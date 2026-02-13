@@ -1,0 +1,94 @@
+# Kamal 2 Deployment Configuration
+# https://kamal-deploy.org
+
+# Name of your application. Used to uniquely configure containers.
+service: learning_routes
+
+# Name of the container image.
+image: your-dockerhub-username/learning_routes
+
+# Deploy to these servers.
+servers:
+  web:
+    hosts:
+      - HETZNER_SERVER_IP
+    labels:
+      traefik.http.routers.learning_routes.rule: Host(`learning-routes.com`)
+    options:
+      memory: 512m
+  job:
+    hosts:
+      - HETZNER_SERVER_IP
+    cmd: bin/jobs
+    options:
+      memory: 512m
+
+# Enable SSL auto certification via Let's Encrypt (used with Cloudflare in Full mode).
+proxy:
+  ssl: true
+  host: learning-routes.com
+  app_port: 3000
+  healthcheck:
+    interval: 3
+    path: /up
+    timeout: 3
+
+# Where you keep your container images.
+registry:
+  server: registry.hub.docker.com
+  username:
+    - KAMAL_REGISTRY_USERNAME
+  password:
+    - KAMAL_REGISTRY_PASSWORD
+
+# Inject ENV variables into containers (secrets come from .kamal/secrets).
+env:
+  secret:
+    - RAILS_MASTER_KEY
+    - LEARNING_ROUTES_DATABASE_PASSWORD
+  clear:
+    # Database connection
+    DB_HOST: learning_routes-db
+    DB_USERNAME: learning_routes
+    DB_PORT: "5432"
+
+    # Rails configuration
+    RAILS_LOG_LEVEL: info
+    RAILS_SERVE_STATIC_FILES: "true"
+    WEB_CONCURRENCY: 2
+    CORS_ORIGINS: "learning-routes.com,www.learning-routes.com"
+
+# Aliases for common Kamal commands.
+aliases:
+  console: app exec --interactive --reuse "bin/rails console"
+  shell: app exec --interactive --reuse "bash"
+  logs: app logs -f
+  dbc: app exec --interactive --reuse "bin/rails dbconsole --include-password"
+
+# Use a persistent storage volume for Active Storage files.
+volumes:
+  - "learning_routes_storage:/rails/storage"
+
+# Bridge fingerprinted assets between versions to avoid 404 on in-flight requests.
+asset_path: /rails/public/assets
+
+# Configure the image builder.
+builder:
+  arch: amd64
+  # Build image via remote server (useful for faster amd64 builds on arm64 Mac)
+  # remote: ssh://docker@docker-builder-server
+
+# PostgreSQL database accessory
+accessories:
+  db:
+    image: postgres:16-alpine
+    host: HETZNER_SERVER_IP
+    port: "127.0.0.1:5432:5432"
+    env:
+      clear:
+        POSTGRES_USER: learning_routes
+        POSTGRES_DB: learning_routes_production
+      secret:
+        - POSTGRES_PASSWORD
+    directories:
+      - learning_routes_postgres_data:/var/lib/postgresql/data
