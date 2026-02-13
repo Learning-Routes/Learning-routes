@@ -1,0 +1,28 @@
+# See https://docs.docker.com/engine/reference/builder/#dockerignore-file
+.git
+.gitignore
+.github
+.kamal
+.dockerignore
+.env*
+.DS_Store
+
+# Ignore log and temp files
+log/*
+tmp/*
+storage/*
+
+# Ignore test files
+test/
+spec/
+
+# Ignore development files
+docker-compose.yml
+Dockerfile.dev
+README.md
+MASTER_PLAN.md
+
+# Ignore IDE files
+.idea
+.vscode
+*.swp
