@@ -1,3 +1,48 @@
+PATH
+  remote: engines/ai_orchestrator
+  specs:
+    ai_orchestrator (0.1.0)
+      core
+      rails (>= 8.1.2)
+
+PATH
+  remote: engines/analytics
+  specs:
+    analytics (0.1.0)
+      core
+      learning_routes_engine
+      rails (>= 8.1.2)
+
+PATH
+  remote: engines/assessments
+  specs:
+    assessments (0.1.0)
+      core
+      learning_routes_engine
+      rails (>= 8.1.2)
+
+PATH
+  remote: engines/content_engine
+  specs:
+    content_engine (0.1.0)
+      core
+      learning_routes_engine
+      rails (>= 8.1.2)
+
+PATH
+  remote: engines/core
+  specs:
+    core (0.1.0)
+      bcrypt (~> 3.1)
+      rails (>= 8.1.2)
+
+PATH
+  remote: engines/learning_routes_engine
+  specs:
+    learning_routes_engine (0.1.0)
+      core
+      rails (>= 8.1.2)
+
 GEM
   remote: https://rubygems.org/
   specs:
@@ -79,6 +124,7 @@ GEM
       public_suffix (>= 2.0.2, < 8.0)
     ast (2.4.3)
     base64 (0.3.0)
+    bcrypt (3.1.21)
     bcrypt_pbkdf (1.1.2)
     bcrypt_pbkdf (1.1.2-arm64-darwin)
     bcrypt_pbkdf (1.1.2-x86_64-darwin)
@@ -413,14 +459,21 @@ PLATFORMS
   x86_64-linux-musl
 
 DEPENDENCIES
+  ai_orchestrator!
+  analytics!
+  assessments!
+  bcrypt (~> 3.1.7)
   bootsnap
   brakeman
   bundler-audit
   capybara
+  content_engine!
+  core!
   debug
   image_processing (~> 1.2)
   importmap-rails
   kamal
+  learning_routes_engine!
   lograge
   pg (~> 1.1)
   propshaft
