@@ -18,4 +18,6 @@ Gem::Specification.new do |spec|
 
   spec.add_dependency "rails", ">= 8.1.2"
   spec.add_dependency "core"
+  spec.add_dependency "ruby_llm", "~> 1.1"
+  spec.add_dependency "httparty", "~> 0.22"
 end
