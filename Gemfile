@@ -18,7 +18,7 @@ gem "stimulus-rails"
 gem "tailwindcss-rails"
 
 # Use Active Model has_secure_password [https://guides.rubyonrails.org/active_model_basics.html#securepassword]
-# gem "bcrypt", "~> 3.1.7"
+gem "bcrypt", "~> 3.1.7"
 
 # Windows does not include zoneinfo files, so bundle the tzinfo-data gem
 gem "tzinfo-data", platforms: %i[ windows jruby ]
@@ -43,13 +43,20 @@ gem "lograge"
 # CORS support for API endpoints [https://github.com/cyu/rack-cors]
 gem "rack-cors"
 
-
 # Use Active Storage variants [https://guides.rubyonrails.org/active_storage_overview.html#transforming-images]
 gem "image_processing", "~> 1.2"
 
+# === Engines (modular monolith) ===
+gem "core", path: "engines/core"
+gem "learning_routes_engine", path: "engines/learning_routes_engine"
+gem "content_engine", path: "engines/content_engine"
+gem "assessments", path: "engines/assessments"
+gem "ai_orchestrator", path: "engines/ai_orchestrator"
+gem "analytics", path: "engines/analytics"
+
 group :development, :test do
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
-  gem "debug", platforms: %i[ mri windows ], require: "debug/prelude"
+  gem "debug", platforms: %i[ mri windows ], require: false
 
   # Audits gems for known security defects (use config/bundler-audit.yml to ignore issues)
   gem "bundler-audit", require: false
