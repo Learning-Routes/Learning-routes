@@ -1,8 +1,3 @@
-# This file should ensure the existence of records required to run the application in every environment
-# (production, development, test). The code here should be idempotent so that it can be executed at any
-# point in every environment. The data can then be loaded with the bin/rails db:seed command (or created
-# alongside the database with db:setup).
-
 puts "Seeding database..."
 
 # === Core: Users ===
@@ -13,6 +8,8 @@ admin = Core::User.find_or_create_by!(email: "admin@learning-routes.com") do |us
   user.role = :admin
   user.locale = "en"
   user.timezone = "UTC"
+  user.email_verified_at = Time.current
+  user.onboarding_completed = true
 end
 puts "  Created admin: #{admin.email}"
 
@@ -23,6 +20,8 @@ teacher = Core::User.find_or_create_by!(email: "teacher@learning-routes.com") do
   user.role = :teacher
   user.locale = "en"
   user.timezone = "UTC"
+  user.email_verified_at = Time.current
+  user.onboarding_completed = true
 end
 puts "  Created teacher: #{teacher.email}"
 
@@ -33,6 +32,8 @@ student = Core::User.find_or_create_by!(email: "student@learning-routes.com") do
   user.role = :student
   user.locale = "en"
   user.timezone = "UTC"
+  user.email_verified_at = Time.current
+  user.onboarding_completed = true
 end
 puts "  Created student: #{student.email}"
 
@@ -42,7 +43,7 @@ profile = LearningRoutesEngine::LearningProfile.find_or_create_by!(user: student
   p.interests = ["programming", "python"]
   p.learning_style = ["visual", "hands_on"]
   p.goal = "Learn Python programming fundamentals"
-  p.timeline = "3 months"
+  p.timeline = "3_months"
 end
 puts "  Created learning profile for: #{student.name}"
 
