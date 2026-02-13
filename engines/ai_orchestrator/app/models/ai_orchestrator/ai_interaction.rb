@@ -8,10 +8,14 @@ module AiOrchestrator
     validates :prompt, presence: true
 
     scope :by_model, ->(model) { where(model: model) }
+    scope :by_task, ->(task) { where(task_type: task) }
     scope :successful, -> { where(status: :completed) }
     scope :failed_requests, -> { where(status: [:failed, :timeout]) }
+    scope :cached_hits, -> { where(cached: true) }
     scope :recent, -> { order(created_at: :desc) }
     scope :today, -> { where("created_at >= ?", Time.current.beginning_of_day) }
+    scope :this_week, -> { where("created_at >= ?", Time.current.beginning_of_week) }
+    scope :this_month, -> { where("created_at >= ?", Time.current.beginning_of_month) }
 
     SUPPORTED_MODELS = %w[
       gpt-5.2
@@ -25,6 +29,7 @@ module AiOrchestrator
     ].freeze
 
     validates :model, inclusion: { in: SUPPORTED_MODELS }
+    validates :task_type, inclusion: { in: AiModelConfig::TASK_TYPES }, allow_nil: true
 
     def cost_dollars
       cost_cents / 100.0
@@ -32,6 +37,40 @@ module AiOrchestrator
 
     def latency_seconds
       (latency_ms || 0) / 1000.0
+    end
+
+    def total_tokens
+      (input_tokens || 0) + (output_tokens || 0)
+    end
+
+    def mark_completed!(response_text:, input_tokens: 0, output_tokens: 0, latency_ms: 0)
+      update!(
+        status: :completed,
+        response: response_text,
+        input_tokens: input_tokens,
+        output_tokens: output_tokens,
+        tokens_used: input_tokens + output_tokens,
+        latency_ms: latency_ms,
+        cost_cents: CostTracker.estimate_cost(
+          model: model,
+          input_tokens: input_tokens,
+          output_tokens: output_tokens
+        )
+      )
+    end
+
+    def mark_failed!(error:)
+      update!(
+        status: :failed,
+        error_message: error.to_s.truncate(1000)
+      )
+    end
+
+    def mark_timeout!
+      update!(
+        status: :timeout,
+        error_message: "Request timed out"
+      )
     end
   end
 end

@@ -46,6 +46,13 @@ gem "rack-cors"
 # Use Active Storage variants [https://guides.rubyonrails.org/active_storage_overview.html#transforming-images]
 gem "image_processing", "~> 1.2"
 
+# === AI Services ===
+# Unified multi-provider AI API (OpenAI, Anthropic, Gemini) [https://rubyllm.com]
+gem "ruby_llm", "~> 1.1"
+
+# HTTP client for ElevenLabs and Nano Banana REST APIs
+gem "httparty", "~> 0.22"
+
 # === Engines (modular monolith) ===
 gem "core", path: "engines/core"
 gem "learning_routes_engine", path: "engines/learning_routes_engine"

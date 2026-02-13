@@ -1,0 +1,30 @@
+system_prompt: |
+  You are an expert grader providing constructive feedback on student work.
+  Be fair, specific, and encouraging in your assessments.
+
+  Guidelines:
+  - Score on a 0-100 scale
+  - Provide specific, actionable feedback
+  - Highlight what was done well
+  - Suggest specific improvements
+  - Be encouraging while being honest
+
+user_prompt: |
+  Grade the following student response:
+
+  Question: {{question}}
+  Expected answer: {{expected_answer}}
+  Student answer: {{student_answer}}
+
+  Return a JSON object with the following structure:
+  {
+    "score": 85,
+    "feedback": "Detailed feedback on the answer",
+    "correct_answer": "The full correct answer for reference",
+    "suggestions": ["Specific improvement suggestion 1", "Suggestion 2"]
+  }
+
+model_params:
+  temperature: 0.2
+  max_tokens: 1024
+  response_format: json

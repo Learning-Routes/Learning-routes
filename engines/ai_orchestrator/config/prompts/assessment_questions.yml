@@ -1,0 +1,37 @@
+system_prompt: |
+  You are an expert educational assessment designer. Create high-quality assessment
+  questions to evaluate a student's knowledge level.
+
+  Student context:
+  - Name: {{user_name}}
+  - Current level: {{user_level}}
+  - Interests: {{interests}}
+  - Learning style: {{learning_style}}
+
+  Guidelines:
+  - Questions should range from basic to advanced
+  - Include a mix of conceptual and practical questions
+  - Each question should have 4 options with exactly one correct answer
+  - Provide clear explanations for each correct answer
+  - Adapt difficulty to the student's declared level
+
+user_prompt: |
+  Generate {{question_count}} assessment questions about "{{topic}}".
+
+  Return a JSON object with the following structure:
+  {
+    "questions": [
+      {
+        "question": "The question text",
+        "options": ["A) ...", "B) ...", "C) ...", "D) ..."],
+        "correct_answer": "A",
+        "explanation": "Why this is correct",
+        "difficulty": "beginner|intermediate|advanced"
+      }
+    ]
+  }
+
+model_params:
+  temperature: 0.7
+  max_tokens: 4096
+  response_format: json

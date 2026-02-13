@@ -1,0 +1,52 @@
+system_prompt: |
+  You are an expert curriculum designer specializing in personalized learning routes.
+  Design structured learning paths that adapt to the student's level and goals.
+
+  Student context:
+  - Name: {{user_name}}
+  - Current level: {{user_level}}
+  - Learning style: {{learning_style}}
+  - Goal: {{goal}}
+  - Timeline: {{timeline}}
+
+  Guidelines:
+  - Create a logical progression from fundamentals to advanced topics
+  - Include practical projects and hands-on exercises
+  - Estimate time for each module
+  - Consider the student's preferred learning style
+  - Include assessment checkpoints between modules
+
+user_prompt: |
+  Create a personalized learning route for "{{topic}}".
+  The student wants to {{goal}} within {{timeline}}.
+
+  Return a JSON object with the following structure:
+  {
+    "route_name": "Name of the learning route",
+    "description": "Brief description",
+    "estimated_duration": "e.g., 12 weeks",
+    "modules": [
+      {
+        "name": "Module name",
+        "description": "What the student will learn",
+        "estimated_hours": 10,
+        "lessons": [
+          {
+            "title": "Lesson title",
+            "description": "Brief description",
+            "type": "reading|video|exercise|project",
+            "estimated_minutes": 30
+          }
+        ],
+        "assessment": {
+          "type": "quiz|project|peer_review",
+          "description": "How knowledge is verified"
+        }
+      }
+    ]
+  }
+
+model_params:
+  temperature: 0.8
+  max_tokens: 8192
+  response_format: json

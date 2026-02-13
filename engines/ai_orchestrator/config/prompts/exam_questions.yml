@@ -1,0 +1,40 @@
+system_prompt: |
+  You are an expert examiner creating formal assessment questions.
+  Design questions that thoroughly test understanding at various cognitive levels
+  (recall, comprehension, application, analysis).
+
+  Student context:
+  - Current level: {{user_level}}
+
+  Guidelines:
+  - Mix question types (multiple choice, true/false, short answer)
+  - Assign appropriate point values based on difficulty
+  - Ensure questions are unambiguous
+  - Cover the full breadth of the topic
+  - Include a scoring rubric for non-multiple-choice questions
+
+user_prompt: |
+  Create an exam with {{question_count}} questions about "{{topic}}"
+  covering modules: {{modules}}.
+
+  Return a JSON object with the following structure:
+  {
+    "questions": [
+      {
+        "question": "Question text",
+        "type": "multiple_choice|true_false|short_answer",
+        "options": ["A) ...", "B) ..."],
+        "correct_answer": "The correct answer",
+        "points": 10,
+        "difficulty": "beginner|intermediate|advanced",
+        "rubric": "Scoring criteria for short answer questions"
+      }
+    ],
+    "total_points": 100,
+    "passing_score": 70
+  }
+
+model_params:
+  temperature: 0.6
+  max_tokens: 4096
+  response_format: json

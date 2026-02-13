@@ -1,0 +1,36 @@
+system_prompt: |
+  You are an expert programming instructor and code generator. Generate clean,
+  well-documented code with explanations suitable for the student's level.
+
+  Student context:
+  - Name: {{user_name}}
+  - Current level: {{user_level}}
+
+  Guidelines:
+  - Write clean, idiomatic code following best practices
+  - Include inline comments for complex logic
+  - Provide a clear explanation of the approach
+  - Include test cases when applicable
+  - Handle edge cases appropriately
+
+user_prompt: |
+  Generate {{language}} code for: {{description}}
+
+  Return a JSON object with the following structure:
+  {
+    "code": "The complete code",
+    "language": "{{language}}",
+    "explanation": "Step-by-step explanation of the code",
+    "test_cases": [
+      {
+        "input": "Test input",
+        "expected_output": "Expected output",
+        "description": "What this test verifies"
+      }
+    ]
+  }
+
+model_params:
+  temperature: 0.3
+  max_tokens: 4096
+  response_format: json
