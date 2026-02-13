@@ -1,0 +1,44 @@
+<%= turbo_frame_tag "onboarding_step" do %>
+  <div data-controller="checkbox-group">
+    <div class="text-center mb-8">
+      <h2 class="text-2xl font-bold text-gray-900">How do you prefer to learn?</h2>
+      <p class="mt-2 text-gray-600">Select all that apply — we'll adapt your content accordingly</p>
+    </div>
+
+    <%= form_with(url: core.onboarding_update_step_path(step: "learning_style"), method: :patch, data: { turbo_frame: "onboarding_step" }) do |f| %>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-8">
+        <% [
+          ["visual", "Visual", "Images, diagrams, and videos", "👁️"],
+          ["reading", "Reading", "Text-based lessons and articles", "📖"],
+          ["auditory", "Auditory", "Voice narrations and explanations", "🎧"],
+          ["hands_on", "Hands-on", "Exercises and practice", "🛠️"]
+        ].each do |value, label, description, emoji| %>
+          <label class="relative cursor-pointer block" data-checkbox-group-target="option">
+            <input type="checkbox" name="learning_style[]" value="<%= value %>"
+                   class="peer sr-only"
+                   <%= "checked" if profile.learning_style&.include?(value) %>
+                   data-action="change->checkbox-group#update">
+            <div class="flex items-center rounded-xl border-2 border-gray-200 p-5 transition
+                        peer-checked:border-indigo-600 peer-checked:bg-indigo-50
+                        hover:border-gray-300 hover:bg-gray-50">
+              <span class="text-2xl mr-4"><%= emoji %></span>
+              <div>
+                <p class="text-sm font-semibold text-gray-900"><%= label %></p>
+                <p class="text-xs text-gray-500"><%= description %></p>
+              </div>
+            </div>
+          </label>
+        <% end %>
+      </div>
+
+      <div class="flex justify-between">
+        <%= link_to "← Back", core.onboarding_path(step: "level"),
+            class: "rounded-lg border border-gray-300 px-8 py-3 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition",
+            data: { turbo_frame: "onboarding_step" } %>
+        <%= f.submit "Continue →",
+            class: "rounded-lg bg-indigo-600 px-8 py-3 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition cursor-pointer",
+            data: { checkbox_group_target: "submit" } %>
+      </div>
+    <% end %>
+  </div>
+<% end %>

@@ -55,27 +55,82 @@ module Core
       assert_equal({ "student" => 0, "teacher" => 1, "admin" => 2 }, Core::User.roles)
     end
 
-    test "authenticatable concern" do
+    test "authenticates with correct password" do
       user = Core::User.create!(valid_user_attributes)
       assert user.authenticate("securepassword123")
       assert_not user.authenticate("wrongpassword")
     end
 
-    test "authorizable concern - student" do
+    test "email_verified? returns false by default" do
+      user = Core::User.new(valid_user_attributes)
+      assert_not user.email_verified?
+    end
+
+    test "verify_email! sets email_verified_at" do
+      user = Core::User.create!(valid_user_attributes)
+      user.verify_email!
+      assert user.email_verified?
+      assert_not_nil user.email_verified_at
+    end
+
+    test "onboarding_completed? returns false by default" do
+      user = Core::User.new(valid_user_attributes)
+      assert_not user.onboarding_completed?
+    end
+
+    test "complete_onboarding! sets flag" do
+      user = Core::User.create!(valid_user_attributes)
+      user.complete_onboarding!
+      assert user.onboarding_completed?
+    end
+
+    test "remember! generates and stores token" do
+      user = Core::User.create!(valid_user_attributes)
+      token = user.remember!
+      assert_not_nil token
+      assert_not_nil user.remember_token
+    end
+
+    test "forget! clears remember token" do
+      user = Core::User.create!(valid_user_attributes)
+      user.remember!
+      user.forget!
+      assert_nil user.remember_token
+    end
+
+    test "generates token for email verification" do
+      user = Core::User.create!(valid_user_attributes)
+      token = user.generate_token_for(:email_verification)
+      assert_not_nil token
+
+      found = Core::User.find_by_token_for(:email_verification, token)
+      assert_equal user, found
+    end
+
+    test "generates token for password reset" do
+      user = Core::User.create!(valid_user_attributes)
+      token = user.generate_token_for(:password_reset)
+      assert_not_nil token
+
+      found = Core::User.find_by_token_for(:password_reset, token)
+      assert_equal user, found
+    end
+
+    test "authorization - student" do
       user = Core::User.new(valid_user_attributes.merge(role: :student))
       assert user.can_create_routes?
       assert_not user.can_manage_users?
       assert_not user.can_manage_content?
     end
 
-    test "authorizable concern - admin" do
+    test "authorization - admin" do
       user = Core::User.new(valid_user_attributes.merge(role: :admin))
       assert user.can_manage_users?
       assert user.can_manage_content?
       assert user.can_access_analytics?
     end
 
-    test "authorizable concern - teacher" do
+    test "authorization - teacher" do
       user = Core::User.new(valid_user_attributes.merge(role: :teacher))
       assert_not user.can_manage_users?
       assert user.can_manage_content?
