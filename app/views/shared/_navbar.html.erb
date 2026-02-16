@@ -15,7 +15,7 @@
 
     <%# === Desktop links === %>
     <div class="hidden md:flex items-center gap-[clamp(1rem,3vw,2.5rem)]">
-      <% %w[Producto Precios].each do |label| %>
+      <% %w[Product Pricing].each do |label| %>
         <a href="#" class="font-sans text-[0.8rem] font-medium text-muted hover:text-txt transition-colors duration-200">
           <%= label %>
         </a>
@@ -25,7 +25,7 @@
         <%= link_to "Dashboard", dashboard_path,
             class: "font-sans text-[0.8rem] font-medium text-muted hover:text-txt transition-colors duration-200" %>
       <% else %>
-        <%= link_to "Iniciar sesi\u00F3n", core.sign_in_path,
+        <%= link_to "Sign in", core.sign_in_path,
             class: "font-sans text-[0.8rem] font-medium text-muted hover:text-txt transition-colors duration-200" %>
       <% end %>
 
@@ -35,7 +35,7 @@
                     bg-accent text-accent-text px-[1.15rem] py-[0.48rem] rounded-btn btn-shadow
                     hover-lift tracking-[-0.2px]" %>
       <% else %>
-        <%= link_to "Empezar", core.sign_up_path,
+        <%= link_to "Get started", core.sign_up_path,
             class: "inline-flex items-center justify-center font-sans text-[0.8rem] font-semibold
                     bg-accent text-accent-text px-[1.15rem] py-[0.48rem] rounded-btn btn-shadow
                     hover-lift tracking-[-0.2px]" %>
@@ -54,7 +54,7 @@
   <div data-navbar-target="menu"
        class="hidden md:hidden bg-card border-b border-lr px-[clamp(1.5rem,5vw,4rem)] pb-5 pt-2">
     <div class="flex flex-col gap-3">
-      <% %w[Producto Precios].each do |label| %>
+      <% %w[Product Pricing].each do |label| %>
         <a href="#" data-action="navbar#closeMenu"
            class="font-sans text-[0.88rem] font-medium text-sub hover:text-txt transition-colors py-1">
           <%= label %>
@@ -66,7 +66,7 @@
             data: { action: "navbar#closeMenu" },
             class: "font-sans text-[0.88rem] font-medium text-sub hover:text-txt transition-colors py-1" %>
       <% else %>
-        <%= link_to "Iniciar sesi\u00F3n", core.sign_in_path,
+        <%= link_to "Sign in", core.sign_in_path,
             data: { action: "navbar#closeMenu" },
             class: "font-sans text-[0.88rem] font-medium text-sub hover:text-txt transition-colors py-1" %>
       <% end %>
@@ -77,7 +77,7 @@
               class: "inline-flex items-center justify-center font-sans text-[0.85rem] font-semibold
                       bg-accent text-accent-text px-5 py-2.5 rounded-btn btn-shadow w-full" %>
         <% else %>
-          <%= link_to "Empezar", core.sign_up_path,
+          <%= link_to "Get started", core.sign_up_path,
               class: "inline-flex items-center justify-center font-sans text-[0.85rem] font-semibold
                       bg-accent text-accent-text px-5 py-2.5 rounded-btn btn-shadow w-full" %>
         <% end %>

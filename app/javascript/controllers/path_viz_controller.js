@@ -2,12 +2,12 @@ import { Controller } from "@hotwired/stimulus"
 
 // Node data — refined radii: pretty but not overwhelming
 const NODES = [
-  { id:"n1", label:"Nivelación",  tag:"NV1", color:"#8B80C4", side:"left",  note:"Diagnóstico inicial",  goal:false, sats:[{a:-55,d:1.08,r:46},{a:0,d:1.28,r:44},{a:55,d:1.08,r:46}] },
-  { id:"n2", label:"Evaluación",  tag:"NV2", color:"#6E9BC8", side:"right", note:"Evaluación dinámica",  goal:false, sats:[{a:-50,d:1.12,r:46},{a:50,d:1.12,r:48}] },
-  { id:"n3", label:"Multi-Modelo",tag:"MM",  color:"#B5718E", side:"left",  note:"Múltiples enfoques",   goal:false, sats:[{a:-55,d:1.12,r:46},{a:0,d:1.3,r:48},{a:55,d:1.08,r:44}] },
-  { id:"n4", label:"Refuerzo",    tag:"NV3", color:"#B09848", side:"right", note:"Adaptativo",           goal:false, sats:[{a:-50,d:1.16,r:46},{a:50,d:1.16,r:46}] },
-  { id:"n5", label:"Examen Final",tag:"EF",  color:"#B06050", side:"left",  note:null,                   goal:false, sats:[{a:-55,d:1.08,r:46},{a:0,d:1.28,r:48},{a:55,d:1.1,r:44}] },
-  { id:"n6", label:"Tu Objetivo", tag:null,  color:"#5BA880", side:"right", note:null,                   goal:true,  sats:[{a:-50,d:1.12,r:46},{a:0,d:1.3,r:46},{a:50,d:1.12,r:48}] },
+  { id:"n1", label:"Leveling",  tag:"NV1", color:"#8B80C4", side:"left",  note:"Initial diagnosis",  goal:false, sats:[{a:-55,d:1.08,r:46},{a:0,d:1.28,r:44},{a:55,d:1.08,r:46}] },
+  { id:"n2", label:"Assessment",  tag:"NV2", color:"#6E9BC8", side:"right", note:"Dynamic assessment",  goal:false, sats:[{a:-50,d:1.12,r:46},{a:50,d:1.12,r:48}] },
+  { id:"n3", label:"Multi-Model",tag:"MM",  color:"#B5718E", side:"left",  note:"Multiple approaches",   goal:false, sats:[{a:-55,d:1.12,r:46},{a:0,d:1.3,r:48},{a:55,d:1.08,r:44}] },
+  { id:"n4", label:"Reinforcement",    tag:"NV3", color:"#B09848", side:"right", note:"Adaptive",           goal:false, sats:[{a:-50,d:1.16,r:46},{a:50,d:1.16,r:46}] },
+  { id:"n5", label:"Final Exam",tag:"EF",  color:"#B06050", side:"left",  note:null,                   goal:false, sats:[{a:-55,d:1.08,r:46},{a:0,d:1.28,r:48},{a:55,d:1.1,r:44}] },
+  { id:"n6", label:"Your Goal", tag:null,  color:"#5BA880", side:"right", note:null,                   goal:true,  sats:[{a:-50,d:1.12,r:46},{a:0,d:1.3,r:46},{a:50,d:1.12,r:48}] },
 ]
 
 const COLORS = { dkT: "#E8E4DC", dkM: "#605848" }
