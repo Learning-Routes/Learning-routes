@@ -99,13 +99,19 @@ model_configs = [
 ]
 
 model_configs.each do |config_data|
-  AiOrchestrator::AiModelConfig.find_or_create_by!(
-    model_name: config_data[:model_name],
-    task_type: config_data[:task_type]
-  ) do |config|
-    config.assign_attributes(config_data)
+  existing = AiOrchestrator::AiModelConfig.where(task_type: config_data[:task_type]).exists?
+  unless existing
+    AiOrchestrator::AiModelConfig.connection.execute(
+      ActiveRecord::Base.sanitize_sql_array([
+        "INSERT INTO ai_orchestrator_ai_model_configs (id, model_name, task_type, priority, fallback_model, enabled, created_at, updated_at) VALUES (gen_random_uuid(), ?, ?, ?, ?, true, NOW(), NOW())",
+        config_data[:model_name], config_data[:task_type], config_data[:priority], config_data[:fallback_model]
+      ])
+    )
   end
 end
-puts "  Created #{model_configs.size} AI model configs"
+puts "  Created AI model configs"
+
+# === Content Delivery Seed ===
+load Rails.root.join("db/seeds/content_delivery_seed.rb")
 
 puts "Seeding complete!"

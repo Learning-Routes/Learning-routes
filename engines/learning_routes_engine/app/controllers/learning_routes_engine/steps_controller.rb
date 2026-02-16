@@ -1,0 +1,108 @@
+module LearningRoutesEngine
+  class StepsController < ApplicationController
+    before_action :authenticate_user!
+    before_action :set_route_and_step
+    before_action :authorize_route_owner!
+    before_action :ensure_step_accessible!, only: [:show]
+
+    layout "learning"
+
+    def show
+      mark_in_progress_if_available!
+      load_step_content
+      @study_session = find_or_start_study_session
+      @notes = ContentEngine::UserNote.for_user(current_user).for_step(@step).ordered
+      @progress = RouteProgressTracker.new(@route).progress_summary
+    end
+
+    def complete
+      tracker = RouteProgressTracker.new(@route)
+      tracker.complete_step!(@step)
+      finish_study_session!
+
+      next_available = @route.route_steps
+        .where("position > ?", @step.position)
+        .where(status: [:available])
+        .order(:position).first
+
+      respond_to do |format|
+        format.html { redirect_to route_step_path(@route, next_available || @step), notice: "Step completed!" }
+        format.turbo_stream
+      end
+    end
+
+    private
+
+    def set_route_and_step
+      @route = LearningRoute.find(params[:route_id])
+      @step = @route.route_steps.find(params[:id])
+    end
+
+    def authorize_route_owner!
+      unless @route.learning_profile.user_id == current_user.id
+        redirect_to main_app.dashboard_path, alert: "Not authorized."
+      end
+    end
+
+    def ensure_step_accessible!
+      if @step.locked?
+        redirect_to learning_routes_engine.route_path(@route),
+                    alert: "This step is not yet available."
+      end
+    end
+
+    def mark_in_progress_if_available!
+      @step.update!(status: :in_progress) if @step.available?
+    end
+
+    def load_step_content
+      case @step.content_type
+      when "lesson"
+        @content = ContentEngine::AiContent.where(route_step: @step).by_type(:text).first
+        unless @content
+          LearningRoutesEngine::ContentGenerationJob.perform_later(@step.id) rescue nil
+          @content_generating = true
+        end
+        @rendered_html = ContentEngine::MarkdownRenderer.render(@content.body) if @content
+      when "exercise"
+        @content = ContentEngine::AiContent.where(route_step: @step).by_type(:exercise).first
+        unless @content
+          LearningRoutesEngine::ContentGenerationJob.perform_later(@step.id) rescue nil
+          @content_generating = true
+        end
+        @rendered_html = ContentEngine::MarkdownRenderer.render(@content.body) if @content
+      when "assessment"
+        @assessment = Assessments::Assessment.find_by(route_step: @step)
+        unless @assessment
+          LearningRoutesEngine::AssessmentGenerationJob.perform_later(@step.id) rescue nil
+          @assessment_generating = true
+        end
+        @existing_result = Assessments::AssessmentResult.find_by(
+          user: current_user, assessment: @assessment
+        ) if @assessment
+      when "review"
+        @retrievability = SpacedRepetition.new.retrievability(@step)
+        @review_steps = @route.route_steps.completed_steps.where.not(id: @step.id).order(:position).limit(20)
+      end
+    end
+
+    def find_or_start_study_session
+      existing = Analytics::StudySession.for_user(current_user)
+        .active
+        .find_by(route_step_id: @step.id)
+      existing || Analytics::StudySession.create!(
+        user: current_user,
+        learning_route: @route,
+        route_step: @step,
+        started_at: Time.current
+      )
+    end
+
+    def finish_study_session!
+      Analytics::StudySession.for_user(current_user)
+        .active
+        .where(route_step_id: @step.id)
+        .find_each(&:finish!)
+    end
+  end
+end

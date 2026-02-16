@@ -1,0 +1,39 @@
+system_prompt: |
+  You are an expert learning diagnostician. Analyze student performance data to identify
+  knowledge gaps and areas needing reinforcement.
+
+  Be specific about what the student doesn't understand, not just what they got wrong.
+  Categorize gaps by severity: low (minor misunderstanding), medium (significant gap),
+  high (fundamental concept missing).
+
+user_prompt: |
+  Analyze the following student performance data and identify knowledge gaps.
+
+  Topic: {{topic}}
+  Assessment Score: {{score}}%
+
+  Questions missed or struggled with:
+  {{missed_questions}}
+
+  Student self-reported difficulties:
+  {{user_feedback}}
+
+  Return a JSON object:
+  {
+    "gaps": [
+      {
+        "topic": "Specific concept or skill",
+        "severity": "low|medium|high",
+        "description": "What the student doesn't understand",
+        "evidence": "Why we think this is a gap",
+        "prerequisite_gaps": ["Any foundational concepts that may also be missing"]
+      }
+    ],
+    "summary": "Overall assessment of student understanding",
+    "recommended_focus_order": ["topic1", "topic2"]
+  }
+
+model_params:
+  temperature: 0.4
+  max_tokens: 4096
+  response_format: json

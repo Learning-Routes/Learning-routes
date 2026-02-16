@@ -1,0 +1,37 @@
+{
+  "steps": [
+    {
+      "title": "Review: Database Relationships",
+      "description": "Revisit one-to-many and many-to-many concepts with visual diagrams",
+      "content_type": "lesson",
+      "estimated_minutes": 15,
+      "bloom_level": 1,
+      "content_guidance": "Use ER diagrams to show relationship types. Start with simple one-to-many examples before introducing join tables."
+    },
+    {
+      "title": "Understanding has_many :through",
+      "description": "Step-by-step guide to has_many :through with real-world examples",
+      "content_type": "lesson",
+      "estimated_minutes": 20,
+      "bloom_level": 2,
+      "content_guidance": "Use a doctor-appointment-patient example. Show the migration, model, and query examples side by side."
+    },
+    {
+      "title": "Practice: Build Associations",
+      "description": "Hands-on exercise building a tagging system with has_many :through",
+      "content_type": "exercise",
+      "estimated_minutes": 25,
+      "bloom_level": 3,
+      "content_guidance": "Guide student through creating Post, Tag, and Tagging models with full CRUD."
+    },
+    {
+      "title": "Polymorphic Associations Workshop",
+      "description": "Understand and implement polymorphic associations",
+      "content_type": "exercise",
+      "estimated_minutes": 30,
+      "bloom_level": 4,
+      "content_guidance": "Build a commenting system that works across multiple models using polymorphic associations."
+    }
+  ],
+  "rationale": "Starting from basic relationship concepts builds confidence before tackling the specific gap areas of has_many :through and polymorphic associations."
+}

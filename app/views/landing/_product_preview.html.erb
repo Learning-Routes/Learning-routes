@@ -1,0 +1,59 @@
+<%#
+  ProductPreview — dark card showing topic tags and "generate" CTA.
+  Used in the Hero section right column.
+%>
+<%
+  topics = [
+    { label: "Inglés B1→B2",       color: "#6E9BC8" },
+    { label: "Python",              color: "#B5718E" },
+    { label: "Cálculo",             color: "#8B80C4" },
+    { label: "Diseño UX",           color: "#B09848" },
+    { label: "Fotografía",          color: "#B06050" },
+    { label: "Marketing",           color: "#5BA880" },
+    { label: "Japonés",             color: "#6E9BC8" },
+    { label: "Finanzas",            color: "#B09848" },
+    { label: "Machine Learning",    color: "#B5718E" },
+    { label: "Guitarra",            color: "#B06050" },
+    { label: "Historia del arte",   color: "#8B80C4" },
+  ]
+%>
+
+<div class="w-[340px] shrink-0 section-dark rounded-[22px] p-[2rem] relative overflow-hidden"
+     style="box-shadow: 0 20px 64px rgba(28,24,18,0.2), 0 0 0 1px rgba(255,250,240,0.03);">
+
+  <%# Header %>
+  <div class="mb-[1.5rem]">
+    <div class="font-mono text-[0.54rem] tracking-[1.5px] text-dark-muted uppercase mb-[0.5rem]">
+      Nueva ruta
+    </div>
+    <div class="font-sans text-[1.05rem] font-semibold text-dark-text tracking-[-0.3px]">
+      Aprende lo que quieras.
+    </div>
+  </div>
+
+  <%# Topic tags grid %>
+  <div class="flex flex-wrap gap-[0.42rem] mb-[1.8rem]">
+    <% topics.each do |topic| %>
+      <span class="font-sans text-[0.66rem] font-normal text-dark-sub leading-none
+                   px-[0.65rem] py-[0.35rem] rounded-[9px] border-lr-dark border cursor-default"
+            style="background: rgba(255,250,240,0.02);">
+        <%= topic[:label] %>
+      </span>
+    <% end %>
+
+    <%# Last tag — more transparent %>
+    <span class="font-sans text-[0.66rem] font-normal text-dark-muted leading-none
+                 px-[0.65rem] py-[0.35rem] rounded-[9px] cursor-default"
+          style="border: 1px solid rgba(255,250,240,0.03);">
+      Y mucho más...
+    </span>
+  </div>
+
+  <%# Mock generate button %>
+  <div class="bg-dark-text rounded-[12px] p-[0.7rem] text-center"
+       style="box-shadow: 0 1px 3px rgba(0,0,0,0.2);">
+    <span class="font-sans text-[0.85rem] font-semibold text-dark tracking-[-0.2px]">
+      Generar mi ruta
+    </span>
+  </div>
+</div>

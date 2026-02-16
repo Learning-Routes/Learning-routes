@@ -16,13 +16,13 @@ module Core
     end
 
     def find_session_from_cookie
-      return unless session[:session_id]
-      sess = Core::Session.includes(:user).find_by(id: session[:session_id])
+      return unless session[:core_session_id]
+      sess = Core::Session.includes(:user).find_by(id: session[:core_session_id])
       if sess && !sess.expired?
         sess.touch_last_active! if sess.last_active_at.nil? || sess.last_active_at < 1.hour.ago
         sess
       else
-        session.delete(:session_id)
+        session.delete(:core_session_id)
         nil
       end
     end
@@ -43,8 +43,9 @@ module Core
       end
     end
 
-    def after_sign_in_path
-      if current_user.onboarding_completed?
+    def after_sign_in_path(user = nil)
+      user ||= current_user
+      if user&.onboarding_completed?
         main_app.dashboard_path
       else
         core.onboarding_path
@@ -57,7 +58,11 @@ module Core
         user_agent: request.user_agent,
         last_active_at: Time.current
       )
-      session[:session_id] = sess.id
+      session[:core_session_id] = sess.id
+
+      # Reset memoized values so current_user reflects the new session
+      remove_instance_variable(:@current_user) if defined?(@current_user)
+      remove_instance_variable(:@current_session) if defined?(@current_session)
 
       if remember
         token = user.remember!
@@ -71,7 +76,7 @@ module Core
 
     def end_session
       current_session&.destroy
-      session.delete(:session_id)
+      session.delete(:core_session_id)
       cookies.delete(:remember_token)
       @current_user = nil
       @current_session = nil

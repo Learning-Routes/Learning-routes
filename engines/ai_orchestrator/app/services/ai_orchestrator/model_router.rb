@@ -9,7 +9,13 @@ module AiOrchestrator
       quick_grading:        { primary: "claude-haiku-4-5", fallback: "gpt-5.1-codex-mini" },
       voice_narration:      { primary: "elevenlabs", fallback: nil },
       image_generation:     { primary: "nanobanana-pro", fallback: "nanobanana-flash" },
-      quick_images:         { primary: "nanobanana-flash", fallback: "nanobanana-pro" }
+      quick_images:         { primary: "nanobanana-flash", fallback: "nanobanana-pro" },
+      gap_analysis:         { primary: "claude-opus-4-6", fallback: "gpt-5.2" },
+      reinforcement_generation: { primary: "gpt-5.2", fallback: "claude-opus-4-6" },
+      explain_differently:       { primary: "claude-opus-4-6", fallback: "gpt-5.2" },
+      give_example:              { primary: "claude-opus-4-6", fallback: "gpt-5.2" },
+      simplify_content:          { primary: "claude-haiku-4-5", fallback: "gpt-5.1-codex-mini" },
+      exercise_hint:             { primary: "claude-haiku-4-5", fallback: "gpt-5.1-codex-mini" }
     }.freeze
 
     # Per-model rate limits (requests per minute)

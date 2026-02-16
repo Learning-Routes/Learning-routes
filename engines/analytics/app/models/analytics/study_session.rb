@@ -2,6 +2,7 @@ module Analytics
   class StudySession < ApplicationRecord
     belongs_to :user, class_name: "Core::User"
     belongs_to :learning_route, class_name: "LearningRoutesEngine::LearningRoute", optional: true
+    belongs_to :route_step, class_name: "LearningRoutesEngine::RouteStep", optional: true
 
     validates :started_at, presence: true
 

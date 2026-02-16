@@ -1,0 +1,11 @@
+<div data-controller="code-editor"
+     data-code-editor-language-value="<%= question.options&.first || 'javascript' %>"
+     data-code-editor-read-only-value="false">
+  <div class="code-block">
+    <div class="flex items-center justify-between px-4 py-2 border-b border-white/[0.06]">
+      <span class="text-xs text-gray-500 font-mono"><%= question.options&.first || 'javascript' %></span>
+    </div>
+    <div data-code-editor-target="editorContainer" class="min-h-[200px]"></div>
+  </div>
+  <input type="hidden" name="answers[<%= question.id %>]" data-code-editor-target="hiddenInput">
+</div>

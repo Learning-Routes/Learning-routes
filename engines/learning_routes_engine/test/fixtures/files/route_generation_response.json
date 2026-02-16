@@ -1,0 +1,84 @@
+{
+  "route_name": "Ruby on Rails Mastery",
+  "description": "A comprehensive learning path for mastering Ruby on Rails",
+  "estimated_duration": "12 weeks",
+  "modules": [
+    {
+      "name": "Rails Fundamentals",
+      "level": "nv1",
+      "bloom_level": 1,
+      "description": "Core Rails concepts and MVC architecture",
+      "estimated_hours": 8,
+      "lessons": [
+        { "title": "Introduction to MVC", "description": "Understanding Model-View-Controller", "type": "lesson", "bloom_level": 1, "estimated_minutes": 30 },
+        { "title": "Routing Basics", "description": "How Rails routing works", "type": "lesson", "bloom_level": 2, "estimated_minutes": 25 },
+        { "title": "First Rails App", "description": "Build a simple Rails application", "type": "exercise", "bloom_level": 2, "estimated_minutes": 45 }
+      ],
+      "assessment": { "type": "quiz", "title": "Rails Fundamentals Quiz", "description": "Test your MVC knowledge", "bloom_level": 2 }
+    },
+    {
+      "name": "ActiveRecord Deep Dive",
+      "level": "nv1",
+      "bloom_level": 2,
+      "description": "Database interactions with ActiveRecord",
+      "estimated_hours": 10,
+      "lessons": [
+        { "title": "Migrations & Schema", "description": "Database schema management", "type": "lesson", "bloom_level": 1, "estimated_minutes": 30 },
+        { "title": "CRUD Operations", "description": "Create, Read, Update, Delete", "type": "exercise", "bloom_level": 2, "estimated_minutes": 40 }
+      ],
+      "assessment": { "type": "quiz", "title": "ActiveRecord Quiz", "description": "Test ActiveRecord knowledge", "bloom_level": 2 }
+    },
+    {
+      "name": "Testing & TDD",
+      "level": "nv2",
+      "bloom_level": 3,
+      "description": "Test-driven development with Rails",
+      "estimated_hours": 12,
+      "lessons": [
+        { "title": "MiniTest Basics", "description": "Writing your first tests", "type": "lesson", "bloom_level": 3, "estimated_minutes": 30 },
+        { "title": "Model Testing", "description": "Testing ActiveRecord models", "type": "exercise", "bloom_level": 3, "estimated_minutes": 35 },
+        { "title": "Integration Tests", "description": "Testing full request cycles", "type": "exercise", "bloom_level": 4, "estimated_minutes": 40 }
+      ],
+      "assessment": { "type": "exam", "title": "TDD Assessment", "description": "Comprehensive testing exam", "bloom_level": 4 }
+    },
+    {
+      "name": "API Development",
+      "level": "nv2",
+      "bloom_level": 4,
+      "description": "Building RESTful APIs with Rails",
+      "estimated_hours": 10,
+      "lessons": [
+        { "title": "API Controllers", "description": "Building JSON endpoints", "type": "lesson", "bloom_level": 3, "estimated_minutes": 30 },
+        { "title": "Authentication & Authorization", "description": "Securing your API", "type": "lesson", "bloom_level": 4, "estimated_minutes": 35 },
+        { "title": "API Project", "description": "Build a complete REST API", "type": "exercise", "bloom_level": 4, "estimated_minutes": 60 }
+      ],
+      "assessment": { "type": "project", "title": "API Project Review", "description": "Review API implementation", "bloom_level": 4 }
+    },
+    {
+      "name": "Performance & Scaling",
+      "level": "nv3",
+      "bloom_level": 5,
+      "description": "Optimizing Rails for production",
+      "estimated_hours": 10,
+      "lessons": [
+        { "title": "Query Optimization", "description": "N+1 queries and eager loading", "type": "lesson", "bloom_level": 5, "estimated_minutes": 30 },
+        { "title": "Caching Strategies", "description": "Fragment, Russian doll, HTTP caching", "type": "lesson", "bloom_level": 5, "estimated_minutes": 35 },
+        { "title": "Performance Audit", "description": "Profile and optimize a Rails app", "type": "exercise", "bloom_level": 5, "estimated_minutes": 50 }
+      ],
+      "assessment": { "type": "exam", "title": "Performance Exam", "description": "Test optimization knowledge", "bloom_level": 5 }
+    },
+    {
+      "name": "Architecture & Design",
+      "level": "nv3",
+      "bloom_level": 6,
+      "description": "Advanced Rails architecture patterns",
+      "estimated_hours": 12,
+      "lessons": [
+        { "title": "Service Objects", "description": "Extracting business logic", "type": "lesson", "bloom_level": 5, "estimated_minutes": 30 },
+        { "title": "Rails Engines", "description": "Modular monolith architecture", "type": "lesson", "bloom_level": 6, "estimated_minutes": 40 },
+        { "title": "Architecture Project", "description": "Design a modular Rails app", "type": "exercise", "bloom_level": 6, "estimated_minutes": 60 }
+      ],
+      "assessment": { "type": "project", "title": "Architecture Review", "description": "Review architectural decisions", "bloom_level": 6 }
+    }
+  ]
+}

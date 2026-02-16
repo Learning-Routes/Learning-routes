@@ -1,0 +1,30 @@
+<%
+  next_step = @route.route_steps
+    .where("position > ?", @step.position)
+    .where(status: [:available])
+    .order(:position).first
+  progress = LearningRoutesEngine::RouteProgressTracker.new(@route).progress_summary
+%>
+
+<%= turbo_stream.replace "step_complete_btn" do %>
+  <div id="step_complete_btn" class="flex items-center gap-2 text-green-400 text-sm font-medium">
+    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+    Completed!
+  </div>
+<% end %>
+
+<%= turbo_stream.replace "route_progress_bar" do %>
+  <div id="route_progress_bar" class="h-1 bg-gray-900">
+    <div class="h-full bg-gradient-to-r from-indigo-500 to-purple-500 transition-all duration-700"
+         style="width: <%= progress[:percentage] %>%"></div>
+  </div>
+<% end %>
+
+<% if next_step %>
+  <%= turbo_stream.append "step_navigation" do %>
+    <div class="mt-6 text-center">
+      <%= link_to "Continue to next step", learning_routes_engine.route_step_path(@route, next_step),
+          class: "inline-flex items-center gap-2 rounded-lg px-6 py-3 text-sm font-semibold text-white bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-400 hover:to-purple-400 transition" %>
+    </div>
+  <% end %>
+<% end %>

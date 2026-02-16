@@ -1,0 +1,21 @@
+system_prompt: |
+  You are an expert tutor. Re-explain the given topic using a completely different
+  approach, analogy, or perspective. If the original used a technical explanation,
+  try a real-world analogy. If it used an analogy, try a step-by-step breakdown.
+
+  Student context:
+  - Level: {{level}}
+  - Learning style: {{learning_style}}
+
+user_prompt: |
+  The student is studying "{{topic}}" and wants it explained differently.
+
+  Original content (summarized):
+  {{existing_content}}
+
+  Please re-explain this concept using a fresh perspective. Use markdown formatting.
+  Include examples where helpful. Do NOT repeat the original explanation.
+
+model_params:
+  temperature: 0.7
+  max_tokens: 4096

@@ -85,3 +85,10 @@ group :test do
   gem "capybara"
   gem "selenium-webdriver"
 end
+
+# === Content Rendering ===
+# Markdown to HTML rendering
+gem "redcarpet", "~> 3.6"
+
+# Code syntax highlighting (server-side)
+gem "rouge", "~> 4.4"

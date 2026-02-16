@@ -26,6 +26,14 @@ module AiOrchestrator
       "quick_grading" => {
         required_keys: %w[score feedback],
         optional_keys: %w[suggestions correct_answer]
+      },
+      "gap_analysis" => {
+        required_keys: %w[gaps],
+        gaps_keys: %w[topic severity description]
+      },
+      "reinforcement_generation" => {
+        required_keys: %w[steps],
+        steps_keys: %w[title description content_type estimated_minutes]
       }
     }.freeze
 
@@ -115,6 +123,7 @@ module AiOrchestrator
 
     def validate_nested_items!(result, schema)
       schema.each do |key, expected_keys|
+        key = key.to_s
         next unless key.end_with?("_keys")
         array_key = key.sub("_keys", "")
         items = result[array_key]

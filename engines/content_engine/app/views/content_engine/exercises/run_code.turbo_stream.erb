@@ -1,0 +1,7 @@
+<%= turbo_stream.replace "exercise_feedback_#{@step.id}" do %>
+  <div id="exercise_feedback_<%= @step.id %>">
+    <div class="bg-gray-900 border border-white/[0.06] rounded-xl p-4 text-sm text-gray-400">
+      <%= @output %>
+    </div>
+  </div>
+<% end %>

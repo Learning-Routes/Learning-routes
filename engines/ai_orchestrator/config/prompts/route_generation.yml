@@ -10,11 +10,15 @@ system_prompt: |
   - Timeline: {{timeline}}
 
   Guidelines:
-  - Create a logical progression from fundamentals to advanced topics
+  - Structure the route into three levels (NV1, NV2, NV3) representing increasing difficulty
+  - NV1 (30% of content): Foundational concepts - Bloom's levels Remember & Understand
+  - NV2 (40% of content): Application & Analysis - Bloom's levels Apply & Analyze
+  - NV3 (30% of content): Synthesis & Mastery - Bloom's levels Evaluate & Create
+  - Each level includes lessons, exercises, and assessments
   - Include practical projects and hands-on exercises
   - Estimate time for each module
   - Consider the student's preferred learning style
-  - Include assessment checkpoints between modules
+  - Include assessment checkpoints between levels
 
 user_prompt: |
   Create a personalized learning route for "{{topic}}".
@@ -28,23 +32,35 @@ user_prompt: |
     "modules": [
       {
         "name": "Module name",
+        "level": "nv1|nv2|nv3",
+        "bloom_level": 1-6,
         "description": "What the student will learn",
         "estimated_hours": 10,
         "lessons": [
           {
             "title": "Lesson title",
             "description": "Brief description",
-            "type": "reading|video|exercise|project",
-            "estimated_minutes": 30
+            "type": "lesson|exercise|assessment|review",
+            "bloom_level": 1-6,
+            "estimated_minutes": 30,
+            "prerequisites": []
           }
         ],
         "assessment": {
-          "type": "quiz|project|peer_review",
-          "description": "How knowledge is verified"
+          "type": "quiz|exam|project|review",
+          "title": "Assessment title",
+          "description": "How knowledge is verified",
+          "bloom_level": 1-6
         }
       }
     ]
   }
+
+  Bloom's taxonomy levels:
+  1 = Remember, 2 = Understand, 3 = Apply, 4 = Analyze, 5 = Evaluate, 6 = Create
+
+  Ensure NV1 modules come first (~30% of content), then NV2 (~40%), then NV3 (~30%).
+  Include level-up exams between NV transitions and a final exam at the end.
 
 model_params:
   temperature: 0.8

@@ -1,0 +1,106 @@
+<% content_for(:title, "Assessment - #{@step.title}") %>
+
+<div class="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 py-8">
+  <div class="flex gap-6">
+    <!-- Questions area -->
+    <div class="flex-1" data-controller="exam-timer question-nav"
+         data-exam-timer-duration-seconds-value="<%= (@questions.count * 120).clamp(300, 3600) %>"
+         data-question-nav-total-questions-value="<%= @questions.count %>">
+
+      <!-- Header with timer -->
+      <div class="flex items-center justify-between mb-6">
+        <h1 class="text-xl font-bold text-white"><%= @step.title %></h1>
+        <div class="flex items-center gap-2 bg-gray-900 border border-white/[0.06] rounded-lg px-3 py-1.5">
+          <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+          <span data-exam-timer-target="display" class="text-sm font-mono text-gray-300">--:--</span>
+        </div>
+      </div>
+
+      <!-- Questions form -->
+      <%= form_with url: assessments.submit_result_path(@result), method: :post,
+          data: { exam_timer_target: "form" }, local: true do |f| %>
+
+        <% @questions.each_with_index do |question, index| %>
+          <div data-question-nav-target="questionPanel"
+               data-index="<%= index %>"
+               class="<%= 'hidden' unless index == 0 %> bg-gray-900 border border-white/[0.06] rounded-xl p-6 mb-4">
+
+            <div class="flex items-center justify-between mb-4">
+              <span class="text-xs text-gray-500">Question <%= index + 1 %> of <%= @questions.count %></span>
+              <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium bg-gray-800 text-gray-400">
+                <%= question.question_type.humanize %>
+              </span>
+            </div>
+
+            <div class="lesson-content mb-6">
+              <p class="text-gray-200"><%= question.body %></p>
+            </div>
+
+            <% case question.question_type %>
+            <% when "multiple_choice" %>
+              <%= render "learning_routes_engine/steps/question_multiple_choice", question: question, index: index %>
+            <% when "short_answer" %>
+              <%= render "learning_routes_engine/steps/question_short_answer", question: question, index: index %>
+            <% when "code" %>
+              <%= render "learning_routes_engine/steps/question_code", question: question, index: index %>
+            <% end %>
+
+            <!-- Auto-save individual answer -->
+            <div class="mt-4 flex items-center justify-between">
+              <div id="answer_feedback_<%= question.id %>"></div>
+              <button type="button"
+                      data-action="click->question-nav#saveAnswer"
+                      data-index="<%= index %>"
+                      data-question-id="<%= question.id %>"
+                      data-save-url="<%= assessments.assessment_answers_path(@assessment) %>"
+                      class="text-xs text-gray-500 hover:text-gray-300 transition">
+                Save Answer
+              </button>
+            </div>
+          </div>
+        <% end %>
+
+        <!-- Navigation + Submit -->
+        <div class="flex items-center justify-between mt-6">
+          <button type="button" data-action="click->question-nav#previous"
+                  class="rounded-lg px-4 py-2 text-sm font-medium text-gray-300 bg-gray-800 hover:bg-gray-700 border border-white/[0.06] transition">
+            Previous
+          </button>
+
+          <button type="button" data-action="click->question-nav#next"
+                  class="rounded-lg px-4 py-2 text-sm font-medium text-gray-300 bg-gray-800 hover:bg-gray-700 border border-white/[0.06] transition">
+            Next
+          </button>
+        </div>
+
+        <div class="mt-6 text-center">
+          <%= f.submit "Submit Assessment",
+              class: "rounded-lg px-6 py-3 text-sm font-semibold text-white bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-400 hover:to-purple-400 transition cursor-pointer",
+              data: { confirm: "Are you sure you want to submit? You cannot change your answers after submission." } %>
+        </div>
+      <% end %>
+    </div>
+
+    <!-- Question navigation sidebar -->
+    <div class="hidden lg:block w-48 flex-shrink-0">
+      <div class="sticky top-20 bg-gray-900 border border-white/[0.06] rounded-xl p-4">
+        <h3 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Questions</h3>
+        <div class="grid grid-cols-5 gap-2">
+          <% @questions.each_with_index do |_q, index| %>
+            <button data-action="click->question-nav#goToQuestion"
+                    data-question-nav-target="navItem"
+                    data-index="<%= index %>"
+                    class="w-8 h-8 rounded-lg text-xs font-medium bg-gray-800 text-gray-400 hover:bg-gray-700 transition flex items-center justify-center">
+              <%= index + 1 %>
+            </button>
+          <% end %>
+        </div>
+        <div class="mt-3 text-xs text-gray-500" data-question-nav-target="currentIndicator">
+          0 of <%= @questions.count %> answered
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

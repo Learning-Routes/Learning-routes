@@ -1,0 +1,51 @@
+<div class="space-y-6">
+  <div>
+    <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-orange-900/50 text-orange-300 mb-2">
+      <%= @step.metadata['assessment_type']&.humanize || 'Assessment' %>
+    </span>
+    <h1 class="text-2xl font-bold text-white"><%= @step.title %></h1>
+    <p class="text-sm text-gray-400 mt-1"><%= @step.description %></p>
+  </div>
+
+  <% if @assessment_generating %>
+    <%= render "loading_skeleton" %>
+  <% elsif @assessment %>
+    <% if @existing_result&.score.present? %>
+      <!-- Already completed - show results summary -->
+      <div class="bg-gray-900 border border-white/[0.06] rounded-xl p-6 text-center">
+        <div class="text-4xl font-bold mb-2 <%= @existing_result.passed? ? 'text-green-400' : 'text-red-400' %>">
+          <%= @existing_result.score.round(1) %>%
+        </div>
+        <p class="text-sm text-gray-400 mb-4"><%= @existing_result.passed? ? 'Passed' : 'Not passed' %> (passing: <%= @assessment.passing_score %>%)</p>
+        <%= link_to "View Detailed Results", assessments.result_path(@existing_result),
+            class: "inline-block rounded-lg px-4 py-2 text-sm font-semibold text-white bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-400 hover:to-purple-400 transition" %>
+      </div>
+    <% else %>
+      <!-- Start assessment -->
+      <div class="bg-gray-900 border border-white/[0.06] rounded-xl p-6">
+        <div class="grid grid-cols-3 gap-4 mb-6 text-center">
+          <div>
+            <div class="text-2xl font-bold text-white"><%= @assessment.questions.count %></div>
+            <div class="text-xs text-gray-500">Questions</div>
+          </div>
+          <div>
+            <div class="text-2xl font-bold text-white"><%= @assessment.passing_score.to_i %>%</div>
+            <div class="text-xs text-gray-500">Passing Score</div>
+          </div>
+          <div>
+            <div class="text-2xl font-bold text-white">~<%= (@assessment.questions.count * 2).clamp(5, 60) %></div>
+            <div class="text-xs text-gray-500">Minutes</div>
+          </div>
+        </div>
+
+        <%= button_to "Start Assessment", assessments.start_assessment_path(@assessment),
+            method: :post,
+            class: "w-full rounded-lg px-4 py-3 text-sm font-semibold text-white bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-400 hover:to-purple-400 transition" %>
+      </div>
+    <% end %>
+  <% else %>
+    <div class="text-center py-12">
+      <p class="text-gray-400">Assessment not yet generated.</p>
+    </div>
+  <% end %>
+</div>

@@ -1,0 +1,73 @@
+<div class="space-y-6">
+  <div>
+    <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-emerald-900/50 text-emerald-300 mb-2">
+      Exercise
+    </span>
+    <h1 class="text-2xl font-bold text-white"><%= @step.title %></h1>
+    <p class="text-sm text-gray-400 mt-1"><%= @step.description %></p>
+  </div>
+
+  <% if @content_generating %>
+    <%= render "loading_skeleton" %>
+  <% elsif @content %>
+    <!-- Exercise instructions -->
+    <div class="lesson-content" data-controller="math-renderer" data-math-renderer-target="content">
+      <%= @rendered_html %>
+    </div>
+
+    <!-- Code editor -->
+    <div data-controller="code-editor"
+         data-code-editor-language-value="<%= @step.metadata['language'] || 'javascript' %>"
+         data-code-editor-step-id-value="<%= @step.id %>">
+      <div class="code-block">
+        <div class="flex items-center justify-between px-4 py-2 border-b border-white/[0.06]">
+          <span class="text-xs text-gray-500 font-mono"><%= @step.metadata['language'] || 'javascript' %></span>
+          <div class="flex gap-2">
+            <button data-action="click->code-editor#reset" class="text-xs text-gray-500 hover:text-white transition">Reset</button>
+          </div>
+        </div>
+        <div data-code-editor-target="editorContainer" class="min-h-[300px]"></div>
+      </div>
+
+      <div class="flex gap-3 mt-4">
+        <button data-action="click->code-editor#submit"
+                class="rounded-lg px-4 py-2 text-sm font-semibold text-white bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-400 hover:to-purple-400 transition">
+          Submit Answer
+        </button>
+        <button data-action="click->code-editor#requestHint"
+                class="rounded-lg px-4 py-2 text-sm font-medium text-gray-300 bg-gray-800 hover:bg-gray-700 border border-white/[0.06] transition">
+          Get Hint
+        </button>
+      </div>
+
+      <!-- Hint area -->
+      <div id="exercise_hint_<%= @step.id %>" class="mt-4"></div>
+
+      <!-- Feedback area -->
+      <div id="exercise_feedback_<%= @step.id %>" data-code-editor-target="output" class="mt-4"></div>
+    </div>
+
+    <!-- Previous submissions -->
+    <% submissions = @step.metadata["submissions"] || [] %>
+    <% if submissions.any? %>
+      <div class="mt-6">
+        <h3 class="text-sm font-semibold text-gray-400 mb-3">Previous Submissions</h3>
+        <div class="space-y-2">
+          <% submissions.last(3).reverse.each do |sub| %>
+            <div class="bg-gray-900 border border-white/[0.06] rounded-lg p-3 text-sm">
+              <div class="flex items-center justify-between mb-1">
+                <span class="text-gray-400">Score: <span class="<%= sub['score'].to_f >= 70 ? 'text-green-400' : 'text-red-400' %>"><%= sub['score'] %>%</span></span>
+                <span class="text-xs text-gray-600"><%= sub['submitted_at'] %></span>
+              </div>
+              <p class="text-gray-300 text-xs"><%= sub['feedback'] %></p>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+  <% else %>
+    <div class="text-center py-12">
+      <p class="text-gray-400">No exercise content available yet.</p>
+    </div>
+  <% end %>
+</div>
