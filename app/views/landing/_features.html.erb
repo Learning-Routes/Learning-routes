@@ -1,0 +1,62 @@
+<section class="px-8 pb-20">
+  <div class="max-w-[720px] mx-auto">
+
+    <%# Gradient separator %>
+    <div class="h-px mb-16"
+         style="background: linear-gradient(90deg, transparent, rgba(28,24,18,0.06), transparent);"></div>
+
+    <%# Section header %>
+    <div class="animate-enter mb-10">
+      <p class="label-mono text-muted mb-2">Under the hood</p>
+      <h2 class="font-sans font-bold text-[clamp(1.4rem,3vw,1.9rem)] tracking-[-0.8px] text-txt">
+        Why it works.
+      </h2>
+    </div>
+
+    <%# Numbered list %>
+    <div>
+      <%
+        features = [
+          {
+            title: "Routes built just for you",
+            desc: "Each path is generated based on your answers and evolves with your progress. Two people studying the same topic will have different routes."
+          },
+          {
+            title: "Multiple models, one experience",
+            desc: "Different specialized models work together to explain each concept in the clearest way possible."
+          },
+          {
+            title: "Lessons with natural voice",
+            desc: "Audio with high-quality human voices. Real immersion in the language and topic you're studying."
+          },
+          {
+            title: "Intelligent reinforcement",
+            desc: "Detects your weak points and designs specific exercises until you master them completely."
+          },
+        ]
+      %>
+
+      <% features.each_with_index do |feat, i| %>
+        <div class="animate-enter grid grid-cols-[3.5rem_1fr] py-[1.6rem] border-t border-lr"
+             style="animation-delay: <%= (i * 0.08 + 0.1).round(2) %>s;">
+
+          <%# Number %>
+          <div class="font-mono text-[0.6rem] text-faint pt-[0.15rem]">
+            <%= String(i + 1).rjust(2, "0") %>
+          </div>
+
+          <%# Content %>
+          <div>
+            <h3 class="font-sans text-[0.92rem] font-semibold text-txt tracking-[-0.3px] mb-[0.4rem]">
+              <%= feat[:title] %>
+            </h3>
+            <p class="font-sans text-[0.8rem] text-sub leading-[1.8] max-w-[500px]">
+              <%= feat[:desc] %>
+            </p>
+          </div>
+        </div>
+      <% end %>
+    </div>
+
+  </div>
+</section>
