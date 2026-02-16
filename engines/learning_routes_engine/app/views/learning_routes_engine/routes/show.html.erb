@@ -1,0 +1,103 @@
+<% content_for(:title, "#{@route.topic} - Learning Routes") %>
+
+<div class="mx-auto max-w-4xl px-6 py-10">
+  <!-- Route header -->
+  <div class="mb-8">
+    <div class="flex items-center gap-3 mb-2">
+      <%= link_to main_app.dashboard_path, class: "text-gray-400 hover:text-white transition" do %>
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+        </svg>
+      <% end %>
+      <h1 class="text-2xl font-bold text-white"><%= @route.topic %></h1>
+    </div>
+
+    <!-- Progress -->
+    <div class="mt-4 bg-gray-900 rounded-xl border border-white/[0.06] p-5">
+      <div class="flex items-center justify-between mb-3">
+        <span class="text-sm text-gray-400">Progress</span>
+        <span class="text-sm font-semibold text-white"><%= @progress[:percentage] %>%</span>
+      </div>
+      <div class="h-2 bg-gray-800 rounded-full overflow-hidden">
+        <div class="h-full bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full transition-all duration-500"
+             style="width: <%= @progress[:percentage] %>%"></div>
+      </div>
+      <div class="flex items-center justify-between mt-3 text-xs text-gray-500">
+        <span><%= @progress[:completed_steps] %> of <%= @progress[:total_steps] %> steps completed</span>
+        <span>~<%= @progress[:remaining_minutes] %> min remaining</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Due reviews -->
+  <% if @due_reviews.any? %>
+    <div class="mb-8 bg-amber-900/20 border border-amber-700/30 rounded-xl p-5">
+      <h3 class="text-sm font-semibold text-amber-300 mb-3"><%= @due_reviews.size %> review<%= @due_reviews.size == 1 ? '' : 's' %> due</h3>
+      <div class="space-y-2">
+        <% @due_reviews.first(3).each do |step| %>
+          <%= link_to route_step_path(@route, step), class: "block text-sm text-amber-200 hover:text-white transition" do %>
+            <%= step.title %>
+          <% end %>
+        <% end %>
+      </div>
+      <% if @due_reviews.size > 3 %>
+        <%= link_to "See all reviews", reviews_path, class: "text-xs text-amber-400 hover:text-amber-200 mt-2 inline-block" %>
+      <% end %>
+    </div>
+  <% end %>
+
+  <!-- Steps list -->
+  <div class="space-y-3">
+    <% @steps.each_with_index do |step, index| %>
+      <% accessible = step.completed? || step.in_progress? || step.available? %>
+      <div class="group relative bg-gray-900 rounded-xl border border-white/[0.06] p-4 transition
+                  <%= 'hover:border-indigo-500/30 cursor-pointer' if accessible %>
+                  <%= 'opacity-50' if step.locked? %>">
+        <% if accessible %>
+          <%= link_to route_step_path(@route, step), class: "absolute inset-0 z-10" do %><% end %>
+        <% end %>
+
+        <div class="flex items-center gap-4">
+          <!-- Status icon -->
+          <div class="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center
+                      <%= step.completed? ? 'bg-green-900/50 text-green-400' :
+                          step.in_progress? ? 'bg-indigo-900/50 text-indigo-400' :
+                          step.available? ? 'bg-gray-800 text-white' :
+                          'bg-gray-800/50 text-gray-600' %>">
+            <% if step.completed? %>
+              <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+            <% elsif step.locked? %>
+              <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"/></svg>
+            <% else %>
+              <span class="text-sm font-bold"><%= index + 1 %></span>
+            <% end %>
+          </div>
+
+          <!-- Step info -->
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2">
+              <h3 class="text-sm font-semibold text-white truncate"><%= step.title %></h3>
+              <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium
+                          <%= case step.content_type
+                              when 'lesson' then 'bg-blue-900/50 text-blue-300'
+                              when 'exercise' then 'bg-emerald-900/50 text-emerald-300'
+                              when 'assessment' then 'bg-orange-900/50 text-orange-300'
+                              when 'review' then 'bg-purple-900/50 text-purple-300'
+                              end %>">
+                <%= step.content_type.capitalize %>
+              </span>
+            </div>
+            <p class="text-xs text-gray-500 mt-0.5 truncate"><%= step.description %></p>
+          </div>
+
+          <!-- Duration -->
+          <div class="flex-shrink-0 text-xs text-gray-500">
+            <% if step.estimated_minutes.to_i > 0 %>
+              ~<%= step.estimated_minutes %> min
+            <% end %>
+          </div>
+        </div>
+      </div>
+    <% end %>
+  </div>
+</div>

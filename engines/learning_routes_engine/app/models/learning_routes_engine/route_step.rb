@@ -5,6 +5,7 @@ module LearningRoutesEngine
     enum :level, { nv1: 0, nv2: 1, nv3: 2 }, prefix: true
     enum :content_type, { lesson: 0, exercise: 1, assessment: 2, review: 3 }, prefix: true
     enum :status, { locked: 0, available: 1, in_progress: 2, completed: 3 }
+    enum :fsrs_state, { fsrs_new: 0, fsrs_learning: 1, fsrs_review: 2, fsrs_relearning: 3 }, prefix: true
 
     validates :position, presence: true,
               uniqueness: { scope: :learning_route_id },
@@ -14,6 +15,8 @@ module LearningRoutesEngine
     scope :by_level, ->(level) { where(level: level) }
     scope :available_steps, -> { where(status: :available) }
     scope :completed_steps, -> { where(status: :completed) }
+    scope :due_for_review, -> { where(status: :completed).where("fsrs_next_review_at <= ?", Time.current) }
+    scope :reviews_only, -> { where(content_type: :review) }
 
     def complete!
       update!(status: :completed, completed_at: Time.current)
@@ -21,6 +24,17 @@ module LearningRoutesEngine
 
     def unlock!
       update!(status: :available) if locked?
+    end
+
+    def prerequisites_met?
+      return true if prerequisites.blank?
+
+      prerequisite_steps = learning_route.route_steps.where(id: prerequisites)
+      prerequisite_steps.all? { |step| step.completed? }
+    end
+
+    def unlock_if_ready!
+      unlock! if locked? && prerequisites_met?
     end
   end
 end

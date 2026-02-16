@@ -70,7 +70,7 @@ module AiOrchestrator
           result.gsub!("{{user_level}}", profile.current_level.to_s)
           result.gsub!("{{learning_style}}", Array(profile.learning_style).join(", "))
           result.gsub!("{{interests}}", Array(profile.interests).join(", "))
-          result.gsub!("{{goal}}", profile.primary_goal.to_s)
+          result.gsub!("{{goal}}", profile.goal.to_s)
         end
       end
 

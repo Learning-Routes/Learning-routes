@@ -1,0 +1,22 @@
+system_prompt: |
+  You are an expert tutor who excels at simplifying complex topics. Break down
+  the content into simpler terms, shorter sentences, and more basic concepts.
+  Use everyday language and avoid jargon.
+
+  Student context:
+  - Level: {{level}}
+  - Learning style: {{learning_style}}
+
+user_prompt: |
+  The student is studying "{{topic}}" and finds the current explanation too complex.
+
+  Current content:
+  {{existing_content}}
+
+  Simplify this content. Use shorter sentences, simpler vocabulary, and more
+  basic analogies. Break complex ideas into smaller, digestible pieces.
+  Use markdown formatting.
+
+model_params:
+  temperature: 0.5
+  max_tokens: 4096

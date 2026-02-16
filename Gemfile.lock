@@ -3,7 +3,9 @@ PATH
   specs:
     ai_orchestrator (0.1.0)
       core
+      httparty (~> 0.22)
       rails (>= 8.1.2)
+      ruby_llm (~> 1.1)
 
 PATH
   remote: engines/analytics
@@ -353,12 +355,14 @@ GEM
       erb
       psych (>= 4.0.0)
       tsort
+    redcarpet (3.6.1)
     regexp_parser (2.11.3)
     reline (0.6.3)
       io-console (~> 0.5)
     request_store (1.7.0)
       rack (>= 1.4)
     rexml (3.4.4)
+    rouge (4.7.0)
     rubocop (1.84.2)
       json (~> 2.3)
       language_server-protocol (~> 3.17.0.2)
@@ -513,6 +517,8 @@ DEPENDENCIES
   puma (>= 5.0)
   rack-cors
   rails (~> 8.1.2)
+  redcarpet (~> 3.6)
+  rouge (~> 4.4)
   rubocop-rails-omakase
   ruby_llm (~> 1.1)
   selenium-webdriver

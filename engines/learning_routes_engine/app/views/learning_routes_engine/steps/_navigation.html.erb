@@ -1,0 +1,30 @@
+<%
+  prev_step = @route.route_steps.where("position < ?", @step.position).where.not(status: :locked).order(position: :desc).first
+  next_step = @route.route_steps.where("position > ?", @step.position).where.not(status: :locked).order(:position).first
+%>
+
+<div class="flex items-center justify-between mt-8 pt-6 border-t border-white/[0.06]">
+  <% if prev_step %>
+    <%= link_to route_step_path(@route, prev_step), class: "flex items-center gap-2 text-sm text-gray-400 hover:text-white transition" do %>
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+      </svg>
+      <span class="truncate max-w-[200px]"><%= prev_step.title %></span>
+    <% end %>
+  <% else %>
+    <div></div>
+  <% end %>
+
+  <%= link_to "Route Overview", route_path(@route), class: "text-xs text-gray-500 hover:text-gray-300 transition" %>
+
+  <% if next_step %>
+    <%= link_to route_step_path(@route, next_step), class: "flex items-center gap-2 text-sm text-gray-400 hover:text-white transition" do %>
+      <span class="truncate max-w-[200px]"><%= next_step.title %></span>
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+      </svg>
+    <% end %>
+  <% else %>
+    <div></div>
+  <% end %>
+</div>

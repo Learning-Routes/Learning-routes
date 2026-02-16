@@ -1,0 +1,27 @@
+{
+  "gaps": [
+    {
+      "topic": "ActiveRecord Associations",
+      "severity": "high",
+      "description": "Student struggles with has_many :through and polymorphic associations",
+      "evidence": "Missed 3 out of 4 association questions",
+      "prerequisite_gaps": ["Database Normalization"]
+    },
+    {
+      "topic": "SQL Joins",
+      "severity": "medium",
+      "description": "Difficulty translating ActiveRecord queries to SQL and understanding join types",
+      "evidence": "Incorrect answers on join-related questions",
+      "prerequisite_gaps": []
+    },
+    {
+      "topic": "Eager Loading",
+      "severity": "low",
+      "description": "Minor confusion about when to use includes vs preload vs eager_load",
+      "evidence": "Partially correct answer on optimization question",
+      "prerequisite_gaps": ["SQL Joins"]
+    }
+  ],
+  "summary": "The student has a solid grasp of basic CRUD but struggles with relational data patterns",
+  "recommended_focus_order": ["Database Normalization", "SQL Joins", "ActiveRecord Associations", "Eager Loading"]
+}

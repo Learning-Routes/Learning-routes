@@ -14,7 +14,7 @@ module Core
 
       if user&.authenticate(params[:password])
         start_session_for(user, remember: params[:remember_me] == "1")
-        redirect_to after_sign_in_path, notice: "Signed in successfully."
+        redirect_to after_sign_in_path(user), notice: "Signed in successfully."
       else
         flash.now[:alert] = "Invalid email or password."
         render :new, status: :unprocessable_entity

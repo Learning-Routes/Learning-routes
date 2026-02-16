@@ -1,0 +1,66 @@
+<section class="py-32 px-8" id="como-funciona">
+  <div class="max-w-[1100px] mx-auto">
+
+    <%# Section header %>
+    <div class="animate-enter text-center mb-20">
+      <p class="label-mono text-muted mb-4">3 pasos</p>
+      <h2 class="font-sans font-bold text-[clamp(1.8rem,3.5vw,2.6rem)] tracking-[-1.2px] text-txt">
+        De cero a dominar un tema.
+      </h2>
+    </div>
+
+    <%# 3 cards grid %>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-10">
+      <%
+        steps = [
+          {
+            n: "1",
+            icon: '<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>',
+            title: "Dinos tu objetivo",
+            desc: "¿Inglés B2? ¿Cálculo diferencial? ¿Python desde cero? Cuéntanos qué quieres lograr y cuánto sabes hoy."
+          },
+          {
+            n: "2",
+            icon: '<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>',
+            title: "Recibe tu ruta",
+            desc: "Generamos un camino de aprendizaje personalizado con etapas, evaluaciones y contenido adaptado a tu nivel."
+          },
+          {
+            n: "3",
+            icon: '<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>',
+            title: "Aprende y avanza",
+            desc: "Completa lecciones, recibe refuerzo donde lo necesites y mide tu progreso en cada paso hasta dominar el tema."
+          }
+        ]
+      %>
+
+      <% steps.each_with_index do |step, i| %>
+        <div class="animate-enter text-center px-[2rem] py-[2.8rem]
+                    rounded-[18px] border border-lr bg-card card-hover"
+             style="animation-delay: <%= (i * 0.12 + 0.1).round(2) %>s;">
+
+          <%# Icon %>
+          <div class="w-14 h-14 rounded-[14px] bg-bg flex items-center justify-center mx-auto mb-6 text-sub">
+            <%= step[:icon].html_safe %>
+          </div>
+
+          <%# Step label %>
+          <div class="font-mono text-[0.58rem] text-faint tracking-[1.2px] mb-4">
+            PASO <%= step[:n] %>
+          </div>
+
+          <%# Title %>
+          <h3 class="font-sans font-semibold text-[1.08rem] text-txt tracking-[-0.3px] mb-4">
+            <%= step[:title] %>
+          </h3>
+
+          <%# Description %>
+          <p class="font-sans text-[0.85rem] text-sub leading-[1.85]">
+            <%= step[:desc] %>
+          </p>
+        </div>
+      <% end %>
+    </div>
+
+  </div>
+</section>

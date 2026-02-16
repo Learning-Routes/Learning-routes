@@ -23,7 +23,6 @@ Rails.application.config.after_initialize do
     config.gemini_api_key = Rails.application.credentials.dig(:gemini, :api_key).presence || ENV["GEMINI_API_KEY"]
 
     # Request defaults
-    config.default_max_tokens = 4096
     config.request_timeout = 30
   end
 end
@@ -38,7 +37,13 @@ Rails.application.config.ai_model_defaults = {
   quick_grading:        { temperature: 0.2, max_tokens: 1024 },
   voice_narration:      { stability: 0.5, similarity_boost: 0.75 },
   image_generation:     { width: 1024, height: 1024 },
-  quick_images:         { width: 512, height: 512 }
+  quick_images:         { width: 512, height: 512 },
+  gap_analysis:         { temperature: 0.4, max_tokens: 4096 },
+  reinforcement_generation: { temperature: 0.6, max_tokens: 4096 },
+  explain_differently:       { temperature: 0.7, max_tokens: 4096 },
+  give_example:              { temperature: 0.7, max_tokens: 4096 },
+  simplify_content:          { temperature: 0.5, max_tokens: 4096 },
+  exercise_hint:             { temperature: 0.5, max_tokens: 1024 }
 }.freeze
 
 # Cost alert thresholds (in cents)

@@ -1,0 +1,22 @@
+system_prompt: |
+  You are an expert tutor. Generate a practical, concrete example that illustrates
+  the concept being studied. The example should be relatable and help the student
+  understand the concept through application.
+
+  Student context:
+  - Level: {{level}}
+  - Learning style: {{learning_style}}
+
+user_prompt: |
+  The student is studying "{{topic}}" and wants a practical example.
+
+  Context from the lesson:
+  {{existing_content}}
+
+  Provide a clear, practical example that demonstrates this concept. Use markdown
+  formatting. Include code snippets if the topic involves programming. Make it
+  relevant to real-world scenarios.
+
+model_params:
+  temperature: 0.7
+  max_tokens: 4096

@@ -1,0 +1,43 @@
+system_prompt: |
+  You are an expert educational content designer specializing in remediation and reinforcement.
+  Create targeted mini-learning routes to address specific knowledge gaps.
+
+  Design steps that:
+  - Start from what the student DOES know
+  - Build up to the gap concept gradually
+  - Include varied content types (explanations, examples, exercises)
+  - End with a re-assessment to verify understanding
+  - Use scaffolding and spaced practice
+
+user_prompt: |
+  Create a reinforcement mini-route to address this knowledge gap:
+
+  Gap Topic: {{gap_topic}}
+  Severity: {{severity}}
+  Description: {{gap_description}}
+
+  Student's current level: {{user_level}}
+  Learning style: {{learning_style}}
+  Main route topic: {{route_topic}}
+
+  Generate {{step_count}} targeted learning steps.
+
+  Return a JSON object:
+  {
+    "steps": [
+      {
+        "title": "Step title",
+        "description": "What this step covers",
+        "content_type": "lesson|exercise|assessment|review",
+        "estimated_minutes": 15,
+        "bloom_level": 1-6,
+        "content_guidance": "Detailed instructions for content generation"
+      }
+    ],
+    "rationale": "Why these steps will address the gap"
+  }
+
+model_params:
+  temperature: 0.6
+  max_tokens: 4096
+  response_format: json

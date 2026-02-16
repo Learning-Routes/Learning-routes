@@ -17,6 +17,12 @@ module AiOrchestrator
       voice_narration
       image_generation
       quick_images
+      gap_analysis
+      reinforcement_generation
+      explain_differently
+      give_example
+      simplify_content
+      exercise_hint
     ].freeze
 
     validates :task_type, inclusion: { in: TASK_TYPES }

@@ -1,0 +1,16 @@
+<% if @error %>
+  <%= turbo_stream.append "ai_supplementary_#{@step.id}" do %>
+    <div class="bg-red-900/20 border border-red-700/30 rounded-xl p-4 text-sm text-red-300">
+      <%= @error %>
+    </div>
+  <% end %>
+<% else %>
+  <%= turbo_stream.append "ai_supplementary_#{@step.id}" do %>
+    <div class="bg-gray-900 border border-indigo-500/20 rounded-xl p-5 lesson-content" data-controller="math-renderer" data-math-renderer-target="content">
+      <div class="flex items-center gap-2 mb-3">
+        <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium bg-indigo-900/50 text-indigo-300">Alternative Explanation</span>
+      </div>
+      <%= @rendered_html %>
+    </div>
+  <% end %>
+<% end %>

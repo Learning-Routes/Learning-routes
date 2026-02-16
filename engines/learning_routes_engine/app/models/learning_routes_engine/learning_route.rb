@@ -15,6 +15,9 @@ module LearningRoutesEngine
 
     scope :active_routes, -> { where(status: :active) }
     scope :by_topic, ->(topic) { where("topic ILIKE ?", "%#{topic}%") }
+    scope :generating, -> { where(generation_status: "generating") }
+    scope :generated, -> { where(generation_status: "completed") }
+    scope :generation_failed, -> { where(generation_status: "failed") }
 
     def progress_percentage
       return 0 if total_steps.zero?
@@ -23,6 +26,26 @@ module LearningRoutesEngine
 
     def current_route_step
       route_steps.find_by(position: current_step)
+    end
+
+    def nv1_steps
+      route_steps.by_level(:nv1)
+    end
+
+    def nv2_steps
+      route_steps.by_level(:nv2)
+    end
+
+    def nv3_steps
+      route_steps.by_level(:nv3)
+    end
+
+    def estimated_total_minutes
+      route_steps.sum(:estimated_minutes)
+    end
+
+    def estimated_remaining_minutes
+      route_steps.where.not(status: :completed).sum(:estimated_minutes)
     end
   end
 end

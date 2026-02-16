@@ -1,0 +1,29 @@
+<div class="bg-gray-900 border border-white/[0.06] rounded-xl p-4" data-controller="note-taking"
+     data-note-taking-step-id-value="<%= @step.id %>"
+     data-note-taking-save-url-value="<%= @notes.any? ? content_engine.note_path(@notes.first) : content_engine.notes_path %>">
+  <h3 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Notes</h3>
+
+  <div id="notes_list">
+    <% if @notes.any? %>
+      <% @notes.each do |note| %>
+        <div id="<%= dom_id(note) %>" class="mb-2">
+          <textarea data-action="input->note-taking#save"
+                    data-note-id="<%= note.id %>"
+                    class="w-full bg-gray-800/50 border border-white/[0.04] rounded-lg p-3 text-sm text-gray-300 placeholder-gray-600 resize-none focus:outline-none focus:border-indigo-500/30"
+                    rows="4" placeholder="Add your notes..."><%= note.body %></textarea>
+        </div>
+      <% end %>
+    <% else %>
+      <form data-action="submit->note-taking#create" id="note_form">
+        <input type="hidden" name="route_step_id" value="<%= @step.id %>">
+        <textarea name="body"
+                  data-action="input->note-taking#save"
+                  data-note-taking-target="textarea"
+                  class="w-full bg-gray-800/50 border border-white/[0.04] rounded-lg p-3 text-sm text-gray-300 placeholder-gray-600 resize-none focus:outline-none focus:border-indigo-500/30"
+                  rows="4" placeholder="Add your notes..."></textarea>
+      </form>
+    <% end %>
+  </div>
+
+  <div data-note-taking-target="savedIndicator" class="text-xs text-gray-600 mt-1 hidden">Saved</div>
+</div>
