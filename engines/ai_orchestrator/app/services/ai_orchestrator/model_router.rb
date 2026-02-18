@@ -106,8 +106,13 @@ module AiOrchestrator
         raise RateLimitExceeded, "Rate limit exceeded for #{model_name}: #{current}/#{limit} rpm"
       end
 
-      Rails.cache.write(key, current + 1, expires_in: 1.minute) if Rails.cache.read(key)
-      Rails.cache.write(key, 1, expires_in: 1.minute) unless Rails.cache.read(key)
+      # Atomic increment; initialize to 1 if key doesn't exist yet
+      if Rails.cache.respond_to?(:increment)
+        Rails.cache.write(key, 0, expires_in: 1.minute) unless Rails.cache.read(key)
+        Rails.cache.increment(key)
+      else
+        Rails.cache.write(key, current + 1, expires_in: 1.minute)
+      end
     end
 
     def rate_limit_for(model_name)

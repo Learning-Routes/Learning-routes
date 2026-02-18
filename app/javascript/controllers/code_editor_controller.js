@@ -5,6 +5,7 @@ export default class extends Controller {
   static values = { language: { type: String, default: "javascript" }, stepId: String, initialCode: String, readOnly: { type: Boolean, default: false } }
 
   async connect() {
+    this._abortController = new AbortController()
     try {
       const ace = await import("ace-builds")
       this.editor = ace.edit(this.editorContainerTarget)
@@ -35,6 +36,14 @@ export default class extends Controller {
     }
   }
 
+  disconnect() {
+    if (this._abortController) this._abortController.abort()
+    if (this.editor) {
+      this.editor.destroy()
+      this.editor = null
+    }
+  }
+
   getCode() {
     if (this.editor) return this.editor.getValue()
     if (this.fallbackTextarea) return this.fallbackTextarea.value
@@ -59,7 +68,8 @@ export default class extends Controller {
           "Accept": "text/vnd.turbo-stream.html"
         },
         body: formData,
-        credentials: "same-origin"
+        credentials: "same-origin",
+        signal: this._abortController.signal
       })
 
       if (response.ok) {
@@ -67,7 +77,7 @@ export default class extends Controller {
         Turbo.renderStreamMessage(html)
       }
     } catch (error) {
-      console.error("Submit failed:", error)
+      if (error.name !== "AbortError") console.error("Submit failed:", error)
     }
   }
 
@@ -82,7 +92,8 @@ export default class extends Controller {
           "X-CSRF-Token": token,
           "Accept": "text/vnd.turbo-stream.html"
         },
-        credentials: "same-origin"
+        credentials: "same-origin",
+        signal: this._abortController.signal
       })
 
       if (response.ok) {
@@ -90,7 +101,7 @@ export default class extends Controller {
         Turbo.renderStreamMessage(html)
       }
     } catch (error) {
-      console.error("Hint request failed:", error)
+      if (error.name !== "AbortError") console.error("Hint request failed:", error)
     }
   }
 

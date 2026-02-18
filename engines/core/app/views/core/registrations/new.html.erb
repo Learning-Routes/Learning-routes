@@ -1,65 +1,136 @@
-<% content_for(:title, "Sign Up - Learning Routes") %>
+<% content_for(:title, "Create account — Learning Routes") %>
 
-<div class="mx-auto w-full max-w-md">
-  <div class="text-center mb-8">
-    <h1 class="text-3xl font-bold text-gray-900">Create your account</h1>
-    <p class="mt-2 text-gray-600">Start your personalized learning journey</p>
-  </div>
+<% content_for(:auth_toggle) do %>
+  <%= link_to core.sign_in_path,
+      style: "font-family:'DM Sans',sans-serif; font-size:0.82rem; color:#A09889; text-decoration:none; transition:color 0.2s;",
+      class: "nav-link" do %>
+    I have an account
+  <% end %>
+<% end %>
 
-  <div class="bg-white shadow-lg rounded-2xl p-8">
-    <%= form_with(model: @user, url: core.sign_up_path, data: { controller: "form-validation" }) do |f| %>
-      <%= render "core/shared/form_errors", object: @user %>
+<%# Wrapper to stack card + legal vertically %>
+<div style="display:flex; flex-direction:column; align-items:center; width:100%; max-width:440px;"
+     data-controller="auth-form">
 
-      <div class="space-y-5">
+  <%# === Glassmorphic auth card === %>
+  <div class="auth-enter"
+       style="width:100%; padding:2.2rem 2rem;
+              background:rgba(255,255,255,0.55); backdrop-filter:blur(50px) saturate(1.4); -webkit-backdrop-filter:blur(50px) saturate(1.4);
+              border:1px solid rgba(28,24,18,0.07); border-radius:20px;
+              box-shadow:0 8px 32px rgba(28,24,18,0.06), 0 1px 3px rgba(28,24,18,0.03);">
+
+    <%# === Heading === %>
+    <h1 style="font-family:'DM Sans',sans-serif; font-weight:700; font-size:1.6rem; letter-spacing:-0.7px; color:#1C1812; margin:0 0 1.5rem; line-height:1.2;">
+      Start your journey.
+    </h1>
+
+    <%# === Google OAuth placeholder === %>
+    <button type="button"
+            aria-label="Sign up with Google"
+            style="display:flex; align-items:center; justify-content:center; gap:0.65rem; width:100%;
+                   font-family:'DM Sans',sans-serif; font-size:0.88rem; font-weight:500; color:#1C1812;
+                   padding:0.78rem 1rem; border-radius:11px; border:1px solid rgba(28,24,18,0.1); background:white;
+                   cursor:pointer; transition:all 0.2s;"
+            data-auth-form-target="oauth"
+            data-action="mouseenter->auth-form#oauthOver mouseleave->auth-form#oauthOut"
+            onclick="alert('Google OAuth coming soon')">
+      <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true">
+        <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+        <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+        <path fill="#FBBC05" d="M10.53 28.59a14.5 14.5 0 0 1 0-9.18l-7.98-6.19a24.0 24.0 0 0 0 0 21.56l7.98-6.19z"/>
+        <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+      </svg>
+      Sign up with Google
+    </button>
+
+    <%# === Divider === %>
+    <div style="display:flex; align-items:center; gap:0.8rem; margin:1.4rem 0;" role="presentation">
+      <div style="flex:1; height:1px; background:rgba(28,24,18,0.08);"></div>
+      <span style="font-family:'DM Mono',monospace; font-size:0.55rem; letter-spacing:2px; text-transform:uppercase; color:#CCC5B8;">EMAIL</span>
+      <div style="flex:1; height:1px; background:rgba(28,24,18,0.08);"></div>
+    </div>
+
+    <%# === Registration form === %>
+    <%= form_with(model: @user, url: core.sign_up_path) do |f| %>
+
+      <%# Form errors %>
+      <% if @user.errors.any? %>
+        <div role="alert" style="background:rgba(176,96,80,0.08); border:1px solid rgba(176,96,80,0.15); border-radius:10px; padding:0.75rem 0.9rem; margin-bottom:1rem;">
+          <p style="font-family:'DM Sans',sans-serif; font-size:0.76rem; font-weight:500; color:#B06050; margin:0 0 0.3rem;">
+            <%= pluralize(@user.errors.count, "error") %> prevented saving:
+          </p>
+          <ul style="margin:0; padding-left:1rem;">
+            <% @user.errors.full_messages.each do |message| %>
+              <li style="font-family:'DM Sans',sans-serif; font-size:0.72rem; color:#B06050; line-height:1.5;"><%= message %></li>
+            <% end %>
+          </ul>
+        </div>
+      <% end %>
+
+      <div style="display:flex; flex-direction:column; gap:1rem;">
+
+        <%# Name %>
         <div>
-          <label for="user_name" class="block text-sm font-medium text-gray-700 mb-1">Full name</label>
+          <%= f.label :name, "Name",
+              style: "display:block; font-family:'DM Sans',sans-serif; font-size:0.78rem; font-weight:500; color:#6D665B; margin-bottom:0.45rem;" %>
           <%= f.text_field :name,
-              class: "w-full rounded-lg border border-gray-300 px-4 py-3 text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none transition",
-              placeholder: "Your full name",
+              style: "display:block; width:100%; box-sizing:border-box; font-family:'DM Sans',sans-serif; font-size:0.92rem; color:#1C1812; padding:0.78rem 0.95rem; border-radius:10px; border:1px solid rgba(28,24,18,0.1); background:white; outline:none; transition:border-color 0.2s, box-shadow 0.2s;",
+              placeholder: "Your name",
               required: true,
               autofocus: true,
-              data: { form_validation_target: "field", action: "blur->form-validation#validate" } %>
+              autocomplete: "name",
+              data: { auth_form_target: "input", action: "focus->auth-form#inputFocus blur->auth-form#inputBlur" } %>
         </div>
 
+        <%# Email %>
         <div>
-          <label for="user_email" class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+          <%= f.label :email, "Email",
+              style: "display:block; font-family:'DM Sans',sans-serif; font-size:0.78rem; font-weight:500; color:#6D665B; margin-bottom:0.45rem;" %>
           <%= f.email_field :email,
-              class: "w-full rounded-lg border border-gray-300 px-4 py-3 text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none transition",
-              placeholder: "you@example.com",
+              style: "display:block; width:100%; box-sizing:border-box; font-family:'DM Sans',sans-serif; font-size:0.92rem; color:#1C1812; padding:0.78rem 0.95rem; border-radius:10px; border:1px solid rgba(28,24,18,0.1); background:white; outline:none; transition:border-color 0.2s, box-shadow 0.2s;",
+              placeholder: "tu@email.com",
               required: true,
               autocomplete: "email",
-              data: { form_validation_target: "field", action: "blur->form-validation#validate" } %>
+              data: { auth_form_target: "input", action: "focus->auth-form#inputFocus blur->auth-form#inputBlur" } %>
         </div>
 
+        <%# Password %>
         <div>
-          <label for="user_password" class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+          <%= f.label :password, "Password",
+              style: "display:block; font-family:'DM Sans',sans-serif; font-size:0.78rem; font-weight:500; color:#6D665B; margin-bottom:0.45rem;" %>
           <%= f.password_field :password,
-              class: "w-full rounded-lg border border-gray-300 px-4 py-3 text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none transition",
+              style: "display:block; width:100%; box-sizing:border-box; font-family:'DM Sans',sans-serif; font-size:0.92rem; color:#1C1812; padding:0.78rem 0.95rem; border-radius:10px; border:1px solid rgba(28,24,18,0.1); background:white; outline:none; transition:border-color 0.2s, box-shadow 0.2s;",
               placeholder: "Minimum 8 characters",
               required: true,
               minlength: 8,
               autocomplete: "new-password",
-              data: { form_validation_target: "field", action: "blur->form-validation#validate" } %>
+              data: { auth_form_target: "input", action: "focus->auth-form#inputFocus blur->auth-form#inputBlur" } %>
         </div>
 
-        <div>
-          <label for="user_password_confirmation" class="block text-sm font-medium text-gray-700 mb-1">Confirm password</label>
-          <%= f.password_field :password_confirmation,
-              class: "w-full rounded-lg border border-gray-300 px-4 py-3 text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none transition",
-              placeholder: "Repeat your password",
-              required: true,
-              autocomplete: "new-password",
-              data: { form_validation_target: "field", action: "blur->form-validation#validate" } %>
+        <%# Submit %>
+        <div style="margin-top:0.3rem;">
+          <%= f.submit "Create account",
+              style: "display:block; width:100%; font-family:'DM Sans',sans-serif; font-size:0.9rem; font-weight:600; color:#F5F1EB; background:#2C261E; padding:0.85rem 1rem; border-radius:11px; border:none; cursor:pointer; transition:all 0.2s; box-shadow:0 1px 3px rgba(28,24,18,0.12), 0 1px 2px rgba(28,24,18,0.06);",
+              data: { auth_form_target: "submit", action: "mouseenter->auth-form#submitOver mouseleave->auth-form#submitOut" } %>
         </div>
-
-        <%= f.submit "Create account",
-            class: "w-full rounded-lg bg-indigo-600 px-4 py-3 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition cursor-pointer" %>
       </div>
     <% end %>
 
-    <p class="mt-6 text-center text-sm text-gray-500">
+    <%# === Switch to login === %>
+    <p style="text-align:center; margin:1.3rem 0 0; font-family:'DM Sans',sans-serif; font-size:0.78rem; color:#A09889;">
       Already have an account?
-      <%= link_to "Sign in", core.sign_in_path, class: "font-semibold text-indigo-600 hover:text-indigo-500" %>
+      <%= link_to "Sign in", core.sign_in_path,
+          style: "color:#8B6D28; text-decoration:none; font-weight:600;",
+          data: { action: "mouseenter->auth-form#inlineLinkOver mouseleave->auth-form#inlineLinkOut" } %>
     </p>
+
   </div>
+
+  <%# === Legal (below card) === %>
+  <p style="text-align:center; font-family:'DM Sans',sans-serif; font-size:0.62rem; color:#CCC5B8; line-height:1.5; margin:1rem 0 0;">
+    By creating an account you accept the
+    <a href="#" style="color:#A09889; text-decoration:underline;">terms</a> and
+    <a href="#" style="color:#A09889; text-decoration:underline;">privacy</a>.
+  </p>
+
 </div>

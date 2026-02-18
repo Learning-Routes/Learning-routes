@@ -60,21 +60,21 @@ module LearningRoutesEngine
       when "lesson"
         @content = ContentEngine::AiContent.where(route_step: @step).by_type(:text).first
         unless @content
-          LearningRoutesEngine::ContentGenerationJob.perform_later(@step.id) rescue nil
+          begin; LearningRoutesEngine::ContentGenerationJob.perform_later(@step.id); rescue => e; Rails.logger.error("Content generation failed for step ##{@step.id}: #{e.message}"); end
           @content_generating = true
         end
         @rendered_html = ContentEngine::MarkdownRenderer.render(@content.body) if @content
       when "exercise"
         @content = ContentEngine::AiContent.where(route_step: @step).by_type(:exercise).first
         unless @content
-          LearningRoutesEngine::ContentGenerationJob.perform_later(@step.id) rescue nil
+          begin; LearningRoutesEngine::ContentGenerationJob.perform_later(@step.id); rescue => e; Rails.logger.error("Content generation failed for step ##{@step.id}: #{e.message}"); end
           @content_generating = true
         end
         @rendered_html = ContentEngine::MarkdownRenderer.render(@content.body) if @content
       when "assessment"
         @assessment = Assessments::Assessment.find_by(route_step: @step)
         unless @assessment
-          LearningRoutesEngine::AssessmentGenerationJob.perform_later(@step.id) rescue nil
+          begin; LearningRoutesEngine::AssessmentGenerationJob.perform_later(@step.id); rescue => e; Rails.logger.error("Assessment generation failed for step ##{@step.id}: #{e.message}"); end
           @assessment_generating = true
         end
         @existing_result = Assessments::AssessmentResult.find_by(

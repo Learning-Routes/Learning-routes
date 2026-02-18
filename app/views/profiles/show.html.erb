@@ -1,0 +1,203 @@
+<% content_for(:title, "My Profile — Learning Routes") %>
+
+<%# === Profile Header Card === %>
+<div style="background:rgba(255,255,255,0.6); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); border:1px solid rgba(28,24,18,0.06); border-radius:20px; padding:2rem 2rem 1.8rem; margin-bottom:1rem;">
+
+  <%# Top row: avatar + info + level badge %>
+  <div style="display:flex; align-items:flex-start; gap:1.4rem;">
+
+    <%# Avatar %>
+    <% initials = @user.name.to_s.split.map(&:first).join.upcase.slice(0,2) %>
+    <div style="width:80px; height:80px; border-radius:20px; background:linear-gradient(135deg, rgba(139,128,196,0.25), rgba(110,155,200,0.25)); display:flex; align-items:center; justify-content:center; flex-shrink:0; position:relative;">
+      <span style="font-family:'DM Sans',sans-serif; font-weight:800; font-size:1.6rem; color:#6D665B; letter-spacing:0.5px;"><%= initials %></span>
+      <%# Level badge overlaid on avatar %>
+      <div style="position:absolute; bottom:-6px; right:-6px; background:#1C1812; color:#F5F1EB; font-family:'DM Mono',monospace; font-size:0.55rem; font-weight:500; padding:0.2rem 0.5rem; border-radius:8px; letter-spacing:0.5px; border:2px solid #F5F1EB;">
+        NV.<%= @level %>
+      </div>
+    </div>
+
+    <%# Name, role, streak %>
+    <div style="flex:1; min-width:0;">
+      <div style="display:flex; align-items:center; gap:0.6rem; flex-wrap:wrap;">
+        <h1 style="font-family:'DM Sans',sans-serif; font-weight:700; font-size:1.35rem; letter-spacing:-0.5px; color:#1C1812; margin:0;">
+          <%= @user.name %>
+        </h1>
+        <% if @streak > 0 %>
+          <span style="display:inline-flex; align-items:center; gap:0.25rem; background:rgba(176,152,72,0.1); color:#8B6D28; font-family:'DM Mono',monospace; font-size:0.6rem; font-weight:500; padding:0.2rem 0.55rem; border-radius:8px; letter-spacing:0.3px;">
+            <svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              <path d="M8 1C8 1 6.5 4 6.5 6C6.5 7.1 7.2 8 8 8C8.8 8 9.5 7.1 9.5 6C9.5 4 8 1 8 1Z" fill="#B09848"/>
+              <path d="M8 5C8 5 5 8 5 10.5C5 12.4 6.3 14 8 14C9.7 14 11 12.4 11 10.5C11 8 8 5 8 5Z" fill="#B09848" opacity="0.6"/>
+            </svg>
+            <%= @streak %> days
+          </span>
+        <% end %>
+      </div>
+
+      <p style="font-family:'DM Sans',sans-serif; font-size:0.78rem; color:#A09889; margin:0.3rem 0 0;">
+        <%= @user.email %>
+        <span style="margin:0 0.4rem; opacity:0.4;">&middot;</span>
+        <span style="font-family:'DM Mono',monospace; font-size:0.7rem; text-transform:capitalize;"><%= @user.role %></span>
+        <span style="margin:0 0.4rem; opacity:0.4;">&middot;</span>
+        Member since <%= @member_since.strftime("%b %Y") %>
+      </p>
+
+      <%# Interests as tags %>
+      <% if @profile&.interests&.any? %>
+        <div style="display:flex; flex-wrap:wrap; gap:0.35rem; margin-top:0.7rem;">
+          <% @profile.interests.first(5).each do |interest| %>
+            <span style="font-family:'DM Mono',monospace; font-size:0.6rem; letter-spacing:0.4px; text-transform:uppercase; padding:0.2rem 0.55rem; border-radius:6px; background:rgba(28,24,18,0.04); color:#6D665B;">
+              <%= interest %>
+            </span>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+
+  <%# XP Bar %>
+  <div style="margin-top:1.4rem; padding-top:1.2rem; border-top:1px solid rgba(28,24,18,0.05);">
+    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:0.5rem;">
+      <span style="font-family:'DM Mono',monospace; font-size:0.65rem; letter-spacing:1px; text-transform:uppercase; color:#A09889;">
+        Experience
+      </span>
+      <span style="font-family:'DM Mono',monospace; font-size:0.72rem; font-weight:500; color:#1C1812;">
+        <%= @xp.to_i %> / <%= @xp_for_next_level %> XP
+      </span>
+    </div>
+    <div style="width:100%; height:6px; background:rgba(28,24,18,0.06); border-radius:3px; overflow:hidden;">
+      <div data-controller="xp-bar" data-xp-bar-progress-value="<%= @xp_progress %>"
+           style="height:100%; background:linear-gradient(90deg, #8B80C4, #5BA880); border-radius:3px;">
+      </div>
+    </div>
+  </div>
+
+  <%# Badges row %>
+  <div style="display:flex; gap:0.5rem; margin-top:1rem; flex-wrap:wrap;">
+    <% badges = [] %>
+    <% badges << { icon: "path", label: "First Route", color: "#8B80C4" } if @routes.any? %>
+    <% badges << { icon: "check", label: "Step Completed", color: "#5BA880" } if @total_steps_completed > 0 %>
+    <% badges << { icon: "star", label: "High Accuracy", color: "#B09848" } if @avg_accuracy >= 80 %>
+    <% badges << { icon: "fire", label: "#{@streak}d Streak", color: "#B06050" } if @streak >= 3 %>
+    <% badges << { icon: "bolt", label: "Route Complete", color: "#6E9BC8" } if @completed_routes.any? %>
+
+    <% if badges.any? %>
+      <% badges.each do |badge| %>
+        <div style="display:inline-flex; align-items:center; gap:0.3rem; background:rgba(28,24,18,0.03); border:1px solid rgba(28,24,18,0.05); border-radius:8px; padding:0.3rem 0.6rem;">
+          <div style="width:18px; height:18px; border-radius:5px; background:<%= badge[:color] %>15; display:flex; align-items:center; justify-content:center;">
+            <% case badge[:icon] %>
+            <% when "path" %>
+              <svg width="10" height="10" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 13V8l5-5 5 5v5" stroke="<%= badge[:color] %>" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <% when "check" %>
+              <svg width="10" height="10" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8l3.5 3.5L13 5" stroke="<%= badge[:color] %>" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <% when "star" %>
+              <svg width="10" height="10" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 2l1.8 3.6L14 6.3l-3 2.9.7 4.1L8 11.4l-3.7 1.9.7-4.1-3-2.9 4.2-.7L8 2z" stroke="<%= badge[:color] %>" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <% when "fire" %>
+              <svg width="10" height="10" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 2s-1.5 3-1.5 5c0 1.1.7 2 1.5 2s1.5-.9 1.5-2c0-2-1.5-5-1.5-5z" fill="<%= badge[:color] %>" opacity="0.7"/></svg>
+            <% when "bolt" %>
+              <svg width="10" height="10" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M9 2L5 9h3l-1 5 4-7H8l1-5z" stroke="<%= badge[:color] %>" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <% end %>
+          </div>
+          <span style="font-family:'DM Mono',monospace; font-size:0.58rem; letter-spacing:0.3px; color:#6D665B;"><%= badge[:label] %></span>
+        </div>
+      <% end %>
+    <% else %>
+      <p style="font-family:'DM Sans',sans-serif; font-size:0.75rem; color:#A09889; margin:0;">
+        Complete activities to unlock achievements.
+      </p>
+    <% end %>
+  </div>
+</div>
+
+<%# === Stats Grid === %>
+<div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(150px, 1fr)); gap:0.6rem; margin-bottom:1rem;">
+  <%
+    stats = [
+      { value: @routes.size, label: "Routes", color: "#8B80C4", bg: "rgba(139,128,196,0.08)" },
+      { value: @total_steps_completed, label: "Lessons", color: "#6E9BC8", bg: "rgba(110,155,200,0.08)" },
+      { value: format_study_time(@study_minutes), label: "Time", color: "#5BA880", bg: "rgba(91,168,128,0.08)" },
+      { value: "#{@avg_accuracy}%", label: "Accuracy", color: "#B09848", bg: "rgba(176,152,72,0.08)" }
+    ]
+  %>
+  <% stats.each do |stat| %>
+    <div style="background:rgba(255,255,255,0.5); border:1px solid rgba(28,24,18,0.05); border-radius:14px; padding:1.1rem 1rem; text-align:center;">
+      <p style="font-family:'DM Mono',monospace; font-size:1.35rem; font-weight:500; color:<%= stat[:color] %>; margin:0 0 0.3rem; letter-spacing:-0.5px;">
+        <%= stat[:value] %>
+      </p>
+      <p style="font-family:'DM Mono',monospace; font-size:0.58rem; letter-spacing:1.2px; text-transform:uppercase; color:#A09889; margin:0;">
+        <%= stat[:label] %>
+      </p>
+    </div>
+  <% end %>
+</div>
+
+<%# === Tabs === %>
+<div data-controller="profile-tabs">
+
+  <%# Tab bar %>
+  <div role="tablist" style="display:flex; gap:0; border-bottom:1px solid rgba(28,24,18,0.06); margin-bottom:1.2rem;">
+    <% ["My Routes", "Achievements", "Activity"].each_with_index do |label, i| %>
+      <button data-profile-tabs-target="tab" data-action="click->profile-tabs#switch" data-index="<%= i %>"
+              style="font-family:'DM Sans',sans-serif; font-size:0.82rem; font-weight:<%= i == 0 ? '600' : '400' %>; color:<%= i == 0 ? '#1C1812' : '#A09889' %>; background:none; border:none; cursor:pointer; padding:0.6rem 1.2rem; position:relative; transition:color 0.2s;">
+        <%= label %>
+        <span data-underline style="position:absolute; bottom:-1px; left:0.6rem; right:0.6rem; height:2px; background:#5BA880; border-radius:1px; transition:opacity 0.2s, transform 0.2s; opacity:<%= i == 0 ? '1' : '0' %>; transform:scaleX(<%= i == 0 ? '1' : '0' %>);"></span>
+      </button>
+    <% end %>
+  </div>
+
+  <%# === Panel 1: Mis Rutas === %>
+  <div id="panel-routes" role="tabpanel" aria-labelledby="tab-0" data-profile-tabs-target="panel" data-controller="expanded-route">
+    <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(340px, 1fr)); gap:0.8rem;">
+      <% @routes.each do |route| %>
+        <%= render "profiles/route_card", route: route, accent_color: route_accent_color(route) %>
+      <% end %>
+
+      <%# Always show the "create" card %>
+      <%= render "profiles/create_route_card" %>
+    </div>
+
+    <%# Expanded route overlay (rendered once, populated dynamically by JS) %>
+    <%= render "profiles/expanded_route_overlay" %>
+  </div>
+
+  <%# === Panel 2: Logros (Turbo Frame — loaded on demand) === %>
+  <div id="panel-achievements" role="tabpanel" aria-labelledby="tab-1" data-profile-tabs-target="panel" style="display:none;">
+    <turbo-frame id="profile-achievements" data-lazy-src="<%= profile_path(tab: "achievements") %>">
+      <div style="text-align:center; padding:2rem;">
+        <p style="font-family:'DM Mono',monospace; font-size:0.72rem; color:#A09889; margin:0;">Loading achievements…</p>
+      </div>
+    </turbo-frame>
+  </div>
+
+  <%# === Panel 3: Actividad (Turbo Frame — loaded on demand) === %>
+  <div id="panel-activity" role="tabpanel" aria-labelledby="tab-2" data-profile-tabs-target="panel" style="display:none;">
+    <turbo-frame id="profile-activity" data-lazy-src="<%= profile_path(tab: "activity") %>">
+      <div style="text-align:center; padding:2rem;">
+        <p style="font-family:'DM Mono',monospace; font-size:0.72rem; color:#A09889; margin:0;">Loading activity…</p>
+      </div>
+    </turbo-frame>
+  </div>
+
+</div>
+
+<%# === Learning Profile Summary === %>
+<% if @profile %>
+  <div style="margin-top:1.2rem; background:rgba(255,255,255,0.4); border:1px solid rgba(28,24,18,0.05); border-radius:14px; padding:1.1rem 1.2rem;">
+    <p style="font-family:'DM Mono',monospace; font-size:0.58rem; letter-spacing:1.5px; text-transform:uppercase; color:#A09889; margin:0 0 0.7rem;">
+      Learning Profile
+    </p>
+    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(140px, 1fr)); gap:0.7rem;">
+      <div>
+        <p style="font-family:'DM Sans',sans-serif; font-size:0.68rem; color:#A09889; margin:0 0 0.15rem;">Level</p>
+        <p style="font-family:'DM Sans',sans-serif; font-size:0.8rem; font-weight:500; color:#1C1812; margin:0;"><%= @profile.current_level&.capitalize || "—" %></p>
+      </div>
+      <div>
+        <p style="font-family:'DM Sans',sans-serif; font-size:0.68rem; color:#A09889; margin:0 0 0.15rem;">Style</p>
+        <p style="font-family:'DM Sans',sans-serif; font-size:0.8rem; font-weight:500; color:#1C1812; margin:0;"><%= @profile.learning_style&.presence&.map(&:capitalize)&.join(", ") || "—" %></p>
+      </div>
+      <div>
+        <p style="font-family:'DM Sans',sans-serif; font-size:0.68rem; color:#A09889; margin:0 0 0.15rem;">Timeline</p>
+        <p style="font-family:'DM Sans',sans-serif; font-size:0.8rem; font-weight:500; color:#1C1812; margin:0;"><%= @profile.timeline&.humanize || "—" %></p>
+      </div>
+    </div>
+  </div>
+<% end %>

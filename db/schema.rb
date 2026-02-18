@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_02_13_100002) do
+ActiveRecord::Schema[8.1].define(version: 2026_02_18_171611) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -330,6 +330,24 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_13_100002) do
     t.index ["status"], name: "index_learning_routes_engine_route_steps_on_status"
   end
 
+  create_table "route_requests", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "custom_topic"
+    t.text "error_message"
+    t.jsonb "goals", default: [], null: false
+    t.uuid "learning_route_id"
+    t.string "level", null: false
+    t.string "pace", null: false
+    t.string "status", default: "pending", null: false
+    t.jsonb "topics", default: [], null: false
+    t.datetime "updated_at", null: false
+    t.uuid "user_id", null: false
+    t.index ["learning_route_id"], name: "index_route_requests_on_learning_route_id"
+    t.index ["status"], name: "index_route_requests_on_status"
+    t.index ["user_id", "created_at"], name: "index_route_requests_on_user_id_and_created_at"
+    t.index ["user_id"], name: "index_route_requests_on_user_id"
+  end
+
   add_foreign_key "assessments_assessment_results", "assessments_assessments", column: "assessment_id"
   add_foreign_key "assessments_questions", "assessments_assessments", column: "assessment_id"
   add_foreign_key "assessments_user_answers", "assessments_questions", column: "question_id"
@@ -339,4 +357,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_13_100002) do
   add_foreign_key "learning_routes_engine_reinforcement_routes", "learning_routes_engine_knowledge_gaps", column: "knowledge_gap_id"
   add_foreign_key "learning_routes_engine_reinforcement_routes", "learning_routes_engine_learning_routes", column: "learning_route_id"
   add_foreign_key "learning_routes_engine_route_steps", "learning_routes_engine_learning_routes", column: "learning_route_id"
+  add_foreign_key "route_requests", "core_users", column: "user_id"
+  add_foreign_key "route_requests", "learning_routes_engine_learning_routes", column: "learning_route_id"
 end

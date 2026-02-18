@@ -1,0 +1,38 @@
+<% content_for(:title, "Learning Routes — Learn anything, the right way") %>
+
+<% content_for(:head) do %>
+  <meta name="description" content="AI-powered personalized learning routes. Learn programming, math, languages, and more.">
+  <meta property="og:title" content="Learning Routes — Learn anything, the right way">
+  <meta property="og:description" content="AI-powered personalized learning routes. Learn programming, math, languages, and more.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://learning-routes.com">
+  <meta property="og:site_name" content="Learning Routes">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Learning Routes — Learn anything, the right way">
+  <meta name="twitter:description" content="AI-powered personalized learning routes.">
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "Learning Routes",
+      "url": "https://learning-routes.com",
+      "description": "AI-powered personalized learning routes. Learn programming, math, languages, and more.",
+      "applicationCategory": "EducationalApplication",
+      "operatingSystem": "Web",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      }
+    }
+  </script>
+<% end %>
+
+<%= render "landing/hero" %>
+<%= render "landing/how_it_works" %>
+<%= render "landing/path_section" %>
+<%= render "landing/outcomes" %>
+<%= render "landing/features" %>
+<%= render "landing/integrations" %>
+<%= render "landing/cta" %>
+<%= render "shared/footer" %>

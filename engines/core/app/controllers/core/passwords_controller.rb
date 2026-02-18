@@ -1,5 +1,6 @@
 module Core
   class PasswordsController < ApplicationController
+    layout "auth"
     rate_limit to: 5, within: 5.minutes, only: :create, with: -> {
       redirect_to core.forgot_password_path, alert: "Too many requests. Please try again later."
     }

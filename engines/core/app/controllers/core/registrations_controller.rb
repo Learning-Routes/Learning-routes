@@ -1,5 +1,7 @@
 module Core
   class RegistrationsController < ApplicationController
+    layout "auth"
+    rate_limit to: 5, within: 3.minutes, only: :create
     before_action :redirect_if_signed_in, only: [:new, :create]
 
     def new

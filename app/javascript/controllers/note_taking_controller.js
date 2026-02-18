@@ -6,10 +6,12 @@ export default class extends Controller {
 
   connect() {
     this.saveTimeout = null
+    this._indicatorTimeout = null
   }
 
   disconnect() {
     if (this.saveTimeout) clearTimeout(this.saveTimeout)
+    if (this._indicatorTimeout) clearTimeout(this._indicatorTimeout)
   }
 
   save(event) {
@@ -61,8 +63,8 @@ export default class extends Controller {
       if (response.ok && this.hasSavedIndicatorTarget) {
         this.savedIndicatorTarget.classList.remove("hidden")
         this.savedIndicatorTarget.textContent = "Saved"
-        setTimeout(() => {
-          this.savedIndicatorTarget.classList.add("hidden")
+        this._indicatorTimeout = setTimeout(() => {
+          if (this.hasSavedIndicatorTarget) this.savedIndicatorTarget.classList.add("hidden")
         }, 2000)
       }
     } catch (error) {

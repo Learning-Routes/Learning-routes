@@ -26,11 +26,11 @@ module LearningRoutesEngine
     GOOD  = 3
     EASY  = 4
 
-    # State constants
-    NEW        = 0
-    LEARNING   = 1
-    REVIEW     = 2
-    RELEARNING = 3
+    # State constants (match Rails enum string values)
+    NEW        = "fsrs_new"
+    LEARNING   = "fsrs_learning"
+    REVIEW     = "fsrs_review"
+    RELEARNING = "fsrs_relearning"
 
     # Process a review and return updated card parameters
     def review(step, rating)

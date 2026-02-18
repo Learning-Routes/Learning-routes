@@ -1,14 +1,22 @@
 module Assessments
   class ResultsController < ApplicationController
+    layout "learning"
+
     before_action :authenticate_user!
     before_action :set_result
     before_action :authorize_result_owner!
 
     def show
       @assessment = @result.assessment
-      @answers = UserAnswer.where(user: current_user, question: @assessment.questions).includes(:question)
       @step = @assessment.route_step
       @route = @step.learning_route
+
+      unless @result.score.present?
+        redirect_to assessments.assessment_path(@assessment), alert: "Assessment not yet submitted."
+        return
+      end
+
+      @answers = UserAnswer.where(user: current_user, question: @assessment.questions).includes(:question)
     end
 
     def submit

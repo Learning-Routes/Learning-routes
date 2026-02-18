@@ -1,0 +1,26 @@
+<div id="generating-state" style="text-align:center; padding:60px 0;">
+  <div style="margin:0 auto 24px; width:64px; height:64px; border-radius:50%; background:rgba(91,168,128,0.1); display:flex; align-items:center; justify-content:center; animation:wizardScaleIn 0.5s cubic-bezier(0.16,1,0.3,1) both;">
+    <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+      <path d="M7 14L12 19L21 9" stroke="#5BA880" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </div>
+
+  <h2 style="font-family:'DM Sans',sans-serif; font-weight:700; font-size:1.3rem; letter-spacing:-0.3px; color:#1C1812; margin:0 0 8px;">
+    ¡Tu ruta está lista!
+  </h2>
+
+  <% if route_request.learning_route %>
+    <p style="font-family:'DM Sans',sans-serif; font-weight:400; font-size:0.85rem; color:#9E9587; margin:0 0 28px;">
+      <%= route_request.learning_route.topic %>
+    </p>
+  <% end %>
+
+  <a href="<%= profile_path %>"
+     style="display:inline-flex; align-items:center; gap:8px; background:linear-gradient(135deg, #2C261E, #2C261Edd); color:#FEFDFB; border-radius:12px; padding:14px 32px; text-decoration:none; font-family:'DM Sans',sans-serif; font-weight:600; font-size:0.85rem; box-shadow:0 2px 12px rgba(28,24,18,0.15); transition:transform 0.2s;"
+     onmouseover="this.style.transform='translateY(-1px)'"
+     onmouseout="this.style.transform='translateY(0)'">
+    Ver mi ruta <span style="font-size:0.9rem; opacity:0.7;">→</span>
+  </a>
+
+  <meta http-equiv="refresh" content="2;url=<%= profile_path %>">
+</div>

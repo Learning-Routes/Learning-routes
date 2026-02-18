@@ -1,40 +1,69 @@
 <%#
   PathSection — dark card showing the 6-node learning route visualization.
   SVG nodes rendered by path_viz Stimulus controller on scroll.
+  When user is logged in with an active route, nodes are personalized.
 %>
 
-<section class="mx-[clamp(0.5rem,2vw,1.5rem)] mt-16 section-dark rounded-section relative overflow-hidden"
-         style="box-shadow: 0 12px 48px rgba(28,24,18,0.14), 0 0 0 1px rgba(255,250,240,0.03);">
+<%# Gradient fade into dark section %>
+<div class="h-20 mt-8" style="background: linear-gradient(180deg, #F5F1EB 0%, rgba(28,25,18,0.03) 100%);"></div>
 
-  <%# Section header %>
-  <div class="pt-[3.5rem] px-[clamp(2rem,5vw,4rem)] max-w-[880px] mx-auto
-              flex items-end justify-between flex-wrap gap-[1.4rem]">
-    <div>
-      <p class="label-mono text-dark-muted mb-3">Product</p>
-      <h2 class="font-sans font-bold text-[clamp(1.6rem,3.2vw,2.2rem)] text-dark-text tracking-[-1px] leading-[1.15]">
-        This is what your route looks like.
-      </h2>
+<section class="max-w-[1100px] mx-auto px-4">
+  <div class="section-dark rounded-section relative overflow-hidden"
+       style="box-shadow: 0 12px 48px rgba(28,24,18,0.14), 0 0 0 1px rgba(255,250,240,0.03);">
+
+    <%# Section header — personalized when logged in %>
+    <div class="pt-[3.5rem] px-[clamp(2rem,5vw,4rem)] max-w-[840px] mx-auto
+                flex items-end justify-between flex-wrap gap-[1.4rem]">
+      <div>
+        <p class="label-mono text-dark-muted mb-3">
+          <%= @active_route ? @active_route.topic : "Product" %>
+        </p>
+        <h2 class="font-sans font-bold text-[clamp(1.6rem,3.2vw,2.2rem)] text-dark-text tracking-[-1px] leading-[1.15]">
+          <% if @active_route %>
+            Your learning route.
+          <% else %>
+            This is what your route looks like.
+          <% end %>
+        </h2>
+      </div>
+      <p class="font-sans text-[0.82rem] text-dark-muted leading-[1.7] max-w-[280px] text-right">
+        <% if @active_route %>
+          Each node is a stage of your route. Satellites are the topics at each level.
+        <% else %>
+          Each node is a stage. Satellites are the topics at each level.
+        <% end %>
+      </p>
     </div>
-    <p class="font-sans text-[0.82rem] text-dark-muted leading-[1.7] max-w-[280px] text-right">
-      Each node is a stage. Satellites are the topics at each level.
-    </p>
+
+    <%# Gradient separator %>
+    <div class="max-w-[840px] mx-auto mt-[1.4rem] h-px"
+         style="background: linear-gradient(90deg, transparent, rgba(255,250,240,0.06), transparent);"></div>
+
+    <%# Node visualization — rendered by Stimulus controller %>
+    <div data-controller="path-viz"
+         <% if @route_nodes.present? %>
+           data-path-viz-nodes-value="<%= @route_nodes.to_json %>"
+         <% end %>
+         class="pt-[0.5rem] pb-6"
+         role="img"
+         aria-label="<%= @active_route ? "Visual representation of your #{@active_route.topic} learning route with #{@route_nodes&.size || 6} connected nodes" : "A visual representation of a personalized learning route with 6 connected nodes, each representing a stage of your learning journey" %>">
+      <div data-path-viz-target="container" class="max-w-[840px] mx-auto"></div>
+    </div>
+
+    <%# Footer tag %>
+    <div class="text-center pb-14">
+      <span class="font-mono text-[0.6rem] tracking-[1px] text-dark-muted
+                   py-[0.4rem] px-[1rem] rounded-lg border border-lr-dark inline-block">
+        <% if @active_route %>
+          <%= @active_route.route_steps.completed_steps.count %>/<%= @active_route.total_steps %> steps completed
+        <% else %>
+          Each route is uniquely generated
+        <% end %>
+      </span>
+    </div>
+
   </div>
-
-  <%# Gradient separator %>
-  <div class="max-w-[880px] mx-auto mt-[1.4rem] h-px"
-       style="background: linear-gradient(90deg, transparent, rgba(255,250,240,0.06), transparent);"></div>
-
-  <%# Node visualization — rendered by Stimulus controller %>
-  <div data-controller="path-viz" class="pt-[0.5rem] pb-6">
-    <div data-path-viz-target="container" class="max-w-[880px] mx-auto"></div>
-  </div>
-
-  <%# Footer tag %>
-  <div class="text-center pb-14">
-    <span class="font-mono text-[0.6rem] tracking-[1px] text-dark-muted
-                 py-[0.4rem] px-[1rem] rounded-lg border border-lr-dark inline-block">
-      Each route is uniquely generated
-    </span>
-  </div>
-
 </section>
+
+<%# Gradient fade back to light %>
+<div class="h-20" style="background: linear-gradient(180deg, rgba(28,25,18,0.03) 0%, #F5F1EB 100%);"></div>

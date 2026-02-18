@@ -1,5 +1,7 @@
 module Assessments
   class AssessmentsController < ApplicationController
+    layout "learning"
+
     before_action :authenticate_user!
     before_action :set_assessment
     before_action :authorize_assessment_owner!

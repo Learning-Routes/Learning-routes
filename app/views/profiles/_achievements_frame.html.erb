@@ -1,0 +1,49 @@
+<turbo-frame id="profile-achievements">
+<%
+  all_achievements = [
+    { emoji: "\u{1F31F}", title: "First Route",     desc: "Complete a learning route",  unlocked: @completed_routes.any?,        color: "#8B80C4" },
+    { emoji: "\u{1F525}", title: "3-Day Streak",  desc: "Consistent daily learning",     unlocked: @streak >= 3,                  color: "#B09848" },
+    { emoji: "\u{1F525}", title: "14-Day Streak", desc: "Consistent daily learning",     unlocked: @streak >= 14,                 color: "#B09848" },
+    { emoji: "\u{1F3AF}", title: "Sharpshooter",    desc: "50 lessons · 90%+ accuracy",      unlocked: @total_steps_completed >= 50 && @avg_accuracy >= 90, color: "#5BA880" },
+    { emoji: "\u{26A1}",  title: "Fast Learner",   desc: "5 lessons in one session",          unlocked: @total_steps_completed >= 5,   color: "#6E9BC8" },
+    { emoji: "\u{2705}",  title: "First Step",      desc: "Complete your first step",            unlocked: @total_steps_completed > 0,    color: "#5BA880" },
+    { emoji: "\u{2705}",  title: "Ten Steps",       desc: "Complete 10 steps total",         unlocked: @total_steps_completed >= 10,  color: "#5BA880" },
+    { emoji: "\u{1F4DA}", title: "Half Century",   desc: "Complete 50 steps total",         unlocked: @total_steps_completed >= 50,  color: "#5BA880" },
+    { emoji: "\u{2B50}",  title: "80% Accuracy",    desc: "Score 80%+ on exams",             unlocked: @avg_accuracy >= 80,           color: "#B09848" },
+    { emoji: "\u{2B50}",  title: "95% Accuracy",    desc: "Score 95%+ on exams",             unlocked: @avg_accuracy >= 95,           color: "#B09848" },
+    { emoji: "\u{23F0}",  title: "10 Hours",         desc: "Accumulate 10 hours of study",        unlocked: @study_minutes >= 600,         color: "#6E9BC8" },
+    { emoji: "\u{1F3D4}",  title: "Climber",       desc: "Reach level 20",                  unlocked: false,                         color: "#8B80C4" },
+    { emoji: "\u{1F310}", title: "Polymath",        desc: "Routes in 3+ different topics",       unlocked: @routes.map(&:subject_area).compact.uniq.size >= 3, color: "#7EA5A0" },
+    { emoji: "\u{1F680}", title: "Route Complete",    desc: "Finish a route completely",      unlocked: @completed_routes.any?,        color: "#6E9BC8" },
+  ]
+
+  # Sort: unlocked first, then locked
+  sorted = all_achievements.sort_by { |a| a[:unlocked] ? 0 : 1 }
+%>
+
+<div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:12px;">
+  <% sorted.each do |ach| %>
+    <div style="background:<%= ach[:unlocked] ? '#FEFDFB' : 'transparent' %>; border:1px solid rgba(28,24,18,<%= ach[:unlocked] ? '0.04' : '0.05' %>); border-radius:14px; padding:16px; display:flex; align-items:center; gap:12px; opacity:<%= ach[:unlocked] ? '1' : '0.4' %>;">
+
+      <%# Icon %>
+      <div role="img" aria-label="<%= ach[:title] %><%= ' (unlocked)' if ach[:unlocked] %>" style="width:42px; height:42px; border-radius:12px; background:<%= ach[:color] %><%= ach[:unlocked] ? '1A' : '06' %>; display:flex; align-items:center; justify-content:center; flex-shrink:0; font-size:1.2rem;<%= ' filter:grayscale(1);' unless ach[:unlocked] %>">
+        <%= ach[:emoji] %>
+      </div>
+
+      <%# Text %>
+      <div style="flex:1; min-width:0;">
+        <p style="font-family:'DM Sans',sans-serif; font-size:0.8rem; font-weight:600; color:#1C1812; margin:0 0 0.15rem;">
+          <%= ach[:title] %>
+          <% if ach[:unlocked] %>
+            <svg aria-hidden="true" width="12" height="12" viewBox="0 0 16 16" fill="none" style="vertical-align:-1px; margin-left:3px;"><path d="M3 8l3.5 3.5L13 5" stroke="#5BA880" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <% end %>
+        </p>
+        <p style="font-family:'DM Sans',sans-serif; font-size:0.68rem; color:#A09889; margin:0;">
+          <%= ach[:desc] %>
+        </p>
+      </div>
+    </div>
+  <% end %>
+</div>
+
+</turbo-frame>

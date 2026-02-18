@@ -1,0 +1,46 @@
+<%#
+  Expanded Route Overlay — full-screen dark visualization.
+  Controlled by expanded_route_controller.js Stimulus controller.
+  Rendered once; content populated dynamically via JS when a route card is clicked.
+%>
+
+<div data-expanded-route-target="overlay" role="dialog" aria-modal="true" aria-label="Route details"
+     style="position:fixed; inset:0; z-index:1000; display:none; overflow:auto;">
+
+  <%# Backdrop (click to close) %>
+  <div data-expanded-route-target="backdrop"
+       data-action="click->expanded-route#clickBackdrop"
+       style="position:fixed; inset:0; background:rgba(28,25,18,0); transition:background 0.4s ease;">
+  </div>
+
+  <%# Content wrapper %>
+  <div data-expanded-route-target="content"
+       style="position:relative; z-index:1; min-height:100vh; display:flex; flex-direction:column; opacity:0; transform:translateY(-12px);">
+
+    <%# Header %>
+    <div style="padding:28px 40px 16px; display:flex; align-items:flex-start; justify-content:space-between; gap:1.5rem;">
+      <div data-expanded-route-target="headerText" style="flex:1; min-width:0;">
+        <%# Populated by JS %>
+      </div>
+      <button data-action="click->expanded-route#close"
+              style="font-family:'DM Mono',monospace; font-size:0.68rem; font-weight:500; color:rgba(255,255,255,0.45); background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:0.4rem 0.85rem; cursor:pointer; flex-shrink:0; transition:all 0.2s; white-space:nowrap;"
+              class="overlay-close-btn">
+        Close <span style="opacity:0.5;">esc</span>
+      </button>
+    </div>
+
+    <%# SVG Visualization %>
+    <div data-expanded-route-target="svgWrap"
+         style="flex:1; padding:0 40px; min-height:380px;">
+      <%# SVG built entirely by Stimulus controller %>
+    </div>
+
+    <%# Footer %>
+    <div style="padding:20px 40px 28px; display:flex; align-items:center; flex-wrap:wrap; gap:0.5rem;">
+      <div data-expanded-route-target="footerText" style="flex:1;">
+        <%# Populated by JS %>
+      </div>
+    </div>
+
+  </div>
+</div>

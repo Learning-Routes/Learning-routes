@@ -1,99 +1,113 @@
-<% content_for(:title, "Dashboard - Learning Routes") %>
+<% content_for(:title, "My Routes — Learning Routes") %>
 
-<div class="w-full max-w-4xl mx-auto">
-  <div class="mb-8">
-    <h1 class="text-3xl font-bold text-gray-900">Welcome back, <%= current_user.name %>!</h1>
-    <p class="mt-1 text-gray-600">Continue your learning journey</p>
+<%# === Header === %>
+<div style="margin-bottom:2rem;">
+  <h1 style="font-family:'DM Sans',sans-serif; font-weight:700; font-size:1.5rem; letter-spacing:-0.5px; color:#1C1812; margin:0 0 0.3rem;">
+    Hello, <%= current_user.name.to_s.split.first || current_user.name %>.
+  </h1>
+  <p style="font-family:'DM Sans',sans-serif; font-size:0.85rem; color:#A09889; margin:0;">
+    Continue your learning journey.
+  </p>
+</div>
+
+<%# === Email verification banner === %>
+<% if !current_user.email_verified? %>
+  <div style="background:rgba(176,152,72,0.08); border:1px solid rgba(176,152,72,0.15); border-radius:12px; padding:0.75rem 1rem; margin-bottom:1.2rem; display:flex; align-items:center; gap:0.6rem;">
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+      <path d="M8 1.5l6 11H2l6-11z" stroke="#B09848" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M8 6v3M8 11h.01" stroke="#B09848" stroke-width="1.2" stroke-linecap="round"/>
+    </svg>
+    <p style="font-family:'DM Sans',sans-serif; font-size:0.78rem; color:#8B6D28; margin:0;">
+      Verify your email.
+      <%= link_to "Resend verification", core.resend_verification_path,
+          data: { turbo_method: :post },
+          style: "color:#8B6D28; font-weight:600; text-decoration:underline; text-underline-offset:2px;" %>
+    </p>
+  </div>
+<% end %>
+
+<% if @routes.any? %>
+  <%# === Routes list === %>
+  <div style="display:flex; flex-direction:column; gap:0.75rem;">
+    <% @routes.each do |route| %>
+      <%= link_to learning_routes_engine.route_path(route),
+          class: "card-hover",
+          style: "display:block; background:rgba(255,255,255,0.6); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); border:1px solid rgba(28,24,18,0.06); border-radius:14px; padding:1.2rem 1.3rem; text-decoration:none;" do %>
+        <div style="display:flex; align-items:center; justify-content:space-between; gap:1rem;">
+          <div style="width:38px; height:38px; border-radius:11px; background:<%= route_accent_color(route) %>12; display:flex; align-items:center; justify-content:center; flex-shrink:0; font-size:1.15rem;">
+            <%= topic_emoji_for(route.topic) %>
+          </div>
+          <div style="flex:1; min-width:0;">
+            <h3 style="font-family:'DM Sans',sans-serif; font-weight:600; font-size:0.92rem; color:#1C1812; margin:0 0 0.3rem; letter-spacing:-0.2px;">
+              <%= route.topic %>
+            </h3>
+            <p style="font-family:'DM Sans',sans-serif; font-size:0.75rem; color:#A09889; margin:0;">
+              <% if route.subject_area.present? %><%= route.subject_area %> &middot; <% end %><%= route.route_steps.count(&:completed?) %>/<%= route.total_steps %> steps
+            </p>
+          </div>
+          <div style="display:flex; align-items:center; gap:1rem; flex-shrink:0;">
+            <div style="text-align:right;">
+              <span style="font-family:'DM Mono',monospace; font-size:0.82rem; font-weight:500; color:#1C1812;"><%= route.progress_percentage %>%</span>
+              <div style="width:5rem; height:4px; background:rgba(28,24,18,0.06); border-radius:2px; margin-top:0.35rem;">
+                <div style="width:<%= route.progress_percentage %>%; height:100%; background:#5BA880; border-radius:2px; transition:width 0.3s;"></div>
+              </div>
+            </div>
+            <% badge_colors = case route.status
+                              when 'active' then 'background:rgba(91,168,128,0.1); color:#3D7A5A'
+                              when 'completed' then 'background:rgba(110,155,200,0.1); color:#4A7A9E'
+                              when 'paused' then 'background:rgba(176,152,72,0.1); color:#8B6D28'
+                              else 'background:rgba(28,24,18,0.05); color:#6D665B'
+                              end %>
+            <span style="font-family:'DM Mono',monospace; font-size:0.6rem; letter-spacing:0.5px; text-transform:uppercase; padding:0.25rem 0.55rem; border-radius:6px; <%= badge_colors %>">
+              <%= route.status %>
+            </span>
+          </div>
+        </div>
+      <% end %>
+    <% end %>
   </div>
 
-  <% if !current_user.email_verified? %>
-    <div class="rounded-lg bg-amber-50 border border-amber-200 p-4 mb-6">
-      <div class="flex">
-        <div class="shrink-0">
-          <svg class="h-5 w-5 text-amber-400" viewBox="0 0 20 20" fill="currentColor">
-            <path fill-rule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495zM10 6a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 6zm0 9a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd" />
-          </svg>
-        </div>
-        <div class="ml-3">
-          <p class="text-sm text-amber-800">
-            Please verify your email address.
-            <%= link_to "Resend verification email", core.resend_verification_path, data: { turbo_method: :post }, class: "font-semibold underline hover:text-amber-900" %>
-          </p>
-        </div>
-      </div>
-    </div>
-  <% end %>
+<% else %>
+  <%# === Empty state: no routes yet === %>
+  <div style="background:rgba(255,255,255,0.5); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); border:1px solid rgba(28,24,18,0.06); border-radius:20px; padding:3rem 2rem; text-align:center;">
 
-  <% if @routes.empty? %>
-    <!-- Loading state for route generation -->
-    <div class="bg-white shadow-lg rounded-2xl p-12 text-center" id="route-loading">
-      <div class="inline-flex items-center justify-center w-16 h-16 bg-indigo-100 rounded-full mb-6">
-        <svg class="animate-spin h-8 w-8 text-indigo-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-        </svg>
-      </div>
-      <h2 class="text-xl font-bold text-gray-900 mb-2">We're creating your personalized route...</h2>
-      <p class="text-gray-600 mb-1">Our AI is analyzing your preferences and building the perfect learning path.</p>
-      <p class="text-sm text-gray-400">This usually takes a few moments.</p>
+    <%# Decorative route icon %>
+    <div style="width:56px; height:56px; border-radius:14px; background:linear-gradient(135deg, rgba(139,128,196,0.12), rgba(91,168,128,0.12)); display:inline-flex; align-items:center; justify-content:center; margin-bottom:1.2rem;">
+      <%= render "shared/logo", size: 28 %>
     </div>
-  <% else %>
-    <div class="space-y-4">
-      <% @routes.each do |route| %>
-        <%= link_to learning_routes_engine.route_path(route), class: "block bg-white shadow rounded-xl p-6 hover:shadow-md transition" do %>
-          <div class="flex items-center justify-between">
-            <div>
-              <h3 class="text-lg font-semibold text-gray-900"><%= route.topic %></h3>
-              <p class="text-sm text-gray-500 mt-1">
-                <%= route.subject_area %> &middot;
-                <%= route.route_steps.completed_steps.count %>/<%= route.total_steps %> steps
-              </p>
-            </div>
-            <div class="flex items-center gap-4">
-              <div class="text-right">
-                <p class="text-sm font-medium text-indigo-600"><%= route.progress_percentage %>%</p>
-                <div class="w-24 bg-gray-200 rounded-full h-2 mt-1">
-                  <div class="bg-indigo-600 h-2 rounded-full" style="width: <%= route.progress_percentage %>%"></div>
-                </div>
-              </div>
-              <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium
-                           <%= case route.status
-                               when 'active' then 'bg-green-100 text-green-800'
-                               when 'completed' then 'bg-blue-100 text-blue-800'
-                               when 'paused' then 'bg-yellow-100 text-yellow-800'
-                               else 'bg-gray-100 text-gray-800'
-                               end %>">
-                <%= route.status.capitalize %>
-              </span>
-            </div>
-          </div>
-        <% end %>
-      <% end %>
-    </div>
-  <% end %>
 
-  <!-- Profile summary card -->
-  <% if @profile %>
-    <div class="mt-8 bg-white shadow rounded-xl p-6">
-      <h3 class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4">Your Profile</h3>
-      <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
-        <div>
-          <p class="text-gray-500">Interests</p>
-          <p class="font-medium text-gray-900"><%= @profile.interests&.map(&:capitalize)&.join(", ") || "—" %></p>
-        </div>
-        <div>
-          <p class="text-gray-500">Level</p>
-          <p class="font-medium text-gray-900"><%= @profile.current_level&.capitalize || "—" %></p>
-        </div>
-        <div>
-          <p class="text-gray-500">Learning style</p>
-          <p class="font-medium text-gray-900"><%= @profile.learning_style&.map(&:capitalize)&.join(", ") || "—" %></p>
-        </div>
-        <div>
-          <p class="text-gray-500">Timeline</p>
-          <p class="font-medium text-gray-900"><%= @profile.timeline&.humanize || "—" %></p>
-        </div>
+    <h2 style="font-family:'DM Sans',sans-serif; font-weight:700; font-size:1.15rem; color:#1C1812; margin:0 0 0.5rem; letter-spacing:-0.3px;">
+      You don't have any routes yet
+    </h2>
+    <p style="font-family:'DM Sans',sans-serif; font-size:0.82rem; color:#A09889; margin:0; max-width:340px; margin-left:auto; margin-right:auto; line-height:1.5;">
+      Set up your learning profile so our AI can create a personalized route for you.
+    </p>
+  </div>
+<% end %>
+
+<%# === Profile summary === %>
+<% if @profile %>
+  <div style="margin-top:1.5rem; background:rgba(255,255,255,0.45); border:1px solid rgba(28,24,18,0.06); border-radius:14px; padding:1.2rem 1.3rem;">
+    <p style="font-family:'DM Mono',monospace; font-size:0.6rem; letter-spacing:1.5px; text-transform:uppercase; color:#A09889; margin:0 0 0.8rem;">
+      Your profile
+    </p>
+    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(140px, 1fr)); gap:0.8rem;">
+      <div>
+        <p style="font-family:'DM Sans',sans-serif; font-size:0.7rem; color:#A09889; margin:0 0 0.2rem;">Interests</p>
+        <p style="font-family:'DM Sans',sans-serif; font-size:0.82rem; font-weight:500; color:#1C1812; margin:0;"><%= @profile.interests&.presence&.map(&:capitalize)&.join(", ") || "—" %></p>
+      </div>
+      <div>
+        <p style="font-family:'DM Sans',sans-serif; font-size:0.7rem; color:#A09889; margin:0 0 0.2rem;">Level</p>
+        <p style="font-family:'DM Sans',sans-serif; font-size:0.82rem; font-weight:500; color:#1C1812; margin:0;"><%= @profile.current_level&.capitalize || "—" %></p>
+      </div>
+      <div>
+        <p style="font-family:'DM Sans',sans-serif; font-size:0.7rem; color:#A09889; margin:0 0 0.2rem;">Style</p>
+        <p style="font-family:'DM Sans',sans-serif; font-size:0.82rem; font-weight:500; color:#1C1812; margin:0;"><%= @profile.learning_style&.presence&.map(&:capitalize)&.join(", ") || "—" %></p>
+      </div>
+      <div>
+        <p style="font-family:'DM Sans',sans-serif; font-size:0.7rem; color:#A09889; margin:0 0 0.2rem;">Timeline</p>
+        <p style="font-family:'DM Sans',sans-serif; font-size:0.82rem; font-weight:500; color:#1C1812; margin:0;"><%= @profile.timeline&.humanize || "—" %></p>
       </div>
     </div>
-  <% end %>
-</div>
+  </div>
+<% end %>

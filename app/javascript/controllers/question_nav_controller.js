@@ -6,7 +6,12 @@ export default class extends Controller {
 
   connect() {
     this.answeredSet = new Set()
+    this._buttonResetTimeout = null
     this.updateDisplay()
+  }
+
+  disconnect() {
+    clearTimeout(this._buttonResetTimeout)
   }
 
   goToQuestion(event) {
@@ -87,7 +92,8 @@ export default class extends Controller {
         this.updateNavItem(index)
         this.updateDisplay()
         btn.textContent = "Saved!"
-        setTimeout(() => { btn.textContent = "Save Answer" }, 1500)
+        clearTimeout(this._buttonResetTimeout)
+        this._buttonResetTimeout = setTimeout(() => { btn.textContent = "Save Answer" }, 1500)
 
         const html = await response.text()
         if (html.includes("turbo-stream")) Turbo.renderStreamMessage(html)

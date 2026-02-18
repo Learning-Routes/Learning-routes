@@ -27,13 +27,16 @@
   --color-dark-sub: #908880;
   --color-dark-muted: #605848;
 
+  /* --- Colors: Auth pages --- */
+  --color-link: #8B6D28;
+
   /* --- Colors: Node/route types --- */
-  --color-node-nv1: #8B80C4;
-  --color-node-nv2: #6E9BC8;
-  --color-node-mm: #B5718E;
-  --color-node-nv3: #B09848;
-  --color-node-exam: #B06050;
-  --color-node-goal: #5BA880;
+  --color-node-nv1: #B0A898;
+  --color-node-nv2: #B0A898;
+  --color-node-mm: #B0A898;
+  --color-node-nv3: #B0A898;
+  --color-node-exam: #B0A898;
+  --color-node-goal: #B0A898;
 
   /* --- Border radius --- */
   --radius-btn: 11px;
@@ -71,6 +74,30 @@
   body {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+/* --- Reduced motion: disable all animations for users who prefer it --- */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* --- iOS auto-zoom fix: inputs below 16px trigger zoom on focus --- */
+@media screen and (max-width: 767px) {
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="number"],
+  input[type="tel"],
+  input[type="url"],
+  select,
+  textarea {
+    font-size: 16px !important;
   }
 }
 
@@ -147,6 +174,211 @@
 }
 
 /* ==========================================================================
+   AUTH PAGE COMPONENTS
+   ========================================================================== */
+
+@layer components {
+  /* --- Auth glassmorphic card --- */
+  .auth-card {
+    background: rgba(255, 255, 255, 0.5);
+    backdrop-filter: blur(50px) saturate(1.4);
+    -webkit-backdrop-filter: blur(50px) saturate(1.4);
+    border: 1px solid rgba(28, 24, 18, 0.07);
+    border-radius: 20px;
+    box-shadow: 0 8px 32px rgba(28, 24, 18, 0.05), 0 1px 3px rgba(28, 24, 18, 0.03);
+  }
+
+  /* --- Auth input --- */
+  .auth-input {
+    width: 100%;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.86rem;
+    padding: 0.68rem 0.85rem;
+    border-radius: 10px;
+    border: 1px solid rgba(28, 24, 18, 0.1);
+    background: white;
+    color: #1C1812;
+    outline: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+  .auth-input::placeholder {
+    color: #A09889;
+  }
+  .auth-input:focus {
+    border-color: rgba(28, 24, 18, 0.22);
+    box-shadow: 0 0 0 3px rgba(28, 24, 18, 0.04);
+  }
+
+  /* --- Auth label --- */
+  .auth-label {
+    display: block;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.72rem;
+    font-weight: 500;
+    color: #6D665B;
+    margin-bottom: 0.35rem;
+  }
+
+  /* --- Auth submit button --- */
+  .auth-btn {
+    width: 100%;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.82rem;
+    font-weight: 600;
+    padding: 0.72rem 1rem;
+    border-radius: 11px;
+    border: none;
+    background: #2C261E;
+    color: #F5F1EB;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 1px 3px rgba(28, 24, 18, 0.12), 0 1px 2px rgba(28, 24, 18, 0.06);
+  }
+  .auth-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(28, 24, 18, 0.15), 0 2px 4px rgba(28, 24, 18, 0.08);
+  }
+  .auth-btn:active {
+    transform: translateY(0);
+  }
+
+  /* --- Google OAuth button --- */
+  .auth-google-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem;
+    width: 100%;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.8rem;
+    font-weight: 500;
+    padding: 0.65rem 1rem;
+    border-radius: 11px;
+    border: 1px solid rgba(28, 24, 18, 0.1);
+    background: white;
+    color: #1C1812;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  .auth-google-btn:hover {
+    border-color: rgba(28, 24, 18, 0.2);
+    box-shadow: 0 2px 8px rgba(28, 24, 18, 0.06);
+  }
+
+  /* --- Auth card enter animation --- */
+  .auth-enter {
+    animation: authEnter 0.45s ease both;
+  }
+  @keyframes authEnter {
+    from { opacity: 0; transform: translateY(16px) scale(0.98); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  /* --- Auth form errors --- */
+  .auth-errors {
+    background: rgba(176, 96, 80, 0.08);
+    border: 1px solid rgba(176, 96, 80, 0.15);
+    border-radius: 10px;
+    padding: 0.7rem 0.85rem;
+    margin-bottom: 1rem;
+  }
+  .auth-errors p {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.72rem;
+    font-weight: 500;
+    color: #B06050;
+    margin: 0;
+  }
+  .auth-errors ul {
+    margin: 0.3rem 0 0;
+    padding-left: 1rem;
+  }
+  .auth-errors li {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.68rem;
+    color: #B06050;
+    line-height: 1.4;
+  }
+
+  /* --- Auth flash messages --- */
+  .auth-flash {
+    max-width: 370px;
+    margin: 0 auto 1rem;
+    padding: 0.6rem 0.85rem;
+    border-radius: 10px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.72rem;
+    font-weight: 500;
+    animation: authEnter 0.35s ease both;
+  }
+  .auth-flash-notice {
+    background: rgba(91, 168, 128, 0.1);
+    border: 1px solid rgba(91, 168, 128, 0.18);
+    color: #3D7A5A;
+  }
+  .auth-flash-alert {
+    background: rgba(176, 96, 80, 0.08);
+    border: 1px solid rgba(176, 96, 80, 0.15);
+    color: #B06050;
+  }
+}
+
+/* ==========================================================================
+   FOOTER LINK HOVER (replaces inline JS handlers)
+   ========================================================================== */
+
+.footer-link {
+  transition: color 0.2s;
+}
+.footer-link:hover {
+  color: #1C1812 !important;
+}
+
+.social-link {
+  transition: color 0.2s;
+}
+.social-link:hover {
+  color: #1C1812 !important;
+}
+
+/* --- App nav link hover --- */
+.nav-link {
+  transition: color 0.2s;
+}
+.nav-link:hover {
+  color: #1C1812 !important;
+}
+
+/* --- Avatar hover --- */
+.avatar-hover {
+  transition: transform 0.15s ease;
+}
+.avatar-hover:hover {
+  transform: scale(1.08);
+}
+
+/* --- Overlay close button hover --- */
+.overlay-close-btn {
+  transition: background 0.2s, color 0.2s;
+}
+.overlay-close-btn:hover {
+  background: rgba(255,255,255,0.1) !important;
+  color: rgba(255,255,255,0.7) !important;
+}
+
+/* --- Create route card hover --- */
+.create-route-card {
+  transition: all 0.25s cubic-bezier(0.22,1,0.36,1);
+}
+.create-route-card:hover {
+  border-color: #5BA880 !important;
+  background: rgba(91,168,128,0.015) !important;
+}
+.create-route-card:hover [data-icon] {
+  background: rgba(91,168,128,0.12) !important;
+}
+
+/* ==========================================================================
    CONTENT SOURCE SCANNING
    ========================================================================== */
 
@@ -157,6 +389,7 @@
 @source "../../../engines/content_engine/app/views";
 @source "../../../engines/assessments/app/views";
 @source "../../../engines/analytics/app/views";
+@source "../../../engines/ai_orchestrator/app/views";
 
 /* ==========================================================================
    ROUGE SYNTAX HIGHLIGHTING (dark code blocks)
@@ -224,4 +457,30 @@
   }
   .lesson-content hr { @apply border-white/[0.06] my-6; }
   .lesson-content img { @apply rounded-xl max-w-full my-4; }
+}
+
+/* ============================================================
+   Route Wizard — Step transitions & animations
+   ============================================================ */
+
+@keyframes wizardCardEnter {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes wizardScaleIn {
+  from { opacity: 0; transform: scale(0.6); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+/* Responsive: collapse topic grid on mobile */
+@media (max-width: 600px) {
+  [data-route-wizard-target="topicGrid"] {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+@media (max-width: 400px) {
+  [data-route-wizard-target="topicGrid"] {
+    grid-template-columns: 1fr !important;
+  }
 }
