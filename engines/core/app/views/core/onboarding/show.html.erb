@@ -1,31 +1,25 @@
-<% content_for(:title, "Set up your profile - Learning Routes") %>
+<% content_for(:title, "Set up your profile — Learning Routes") %>
 
-<div class="mx-auto w-full max-w-2xl" data-controller="onboarding">
-  <!-- Top actions -->
-  <div class="flex items-center justify-between mb-6">
-    <%= link_to main_app.root_path, class: "text-sm text-gray-500 hover:text-gray-700 transition" do %>
-      &larr; Back to home
-    <% end %>
-    <%= button_to "Sign out", core.sign_out_path, method: :delete,
-        class: "text-sm text-gray-500 hover:text-gray-700 transition" %>
-  </div>
-
-  <!-- Progress bar -->
-  <div class="mb-8">
-    <div class="flex items-center justify-between mb-2">
-      <span class="text-sm font-medium text-gray-700">Step <%= @step_number %> of <%= @total_steps %></span>
-      <span class="text-sm text-gray-500"><%= (@step_number.to_f / @total_steps * 100).round %>% complete</span>
+<div class="onb-enter" data-controller="onboarding">
+  <%# === Segmented progress bar === %>
+  <div style="margin-bottom:2.2rem;">
+    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:0.6rem;">
+      <span style="font-family:'DM Sans',sans-serif; font-size:0.78rem; font-weight:500; color:#1C1812;">
+        Step <%= @step_number %> of <%= @total_steps %> — <span style="color:#6D665B;"><%= @step_label %></span>
+      </span>
+      <span style="font-family:'DM Mono',monospace; font-size:0.65rem; color:#A09889;">
+        <%= (@step_number.to_f / @total_steps * 100).round %>%
+      </span>
     </div>
-    <div class="w-full bg-gray-200 rounded-full h-2" role="progressbar" aria-valuenow="<%= @step_number %>" aria-valuemin="1" aria-valuemax="<%= @total_steps %>" aria-label="Onboarding progress">
-      <div class="bg-indigo-600 h-2 rounded-full transition-all duration-500 ease-out"
-           style="width: <%= (@step_number.to_f / @total_steps * 100).round %>%"></div>
+    <div style="display:flex; gap:0.35rem;" role="progressbar" aria-valuenow="<%= @step_number %>" aria-valuemin="1" aria-valuemax="<%= @total_steps %>" aria-label="Onboarding progress">
+      <% @total_steps.times do |i| %>
+        <div style="flex:1; height:4px; border-radius:2px; background:<%= i < @step_number ? '#2C261E' : 'rgba(28,24,18,0.08)' %>; transition:background 0.4s ease;"></div>
+      <% end %>
     </div>
   </div>
 
-  <!-- Wizard content (Turbo Frame) -->
-  <div class="bg-white shadow-lg rounded-2xl p-8">
-    <%= turbo_frame_tag "onboarding_step" do %>
-      <%= render "core/onboarding/step_#{@step}", profile: @profile %>
-    <% end %>
+  <%# === Wizard card === %>
+  <div style="background:#FEFDFB; border:1px solid rgba(28,24,18,0.06); border-radius:16px; box-shadow:0 2px 12px rgba(28,24,18,0.04); padding:clamp(1.5rem,4vw,2.5rem);">
+    <%= render "core/onboarding/step_#{@step}", profile: @profile %>
   </div>
 </div>

@@ -15,8 +15,8 @@ export default class extends Controller {
     if (this.hasSubmitTarget) {
       const disabled = checked.length === 0 && !customValue
       this.submitTarget.disabled = disabled
-      this.submitTarget.classList.toggle("opacity-50", disabled)
-      this.submitTarget.classList.toggle("cursor-not-allowed", disabled)
+      this.submitTarget.style.opacity = disabled ? "0.45" : "1"
+      this.submitTarget.style.cursor = disabled ? "not-allowed" : "pointer"
     }
   }
 }

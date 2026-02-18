@@ -54,7 +54,7 @@ module Core
     end
 
     def after_sign_in_path(user = nil)
-      main_app.dashboard_path
+      main_app.profile_path
     end
 
     def start_session_for(user, remember: false)

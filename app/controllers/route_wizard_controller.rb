@@ -71,10 +71,15 @@ class RouteWizardController < ApplicationController
   def wizard_params
     params.require(:route_request).permit(
       :custom_topic, :level, :pace,
-      topics: [], goals: []
+      topics: [], goals: [],
+      learning_style_answers: {}
     ).tap do |p|
       p[:topics] = p[:topics]&.reject(&:blank?) || []
       p[:goals] = p[:goals]&.reject(&:blank?) || []
+      # Remove empty style answer values (hidden fields start as "")
+      if p[:learning_style_answers].present?
+        p[:learning_style_answers] = p[:learning_style_answers].reject { |_, v| v.blank? }
+      end
     end
   end
 end

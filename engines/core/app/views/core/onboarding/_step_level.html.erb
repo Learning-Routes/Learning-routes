@@ -1,40 +1,53 @@
 <%= turbo_frame_tag "onboarding_step" do %>
-  <div>
-    <div class="text-center mb-8">
-      <h2 class="text-2xl font-bold text-gray-900">What's your current level?</h2>
-      <p class="mt-2 text-gray-600">This helps us personalize your learning path</p>
+  <div data-controller="selectable-card">
+    <%# === Heading === %>
+    <div style="text-align:center; margin-bottom:2rem;">
+      <h2 style="font-family:'DM Sans',sans-serif; font-weight:600; font-size:1.5rem; color:#1C1812; letter-spacing:-0.5px; margin:0 0 0.5rem;">
+        <em style="font-style:italic;">What's your current level?</em>
+      </h2>
+      <p style="font-family:'DM Sans',sans-serif; font-size:0.85rem; color:#6D665B; margin:0;">
+        This helps us personalize the difficulty of your learning path.
+      </p>
     </div>
 
     <%= form_with(url: core.onboarding_update_step_path(step: "level"), method: :patch, data: { turbo_frame: "onboarding_step" }) do |f| %>
-      <div class="space-y-3 mb-8">
+      <%# === Level options === %>
+      <div style="display:flex; flex-direction:column; gap:0.6rem; margin-bottom:2rem;">
         <% [
-          ["beginner", "Beginner", "I'm just starting out", "🌱"],
-          ["intermediate", "Intermediate", "I have some experience", "🌿"],
-          ["advanced", "Advanced", "I want to master this topic", "🌳"]
+          ["beginner", "Beginner", "I'm just starting out — teach me from scratch", "🌱"],
+          ["intermediate", "Intermediate", "I have some experience and want to go deeper", "🌿"],
+          ["advanced", "Advanced", "I want to master this topic at an expert level", "🌳"]
         ].each do |value, label, description, emoji| %>
-          <label class="relative cursor-pointer block">
+          <label style="cursor:pointer; display:block;" data-selectable-card-target="card">
             <input type="radio" name="current_level" value="<%= value %>"
-                   class="peer sr-only"
-                   <%= "checked" if profile.current_level == value %>>
-            <div class="flex items-center rounded-xl border-2 border-gray-200 p-5 transition
-                        peer-checked:border-indigo-600 peer-checked:bg-indigo-50
-                        hover:border-gray-300 hover:bg-gray-50">
-              <span class="text-3xl mr-4"><%= emoji %></span>
+                   style="position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); border:0;"
+                   <%= "checked" if profile.current_level == value %>
+                   data-action="change->selectable-card#toggle">
+            <div data-card-visual
+                 style="display:flex; align-items:center; padding:1rem 1.1rem; border-radius:12px; border:1.5px solid rgba(28,24,18,0.08); background:#FEFDFB; transition:all 0.2s ease;"
+                 onmouseenter="this.style.boxShadow='0 2px 8px rgba(28,24,18,0.04)'"
+                 onmouseleave="this.style.boxShadow='none'">
+              <span style="font-size:1.6rem; margin-right:0.9rem; flex-shrink:0;"><%= emoji %></span>
               <div>
-                <p class="text-base font-semibold text-gray-900"><%= label %></p>
-                <p class="text-sm text-gray-500"><%= description %></p>
+                <span style="font-family:'DM Sans',sans-serif; font-weight:600; font-size:0.88rem; color:#1C1812; display:block; letter-spacing:-0.2px;"><%= label %></span>
+                <span style="font-family:'DM Sans',sans-serif; font-size:0.75rem; color:#A09889; display:block; margin-top:0.15rem;"><%= description %></span>
               </div>
             </div>
           </label>
         <% end %>
       </div>
 
-      <div class="flex justify-between">
+      <%# === Navigation buttons === %>
+      <div style="display:flex; justify-content:space-between; align-items:center;">
         <%= link_to "← Back", core.onboarding_path(step: "interests"),
-            class: "rounded-lg border border-gray-300 px-8 py-3 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition",
+            style: "font-family:'DM Sans',sans-serif; font-weight:500; font-size:0.82rem; color:#6D665B; text-decoration:none; padding:0.65rem 1.2rem; border-radius:11px; border:1px solid rgba(28,24,18,0.08); transition:all 0.2s ease; display:inline-flex; align-items:center;",
+            onmouseenter: "this.style.borderColor='rgba(28,24,18,0.15)';this.style.color='#1C1812'",
+            onmouseleave: "this.style.borderColor='rgba(28,24,18,0.08)';this.style.color='#6D665B'",
             data: { turbo_frame: "onboarding_step" } %>
         <%= f.submit "Continue →",
-            class: "rounded-lg bg-indigo-600 px-8 py-3 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition cursor-pointer" %>
+            style: "font-family:'DM Sans',sans-serif; font-weight:600; font-size:0.82rem; color:#F5F1EB; background:#2C261E; border:none; border-radius:11px; padding:0.65rem 1.6rem; cursor:pointer; transition:all 0.2s ease; box-shadow:0 1px 3px rgba(28,24,18,0.12),0 1px 2px rgba(28,24,18,0.06); letter-spacing:-0.2px;",
+            onmouseenter: "this.style.boxShadow='0 4px 16px rgba(28,24,18,0.18)';this.style.transform='translateY(-1px)'",
+            onmouseleave: "this.style.boxShadow='0 1px 3px rgba(28,24,18,0.12),0 1px 2px rgba(28,24,18,0.06)';this.style.transform='translateY(0)'" %>
       </div>
     <% end %>
   </div>

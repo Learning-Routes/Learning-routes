@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title><%= content_for(:title) || "Set up your profile — Learning Routes" %></title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="theme-color" content="#F5F1EB">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+
+    <%= yield :head %>
+
+    <link rel="icon" href="/icon.svg" type="image/svg+xml">
+    <link rel="icon" href="/icon.png" type="image/png">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300..700;1,9..40,300..700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+    <%= stylesheet_link_tag "tailwind", "application", "data-turbo-track": "reload" %>
+    <%= javascript_importmap_tags %>
+
+    <style>
+      @keyframes onb-enter { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+      .onb-enter { animation: onb-enter 0.4s ease both; }
+    </style>
+  </head>
+
+  <body style="margin:0; min-height:100vh; font-family:'DM Sans',sans-serif; background:#F5F1EB; color:#1C1812;">
+    <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-[200] focus:px-4 focus:py-2 focus:rounded-lg focus:text-sm focus:font-semibold" style="background:#2C261E; color:#F5F1EB;">Skip to main content</a>
+
+    <%# === Minimal onboarding navbar === %>
+    <nav style="display:flex; align-items:center; justify-content:space-between; padding:1rem clamp(1.5rem,5vw,3rem); max-width:720px; margin:0 auto;">
+      <%= link_to main_app.root_path, style: "display:flex; align-items:center; gap:0.5rem; text-decoration:none;" do %>
+        <%= render "shared/logo", size: 26 %>
+        <span style="font-family:'DM Sans',sans-serif; font-weight:700; font-size:0.88rem; color:#1C1812; letter-spacing:-0.3px;">Learning Routes</span>
+      <% end %>
+
+      <%= link_to "Save & exit", main_app.root_path,
+            style: "font-family:'DM Sans',sans-serif; font-size:0.78rem; font-weight:500; color:#A09889; text-decoration:none; transition:color 0.2s;",
+            onmouseenter: "this.style.color='#1C1812'",
+            onmouseleave: "this.style.color='#A09889'" %>
+    </nav>
+
+    <%# === Flash messages === %>
+    <% if flash[:notice] %>
+      <div role="status" style="max-width:620px; margin:0 auto 0.8rem; padding:0.6rem 0.85rem; border-radius:10px; font-family:'DM Sans',sans-serif; font-size:0.75rem; font-weight:500; background:rgba(91,168,128,0.1); border:1px solid rgba(91,168,128,0.18); color:#3D7A5A;">
+        <%= flash[:notice] %>
+      </div>
+    <% end %>
+    <% if flash[:alert] %>
+      <div role="alert" style="max-width:620px; margin:0 auto 0.8rem; padding:0.6rem 0.85rem; border-radius:10px; font-family:'DM Sans',sans-serif; font-size:0.75rem; font-weight:500; background:rgba(176,96,80,0.08); border:1px solid rgba(176,96,80,0.15); color:#B06050;">
+        <%= flash[:alert] %>
+      </div>
+    <% end %>
+
+    <%# === Main content === %>
+    <main id="main-content" style="max-width:620px; margin:0 auto; padding:0 1.5rem 3rem;">
+      <%= yield %>
+    </main>
+  </body>
+</html>

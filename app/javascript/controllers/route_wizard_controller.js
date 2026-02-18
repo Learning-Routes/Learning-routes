@@ -6,7 +6,11 @@ export default class extends Controller {
     "continueBtn", "btnText", "chips", "navLeft", "bottomHint", "footer",
     "topicInputs", "goalInputs", "levelInput", "paceInput",
     "customInput", "customInputWrap", "topicGrid",
-    "bar0", "bar1", "bar2", "bar3"
+    "bar0", "bar1", "bar2", "bar3", "bar4",
+    "styleAnswer1", "styleAnswer2", "styleAnswer3",
+    "styleAnswer4", "styleAnswer5", "styleAnswer6",
+    "styleProgress", "styleResultCard", "styleResultIcon",
+    "styleResultName", "styleResultDesc", "styleDoneMsg"
   ]
 
   static values = {
@@ -21,7 +25,8 @@ export default class extends Controller {
     this.selectedGoals = new Set()
     this.selectedLevel = ""
     this.selectedPace = ""
-    this.stepLabels = ["Tema", "Nivel", "Objetivo", "Ritmo"]
+    this.styleAnswers = {}
+    this.stepLabels = ["Tema", "Nivel", "Objetivo", "Estilo", "Ritmo"]
     this.isAnimating = false
 
     this.updateUI()
@@ -32,7 +37,7 @@ export default class extends Controller {
     if (this.isAnimating) return
     if (!this.isCurrentStepValid()) return
 
-    if (this.stepValue === 3) {
+    if (this.stepValue === 4) {
       this.formTarget.requestSubmit()
       return
     }
@@ -81,22 +86,21 @@ export default class extends Controller {
     const level = card.dataset.level
     const color = card.dataset.color
 
-    // Deselect all
-    this.stepTargets[1].querySelectorAll("[data-level]").forEach(el => {
-      el.style.background = "#FDFCFA"
-      el.style.borderColor = "rgba(28,24,18,0.06)"
-      const icon = el.querySelector("div:first-child")
-      if (icon) icon.style.background = "rgba(28,24,18,0.02)"
-      const dot = el.querySelector(".wizard-radio-dot")
-      if (dot) {
-        dot.style.transform = "scale(0)"
-        dot.style.background = "transparent"
-      }
-      const ring = dot?.parentElement
-      if (ring) ring.style.borderColor = "rgba(28,24,18,0.1)"
-    })
+    this.stepTargets.find(el => parseInt(el.dataset.step) === 1)
+      .querySelectorAll("[data-level]").forEach(el => {
+        el.style.background = "#FDFCFA"
+        el.style.borderColor = "rgba(28,24,18,0.06)"
+        const icon = el.querySelector("div:first-child")
+        if (icon) icon.style.background = "rgba(28,24,18,0.02)"
+        const dot = el.querySelector(".wizard-radio-dot")
+        if (dot) {
+          dot.style.transform = "scale(0)"
+          dot.style.background = "transparent"
+        }
+        const ring = dot?.parentElement
+        if (ring) ring.style.borderColor = "rgba(28,24,18,0.1)"
+      })
 
-    // Select this one
     card.style.background = color + "08"
     card.style.borderColor = color + "40"
     const icon = card.querySelector("div:first-child")
@@ -138,26 +142,134 @@ export default class extends Controller {
     this.validateStep()
   }
 
+  // ===== LEARNING STYLE TEST =====
+
+  selectStyleAnswer(event) {
+    const card = event.currentTarget
+    const question = card.dataset.question
+    const option = card.dataset.option
+
+    // Deselect all options in this question
+    const questionContainer = card.closest("[data-style-question]")
+    if (questionContainer) {
+      questionContainer.querySelectorAll("[data-option]").forEach(el => {
+        el.style.background = "#FEFDFB"
+        el.style.borderColor = "rgba(28,24,18,0.06)"
+        const text = el.querySelector(".style-option-text")
+        if (text) text.style.fontWeight = "400"
+        const check = el.querySelector(".style-check")
+        if (check) check.style.display = "none"
+      })
+    }
+
+    // Select this option
+    card.style.background = "rgba(139,128,196,0.05)"
+    card.style.borderColor = "rgba(139,128,196,0.3)"
+    const text = card.querySelector(".style-option-text")
+    if (text) text.style.fontWeight = "500"
+    const check = card.querySelector(".style-check")
+    if (check) check.style.display = "flex"
+
+    // Store answer
+    this.styleAnswers[question] = option
+
+    // Update hidden field
+    const target = this[`styleAnswer${question}Target`]
+    if (target) target.value = option
+
+    // Update progress counter
+    this.updateStyleProgress()
+
+    // Auto-scroll to next unanswered question
+    const nextQ = parseInt(question) + 1
+    if (nextQ <= 6 && !this.styleAnswers[String(nextQ)]) {
+      setTimeout(() => {
+        const nextEl = this.element.querySelector(`[data-style-question="${nextQ}"]`)
+        if (nextEl) {
+          nextEl.scrollIntoView({ behavior: "smooth", block: "center" })
+        }
+      }, 150)
+    }
+
+    // Show result preview if all answered
+    if (Object.keys(this.styleAnswers).length === 6) {
+      this.showStyleResult()
+    }
+
+    this.validateStep()
+  }
+
+  updateStyleProgress() {
+    const answered = Object.keys(this.styleAnswers).length
+    if (this.hasStyleProgressTarget) {
+      this.styleProgressTarget.textContent = `${answered} de 6`
+    }
+    if (answered === 6 && this.hasStyleDoneMsgTarget) {
+      this.styleDoneMsgTarget.style.opacity = "1"
+      this.styleDoneMsgTarget.style.transform = "translateY(0)"
+    }
+  }
+
+  showStyleResult() {
+    const scores = { visual: 0, auditory: 0, reading: 0, kinesthetic: 0 }
+    const styleMap = { v: "visual", a: "auditory", r: "reading", k: "kinesthetic" }
+
+    Object.values(this.styleAnswers).forEach(optionId => {
+      const letter = optionId.slice(-1)
+      const style = styleMap[letter]
+      if (style) scores[style]++
+    })
+
+    const sorted = Object.entries(scores).sort((a, b) => b[1] - a[1])
+    let dominant = sorted[0][0]
+    if (sorted[0][1] === sorted[1][1]) dominant = "multimodal"
+
+    const styleData = {
+      visual:      { emoji: "🎬", name: "Visual",       desc: "Aprendes mejor con imágenes, videos y diagramas" },
+      auditory:    { emoji: "🎧", name: "Auditivo",     desc: "Aprendes mejor escuchando explicaciones y discusiones" },
+      reading:     { emoji: "📖", name: "Lectura",      desc: "Aprendes mejor leyendo y tomando notas" },
+      kinesthetic: { emoji: "🔧", name: "Kinestésico",  desc: "Aprendes mejor practicando y experimentando" },
+      multimodal:  { emoji: "🧩", name: "Multimodal",   desc: "Combinas varios estilos — eres versátil" }
+    }
+
+    const info = styleData[dominant] || styleData.multimodal
+
+    if (this.hasStyleResultCardTarget) {
+      this.styleResultCardTarget.style.display = "block"
+      setTimeout(() => {
+        this.styleResultCardTarget.style.opacity = "1"
+        this.styleResultCardTarget.style.transform = "translateY(0)"
+      }, 50)
+    }
+    if (this.hasStyleResultIconTarget) this.styleResultIconTarget.textContent = info.emoji
+    if (this.hasStyleResultNameTarget) this.styleResultNameTarget.textContent = info.name
+    if (this.hasStyleResultDescTarget) this.styleResultDescTarget.textContent = info.desc
+
+    this.dominantStyle = dominant
+    this.dominantStyleData = info
+  }
+
+  // ===== PACE =====
+
   selectPace(event) {
     const card = event.currentTarget
     const pace = card.dataset.pace
     const color = card.dataset.color
 
-    // Deselect all
-    this.stepTargets[3].querySelectorAll("[data-pace]").forEach(el => {
-      el.style.background = "#FDFCFA"
-      el.style.borderColor = "rgba(28,24,18,0.06)"
-      const icon = el.querySelector("div:first-child")
-      if (icon) icon.style.background = "rgba(28,24,18,0.02)"
-      const badge = el.querySelector(".wizard-time-badge")
-      if (badge) {
-        badge.style.color = "#9E9587"
-        badge.style.opacity = "0.5"
-        badge.style.background = "rgba(28,24,18,0.02)"
-      }
-    })
+    this.stepTargets.find(el => parseInt(el.dataset.step) === 4)
+      .querySelectorAll("[data-pace]").forEach(el => {
+        el.style.background = "#FDFCFA"
+        el.style.borderColor = "rgba(28,24,18,0.06)"
+        const icon = el.querySelector("div:first-child")
+        if (icon) icon.style.background = "rgba(28,24,18,0.02)"
+        const badge = el.querySelector(".wizard-time-badge")
+        if (badge) {
+          badge.style.color = "#9E9587"
+          badge.style.opacity = "0.5"
+          badge.style.background = "rgba(28,24,18,0.02)"
+        }
+      })
 
-    // Select this one
     card.style.background = color + "08"
     card.style.borderColor = color + "40"
     const icon = card.querySelector("div:first-child")
@@ -216,6 +328,8 @@ export default class extends Controller {
       case 2:
         return this.selectedGoals.size > 0
       case 3:
+        return Object.keys(this.styleAnswers).length === 6
+      case 4:
         return this.selectedPace !== ""
       default:
         return false
@@ -241,7 +355,7 @@ export default class extends Controller {
     }
 
     if (this.hasBtnTextTarget) {
-      this.btnTextTarget.textContent = this.stepValue === 3 ? "Generar ruta" : "Continuar"
+      this.btnTextTarget.textContent = this.stepValue === 4 ? "Generar ruta" : "Continuar"
     }
   }
 
@@ -249,7 +363,6 @@ export default class extends Controller {
     const step = this.stepValue
     const labels = this.stepLabels
 
-    // Step label
     if (this.hasStepLabelTarget) {
       this.stepLabelTarget.textContent = `Paso ${step + 1}`
     }
@@ -257,11 +370,11 @@ export default class extends Controller {
       this.stepNameTarget.textContent = `— ${labels[step]}`
     }
     if (this.hasPercentLabelTarget) {
-      this.percentLabelTarget.textContent = `${(step + 1) * 25}%`
+      this.percentLabelTarget.textContent = `${(step + 1) * 20}%`
     }
 
-    // Progress bars
-    const bars = [this.bar0Target, this.bar1Target, this.bar2Target, this.bar3Target]
+    // Progress bars — 5 segments
+    const bars = [this.bar0Target, this.bar1Target, this.bar2Target, this.bar3Target, this.bar4Target]
     bars.forEach((bar, i) => {
       if (i < step) {
         bar.style.width = "100%"
@@ -277,7 +390,6 @@ export default class extends Controller {
       }
     })
 
-    // Nav left: logo on step 0, back button on steps 1+
     if (this.hasNavLeftTarget) {
       if (step === 0) {
         this.navLeftTarget.innerHTML = `
@@ -293,7 +405,6 @@ export default class extends Controller {
       }
     }
 
-    // Chips
     if (this.hasChipsTarget) {
       this.updateChips()
     }
@@ -321,7 +432,6 @@ export default class extends Controller {
       advanced: "🏔️ Avanzado"
     }
 
-    // Show selected topics (max 2)
     let count = 0
     this.selectedTopics.forEach(t => {
       if (count < 2) {
@@ -333,15 +443,18 @@ export default class extends Controller {
       this.addChip(chips, `+${this.selectedTopics.size - 2}`)
     }
 
-    // Custom topic
     const custom = this.customInputTarget.value.trim()
     if (custom) {
       this.addChip(chips, `✏️ ${custom.substring(0, 15)}${custom.length > 15 ? "…" : ""}`)
     }
 
-    // Level (on steps 2+)
     if (this.stepValue >= 2 && this.selectedLevel) {
       this.addChip(chips, levelLabels[this.selectedLevel] || this.selectedLevel)
+    }
+
+    // Show learning style chip on steps 4+
+    if (this.stepValue >= 4 && this.dominantStyleData) {
+      this.addChip(chips, `${this.dominantStyleData.emoji} ${this.dominantStyleData.name}`)
     }
   }
 
@@ -362,7 +475,6 @@ export default class extends Controller {
       return
     }
 
-    // Animate out
     fromEl.style.transition = "opacity 0.2s ease, transform 0.2s ease"
     fromEl.style.opacity = "0"
     fromEl.style.transform = `translateX(${-20 * direction}px)`
@@ -373,7 +485,6 @@ export default class extends Controller {
       fromEl.style.opacity = ""
       fromEl.style.transform = ""
 
-      // Show target
       toEl.style.display = "block"
       toEl.style.opacity = "0"
       toEl.style.transform = `translateX(${20 * direction}px)`

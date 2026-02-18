@@ -27,6 +27,21 @@ class ProfilesController < ApplicationController
     @assessment_results = Assessments::AssessmentResult.for_user(@user)
     @avg_accuracy = @assessment_results.any? ? @assessment_results.average(:score).to_f.round(1) : 0
 
+    # Per-route stats for route cards
+    route_ids = @routes.map(&:id)
+    study_minutes_by_route = Analytics::StudySession.for_user(@user)
+                               .where(learning_route_id: route_ids)
+                               .group(:learning_route_id)
+                               .sum(:duration_minutes)
+    @route_stats = {}
+    @routes.each do |r|
+      @route_stats[r.id] = {
+        study_minutes: study_minutes_by_route[r.id] || 0,
+        lessons_completed: r.route_steps.count(&:completed?),
+        accuracy: @avg_accuracy
+      }
+    end
+
     # XP calculation (10 per completed step, 25 per passed assessment, 1 per study minute)
     passed_assessments = @assessment_results.passed.count
     @xp = (@total_steps_completed * 10) + (passed_assessments * 25) + @study_minutes

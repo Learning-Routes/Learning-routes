@@ -8,7 +8,7 @@ Rails.application.routes.draw do
   mount Analytics::Engine => "/analytics", as: "analytics"
 
   # Dashboard
-  get "dashboard", to: "dashboard#show", as: :dashboard
+  get "dashboard", to: redirect("/profile"), as: :dashboard
 
   # Profile
   get "profile", to: "profiles#show", as: :profile

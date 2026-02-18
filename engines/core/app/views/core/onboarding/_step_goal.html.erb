@@ -1,45 +1,61 @@
 <%= turbo_frame_tag "onboarding_step" do %>
-  <div>
-    <div class="text-center mb-8">
-      <h2 class="text-2xl font-bold text-gray-900">What's your goal?</h2>
-      <p class="mt-2 text-gray-600">Tell us what you want to achieve</p>
+  <div data-controller="selectable-card">
+    <%# === Heading === %>
+    <div style="text-align:center; margin-bottom:2rem;">
+      <h2 style="font-family:'DM Sans',sans-serif; font-weight:600; font-size:1.5rem; color:#1C1812; letter-spacing:-0.5px; margin:0 0 0.5rem;">
+        <em style="font-style:italic;">What's your goal?</em>
+      </h2>
+      <p style="font-family:'DM Sans',sans-serif; font-size:0.85rem; color:#6D665B; margin:0;">
+        Tell us what you want to achieve and your timeline.
+      </p>
     </div>
 
     <%= form_with(url: core.onboarding_update_step_path(step: "goal"), method: :patch, data: { turbo_frame: "onboarding_step" }) do |f| %>
       <% if profile.errors.any? %>
-        <div role="alert" class="mb-4 rounded-lg bg-red-50 border border-red-200 p-3">
+        <div role="alert" style="margin-bottom:1rem; padding:0.6rem 0.85rem; border-radius:10px; background:rgba(176,96,80,0.08); border:1px solid rgba(176,96,80,0.15);">
           <% profile.errors.full_messages.each do |msg| %>
-            <p class="text-sm text-red-600"><%= msg %></p>
+            <p style="font-family:'DM Sans',sans-serif; font-size:0.75rem; font-weight:500; color:#B06050; margin:0;"><%= msg %></p>
           <% end %>
         </div>
       <% end %>
 
-      <div class="space-y-5 mb-8">
+      <div style="display:flex; flex-direction:column; gap:1.3rem; margin-bottom:2rem;">
+        <%# === Goal textarea === %>
         <div>
-          <label for="goal_textarea" class="block text-sm font-medium text-gray-700 mb-1">Your learning goal</label>
+          <label for="goal_textarea" style="font-family:'DM Sans',sans-serif; font-size:0.78rem; font-weight:500; color:#6D665B; margin-bottom:0.4rem; display:block;">
+            Your learning goal
+          </label>
           <textarea name="goal" id="goal_textarea" rows="3"
-                    class="w-full rounded-lg border border-gray-300 px-4 py-3 text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none transition resize-none"
+                    style="width:100%; padding:0.7rem 0.9rem; border-radius:10px; border:1.5px solid rgba(28,24,18,0.1); background:white; font-family:'DM Sans',sans-serif; font-size:0.85rem; color:#1C1812; outline:none; transition:border-color 0.2s, box-shadow 0.2s; resize:none; box-sizing:border-box; line-height:1.6;"
                     placeholder="e.g., I want to learn Python well enough to build web applications..."
+                    onfocus="this.style.borderColor='rgba(28,24,18,0.22)';this.style.boxShadow='0 0 0 3px rgba(28,24,18,0.05)'"
+                    onblur="this.style.borderColor='rgba(28,24,18,0.1)';this.style.boxShadow='none'"
                     required><%= profile.goal %></textarea>
+          <span style="font-family:'DM Sans',sans-serif; font-size:0.65rem; color:#CCC5B8; margin-top:0.3rem; display:block; text-align:right;">Max 500 characters</span>
         </div>
 
+        <%# === Timeline === %>
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-3">Timeline</label>
-          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <label style="font-family:'DM Sans',sans-serif; font-size:0.78rem; font-weight:500; color:#6D665B; margin-bottom:0.5rem; display:block;">
+            Timeline
+          </label>
+          <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:0.5rem;">
             <% [
               ["1 month", "1_month"],
               ["3 months", "3_months"],
               ["6 months", "6_months"],
               ["1 year", "1_year"]
             ].each do |label, value| %>
-              <label class="relative cursor-pointer block">
+              <label style="cursor:pointer; display:block;" data-selectable-card-target="card">
                 <input type="radio" name="timeline" value="<%= value %>"
-                       class="peer sr-only"
-                       <%= "checked" if profile.timeline == value %>>
-                <div class="flex items-center justify-center rounded-xl border-2 border-gray-200 py-3 px-4 transition text-center
-                            peer-checked:border-indigo-600 peer-checked:bg-indigo-50
-                            hover:border-gray-300 hover:bg-gray-50">
-                  <span class="text-sm font-medium text-gray-700"><%= label %></span>
+                       style="position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); border:0;"
+                       <%= "checked" if profile.timeline == value %>
+                       data-action="change->selectable-card#toggle">
+                <div data-card-visual
+                     style="padding:0.6rem; border-radius:10px; border:1.5px solid rgba(28,24,18,0.08); background:#FEFDFB; text-align:center; transition:all 0.2s ease;"
+                     onmouseenter="this.style.boxShadow='0 2px 6px rgba(28,24,18,0.04)'"
+                     onmouseleave="this.style.boxShadow='none'">
+                  <span style="font-family:'DM Sans',sans-serif; font-weight:500; font-size:0.78rem; color:#1C1812;"><%= label %></span>
                 </div>
               </label>
             <% end %>
@@ -47,13 +63,23 @@
         </div>
       </div>
 
-      <div class="flex justify-between">
+      <%# === Navigation buttons === %>
+      <div style="display:flex; justify-content:space-between; align-items:center;">
         <%= link_to "← Back", core.onboarding_path(step: "learning_style"),
-            class: "rounded-lg border border-gray-300 px-8 py-3 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition",
+            style: "font-family:'DM Sans',sans-serif; font-weight:500; font-size:0.82rem; color:#6D665B; text-decoration:none; padding:0.65rem 1.2rem; border-radius:11px; border:1px solid rgba(28,24,18,0.08); transition:all 0.2s ease; display:inline-flex; align-items:center;",
+            onmouseenter: "this.style.borderColor='rgba(28,24,18,0.15)';this.style.color='#1C1812'",
+            onmouseleave: "this.style.borderColor='rgba(28,24,18,0.08)';this.style.color='#6D665B'",
             data: { turbo_frame: "onboarding_step" } %>
         <%= f.submit "Finish setup ✓",
-            class: "rounded-lg bg-green-600 px-8 py-3 text-sm font-semibold text-white shadow-sm hover:bg-green-500 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition cursor-pointer" %>
+            style: "font-family:'DM Sans',sans-serif; font-weight:600; font-size:0.82rem; color:#F5F1EB; background:#5BA880; border:none; border-radius:11px; padding:0.65rem 1.6rem; cursor:pointer; transition:all 0.2s ease; box-shadow:0 1px 3px rgba(91,168,128,0.2),0 1px 2px rgba(91,168,128,0.1); letter-spacing:-0.2px;",
+            onmouseenter: "this.style.boxShadow='0 4px 16px rgba(91,168,128,0.25)';this.style.transform='translateY(-1px)'",
+            onmouseleave: "this.style.boxShadow='0 1px 3px rgba(91,168,128,0.2),0 1px 2px rgba(91,168,128,0.1)';this.style.transform='translateY(0)'" %>
       </div>
     <% end %>
+
+    <%# === Footer help text === %>
+    <p style="font-family:'DM Sans',sans-serif; font-size:0.72rem; color:#A09889; text-align:center; margin:1.5rem 0 0;">
+      Almost done — your personalized learning route will be generated next
+    </p>
   </div>
 <% end %>

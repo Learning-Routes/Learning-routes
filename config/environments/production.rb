@@ -58,7 +58,7 @@ Rails.application.configure do
   # config.action_mailer.raise_delivery_errors = false
 
   # Set host to be used by links generated in mailer templates.
-  config.action_mailer.default_url_options = { host: "learning-routes.com" }
+  config.action_mailer.default_url_options = { host: "learningroutes.com" }
 
   # Specify outgoing SMTP server. Remember to add smtp/* credentials via bin/rails credentials:edit.
   # config.action_mailer.smtp_settings = {
@@ -81,8 +81,8 @@ Rails.application.configure do
 
   # Enable DNS rebinding protection and other `Host` header attacks.
   config.hosts = [
-    "learning-routes.com",
-    /.*\.learning-routes\.com/
+    "learningroutes.com",
+    /.*\.learningroutes\.com/
   ]
 
   # Skip DNS rebinding protection for the default health check endpoint.
