@@ -34,8 +34,22 @@ RUN apt-get update -qq && \
     rm -rf /var/lib/apt/lists /var/cache/apt/archives
 
 # Install application gems
-COPY vendor/* ./vendor/
+COPY vendor/ ./vendor/
 COPY Gemfile Gemfile.lock ./
+
+# Copy engine gemspecs so bundle install can resolve local path dependencies
+COPY engines/core/core.gemspec engines/core/
+COPY engines/core/lib/core/version.rb engines/core/lib/core/
+COPY engines/learning_routes_engine/learning_routes_engine.gemspec engines/learning_routes_engine/
+COPY engines/learning_routes_engine/lib/learning_routes_engine/version.rb engines/learning_routes_engine/lib/learning_routes_engine/
+COPY engines/content_engine/content_engine.gemspec engines/content_engine/
+COPY engines/content_engine/lib/content_engine/version.rb engines/content_engine/lib/content_engine/
+COPY engines/assessments/assessments.gemspec engines/assessments/
+COPY engines/assessments/lib/assessments/version.rb engines/assessments/lib/assessments/
+COPY engines/ai_orchestrator/ai_orchestrator.gemspec engines/ai_orchestrator/
+COPY engines/ai_orchestrator/lib/ai_orchestrator/version.rb engines/ai_orchestrator/lib/ai_orchestrator/
+COPY engines/analytics/analytics.gemspec engines/analytics/
+COPY engines/analytics/lib/analytics/version.rb engines/analytics/lib/analytics/
 
 RUN bundle install && \
     rm -rf ~/.bundle/ "${BUNDLE_PATH}"/ruby/*/cache "${BUNDLE_PATH}"/ruby/*/bundler/gems/*/.git && \

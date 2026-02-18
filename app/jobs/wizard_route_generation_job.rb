@@ -17,6 +17,10 @@ class WizardRouteGenerationJob < ApplicationJob
         p.interests = request.topics
       end
 
+      # Extract learning style data
+      style_result = request.learning_style_result || {}
+      content_mix = style_result["content_mix"] || { "video" => 25, "audio" => 25, "text" => 25, "interactive" => 25 }
+
       ActiveRecord::Base.transaction do
         route = LearningRoutesEngine::LearningRoute.create!(
           learning_profile: profile,
@@ -31,9 +35,18 @@ class WizardRouteGenerationJob < ApplicationJob
             custom_topic: request.custom_topic,
             level: request.level,
             goals: request.goals,
-            pace: request.pace
+            pace: request.pace,
+            learning_style: style_result["dominant"]
+          },
+          content_preferences: {
+            primary_style: style_result["dominant"],
+            secondary_style: style_result["secondary"],
+            content_mix: content_mix
           }
         )
+
+        # Assign delivery formats based on learning style scores
+        delivery_formats = assign_delivery_formats(route_data[:steps].length, content_mix)
 
         route_data[:steps].each_with_index do |step_data, index|
           route.route_steps.create!(
@@ -44,6 +57,7 @@ class WizardRouteGenerationJob < ApplicationJob
             content_type: :lesson,
             status: index == 0 ? :available : :locked,
             estimated_minutes: step_data[:estimated_minutes] || 30,
+            delivery_format: delivery_formats[index] || "mixed",
             metadata: { satellite_topics: step_data[:topics] }
           )
         end
@@ -89,6 +103,27 @@ class WizardRouteGenerationJob < ApplicationJob
     when 4, 5 then :nv3
     else :nv1
     end
+  end
+
+  # Distribute delivery format types across steps based on learning style percentages
+  def assign_delivery_formats(step_count, content_mix)
+    video_pct = (content_mix["video"] || content_mix[:video] || 25).to_f
+    audio_pct = (content_mix["audio"] || content_mix[:audio] || 25).to_f
+    text_pct = (content_mix["text"] || content_mix[:text] || 25).to_f
+    interactive_pct = (content_mix["interactive"] || content_mix[:interactive] || 25).to_f
+
+    pool = []
+    pool += Array.new((video_pct / 100.0 * step_count).round, "video")
+    pool += Array.new((audio_pct / 100.0 * step_count).round, "audio")
+    pool += Array.new((text_pct / 100.0 * step_count).round, "text")
+    pool += Array.new((interactive_pct / 100.0 * step_count).round, "interactive")
+
+    # Fill remainder with "mixed"
+    pool << "mixed" while pool.length < step_count
+    # Trim excess
+    pool = pool.first(step_count)
+
+    pool.shuffle
   end
 
   def generate_fallback_route(request)

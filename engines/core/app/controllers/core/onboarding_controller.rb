@@ -1,15 +1,19 @@
 module Core
   class OnboardingController < ApplicationController
+    layout "onboarding"
+
     before_action :authenticate_user!
     before_action :redirect_if_onboarded, except: :complete
     before_action :set_or_build_profile
 
     STEPS = %w[interests level learning_style goal].freeze
+    STEP_LABELS = { "interests" => "Topic", "level" => "Level", "learning_style" => "Style", "goal" => "Goal" }.freeze
 
     def show
       @step = current_step
       @step_number = STEPS.index(@step) + 1
       @total_steps = STEPS.size
+      @step_label = STEP_LABELS[@step]
       return render partial: "core/onboarding/step_#{@step}", locals: { profile: @profile } if turbo_frame_request?
     end
 
@@ -70,7 +74,7 @@ module Core
     def complete
       current_user.complete_onboarding!
       RouteGenerationPlaceholderJob.perform_later(current_user.id) if defined?(RouteGenerationPlaceholderJob)
-      redirect_to main_app.dashboard_path, notice: "Welcome aboard! We're creating your personalized learning route."
+      redirect_to main_app.profile_path, notice: "Welcome aboard! We're creating your personalized learning route."
     end
 
     private
@@ -92,11 +96,12 @@ module Core
     def render_step_error
       @step_number = STEPS.index(@step) + 1
       @total_steps = STEPS.size
+      @step_label = STEP_LABELS[@step]
       render partial: "core/onboarding/step_#{@step}", locals: { profile: @profile }, status: :unprocessable_entity
     end
 
     def redirect_if_onboarded
-      redirect_to main_app.dashboard_path if current_user.onboarding_completed?
+      redirect_to main_app.profile_path if current_user.onboarding_completed?
     end
   end
 end

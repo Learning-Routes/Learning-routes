@@ -1,19 +1,19 @@
 <%= form_with model: route_request, url: create_route_wizard_path, data: { turbo: true, route_wizard_target: "form" } do |f| %>
 
-  <%# === Step Progress Indicator === %>
+  <%# === Step Progress Indicator — 5 steps === %>
   <div style="max-width:560px; width:100%; margin-bottom:10px;" data-route-wizard-target="stepBar">
     <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
       <div style="display:flex; gap:4px; align-items:center;">
         <span data-route-wizard-target="stepLabel" style="font-family:'DM Mono',monospace; font-weight:500; font-size:0.62rem; color:#1C1812;">Paso 1</span>
-        <span style="font-family:'DM Mono',monospace; font-size:0.62rem; color:#D4CFC5;">de 4</span>
+        <span style="font-family:'DM Mono',monospace; font-size:0.62rem; color:#D4CFC5;">de 5</span>
         <span data-route-wizard-target="stepName" style="font-family:'DM Sans',sans-serif; font-weight:400; font-size:0.65rem; color:#9E9587; margin-left:8px;">— Tema</span>
       </div>
-      <span data-route-wizard-target="percentLabel" style="font-family:'DM Mono',monospace; font-size:0.6rem; color:#9E9587;">25%</span>
+      <span data-route-wizard-target="percentLabel" style="font-family:'DM Mono',monospace; font-size:0.6rem; color:#9E9587;">20%</span>
     </div>
     <div style="display:flex; gap:6px;">
-      <% 4.times do |i| %>
+      <% 5.times do |i| %>
         <div style="flex:1; height:3px; border-radius:2px; background:rgba(28,24,18,0.05); overflow:hidden;">
-          <div data-route-wizard-target="bar<%= i %>" style="height:100%; width:<%= i == 0 ? '50%' : '0%' %>; opacity:<%= i == 0 ? '0.7' : '0' %>; background:<%= i == 0 ? '#5BA880' : '#5BA880' %>; border-radius:2px; transition:width 0.6s cubic-bezier(0.16,1,0.3,1), opacity 0.4s;"></div>
+          <div data-route-wizard-target="bar<%= i %>" style="height:100%; width:<%= i == 0 ? '50%' : '0%' %>; opacity:<%= i == 0 ? '0.7' : '0' %>; background:#5BA880; border-radius:2px; transition:width 0.6s cubic-bezier(0.16,1,0.3,1), opacity 0.4s;"></div>
         </div>
       <% end %>
     </div>
@@ -52,18 +52,11 @@
         <% end %>
       </div>
 
-      <%# Custom topic input %>
       <div>
         <div style="font-family:'DM Sans',sans-serif; font-weight:600; font-size:0.72rem; color:#1C1812; margin-bottom:8px;">O escribe algo específico</div>
         <div style="display:flex; align-items:center; gap:10px; padding:12px 16px; border-radius:12px; background:#FDFCFA; border:1.5px solid rgba(28,24,18,0.06); transition:border-color 0.3s;" data-route-wizard-target="customInputWrap">
           <span style="font-size:0.9rem; opacity:0.4;">✏️</span>
-          <input type="text"
-                 name="route_request[custom_topic]"
-                 placeholder="Ej: Machine Learning, Guitarra, Cocina…"
-                 data-action="input->route-wizard#updateCustomTopic"
-                 data-route-wizard-target="customInput"
-                 style="flex:1; border:none; outline:none; background:none; font-family:'DM Sans',sans-serif; font-size:0.82rem; color:#1C1812;"
-                 autocomplete="off">
+          <input type="text" name="route_request[custom_topic]" placeholder="Ej: Machine Learning, Guitarra, Cocina…" data-action="input->route-wizard#updateCustomTopic" data-route-wizard-target="customInput" style="flex:1; border:none; outline:none; background:none; font-family:'DM Sans',sans-serif; font-size:0.82rem; color:#1C1812;" autocomplete="off">
         </div>
       </div>
 
@@ -84,10 +77,7 @@
           { id: "intermediate", label: "Intermedio", desc: "Cómodo con los conceptos clave", emoji: "🌳", color: "#8B80C4" },
           { id: "advanced", label: "Avanzado", desc: "Busco dominar los detalles", emoji: "🏔️", color: "#B09848" }
         ].each do |level| %>
-          <div data-action="click->route-wizard#selectLevel"
-               data-level="<%= level[:id] %>"
-               data-color="<%= level[:color] %>"
-               style="display:flex; align-items:center; gap:16px; padding:18px 20px; border-radius:14px; cursor:pointer; background:#FDFCFA; border:1.5px solid rgba(28,24,18,0.06); transition:all 0.3s cubic-bezier(0.16,1,0.3,1);">
+          <div data-action="click->route-wizard#selectLevel" data-level="<%= level[:id] %>" data-color="<%= level[:color] %>" style="display:flex; align-items:center; gap:16px; padding:18px 20px; border-radius:14px; cursor:pointer; background:#FDFCFA; border:1.5px solid rgba(28,24,18,0.06); transition:all 0.3s cubic-bezier(0.16,1,0.3,1);">
             <div style="width:44px; height:44px; border-radius:12px; background:rgba(28,24,18,0.02); display:flex; align-items:center; justify-content:center; font-size:1.3rem; transition:background 0.3s;"><%= level[:emoji] %></div>
             <div style="flex:1;">
               <div style="font-family:'DM Sans',sans-serif; font-weight:600; font-size:0.88rem; color:#1C1812;"><%= level[:label] %></div>
@@ -99,7 +89,6 @@
           </div>
         <% end %>
       </div>
-
       <input type="hidden" name="route_request[level]" value="" data-route-wizard-target="levelInput">
     </div>
 
@@ -119,9 +108,7 @@
           { id: "switch", label: "Cambio de carrera", emoji: "🔄" },
           { id: "teaching", label: "Enseñar a otros", emoji: "👥" }
         ].each do |goal| %>
-          <div data-action="click->route-wizard#toggleGoal"
-               data-goal="<%= goal[:id] %>"
-               style="display:flex; align-items:center; gap:12px; padding:16px 18px; border-radius:12px; cursor:pointer; background:#FDFCFA; border:1.5px solid rgba(28,24,18,0.06); transition:all 0.3s cubic-bezier(0.16,1,0.3,1);">
+          <div data-action="click->route-wizard#toggleGoal" data-goal="<%= goal[:id] %>" style="display:flex; align-items:center; gap:12px; padding:16px 18px; border-radius:12px; cursor:pointer; background:#FDFCFA; border:1.5px solid rgba(28,24,18,0.06); transition:all 0.3s cubic-bezier(0.16,1,0.3,1);">
             <span style="font-size:1.2rem;"><%= goal[:emoji] %></span>
             <span style="font-family:'DM Sans',sans-serif; font-weight:500; font-size:0.82rem; color:#1C1812; flex:1;"><%= goal[:label] %></span>
             <div class="wizard-goal-check" style="display:none; margin-left:auto;">
@@ -130,14 +117,137 @@
           </div>
         <% end %>
       </div>
-
       <div data-route-wizard-target="goalInputs"></div>
     </div>
 
     <%# ============================================================ %>
-    <%# STEP 3 — RITMO %>
+    <%# STEP 3 — ESTILO DE APRENDIZAJE (MINI-TEST VARK) %>
     <%# ============================================================ %>
     <div data-route-wizard-target="step" data-step="3" style="display:none;">
+
+      <%# Header %>
+      <div style="margin-bottom:28px;">
+        <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
+          <span style="font-family:'DM Mono',monospace; font-size:0.55rem; font-weight:600; color:#8B80C4; text-transform:uppercase; letter-spacing:0.12em; background:rgba(139,128,196,0.08); padding:3px 10px; border-radius:6px;">MINI-TEST</span>
+          <span data-route-wizard-target="styleDoneMsg" style="font-family:'DM Sans',sans-serif; font-size:0.72rem; font-weight:500; color:#5BA880; opacity:0; transform:translateY(4px); transition:opacity 0.4s ease 0.2s, transform 0.4s ease 0.2s;">✓ Todas respondidas</span>
+        </div>
+        <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:12px;">
+          <div>
+            <h2 style="font-family:'DM Sans',sans-serif; font-weight:700; font-size:1.5rem; letter-spacing:-0.7px; color:#1C1812; margin:0 0 6px;">¿Cómo aprendes mejor?</h2>
+            <p style="font-family:'DM Sans',sans-serif; font-weight:400; font-size:0.82rem; color:#A09889; margin:0;">Responde rápido — no hay respuestas correctas.</p>
+          </div>
+          <span data-route-wizard-target="styleProgress" style="font-family:'DM Mono',monospace; font-size:0.68rem; color:#5BA880; white-space:nowrap; padding-top:4px;">0 de 6</span>
+        </div>
+      </div>
+
+      <%# Questions Container %>
+      <div style="display:flex; flex-direction:column; gap:24px;">
+        <%
+          style_questions = [
+            { id: 1, scenario: "Necesitas aprender a usar un software nuevo para el trabajo.",
+              options: [
+                { id: "1v", text: "Busco un video tutorial en YouTube", style: "visual", icon: "🎬" },
+                { id: "1a", text: "Le pido a un compañero que me explique paso a paso", style: "auditory", icon: "🗣️" },
+                { id: "1r", text: "Leo la documentación o un manual escrito", style: "reading", icon: "📖" },
+                { id: "1k", text: "Abro el programa y empiezo a explorar por mi cuenta", style: "kinesthetic", icon: "🖱️" }
+              ] },
+            { id: 2, scenario: "Estás planeando un viaje a un lugar que no conoces.",
+              options: [
+                { id: "2v", text: "Miro mapas, fotos y videos del destino", style: "visual", icon: "🗺️" },
+                { id: "2a", text: "Escucho podcasts o recomendaciones de amigos", style: "auditory", icon: "🎧" },
+                { id: "2r", text: "Leo blogs, guías y reseñas escritas", style: "reading", icon: "📝" },
+                { id: "2k", text: "Prefiero improvisar y descubrir el lugar caminando", style: "kinesthetic", icon: "🚶" }
+              ] },
+            { id: 3, scenario: "Tienes que recordar información importante para un examen.",
+              options: [
+                { id: "3v", text: "Hago diagramas, mapas mentales o esquemas con colores", style: "visual", icon: "🎨" },
+                { id: "3a", text: "Repito la información en voz alta o me la explico a mí mismo", style: "auditory", icon: "🔊" },
+                { id: "3r", text: "Reescribo mis notas y hago resúmenes", style: "reading", icon: "✍️" },
+                { id: "3k", text: "Creo ejemplos prácticos o asocio con experiencias reales", style: "kinesthetic", icon: "🧪" }
+              ] },
+            { id: 4, scenario: "Alguien te está explicando un concepto difícil. ¿Qué te ayudaría más?",
+              options: [
+                { id: "4v", text: "Que me dibuje un diagrama o me muestre una imagen", style: "visual", icon: "📊" },
+                { id: "4a", text: "Que me lo explique con calma, usando analogías habladas", style: "auditory", icon: "💬" },
+                { id: "4r", text: "Que me lo escriba o me pase un artículo para leer", style: "reading", icon: "📄" },
+                { id: "4k", text: "Que me deje intentarlo yo con un ejemplo real", style: "kinesthetic", icon: "🔧" }
+              ] },
+            { id: 5, scenario: "Quieres aprender a cocinar un plato nuevo.",
+              options: [
+                { id: "5v", text: "Veo un video de la receta paso a paso", style: "visual", icon: "📹" },
+                { id: "5a", text: "Escucho a alguien explicarme cómo hacerlo mientras cocino", style: "auditory", icon: "👨‍🍳" },
+                { id: "5r", text: "Sigo una receta escrita con ingredientes y pasos", style: "reading", icon: "📋" },
+                { id: "5k", text: "Voy directo a la cocina y experimento con los ingredientes", style: "kinesthetic", icon: "🍳" }
+              ] },
+            { id: 6, scenario: "Compraste un mueble que hay que armar. ¿Cómo lo resuelves?",
+              options: [
+                { id: "6v", text: "Miro los diagramas y figuras del instructivo", style: "visual", icon: "📐" },
+                { id: "6a", text: "Llamo a alguien que me guíe por teléfono mientras armo", style: "auditory", icon: "📞" },
+                { id: "6r", text: "Leo las instrucciones escritas paso a paso", style: "reading", icon: "📑" },
+                { id: "6k", text: "Ignoro las instrucciones y empiezo a armar por intuición", style: "kinesthetic", icon: "🔨" }
+              ] }
+          ]
+        %>
+
+        <% style_questions.each_with_index do |q, qi| %>
+          <%# Separator between questions %>
+          <% if qi > 0 %>
+            <div style="height:1px; background:rgba(28,24,18,0.04); margin:4px 0;"></div>
+          <% end %>
+
+          <div data-style-question="<%= q[:id] %>">
+            <div style="font-family:'DM Mono',monospace; font-size:0.6rem; font-weight:500; color:#CCC5B8; margin-bottom:6px;"><%= q[:id].to_s.rjust(2, '0') %></div>
+            <div style="font-family:'DM Sans',sans-serif; font-weight:500; font-size:0.88rem; color:#1C1812; line-height:1.5; margin-bottom:12px;"><%= q[:scenario] %></div>
+
+            <div style="display:grid; grid-template-columns:repeat(2, 1fr); gap:8px;">
+              <% q[:options].each do |opt| %>
+                <div data-action="click->route-wizard#selectStyleAnswer"
+                     data-question="<%= q[:id] %>"
+                     data-option="<%= opt[:id] %>"
+                     data-style="<%= opt[:style] %>"
+                     tabindex="0"
+                     role="radio"
+                     aria-label="<%= opt[:text] %>"
+                     style="display:flex; align-items:center; gap:10px; padding:12px 14px; border-radius:12px; cursor:pointer; background:#FEFDFB; border:1.5px solid rgba(28,24,18,0.06); transition:all 0.25s cubic-bezier(0.16,1,0.3,1);"
+                     onmouseenter="if(!this.querySelector('.style-check')?.style.display?.includes('flex')){this.style.borderColor='rgba(28,24,18,0.12)';this.style.transform='translateY(-1px)'}"
+                     onmouseleave="if(!this.querySelector('.style-check')?.style.display?.includes('flex')){this.style.borderColor='rgba(28,24,18,0.06)';this.style.transform='translateY(0)'}"
+                     onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click()}">
+                  <span style="font-size:1.1rem; flex-shrink:0;"><%= opt[:icon] %></span>
+                  <span class="style-option-text" style="font-family:'DM Sans',sans-serif; font-weight:400; font-size:0.76rem; color:#1C1812; flex:1;"><%= opt[:text] %></span>
+                  <div class="style-check" style="display:none; align-items:center; justify-content:center; width:16px; height:16px; flex-shrink:0;">
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                      <circle cx="8" cy="8" r="8" fill="#8B80C4"/>
+                      <path d="M4.5 8.5L7 11L11.5 5.5" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                  </div>
+                </div>
+              <% end %>
+            </div>
+          </div>
+        <% end %>
+      </div>
+
+      <%# Hidden fields for style answers %>
+      <% (1..6).each do |i| %>
+        <input type="hidden" name="route_request[learning_style_answers][<%= i %>]" value="" data-route-wizard-target="styleAnswer<%= i %>">
+      <% end %>
+
+      <%# Result Preview Card (hidden until all 6 answered) %>
+      <div data-route-wizard-target="styleResultCard" style="display:none; opacity:0; transform:translateY(8px); transition:opacity 0.4s ease 0.2s, transform 0.4s ease 0.2s; margin-top:20px; border-radius:12px; background:rgba(139,128,196,0.04); border:1px solid rgba(139,128,196,0.08); padding:14px 18px;">
+        <div style="font-family:'DM Sans',sans-serif; font-weight:400; font-size:0.68rem; color:#A09889; margin-bottom:6px;">Tu estilo dominante:</div>
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
+          <span data-route-wizard-target="styleResultIcon" style="font-size:1.1rem;"></span>
+          <span data-route-wizard-target="styleResultName" style="font-family:'DM Sans',sans-serif; font-weight:600; font-size:0.88rem; color:#1C1812;"></span>
+        </div>
+        <div data-route-wizard-target="styleResultDesc" style="font-family:'DM Sans',sans-serif; font-weight:400; font-size:0.7rem; color:#A09889; line-height:1.4;"></div>
+        <div style="font-family:'DM Mono',monospace; font-size:0.58rem; color:#CCC5B8; margin-top:6px;">Esto se usa para personalizar tu ruta</div>
+      </div>
+    </div>
+
+    <%# ============================================================ %>
+    <%# STEP 4 — RITMO (was Step 3) %>
+    <%# ============================================================ %>
+    <div data-route-wizard-target="step" data-step="4" style="display:none;">
       <h2 style="font-family:'DM Sans',sans-serif; font-weight:700; font-size:1.8rem; letter-spacing:-0.3px; color:#1C1812; margin:0 0 6px;">Establece tu ritmo.</h2>
       <p style="font-family:'DM Sans',sans-serif; font-weight:400; font-size:0.82rem; color:#9E9587; margin:0 0 32px;">Siempre puedes cambiarlo después.</p>
 
@@ -147,20 +257,16 @@
           { id: "steady", label: "Constante", desc: "4–5 lecciones por semana", time: "~25 min/día", emoji: "🚶", color: "#6E9BC8" },
           { id: "intensive", label: "Intensivo", desc: "Lecciones diarias", time: "~45 min/día", emoji: "🏃", color: "#B09848" }
         ].each do |pace| %>
-          <div data-action="click->route-wizard#selectPace"
-               data-pace="<%= pace[:id] %>"
-               data-color="<%= pace[:color] %>"
-               style="display:flex; align-items:center; gap:16px; padding:20px; border-radius:14px; cursor:pointer; background:#FDFCFA; border:1.5px solid rgba(28,24,18,0.06); transition:all 0.3s cubic-bezier(0.16,1,0.3,1);">
+          <div data-action="click->route-wizard#selectPace" data-pace="<%= pace[:id] %>" data-color="<%= pace[:color] %>" style="display:flex; align-items:center; gap:16px; padding:20px; border-radius:14px; cursor:pointer; background:#FDFCFA; border:1.5px solid rgba(28,24,18,0.06); transition:all 0.3s cubic-bezier(0.16,1,0.3,1);">
             <div style="width:48px; height:48px; border-radius:14px; background:rgba(28,24,18,0.02); display:flex; align-items:center; justify-content:center; font-size:1.4rem; transition:background 0.3s;"><%= pace[:emoji] %></div>
             <div style="flex:1;">
               <div style="font-family:'DM Sans',sans-serif; font-weight:600; font-size:0.88rem; color:#1C1812;"><%= pace[:label] %></div>
               <div style="font-family:'DM Sans',sans-serif; font-weight:400; font-size:0.72rem; color:#9E9587; margin-top:2px;"><%= pace[:desc] %></div>
             </div>
-            <div class="wizard-time-badge" style="font-family:'DM Mono',monospace; font-size:0.65rem; font-weight:500; padding:4px 10px; border-radius:8px; color:#9E9587; opacity:0.5; background:rgba(28,24,18,0.02); transition:all 0.3s;" data-time-color="<%= pace[:color] %>"><%= pace[:time] %></div>
+            <div class="wizard-time-badge" style="font-family:'DM Mono',monospace; font-size:0.65rem; font-weight:500; padding:4px 10px; border-radius:8px; color:#9E9587; opacity:0.5; background:rgba(28,24,18,0.02); transition:all 0.3s;"><%= pace[:time] %></div>
           </div>
         <% end %>
       </div>
-
       <input type="hidden" name="route_request[pace]" value="" data-route-wizard-target="paceInput">
     </div>
 

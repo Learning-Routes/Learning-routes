@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_02_18_171611) do
+ActiveRecord::Schema[8.1].define(version: 2026_02_18_180003) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -267,6 +267,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_18_171611) do
   create_table "learning_routes_engine_learning_routes", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.uuid "ai_interaction_id"
     t.string "ai_model_used"
+    t.jsonb "content_preferences", default: {}, null: false
     t.datetime "created_at", null: false
     t.integer "current_step", default: 0
     t.jsonb "difficulty_progression", default: {}
@@ -303,6 +304,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_18_171611) do
     t.datetime "completed_at"
     t.integer "content_type", default: 0, null: false
     t.datetime "created_at", null: false
+    t.string "delivery_format", default: "mixed"
     t.text "description"
     t.integer "estimated_minutes"
     t.float "fsrs_difficulty", default: 0.0
@@ -336,6 +338,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_18_171611) do
     t.text "error_message"
     t.jsonb "goals", default: [], null: false
     t.uuid "learning_route_id"
+    t.jsonb "learning_style_answers", default: {}, null: false
+    t.jsonb "learning_style_result", default: {}, null: false
     t.string "level", null: false
     t.string "pace", null: false
     t.string "status", default: "pending", null: false

@@ -46,7 +46,7 @@ function trunc(str, max) {
 }
 
 export default class extends Controller {
-  static targets = ["overlay", "backdrop", "content", "headerText", "svgWrap", "footerText"]
+  static targets = ["overlay", "backdrop", "content", "headerText", "svgWrap", "footerText", "actionBtn"]
 
   connect() {
     this._onEsc = (e) => { if (e.key === "Escape") this.close() }
@@ -81,6 +81,9 @@ export default class extends Controller {
 
     this.routeData = JSON.parse(json)
     this.selectedIndex = this._initialIndex()
+    if (this.hasActionBtnTarget && this.routeData.route_path) {
+      this.actionBtnTarget.href = this.routeData.route_path
+    }
     this._show()
     document.addEventListener("keydown", this._onEsc)
     document.body.style.overflow = "hidden"
@@ -157,9 +160,9 @@ export default class extends Controller {
     const d = this.routeData
     const completed = d.nodes.filter(n => n.status === "completed").length
     this.headerTextTarget.innerHTML =
-      `<span style="font-family:${FM};font-size:0.65rem;font-weight:600;color:#B09848;text-transform:uppercase;letter-spacing:0.15em;">RUTA</span>` +
+      `<span style="font-family:${FM};font-size:0.65rem;font-weight:600;color:#B09848;text-transform:uppercase;letter-spacing:0.15em;">ROUTE</span>` +
       `<h2 style="font-family:${FF};font-weight:700;font-size:2rem;color:#E8E4DC;margin:0.3rem 0 0.4rem;letter-spacing:-0.3px;">${esc(d.title)}</h2>` +
-      `<p style="font-family:${FF};font-size:0.82rem;color:#908880;margin:0;">${esc(d.subject_area)} &middot; ${completed} de ${d.total_steps} etapas</p>`
+      `<p style="font-family:${FF};font-size:0.82rem;color:#908880;margin:0;">${esc(d.subject_area)} &middot; ${completed} of ${d.total_steps} steps</p>`
   }
 
   _renderFooter() {
@@ -168,9 +171,9 @@ export default class extends Controller {
     const sameLevel = this.routeData.nodes.filter(n => n.level === node.level).length
     let h = ""
     if (node.status === "completed")
-      h += `<span style="font-family:${FM};font-size:0.72rem;color:#5BA880;margin-right:1.5rem;">\u2713 Etapa completada</span>`
-    h += `<span style="font-family:${FM};font-size:0.68rem;color:rgba(255,255,255,0.15);">${sameLevel} temas en este nivel</span>`
-    h += `<span style="font-family:${FM};font-size:0.68rem;color:rgba(255,255,255,0.15);margin-left:1.5rem;">Click en nodos para navegar</span>`
+      h += `<span style="font-family:${FM};font-size:0.72rem;color:#5BA880;margin-right:1.5rem;">\u2713 Step completed</span>`
+    h += `<span style="font-family:${FM};font-size:0.68rem;color:rgba(255,255,255,0.15);">${sameLevel} topics at this level</span>`
+    h += `<span style="font-family:${FM};font-size:0.68rem;color:rgba(255,255,255,0.15);margin-left:1.5rem;">Click nodes to navigate</span>`
     this.footerTextTarget.innerHTML = h
   }
 
@@ -308,7 +311,7 @@ export default class extends Controller {
         x: cX, y: cY + 30, "text-anchor": "middle", "dominant-baseline": "central",
         fill: "rgba(255,255,255,0.3)", "font-family": FM, "font-size": "10",
         "data-anim": "cfade"
-      }, ["Etapa actual"]))
+      }, ["Current step"]))
     }
 
     // Content type tag below center
