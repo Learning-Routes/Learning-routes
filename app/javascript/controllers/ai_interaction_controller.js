@@ -4,9 +4,21 @@ export default class extends Controller {
   static targets = ["loadingIndicator"]
   static values = { stepId: String }
 
+  connect() {
+    this._abortController = null
+  }
+
+  disconnect() {
+    if (this._abortController) this._abortController.abort()
+  }
+
   async request(event) {
     const url = event.currentTarget.dataset.url
     if (!url) return
+
+    // Abort any in-flight request
+    if (this._abortController) this._abortController.abort()
+    this._abortController = new AbortController()
 
     // Show loading
     if (this.hasLoadingIndicatorTarget) {
@@ -23,7 +35,8 @@ export default class extends Controller {
           "X-CSRF-Token": token,
           "X-Requested-With": "XMLHttpRequest"
         },
-        credentials: "same-origin"
+        credentials: "same-origin",
+        signal: this._abortController.signal
       })
 
       if (response.ok) {
@@ -31,7 +44,9 @@ export default class extends Controller {
         Turbo.renderStreamMessage(html)
       }
     } catch (error) {
-      console.error("AI interaction failed:", error)
+      if (error.name !== "AbortError") {
+        console.error("AI interaction failed:", error)
+      }
     } finally {
       if (this.hasLoadingIndicatorTarget) {
         this.loadingIndicatorTarget.classList.add("hidden")

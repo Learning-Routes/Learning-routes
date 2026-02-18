@@ -1,0 +1,128 @@
+<turbo-frame id="profile-activity">
+<%
+  # Gather activity from multiple sources
+  activities = []
+
+  # Step completions (lesson/exercise completed)
+  completed_steps = LearningRoutesEngine::RouteStep
+    .joins(:learning_route)
+    .includes(:learning_route)
+    .where(learning_routes_engine_learning_routes: {
+      learning_profile_id: @profile&.id
+    })
+    .where.not(completed_at: nil)
+    .order(completed_at: :desc)
+    .limit(15)
+
+  completed_steps.each do |step|
+    activities << {
+      type: step.content_type_assessment? ? :exam_pass : :lesson_completed,
+      title: step.title,
+      desc: step.learning_route.topic,
+      time: step.completed_at,
+      color: step.content_type_assessment? ? "#5BA880" : "#5BA880"
+    }
+  end
+
+  # Route creations
+  (@routes || []).each do |route|
+    activities << {
+      type: :route_new,
+      title: route.topic,
+      desc: "New route created",
+      time: route.created_at,
+      color: "#8B80C4"
+    }
+  end
+
+  # Assessment results
+  results = Assessments::AssessmentResult.for_user(@user).recent.limit(10)
+  results.each do |r|
+    activities << {
+      type: r.passed? ? :exam_passed : :exam_failed,
+      title: r.assessment&.route_step&.title || r.assessment&.assessment_type&.humanize || "Exam",
+      desc: r.passed? ? "Passed with #{r.score&.round(1)}%" : "#{r.score&.round(1)}% — try again",
+      time: r.created_at,
+      color: r.passed? ? "#5BA880" : "#B06050"
+    }
+  end
+
+  # Study sessions
+  sessions = Analytics::StudySession.for_user(@user).completed.order(started_at: :desc).limit(10)
+  sessions.each do |s|
+    activities << {
+      type: :lesson_started,
+      title: "Study session",
+      desc: s.duration_minutes ? "#{s.duration_minutes} min of learning" : "Session completed",
+      time: s.started_at,
+      color: "#6E9BC8"
+    }
+  end
+
+  # Sort and limit
+  activities.sort_by! { |a| a[:time] || Time.at(0) }.reverse!
+  activities = activities.first(20)
+
+  # Type labels for display
+  type_labels = {
+    lesson_completed: "Lesson completed",
+    lesson_started: "Lesson started",
+    achievement_unlocked: "Achievement unlocked",
+    route_new: "New route",
+    level_up: "Level up",
+    exam_passed: "Exam passed",
+    exam_failed: "Exam failed",
+    exam_pass: "Assessment completed"
+  }
+%>
+
+<% if activities.any? %>
+  <div style="display:flex; flex-direction:column;">
+    <% activities.each_with_index do |act, i| %>
+      <div style="display:flex; align-items:flex-start; gap:14px; padding:14px 2px; <%= 'border-bottom:1px solid rgba(28,24,18,0.035);' unless i == activities.size - 1 %>">
+
+        <%# Color dot with accessible label %>
+        <div style="display:flex; align-items:center; gap:6px; margin-top:7px; flex-shrink:0;">
+          <div style="width:6px; height:6px; border-radius:50%; background:<%= act[:color] %>; box-shadow:0 0 6px <%= act[:color] %>40;" aria-hidden="true"></div>
+        </div>
+
+        <%# Content %>
+        <div style="flex:1; min-width:0;">
+          <p style="font-family:'DM Sans',sans-serif; font-weight:600; font-size:0.8rem; color:#1C1812; margin:0 0 0.15rem; line-height:1.35;">
+            <span style="font-family:'DM Mono',monospace; font-size:0.55rem; letter-spacing:0.5px; text-transform:uppercase; color:<%= act[:color] %>; margin-right:0.35rem;"><%= type_labels[act[:type]] || act[:type].to_s.humanize %></span>
+            <%= act[:title] %>
+          </p>
+          <p style="font-family:'DM Sans',sans-serif; font-size:0.72rem; color:#A09889; margin:0; line-height:1.35;">
+            <%= act[:desc] %>
+          </p>
+        </div>
+
+        <%# Timestamp %>
+        <span style="font-family:'DM Mono',monospace; font-size:0.62rem; color:#CCC5B8; flex-shrink:0; white-space:nowrap; margin-top:2px;">
+          <% if act[:time] %>
+            <% if act[:time].to_date == Date.current %>
+              Today, <%= act[:time].strftime("%H:%M") %>
+            <% elsif act[:time].to_date == Date.yesterday %>
+              Yesterday, <%= act[:time].strftime("%H:%M") %>
+            <% else %>
+              <%= act[:time].strftime("%d %b, %H:%M") %>
+            <% end %>
+          <% end %>
+        </span>
+      </div>
+    <% end %>
+  </div>
+<% else %>
+  <div style="text-align:center; padding:2.5rem 1rem;">
+    <div style="width:48px; height:48px; border-radius:14px; background:rgba(91,168,128,0.08); display:inline-flex; align-items:center; justify-content:center; margin-bottom:0.8rem;">
+      <svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#5BA880" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="9"/>
+        <path d="M12 7v5l3 2"/>
+      </svg>
+    </div>
+    <p style="font-family:'DM Sans',sans-serif; font-size:0.85rem; font-weight:500; color:#1C1812; margin:0 0 0.3rem;">No recent activity</p>
+    <p style="font-family:'DM Sans',sans-serif; font-size:0.75rem; color:#A09889; margin:0;">Your study activity will appear here.</p>
+  </div>
+<% end %>
+
+</turbo-frame>

@@ -1,7 +1,7 @@
 import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
-  static targets = ["bar", "menu"]
+  static targets = ["bar", "menu", "menuBtn"]
 
   connect() {
     this.scrolled = false
@@ -25,10 +25,12 @@ export default class extends Controller {
   toggleMenu() {
     this.menuOpen = !this.menuOpen
     this.menuTarget.classList.toggle("hidden", !this.menuOpen)
+    if (this.hasMenuBtnTarget) this.menuBtnTarget.setAttribute("aria-expanded", this.menuOpen)
   }
 
   closeMenu() {
     this.menuOpen = false
     this.menuTarget.classList.add("hidden")
+    if (this.hasMenuBtnTarget) this.menuBtnTarget.setAttribute("aria-expanded", "false")
   }
 }

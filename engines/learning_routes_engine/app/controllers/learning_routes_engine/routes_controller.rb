@@ -4,6 +4,8 @@ module LearningRoutesEngine
     before_action :set_route
     before_action :authorize_route_owner!
 
+    layout "learning"
+
     def show
       @steps = @route.route_steps.order(:position)
       @progress = RouteProgressTracker.new(@route).progress_summary

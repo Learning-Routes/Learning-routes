@@ -1,1 +1,15 @@
 # See https://www.robotstxt.org/robotstxt.html for documentation on how to use the robots.txt file
+
+User-agent: *
+Allow: /
+
+# Disallow authenticated areas from indexing
+Disallow: /dashboard
+Disallow: /onboarding
+Disallow: /profile
+Disallow: /routes/
+Disallow: /steps/
+Disallow: /assessments/
+
+# Sitemap
+Sitemap: https://learning-routes.com/sitemap.xml

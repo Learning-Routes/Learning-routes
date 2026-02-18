@@ -1,5 +1,6 @@
 module Core
   class SessionsController < ApplicationController
+    layout "auth", only: [:new, :create]
     rate_limit to: 10, within: 3.minutes, only: :create, with: -> {
       redirect_to core.sign_in_path, alert: "Too many login attempts. Please try again later."
     }

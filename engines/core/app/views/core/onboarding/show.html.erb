@@ -16,7 +16,7 @@
       <span class="text-sm font-medium text-gray-700">Step <%= @step_number %> of <%= @total_steps %></span>
       <span class="text-sm text-gray-500"><%= (@step_number.to_f / @total_steps * 100).round %>% complete</span>
     </div>
-    <div class="w-full bg-gray-200 rounded-full h-2">
+    <div class="w-full bg-gray-200 rounded-full h-2" role="progressbar" aria-valuenow="<%= @step_number %>" aria-valuemin="1" aria-valuemax="<%= @total_steps %>" aria-label="Onboarding progress">
       <div class="bg-indigo-600 h-2 rounded-full transition-all duration-500 ease-out"
            style="width: <%= (@step_number.to_f / @total_steps * 100).round %>%"></div>
     </div>

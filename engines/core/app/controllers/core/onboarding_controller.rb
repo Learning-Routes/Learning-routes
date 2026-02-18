@@ -10,7 +10,7 @@ module Core
       @step = current_step
       @step_number = STEPS.index(@step) + 1
       @total_steps = STEPS.size
-      render partial: "core/onboarding/step_#{@step}", locals: { profile: @profile } if turbo_frame_request?
+      return render partial: "core/onboarding/step_#{@step}", locals: { profile: @profile } if turbo_frame_request?
     end
 
     def update_step
@@ -22,14 +22,37 @@ module Core
         interests = Array(params[:interests]).reject(&:blank?)
         custom = params[:custom_interest].to_s.strip
         interests << custom if custom.present?
+        if interests.empty?
+          @profile.errors.add(:interests, "please select at least one topic")
+          return render_step_error
+        end
         @profile.interests = interests
       when "level"
         @profile.current_level = params[:current_level]
       when "learning_style"
-        @profile.learning_style = Array(params[:learning_style]).reject(&:blank?)
+        styles = Array(params[:learning_style]).reject(&:blank?)
+        if styles.empty?
+          @profile.errors.add(:learning_style, "please select at least one style")
+          return render_step_error
+        end
+        @profile.learning_style = styles
       when "goal"
-        @profile.goal = params[:goal].to_s.strip
-        @profile.timeline = params[:timeline]
+        goal = params[:goal].to_s.strip
+        timeline = params[:timeline].to_s
+        if goal.blank?
+          @profile.errors.add(:goal, "can't be blank")
+          return render_step_error
+        end
+        if goal.length > 500
+          @profile.errors.add(:goal, "is too long (maximum 500 characters)")
+          return render_step_error
+        end
+        unless timeline.in?(%w[1_month 3_months 6_months 1_year])
+          @profile.errors.add(:timeline, "please select a timeline")
+          return render_step_error
+        end
+        @profile.goal = goal
+        @profile.timeline = timeline
       end
 
       if @profile.save
@@ -40,9 +63,7 @@ module Core
           redirect_to core.complete_onboarding_path
         end
       else
-        @step_number = STEPS.index(@step) + 1
-        @total_steps = STEPS.size
-        render partial: "core/onboarding/step_#{@step}", locals: { profile: @profile }, status: :unprocessable_entity
+        render_step_error
       end
     end
 
@@ -66,6 +87,12 @@ module Core
 
     def set_or_build_profile
       @profile = LearningRoutesEngine::LearningProfile.find_or_initialize_by(user: current_user)
+    end
+
+    def render_step_error
+      @step_number = STEPS.index(@step) + 1
+      @total_steps = STEPS.size
+      render partial: "core/onboarding/step_#{@step}", locals: { profile: @profile }, status: :unprocessable_entity
     end
 
     def redirect_if_onboarded

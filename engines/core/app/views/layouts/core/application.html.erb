@@ -1,12 +1,18 @@
 <!DOCTYPE html>
-<html class="h-full bg-gray-50">
+<html lang="en" class="h-full">
   <head>
     <title><%= content_for(:title) || "Learning Routes" %></title>
+    <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="theme-color" content="#F5F1EB">
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
 
     <%= yield :head %>
+
+    <link rel="icon" href="/icon.svg" type="image/svg+xml">
+    <link rel="icon" href="/icon.png" type="image/png">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -16,11 +22,13 @@
     <%= javascript_importmap_tags %>
   </head>
 
-  <body class="h-full font-sans">
-    <!-- Minimal header for auth pages -->
-    <div class="py-6 text-center">
-      <%= link_to main_app.root_path, class: "inline-flex items-center gap-2" do %>
-        <span class="text-2xl font-bold text-indigo-600">Learning Routes</span>
+  <body class="h-full font-sans bg-bg text-txt">
+    <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-[200] focus:bg-accent focus:text-accent-text focus:px-4 focus:py-2 focus:rounded-btn focus:text-sm focus:font-semibold">Skip to main content</a>
+    <!-- Header -->
+    <div class="py-5 text-center">
+      <%= link_to main_app.root_path, class: "inline-flex items-center gap-2 no-underline" do %>
+        <%= render "shared/logo", size: 26 %>
+        <span class="font-sans font-bold text-[1.05rem] tracking-[-0.5px] text-txt">Learning Routes</span>
       <% end %>
     </div>
 
@@ -28,20 +36,20 @@
     <% if flash[:notice] || flash[:alert] %>
       <div class="mx-auto max-w-md px-4 mb-6">
         <% if flash[:notice] %>
-          <div class="rounded-lg bg-green-50 border border-green-200 p-4">
-            <p class="text-sm font-medium text-green-800"><%= flash[:notice] %></p>
+          <div style="background:rgba(91,168,128,0.1); border:1px solid rgba(91,168,128,0.18); color:#3D7A5A; border-radius:10px; padding:0.6rem 0.85rem; font-size:0.78rem; font-weight:500;">
+            <%= flash[:notice] %>
           </div>
         <% end %>
         <% if flash[:alert] %>
-          <div class="rounded-lg bg-red-50 border border-red-200 p-4">
-            <p class="text-sm font-medium text-red-800"><%= flash[:alert] %></p>
+          <div style="background:rgba(176,96,80,0.08); border:1px solid rgba(176,96,80,0.15); color:#B06050; border-radius:10px; padding:0.6rem 0.85rem; font-size:0.78rem; font-weight:500;">
+            <%= flash[:alert] %>
           </div>
         <% end %>
       </div>
     <% end %>
 
     <!-- Main content -->
-    <main class="px-4 py-4">
+    <main id="main-content" class="px-4 py-4">
       <%= yield %>
     </main>
   </body>

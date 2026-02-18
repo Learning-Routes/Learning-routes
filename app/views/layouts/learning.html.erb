@@ -1,15 +1,20 @@
 <!DOCTYPE html>
-<html class="h-full">
+<html lang="en" class="h-full">
   <head>
     <title><%= content_for(:title) || "Learning Routes" %></title>
+    <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#0a0a0a">
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
 
     <%= yield :head %>
 
     <link rel="icon" href="/icon.png" type="image/png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300..700;1,9..40,300..700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.21/dist/katex.min.css">
 
     <%= stylesheet_link_tag "tailwind", "application", "data-turbo-track": "reload" %>
@@ -17,6 +22,7 @@
   </head>
 
   <body class="h-full bg-gray-950 text-gray-100">
+    <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-4 focus:z-[200] focus:bg-indigo-500 focus:text-white focus:px-4 focus:py-2 focus:rounded-lg focus:text-sm focus:font-semibold">Skip to main content</a>
     <%= turbo_stream_from "learning_route_#{@route.id}" if @route %>
     <%= turbo_stream_from "step_content_#{@step.id}" if @step %>
 
@@ -26,7 +32,7 @@
         <div class="flex h-14 items-center justify-between">
           <div class="flex items-center gap-4">
             <%= link_to main_app.dashboard_path, class: "text-sm font-medium text-gray-400 hover:text-white transition" do %>
-              <svg class="w-5 h-5 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg aria-hidden="true" class="w-5 h-5 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
               </svg>
               Dashboard
@@ -41,7 +47,7 @@
           <div class="flex items-center gap-4">
             <% if @step && @progress %>
               <span class="text-xs text-gray-400">
-                Step <%= @step.position + 1 %> of <%= @progress[:total] %>
+                Step <%= @step.position + 1 %> of <%= @progress[:total_steps] %>
               </span>
             <% end %>
 
@@ -51,11 +57,13 @@
               <span class="text-xs text-gray-500" data-lesson-target="timer">0:00</span>
 
               <% if @step && !@step.completed? %>
-                <%= button_to "Complete Step",
-                    learning_routes_engine.complete_route_step_path(@route, @step),
-                    method: :post,
-                    class: "rounded-lg px-4 py-1.5 text-xs font-semibold text-white transition bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-400 hover:to-purple-400",
-                    data: { lesson_target: "markCompleteBtn" } %>
+                <div id="step_complete_btn">
+                  <%= button_to "Complete Step",
+                      learning_routes_engine.complete_route_step_path(@route, @step),
+                      method: :post,
+                      class: "rounded-lg px-4 py-1.5 text-xs font-semibold text-white transition bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-400 hover:to-purple-400",
+                      data: { lesson_target: "markCompleteBtn" } %>
+                </div>
               <% end %>
             </div>
 
@@ -68,7 +76,7 @@
 
       <!-- Progress bar -->
       <% if @progress %>
-        <div class="h-1 bg-gray-800">
+        <div class="h-1 bg-gray-800" role="progressbar" aria-valuenow="<%= @progress[:percentage] %>" aria-valuemin="0" aria-valuemax="100" aria-label="Route progress: <%= @progress[:percentage] %>%">
           <div class="h-full bg-gradient-to-r from-indigo-500 to-purple-500 transition-all duration-500"
                style="width: <%= @progress[:percentage] %>%"
                id="route_progress_bar"></div>
@@ -85,7 +93,7 @@
             <div class="flex items-center justify-between">
               <p><%= flash[:notice] %></p>
               <button data-action="click->flash#dismiss" class="text-green-500 hover:text-green-300 ml-4">
-                <svg class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z"/></svg>
+                <svg class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z"/></svg>
               </button>
             </div>
           </div>
@@ -96,7 +104,7 @@
             <div class="flex items-center justify-between">
               <p><%= flash[:alert] %></p>
               <button data-action="click->flash#dismiss" class="text-red-500 hover:text-red-300 ml-4">
-                <svg class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z"/></svg>
+                <svg class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z"/></svg>
               </button>
             </div>
           </div>
@@ -105,7 +113,7 @@
     <% end %>
 
     <!-- Main content -->
-    <main>
+    <main id="main-content">
       <%= yield %>
     </main>
   </body>

@@ -57,3 +57,7 @@
 
 # Coverage reports
 /coverage/
+
+# Claude Code
+CLAUDE.md
+/CLAUDE.md

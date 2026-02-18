@@ -6,11 +6,11 @@
       <div class="space-y-2 text-sm">
         <div class="flex justify-between">
           <span class="text-gray-500">Type</span>
-          <span class="text-gray-300"><%= @step.content_type.capitalize %></span>
+          <span class="text-gray-300"><%= @step.content_type&.capitalize || "—" %></span>
         </div>
         <div class="flex justify-between">
           <span class="text-gray-500">Level</span>
-          <span class="text-gray-300"><%= @step.level.upcase %></span>
+          <span class="text-gray-300"><%= @step.level&.upcase || "—" %></span>
         </div>
         <% if @step.estimated_minutes.to_i > 0 %>
           <div class="flex justify-between">
@@ -37,9 +37,9 @@
         <div class="text-2xl font-bold text-white"><%= @progress[:percentage] %>%</div>
         <div class="text-xs text-gray-500 mt-1"><%= @progress[:completed_steps] %>/<%= @progress[:total_steps] %> steps</div>
       </div>
-      <div class="h-1.5 bg-gray-800 rounded-full overflow-hidden mt-3">
+      <div class="h-1.5 bg-gray-800 rounded-full overflow-hidden mt-3" role="progressbar" aria-valuenow="<%= @progress[:percentage] %>" aria-valuemin="0" aria-valuemax="100" aria-label="Route progress: <%= @progress[:percentage] %>%">
         <div class="h-full bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full"
-             style="width: <%= @progress[:percentage] %>%"></div>
+             style="width: <%= @progress[:percentage] %>%" aria-hidden="true"></div>
       </div>
     </div>
   </div>

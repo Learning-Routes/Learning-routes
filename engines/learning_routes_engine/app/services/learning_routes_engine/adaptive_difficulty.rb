@@ -78,7 +78,7 @@ module LearningRoutesEngine
         # Step 2: Set final positions from the negated values
         RouteStep.where(learning_route_id: @route.id)
                  .where("position < 0")
-                 .update_all("position = -(position + 1000) + #{shift}")
+                 .update_all(["position = -(position + 1000) + ?", shift])
 
         # Insert reinforcement steps
         reinforcement_steps.each_with_index do |attrs, idx|

@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 180" fill="none">
+  <defs>
+    <!-- Main route gradient: charcoal → purple → blue → green -->
+    <linearGradient id="routeGrad" x1="90" y1="155" x2="90" y2="25" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#2C261E"/>
+      <stop offset="30%" stop-color="#8B80C4"/>
+      <stop offset="60%" stop-color="#6E9BC8"/>
+      <stop offset="100%" stop-color="#5BA880"/>
+    </linearGradient>
+    <!-- Destination glow -->
+    <radialGradient id="destGlow" cx="90" cy="28" r="18" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#5BA880" stop-opacity="0.35"/>
+      <stop offset="100%" stop-color="#5BA880" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- Destination glow circle -->
+  <circle cx="90" cy="28" r="18" fill="url(#destGlow)"/>
+
+  <!-- Main winding route path -->
+  <path d="M90 152 C90 138, 58 130, 52 115 C46 100, 80 95, 90 85 C100 75, 130 72, 128 58 C126 44, 98 40, 90 32"
+        stroke="url(#routeGrad)" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <!-- Left branch (rose) -->
+  <path d="M52 115 C42 112, 36 105, 38 96"
+        stroke="#B5718E" stroke-width="3.5" stroke-linecap="round" opacity="0.85"/>
+
+  <!-- Right branch (gold) -->
+  <path d="M128 58 C136 54, 142 48, 140 40"
+        stroke="#B09848" stroke-width="3.5" stroke-linecap="round" opacity="0.85"/>
+
+  <!-- Origin dot (charcoal, bottom) -->
+  <circle cx="90" cy="152" r="5.5" fill="#2C261E"/>
+  <circle cx="88.5" cy="150.5" r="1.5" fill="white" opacity="0.35"/>
+
+  <!-- Left branch endpoint (rose) -->
+  <circle cx="38" cy="96" r="7" fill="#B5718E"/>
+  <circle cx="36" cy="94" r="2" fill="white" opacity="0.35"/>
+
+  <!-- Right branch endpoint (gold) -->
+  <circle cx="140" cy="40" r="6" fill="#B09848"/>
+  <circle cx="138.5" cy="38.5" r="1.8" fill="white" opacity="0.35"/>
+
+  <!-- Destination dot (green, top) with glow -->
+  <circle cx="90" cy="28" r="9" fill="#5BA880"/>
+  <circle cx="87.5" cy="25.5" r="2.5" fill="white" opacity="0.4"/>
+</svg>

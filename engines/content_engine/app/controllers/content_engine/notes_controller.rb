@@ -57,8 +57,7 @@ module ContentEngine
     private
 
     def set_note
-      @note = UserNote.find(params[:id])
-      head :forbidden unless @note.user_id == current_user.id
+      @note = UserNote.for_user(current_user).find(params[:id])
     end
 
     def authorize_step_owner!(step)

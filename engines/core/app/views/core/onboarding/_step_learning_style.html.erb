@@ -6,6 +6,14 @@
     </div>
 
     <%= form_with(url: core.onboarding_update_step_path(step: "learning_style"), method: :patch, data: { turbo_frame: "onboarding_step" }) do |f| %>
+      <% if profile.errors.any? %>
+        <div role="alert" class="mb-4 rounded-lg bg-red-50 border border-red-200 p-3">
+          <% profile.errors.full_messages.each do |msg| %>
+            <p class="text-sm text-red-600"><%= msg %></p>
+          <% end %>
+        </div>
+      <% end %>
+
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-8">
         <% [
           ["visual", "Visual", "Images, diagrams, and videos", "👁️"],

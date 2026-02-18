@@ -2,7 +2,17 @@ module Core
   class ApplicationController < ActionController::Base
     before_action :set_current_session
 
+    rescue_from ActiveRecord::RecordNotFound, with: :record_not_found
+
     private
+
+    def record_not_found
+      respond_to do |format|
+        format.html { render file: Rails.root.join("public/404.html"), status: :not_found, layout: false }
+        format.turbo_stream { head :not_found }
+        format.json { render json: { error: "Not found" }, status: :not_found }
+      end
+    end
 
     def current_user
       return @current_user if defined?(@current_user)
@@ -44,12 +54,7 @@ module Core
     end
 
     def after_sign_in_path(user = nil)
-      user ||= current_user
-      if user&.onboarding_completed?
-        main_app.dashboard_path
-      else
-        core.onboarding_path
-      end
+      main_app.dashboard_path
     end
 
     def start_session_for(user, remember: false)

@@ -1,0 +1,130 @@
+<%#
+  Route card with compact SVG visualization.
+  Locals: route (LearningRoute), accent_color (String hex)
+  Click opens the expanded route overlay (not a page navigation).
+%>
+<%
+  # Use the already-eager-loaded association (sorted by position via has_many default scope)
+  steps = route.route_steps.sort_by(&:position)
+  completed_count = steps.count(&:completed?)
+  progress = route.progress_percentage
+  remaining_min = steps.reject(&:completed?).sum { |s| s.estimated_minutes.to_i }
+
+  # Build node data for compact SVG controller
+  nodes_data = steps.map { |s|
+    { label: s.title, status: s.status }
+  }
+
+  # Color seed from UUID
+  color_seed = route.id.to_s.delete("-").last(8).to_i(16)
+
+  # Build full route data for expanded overlay (JSON)
+  expanded_nodes = steps.map { |s|
+    # Extract satellite topics from metadata or description
+    sats = []
+    if s.metadata.is_a?(Hash)
+      sats = s.metadata["topics"] || s.metadata["satellite_topics"] || s.metadata["keywords"] || []
+    end
+    if sats.empty? && s.description.present?
+      sats = s.description.split(/[,.\n;:—–]/)
+        .map(&:strip)
+        .reject { |w| w.blank? || w.length < 4 || w.length > 35 }
+        .first(4)
+    end
+    sats << s.content_type.humanize if sats.empty?
+
+    {
+      label: s.title,
+      status: s.status,
+      level: s.level,
+      content_type: s.content_type,
+      estimated_minutes: s.estimated_minutes,
+      satellites: sats
+    }
+  }
+
+  route_json = {
+    title: route.topic,
+    subject_area: route.subject_area || "",
+    color: accent_color,
+    status: route.status,
+    total_steps: route.total_steps,
+    progress: progress,
+    route_path: learning_routes_engine.route_path(route),
+    nodes: expanded_nodes
+  }
+%>
+
+<div role="button" tabindex="0" aria-label="Open route details" data-action="click->expanded-route#open keydown.enter->expanded-route#open keydown.space->expanded-route#open"
+     data-route="<%= route_json.to_json %>"
+     style="display:block; background:#FEFDFB; border:1px solid rgba(28,24,18,0.04); border-radius:18px; cursor:pointer; transition:all 0.25s cubic-bezier(0.22,1,0.36,1); overflow:hidden;"
+     class="card-hover">
+
+  <%# === Compact Route SVG === %>
+  <div style="padding:20px 20px 8px;"
+       data-controller="compact-route"
+       data-compact-route-nodes-value="<%= nodes_data.to_json %>"
+       data-compact-route-seed-value="<%= color_seed %>"
+       data-compact-route-color-value="<%= accent_color %>">
+  </div>
+
+  <%# === Route Info === %>
+  <div style="padding:10px 24px 20px;">
+
+    <%# Title + status badge row %>
+    <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:0.8rem; margin-bottom:0.45rem;">
+      <h3 style="font-family:'DM Sans',sans-serif; font-weight:700; font-size:0.95rem; color:#1C1812; margin:0; letter-spacing:-0.3px; line-height:1.3;">
+        <span style="margin-right:0.3rem;"><%= topic_emoji_for(route.topic) %></span><%= route.topic %>
+      </h3>
+      <% badge_style = case route.status
+                        when 'active' then "background:rgba(91,168,128,0.1); color:#3D7A5A"
+                        when 'completed' then "background:rgba(110,155,200,0.1); color:#4A7A9E"
+                        when 'paused' then "background:rgba(176,152,72,0.1); color:#8B6D28"
+                        else "background:rgba(28,24,18,0.05); color:#6D665B"
+                        end %>
+      <span style="font-family:'DM Mono',monospace; font-size:0.55rem; letter-spacing:0.5px; text-transform:uppercase; padding:0.2rem 0.55rem; border-radius:6px; flex-shrink:0; white-space:nowrap; <%= badge_style %>">
+        <%= route.status %>
+      </span>
+    </div>
+
+    <%# Subtitle %>
+    <p style="font-family:'DM Sans',sans-serif; font-size:0.72rem; color:#A09889; margin:0 0 0.8rem; line-height:1.35;">
+      <%= route.subject_area %>
+    </p>
+
+    <%# Progress row: badge + bar %>
+    <div style="display:flex; align-items:center; gap:0.7rem; margin-bottom:0.85rem;">
+      <span style="font-family:'DM Mono',monospace; font-size:0.72rem; font-weight:500; color:<%= accent_color %>; background:<%= accent_color %>0D; padding:0.18rem 0.55rem; border-radius:7px; flex-shrink:0;">
+        <%= progress %>%
+      </span>
+      <div style="flex:1; height:3px; background:rgba(28,24,18,0.05); border-radius:2px; overflow:hidden;">
+        <div style="width:<%= progress %>%; height:100%; background:<%= accent_color %>; border-radius:2px; transition:width 0.4s cubic-bezier(0.22,1,0.36,1);"></div>
+      </div>
+    </div>
+
+    <%# Stats row %>
+    <div style="display:flex; align-items:center; gap:1.2rem;">
+      <div style="display:flex; flex-direction:column; align-items:flex-start;">
+        <span style="font-family:'DM Mono',monospace; font-size:0.78rem; font-weight:500; color:#1C1812; letter-spacing:-0.2px;">
+          <%= format_study_time(remaining_min) %>
+        </span>
+        <span style="font-family:'DM Sans',sans-serif; font-size:0.62rem; color:#A09889;">remaining</span>
+      </div>
+      <div style="width:1px; height:22px; background:rgba(28,24,18,0.06);"></div>
+      <div style="display:flex; flex-direction:column; align-items:flex-start;">
+        <span style="font-family:'DM Mono',monospace; font-size:0.78rem; font-weight:500; color:#1C1812; letter-spacing:-0.2px;">
+          <%= completed_count %>/<%= route.total_steps %>
+        </span>
+        <span style="font-family:'DM Sans',sans-serif; font-size:0.62rem; color:#A09889;">steps</span>
+      </div>
+      <div style="width:1px; height:22px; background:rgba(28,24,18,0.06);"></div>
+      <div style="display:flex; flex-direction:column; align-items:flex-start;">
+        <span style="font-family:'DM Mono',monospace; font-size:0.78rem; font-weight:500; color:#1C1812; letter-spacing:-0.2px;">
+          <% dp = route.difficulty_progression %>
+          <%= dp.is_a?(String) ? dp.capitalize : "—" %>
+        </span>
+        <span style="font-family:'DM Sans',sans-serif; font-size:0.62rem; color:#A09889;">difficulty</span>
+      </div>
+    </div>
+  </div>
+</div>

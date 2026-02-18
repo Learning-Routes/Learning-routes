@@ -1,0 +1,91 @@
+<%#
+  Authenticated app navbar — used on dashboard, profile, and all logged-in pages.
+  Different from landing navbar: has user-specific nav links + avatar.
+%>
+
+<nav data-controller="app-nav" style="position:sticky; top:0; z-index:50; background:rgba(245,241,235,0.88); backdrop-filter:blur(16px) saturate(1.4); -webkit-backdrop-filter:blur(16px) saturate(1.4); border-bottom:1px solid rgba(28,24,18,0.04);">
+  <div style="display:flex; align-items:center; justify-content:space-between; max-width:1100px; margin:0 auto; padding:0 clamp(1rem,3vw,2.25rem); height:56px;">
+
+    <%# === Left: Logo === %>
+    <%= link_to root_path, style: "display:flex; align-items:center; gap:0.5rem; text-decoration:none;" do %>
+      <%= render "shared/logo", size: 28 %>
+      <span style="font-family:'DM Sans',sans-serif; font-weight:800; font-size:0.95rem; letter-spacing:-0.6px; color:#1C1812;">Learning Routes</span>
+    <% end %>
+
+    <%# === Center: Nav links (desktop) === %>
+    <div style="display:flex; align-items:center; gap:1.8rem;" class="hidden md:flex">
+      <%
+        nav_links = [
+          { label: "Explore", path: root_path, match: "landing" },
+          { label: "My Routes", path: dashboard_path, match: "dashboard" },
+          { label: "Profile", path: profile_path, match: "profiles" },
+          { label: "Community", path: community_path, match: "community" }
+        ]
+      %>
+      <% nav_links.each do |link| %>
+        <% is_active = link[:match] && controller_name == link[:match] %>
+        <%= link_to link[:path],
+            style: "position:relative; font-family:'DM Sans',sans-serif; font-size:0.78rem; font-weight:#{is_active ? '600' : '400'}; color:#{is_active ? '#1C1812' : '#A09889'}; text-decoration:none; padding:0.35rem 0; transition:color 0.2s;",
+            class: "nav-link" do %>
+          <%= link[:label] %>
+          <% if is_active %>
+            <span style="position:absolute; bottom:-1px; left:0; right:0; height:1.5px; background:#5BA880; border-radius:1px;"></span>
+          <% end %>
+        <% end %>
+      <% end %>
+    </div>
+
+    <%# === Right: Avatar + mobile menu === %>
+    <div style="display:flex; align-items:center; gap:0.8rem;">
+
+      <%# Sign out (desktop) %>
+      <%= button_to core.sign_out_path, method: :delete,
+          style: "font-family:'DM Sans',sans-serif; font-size:0.72rem; font-weight:500; color:#A09889; background:none; border:none; cursor:pointer; padding:0.3rem 0; transition:color 0.2s;",
+          class: "hidden md:block nav-link" do %>
+        Sign out
+      <% end %>
+
+      <%# User avatar — links to profile %>
+      <% initials = current_user.name.to_s.split.map(&:first).join.upcase.slice(0,2) %>
+      <%= link_to profile_path, style: "text-decoration:none;" do %>
+        <div style="width:32px; height:32px; border-radius:10px; background:linear-gradient(135deg, rgba(139,128,196,0.2), rgba(110,155,200,0.2)); display:flex; align-items:center; justify-content:center; flex-shrink:0; transition:transform 0.15s;"
+             class="avatar-hover">
+          <span style="font-family:'DM Sans',sans-serif; font-weight:700; font-size:0.7rem; color:#6D665B; letter-spacing:0.3px;"><%= initials %></span>
+        </div>
+      <% end %>
+
+      <%# Mobile hamburger %>
+      <button data-action="click->app-nav#toggleMenu"
+              data-app-nav-target="menuBtn"
+              style="padding:0.4rem; margin-right:-0.4rem; color:#1C1812; background:none; border:none; cursor:pointer;"
+              class="inline-flex md:hidden" aria-label="Menu" aria-expanded="false" aria-controls="app-mobile-menu">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true">
+          <path d="M3 6h14M3 10h14M3 14h14"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <%# === Mobile menu === %>
+  <div id="app-mobile-menu" data-app-nav-target="menu" style="display:none; border-top:1px solid rgba(28,24,18,0.04); padding:0.75rem clamp(1rem,3vw,2.25rem) 1rem;" class="md:hidden">
+    <div style="display:flex; flex-direction:column; gap:0.5rem;">
+      <%
+        nav_links = [
+          { label: "Explore", path: root_path, match: "landing" },
+          { label: "My Routes", path: dashboard_path, match: "dashboard" },
+          { label: "Profile", path: profile_path, match: "profiles" },
+          { label: "Community", path: community_path, match: "community" }
+        ]
+      %>
+      <% nav_links.each do |link| %>
+        <% is_active = link[:match] && controller_name == link[:match] %>
+        <%= link_to link[:label], link[:path],
+            style: "font-family:'DM Sans',sans-serif; font-size:0.88rem; font-weight:#{is_active ? '600' : '400'}; color:#{is_active ? '#1C1812' : '#6D665B'}; text-decoration:none; padding:0.45rem 0; transition:color 0.2s;" %>
+      <% end %>
+      <div style="padding-top:0.5rem; border-top:1px solid rgba(28,24,18,0.04); margin-top:0.25rem;">
+        <%= button_to "Sign out", core.sign_out_path, method: :delete,
+            style: "font-family:'DM Sans',sans-serif; font-size:0.88rem; font-weight:400; color:#A09889; background:none; border:none; cursor:pointer; padding:0.45rem 0;" %>
+      </div>
+    </div>
+  </div>
+</nav>

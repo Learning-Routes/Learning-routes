@@ -10,9 +10,20 @@ Rails.application.routes.draw do
   # Dashboard
   get "dashboard", to: "dashboard#show", as: :dashboard
 
+  # Profile
+  get "profile", to: "profiles#show", as: :profile
+
+  # Route Wizard (Create Route)
+  get "routes/create", to: "route_wizard#new", as: :new_route_wizard
+  post "routes/create", to: "route_wizard#create", as: :create_route_wizard
+  get "routes/create/status/:id", to: "route_wizard#status", as: :route_wizard_status
+
+  # Community
+  get "community", to: "community#show", as: :community
+
   # Health check endpoint for load balancers and uptime monitors
   get "up" => "rails/health#show", as: :rails_health_check
 
   # Root path
-  root "pages#home"
+  root "landing#index"
 end

@@ -13,8 +13,10 @@ export default class extends Controller {
     const customValue = hasCustomInput ? hasCustomInput.value.trim() : ""
 
     if (this.hasSubmitTarget) {
-      this.submitTarget.disabled = checked.length === 0 && !customValue
-      this.submitTarget.classList.toggle("opacity-50", checked.length === 0 && !customValue)
+      const disabled = checked.length === 0 && !customValue
+      this.submitTarget.disabled = disabled
+      this.submitTarget.classList.toggle("opacity-50", disabled)
+      this.submitTarget.classList.toggle("cursor-not-allowed", disabled)
     }
   }
 }

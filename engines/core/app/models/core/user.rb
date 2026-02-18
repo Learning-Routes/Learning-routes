@@ -3,6 +3,7 @@ module Core
     has_secure_password
 
     has_many :sessions, dependent: :destroy
+    has_many :route_requests, class_name: "::RouteRequest", foreign_key: :user_id, dependent: :destroy
 
     enum :role, { student: 0, teacher: 1, admin: 2 }
 

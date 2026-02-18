@@ -44,7 +44,17 @@ module ContentEngine
         highlight: true,
         footnotes: true
       )
-      markdown.render(markdown_text).html_safe
+      html = markdown.render(markdown_text)
+      sanitized = Rails::HTML5::SafeListSanitizer.new.sanitize(
+        html,
+        tags: %w[p br h1 h2 h3 h4 h5 h6 strong em b i u s del a ul ol li dl dt dd
+                 blockquote pre code div span table thead tbody tr th td
+                 img hr sup sub kbd mark abbr details summary],
+        attributes: %w[href src alt title class style id target rel
+                       data-controller data-action data-copy-code-target
+                       colspan rowspan]
+      )
+      sanitized.html_safe
     end
   end
 end
