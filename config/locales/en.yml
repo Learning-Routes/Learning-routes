@@ -11,6 +11,7 @@ en:
     my_routes: "My Routes"
     community: "Community"
     sign_out: "Sign out"
+    settings: "Settings"
 
   # ── Hero ──
   hero:
@@ -731,3 +732,65 @@ en:
     onboarding:
       save_exit: "Save & exit"
       title: "Set up your profile — Learning Routes"
+
+  # ── Settings ──
+  settings:
+    title: "Settings — Learning Routes"
+    heading: "Settings"
+    subheading: "Manage your account, preferences, and learning profile."
+    saved: "Settings saved successfully."
+    password_updated: "Password updated successfully."
+    wrong_current_password: "Current password is incorrect."
+    errors:
+      one: "1 error prevented saving:"
+      other: "%{count} errors prevented saving:"
+    back_to_profile: "Back to profile"
+    save: "Save Changes"
+    account:
+      heading: "Account"
+      name_label: "Name"
+      name_placeholder: "Your name"
+      email_label: "Email"
+      email_placeholder: "your@email.com"
+    preferences:
+      heading: "Preferences"
+      locale_label: "Language"
+      locale_en: "English"
+      locale_es: "Espa\u00f1ol"
+      timezone_label: "Timezone"
+    learning:
+      heading: "Learning Profile"
+      level_label: "Current Level"
+      level_beginner: "Beginner"
+      level_intermediate: "Intermediate"
+      level_advanced: "Advanced"
+      interests_label: "Interests"
+      interest_programming: "Programming"
+      interest_web_development: "Web Development"
+      interest_data_science: "Data Science"
+      interest_mobile_development: "Mobile Development"
+      interest_devops: "DevOps"
+      interest_cybersecurity: "Cybersecurity"
+      interest_ai_ml: "AI & Machine Learning"
+      interest_databases: "Databases"
+      style_label: "Learning Style"
+      style_visual: "Visual"
+      style_auditory: "Auditory"
+      style_reading: "Reading"
+      style_kinesthetic: "Kinesthetic"
+      goal_label: "Goal"
+      goal_placeholder: "What do you want to achieve?"
+      timeline_label: "Timeline"
+      timeline_1_month: "1 month"
+      timeline_3_months: "3 months"
+      timeline_6_months: "6 months"
+      timeline_1_year: "1 year"
+    password:
+      heading: "Change Password"
+      current_label: "Current Password"
+      current_placeholder: "Enter current password"
+      new_label: "New Password"
+      new_placeholder: "Minimum 8 characters"
+      confirm_label: "Confirm Password"
+      confirm_placeholder: "Repeat new password"
+      submit: "Update Password"

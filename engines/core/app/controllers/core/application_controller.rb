@@ -8,7 +8,11 @@ module Core
     private
 
     def set_locale
-      locale = cookies[:locale]&.to_sym
+      locale = if current_user
+        current_user.locale&.to_sym
+      else
+        cookies[:locale]&.to_sym
+      end
       I18n.locale = I18n.available_locales.include?(locale) ? locale : I18n.default_locale
     end
 

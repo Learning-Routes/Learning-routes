@@ -16,6 +16,11 @@ Rails.application.routes.draw do
   # Profile
   get "profile", to: "profiles#show", as: :profile
 
+  # Settings
+  get   "settings", to: "settings#edit", as: :settings
+  patch "settings", to: "settings#update"
+  patch "settings/password", to: "settings#update_password", as: :settings_password
+
   # Route Wizard (Create Route)
   get "routes/create", to: "route_wizard#new", as: :new_route_wizard
   post "routes/create", to: "route_wizard#create", as: :create_route_wizard

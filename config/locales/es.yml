@@ -11,6 +11,7 @@ es:
     my_routes: "Mis Rutas"
     community: "Comunidad"
     sign_out: "Cerrar sesión"
+    settings: "Ajustes"
 
   # ── Hero ──
   hero:
@@ -731,3 +732,65 @@ es:
     onboarding:
       save_exit: "Guardar y salir"
       title: "Configura tu perfil — Learning Routes"
+
+  # ── Ajustes ──
+  settings:
+    title: "Ajustes — Learning Routes"
+    heading: "Ajustes"
+    subheading: "Gestiona tu cuenta, preferencias y perfil de aprendizaje."
+    saved: "Ajustes guardados correctamente."
+    password_updated: "Contrase\u00f1a actualizada correctamente."
+    wrong_current_password: "La contrase\u00f1a actual es incorrecta."
+    errors:
+      one: "1 error impidi\u00f3 guardar:"
+      other: "%{count} errores impidieron guardar:"
+    back_to_profile: "Volver al perfil"
+    save: "Guardar cambios"
+    account:
+      heading: "Cuenta"
+      name_label: "Nombre"
+      name_placeholder: "Tu nombre"
+      email_label: "Correo electr\u00f3nico"
+      email_placeholder: "tu@correo.com"
+    preferences:
+      heading: "Preferencias"
+      locale_label: "Idioma"
+      locale_en: "English"
+      locale_es: "Espa\u00f1ol"
+      timezone_label: "Zona horaria"
+    learning:
+      heading: "Perfil de aprendizaje"
+      level_label: "Nivel actual"
+      level_beginner: "Principiante"
+      level_intermediate: "Intermedio"
+      level_advanced: "Avanzado"
+      interests_label: "Intereses"
+      interest_programming: "Programaci\u00f3n"
+      interest_web_development: "Desarrollo Web"
+      interest_data_science: "Ciencia de datos"
+      interest_mobile_development: "Desarrollo m\u00f3vil"
+      interest_devops: "DevOps"
+      interest_cybersecurity: "Ciberseguridad"
+      interest_ai_ml: "IA y Machine Learning"
+      interest_databases: "Bases de datos"
+      style_label: "Estilo de aprendizaje"
+      style_visual: "Visual"
+      style_auditory: "Auditivo"
+      style_reading: "Lectura"
+      style_kinesthetic: "Kinest\u00e9sico"
+      goal_label: "Objetivo"
+      goal_placeholder: "\u00bfQu\u00e9 quieres lograr?"
+      timeline_label: "Plazo"
+      timeline_1_month: "1 mes"
+      timeline_3_months: "3 meses"
+      timeline_6_months: "6 meses"
+      timeline_1_year: "1 a\u00f1o"
+    password:
+      heading: "Cambiar contrase\u00f1a"
+      current_label: "Contrase\u00f1a actual"
+      current_placeholder: "Ingresa tu contrase\u00f1a actual"
+      new_label: "Nueva contrase\u00f1a"
+      new_placeholder: "M\u00ednimo 8 caracteres"
+      confirm_label: "Confirmar contrase\u00f1a"
+      confirm_placeholder: "Repite la nueva contrase\u00f1a"
+      submit: "Actualizar contrase\u00f1a"
