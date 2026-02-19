@@ -3,6 +3,7 @@ class LocaleController < ApplicationController
     locale = params[:locale]&.to_sym
     if I18n.available_locales.include?(locale)
       cookies[:locale] = { value: locale, expires: 1.year.from_now }
+      current_user&.update(locale: locale.to_s)
     end
     redirect_back fallback_location: root_path, allow_other_host: false
   end

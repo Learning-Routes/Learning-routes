@@ -20,11 +20,11 @@ servers:
 proxy:
   ssl: true
   host: learningroutes.com
-  app_port: 3000
+  app_port: 80
   healthcheck:
     interval: 3
     path: /up
-    timeout: 3
+    timeout: 60
 
 registry:
   server: registry.hub.docker.com

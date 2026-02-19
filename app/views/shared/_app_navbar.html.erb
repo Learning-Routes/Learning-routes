@@ -50,6 +50,13 @@
         <%= t("nav.sign_out") %>
       <% end %>
 
+      <%# Settings gear (desktop) %>
+      <%= link_to settings_path, style: "color:#A09889; transition:color 0.2s; padding:0.2rem;", class: "hidden md:inline-flex nav-link", title: t("nav.settings") do %>
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+        </svg>
+      <% end %>
+
       <%# User avatar — links to profile %>
       <% initials = current_user.name.to_s.split.map(&:first).join.upcase.slice(0,2) %>
       <%= link_to profile_path, style: "text-decoration:none;" do %>
@@ -87,6 +94,8 @@
         <%= link_to link[:label], link[:path],
             style: "font-family:'DM Sans',sans-serif; font-size:0.88rem; font-weight:#{is_active ? '600' : '400'}; color:#{is_active ? '#1C1812' : '#6D665B'}; text-decoration:none; padding:0.45rem 0; transition:color 0.2s;" %>
       <% end %>
+      <%= link_to t("nav.settings"), settings_path,
+          style: "font-family:'DM Sans',sans-serif; font-size:0.88rem; font-weight:#{controller_name == 'settings' ? '600' : '400'}; color:#{controller_name == 'settings' ? '#1C1812' : '#6D665B'}; text-decoration:none; padding:0.45rem 0; transition:color 0.2s;" %>
       <div style="padding:0.45rem 0;">
         <%= render "shared/locale_toggle" %>
       </div>
