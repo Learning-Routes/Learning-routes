@@ -2,25 +2,25 @@
   <div class="sticky top-20 space-y-4">
     <!-- Step info card -->
     <div class="bg-gray-900 border border-white/[0.06] rounded-xl p-4">
-      <h3 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Step Info</h3>
+      <h3 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3"><%= t('learning_engine.sidebar.step_info') %></h3>
       <div class="space-y-2 text-sm">
         <div class="flex justify-between">
-          <span class="text-gray-500">Type</span>
+          <span class="text-gray-500"><%= t('learning_engine.sidebar.type') %></span>
           <span class="text-gray-300"><%= @step.content_type&.capitalize || "—" %></span>
         </div>
         <div class="flex justify-between">
-          <span class="text-gray-500">Level</span>
+          <span class="text-gray-500"><%= t('learning_engine.sidebar.level') %></span>
           <span class="text-gray-300"><%= @step.level&.upcase || "—" %></span>
         </div>
         <% if @step.estimated_minutes.to_i > 0 %>
           <div class="flex justify-between">
-            <span class="text-gray-500">Duration</span>
-            <span class="text-gray-300">~<%= @step.estimated_minutes %> min</span>
+            <span class="text-gray-500"><%= t('learning_engine.sidebar.duration') %></span>
+            <span class="text-gray-300"><%= t('learning_engine.route.duration', minutes: @step.estimated_minutes) %></span>
           </div>
         <% end %>
         <% if @step.bloom_level.to_i > 0 %>
           <div class="flex justify-between">
-            <span class="text-gray-500">Bloom's</span>
+            <span class="text-gray-500"><%= t('learning_engine.sidebar.blooms') %></span>
             <span class="text-gray-300"><%= Assessments::Question::BLOOM_LEVELS[@step.bloom_level.to_i] rescue "Level #{@step.bloom_level}" %></span>
           </div>
         <% end %>
@@ -32,12 +32,12 @@
 
     <!-- Progress overview -->
     <div class="bg-gray-900 border border-white/[0.06] rounded-xl p-4">
-      <h3 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Progress</h3>
+      <h3 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3"><%= t('learning_engine.sidebar.progress') %></h3>
       <div class="text-center">
         <div class="text-2xl font-bold text-white"><%= @progress[:percentage] %>%</div>
-        <div class="text-xs text-gray-500 mt-1"><%= @progress[:completed_steps] %>/<%= @progress[:total_steps] %> steps</div>
+        <div class="text-xs text-gray-500 mt-1"><%= @progress[:completed_steps] %>/<%= @progress[:total_steps] %> <%= t('learning_engine.sidebar.steps') %></div>
       </div>
-      <div class="h-1.5 bg-gray-800 rounded-full overflow-hidden mt-3" role="progressbar" aria-valuenow="<%= @progress[:percentage] %>" aria-valuemin="0" aria-valuemax="100" aria-label="Route progress: <%= @progress[:percentage] %>%">
+      <div class="h-1.5 bg-gray-800 rounded-full overflow-hidden mt-3" role="progressbar" aria-valuenow="<%= @progress[:percentage] %>" aria-valuemin="0" aria-valuemax="100" aria-label="<%= t('learning_engine.progress.aria', percent: @progress[:percentage]) %>">
         <div class="h-full bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full"
              style="width: <%= @progress[:percentage] %>%" aria-hidden="true"></div>
       </div>

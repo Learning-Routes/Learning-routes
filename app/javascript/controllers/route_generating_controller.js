@@ -3,13 +3,14 @@ import { Controller } from "@hotwired/stimulus"
 export default class extends Controller {
   static values = {
     url: String,
-    requestId: Number
+    requestId: String
   }
 
   static targets = ["dotsText"]
 
   connect() {
     this.dotCount = 0
+    this.startedAt = Date.now()
     this.dotInterval = setInterval(() => this.animateDots(), 500)
     this.pollInterval = setInterval(() => this.poll(), 2000)
   }
@@ -44,7 +45,11 @@ export default class extends Controller {
       } else if (data.status === "failed") {
         clearInterval(this.pollInterval)
         clearInterval(this.dotInterval)
-        // Reload to show error state
+        window.location.href = "/routes/create"
+      } else if (Date.now() - this.startedAt > 90000) {
+        // Timeout after 90 seconds — job likely not processing
+        clearInterval(this.pollInterval)
+        clearInterval(this.dotInterval)
         window.location.href = "/routes/create"
       }
     } catch (e) {

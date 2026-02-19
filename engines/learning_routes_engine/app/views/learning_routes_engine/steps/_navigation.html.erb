@@ -15,7 +15,7 @@
     <div></div>
   <% end %>
 
-  <%= link_to "Route Overview", route_path(@route), class: "text-xs text-gray-500 hover:text-gray-300 transition" %>
+  <%= link_to t('learning_engine.navigation.route_overview'), route_path(@route), class: "text-xs text-gray-500 hover:text-gray-300 transition" %>
 
   <% if next_step %>
     <%= link_to route_step_path(@route, next_step), class: "flex items-center gap-2 text-sm text-gray-400 hover:text-white transition" do %>

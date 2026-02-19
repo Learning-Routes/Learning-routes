@@ -15,7 +15,7 @@ module Core
       if @user.save
         Core::VerificationMailer.verify_email(@user).deliver_later
         start_session_for(@user)
-        redirect_to after_sign_in_path(@user), notice: "Welcome to Learning Routes! Check your email to verify your account."
+        redirect_to after_sign_in_path(@user), notice: t("flash.welcome")
       else
         render :new, status: :unprocessable_entity
       end

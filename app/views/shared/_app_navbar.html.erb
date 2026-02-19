@@ -16,10 +16,10 @@
     <div style="display:flex; align-items:center; gap:1.8rem;" class="hidden md:flex">
       <%
         nav_links = [
-          { label: "Explore", path: root_path, match: "landing" },
-          { label: "My Routes", path: dashboard_path, match: "dashboard" },
-          { label: "Profile", path: profile_path, match: "profiles" },
-          { label: "Community", path: community_path, match: "community" }
+          { label: t("nav.explore"), path: root_path, match: "landing" },
+          { label: t("nav.my_routes"), path: dashboard_path, match: "dashboard" },
+          { label: t("nav.profile"), path: profile_path, match: "profiles" },
+          { label: t("nav.community"), path: community_path, match: "community" }
         ]
       %>
       <% nav_links.each do |link| %>
@@ -35,14 +35,19 @@
       <% end %>
     </div>
 
-    <%# === Right: Avatar + mobile menu === %>
+    <%# === Right: Locale toggle + Sign out + Avatar + mobile menu === %>
     <div style="display:flex; align-items:center; gap:0.8rem;">
+
+      <%# Locale toggle (desktop) %>
+      <div class="hidden md:block">
+        <%= render "shared/locale_toggle" %>
+      </div>
 
       <%# Sign out (desktop) %>
       <%= button_to core.sign_out_path, method: :delete,
           style: "font-family:'DM Sans',sans-serif; font-size:0.72rem; font-weight:500; color:#A09889; background:none; border:none; cursor:pointer; padding:0.3rem 0; transition:color 0.2s;",
           class: "hidden md:block nav-link" do %>
-        Sign out
+        <%= t("nav.sign_out") %>
       <% end %>
 
       <%# User avatar — links to profile %>
@@ -71,10 +76,10 @@
     <div style="display:flex; flex-direction:column; gap:0.5rem;">
       <%
         nav_links = [
-          { label: "Explore", path: root_path, match: "landing" },
-          { label: "My Routes", path: dashboard_path, match: "dashboard" },
-          { label: "Profile", path: profile_path, match: "profiles" },
-          { label: "Community", path: community_path, match: "community" }
+          { label: t("nav.explore"), path: root_path, match: "landing" },
+          { label: t("nav.my_routes"), path: dashboard_path, match: "dashboard" },
+          { label: t("nav.profile"), path: profile_path, match: "profiles" },
+          { label: t("nav.community"), path: community_path, match: "community" }
         ]
       %>
       <% nav_links.each do |link| %>
@@ -82,8 +87,11 @@
         <%= link_to link[:label], link[:path],
             style: "font-family:'DM Sans',sans-serif; font-size:0.88rem; font-weight:#{is_active ? '600' : '400'}; color:#{is_active ? '#1C1812' : '#6D665B'}; text-decoration:none; padding:0.45rem 0; transition:color 0.2s;" %>
       <% end %>
+      <div style="padding:0.45rem 0;">
+        <%= render "shared/locale_toggle" %>
+      </div>
       <div style="padding-top:0.5rem; border-top:1px solid rgba(28,24,18,0.04); margin-top:0.25rem;">
-        <%= button_to "Sign out", core.sign_out_path, method: :delete,
+        <%= button_to t("nav.sign_out"), core.sign_out_path, method: :delete,
             style: "font-family:'DM Sans',sans-serif; font-size:0.88rem; font-weight:400; color:#A09889; background:none; border:none; cursor:pointer; padding:0.45rem 0;" %>
       </div>
     </div>

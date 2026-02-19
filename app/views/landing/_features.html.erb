@@ -1,4 +1,4 @@
-<section class="px-8 pb-20">
+<section class="px-8 pb-20" id="features">
   <div class="max-w-[720px] mx-auto">
 
     <%# Gradient separator %>
@@ -7,36 +7,15 @@
 
     <%# Section header %>
     <div class="animate-enter mb-10">
-      <p class="label-mono text-muted mb-2">Under the hood</p>
+      <p class="label-mono text-muted mb-2"><%= t("features.label") %></p>
       <h2 class="font-sans font-bold text-[clamp(1.4rem,3vw,1.9rem)] tracking-[-0.8px] text-txt">
-        Why it works.
+        <%= t("features.headline") %>
       </h2>
     </div>
 
     <%# Numbered list %>
     <div>
-      <%
-        features = [
-          {
-            title: "Routes built just for you",
-            desc: "Each path is generated based on your answers and evolves with your progress. Two people studying the same topic will have different routes."
-          },
-          {
-            title: "Multiple models, one experience",
-            desc: "Different specialized models work together to explain each concept in the clearest way possible."
-          },
-          {
-            title: "Lessons with natural voice",
-            desc: "Audio with high-quality human voices. Real immersion in the language and topic you're studying."
-          },
-          {
-            title: "Intelligent reinforcement",
-            desc: "Detects your weak points and designs specific exercises until you master them completely."
-          },
-        ]
-      %>
-
-      <% features.each_with_index do |feat, i| %>
+      <% t("features.items").each_with_index do |feat, i| %>
         <div class="animate-enter grid grid-cols-[3.5rem_1fr] py-[1.6rem] border-t border-lr"
              style="animation-delay: <%= (i * 0.08 + 0.1).round(2) %>s;">
 
@@ -48,10 +27,10 @@
           <%# Content %>
           <div>
             <h3 class="font-sans text-[0.92rem] font-semibold text-txt tracking-[-0.3px] mb-[0.4rem]">
-              <%= feat[:title] %>
+              <%= feat[:title] || feat["title"] %>
             </h3>
             <p class="font-sans text-[0.8rem] text-sub leading-[1.8] max-w-[500px]">
-              <%= feat[:desc] %>
+              <%= feat[:desc] || feat["desc"] %>
             </p>
           </div>
         </div>

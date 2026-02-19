@@ -1,31 +1,733 @@
-# Files in the config/locales directory are used for internationalization and
-# are automatically loaded by Rails. If you want to use locales other than
-# English, add the necessary files in this directory.
-#
-# To use the locales, use `I18n.t`:
-#
-#     I18n.t "hello"
-#
-# In views, this is aliased to just `t`:
-#
-#     <%= t("hello") %>
-#
-# To use a different locale, set it with `I18n.locale`:
-#
-#     I18n.locale = :es
-#
-# This would use the information in config/locales/es.yml.
-#
-# To learn more about the API, please read the Rails Internationalization guide
-# at https://guides.rubyonrails.org/i18n.html.
-#
-# Be aware that YAML interprets the following case-insensitive strings as
-# booleans: `true`, `false`, `on`, `off`, `yes`, `no`. Therefore, these strings
-# must be quoted to be interpreted as strings. For example:
-#
-#     en:
-#       "yes": yup
-#       enabled: "ON"
-
 en:
-  hello: "Hello world"
+  # ── Navbar ──
+  nav:
+    features: "Features"
+    how_it_works: "How it works"
+    sign_in: "Sign in"
+    sign_up: "Get started"
+    dashboard: "Dashboard"
+    profile: "Profile"
+    explore: "Explore"
+    my_routes: "My Routes"
+    community: "Community"
+    sign_out: "Sign out"
+
+  # ── Hero ──
+  hero:
+    headline: "Learn anything, the&nbsp;right way."
+    headline_active_html: "Your route in<br>%{topic}."
+    subtext: "Tell us what you want to master and get a unique learning route, with assessments that adapt to your real progress."
+    subtext_active: "Continue your personalized route. %{progress}% completed with %{steps} steps finished."
+    cta: "See how it works"
+    cta_active: "Continue learning"
+    social_proof: "4.8 satisfaction in private beta"
+
+  # ── Product Preview ──
+  product_preview:
+    label: "New route"
+    headline: "Learn whatever you want."
+    topics:
+      - "English B1→B2"
+      - "Python"
+      - "Calculus"
+      - "UX Design"
+      - "Photography"
+      - "Marketing"
+      - "Japanese"
+      - "Finance"
+      - "Machine Learning"
+      - "Guitar"
+      - "Art History"
+    more: "And much more..."
+    cta: "Generate my route"
+
+  # ── How It Works ──
+  how_it_works:
+    label: "3 steps"
+    headline: "From zero to mastering a topic."
+    steps:
+      - title: "Tell us your goal"
+        desc: "English B2? Differential calculus? Python from scratch? Tell us what you want to achieve and how much you know today."
+      - title: "Get your route"
+        desc: "We generate a personalized learning path with stages, assessments, and content adapted to your level."
+      - title: "Learn and advance"
+        desc: "Complete lessons, get reinforcement where you need it, and measure your progress at every step until you master the topic."
+
+  # ── Path Section ──
+  path_section:
+    product_label: "Product"
+    headline_active: "Your learning route."
+    headline_default: "This is what your route looks like."
+    desc_active: "Each node is a stage of your route. Satellites are the topics at each level."
+    desc_default: "Each node is a stage. Click on a satellite to explore what happens at each level."
+    footer_active: "%{completed}/%{total} steps completed"
+    footer_default: "Each route is uniquely generated"
+    aria_active: "Visual representation of your %{topic} learning route with %{count} connected nodes"
+    aria_default: "Interactive visualization of a personalized learning route with 6 connected stages. Click on satellite nodes to learn more."
+
+  # ── Outcomes ──
+  outcomes:
+    label: "Outcomes"
+    headline_html: "From where you are, <span class=\"text-sub\">to where you want to be.</span>"
+    items:
+      - from: "I don't know where to start"
+        to: "Clear route from day one"
+      - from: "Generic content for everyone"
+        to: "Lessons adapted to your level"
+      - from: "I learn but forget quickly"
+        to: "Reinforcement that locks in learning"
+      - from: "I don't know if I'm progressing"
+        to: "Measurable progress at every stage"
+
+  # ── Features ──
+  features:
+    label: "Under the hood"
+    headline: "Why it works."
+    items:
+      - title: "Routes built just for you"
+        desc: "Each path is generated based on your answers and evolves with your progress. Two people studying the same topic will have different routes."
+      - title: "Multiple models, one experience"
+        desc: "Different specialized models work together to explain each concept in the clearest way possible."
+      - title: "Lessons with natural voice"
+        desc: "Audio with high-quality human voices. Real immersion in the language and topic you're studying."
+      - title: "Intelligent reinforcement"
+        desc: "Detects your weak points and designs specific exercises until you master them completely."
+
+  # ── Integrations ──
+  integrations:
+    label: "Integrations"
+    headline_html: "Powered by the best <span class=\"text-sub\">tools.</span>"
+    items:
+      - name: "OpenAI"
+        desc: "Content generation"
+      - name: "Claude"
+        desc: "Analysis and reasoning"
+      - name: "ElevenLabs"
+        desc: "Voice synthesis"
+      - name: "Nano Banana"
+        desc: "Image generation"
+
+  # ── CTA ──
+  cta:
+    headline: "Start your route today."
+    headline_active: "Keep going."
+    subtext: "Discover a new way to learn."
+    subtext_active: "Your %{topic} route awaits."
+    button: "Get started"
+    button_active: "Go to dashboard"
+
+  # ── Footer ──
+  footer:
+    tagline: "AI-powered personalized learning routes. Learn what you need, at your own pace."
+    product: "Product"
+    legal: "Legal"
+    account: "Account"
+    terms: "Terms"
+    privacy: "Privacy"
+    contact: "Contact"
+    copyright: "© 2026 Learning Routes. All rights reserved."
+
+  # ── Auth ──
+  auth:
+    register:
+      title: "Create account — Learning Routes"
+      toggle: "I have an account"
+      heading: "Start your journey."
+      google: "Sign up with Google"
+      divider: "EMAIL"
+      name_label: "Name"
+      name_placeholder: "Your name"
+      email_label: "Email"
+      email_placeholder: "tu@email.com"
+      password_label: "Password"
+      password_placeholder: "Minimum 8 characters"
+      submit: "Create account"
+      switch_text: "Already have an account?"
+      switch_link: "Sign in"
+      legal_html: "By creating an account you accept the <a href=\"%{terms_url}\" style=\"color:#A09889; text-decoration:underline;\">terms</a> and <a href=\"%{privacy_url}\" style=\"color:#A09889; text-decoration:underline;\">privacy</a>."
+      errors: "%{count} error(s) prevented saving:"
+    login:
+      title: "Sign in — Learning Routes"
+      toggle: "Create account"
+      heading: "Welcome back."
+      google: "Continue with Google"
+      divider: "EMAIL"
+      email_label: "Email"
+      email_placeholder: "tu@email.com"
+      password_label: "Password"
+      password_placeholder: "Your password"
+      forgot: "Forgot your password?"
+      submit: "Sign in"
+      switch_text: "Don't have an account?"
+      switch_link: "Create one"
+    forgot:
+      title: "Reset password — Learning Routes"
+      toggle: "Sign in"
+      heading: "Reset your password."
+      subtext: "Enter your email and we'll send you a link to reset your password."
+      email_label: "Email"
+      email_placeholder: "tu@email.com"
+      submit: "Send reset link"
+      switch_text: "Remember your password?"
+      switch_link: "Sign in"
+    reset:
+      title: "New password — Learning Routes"
+      heading: "New password."
+      subtext: "Choose a strong password for your account."
+      password_label: "New password"
+      password_placeholder: "Minimum 8 characters"
+      confirm_label: "Confirm password"
+      confirm_placeholder: "Repeat your new password"
+      submit: "Update password"
+      errors: "%{count} error(s) prevented saving:"
+
+  # ── Flash messages ──
+  flash:
+    welcome: "Welcome to Learning Routes! Check your email to verify your account."
+    signed_in: "Signed in successfully."
+    signed_out: "Signed out successfully."
+    invalid_credentials: "Invalid email or password."
+    too_many_login: "Too many login attempts. Please try again later."
+    too_many_requests: "Too many requests. Please try again later."
+    password_reset_sent: "If that email exists, we sent password reset instructions."
+    invalid_reset_link: "Invalid or expired reset link."
+    password_updated: "Password updated. Please sign in."
+    email_verified: "Email verified successfully!"
+    invalid_verification: "Invalid or expired verification link."
+    verification_sent: "Verification email sent."
+    onboarding_complete: "Welcome aboard! We're creating your personalized learning route."
+    must_sign_in: "You must be signed in."
+    not_authorized: "You are not authorized to perform this action."
+
+  # ── Path Visualization ──
+  path_viz:
+    back_button: "Back to satellites"
+    nodes:
+      n1:
+        label: "Leveling"
+        tag: "NV1"
+        note: "Initial diagnosis"
+        sats:
+          - topic: "Basics"
+            desc: "We start by mapping what you already know — no wasted time on things you've mastered."
+          - topic: "Concepts"
+            desc: "Core concepts are identified so your route focuses on what actually matters."
+          - topic: "Foundations"
+            desc: "Your foundational knowledge is assessed to build the rest of your route on solid ground."
+      n2:
+        label: "Assessment"
+        tag: "NV2"
+        note: "First checkpoint"
+        sats:
+          - topic: "Quiz"
+            desc: "Short adaptive quizzes that adjust difficulty based on your answers in real time."
+          - topic: "Practice"
+            desc: "Hands-on exercises that test understanding, not just memorization."
+      n3:
+        label: "Deep Dive"
+        tag: "MM"
+        note: "Multi-model content"
+        sats:
+          - topic: "Theory"
+            desc: "AI-generated explanations tailored to your level and learning style."
+          - topic: "Examples"
+            desc: "Real-world examples and code snippets that make abstract concepts click."
+          - topic: "Exercises"
+            desc: "Progressive exercises that challenge you just enough to keep growing."
+      n4:
+        label: "Reinforcement"
+        tag: "NV3"
+        note: "Fill knowledge gaps"
+        sats:
+          - topic: "Review"
+            desc: "Spaced repetition ensures you retain what you've learned over time."
+          - topic: "Gaps"
+            desc: "We ask what wasn't clear and generate new micro-routes to fill those gaps."
+      n5:
+        label: "Final Exam"
+        tag: "EF"
+        note: "Intensive review"
+        sats:
+          - topic: "Mock"
+            desc: "Full-length practice exams that simulate the real thing."
+          - topic: "Summary"
+            desc: "A condensed review of everything you've covered — your personal study guide."
+          - topic: "Key topics"
+            desc: "The most important topics highlighted so you know exactly where to focus."
+      n6:
+        label: "Your Goal"
+        tag: ""
+        note: "You made it"
+        sats:
+          - topic: "Mastery"
+            desc: "You've demonstrated real understanding — not just surface-level knowledge."
+          - topic: "Portfolio"
+            desc: "Your completed exercises and projects become proof of what you can do."
+          - topic: "Next level"
+            desc: "Ready for more? Generate a new route that builds on everything you've achieved."
+
+  # ── Landing status labels ──
+  landing:
+    status:
+      completed: "Completed"
+      in_progress: "In progress"
+      available: "Available"
+      locked: "Locked"
+
+  # ── Profile Page ──
+  profile:
+    title: "My Profile — Learning Routes"
+    member_since: "Member since %{date}"
+    days_streak: "%{count} days"
+    experience: "Experience"
+    xp_format: "%{current} / %{next} XP"
+    no_badges: "Complete activities to unlock achievements."
+    stats:
+      routes: "Routes"
+      lessons: "Lessons"
+      time: "Time"
+      accuracy: "Accuracy"
+    tabs:
+      my_routes: "My Routes"
+      achievements: "Achievements"
+      activity: "Activity"
+    loading_achievements: "Loading achievements…"
+    loading_activity: "Loading activity…"
+    learning_profile: "Learning Profile"
+    level: "Level"
+    style: "Style"
+    timeline: "Timeline"
+    badges:
+      first_route: "First Route"
+      step_completed: "Step Completed"
+      high_accuracy: "High Accuracy"
+      streak: "%{count}d Streak"
+      route_complete: "Route Complete"
+
+  # ── Route Card ──
+  route_card:
+    time: "time"
+    lessons: "lessons"
+    accuracy: "accuracy"
+
+  # ── Create Route Card ──
+  create_route:
+    title: "Create new route"
+    desc: "AI creates a personalized path based on your goals"
+
+  # ── Expanded Route Overlay ──
+  expanded_route:
+    close: "Close"
+    open_route: "Open Route"
+
+  # ── Community ──
+  community:
+    title: "Community — Learning Routes"
+    heading: "Community"
+    subtext: "See what the Learning Routes community is building."
+    stats:
+      learners: "Learners"
+      routes: "Routes"
+      steps_done: "Steps Done"
+      study_time: "Study Time"
+    top_learners: "Top Learners"
+    top_learners_desc: "This month"
+    level_label: "NV.%{level}"
+    routes_label: "%{count} routes"
+    xp_label: "%{count} XP"
+    recent_activity: "Recent Activity"
+    recent_activity_desc: "From the community"
+    popular_topics: "Popular Topics"
+    popular_topics_desc: "Most studied this month"
+    routes_count: "%{count} routes"
+    learners_count: "%{count} learners"
+    join_heading: "Start Learning"
+    join_text: "Join the community and create your first personalized route."
+    join_cta: "Create my route"
+    steps_label: "%{count} steps"
+    completed: "completed"
+    no_learners: "No learners yet. Be the first!"
+    no_activity: "No activity yet"
+    no_activity_desc: "Community activity will appear here as learners progress."
+    popular_routes: "Popular Routes"
+    general: "General"
+    no_routes: "No routes created yet. Be a pioneer!"
+    activity_types:
+      lesson_completed: "Lesson completed"
+      route_created: "Route created"
+      exam_passed: "Exam passed"
+      step_completed: "Step completed"
+    time:
+      today: "Today"
+      yesterday: "Yesterday"
+
+  # ── Route Wizard ──
+  wizard:
+    title: "Create Route — Learning Routes"
+    save_and_exit: "Save and exit"
+    back: "Back"
+    step_label: "Step %{n}"
+    step_of: "of 5"
+    styles:
+      visual: "Visual"
+      visual_desc: "You learn best with images, videos, and diagrams"
+      auditory: "Auditory"
+      auditory_desc: "You learn best by listening to explanations and discussions"
+      reading: "Reading"
+      reading_desc: "You learn best by reading and taking notes"
+      kinesthetic: "Kinesthetic"
+      kinesthetic_desc: "You learn best by practicing and experimenting"
+      multimodal: "Multimodal"
+      multimodal_desc: "You combine several styles — you're versatile"
+    step0:
+      heading: "What do you want to learn?"
+      subtext: "Choose a topic or type your own — AI will build your route."
+      topics:
+        programming: "Programming"
+        programming_desc: "Code, frameworks, algorithms"
+        languages: "Languages"
+        languages_desc: "English, Spanish, French…"
+        math: "Mathematics"
+        math_desc: "Algebra, calculus, statistics"
+        science: "Science"
+        science_desc: "Physics, chemistry, biology"
+        business: "Business"
+        business_desc: "Marketing, finance, strategy"
+        arts: "Art & Design"
+        arts_desc: "Drawing, music, photography"
+      custom_label: "Or type something specific"
+      custom_placeholder: "E.g.: Machine Learning, Guitar, Cooking…"
+      step_name: "— Topic"
+    step1:
+      heading: "What's your current level?"
+      subtext: "We'll adjust your route to start in the right place."
+      levels:
+        beginner: "Beginner"
+        beginner_desc: "Starting from scratch"
+        basic: "Basic"
+        basic_desc: "I know the basics"
+        intermediate: "Intermediate"
+        intermediate_desc: "Comfortable with key concepts"
+        advanced: "Advanced"
+        advanced_desc: "Looking to master the details"
+      step_name: "— Level"
+    step2:
+      heading: "What motivates you?"
+      subtext: "This helps us prioritize what matters most in your route."
+      goals:
+        career: "Career growth"
+        personal: "Personal interest"
+        exam: "Prepare for exam"
+        project: "Build a project"
+        switch: "Career change"
+        teaching: "Teach others"
+      step_name: "— Goal"
+    step3:
+      mini_test: "MINI-TEST"
+      all_answered: "✓ All answered"
+      heading: "How do you learn best?"
+      subtext: "Answer quickly — there are no wrong answers."
+      progress: "%{done} of 6"
+      questions:
+        q1:
+          scenario: "You need to learn to use new software for work."
+          options:
+            v: "I look for a video tutorial on YouTube"
+            a: "I ask a colleague to explain it step by step"
+            r: "I read the documentation or a written manual"
+            k: "I open the program and start exploring on my own"
+        q2:
+          scenario: "You're planning a trip to a place you don't know."
+          options:
+            v: "I look at maps, photos, and videos of the destination"
+            a: "I listen to podcasts or friend recommendations"
+            r: "I read blogs, guides, and written reviews"
+            k: "I prefer to improvise and discover the place walking"
+        q3:
+          scenario: "You need to remember important information for an exam."
+          options:
+            v: "I make diagrams, mind maps, or color-coded charts"
+            a: "I repeat the information out loud or explain it to myself"
+            r: "I rewrite my notes and make summaries"
+            k: "I create practical examples or associate with real experiences"
+        q4:
+          scenario: "Someone is explaining a difficult concept. What would help most?"
+          options:
+            v: "Draw a diagram or show me an image"
+            a: "Explain it calmly, using spoken analogies"
+            r: "Write it down or share an article for me to read"
+            k: "Let me try it with a real example"
+        q5:
+          scenario: "You want to learn to cook a new dish."
+          options:
+            v: "I watch a step-by-step video recipe"
+            a: "I listen to someone explain how to do it while I cook"
+            r: "I follow a written recipe with ingredients and steps"
+            k: "I go straight to the kitchen and experiment with ingredients"
+        q6:
+          scenario: "You bought furniture that needs assembly. How do you solve it?"
+          options:
+            v: "I look at the diagrams and figures in the instructions"
+            a: "I call someone to guide me by phone while I assemble"
+            r: "I read the written instructions step by step"
+            k: "I ignore the instructions and start assembling by intuition"
+      result_label: "Your dominant style:"
+      result_note: "This is used to personalize your route"
+      step_name: "— Style"
+    step4:
+      heading: "Set your pace."
+      subtext: "You can always change it later."
+      paces:
+        relaxed: "Relaxed"
+        relaxed_desc: "2–3 lessons per week"
+        relaxed_time: "~15 min/day"
+        steady: "Steady"
+        steady_desc: "4–5 lessons per week"
+        steady_time: "~25 min/day"
+        intensive: "Intensive"
+        intensive_desc: "Daily lessons"
+        intensive_time: "~45 min/day"
+      step_name: "— Pace"
+    continue: "Continue"
+    generate: "Generate route"
+    bottom_hint: "AI will create a personalized path based on your choices"
+    generating:
+      title: "Building your route…"
+      desc: "Our AI is designing a personalized learning path for you."
+      steps:
+        analyzing: "Analyzing your profile"
+        building: "Building your learning path"
+        creating: "Creating assessments"
+        personalizing: "Personalizing content"
+      wait: "This can take up to 30 seconds"
+    completed:
+      title: "Your route is ready!"
+      desc: "Explore your personalized learning path."
+      cta: "Start learning"
+    failed:
+      title: "Something went wrong"
+      desc: "We couldn't generate your route. Please try again."
+      retry: "Try again"
+
+  # ── Achievements ──
+  achievements:
+    first_route: "First Route"
+    first_route_desc: "Complete a learning route"
+    streak_3: "3-Day Streak"
+    streak_3_desc: "Consistent daily learning"
+    streak_14: "14-Day Streak"
+    streak_14_desc: "Consistent daily learning"
+    sharpshooter: "Sharpshooter"
+    sharpshooter_desc: "50 lessons · 90%+ accuracy"
+    fast_learner: "Fast Learner"
+    fast_learner_desc: "5 lessons in one session"
+    first_step: "First Step"
+    first_step_desc: "Complete your first step"
+    ten_steps: "Ten Steps"
+    ten_steps_desc: "Complete 10 steps total"
+    half_century: "Half Century"
+    half_century_desc: "Complete 50 steps total"
+    accuracy_80: "80% Accuracy"
+    accuracy_80_desc: "Score 80%+ on exams"
+    accuracy_95: "95% Accuracy"
+    accuracy_95_desc: "Score 95%+ on exams"
+    ten_hours: "10 Hours"
+    ten_hours_desc: "Accumulate 10 hours of study"
+    climber: "Climber"
+    climber_desc: "Reach level 20"
+    polymath: "Polymath"
+    polymath_desc: "Routes in 3+ different topics"
+    route_complete: "Route Complete"
+    route_complete_desc: "Finish a route completely"
+
+  # ── Activity ──
+  activity:
+    no_recent: "No recent activity"
+    no_recent_desc: "Your study activity will appear here."
+    types:
+      lesson_completed: "Lesson completed"
+      lesson_started: "Lesson started"
+      achievement_unlocked: "Achievement unlocked"
+      route_new: "New route"
+      level_up: "Level up"
+      exam_passed: "Exam passed"
+      exam_failed: "Exam failed"
+      exam_pass: "Assessment completed"
+    new_route_desc: "New route created"
+    passed_with: "Passed with %{score}%"
+    failed_score: "%{score}% — try again"
+    study_session: "Study session"
+    study_duration: "%{minutes} min of learning"
+    session_completed: "Session completed"
+    time:
+      today: "Today, %{time}"
+      yesterday: "Yesterday, %{time}"
+
+  # ── Assessments Engine ──
+  assessments:
+    show:
+      title_prefix: "Assessment - "
+      description: "Test your understanding of this topic."
+      questions: "Questions"
+      to_pass: "To pass"
+      minutes: "Minutes"
+      last_attempt: "Last attempt"
+      passed: "Passed"
+      not_passed: "Not passed"
+      back_to_route: "Back to route"
+      start_exam: "Start exam"
+    exam:
+      title_prefix: "Assessment - "
+      question_of: "Question %{current} of %{total}"
+      save_answer: "Save Answer"
+      previous: "Previous"
+      next: "Next"
+      submit: "Submit Assessment"
+      confirm: "Are you sure you want to submit? You cannot change your answers after submission."
+      sidebar_heading: "Questions"
+      answered: "%{count} of %{total} answered"
+    results:
+      title_prefix: "Results - "
+      congrats: "Congratulations!"
+      keep_going: "Keep Going!"
+      passed_desc: "You passed the assessment."
+      need_score: "You need %{score}% to pass."
+      correct: "Correct"
+      incorrect: "Incorrect"
+      unanswered: "Unanswered"
+      breakdown: "Question Breakdown"
+      your_answer: "Your answer:"
+      back_to_route: "Back to Route"
+      continue: "Continue Learning"
+
+  # ── Content Engine ──
+  content_engine:
+    notes:
+      placeholder: "Add your notes..."
+
+  # ── Learning Engine ──
+  learning_engine:
+    route:
+      title_suffix: "- Learning Routes"
+      reviews_due:
+        one: "%{count} review due"
+        other: "%{count} reviews due"
+      see_all_reviews: "See all reviews"
+      duration: "~%{minutes} min"
+    progress:
+      label: "Progress"
+      aria: "Route progress: %{percent}%"
+      steps_completed: "%{completed} of %{total} steps completed"
+      remaining: "~%{minutes} min remaining"
+    lesson:
+      badge: "Lesson"
+      no_content: "No content available for this step yet."
+    exercise:
+      badge: "Exercise"
+      reset: "Reset"
+      submit: "Submit Answer"
+      hint: "Get Hint"
+      previous_submissions: "Previous Submissions"
+      score: "Score:"
+      no_content: "No exercise content available yet."
+    assessment:
+      badge: "Assessment"
+      passed: "Passed"
+      not_passed: "Not passed"
+      passing: "passing:"
+      view_results: "View Detailed Results"
+      questions: "Questions"
+      passing_score: "Passing Score"
+      minutes: "Minutes"
+      start: "Start Assessment"
+      not_generated: "Assessment not yet generated."
+    review:
+      badge: "Review"
+      memory_strength: "Memory Strength"
+      concept_map: "Concept Map"
+      no_steps: "No completed steps to review yet."
+      prompt: "How well do you remember this material?"
+      again: "Again"
+      hard: "Hard"
+      good: "Good"
+      easy: "Easy"
+    sidebar:
+      step_info: "Step Info"
+      type: "Type"
+      level: "Level"
+      duration: "Duration"
+      blooms: "Bloom's"
+      progress: "Progress"
+      steps: "steps"
+    navigation:
+      route_overview: "Route Overview"
+    ai_buttons:
+      explain: "Explain Differently"
+      example: "Give Example"
+      simplify: "Simplify"
+      deeper: "Go Deeper"
+      generating: "Generating..."
+    notes:
+      heading: "Notes"
+      placeholder: "Add your notes..."
+      saved: "Saved"
+    loading:
+      generating: "Generating content..."
+    reviews:
+      title: "Due Reviews - Learning Routes"
+      heading: "Due Reviews"
+      back: "Back to Dashboard"
+      review_btn: "Review"
+      empty: "No reviews due right now. Great job!"
+
+  # ── Assessments Engine ──
+  assessments:
+    show:
+      title_prefix: "Assessment - "
+      description: "Test your understanding of this topic."
+      questions: "Questions"
+      to_pass: "To pass"
+      minutes: "Minutes"
+      last_attempt: "Last attempt"
+      passed: "Passed"
+      not_passed: "Not passed"
+      back_to_route: "Back to route"
+      start_exam: "Start exam"
+    exam:
+      title_prefix: "Assessment - "
+      question_of: "Question %{current} of %{total}"
+      save_answer: "Save Answer"
+      previous: "Previous"
+      next: "Next"
+      submit: "Submit Assessment"
+      confirm: "Are you sure you want to submit? You cannot change your answers after submission."
+      sidebar_heading: "Questions"
+      answered: "%{count} of %{total} answered"
+    results:
+      title_prefix: "Results - "
+      congrats: "Congratulations!"
+      keep_going: "Keep Going!"
+      passed_desc: "You passed the assessment."
+      need_score: "You need %{score}% to pass."
+      correct: "Correct"
+      incorrect: "Incorrect"
+      unanswered: "Unanswered"
+      breakdown: "Question Breakdown"
+      your_answer: "Your answer:"
+      back_to_route: "Back to Route"
+      continue: "Continue Learning"
+
+  # ── Content Engine ──
+  content_engine:
+    notes:
+      placeholder: "Add your notes..."
+
+  # ── Layout strings ──
+  layout:
+    learning:
+      dashboard: "Dashboard"
+      step_of: "Step %{current} of %{total}"
+      complete_step: "Complete Step"
+    onboarding:
+      save_exit: "Save & exit"
+      title: "Set up your profile — Learning Routes"

@@ -1,14 +1,14 @@
 <div id="route_progress_<%= route.id %>" class="bg-gray-900 rounded-xl border border-white/[0.06] p-5">
   <div class="flex items-center justify-between mb-3">
-    <span class="text-sm text-gray-400">Progress</span>
+    <span class="text-sm text-gray-400"><%= t('learning_engine.progress.label') %></span>
     <span class="text-sm font-semibold text-white"><%= summary[:percentage] %>%</span>
   </div>
-  <div class="h-2 bg-gray-800 rounded-full overflow-hidden" role="progressbar" aria-valuenow="<%= summary[:percentage] %>" aria-valuemin="0" aria-valuemax="100" aria-label="Route progress: <%= summary[:percentage] %>%">
+  <div class="h-2 bg-gray-800 rounded-full overflow-hidden" role="progressbar" aria-valuenow="<%= summary[:percentage] %>" aria-valuemin="0" aria-valuemax="100" aria-label="<%= t('learning_engine.progress.aria', percent: summary[:percentage]) %>">
     <div class="h-full bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full transition-all duration-500"
          style="width: <%= summary[:percentage] %>%" aria-hidden="true"></div>
   </div>
   <div class="flex items-center justify-between mt-3 text-xs text-gray-500">
-    <span><%= summary[:completed_steps] %> of <%= summary[:total_steps] %> steps completed</span>
-    <span>~<%= summary[:remaining_minutes] %> min remaining</span>
+    <span><%= t('learning_engine.progress.steps_completed', completed: summary[:completed_steps], total: summary[:total_steps]) %></span>
+    <span><%= t('learning_engine.progress.remaining', minutes: summary[:remaining_minutes]) %></span>
   </div>
 </div>

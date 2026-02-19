@@ -29,7 +29,7 @@
     activities << {
       type: :route_new,
       title: route.topic,
-      desc: "New route created",
+      desc: t("activity.new_route_desc"),
       time: route.created_at,
       color: "#8B80C4"
     }
@@ -41,7 +41,7 @@
     activities << {
       type: r.passed? ? :exam_passed : :exam_failed,
       title: r.assessment&.route_step&.title || r.assessment&.assessment_type&.humanize || "Exam",
-      desc: r.passed? ? "Passed with #{r.score&.round(1)}%" : "#{r.score&.round(1)}% — try again",
+      desc: r.passed? ? t("activity.passed_with", score: "#{r.score&.round(1)}%") : t("activity.failed_score", score: "#{r.score&.round(1)}%"),
       time: r.created_at,
       color: r.passed? ? "#5BA880" : "#B06050"
     }
@@ -52,8 +52,8 @@
   sessions.each do |s|
     activities << {
       type: :lesson_started,
-      title: "Study session",
-      desc: s.duration_minutes ? "#{s.duration_minutes} min of learning" : "Session completed",
+      title: t("activity.study_session"),
+      desc: s.duration_minutes ? t("activity.study_duration", minutes: s.duration_minutes) : t("activity.session_completed"),
       time: s.started_at,
       color: "#6E9BC8"
     }
@@ -62,18 +62,6 @@
   # Sort and limit
   activities.sort_by! { |a| a[:time] || Time.at(0) }.reverse!
   activities = activities.first(20)
-
-  # Type labels for display
-  type_labels = {
-    lesson_completed: "Lesson completed",
-    lesson_started: "Lesson started",
-    achievement_unlocked: "Achievement unlocked",
-    route_new: "New route",
-    level_up: "Level up",
-    exam_passed: "Exam passed",
-    exam_failed: "Exam failed",
-    exam_pass: "Assessment completed"
-  }
 %>
 
 <% if activities.any? %>
@@ -89,7 +77,7 @@
         <%# Content %>
         <div style="flex:1; min-width:0;">
           <p style="font-family:'DM Sans',sans-serif; font-weight:600; font-size:0.8rem; color:#1C1812; margin:0 0 0.15rem; line-height:1.35;">
-            <span style="font-family:'DM Mono',monospace; font-size:0.55rem; letter-spacing:0.5px; text-transform:uppercase; color:<%= act[:color] %>; margin-right:0.35rem;"><%= type_labels[act[:type]] || act[:type].to_s.humanize %></span>
+            <span style="font-family:'DM Mono',monospace; font-size:0.55rem; letter-spacing:0.5px; text-transform:uppercase; color:<%= act[:color] %>; margin-right:0.35rem;"><%= t("activity.types.#{act[:type]}", default: act[:type].to_s.humanize) %></span>
             <%= act[:title] %>
           </p>
           <p style="font-family:'DM Sans',sans-serif; font-size:0.72rem; color:#A09889; margin:0; line-height:1.35;">
@@ -101,9 +89,9 @@
         <span style="font-family:'DM Mono',monospace; font-size:0.62rem; color:#CCC5B8; flex-shrink:0; white-space:nowrap; margin-top:2px;">
           <% if act[:time] %>
             <% if act[:time].to_date == Date.current %>
-              Today, <%= act[:time].strftime("%H:%M") %>
+              <%= t("activity.time.today", time: act[:time].strftime("%H:%M")) %>
             <% elsif act[:time].to_date == Date.yesterday %>
-              Yesterday, <%= act[:time].strftime("%H:%M") %>
+              <%= t("activity.time.yesterday", time: act[:time].strftime("%H:%M")) %>
             <% else %>
               <%= act[:time].strftime("%d %b, %H:%M") %>
             <% end %>
@@ -120,8 +108,8 @@
         <path d="M12 7v5l3 2"/>
       </svg>
     </div>
-    <p style="font-family:'DM Sans',sans-serif; font-size:0.85rem; font-weight:500; color:#1C1812; margin:0 0 0.3rem;">No recent activity</p>
-    <p style="font-family:'DM Sans',sans-serif; font-size:0.75rem; color:#A09889; margin:0;">Your study activity will appear here.</p>
+    <p style="font-family:'DM Sans',sans-serif; font-size:0.85rem; font-weight:500; color:#1C1812; margin:0 0 0.3rem;"><%= t("activity.no_recent") %></p>
+    <p style="font-family:'DM Sans',sans-serif; font-size:0.75rem; color:#A09889; margin:0;"><%= t("activity.no_recent_desc") %></p>
   </div>
 <% end %>
 

@@ -39,9 +39,9 @@
                  font-sans font-bold text-[clamp(3rem,6.5vw,4.6rem)]
                  tracking-[-3px] leading-[1.02] text-txt">
         <% if current_user && @active_route %>
-          Your route in<br><%= @active_route.topic %>.
+          <%= t("hero.headline_active_html", topic: @active_route.topic).html_safe %>
         <% else %>
-          Learn anything, the&nbsp;right way.
+          <%= t("hero.headline").html_safe %>
         <% end %>
       </h1>
 
@@ -50,11 +50,9 @@
                 font-sans font-normal text-[1.1rem] text-sub
                 leading-[1.9] max-w-[440px] mt-8">
         <% if current_user && @active_route %>
-          Continue your personalized route. <%= @active_route.progress_percentage %>% completed
-          with <%= @active_route.route_steps.completed_steps.count %> steps finished.
+          <%= t("hero.subtext_active", progress: @active_route.progress_percentage, steps: @active_route.route_steps.completed_steps.count) %>
         <% else %>
-          Tell us what you want to master and get a unique learning route,
-          with assessments that adapt to your real progress.
+          <%= t("hero.subtext") %>
         <% end %>
       </p>
 
@@ -66,7 +64,7 @@
                       bg-accent text-accent-text font-sans text-[0.92rem] font-semibold
                       px-[2.2rem] py-[0.85rem] rounded-btn btn-shadow hover-lift
                       tracking-[-0.2px]" do %>
-            Continue learning
+            <%= t("hero.cta_active") %>
           <% end %>
         <% else %>
           <a href="#how-it-works"
@@ -74,7 +72,7 @@
                     bg-accent text-accent-text font-sans text-[0.92rem] font-semibold
                     px-[2.2rem] py-[0.85rem] rounded-btn btn-shadow hover-lift
                     tracking-[-0.2px]">
-            See how it works
+            <%= t("hero.cta") %>
           </a>
         <% end %>
       </div>
@@ -95,7 +93,7 @@
           <% end %>
         </div>
         <span class="font-sans text-[0.78rem] text-muted">
-          4.8 satisfaction in private beta
+          <%= t("hero.social_proof") %>
         </span>
       </div>
     </div>

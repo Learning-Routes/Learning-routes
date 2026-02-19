@@ -1,10 +1,21 @@
 module Core
   class ApplicationController < ActionController::Base
     before_action :set_current_session
+    before_action :set_locale
 
     rescue_from ActiveRecord::RecordNotFound, with: :record_not_found
 
     private
+
+    def set_locale
+      locale = cookies[:locale]&.to_sym
+      I18n.locale = I18n.available_locales.include?(locale) ? locale : I18n.default_locale
+    end
+
+    def current_locale
+      I18n.locale
+    end
+    helper_method :current_locale
 
     def record_not_found
       respond_to do |format|
@@ -43,13 +54,13 @@ module Core
 
     def authenticate_user!
       unless current_user
-        redirect_to core.sign_in_path, alert: "You must be signed in."
+        redirect_to core.sign_in_path, alert: t("flash.must_sign_in")
       end
     end
 
     def require_role(*roles)
       unless current_user&.role&.to_sym.in?(roles)
-        redirect_to main_app.root_path, alert: "You are not authorized to perform this action."
+        redirect_to main_app.root_path, alert: t("flash.not_authorized")
       end
     end
 

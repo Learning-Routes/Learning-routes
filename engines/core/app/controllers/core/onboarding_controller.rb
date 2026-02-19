@@ -74,7 +74,7 @@ module Core
     def complete
       current_user.complete_onboarding!
       RouteGenerationPlaceholderJob.perform_later(current_user.id) if defined?(RouteGenerationPlaceholderJob)
-      redirect_to main_app.profile_path, notice: "Welcome aboard! We're creating your personalized learning route."
+      redirect_to main_app.profile_path, notice: t("flash.onboarding_complete")
     end
 
     private

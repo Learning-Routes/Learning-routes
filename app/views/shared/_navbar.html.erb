@@ -10,27 +10,30 @@
 
     <%# === Desktop links === %>
     <div class="hidden md:flex items-center gap-[clamp(1rem,3vw,2.5rem)]">
-      <% %w[Product Pricing].each do |label| %>
-        <a href="#" class="font-sans text-[0.8rem] font-medium text-muted hover:text-txt focus-visible:text-txt focus-visible:outline-none focus-visible:underline transition-colors duration-200">
-          <%= label %>
-        </a>
-      <% end %>
+      <a href="#features" class="font-sans text-[0.8rem] font-medium text-muted hover:text-txt focus-visible:text-txt focus-visible:outline-none focus-visible:underline transition-colors duration-200">
+        <%= t("nav.features") %>
+      </a>
+      <a href="#how-it-works" class="font-sans text-[0.8rem] font-medium text-muted hover:text-txt focus-visible:text-txt focus-visible:outline-none focus-visible:underline transition-colors duration-200">
+        <%= t("nav.how_it_works") %>
+      </a>
 
       <% if current_user %>
-        <%= link_to "Dashboard", dashboard_path,
+        <%= link_to t("nav.dashboard"), dashboard_path,
             class: "font-sans text-[0.8rem] font-medium text-muted hover:text-txt focus-visible:text-txt focus-visible:outline-none focus-visible:underline transition-colors duration-200" %>
       <% else %>
-        <%= link_to "Sign in", core.sign_in_path,
+        <%= link_to t("nav.sign_in"), core.sign_in_path,
             class: "font-sans text-[0.8rem] font-medium text-muted hover:text-txt focus-visible:text-txt focus-visible:outline-none focus-visible:underline transition-colors duration-200" %>
       <% end %>
 
+      <%= render "shared/locale_toggle" %>
+
       <% if current_user %>
-        <%= link_to "Mi Perfil", profile_path,
+        <%= link_to t("nav.profile"), profile_path,
             class: "inline-flex items-center justify-center font-sans text-[0.8rem] font-semibold
                     bg-accent text-accent-text px-[1.15rem] py-[0.48rem] rounded-btn btn-shadow
                     hover-lift tracking-[-0.2px]" %>
       <% else %>
-        <%= link_to "Get started", core.sign_up_path,
+        <%= link_to t("nav.sign_up"), core.sign_up_path,
             class: "inline-flex items-center justify-center font-sans text-[0.8rem] font-semibold
                     bg-accent text-accent-text px-[1.15rem] py-[0.48rem] rounded-btn btn-shadow
                     hover-lift tracking-[-0.2px]" %>
@@ -49,30 +52,36 @@
   <div id="navbar-mobile-menu" data-navbar-target="menu"
        class="hidden md:hidden bg-card border-b border-lr px-[clamp(1.5rem,5vw,4rem)] pb-5 pt-2">
     <div class="flex flex-col gap-3">
-      <% %w[Product Pricing].each do |label| %>
-        <a href="#" data-action="navbar#closeMenu"
-           class="font-sans text-[0.88rem] font-medium text-sub hover:text-txt focus-visible:text-txt focus-visible:outline-none focus-visible:underline transition-colors py-1">
-          <%= label %>
-        </a>
-      <% end %>
+      <a href="#features" data-action="navbar#closeMenu"
+         class="font-sans text-[0.88rem] font-medium text-sub hover:text-txt focus-visible:text-txt focus-visible:outline-none focus-visible:underline transition-colors py-1">
+        <%= t("nav.features") %>
+      </a>
+      <a href="#how-it-works" data-action="navbar#closeMenu"
+         class="font-sans text-[0.88rem] font-medium text-sub hover:text-txt focus-visible:text-txt focus-visible:outline-none focus-visible:underline transition-colors py-1">
+        <%= t("nav.how_it_works") %>
+      </a>
 
       <% if current_user %>
-        <%= link_to "Dashboard", dashboard_path,
+        <%= link_to t("nav.dashboard"), dashboard_path,
             data: { action: "navbar#closeMenu" },
             class: "font-sans text-[0.88rem] font-medium text-sub hover:text-txt focus-visible:text-txt focus-visible:outline-none focus-visible:underline transition-colors py-1" %>
       <% else %>
-        <%= link_to "Sign in", core.sign_in_path,
+        <%= link_to t("nav.sign_in"), core.sign_in_path,
             data: { action: "navbar#closeMenu" },
             class: "font-sans text-[0.88rem] font-medium text-sub hover:text-txt focus-visible:text-txt focus-visible:outline-none focus-visible:underline transition-colors py-1" %>
       <% end %>
 
+      <div class="py-1">
+        <%= render "shared/locale_toggle" %>
+      </div>
+
       <div class="pt-2">
         <% if current_user %>
-          <%= link_to "Mi Perfil", profile_path,
+          <%= link_to t("nav.profile"), profile_path,
               class: "inline-flex items-center justify-center font-sans text-[0.85rem] font-semibold
                       bg-accent text-accent-text px-5 py-2.5 rounded-btn btn-shadow w-full" %>
         <% else %>
-          <%= link_to "Get started", core.sign_up_path,
+          <%= link_to t("nav.sign_up"), core.sign_up_path,
               class: "inline-flex items-center justify-center font-sans text-[0.85rem] font-semibold
                       bg-accent text-accent-text px-5 py-2.5 rounded-btn btn-shadow w-full" %>
         <% end %>

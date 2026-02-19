@@ -1,4 +1,4 @@
-<% content_for(:title, "My Profile — Learning Routes") %>
+<% content_for(:title, t("profile.title")) %>
 
 <%# === Profile Header Card === %>
 <div style="background:rgba(255,255,255,0.6); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); border:1px solid rgba(28,24,18,0.06); border-radius:20px; padding:2rem 2rem 1.8rem; margin-bottom:1rem;">
@@ -28,7 +28,7 @@
               <path d="M8 1C8 1 6.5 4 6.5 6C6.5 7.1 7.2 8 8 8C8.8 8 9.5 7.1 9.5 6C9.5 4 8 1 8 1Z" fill="#B09848"/>
               <path d="M8 5C8 5 5 8 5 10.5C5 12.4 6.3 14 8 14C9.7 14 11 12.4 11 10.5C11 8 8 5 8 5Z" fill="#B09848" opacity="0.6"/>
             </svg>
-            <%= @streak %> days
+            <%= t("profile.days_streak", count: @streak) %>
           </span>
         <% end %>
       </div>
@@ -38,7 +38,7 @@
         <span style="margin:0 0.4rem; opacity:0.4;">&middot;</span>
         <span style="font-family:'DM Mono',monospace; font-size:0.7rem; text-transform:capitalize;"><%= @user.role %></span>
         <span style="margin:0 0.4rem; opacity:0.4;">&middot;</span>
-        Member since <%= @member_since.strftime("%b %Y") %>
+        <%= t("profile.member_since", date: @member_since.strftime("%b %Y")) %>
       </p>
 
       <%# Interests as tags %>
@@ -58,10 +58,10 @@
   <div style="margin-top:1.4rem; padding-top:1.2rem; border-top:1px solid rgba(28,24,18,0.05);">
     <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:0.5rem;">
       <span style="font-family:'DM Mono',monospace; font-size:0.65rem; letter-spacing:1px; text-transform:uppercase; color:#A09889;">
-        Experience
+        <%= t("profile.experience") %>
       </span>
       <span style="font-family:'DM Mono',monospace; font-size:0.72rem; font-weight:500; color:#1C1812;">
-        <%= @xp.to_i %> / <%= @xp_for_next_level %> XP
+        <%= t("profile.xp_format", current: @xp.to_i, next: @xp_for_next_level) %>
       </span>
     </div>
     <div style="width:100%; height:6px; background:rgba(28,24,18,0.06); border-radius:3px; overflow:hidden;">
@@ -74,11 +74,11 @@
   <%# Badges row %>
   <div style="display:flex; gap:0.5rem; margin-top:1rem; flex-wrap:wrap;">
     <% badges = [] %>
-    <% badges << { icon: "path", label: "First Route", color: "#8B80C4" } if @routes.any? %>
-    <% badges << { icon: "check", label: "Step Completed", color: "#5BA880" } if @total_steps_completed > 0 %>
-    <% badges << { icon: "star", label: "High Accuracy", color: "#B09848" } if @avg_accuracy >= 80 %>
-    <% badges << { icon: "fire", label: "#{@streak}d Streak", color: "#B06050" } if @streak >= 3 %>
-    <% badges << { icon: "bolt", label: "Route Complete", color: "#6E9BC8" } if @completed_routes.any? %>
+    <% badges << { icon: "path", label: t("profile.badges.first_route"), color: "#8B80C4" } if @routes.any? %>
+    <% badges << { icon: "check", label: t("profile.badges.step_completed"), color: "#5BA880" } if @total_steps_completed > 0 %>
+    <% badges << { icon: "star", label: t("profile.badges.high_accuracy"), color: "#B09848" } if @avg_accuracy >= 80 %>
+    <% badges << { icon: "fire", label: t("profile.badges.streak", count: @streak), color: "#B06050" } if @streak >= 3 %>
+    <% badges << { icon: "bolt", label: t("profile.badges.route_complete"), color: "#6E9BC8" } if @completed_routes.any? %>
 
     <% if badges.any? %>
       <% badges.each do |badge| %>
@@ -102,7 +102,7 @@
       <% end %>
     <% else %>
       <p style="font-family:'DM Sans',sans-serif; font-size:0.75rem; color:#A09889; margin:0;">
-        Complete activities to unlock achievements.
+        <%= t("profile.no_badges") %>
       </p>
     <% end %>
   </div>
@@ -112,10 +112,10 @@
 <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(150px, 1fr)); gap:0.6rem; margin-bottom:1rem;">
   <%
     stats = [
-      { value: @routes.size, label: "Routes", color: "#8B80C4", bg: "rgba(139,128,196,0.08)" },
-      { value: @total_steps_completed, label: "Lessons", color: "#6E9BC8", bg: "rgba(110,155,200,0.08)" },
-      { value: format_study_time(@study_minutes), label: "Time", color: "#5BA880", bg: "rgba(91,168,128,0.08)" },
-      { value: "#{@avg_accuracy}%", label: "Accuracy", color: "#B09848", bg: "rgba(176,152,72,0.08)" }
+      { value: @routes.size, label: t("profile.stats.routes"), color: "#8B80C4", bg: "rgba(139,128,196,0.08)" },
+      { value: @total_steps_completed, label: t("profile.stats.lessons"), color: "#6E9BC8", bg: "rgba(110,155,200,0.08)" },
+      { value: format_study_time(@study_minutes), label: t("profile.stats.time"), color: "#5BA880", bg: "rgba(91,168,128,0.08)" },
+      { value: "#{@avg_accuracy}%", label: t("profile.stats.accuracy"), color: "#B09848", bg: "rgba(176,152,72,0.08)" }
     ]
   %>
   <% stats.each do |stat| %>
@@ -135,7 +135,7 @@
 
   <%# Tab bar %>
   <div role="tablist" style="display:flex; gap:0; border-bottom:1px solid rgba(28,24,18,0.06); margin-bottom:1.2rem;">
-    <% ["My Routes", "Achievements", "Activity"].each_with_index do |label, i| %>
+    <% [t("profile.tabs.my_routes"), t("profile.tabs.achievements"), t("profile.tabs.activity")].each_with_index do |label, i| %>
       <button data-profile-tabs-target="tab" data-action="click->profile-tabs#switch" data-index="<%= i %>"
               style="font-family:'DM Sans',sans-serif; font-size:0.82rem; font-weight:<%= i == 0 ? '600' : '400' %>; color:<%= i == 0 ? '#1C1812' : '#A09889' %>; background:none; border:none; cursor:pointer; padding:0.6rem 1.2rem; position:relative; transition:color 0.2s;">
         <%= label %>
@@ -163,7 +163,7 @@
   <div id="panel-achievements" role="tabpanel" aria-labelledby="tab-1" data-profile-tabs-target="panel" style="display:none;">
     <turbo-frame id="profile-achievements" data-lazy-src="<%= profile_path(tab: "achievements") %>">
       <div style="text-align:center; padding:2rem;">
-        <p style="font-family:'DM Mono',monospace; font-size:0.72rem; color:#A09889; margin:0;">Loading achievements…</p>
+        <p style="font-family:'DM Mono',monospace; font-size:0.72rem; color:#A09889; margin:0;"><%= t("profile.loading_achievements") %></p>
       </div>
     </turbo-frame>
   </div>
@@ -172,7 +172,7 @@
   <div id="panel-activity" role="tabpanel" aria-labelledby="tab-2" data-profile-tabs-target="panel" style="display:none;">
     <turbo-frame id="profile-activity" data-lazy-src="<%= profile_path(tab: "activity") %>">
       <div style="text-align:center; padding:2rem;">
-        <p style="font-family:'DM Mono',monospace; font-size:0.72rem; color:#A09889; margin:0;">Loading activity…</p>
+        <p style="font-family:'DM Mono',monospace; font-size:0.72rem; color:#A09889; margin:0;"><%= t("profile.loading_activity") %></p>
       </div>
     </turbo-frame>
   </div>
@@ -183,19 +183,19 @@
 <% if @profile %>
   <div style="margin-top:1.2rem; background:rgba(255,255,255,0.4); border:1px solid rgba(28,24,18,0.05); border-radius:14px; padding:1.1rem 1.2rem;">
     <p style="font-family:'DM Mono',monospace; font-size:0.58rem; letter-spacing:1.5px; text-transform:uppercase; color:#A09889; margin:0 0 0.7rem;">
-      Learning Profile
+      <%= t("profile.learning_profile") %>
     </p>
     <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(140px, 1fr)); gap:0.7rem;">
       <div>
-        <p style="font-family:'DM Sans',sans-serif; font-size:0.68rem; color:#A09889; margin:0 0 0.15rem;">Level</p>
+        <p style="font-family:'DM Sans',sans-serif; font-size:0.68rem; color:#A09889; margin:0 0 0.15rem;"><%= t("profile.level") %></p>
         <p style="font-family:'DM Sans',sans-serif; font-size:0.8rem; font-weight:500; color:#1C1812; margin:0;"><%= @profile.current_level&.capitalize || "—" %></p>
       </div>
       <div>
-        <p style="font-family:'DM Sans',sans-serif; font-size:0.68rem; color:#A09889; margin:0 0 0.15rem;">Style</p>
+        <p style="font-family:'DM Sans',sans-serif; font-size:0.68rem; color:#A09889; margin:0 0 0.15rem;"><%= t("profile.style") %></p>
         <p style="font-family:'DM Sans',sans-serif; font-size:0.8rem; font-weight:500; color:#1C1812; margin:0;"><%= @profile.learning_style&.presence&.map(&:capitalize)&.join(", ") || "—" %></p>
       </div>
       <div>
-        <p style="font-family:'DM Sans',sans-serif; font-size:0.68rem; color:#A09889; margin:0 0 0.15rem;">Timeline</p>
+        <p style="font-family:'DM Sans',sans-serif; font-size:0.68rem; color:#A09889; margin:0 0 0.15rem;"><%= t("profile.timeline") %></p>
         <p style="font-family:'DM Sans',sans-serif; font-size:0.8rem; font-weight:500; color:#1C1812; margin:0;"><%= @profile.timeline&.humanize || "—" %></p>
       </div>
     </div>
