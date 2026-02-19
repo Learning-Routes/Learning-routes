@@ -2,21 +2,6 @@
   ProductPreview — dark card showing topic tags and "generate" CTA.
   Used in the Hero section right column.
 %>
-<%
-  topics = [
-    { label: "English B1→B2" },
-    { label: "Python" },
-    { label: "Calculus" },
-    { label: "UX Design" },
-    { label: "Photography" },
-    { label: "Marketing" },
-    { label: "Japanese" },
-    { label: "Finance" },
-    { label: "Machine Learning" },
-    { label: "Guitar" },
-    { label: "Art History" },
-  ]
-%>
 
 <div class="section-dark rounded-[22px] p-[2rem] relative overflow-hidden"
      style="box-shadow: 0 20px 64px rgba(28,24,18,0.2), 0 0 0 1px rgba(255,250,240,0.03);">
@@ -24,35 +9,36 @@
   <%# Header %>
   <div class="mb-[1.5rem]">
     <div class="font-mono text-[0.54rem] tracking-[1.5px] text-dark-muted uppercase mb-[0.5rem]">
-      New route
+      <%= t("product_preview.label") %>
     </div>
     <div class="font-sans text-[1.05rem] font-semibold text-dark-text tracking-[-0.3px]">
-      Learn whatever you want.
+      <%= t("product_preview.headline") %>
     </div>
   </div>
 
   <%# Topic tags grid %>
   <div class="flex flex-wrap gap-[0.42rem] mb-[1.8rem]">
-    <% topics.each do |topic| %>
+    <% t("product_preview.topics").each do |topic| %>
       <span class="font-sans text-[0.66rem] font-normal text-dark-sub leading-none
                    px-[0.65rem] py-[0.35rem] rounded-[9px] border-lr-dark border cursor-default"
             style="background: rgba(255,250,240,0.02);">
-        <%= topic[:label] %>
+        <%= topic %>
       </span>
     <% end %>
 
     <span class="font-sans text-[0.66rem] font-normal text-dark-muted leading-none
                  px-[0.65rem] py-[0.35rem] rounded-[9px] cursor-default"
           style="border: 1px solid rgba(255,250,240,0.03);">
-      And much more...
+      <%= t("product_preview.more") %>
     </span>
   </div>
 
-  <%# Mock generate button %>
-  <div class="bg-dark-text rounded-[12px] p-[0.7rem] text-center"
-       style="box-shadow: 0 1px 3px rgba(0,0,0,0.2);">
+  <%# Generate button %>
+  <%= link_to current_user ? profile_path : core.sign_up_path,
+      class: "block bg-dark-text rounded-[12px] p-[0.7rem] text-center no-underline hover-lift transition-transform duration-200",
+      style: "box-shadow: 0 1px 3px rgba(0,0,0,0.2);" do %>
     <span class="font-sans text-[0.85rem] font-semibold text-dark tracking-[-0.2px]">
-      Generate my route
+      <%= t("product_preview.cta") %>
     </span>
-  </div>
+  <% end %>
 </div>

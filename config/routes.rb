@@ -7,6 +7,9 @@ Rails.application.routes.draw do
   mount AiOrchestrator::Engine => "/ai", as: "ai_orchestrator"
   mount Analytics::Engine => "/analytics", as: "analytics"
 
+  # Locale switcher
+  patch "locale", to: "locale#update", as: :locale
+
   # Dashboard
   get "dashboard", to: redirect("/profile"), as: :dashboard
 
@@ -20,6 +23,10 @@ Rails.application.routes.draw do
 
   # Community
   get "community", to: "community#show", as: :community
+
+  # Legal pages
+  get "terms", to: "pages#terms", as: :terms
+  get "privacy", to: "pages#privacy", as: :privacy
 
   # Health check endpoint for load balancers and uptime monitors
   get "up" => "rails/health#show", as: :rails_health_check

@@ -31,9 +31,10 @@ Rails.application.configure do
   # Store uploaded files on the local file system (see config/storage.yml for options).
   config.active_storage.service = :local
 
-  # Use Solid Queue for background jobs in development too
-  config.active_job.queue_adapter = :solid_queue
-  config.solid_queue.connects_to = { database: { writing: :queue } }
+  # Use async adapter for development (processes jobs in-process via threads).
+  # Solid Queue standalone worker segfaults with pg gem on arm64-darwin.
+  # Production uses :solid_queue with a separate worker process.
+  config.active_job.queue_adapter = :async
 
   # Don't care if the mailer can't send.
   config.action_mailer.raise_delivery_errors = false

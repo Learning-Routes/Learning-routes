@@ -15,24 +15,24 @@
                  font-size: clamp(1.3rem,2.8vw,1.65rem); letter-spacing: -0.7px;
                  line-height: 1.2; color: #F5F1EB; margin: 0;">
         <% if current_user && @active_route %>
-          Keep going.
+          <%= t("cta.headline_active") %>
         <% else %>
-          Start your route today.
+          <%= t("cta.headline") %>
         <% end %>
       </h2>
       <p style="font-family: 'DM Sans', sans-serif; font-size: 0.84rem;
                 color: rgba(245,241,235,0.4); margin: 0.5rem 0 0 0;">
         <% if current_user && @active_route %>
-          Your <%= @active_route.topic %> route awaits.
+          <%= t("cta.subtext_active", topic: @active_route.topic) %>
         <% else %>
-          Discover a new way to learn.
+          <%= t("cta.subtext") %>
         <% end %>
       </p>
     </div>
 
     <%# Right: button %>
     <% if current_user %>
-      <%= link_to "Go to dashboard", dashboard_path,
+      <%= link_to t("cta.button_active"), dashboard_path,
           style: "display: inline-flex; align-items: center; justify-content: center;
                  font-family: 'DM Sans', sans-serif; font-size: 0.88rem; font-weight: 600;
                  padding: 0.72rem 1.9rem; border-radius: 11px;
@@ -41,7 +41,7 @@
                  box-shadow: 0 2px 6px rgba(28,24,18,0.08);
                  transition: all 0.2s ease;" %>
     <% else %>
-      <%= link_to "Get started", core.sign_up_path,
+      <%= link_to t("cta.button"), core.sign_up_path,
           style: "display: inline-flex; align-items: center; justify-content: center;
                  font-family: 'DM Sans', sans-serif; font-size: 0.88rem; font-weight: 600;
                  padding: 0.72rem 1.9rem; border-radius: 11px;

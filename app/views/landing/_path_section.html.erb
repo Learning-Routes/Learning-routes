@@ -16,22 +16,14 @@
                 flex items-end justify-between flex-wrap gap-[1.4rem]">
       <div>
         <p class="label-mono text-dark-muted mb-3">
-          <%= @active_route ? @active_route.topic : "Product" %>
+          <%= @active_route ? @active_route.topic : t("path_section.product_label") %>
         </p>
         <h2 class="font-sans font-bold text-[clamp(1.6rem,3.2vw,2.2rem)] text-dark-text tracking-[-1px] leading-[1.15]">
-          <% if @active_route %>
-            Your learning route.
-          <% else %>
-            This is what your route looks like.
-          <% end %>
+          <%= @active_route ? t("path_section.headline_active") : t("path_section.headline_default") %>
         </h2>
       </div>
       <p class="font-sans text-[0.82rem] text-dark-muted leading-[1.7] max-w-[280px] text-right">
-        <% if @active_route %>
-          Each node is a stage of your route. Satellites are the topics at each level.
-        <% else %>
-          Each node is a stage. Satellites are the topics at each level.
-        <% end %>
+        <%= @active_route ? t("path_section.desc_active") : t("path_section.desc_default") %>
       </p>
     </div>
 
@@ -44,9 +36,10 @@
          <% if @route_nodes.present? %>
            data-path-viz-nodes-value="<%= @route_nodes.to_json %>"
          <% end %>
-         class="pt-[0.5rem] pb-6"
+         data-path-viz-back-label-value="<%= t('path_viz.back_button') %>"
+         class="pt-[0.5rem] pb-6 relative"
          role="img"
-         aria-label="<%= @active_route ? "Visual representation of your #{@active_route.topic} learning route with #{@route_nodes&.size || 6} connected nodes" : "A visual representation of a personalized learning route with 6 connected nodes, each representing a stage of your learning journey" %>">
+         aria-label="<%= @active_route ? t('path_section.aria_active', topic: @active_route.topic, count: @route_nodes&.size || 6) : t('path_section.aria_default') %>">
       <div data-path-viz-target="container" class="max-w-[840px] mx-auto"></div>
     </div>
 
@@ -55,9 +48,9 @@
       <span class="font-mono text-[0.6rem] tracking-[1px] text-dark-muted
                    py-[0.4rem] px-[1rem] rounded-lg border border-lr-dark inline-block">
         <% if @active_route %>
-          <%= @active_route.route_steps.completed_steps.count %>/<%= @active_route.total_steps %> steps completed
+          <%= t("path_section.footer_active", completed: @active_route.route_steps.completed_steps.count, total: @active_route.total_steps) %>
         <% else %>
-          Each route is uniquely generated
+          <%= t("path_section.footer_default") %>
         <% end %>
       </span>
     </div>

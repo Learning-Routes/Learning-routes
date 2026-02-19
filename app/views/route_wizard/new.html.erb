@@ -1,9 +1,49 @@
-<% content_for(:title) { "Crear Ruta — Learning Routes" } %>
+<% content_for(:title) { t("wizard.title") } %>
 <% content_for(:hide_navbar) { true } %>
+
+<%
+  wizard_i18n = {
+    step_label: t("wizard.step_label", n: ":n"),
+    step_of: t("wizard.step_of"),
+    step_names: [
+      t("wizard.step0.step_name"),
+      t("wizard.step1.step_name"),
+      t("wizard.step2.step_name"),
+      t("wizard.step3.step_name"),
+      t("wizard.step4.step_name")
+    ],
+    continue_text: t("wizard.continue"),
+    generate_text: t("wizard.generate"),
+    back_text: t("wizard.back"),
+    progress_of_6: t("wizard.step3.progress", done: ":done"),
+    topics: {
+      "programming" => "💻 " + t("wizard.step0.topics.programming"),
+      "languages" => "🌍 " + t("wizard.step0.topics.languages"),
+      "math" => "📐 " + t("wizard.step0.topics.math"),
+      "science" => "🔬 " + t("wizard.step0.topics.science"),
+      "business" => "📊 " + t("wizard.step0.topics.business"),
+      "arts" => "🎨 " + t("wizard.step0.topics.arts")
+    },
+    levels: {
+      "beginner" => "🌱 " + t("wizard.step1.levels.beginner"),
+      "basic" => "🌿 " + t("wizard.step1.levels.basic"),
+      "intermediate" => "🌳 " + t("wizard.step1.levels.intermediate"),
+      "advanced" => "🏔️ " + t("wizard.step1.levels.advanced")
+    },
+    styles: {
+      "visual" => { "emoji" => "🎬", "name" => t("wizard.styles.visual"), "desc" => t("wizard.styles.visual_desc") },
+      "auditory" => { "emoji" => "🎧", "name" => t("wizard.styles.auditory"), "desc" => t("wizard.styles.auditory_desc") },
+      "reading" => { "emoji" => "📖", "name" => t("wizard.styles.reading"), "desc" => t("wizard.styles.reading_desc") },
+      "kinesthetic" => { "emoji" => "🔧", "name" => t("wizard.styles.kinesthetic"), "desc" => t("wizard.styles.kinesthetic_desc") },
+      "multimodal" => { "emoji" => "🧩", "name" => t("wizard.styles.multimodal"), "desc" => t("wizard.styles.multimodal_desc") }
+    }
+  }
+%>
 
 <div id="wizard-container"
      data-controller="route-wizard"
      data-route-wizard-generating-value="<%= @generating %>"
+     data-route-wizard-i18n-value="<%= wizard_i18n.to_json %>"
      style="min-height:100vh; display:flex; flex-direction:column;">
 
   <%# === Mini wizard nav === %>
@@ -14,7 +54,7 @@
         <span style="font-family:'DM Sans',sans-serif; font-weight:700; font-size:0.9rem; letter-spacing:-0.5px; color:#1C1812;">Learning Routes</span>
       </a>
     </div>
-    <a href="<%= profile_path %>" style="font-family:'DM Sans',sans-serif; font-size:0.72rem; color:#9E9587; text-decoration:none; cursor:pointer;">Guardar y salir</a>
+    <a href="<%= profile_path %>" style="font-family:'DM Sans',sans-serif; font-size:0.72rem; color:#9E9587; text-decoration:none; cursor:pointer;"><%= t("wizard.save_and_exit") %></a>
   </nav>
 
   <%# === Content area === %>

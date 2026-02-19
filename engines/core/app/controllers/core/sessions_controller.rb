@@ -2,7 +2,7 @@ module Core
   class SessionsController < ApplicationController
     layout "auth", only: [:new, :create]
     rate_limit to: 10, within: 3.minutes, only: :create, with: -> {
-      redirect_to core.sign_in_path, alert: "Too many login attempts. Please try again later."
+      redirect_to core.sign_in_path, alert: I18n.t("flash.too_many_login")
     }
 
     before_action :redirect_if_signed_in, only: [:new, :create]
@@ -15,16 +15,16 @@ module Core
 
       if user&.authenticate(params[:password])
         start_session_for(user, remember: params[:remember_me] == "1")
-        redirect_to after_sign_in_path(user), notice: "Signed in successfully."
+        redirect_to after_sign_in_path(user), notice: t("flash.signed_in")
       else
-        flash.now[:alert] = "Invalid email or password."
+        flash.now[:alert] = t("flash.invalid_credentials")
         render :new, status: :unprocessable_entity
       end
     end
 
     def destroy
       end_session
-      redirect_to core.sign_in_path, notice: "Signed out successfully."
+      redirect_to core.sign_in_path, notice: t("flash.signed_out")
     end
 
     private

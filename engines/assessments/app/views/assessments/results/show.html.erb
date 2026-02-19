@@ -1,4 +1,4 @@
-<% content_for(:title, "Results - #{@step.title}") %>
+<% content_for(:title, t("assessments.results.title_prefix") + @step.title) %>
 
 <div class="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8 py-10">
   <!-- Score card -->
@@ -10,10 +10,10 @@
       </span>
     </div>
     <h1 class="text-xl font-bold text-white mb-1">
-      <%= @result.passed? ? 'Congratulations!' : 'Keep Going!' %>
+      <%= @result.passed? ? t("assessments.results.congrats") : t("assessments.results.keep_going") %>
     </h1>
     <p class="text-sm text-gray-400">
-      <%= @result.passed? ? 'You passed the assessment.' : "You need #{@assessment.passing_score}% to pass." %>
+      <%= @result.passed? ? t("assessments.results.passed_desc") : t("assessments.results.need_score", score: @assessment.passing_score) %>
     </p>
   </div>
 
@@ -21,20 +21,20 @@
   <div class="grid grid-cols-3 gap-4 mb-8">
     <div class="bg-gray-900 border border-white/[0.06] rounded-xl p-4 text-center">
       <div class="text-lg font-bold text-white"><%= @answers.where(correct: true).count %></div>
-      <div class="text-xs text-gray-500">Correct</div>
+      <div class="text-xs text-gray-500"><%= t("assessments.results.correct") %></div>
     </div>
     <div class="bg-gray-900 border border-white/[0.06] rounded-xl p-4 text-center">
       <div class="text-lg font-bold text-white"><%= @answers.where(correct: false).count %></div>
-      <div class="text-xs text-gray-500">Incorrect</div>
+      <div class="text-xs text-gray-500"><%= t("assessments.results.incorrect") %></div>
     </div>
     <div class="bg-gray-900 border border-white/[0.06] rounded-xl p-4 text-center">
       <div class="text-lg font-bold text-white"><%= @assessment.questions.count - @answers.count %></div>
-      <div class="text-xs text-gray-500">Unanswered</div>
+      <div class="text-xs text-gray-500"><%= t("assessments.results.unanswered") %></div>
     </div>
   </div>
 
   <!-- Per-question breakdown -->
-  <h2 class="text-lg font-semibold text-white mb-4">Question Breakdown</h2>
+  <h2 class="text-lg font-semibold text-white mb-4"><%= t("assessments.results.breakdown") %></h2>
   <div class="space-y-3">
     <% @assessment.questions.order(:created_at).each_with_index do |question, index| %>
       <% answer = @answers.find { |a| a.question_id == question.id } %>
@@ -51,7 +51,7 @@
           <div class="flex-1">
             <p class="text-sm text-gray-200 mb-1"><%= question.body %></p>
             <% if answer %>
-              <p class="text-xs text-gray-500 mb-1">Your answer: <span class="text-gray-300"><%= answer.answer.to_s.truncate(200) %></span></p>
+              <p class="text-xs text-gray-500 mb-1"><%= t("assessments.results.your_answer") %> <span class="text-gray-300"><%= answer.answer.to_s.truncate(200) %></span></p>
             <% end %>
             <% if question.explanation.present? %>
               <p class="text-xs text-gray-400 mt-2"><%= question.explanation %></p>
@@ -64,11 +64,11 @@
 
   <!-- Actions -->
   <div class="flex items-center justify-center gap-4 mt-8">
-    <%= link_to "Back to Route", learning_routes_engine.route_path(@route),
+    <%= link_to t("assessments.results.back_to_route"), learning_routes_engine.route_path(@route),
         class: "rounded-lg px-4 py-2 text-sm font-medium text-gray-300 bg-gray-800 hover:bg-gray-700 border border-white/[0.06] transition" %>
     <% next_step = @route.route_steps.where("position > ?", @step.position).where(status: [:available]).order(:position).first %>
     <% if next_step %>
-      <%= link_to "Continue Learning", learning_routes_engine.route_step_path(@route, next_step),
+      <%= link_to t("assessments.results.continue"), learning_routes_engine.route_step_path(@route, next_step),
           class: "rounded-lg px-4 py-2 text-sm font-semibold text-white bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-400 hover:to-purple-400 transition" %>
     <% end %>
   </div>

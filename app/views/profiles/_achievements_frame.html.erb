@@ -1,20 +1,20 @@
 <turbo-frame id="profile-achievements">
 <%
   all_achievements = [
-    { emoji: "\u{1F31F}", title: "First Route",     desc: "Complete a learning route",  unlocked: @completed_routes.any?,        color: "#8B80C4" },
-    { emoji: "\u{1F525}", title: "3-Day Streak",  desc: "Consistent daily learning",     unlocked: @streak >= 3,                  color: "#B09848" },
-    { emoji: "\u{1F525}", title: "14-Day Streak", desc: "Consistent daily learning",     unlocked: @streak >= 14,                 color: "#B09848" },
-    { emoji: "\u{1F3AF}", title: "Sharpshooter",    desc: "50 lessons · 90%+ accuracy",      unlocked: @total_steps_completed >= 50 && @avg_accuracy >= 90, color: "#5BA880" },
-    { emoji: "\u{26A1}",  title: "Fast Learner",   desc: "5 lessons in one session",          unlocked: @total_steps_completed >= 5,   color: "#6E9BC8" },
-    { emoji: "\u{2705}",  title: "First Step",      desc: "Complete your first step",            unlocked: @total_steps_completed > 0,    color: "#5BA880" },
-    { emoji: "\u{2705}",  title: "Ten Steps",       desc: "Complete 10 steps total",         unlocked: @total_steps_completed >= 10,  color: "#5BA880" },
-    { emoji: "\u{1F4DA}", title: "Half Century",   desc: "Complete 50 steps total",         unlocked: @total_steps_completed >= 50,  color: "#5BA880" },
-    { emoji: "\u{2B50}",  title: "80% Accuracy",    desc: "Score 80%+ on exams",             unlocked: @avg_accuracy >= 80,           color: "#B09848" },
-    { emoji: "\u{2B50}",  title: "95% Accuracy",    desc: "Score 95%+ on exams",             unlocked: @avg_accuracy >= 95,           color: "#B09848" },
-    { emoji: "\u{23F0}",  title: "10 Hours",         desc: "Accumulate 10 hours of study",        unlocked: @study_minutes >= 600,         color: "#6E9BC8" },
-    { emoji: "\u{1F3D4}",  title: "Climber",       desc: "Reach level 20",                  unlocked: false,                         color: "#8B80C4" },
-    { emoji: "\u{1F310}", title: "Polymath",        desc: "Routes in 3+ different topics",       unlocked: @routes.map(&:subject_area).compact.uniq.size >= 3, color: "#7EA5A0" },
-    { emoji: "\u{1F680}", title: "Route Complete",    desc: "Finish a route completely",      unlocked: @completed_routes.any?,        color: "#6E9BC8" },
+    { emoji: "\u{1F31F}", title: t("achievements.first_route"),     desc: t("achievements.first_route_desc"),  unlocked: @completed_routes.any?,        color: "#8B80C4" },
+    { emoji: "\u{1F525}", title: t("achievements.streak_3"),        desc: t("achievements.streak_3_desc"),     unlocked: @streak >= 3,                  color: "#B09848" },
+    { emoji: "\u{1F525}", title: t("achievements.streak_14"),       desc: t("achievements.streak_14_desc"),    unlocked: @streak >= 14,                 color: "#B09848" },
+    { emoji: "\u{1F3AF}", title: t("achievements.sharpshooter"),    desc: t("achievements.sharpshooter_desc"), unlocked: @total_steps_completed >= 50 && @avg_accuracy >= 90, color: "#5BA880" },
+    { emoji: "\u{26A1}",  title: t("achievements.fast_learner"),    desc: t("achievements.fast_learner_desc"), unlocked: @total_steps_completed >= 5,   color: "#6E9BC8" },
+    { emoji: "\u{2705}",  title: t("achievements.first_step"),      desc: t("achievements.first_step_desc"),   unlocked: @total_steps_completed > 0,    color: "#5BA880" },
+    { emoji: "\u{2705}",  title: t("achievements.ten_steps"),       desc: t("achievements.ten_steps_desc"),    unlocked: @total_steps_completed >= 10,  color: "#5BA880" },
+    { emoji: "\u{1F4DA}", title: t("achievements.half_century"),    desc: t("achievements.half_century_desc"), unlocked: @total_steps_completed >= 50,  color: "#5BA880" },
+    { emoji: "\u{2B50}",  title: t("achievements.accuracy_80"),     desc: t("achievements.accuracy_80_desc"),  unlocked: @avg_accuracy >= 80,           color: "#B09848" },
+    { emoji: "\u{2B50}",  title: t("achievements.accuracy_95"),     desc: t("achievements.accuracy_95_desc"),  unlocked: @avg_accuracy >= 95,           color: "#B09848" },
+    { emoji: "\u{23F0}",  title: t("achievements.ten_hours"),       desc: t("achievements.ten_hours_desc"),    unlocked: @study_minutes >= 600,         color: "#6E9BC8" },
+    { emoji: "\u{1F3D4}",  title: t("achievements.climber"),        desc: t("achievements.climber_desc"),      unlocked: false,                         color: "#8B80C4" },
+    { emoji: "\u{1F310}", title: t("achievements.polymath"),        desc: t("achievements.polymath_desc"),     unlocked: @routes.map(&:subject_area).compact.uniq.size >= 3, color: "#7EA5A0" },
+    { emoji: "\u{1F680}", title: t("achievements.route_complete"),  desc: t("achievements.route_complete_desc"), unlocked: @completed_routes.any?,      color: "#6E9BC8" },
   ]
 
   # Sort: unlocked first, then locked

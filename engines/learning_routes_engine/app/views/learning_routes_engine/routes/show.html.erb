@@ -1,4 +1,4 @@
-<% content_for(:title, "#{@route.topic} - Learning Routes") %>
+<% content_for(:title, "#{@route.topic} #{t('learning_engine.route.title_suffix')}") %>
 
 <div class="mx-auto max-w-4xl px-6 py-10">
   <!-- Route header -->
@@ -21,7 +21,7 @@
   <!-- Due reviews -->
   <% if @due_reviews.any? %>
     <div class="mb-8 bg-amber-900/20 border border-amber-700/30 rounded-xl p-5">
-      <h3 class="text-sm font-semibold text-amber-300 mb-3"><%= @due_reviews.size %> review<%= @due_reviews.size == 1 ? '' : 's' %> due</h3>
+      <h3 class="text-sm font-semibold text-amber-300 mb-3"><%= t('learning_engine.route.reviews_due', count: @due_reviews.size) %></h3>
       <div class="space-y-2">
         <% @due_reviews.first(3).each do |step| %>
           <%= link_to route_step_path(@route, step), class: "block text-sm text-amber-200 hover:text-white transition" do %>
@@ -30,7 +30,7 @@
         <% end %>
       </div>
       <% if @due_reviews.size > 3 %>
-        <%= link_to "See all reviews", reviews_path, class: "text-xs text-amber-400 hover:text-amber-200 mt-2 inline-block" %>
+        <%= link_to t('learning_engine.route.see_all_reviews'), reviews_path, class: "text-xs text-amber-400 hover:text-amber-200 mt-2 inline-block" %>
       <% end %>
     </div>
   <% end %>
@@ -73,7 +73,7 @@
                               when 'assessment' then 'bg-orange-900/50 text-orange-300'
                               when 'review' then 'bg-purple-900/50 text-purple-300'
                               end %>">
-                <%= step.content_type.capitalize %>
+                <%= t("learning_engine.#{step.content_type}.badge") %>
               </span>
             </div>
             <p class="text-xs text-gray-500 mt-0.5 truncate"><%= step.description %></p>
@@ -82,7 +82,7 @@
           <!-- Duration -->
           <div class="flex-shrink-0 text-xs text-gray-500">
             <% if step.estimated_minutes.to_i > 0 %>
-              ~<%= step.estimated_minutes %> min
+              <%= t('learning_engine.route.duration', minutes: step.estimated_minutes) %>
             <% end %>
           </div>
         </div>

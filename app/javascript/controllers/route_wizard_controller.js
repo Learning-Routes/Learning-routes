@@ -15,7 +15,8 @@ export default class extends Controller {
 
   static values = {
     step: { type: Number, default: 0 },
-    generating: { type: Boolean, default: false }
+    generating: { type: Boolean, default: false },
+    i18n: { type: Object, default: {} }
   }
 
   connect() {
@@ -26,11 +27,24 @@ export default class extends Controller {
     this.selectedLevel = ""
     this.selectedPace = ""
     this.styleAnswers = {}
-    this.stepLabels = ["Tema", "Nivel", "Objetivo", "Estilo", "Ritmo"]
     this.isAnimating = false
 
     this.updateUI()
     this.validateStep()
+  }
+
+  // Helper to get i18n text with fallback
+  t(key, fallback) {
+    const keys = key.split(".")
+    let val = this.i18nValue
+    for (const k of keys) {
+      if (val && typeof val === "object" && k in val) {
+        val = val[k]
+      } else {
+        return fallback || key
+      }
+    }
+    return val || fallback || key
   }
 
   next() {
@@ -202,7 +216,8 @@ export default class extends Controller {
   updateStyleProgress() {
     const answered = Object.keys(this.styleAnswers).length
     if (this.hasStyleProgressTarget) {
-      this.styleProgressTarget.textContent = `${answered} de 6`
+      const template = this.t("progress_of_6", ":done of 6")
+      this.styleProgressTarget.textContent = template.replace(":done", answered)
     }
     if (answered === 6 && this.hasStyleDoneMsgTarget) {
       this.styleDoneMsgTarget.style.opacity = "1"
@@ -224,15 +239,8 @@ export default class extends Controller {
     let dominant = sorted[0][0]
     if (sorted[0][1] === sorted[1][1]) dominant = "multimodal"
 
-    const styleData = {
-      visual:      { emoji: "🎬", name: "Visual",       desc: "Aprendes mejor con imágenes, videos y diagramas" },
-      auditory:    { emoji: "🎧", name: "Auditivo",     desc: "Aprendes mejor escuchando explicaciones y discusiones" },
-      reading:     { emoji: "📖", name: "Lectura",      desc: "Aprendes mejor leyendo y tomando notas" },
-      kinesthetic: { emoji: "🔧", name: "Kinestésico",  desc: "Aprendes mejor practicando y experimentando" },
-      multimodal:  { emoji: "🧩", name: "Multimodal",   desc: "Combinas varios estilos — eres versátil" }
-    }
-
-    const info = styleData[dominant] || styleData.multimodal
+    const stylesI18n = this.i18nValue.styles || {}
+    const styleInfo = stylesI18n[dominant] || stylesI18n["multimodal"] || { emoji: "🧩", name: "Multimodal", desc: "" }
 
     if (this.hasStyleResultCardTarget) {
       this.styleResultCardTarget.style.display = "block"
@@ -241,12 +249,12 @@ export default class extends Controller {
         this.styleResultCardTarget.style.transform = "translateY(0)"
       }, 50)
     }
-    if (this.hasStyleResultIconTarget) this.styleResultIconTarget.textContent = info.emoji
-    if (this.hasStyleResultNameTarget) this.styleResultNameTarget.textContent = info.name
-    if (this.hasStyleResultDescTarget) this.styleResultDescTarget.textContent = info.desc
+    if (this.hasStyleResultIconTarget) this.styleResultIconTarget.textContent = styleInfo.emoji
+    if (this.hasStyleResultNameTarget) this.styleResultNameTarget.textContent = styleInfo.name
+    if (this.hasStyleResultDescTarget) this.styleResultDescTarget.textContent = styleInfo.desc || ""
 
     this.dominantStyle = dominant
-    this.dominantStyleData = info
+    this.dominantStyleData = styleInfo
   }
 
   // ===== PACE =====
@@ -355,19 +363,22 @@ export default class extends Controller {
     }
 
     if (this.hasBtnTextTarget) {
-      this.btnTextTarget.textContent = this.stepValue === 4 ? "Generar ruta" : "Continuar"
+      this.btnTextTarget.textContent = this.stepValue === 4
+        ? this.t("generate_text", "Generate route")
+        : this.t("continue_text", "Continue")
     }
   }
 
   updateUI() {
     const step = this.stepValue
-    const labels = this.stepLabels
+    const stepNames = this.i18nValue.step_names || []
 
     if (this.hasStepLabelTarget) {
-      this.stepLabelTarget.textContent = `Paso ${step + 1}`
+      const template = this.t("step_label", "Step :n")
+      this.stepLabelTarget.textContent = template.replace(":n", step + 1)
     }
     if (this.hasStepNameTarget) {
-      this.stepNameTarget.textContent = `— ${labels[step]}`
+      this.stepNameTarget.textContent = stepNames[step] || ""
     }
     if (this.hasPercentLabelTarget) {
       this.percentLabelTarget.textContent = `${(step + 1) * 20}%`
@@ -397,10 +408,11 @@ export default class extends Controller {
             <span style="font-family:'DM Sans',sans-serif; font-weight:700; font-size:0.9rem; letter-spacing:-0.5px; color:#1C1812;">Learning Routes</span>
           </a>`
       } else {
+        const backText = this.t("back_text", "Back")
         this.navLeftTarget.innerHTML = `
           <button type="button" data-action="click->route-wizard#back"
                   style="background:none; border:none; cursor:pointer; font-family:'DM Sans',sans-serif; font-weight:400; font-size:0.78rem; color:#9E9587; padding:0;">
-            ← Atrás
+            \u2190 ${backText}
           </button>`
       }
     }
@@ -416,21 +428,8 @@ export default class extends Controller {
 
     if (this.stepValue === 0) return
 
-    const topicLabels = {
-      programming: "💻 Programación",
-      languages: "🌍 Idiomas",
-      math: "📐 Matemáticas",
-      science: "🔬 Ciencias",
-      business: "📊 Negocios",
-      arts: "🎨 Arte y Diseño"
-    }
-
-    const levelLabels = {
-      beginner: "🌱 Principiante",
-      basic: "🌿 Básico",
-      intermediate: "🌳 Intermedio",
-      advanced: "🏔️ Avanzado"
-    }
+    const topicLabels = this.i18nValue.topics || {}
+    const levelLabels = this.i18nValue.levels || {}
 
     let count = 0
     this.selectedTopics.forEach(t => {
@@ -445,7 +444,7 @@ export default class extends Controller {
 
     const custom = this.customInputTarget.value.trim()
     if (custom) {
-      this.addChip(chips, `✏️ ${custom.substring(0, 15)}${custom.length > 15 ? "…" : ""}`)
+      this.addChip(chips, `\u270F\uFE0F ${custom.substring(0, 15)}${custom.length > 15 ? "\u2026" : ""}`)
     }
 
     if (this.stepValue >= 2 && this.selectedLevel) {
