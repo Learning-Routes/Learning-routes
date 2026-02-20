@@ -571,6 +571,26 @@ en:
       today: "Today, %{time}"
       yesterday: "Yesterday, %{time}"
 
+
+  # ── Profile Display Values ──
+  profile_values:
+    levels:
+      beginner: "Beginner"
+      intermediate: "Intermediate"
+      advanced: "Advanced"
+    styles:
+      visual: "Visual"
+      reading: "Reading"
+      auditory: "Auditory"
+      hands_on: "Hands-on"
+      kinesthetic: "Kinesthetic"
+      multimodal: "Multimodal"
+    timelines:
+      1_month: "1 month"
+      3_months: "3 months"
+      6_months: "6 months"
+      1_year: "1 year"
+
   # ── Dashboard ──
   dashboard:
     title: "My Routes — Learning Routes"
