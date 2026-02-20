@@ -680,6 +680,28 @@ es:
       back: "Volver al panel"
       review_btn: "Repasar"
       empty: "¡No hay repasos pendientes. Buen trabajo!"
+    not_authorized: "No autorizado."
+    step_quiz:
+      title: "Verificación rápida"
+      subtitle:
+        one: "Responde %{count} pregunta para continuar"
+        other: "Responde las %{count} preguntas para continuar"
+      in_progress: "Quiz en progreso..."
+      required: "Completa el quiz de comprensión para continuar."
+      not_ready: "El quiz aún no está listo. Inténtalo en un momento."
+      submit: "Verificar respuestas"
+      passing_note: "Necesitas 80% para aprobar y avanzar."
+      generating_title: "Preparando tu quiz..."
+      generating_desc: "Creando algunas preguntas para verificar tu comprensión. Toma unos segundos."
+      passed_title: "¡Excelente!"
+      passed_desc: "Obtuviste %{score}%! Paso completado."
+      continue: "Continuar al siguiente paso"
+      failed_title: "Casi, pero no del todo"
+      failed_desc: "Obtuviste %{score}%. Revisa las explicaciones y vuelve a intentar."
+      retry: "Intentar de nuevo"
+      correct: "¡Correcto!"
+      incorrect: "Incorrecto"
+      unanswered: "Sin responder"
 
   # ── Assessments Engine ──
   assessments:
@@ -729,6 +751,7 @@ es:
       dashboard: "Panel"
       step_of: "Paso %{current} de %{total}"
       complete_step: "Completar paso"
+      completed: "¡Completado!"
     onboarding:
       save_exit: "Guardar y salir"
       title: "Configura tu perfil — Learning Routes"

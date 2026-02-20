@@ -680,6 +680,28 @@ en:
       back: "Back to Dashboard"
       review_btn: "Review"
       empty: "No reviews due right now. Great job!"
+    not_authorized: "Not authorized."
+    step_quiz:
+      title: "Quick Comprehension Check"
+      subtitle:
+        one: "Answer %{count} question to continue"
+        other: "Answer all %{count} questions to continue"
+      in_progress: "Quiz in progress..."
+      required: "Please complete the comprehension quiz to continue."
+      not_ready: "Quiz is not ready yet. Please try again in a moment."
+      submit: "Check Answers"
+      passing_note: "You need 80% to pass and advance."
+      generating_title: "Preparing your quiz..."
+      generating_desc: "Creating a few questions to check your understanding. This takes a few seconds."
+      passed_title: "Great job!"
+      passed_desc: "You scored %{score}%! Step completed."
+      continue: "Continue to next step"
+      failed_title: "Not quite there yet"
+      failed_desc: "You scored %{score}%. Review the explanations below and try again."
+      retry: "Try Again"
+      correct: "Correct!"
+      incorrect: "Incorrect"
+      unanswered: "Not answered"
 
   # ── Assessments Engine ──
   assessments:
@@ -729,6 +751,7 @@ en:
       dashboard: "Dashboard"
       step_of: "Step %{current} of %{total}"
       complete_step: "Complete Step"
+      completed: "Completed!"
     onboarding:
       save_exit: "Save & exit"
       title: "Set up your profile — Learning Routes"

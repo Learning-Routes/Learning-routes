@@ -36,6 +36,11 @@ module LearningRoutesEngine
 
         step.update!(metadata: step.metadata.merge(content_generated: true))
         Rails.logger.info("[ContentGenerationJob] Content generated for step #{route_step_id}")
+
+        # Generate step quiz for lesson/exercise steps
+        if step.requires_quiz?
+          StepQuizGenerationJob.perform_later(route_step_id)
+        end
       else
         Rails.logger.error("[ContentGenerationJob] AI failed for step #{route_step_id}: #{interaction.status}")
       end

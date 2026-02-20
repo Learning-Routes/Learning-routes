@@ -16,6 +16,23 @@ module LearningRoutesEngine
     end
 
     def complete
+      # Gate lesson/exercise steps behind a mini-quiz
+      if @step.requires_quiz? && !@step.quiz_passed_by?(current_user)
+        @step_quiz = @step.step_quiz
+        if @step_quiz.nil?
+          StepQuizGenerationJob.perform_later(@step.id) unless @step.metadata&.dig("step_quiz_generated")
+          @quiz_generating = true
+        else
+          @questions = @step_quiz.questions.order(:created_at)
+        end
+
+        respond_to do |format|
+          format.turbo_stream { render :show_quiz }
+          format.html { redirect_to route_step_path(@route, @step), notice: t("learning_engine.step_quiz.required") }
+        end
+        return
+      end
+
       tracker = RouteProgressTracker.new(@route)
       tracker.complete_step!(@step)
       finish_study_session!

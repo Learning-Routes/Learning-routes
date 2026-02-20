@@ -1,0 +1,6 @@
+<%= turbo_stream.replace "step_quiz_panel" do %>
+  <div id="step_quiz_panel" class="mt-8 pt-6 border-t border-white/[0.06]">
+    <%= render "learning_routes_engine/step_quizzes/quiz_form",
+        quiz: @quiz, questions: @questions, step: @step, route: @route %>
+  </div>
+<% end %>

@@ -23,6 +23,7 @@ module AiOrchestrator
       give_example
       simplify_content
       exercise_hint
+      step_quiz
     ].freeze
 
     validates :task_type, inclusion: { in: TASK_TYPES }
