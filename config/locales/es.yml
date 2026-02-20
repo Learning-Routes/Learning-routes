@@ -572,6 +572,79 @@ es:
       yesterday: "Ayer, %{time}"
 
 
+  # ── Roles de Usuario ──
+  user_roles:
+    student: "Estudiante"
+    admin: "Administrador"
+    instructor: "Instructor"
+
+  # ── Etiquetas de Intereses ──
+  interests:
+    programming: "Programación"
+    languages: "Idiomas"
+    mathematics: "Matemáticas"
+    sciences: "Ciencias"
+    business: "Negocios"
+    arts_design: "Arte y Diseño"
+
+  # ── Onboarding ──
+  onboarding:
+    interests:
+      heading: "¿Qué quieres aprender?"
+      subtitle: "Elige un tema o escribe el tuyo — la IA creará tu ruta."
+      topics:
+        programming: "Programación"
+        programming_desc: "Código, desarrollo web y software"
+        languages: "Idiomas"
+        languages_desc: "Inglés, español, japonés y más"
+        mathematics: "Matemáticas"
+        mathematics_desc: "Del álgebra al cálculo"
+        sciences: "Ciencias"
+        sciences_desc: "Física, química y biología"
+        business: "Negocios"
+        business_desc: "Gestión, marketing y finanzas"
+        arts_design: "Arte y Diseño"
+        arts_design_desc: "Artes visuales, música y habilidades creativas"
+      custom_label: "O escribe algo específico"
+      custom_placeholder: "ej., Machine Learning, Guitarra, Cocina..."
+      continue: "Continuar →"
+      footer: "La IA creará un camino de aprendizaje personalizado según tus elecciones"
+    level:
+      heading: "¿Cuál es tu nivel actual?"
+      subtitle: "Esto nos ayuda a personalizar la dificultad de tu ruta de aprendizaje."
+      beginner: "Principiante"
+      beginner_desc: "Estoy empezando — enséñame desde cero"
+      intermediate: "Intermedio"
+      intermediate_desc: "Tengo algo de experiencia y quiero profundizar"
+      advanced: "Avanzado"
+      advanced_desc: "Quiero dominar este tema a nivel experto"
+      back: "← Atrás"
+      continue: "Continuar →"
+    style:
+      heading: "¿Cómo prefieres aprender?"
+      subtitle: "Selecciona todos los que apliquen — adaptaremos tu contenido."
+      visual: "Visual"
+      visual_desc: "Imágenes, diagramas y videos"
+      reading: "Lectura"
+      reading_desc: "Lecciones y artículos de texto"
+      auditory: "Auditivo"
+      auditory_desc: "Narraciones y explicaciones de voz"
+      hands_on: "Práctico"
+      hands_on_desc: "Ejercicios, proyectos y práctica"
+      back: "← Atrás"
+      continue: "Continuar →"
+      footer: "Siempre puedes cambiar tus preferencias más tarde en ajustes"
+    goal:
+      heading: "¿Cuál es tu objetivo?"
+      subtitle: "Cuéntanos qué quieres lograr y tu plazo."
+      label: "Tu objetivo de aprendizaje"
+      placeholder: "ej., Quiero aprender Python lo suficiente para construir aplicaciones web..."
+      max_chars: "Máximo 500 caracteres"
+      timeline_label: "Plazo"
+      back: "← Atrás"
+      finish: "Finalizar configuración ✓"
+      footer: "Casi listo — tu ruta de aprendizaje personalizada se generará a continuación"
+
   # ── Profile Display Values ──
   profile_values:
     levels:

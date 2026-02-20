@@ -572,6 +572,79 @@ en:
       yesterday: "Yesterday, %{time}"
 
 
+  # ── User Roles ──
+  user_roles:
+    student: "Student"
+    admin: "Admin"
+    instructor: "Instructor"
+
+  # ── Interest Labels ──
+  interests:
+    programming: "Programming"
+    languages: "Languages"
+    mathematics: "Mathematics"
+    sciences: "Sciences"
+    business: "Business"
+    arts_design: "Arts & Design"
+
+  # ── Onboarding ──
+  onboarding:
+    interests:
+      heading: "What do you want to learn?"
+      subtitle: "Choose a topic or type your own — AI will build your route."
+      topics:
+        programming: "Programming"
+        programming_desc: "Code, web dev & software"
+        languages: "Languages"
+        languages_desc: "English, Spanish, Japanese & more"
+        mathematics: "Mathematics"
+        mathematics_desc: "From algebra to calculus"
+        sciences: "Sciences"
+        sciences_desc: "Physics, chemistry & biology"
+        business: "Business"
+        business_desc: "Management, marketing & finance"
+        arts_design: "Arts & Design"
+        arts_design_desc: "Visual arts, music & creative skills"
+      custom_label: "Or type something specific"
+      custom_placeholder: "e.g., Machine Learning, Guitar, Cooking..."
+      continue: "Continue →"
+      footer: "AI will create a personalized learning path based on your choices"
+    level:
+      heading: "What's your current level?"
+      subtitle: "This helps us personalize the difficulty of your learning path."
+      beginner: "Beginner"
+      beginner_desc: "I'm just starting out — teach me from scratch"
+      intermediate: "Intermediate"
+      intermediate_desc: "I have some experience and want to go deeper"
+      advanced: "Advanced"
+      advanced_desc: "I want to master this topic at an expert level"
+      back: "← Back"
+      continue: "Continue →"
+    style:
+      heading: "How do you prefer to learn?"
+      subtitle: "Select all that apply — we'll adapt your content accordingly."
+      visual: "Visual"
+      visual_desc: "Images, diagrams & videos"
+      reading: "Reading"
+      reading_desc: "Text-based lessons & articles"
+      auditory: "Auditory"
+      auditory_desc: "Voice narrations & explanations"
+      hands_on: "Hands-on"
+      hands_on_desc: "Exercises, projects & practice"
+      back: "← Back"
+      continue: "Continue →"
+      footer: "You can always change your preferences later in settings"
+    goal:
+      heading: "What's your goal?"
+      subtitle: "Tell us what you want to achieve and your timeline."
+      label: "Your learning goal"
+      placeholder: "e.g., I want to learn Python well enough to build web applications..."
+      max_chars: "Max 500 characters"
+      timeline_label: "Timeline"
+      back: "← Back"
+      finish: "Finish setup ✓"
+      footer: "Almost done — your personalized learning route will be generated next"
+
   # ── Profile Display Values ──
   profile_values:
     levels:
