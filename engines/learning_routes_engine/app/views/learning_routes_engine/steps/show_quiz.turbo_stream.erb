@@ -1,0 +1,21 @@
+<%# Replace the complete button with "Quiz in progress" indicator %>
+<%= turbo_stream.replace "step_complete_btn" do %>
+  <div id="step_complete_btn" class="flex items-center gap-2 text-amber-400 text-sm font-medium">
+    <svg aria-hidden="true" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+    </svg>
+    <%= t("learning_engine.step_quiz.in_progress") %>
+  </div>
+<% end %>
+
+<%# Append the quiz panel below the step content %>
+<%= turbo_stream.append "step_content_#{@step.id}" do %>
+  <div id="step_quiz_panel" class="mt-8 pt-6 border-t border-white/[0.06]">
+    <% if @quiz_generating %>
+      <%= render "learning_routes_engine/step_quizzes/generating", step: @step, route: @route %>
+    <% else %>
+      <%= render "learning_routes_engine/step_quizzes/quiz_form",
+          quiz: @step_quiz, questions: @questions, step: @step, route: @route %>
+    <% end %>
+  </div>
+<% end %>

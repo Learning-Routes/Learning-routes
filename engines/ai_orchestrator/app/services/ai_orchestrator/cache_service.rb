@@ -16,7 +16,8 @@ module AiOrchestrator
       "explain_differently"       => 12.hours,
       "give_example"              => 12.hours,
       "simplify_content"          => 12.hours,
-      "exercise_hint"             => 0
+      "exercise_hint"             => 0,
+      "step_quiz"                 => 2.hours
     }.freeze
 
     # Tasks that should never be cached

@@ -34,6 +34,10 @@ module AiOrchestrator
       "reinforcement_generation" => {
         required_keys: %w[steps],
         steps_keys: %w[title description content_type estimated_minutes]
+      },
+      "step_quiz" => {
+        required_keys: %w[questions],
+        questions_keys: %w[question options correct_answer explanation]
       }
     }.freeze
 

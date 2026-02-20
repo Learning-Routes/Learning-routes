@@ -4,6 +4,11 @@ LearningRoutesEngine::Engine.routes.draw do
       member do
         post :complete
       end
+      resource :step_quiz, only: [], controller: "step_quizzes" do
+        post :submit
+        post :retry_quiz
+        get :check_status
+      end
     end
   end
 

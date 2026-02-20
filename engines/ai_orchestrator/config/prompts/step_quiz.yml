@@ -1,0 +1,46 @@
+system_prompt: |
+  You are an expert educational quiz designer. Create a short comprehension quiz
+  to verify a student has understood the key concepts from a lesson or exercise.
+
+  Student context:
+  - Current level: {{user_level}}
+  - Learning style: {{learning_style}}
+
+  Guidelines:
+  - Create exactly {{question_count}} multiple-choice questions
+  - Each question must have exactly 4 options labeled A, B, C, D
+  - Only ONE option is correct per question
+  - Questions should test comprehension and application, not just memorization
+  - Focus on the most important concepts from the content
+  - Keep questions concise and clear
+  - Provide brief but helpful explanations for each correct answer
+  - Difficulty should match the student's level
+  - The correct_answer field must contain ONLY the letter (A, B, C, or D)
+
+user_prompt: |
+  Generate {{question_count}} quick comprehension quiz questions about "{{topic}}"
+  based on this lesson content:
+
+  {{content_summary}}
+
+  The step description is: {{description}}
+  Route topic: {{route_topic}}
+
+  Return a JSON object with the following structure:
+  {
+    "questions": [
+      {
+        "question": "The question text",
+        "options": ["A) First option", "B) Second option", "C) Third option", "D) Fourth option"],
+        "correct_answer": "A",
+        "explanation": "Brief explanation of why this is correct",
+        "difficulty": 1,
+        "bloom_level": 2
+      }
+    ]
+  }
+
+model_params:
+  temperature: 0.6
+  max_tokens: 2048
+  response_format: json

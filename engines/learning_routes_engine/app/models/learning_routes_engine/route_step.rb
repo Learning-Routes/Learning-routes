@@ -2,6 +2,10 @@ module LearningRoutesEngine
   class RouteStep < ApplicationRecord
     belongs_to :learning_route
 
+    has_one :step_quiz, -> { where(assessment_type: :step_quiz) },
+            class_name: "Assessments::Assessment",
+            foreign_key: :route_step_id
+
     enum :level, { nv1: 0, nv2: 1, nv3: 2 }, prefix: true
     enum :content_type, { lesson: 0, exercise: 1, assessment: 2, review: 3 }, prefix: true
     enum :status, { locked: 0, available: 1, in_progress: 2, completed: 3 }
@@ -35,6 +39,14 @@ module LearningRoutesEngine
 
     def unlock_if_ready!
       unlock! if locked? && prerequisites_met?
+    end
+
+    def requires_quiz?
+      content_type_lesson? || content_type_exercise?
+    end
+
+    def quiz_passed_by?(user)
+      step_quiz&.passed_by?(user) || false
     end
   end
 end

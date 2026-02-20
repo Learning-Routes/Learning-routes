@@ -15,7 +15,8 @@ module AiOrchestrator
       explain_differently:       { primary: "claude-opus-4-6", fallback: "gpt-5.2" },
       give_example:              { primary: "claude-opus-4-6", fallback: "gpt-5.2" },
       simplify_content:          { primary: "claude-haiku-4-5", fallback: "gpt-5.1-codex-mini" },
-      exercise_hint:             { primary: "claude-haiku-4-5", fallback: "gpt-5.1-codex-mini" }
+      exercise_hint:             { primary: "claude-haiku-4-5", fallback: "gpt-5.1-codex-mini" },
+      step_quiz:                 { primary: "claude-haiku-4-5", fallback: "claude-opus-4-6" }
     }.freeze
 
     # Per-model rate limits (requests per minute)

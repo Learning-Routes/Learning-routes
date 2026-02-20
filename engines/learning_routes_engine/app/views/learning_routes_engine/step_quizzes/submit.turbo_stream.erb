@@ -1,0 +1,97 @@
+<% if @result.passed? %>
+  <%# PASSED: Replace quiz with success + continue %>
+  <%= turbo_stream.replace "step_quiz_panel" do %>
+    <div id="step_quiz_panel" class="mt-8 pt-6 border-t border-white/[0.06]">
+      <div class="bg-green-900/20 border border-green-700/30 rounded-xl p-6 text-center">
+        <svg aria-hidden="true" class="w-10 h-10 text-green-400 mx-auto mb-3" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+        </svg>
+        <h3 class="text-lg font-bold text-white mb-1"><%= t("learning_engine.step_quiz.passed_title") %></h3>
+        <p class="text-sm text-gray-400 mb-4">
+          <%= t("learning_engine.step_quiz.passed_desc", score: @result.score.round(0).to_i) %>
+        </p>
+        <% if @next_step %>
+          <%= link_to t("learning_engine.step_quiz.continue"),
+              learning_routes_engine.route_step_path(@route, @next_step),
+              class: "inline-flex items-center gap-2 rounded-lg px-6 py-3 text-sm font-semibold text-white bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-400 hover:to-purple-400 transition" %>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+
+  <%# Update complete button to checkmark %>
+  <%= turbo_stream.replace "step_complete_btn" do %>
+    <div id="step_complete_btn" class="flex items-center gap-2 text-green-400 text-sm font-medium">
+      <svg aria-hidden="true" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+      </svg>
+      <%= t("layout.learning.completed") %>
+    </div>
+  <% end %>
+
+  <%# Update progress bar %>
+  <% progress = LearningRoutesEngine::RouteProgressTracker.new(@route).progress_summary %>
+  <%= turbo_stream.replace "route_progress_bar" do %>
+    <div id="route_progress_bar"
+         class="h-full bg-gradient-to-r from-indigo-500 to-purple-500 transition-all duration-700"
+         style="width: <%= progress[:percentage] %>%"></div>
+  <% end %>
+
+<% else %>
+  <%# FAILED: Show feedback per question + retry %>
+  <%= turbo_stream.replace "step_quiz_form" do %>
+    <div id="step_quiz_form">
+      <div class="bg-gray-900 border border-white/[0.06] rounded-xl p-6">
+        <%# Failure header %>
+        <div class="bg-red-900/20 border border-red-700/30 rounded-lg p-4 mb-6">
+          <div class="flex items-center gap-2 mb-1">
+            <svg aria-hidden="true" class="w-5 h-5 text-red-400" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+            </svg>
+            <span class="text-sm font-semibold text-red-300"><%= t("learning_engine.step_quiz.failed_title") %></span>
+          </div>
+          <p class="text-xs text-red-300/70">
+            <%= t("learning_engine.step_quiz.failed_desc", score: @result.score.round(0).to_i) %>
+          </p>
+        </div>
+
+        <%# Question feedback %>
+        <div class="space-y-4">
+          <% @quiz.questions.order(:created_at).each_with_index do |question, idx| %>
+            <% answer = @answers.find { |a| a.question_id == question.id } %>
+            <div class="rounded-lg bg-gray-800/50 border border-white/[0.04] p-4">
+              <p class="text-sm font-medium text-white mb-2">
+                <span class="text-gray-500 font-mono text-xs mr-2"><%= idx + 1 %>.</span>
+                <%= question.body %>
+              </p>
+              <% if answer %>
+                <div class="flex items-center gap-1.5 text-xs mb-2 <%= answer.correct? ? 'text-green-400' : 'text-red-400' %>">
+                  <% if answer.correct? %>
+                    <svg aria-hidden="true" class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                  <% else %>
+                    <svg aria-hidden="true" class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
+                  <% end %>
+                  <%= answer.correct? ? t("learning_engine.step_quiz.correct") : t("learning_engine.step_quiz.incorrect") %>
+                  <span class="text-gray-500 ml-1"><%= answer.answer.to_s.truncate(60) %></span>
+                </div>
+                <% unless answer.correct? %>
+                  <p class="text-xs text-gray-400 pl-5"><%= question.explanation %></p>
+                <% end %>
+              <% else %>
+                <div class="text-xs text-gray-500"><%= t("learning_engine.step_quiz.unanswered") %></div>
+              <% end %>
+            </div>
+          <% end %>
+        </div>
+
+        <%# Retry button %>
+        <div class="mt-6 text-center">
+          <%= button_to t("learning_engine.step_quiz.retry"),
+              learning_routes_engine.retry_quiz_route_step_step_quiz_path(@route, @step),
+              method: :post,
+              class: "rounded-lg px-6 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-400 hover:to-purple-400 transition" %>
+        </div>
+      </div>
+    </div>
+  <% end %>
+<% end %>
