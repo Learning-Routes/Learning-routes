@@ -127,11 +127,11 @@
           <span style="font-family:'DM Mono',monospace; font-size:0.58rem; color:#CCC5B8; flex-shrink:0; white-space:nowrap; margin-top:2px;">
             <% if step.completed_at %>
               <% if step.completed_at.to_date == Date.current %>
-                <%= t("community.time.today") %>, <%= step.completed_at.strftime("%H:%M") %>
+                <%= t("community.time.today") %>, <%= l(step.completed_at, format: "%H:%M") %>
               <% elsif step.completed_at.to_date == Date.yesterday %>
-                <%= t("community.time.yesterday") %>, <%= step.completed_at.strftime("%H:%M") %>
+                <%= t("community.time.yesterday") %>, <%= l(step.completed_at, format: "%H:%M") %>
               <% else %>
-                <%= step.completed_at.strftime("%d %b, %H:%M") %>
+                <%= l(step.completed_at, format: "%d %b, %H:%M") %>
               <% end %>
             <% end %>
           </span>
