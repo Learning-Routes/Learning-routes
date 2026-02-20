@@ -94,7 +94,7 @@
     <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(140px, 1fr)); gap:0.8rem;">
       <div>
         <p style="font-family:'DM Sans',sans-serif; font-size:0.7rem; color:#A09889; margin:0 0 0.2rem;"><%= t("dashboard.profile_interests") %></p>
-        <p style="font-family:'DM Sans',sans-serif; font-size:0.82rem; font-weight:500; color:#1C1812; margin:0;"><%= @profile.interests&.presence&.map(&:capitalize)&.join(", ") || "—" %></p>
+        <p style="font-family:'DM Sans',sans-serif; font-size:0.82rem; font-weight:500; color:#1C1812; margin:0;"><%= @profile.interests&.presence&.map { |i| t("interests.#{i}", default: i.humanize) }&.join(", ") || "—" %></p>
       </div>
       <div>
         <p style="font-family:'DM Sans',sans-serif; font-size:0.7rem; color:#A09889; margin:0 0 0.2rem;"><%= t("dashboard.profile_level") %></p>

@@ -3,10 +3,10 @@
     <%# === Heading === %>
     <div style="text-align:center; margin-bottom:2rem;">
       <h2 style="font-family:'DM Sans',sans-serif; font-weight:600; font-size:1.5rem; color:#1C1812; letter-spacing:-0.5px; margin:0 0 0.5rem;">
-        <em style="font-style:italic;">What do you want to learn?</em>
+        <em style="font-style:italic;"><%= t("onboarding.interests.heading") %></em>
       </h2>
       <p style="font-family:'DM Sans',sans-serif; font-size:0.85rem; color:#6D665B; margin:0;">
-        Choose a topic or type your own — AI will build your route.
+        <%= t("onboarding.interests.subtitle") %>
       </p>
     </div>
 
@@ -22,25 +22,25 @@
       <%# === Topic cards grid === %>
       <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:0.65rem; margin-bottom:1.5rem;">
         <% [
-          ["Programming", "💻", "Code, web dev & software"],
-          ["Languages", "🌍", "English, Spanish, Japanese & more"],
-          ["Mathematics", "📐", "From algebra to calculus"],
-          ["Sciences", "🔬", "Physics, chemistry & biology"],
-          ["Business", "💼", "Management, marketing & finance"],
-          ["Arts & Design", "🎨", "Visual arts, music & creative skills"]
-        ].each do |name, emoji, description| %>
+          ["programming", "💻"],
+          ["languages", "🌍"],
+          ["mathematics", "📐"],
+          ["sciences", "🔬"],
+          ["business", "💼"],
+          ["arts_design", "🎨"]
+        ].each do |key, emoji| %>
           <label style="cursor:pointer; display:block;" data-selectable-card-target="card">
-            <input type="checkbox" name="interests[]" value="<%= name.downcase.gsub(' & ', '_') %>"
+            <input type="checkbox" name="interests[]" value="<%= key %>"
                    style="position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); border:0;"
-                   <%= "checked" if profile.interests&.include?(name.downcase.gsub(' & ', '_')) %>
+                   <%= "checked" if profile.interests&.include?(key) %>
                    data-action="change->checkbox-group#update change->selectable-card#toggle">
             <div data-card-visual
                  style="padding:1rem 0.85rem; border-radius:12px; border:1.5px solid rgba(28,24,18,0.08); background:#FEFDFB; transition:all 0.2s ease; text-align:center;"
                  onmouseenter="this.style.boxShadow='0 2px 8px rgba(28,24,18,0.04)'"
                  onmouseleave="this.style.boxShadow='none'">
               <span style="font-size:1.5rem; display:block; margin-bottom:0.4rem;"><%= emoji %></span>
-              <span style="font-family:'DM Sans',sans-serif; font-weight:600; font-size:0.82rem; color:#1C1812; display:block; margin-bottom:0.2rem; letter-spacing:-0.2px;"><%= name %></span>
-              <span style="font-family:'DM Sans',sans-serif; font-size:0.68rem; color:#A09889; line-height:1.4; display:block;"><%= description %></span>
+              <span style="font-family:'DM Sans',sans-serif; font-weight:600; font-size:0.82rem; color:#1C1812; display:block; margin-bottom:0.2rem; letter-spacing:-0.2px;"><%= t("onboarding.interests.topics.#{key}") %></span>
+              <span style="font-family:'DM Sans',sans-serif; font-size:0.68rem; color:#A09889; line-height:1.4; display:block;"><%= t("onboarding.interests.topics.#{key}_desc") %></span>
             </div>
           </label>
         <% end %>
@@ -49,11 +49,11 @@
       <%# === Custom topic input === %>
       <div style="margin-bottom:1.5rem;">
         <label for="custom_interest" style="font-family:'DM Sans',sans-serif; font-size:0.78rem; font-weight:500; color:#6D665B; margin-bottom:0.4rem; display:block;">
-          Or type something specific
+          <%= t("onboarding.interests.custom_label") %>
         </label>
         <input type="text" name="custom_interest" id="custom_interest"
                style="width:100%; padding:0.7rem 0.9rem; border-radius:10px; border:1.5px solid rgba(28,24,18,0.1); background:white; font-family:'DM Sans',sans-serif; font-size:0.85rem; color:#1C1812; outline:none; transition:border-color 0.2s, box-shadow 0.2s; box-sizing:border-box;"
-               placeholder="e.g., Machine Learning, Guitar, Cooking..."
+               placeholder="<%= t("onboarding.interests.custom_placeholder") %>"
                onfocus="this.style.borderColor='rgba(28,24,18,0.22)';this.style.boxShadow='0 0 0 3px rgba(28,24,18,0.05)'"
                onblur="this.style.borderColor='rgba(28,24,18,0.1)';this.style.boxShadow='none'"
                data-action="input->checkbox-group#update">
@@ -61,7 +61,7 @@
 
       <%# === Continue button === %>
       <div style="display:flex; justify-content:flex-end;">
-        <%= f.submit "Continue →",
+        <%= f.submit t("onboarding.interests.continue"),
             style: "font-family:'DM Sans',sans-serif; font-weight:600; font-size:0.82rem; color:#F5F1EB; background:#2C261E; border:none; border-radius:11px; padding:0.65rem 1.6rem; cursor:pointer; transition:all 0.2s ease; box-shadow:0 1px 3px rgba(28,24,18,0.12),0 1px 2px rgba(28,24,18,0.06); letter-spacing:-0.2px;",
             onmouseenter: "this.style.boxShadow='0 4px 16px rgba(28,24,18,0.18)';this.style.transform='translateY(-1px)'",
             onmouseleave: "this.style.boxShadow='0 1px 3px rgba(28,24,18,0.12),0 1px 2px rgba(28,24,18,0.06)';this.style.transform='translateY(0)'",
@@ -71,7 +71,7 @@
 
     <%# === Footer help text === %>
     <p style="font-family:'DM Sans',sans-serif; font-size:0.72rem; color:#A09889; text-align:center; margin:1.5rem 0 0;">
-      AI will create a personalized learning path based on your choices
+      <%= t("onboarding.interests.footer") %>
     </p>
   </div>
 <% end %>

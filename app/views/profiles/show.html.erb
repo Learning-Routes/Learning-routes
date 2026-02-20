@@ -36,7 +36,7 @@
       <p style="font-family:'DM Sans',sans-serif; font-size:0.78rem; color:#A09889; margin:0.3rem 0 0;">
         <%= @user.email %>
         <span style="margin:0 0.4rem; opacity:0.4;">&middot;</span>
-        <span style="font-family:'DM Mono',monospace; font-size:0.7rem; text-transform:capitalize;"><%= @user.role %></span>
+        <span style="font-family:'DM Mono',monospace; font-size:0.7rem;"><%= t("user_roles.#{@user.role}", default: @user.role&.capitalize) %></span>
         <span style="margin:0 0.4rem; opacity:0.4;">&middot;</span>
         <%= t("profile.member_since", date: @member_since.strftime("%b %Y")) %>
       </p>
@@ -46,7 +46,7 @@
         <div style="display:flex; flex-wrap:wrap; gap:0.35rem; margin-top:0.7rem;">
           <% @profile.interests.first(5).each do |interest| %>
             <span style="font-family:'DM Mono',monospace; font-size:0.6rem; letter-spacing:0.4px; text-transform:uppercase; padding:0.2rem 0.55rem; border-radius:6px; background:rgba(28,24,18,0.04); color:#6D665B;">
-              <%= interest %>
+              <%= t("interests.#{interest}", default: interest.humanize) %>
             </span>
           <% end %>
         </div>
