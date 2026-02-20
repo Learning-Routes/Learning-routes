@@ -12,7 +12,7 @@
 
   # Build node data for compact SVG controller
   nodes_data = steps.map { |s|
-    { label: s.title, status: s.status }
+    { label: s.localized_title, status: s.status }
   }
 
   # Color seed from UUID
@@ -34,7 +34,7 @@
     sats << s.content_type.humanize if sats.empty?
 
     {
-      label: s.title,
+      label: s.localized_title,
       status: s.status,
       level: s.level,
       content_type: s.content_type,
@@ -44,8 +44,8 @@
   }
 
   route_json = {
-    title: route.topic,
-    subject_area: route.subject_area || "",
+    title: route.localized_topic,
+    subject_area: route.localized_subject_area || "",
     color: accent_color,
     status: route.status,
     total_steps: route.total_steps,
@@ -74,7 +74,7 @@
     <%# Title + status badge row %>
     <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:0.8rem; margin-bottom:0.45rem;">
       <h3 style="font-family:'DM Sans',sans-serif; font-weight:700; font-size:0.95rem; color:#1C1812; margin:0; letter-spacing:-0.3px; line-height:1.3;">
-        <span style="margin-right:0.3rem;"><%= topic_emoji_for(route.topic) %></span><%= route.topic %>
+        <span style="margin-right:0.3rem;"><%= topic_emoji_for(route.topic) %></span><%= route.localized_topic %>
       </h3>
       <% badge_style = case route.status
                         when 'active' then "background:rgba(91,168,128,0.1); color:#3D7A5A"
@@ -83,13 +83,13 @@
                         else "background:rgba(28,24,18,0.05); color:#6D665B"
                         end %>
       <span style="font-family:'DM Mono',monospace; font-size:0.55rem; letter-spacing:0.5px; text-transform:uppercase; padding:0.2rem 0.55rem; border-radius:6px; flex-shrink:0; white-space:nowrap; <%= badge_style %>">
-        <%= route.status %>
+        <%= t("dashboard.status.#{route.status}") %>
       </span>
     </div>
 
     <%# Subtitle %>
     <p style="font-family:'DM Sans',sans-serif; font-size:0.72rem; color:#A09889; margin:0 0 0.8rem; line-height:1.35;">
-      <%= route.subject_area %>
+      <%= route.localized_subject_area %>
     </p>
 
     <%# Progress row: badge + bar %>

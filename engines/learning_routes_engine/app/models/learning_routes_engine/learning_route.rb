@@ -47,5 +47,13 @@ module LearningRoutesEngine
     def estimated_remaining_minutes
       route_steps.where.not(status: :completed).sum(:estimated_minutes)
     end
+
+    def localized_topic(locale = I18n.locale)
+      translations.dig(locale.to_s, "title") || topic
+    end
+
+    def localized_subject_area(locale = I18n.locale)
+      translations.dig(locale.to_s, "subject_area") || subject_area
+    end
   end
 end

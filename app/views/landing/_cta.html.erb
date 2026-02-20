@@ -23,7 +23,7 @@
       <p style="font-family: 'DM Sans', sans-serif; font-size: 0.84rem;
                 color: rgba(245,241,235,0.4); margin: 0.5rem 0 0 0;">
         <% if current_user && @active_route %>
-          <%= t("cta.subtext_active", topic: @active_route.topic) %>
+          <%= t("cta.subtext_active", topic: @active_route.localized_topic) %>
         <% else %>
           <%= t("cta.subtext") %>
         <% end %>

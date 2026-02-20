@@ -3,8 +3,8 @@
     <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-purple-900/50 text-purple-300 mb-2">
       <%= t('learning_engine.review.badge') %>
     </span>
-    <h1 class="text-2xl font-bold text-white"><%= @step.title %></h1>
-    <p class="text-sm text-gray-400 mt-1"><%= @step.description %></p>
+    <h1 class="text-2xl font-bold text-white"><%= @step.localized_title %></h1>
+    <p class="text-sm text-gray-400 mt-1"><%= @step.localized_description %></p>
   </div>
 
   <!-- Memory strength indicator -->
@@ -34,7 +34,7 @@
         <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 w-full">
           <% @review_steps.each do |step| %>
             <div class="bg-gray-800/50 border border-white/[0.04] rounded-lg p-3 text-center">
-              <div class="text-xs font-medium text-gray-300 truncate"><%= step.title %></div>
+              <div class="text-xs font-medium text-gray-300 truncate"><%= step.localized_title %></div>
               <div class="text-xs text-gray-500 mt-1"><%= t("learning_engine.#{step.content_type}.badge") %></div>
             </div>
           <% end %>

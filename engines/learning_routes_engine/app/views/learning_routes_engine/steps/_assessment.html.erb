@@ -3,8 +3,8 @@
     <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-orange-900/50 text-orange-300 mb-2">
       <%= @step.metadata['assessment_type']&.humanize || t('learning_engine.assessment.badge') %>
     </span>
-    <h1 class="text-2xl font-bold text-white"><%= @step.title %></h1>
-    <p class="text-sm text-gray-400 mt-1"><%= @step.description %></p>
+    <h1 class="text-2xl font-bold text-white"><%= @step.localized_title %></h1>
+    <p class="text-sm text-gray-400 mt-1"><%= @step.localized_description %></p>
   </div>
 
   <% if @assessment_generating %>

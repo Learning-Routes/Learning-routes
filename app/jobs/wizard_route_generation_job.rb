@@ -9,7 +9,8 @@ class WizardRouteGenerationJob < ApplicationJob
     request.update!(status: "generating")
 
     begin
-      route_data = generate_fallback_route(request)
+      user_locale = request.user.locale || "en"
+      route_data = generate_fallback_route(request, user_locale)
 
       # Find or create the user's learning profile
       profile = LearningRoutesEngine::LearningProfile.find_or_create_by!(user: request.user) do |p|
@@ -26,6 +27,8 @@ class WizardRouteGenerationJob < ApplicationJob
           learning_profile: profile,
           topic: route_data[:title],
           subject_area: route_data[:subtitle],
+          locale: user_locale,
+          translations: route_data[:translations],
           status: :active,
           total_steps: route_data[:steps].length,
           generation_status: "completed",
@@ -53,6 +56,7 @@ class WizardRouteGenerationJob < ApplicationJob
             position: index,
             title: step_data[:label],
             description: step_data[:topics].join(", "),
+            translations: step_data[:translations],
             level: step_data[:level_enum] || :nv1,
             content_type: :lesson,
             status: index == 0 ? :available : :locked,
@@ -126,10 +130,59 @@ class WizardRouteGenerationJob < ApplicationJob
     pool.shuffle
   end
 
-  def generate_fallback_route(request)
-    topic = request.topic_display.first || "Aprendizaje General"
+  def generate_fallback_route(request, locale)
+    topic = request.topic_display.first || (locale == "es" ? "Aprendizaje General" : "General Learning")
 
-    step_templates = case request.level
+    es_templates = step_templates_es(request.level)
+    en_templates = step_templates_en(request.level)
+
+    minutes_range = case request.pace
+    when "relaxed" then (40..55)
+    when "steady" then (25..40)
+    when "intensive" then (15..25)
+    else (25..40)
+    end
+
+    # Primary templates based on user locale
+    primary = locale == "es" ? es_templates : en_templates
+    secondary = locale == "es" ? en_templates : es_templates
+
+    steps = primary.each_with_index.map do |template, i|
+      alt = secondary[i] || template
+      est_min = rand(minutes_range)
+
+      {
+        label: template[:label],
+        level: template[:level],
+        topics: template[:topics],
+        estimated_minutes: est_min,
+        level_enum: level_to_enum(template[:level]),
+        translations: {
+          "en" => { "title" => (locale == "en" ? template : alt)[:label], "description" => (locale == "en" ? template : alt)[:topics].join(", ") },
+          "es" => { "title" => (locale == "es" ? template : alt)[:label], "description" => (locale == "es" ? template : alt)[:topics].join(", ") }
+        }
+      }
+    end
+
+    # Build route-level titles
+    en_title = locale == "en" ? "#{topic} Route" : "#{topic} Route"
+    es_title = locale == "es" ? "Ruta de #{topic}" : "Ruta de #{topic}"
+    en_subtitle = "Personalized path · #{steps.length} stages · #{request.level} level"
+    es_subtitle = "Camino personalizado · #{steps.length} etapas · nivel #{request.level}"
+
+    {
+      title: locale == "es" ? es_title : en_title,
+      subtitle: locale == "es" ? es_subtitle : en_subtitle,
+      translations: {
+        "en" => { "title" => en_title, "subject_area" => en_subtitle },
+        "es" => { "title" => es_title, "subject_area" => es_subtitle }
+      },
+      steps: steps
+    }
+  end
+
+  def step_templates_es(level)
+    case level
     when "beginner"
       [
         { label: "Fundamentos básicos", level: 1, topics: ["Conceptos clave", "Terminología", "Primeros pasos"] },
@@ -177,25 +230,56 @@ class WizardRouteGenerationJob < ApplicationJob
         { label: "Avance", level: 3, topics: ["Profundización", "Proyectos", "Evaluación"] }
       ]
     end
+  end
 
-    minutes_range = case request.pace
-    when "relaxed" then (40..55)
-    when "steady" then (25..40)
-    when "intensive" then (15..25)
-    else (25..40)
+  def step_templates_en(level)
+    case level
+    when "beginner"
+      [
+        { label: "Core Fundamentals", level: 1, topics: ["Key concepts", "Terminology", "First steps"] },
+        { label: "Essential Concepts", level: 1, topics: ["Basic theory", "Simple examples", "Guided practice"] },
+        { label: "Initial Practice", level: 2, topics: ["Basic exercises", "Active repetition", "Self-assessment"] },
+        { label: "First Projects", level: 2, topics: ["Guided project", "Real-world application", "Review"] },
+        { label: "Review & Consolidation", level: 2, topics: ["Summary", "Comprehension test", "Next level"] },
+        { label: "Early Intermediate", level: 3, topics: ["New concepts", "Medium complexity", "Challenges"] },
+        { label: "Practical Application", level: 3, topics: ["Own project", "Problem solving", "Feedback"] },
+        { label: "Final Assessment", level: 3, topics: ["Comprehensive exam", "Portfolio", "Certification"] }
+      ]
+    when "basic"
+      [
+        { label: "Fundamentals Review", level: 1, topics: ["Quick review", "Knowledge gaps", "Leveling up"] },
+        { label: "Intermediate Concepts", level: 2, topics: ["Deep dive", "Common patterns", "Best practices"] },
+        { label: "Advanced Techniques", level: 2, topics: ["Optimization", "Special cases", "Tools"] },
+        { label: "Applied Project", level: 3, topics: ["Design", "Implementation", "Testing"] },
+        { label: "Specialization", level: 3, topics: ["Focus area", "Specific techniques", "Community"] },
+        { label: "Mastery & Practice", level: 4, topics: ["Complex problems", "Mentoring", "Portfolio"] },
+        { label: "Advanced Assessment", level: 4, topics: ["Exam", "Final project", "Certification"] }
+      ]
+    when "intermediate"
+      [
+        { label: "Level Diagnostic", level: 2, topics: ["Initial assessment", "Strengths", "Areas for improvement"] },
+        { label: "Advanced Techniques", level: 3, topics: ["Advanced patterns", "Optimization", "Architecture"] },
+        { label: "Complex Cases", level: 3, topics: ["Real scenarios", "Debugging", "Performance"] },
+        { label: "Deep Specialization", level: 4, topics: ["Specific niche", "Research", "Innovation"] },
+        { label: "Advanced Project", level: 4, topics: ["Complex design", "Full implementation", "Deploy"] },
+        { label: "Technical Leadership", level: 4, topics: ["Code review", "Mentoring", "Documentation"] },
+        { label: "Mastery", level: 5, topics: ["State of the art", "Contribution", "Teaching"] }
+      ]
+    when "advanced"
+      [
+        { label: "State of the Art", level: 4, topics: ["Latest trends", "Papers", "New tools"] },
+        { label: "Applied Research", level: 4, topics: ["Experimentation", "Benchmarks", "Analysis"] },
+        { label: "Expert Architecture", level: 5, topics: ["System design", "Scalability", "Trade-offs"] },
+        { label: "Innovation", level: 5, topics: ["New approaches", "Prototyping", "Validation"] },
+        { label: "Open Contribution", level: 5, topics: ["Open source", "Conferences", "Publications"] },
+        { label: "Mastery & Mentoring", level: 5, topics: ["Teaching", "Leadership", "Legacy"] }
+      ]
+    else
+      [
+        { label: "Introduction", level: 1, topics: ["Basic concepts", "Terminology", "First steps"] },
+        { label: "Practice", level: 2, topics: ["Exercises", "Application", "Review"] },
+        { label: "Progress", level: 3, topics: ["Deep dive", "Projects", "Assessment"] }
+      ]
     end
-
-    steps = step_templates.map do |template|
-      template.merge(
-        estimated_minutes: rand(minutes_range),
-        level_enum: level_to_enum(template[:level])
-      )
-    end
-
-    {
-      title: "Ruta de #{topic}",
-      subtitle: "Camino personalizado · #{steps.length} etapas · nivel #{request.level}",
-      steps: steps
-    }
   end
 end

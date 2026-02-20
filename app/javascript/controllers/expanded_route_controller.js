@@ -13,13 +13,17 @@ const NS = "http://www.w3.org/2000/svg"
 const FF = "'DM Sans', sans-serif"
 const FM = "'DM Mono', monospace"
 
-function crv(x1, y1, x2, y2) {
+// Flowing S-curve between two points. `sway` controls how much the curve bows out (0–1).
+function crv(x1, y1, x2, y2, sway = 0.55) {
   const dx = x2 - x1, dy = y2 - y1
-  if (Math.abs(dy) < 28)
-    return `M${x1} ${y1}C${x1 + dx * .3} ${y1 + 28},${x1 + dx * .7} ${y2 - 26},${x2} ${y2}`
-  if (dy < 0)
-    return `M${x1} ${y1}C${x1 + dx * .55} ${y1 + 10},${x2 - dx * .1} ${y2 + Math.abs(dy) * .32},${x2} ${y2}`
-  return `M${x1} ${y1}C${x1 + dx * .55} ${y1 - 10},${x2 - dx * .1} ${y2 - Math.abs(dy) * .32},${x2} ${y2}`
+  const sign = dy >= 0 ? 1 : -1
+  const ady = Math.abs(dy)
+  // Control points sweep outward for a smooth S-shape
+  const cx1 = x1 + dx * 0.42
+  const cy1 = y1 + sign * ady * sway * 0.1
+  const cx2 = x2 - dx * 0.25
+  const cy2 = y2 - sign * ady * sway * 0.35
+  return `M${x1} ${y1}C${cx1} ${cy1},${cx2} ${cy2},${x2} ${y2}`
 }
 
 function svg(tag, attrs = {}, children = []) {
@@ -47,6 +51,7 @@ function trunc(str, max) {
 
 export default class extends Controller {
   static targets = ["overlay", "backdrop", "content", "headerText", "svgWrap", "footerText", "actionBtn"]
+  static values = { i18n: { type: Object, default: {} } }
 
   connect() {
     this._onEsc = (e) => { if (e.key === "Escape") this.close() }
@@ -63,6 +68,13 @@ export default class extends Controller {
       this._svgRoot.removeEventListener("click", this._onNodeClick)
     }
     this._svgRoot = null
+    // Restore navbar and main z-index if overlay was open when disconnected
+    if (this._isOpen) {
+      const navbar = document.querySelector("nav[data-controller='app-nav']")
+      if (navbar) navbar.style.display = ""
+      const main = document.getElementById("main-content")
+      if (main && this._mainZIndex !== undefined) main.style.zIndex = this._mainZIndex
+    }
   }
 
   _setTimeout(fn, delay) {
@@ -107,6 +119,14 @@ export default class extends Controller {
     const backdrop = this.backdropTarget
     const content = this.contentTarget
 
+    // Hide the navbar so the overlay gets full screen
+    const navbar = document.querySelector("nav[data-controller='app-nav']")
+    if (navbar) navbar.style.display = "none"
+
+    // Remove <main> z-index so the fixed overlay escapes its stacking context
+    const main = document.getElementById("main-content")
+    if (main) { this._mainZIndex = main.style.zIndex; main.style.zIndex = "auto" }
+
     overlay.style.display = "block"
     this._renderAll()
 
@@ -129,6 +149,14 @@ export default class extends Controller {
     content.style.transition = "opacity 0.25s ease, transform 0.25s ease"
     content.style.opacity = "0"
     content.style.transform = "translateY(12px)"
+
+    // Show the navbar again
+    const navbar = document.querySelector("nav[data-controller='app-nav']")
+    if (navbar) navbar.style.display = ""
+
+    // Restore <main> z-index
+    const main = document.getElementById("main-content")
+    if (main && this._mainZIndex !== undefined) main.style.zIndex = this._mainZIndex
 
     this._setTimeout(() => {
       this.overlayTarget.style.display = "none"
@@ -157,29 +185,32 @@ export default class extends Controller {
   }
 
   _renderHeader() {
+    const i18n = this.i18nValue || {}
     const d = this.routeData
     const completed = d.nodes.filter(n => n.status === "completed").length
     this.headerTextTarget.innerHTML =
-      `<span style="font-family:${FM};font-size:0.65rem;font-weight:600;color:#B09848;text-transform:uppercase;letter-spacing:0.15em;">ROUTE</span>` +
+      `<span style="font-family:${FM};font-size:0.65rem;font-weight:600;color:#B09848;text-transform:uppercase;letter-spacing:0.15em;">${esc(i18n.label || "ROUTE")}</span>` +
       `<h2 style="font-family:${FF};font-weight:700;font-size:2rem;color:#E8E4DC;margin:0.3rem 0 0.4rem;letter-spacing:-0.3px;">${esc(d.title)}</h2>` +
-      `<p style="font-family:${FF};font-size:0.82rem;color:#908880;margin:0;">${esc(d.subject_area)} &middot; ${completed} of ${d.total_steps} steps</p>`
+      `<p style="font-family:${FF};font-size:0.82rem;color:#908880;margin:0;">${esc(d.subject_area)} &middot; ${(i18n.steps_of || "__completed__ of __total__ steps").replace("__completed__", completed).replace("__total__", d.total_steps)}</p>`
   }
 
   _renderFooter() {
+    const i18n = this.i18nValue || {}
     const node = this.routeData.nodes[this.selectedIndex]
     if (!node) return
     const sameLevel = this.routeData.nodes.filter(n => n.level === node.level).length
     let h = ""
     if (node.status === "completed")
-      h += `<span style="font-family:${FM};font-size:0.72rem;color:#5BA880;margin-right:1.5rem;">\u2713 Step completed</span>`
-    h += `<span style="font-family:${FM};font-size:0.68rem;color:rgba(255,255,255,0.15);">${sameLevel} topics at this level</span>`
-    h += `<span style="font-family:${FM};font-size:0.68rem;color:rgba(255,255,255,0.15);margin-left:1.5rem;">Click nodes to navigate</span>`
+      h += `<span style="font-family:${FM};font-size:0.72rem;color:#5BA880;margin-right:1.5rem;">\u2713 ${esc(i18n.step_completed || "Step completed")}</span>`
+    h += `<span style="font-family:${FM};font-size:0.68rem;color:rgba(255,255,255,0.15);">${(i18n.topics_at_level || "__count__ topics at this level").replace("__count__", sameLevel)}</span>`
+    h += `<span style="font-family:${FM};font-size:0.68rem;color:rgba(255,255,255,0.15);margin-left:1.5rem;">${esc(i18n.click_to_navigate || "Click nodes to navigate")}</span>`
     this.footerTextTarget.innerHTML = h
   }
 
   // --- SVG Rendering ---
 
   _renderSVG() {
+    const i18n = this.i18nValue || {}
     const wrap = this.svgWrapTarget
     wrap.innerHTML = ""
 
@@ -236,12 +267,20 @@ export default class extends Controller {
 
     // === CONNECTIONS (back layer) ===
 
-    // Left → Center
+    // Left → Center: each connection arrives at a different angle around the center circle
     leftPos.forEach((lp, i) => {
       const active = i === sel
       const nodeR = active ? 28 : 16
+      // Spread arrival angles around left hemisphere of center circle (-110° to -250°)
+      const t = nodes.length === 1 ? 0.5 : i / (nodes.length - 1)
+      const arrivalAngle = Math.PI + (t - 0.5) * Math.PI * 0.8 // ~144° to ~216°
+      const ax = cX + Math.cos(arrivalAngle) * (cR + 6)
+      const ay = cY + Math.sin(arrivalAngle) * (cR + 6)
+      const startX = lp.x + nodeR + 4
+      // Vary sway per node for organic feel
+      const sway = 0.4 + (i % 3) * 0.15
       root.appendChild(svg("path", {
-        d: crv(lp.x + nodeR + 4, lp.y, cX - cR - 10, cY),
+        d: crv(startX, lp.y, ax, ay, sway),
         fill: "none",
         stroke: active ? color : "white",
         "stroke-width": active ? "1.5" : "0.8",
@@ -251,17 +290,33 @@ export default class extends Controller {
       }))
     })
 
-    // Center → Satellites
+    // Center → Satellites: organic curves that bow outward
     satPos.forEach((sp, i) => {
+      // Departure point on center circle toward satellite
+      const angle = Math.atan2(sp.y - cY, sp.x - cX)
+      const sx = cX + Math.cos(angle) * (cR + 4)
+      const sy = cY + Math.sin(angle) * (cR + 4)
+      // Arrival point on satellite circle
+      const backAngle = Math.atan2(cY - sp.y, cX - sp.x)
+      const ex = sp.x + Math.cos(backAngle) * (sp.r + 2)
+      const ey = sp.y + Math.sin(backAngle) * (sp.r + 2)
+      // Perpendicular bow for curvature
+      const mx = (sx + ex) / 2, my = (sy + ey) / 2
+      const perpX = -(ey - sy), perpY = ex - sx
+      const pLen = Math.sqrt(perpX * perpX + perpY * perpY) || 1
+      const bow = 25 + (i % 2) * 15
+      const sign = i % 2 === 0 ? 1 : -1
+      const cx1 = mx + (perpX / pLen) * bow * sign
+      const cy1 = my + (perpY / pLen) * bow * sign
       root.appendChild(svg("path", {
-        d: crv(cX + cR * 0.7, cY + (sp.y - cY) * 0.2, sp.x - sp.r * 0.7, sp.y),
+        d: `M${sx} ${sy}Q${cx1} ${cy1},${ex} ${ey}`,
         fill: "none", stroke: "white", "stroke-width": "0.8", opacity: "0.08",
         "data-anim": "conn", "data-delay": String(0.5 + i * 0.06)
       }))
-      // Midpoint dot
-      const mx = (cX + cR * 0.7 + sp.x - sp.r * 0.7) / 2
-      const my = (cY + (sp.y - cY) * 0.2 + sp.y) / 2
-      root.appendChild(svg("circle", { cx: mx, cy: my, r: "2", fill: color, opacity: "0.2", "data-anim": "dot" }))
+      // Midpoint dot along the curve
+      const dotX = 0.25 * sx + 0.5 * cx1 + 0.25 * ex
+      const dotY = 0.25 * sy + 0.5 * cy1 + 0.25 * ey
+      root.appendChild(svg("circle", { cx: dotX, cy: dotY, r: "2", fill: color, opacity: "0.2", "data-anim": "dot" }))
     })
 
     // === CENTER NODE ===
@@ -311,7 +366,7 @@ export default class extends Controller {
         x: cX, y: cY + 30, "text-anchor": "middle", "dominant-baseline": "central",
         fill: "rgba(255,255,255,0.3)", "font-family": FM, "font-size": "10",
         "data-anim": "cfade"
-      }, ["Current step"]))
+      }, [i18n.current_step || "Current step"]))
     }
 
     // Content type tag below center

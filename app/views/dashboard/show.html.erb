@@ -1,12 +1,12 @@
-<% content_for(:title, "My Routes — Learning Routes") %>
+<% content_for(:title, t("dashboard.title")) %>
 
 <%# === Header === %>
 <div style="margin-bottom:2rem;">
   <h1 style="font-family:'DM Sans',sans-serif; font-weight:700; font-size:1.5rem; letter-spacing:-0.5px; color:#1C1812; margin:0 0 0.3rem;">
-    Hello, <%= current_user.name.to_s.split.first || current_user.name %>.
+    <%= t("dashboard.greeting", name: current_user.name.to_s.split.first || current_user.name) %>
   </h1>
   <p style="font-family:'DM Sans',sans-serif; font-size:0.85rem; color:#A09889; margin:0;">
-    Continue your learning journey.
+    <%= t("dashboard.subheading") %>
   </p>
 </div>
 
@@ -18,8 +18,8 @@
       <path d="M8 6v3M8 11h.01" stroke="#B09848" stroke-width="1.2" stroke-linecap="round"/>
     </svg>
     <p style="font-family:'DM Sans',sans-serif; font-size:0.78rem; color:#8B6D28; margin:0;">
-      Verify your email.
-      <%= link_to "Resend verification", core.resend_verification_path,
+      <%= t("dashboard.verify_email") %>
+      <%= link_to t("dashboard.resend_verification"), core.resend_verification_path,
           data: { turbo_method: :post },
           style: "color:#8B6D28; font-weight:600; text-decoration:underline; text-underline-offset:2px;" %>
     </p>
@@ -39,10 +39,10 @@
           </div>
           <div style="flex:1; min-width:0;">
             <h3 style="font-family:'DM Sans',sans-serif; font-weight:600; font-size:0.92rem; color:#1C1812; margin:0 0 0.3rem; letter-spacing:-0.2px;">
-              <%= route.topic %>
+              <%= route.localized_topic %>
             </h3>
             <p style="font-family:'DM Sans',sans-serif; font-size:0.75rem; color:#A09889; margin:0;">
-              <% if route.subject_area.present? %><%= route.subject_area %> &middot; <% end %><%= route.route_steps.count(&:completed?) %>/<%= route.total_steps %> steps
+              <% if route.subject_area.present? %><%= route.localized_subject_area %> &middot; <% end %><%= t("dashboard.steps_progress", completed: route.route_steps.count(&:completed?), total: route.total_steps) %>
             </p>
           </div>
           <div style="display:flex; align-items:center; gap:1rem; flex-shrink:0;">
@@ -59,7 +59,7 @@
                               else 'background:rgba(28,24,18,0.05); color:#6D665B'
                               end %>
             <span style="font-family:'DM Mono',monospace; font-size:0.6rem; letter-spacing:0.5px; text-transform:uppercase; padding:0.25rem 0.55rem; border-radius:6px; <%= badge_colors %>">
-              <%= route.status %>
+              <%= t("dashboard.status.#{route.status}") %>
             </span>
           </div>
         </div>
@@ -77,10 +77,10 @@
     </div>
 
     <h2 style="font-family:'DM Sans',sans-serif; font-weight:700; font-size:1.15rem; color:#1C1812; margin:0 0 0.5rem; letter-spacing:-0.3px;">
-      You don't have any routes yet
+      <%= t("dashboard.empty_heading") %>
     </h2>
     <p style="font-family:'DM Sans',sans-serif; font-size:0.82rem; color:#A09889; margin:0; max-width:340px; margin-left:auto; margin-right:auto; line-height:1.5;">
-      Set up your learning profile so our AI can create a personalized route for you.
+      <%= t("dashboard.empty_body") %>
     </p>
   </div>
 <% end %>
@@ -89,23 +89,23 @@
 <% if @profile %>
   <div style="margin-top:1.5rem; background:rgba(255,255,255,0.45); border:1px solid rgba(28,24,18,0.06); border-radius:14px; padding:1.2rem 1.3rem;">
     <p style="font-family:'DM Mono',monospace; font-size:0.6rem; letter-spacing:1.5px; text-transform:uppercase; color:#A09889; margin:0 0 0.8rem;">
-      Your profile
+      <%= t("dashboard.profile_heading") %>
     </p>
     <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(140px, 1fr)); gap:0.8rem;">
       <div>
-        <p style="font-family:'DM Sans',sans-serif; font-size:0.7rem; color:#A09889; margin:0 0 0.2rem;">Interests</p>
+        <p style="font-family:'DM Sans',sans-serif; font-size:0.7rem; color:#A09889; margin:0 0 0.2rem;"><%= t("dashboard.profile_interests") %></p>
         <p style="font-family:'DM Sans',sans-serif; font-size:0.82rem; font-weight:500; color:#1C1812; margin:0;"><%= @profile.interests&.presence&.map(&:capitalize)&.join(", ") || "—" %></p>
       </div>
       <div>
-        <p style="font-family:'DM Sans',sans-serif; font-size:0.7rem; color:#A09889; margin:0 0 0.2rem;">Level</p>
-        <p style="font-family:'DM Sans',sans-serif; font-size:0.82rem; font-weight:500; color:#1C1812; margin:0;"><%= @profile.current_level&.capitalize || "—" %></p>
+        <p style="font-family:'DM Sans',sans-serif; font-size:0.7rem; color:#A09889; margin:0 0 0.2rem;"><%= t("dashboard.profile_level") %></p>
+        <p style="font-family:'DM Sans',sans-serif; font-size:0.82rem; font-weight:500; color:#1C1812; margin:0;"><%= @profile.current_level ? t("settings.learning.level_#{@profile.current_level}", default: @profile.current_level.capitalize) : "—" %></p>
       </div>
       <div>
-        <p style="font-family:'DM Sans',sans-serif; font-size:0.7rem; color:#A09889; margin:0 0 0.2rem;">Style</p>
+        <p style="font-family:'DM Sans',sans-serif; font-size:0.7rem; color:#A09889; margin:0 0 0.2rem;"><%= t("dashboard.profile_style") %></p>
         <p style="font-family:'DM Sans',sans-serif; font-size:0.82rem; font-weight:500; color:#1C1812; margin:0;"><%= @profile.learning_style&.presence&.map(&:capitalize)&.join(", ") || "—" %></p>
       </div>
       <div>
-        <p style="font-family:'DM Sans',sans-serif; font-size:0.7rem; color:#A09889; margin:0 0 0.2rem;">Timeline</p>
+        <p style="font-family:'DM Sans',sans-serif; font-size:0.7rem; color:#A09889; margin:0 0 0.2rem;"><%= t("dashboard.profile_timeline") %></p>
         <p style="font-family:'DM Sans',sans-serif; font-size:0.82rem; font-weight:500; color:#1C1812; margin:0;"><%= @profile.timeline&.humanize || "—" %></p>
       </div>
     </div>

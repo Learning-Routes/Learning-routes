@@ -1,4 +1,4 @@
-<% content_for(:title, "#{@route.topic} #{t('learning_engine.route.title_suffix')}") %>
+<% content_for(:title, "#{@route.localized_topic} #{t('learning_engine.route.title_suffix')}") %>
 
 <div class="mx-auto max-w-4xl px-6 py-10">
   <!-- Route header -->
@@ -9,7 +9,7 @@
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
         </svg>
       <% end %>
-      <h1 class="text-2xl font-bold text-white"><%= @route.topic %></h1>
+      <h1 class="text-2xl font-bold text-white"><%= @route.localized_topic %></h1>
     </div>
 
     <!-- Progress -->
@@ -36,6 +36,16 @@
   <% end %>
 
   <!-- Steps list -->
+  <div class="flex items-center justify-between mb-4">
+    <h2 class="text-sm font-semibold text-gray-400 uppercase tracking-wider"><%= t('learning_engine.route.steps_title', default: 'Steps') %></h2>
+    <%= link_to main_app.profile_path, class: "inline-flex items-center gap-1.5 text-xs font-medium text-gray-500 hover:text-white bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.06] rounded-lg px-3 py-1.5 transition" do %>
+      <svg aria-hidden="true" class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+      </svg>
+      <%= t('learning_engine.route.exit_route', default: 'Exit Route') %>
+    <% end %>
+  </div>
+
   <div class="space-y-3">
     <% @steps.each_with_index do |step, index| %>
       <% accessible = step.completed? || step.in_progress? || step.available? %>
@@ -65,7 +75,7 @@
           <!-- Step info -->
           <div class="flex-1 min-w-0">
             <div class="flex items-center gap-2">
-              <h3 class="text-sm font-semibold text-white truncate"><%= step.title %></h3>
+              <h3 class="text-sm font-semibold text-white truncate"><%= step.localized_title %></h3>
               <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium
                           <%= case step.content_type
                               when 'lesson' then 'bg-blue-900/50 text-blue-300'
@@ -76,7 +86,7 @@
                 <%= t("learning_engine.#{step.content_type}.badge") %>
               </span>
             </div>
-            <p class="text-xs text-gray-500 mt-0.5 truncate"><%= step.description %></p>
+            <p class="text-xs text-gray-500 mt-0.5 truncate"><%= step.localized_description %></p>
           </div>
 
           <!-- Duration -->

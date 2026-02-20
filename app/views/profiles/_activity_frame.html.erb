@@ -17,8 +17,8 @@
   completed_steps.each do |step|
     activities << {
       type: step.content_type_assessment? ? :exam_pass : :lesson_completed,
-      title: step.title,
-      desc: step.learning_route.topic,
+      title: step.localized_title,
+      desc: step.learning_route.localized_topic,
       time: step.completed_at,
       color: step.content_type_assessment? ? "#5BA880" : "#5BA880"
     }
@@ -28,7 +28,7 @@
   (@routes || []).each do |route|
     activities << {
       type: :route_new,
-      title: route.topic,
+      title: route.localized_topic,
       desc: t("activity.new_route_desc"),
       time: route.created_at,
       color: "#8B80C4"

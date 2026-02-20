@@ -145,7 +145,17 @@
   </div>
 
   <%# === Panel 1: Mis Rutas === %>
-  <div id="panel-routes" role="tabpanel" aria-labelledby="tab-0" data-profile-tabs-target="panel" data-controller="expanded-route">
+  <%
+    expanded_route_i18n = {
+      label: t("expanded_route.label"),
+      steps_of: t("expanded_route.steps_of"),
+      step_completed: t("expanded_route.step_completed"),
+      topics_at_level: t("expanded_route.topics_at_level"),
+      click_to_navigate: t("expanded_route.click_to_navigate"),
+      current_step: t("expanded_route.current_step")
+    }
+  %>
+  <div id="panel-routes" role="tabpanel" aria-labelledby="tab-0" data-profile-tabs-target="panel" data-controller="expanded-route" data-expanded-route-i18n-value="<%= expanded_route_i18n.to_json %>">
     <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(340px, 1fr)); gap:0.8rem;">
       <% @routes.each do |route| %>
         <%= render "profiles/route_card", route: route, accent_color: route_accent_color(route) %>

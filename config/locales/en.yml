@@ -320,6 +320,13 @@ en:
   expanded_route:
     close: "Close"
     open_route: "Open Route"
+    back_to_profile: "Profile"
+    label: "ROUTE"
+    steps_of: "__completed__ of __total__ steps"
+    step_completed: "Step completed"
+    topics_at_level: "__count__ topics at this level"
+    click_to_navigate: "Click nodes to navigate"
+    current_step: "Current step"
 
   # ── Community ──
   community:
@@ -564,47 +571,26 @@ en:
       today: "Today, %{time}"
       yesterday: "Yesterday, %{time}"
 
-  # ── Assessments Engine ──
-  assessments:
-    show:
-      title_prefix: "Assessment - "
-      description: "Test your understanding of this topic."
-      questions: "Questions"
-      to_pass: "To pass"
-      minutes: "Minutes"
-      last_attempt: "Last attempt"
-      passed: "Passed"
-      not_passed: "Not passed"
-      back_to_route: "Back to route"
-      start_exam: "Start exam"
-    exam:
-      title_prefix: "Assessment - "
-      question_of: "Question %{current} of %{total}"
-      save_answer: "Save Answer"
-      previous: "Previous"
-      next: "Next"
-      submit: "Submit Assessment"
-      confirm: "Are you sure you want to submit? You cannot change your answers after submission."
-      sidebar_heading: "Questions"
-      answered: "%{count} of %{total} answered"
-    results:
-      title_prefix: "Results - "
-      congrats: "Congratulations!"
-      keep_going: "Keep Going!"
-      passed_desc: "You passed the assessment."
-      need_score: "You need %{score}% to pass."
-      correct: "Correct"
-      incorrect: "Incorrect"
-      unanswered: "Unanswered"
-      breakdown: "Question Breakdown"
-      your_answer: "Your answer:"
-      back_to_route: "Back to Route"
-      continue: "Continue Learning"
-
-  # ── Content Engine ──
-  content_engine:
-    notes:
-      placeholder: "Add your notes..."
+  # ── Dashboard ──
+  dashboard:
+    title: "My Routes — Learning Routes"
+    greeting: "Hello, %{name}."
+    subheading: "Continue your learning journey."
+    verify_email: "Verify your email."
+    resend_verification: "Resend verification"
+    steps_progress: "%{completed}/%{total} steps"
+    empty_heading: "You don't have any routes yet"
+    empty_body: "Set up your learning profile so our AI can create a personalized route for you."
+    profile_heading: "Your profile"
+    profile_interests: "Interests"
+    profile_level: "Level"
+    profile_style: "Style"
+    profile_timeline: "Timeline"
+    status:
+      active: "Active"
+      completed: "Completed"
+      paused: "Paused"
+      draft: "Draft"
 
   # ── Learning Engine ──
   learning_engine:
@@ -615,6 +601,8 @@ en:
         other: "%{count} reviews due"
       see_all_reviews: "See all reviews"
       duration: "~%{minutes} min"
+      steps_title: "Steps"
+      exit_route: "Exit Route"
     progress:
       label: "Progress"
       aria: "Route progress: %{percent}%"

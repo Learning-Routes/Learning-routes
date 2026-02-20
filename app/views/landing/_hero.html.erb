@@ -39,7 +39,7 @@
                  font-sans font-bold text-[clamp(3rem,6.5vw,4.6rem)]
                  tracking-[-3px] leading-[1.02] text-txt">
         <% if current_user && @active_route %>
-          <%= t("hero.headline_active_html", topic: @active_route.topic).html_safe %>
+          <%= t("hero.headline_active_html", topic: @active_route.localized_topic).html_safe %>
         <% else %>
           <%= t("hero.headline").html_safe %>
         <% end %>
