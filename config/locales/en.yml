@@ -1,4 +1,10 @@
 en:
+  # ── Date formats ──
+  date:
+    formats:
+      short_month_year: "%b %Y"
+      day_month_time: "%d %b, %H:%M"
+
   # ── Navbar ──
   nav:
     features: "Features"
@@ -561,6 +567,7 @@ en:
       exam_passed: "Exam passed"
       exam_failed: "Exam failed"
       exam_pass: "Assessment completed"
+    exam: "Exam"
     new_route_desc: "New route created"
     passed_with: "Passed with %{score}%"
     failed_score: "%{score}% — try again"

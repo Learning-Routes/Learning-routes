@@ -40,7 +40,7 @@
   results.each do |r|
     activities << {
       type: r.passed? ? :exam_passed : :exam_failed,
-      title: r.assessment&.route_step&.title || r.assessment&.assessment_type&.humanize || "Exam",
+      title: r.assessment&.route_step&.localized_title || r.assessment&.assessment_type&.humanize || t("activity.exam"),
       desc: r.passed? ? t("activity.passed_with", score: "#{r.score&.round(1)}%") : t("activity.failed_score", score: "#{r.score&.round(1)}%"),
       time: r.created_at,
       color: r.passed? ? "#5BA880" : "#B06050"
@@ -93,7 +93,7 @@
             <% elsif act[:time].to_date == Date.yesterday %>
               <%= t("activity.time.yesterday", time: act[:time].strftime("%H:%M")) %>
             <% else %>
-              <%= act[:time].strftime("%d %b, %H:%M") %>
+              <%= l(act[:time], format: "%d %b, %H:%M") %>
             <% end %>
           <% end %>
         </span>

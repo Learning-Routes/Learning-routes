@@ -1,4 +1,12 @@
 es:
+  # ── Formatos de fecha ──
+  date:
+    abbr_month_names: [~, ene, feb, mar, abr, may, jun, jul, ago, sep, oct, nov, dic]
+    month_names: [~, enero, febrero, marzo, abril, mayo, junio, julio, agosto, septiembre, octubre, noviembre, diciembre]
+    formats:
+      short_month_year: "%b %Y"
+      day_month_time: "%d %b, %H:%M"
+
   # ── Navbar ──
   nav:
     features: "Características"
@@ -561,6 +569,7 @@ es:
       exam_passed: "Examen aprobado"
       exam_failed: "Examen reprobado"
       exam_pass: "Evaluación completada"
+    exam: "Examen"
     new_route_desc: "Nueva ruta creada"
     passed_with: "Aprobado con %{score}%"
     failed_score: "%{score}% — intenta de nuevo"
