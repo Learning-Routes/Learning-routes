@@ -1,4 +1,7 @@
-<%= form_with model: route_request, url: create_route_wizard_path, data: { turbo: true, route_wizard_target: "form" } do |f| %>
+<%= form_with model: route_request, url: create_route_wizard_path, data: { turbo: true, route_wizard_target: "form", action: "submit->route-wizard#handleSubmit" } do |f| %>
+
+  <%# === Error banner (hidden by default, targetable by turbo stream) === %>
+  <div id="wizard-error-banner" data-route-wizard-target="errorBanner" style="max-width:560px; width:100%;"></div>
 
   <%# === Step Progress Indicator — 5 steps === %>
   <div style="max-width:560px; width:100%; margin-bottom:10px;" data-route-wizard-target="stepBar">
@@ -56,7 +59,7 @@
         <div style="font-family:'DM Sans',sans-serif; font-weight:600; font-size:0.72rem; color:#1C1812; margin-bottom:8px;"><%= t("wizard.step0.custom_label") %></div>
         <div style="display:flex; align-items:center; gap:10px; padding:12px 16px; border-radius:12px; background:#FDFCFA; border:1.5px solid rgba(28,24,18,0.06); transition:border-color 0.3s;" data-route-wizard-target="customInputWrap">
           <span style="font-size:0.9rem; opacity:0.4;">✏️</span>
-          <input type="text" name="route_request[custom_topic]" placeholder="<%= t("wizard.step0.custom_placeholder") %>" data-action="input->route-wizard#updateCustomTopic" data-route-wizard-target="customInput" style="flex:1; border:none; outline:none; background:none; font-family:'DM Sans',sans-serif; font-size:0.82rem; color:#1C1812;" autocomplete="off">
+          <input type="text" name="route_request[custom_topic]" placeholder="<%= t("wizard.step0.custom_placeholder") %>" data-action="input->route-wizard#updateCustomTopic keydown.enter->route-wizard#preventEnterSubmit" data-route-wizard-target="customInput" style="flex:1; border:none; outline:none; background:none; font-family:'DM Sans',sans-serif; font-size:0.82rem; color:#1C1812;" autocomplete="off">
         </div>
       </div>
 

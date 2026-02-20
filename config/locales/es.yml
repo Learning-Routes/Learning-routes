@@ -320,6 +320,13 @@ es:
   expanded_route:
     close: "Cerrar"
     open_route: "Abrir Ruta"
+    back_to_profile: "Perfil"
+    label: "RUTA"
+    steps_of: "__completed__ de __total__ pasos"
+    step_completed: "Paso completado"
+    topics_at_level: "__count__ temas en este nivel"
+    click_to_navigate: "Haz clic en los nodos para navegar"
+    current_step: "Paso actual"
 
   # ── Community ──
   community:
@@ -564,47 +571,26 @@ es:
       today: "Hoy, %{time}"
       yesterday: "Ayer, %{time}"
 
-  # ── Assessments Engine ──
-  assessments:
-    show:
-      title_prefix: "Evaluación - "
-      description: "Pon a prueba tu comprensión de este tema."
-      questions: "Preguntas"
-      to_pass: "Para aprobar"
-      minutes: "Minutos"
-      last_attempt: "Último intento"
-      passed: "Aprobado"
-      not_passed: "No aprobado"
-      back_to_route: "Volver a la ruta"
-      start_exam: "Iniciar examen"
-    exam:
-      title_prefix: "Evaluación - "
-      question_of: "Pregunta %{current} de %{total}"
-      save_answer: "Guardar respuesta"
-      previous: "Anterior"
-      next: "Siguiente"
-      submit: "Enviar evaluación"
-      confirm: "¿Estás seguro de enviar? No podrás cambiar tus respuestas después."
-      sidebar_heading: "Preguntas"
-      answered: "%{count} de %{total} respondidas"
-    results:
-      title_prefix: "Resultados - "
-      congrats: "¡Felicidades!"
-      keep_going: "¡Sigue adelante!"
-      passed_desc: "Aprobaste la evaluación."
-      need_score: "Necesitas %{score}% para aprobar."
-      correct: "Correctas"
-      incorrect: "Incorrectas"
-      unanswered: "Sin responder"
-      breakdown: "Desglose de preguntas"
-      your_answer: "Tu respuesta:"
-      back_to_route: "Volver a la ruta"
-      continue: "Seguir aprendiendo"
-
-  # ── Content Engine ──
-  content_engine:
-    notes:
-      placeholder: "Agrega tus notas..."
+  # ── Dashboard ──
+  dashboard:
+    title: "Mis Rutas — Learning Routes"
+    greeting: "Hola, %{name}."
+    subheading: "Continúa tu viaje de aprendizaje."
+    verify_email: "Verifica tu correo electrónico."
+    resend_verification: "Reenviar verificación"
+    steps_progress: "%{completed}/%{total} pasos"
+    empty_heading: "Aún no tienes rutas"
+    empty_body: "Configura tu perfil de aprendizaje para que nuestra IA pueda crear una ruta personalizada para ti."
+    profile_heading: "Tu perfil"
+    profile_interests: "Intereses"
+    profile_level: "Nivel"
+    profile_style: "Estilo"
+    profile_timeline: "Plazo"
+    status:
+      active: "Activa"
+      completed: "Completada"
+      paused: "Pausada"
+      draft: "Borrador"
 
   # ── Learning Engine ──
   learning_engine:
@@ -615,6 +601,8 @@ es:
         other: "%{count} repasos pendientes"
       see_all_reviews: "Ver todos los repasos"
       duration: "~%{minutes} min"
+      steps_title: "Pasos"
+      exit_route: "Salir de la Ruta"
     progress:
       label: "Progreso"
       aria: "Progreso de la ruta: %{percent}%"

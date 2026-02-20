@@ -31,16 +31,27 @@
       <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div class="flex h-14 items-center justify-between">
           <div class="flex items-center gap-4">
-            <%= link_to main_app.dashboard_path, class: "text-sm font-medium text-gray-400 hover:text-white transition" do %>
-              <svg aria-hidden="true" class="w-5 h-5 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
-              </svg>
-              <%= t("layout.learning.dashboard") %>
-            <% end %>
+            <% if @step && @route %>
+              <%# When viewing a step, back goes to the route (not dashboard) %>
+              <%= link_to learning_routes_engine.route_path(@route), class: "text-sm font-medium text-gray-400 hover:text-white transition inline-flex items-center" do %>
+                <svg aria-hidden="true" class="w-5 h-5 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                </svg>
+                <%= @route.localized_topic.truncate(25) %>
+              <% end %>
+            <% else %>
+              <%# When viewing a route overview, back goes to dashboard %>
+              <%= link_to main_app.dashboard_path, class: "text-sm font-medium text-gray-400 hover:text-white transition inline-flex items-center" do %>
+                <svg aria-hidden="true" class="w-5 h-5 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                </svg>
+                <%= t("layout.learning.dashboard") %>
+              <% end %>
 
-            <% if @route %>
-              <span class="text-white/20">|</span>
-              <span class="text-sm font-semibold text-white truncate max-w-xs"><%= @route.topic %></span>
+              <% if @route %>
+                <span class="text-white/20">|</span>
+                <span class="text-sm font-semibold text-white truncate max-w-xs"><%= @route.localized_topic %></span>
+              <% end %>
             <% end %>
           </div>
 

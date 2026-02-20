@@ -41,6 +41,14 @@ module LearningRoutesEngine
       unlock! if locked? && prerequisites_met?
     end
 
+    def localized_title(locale = I18n.locale)
+      translations.dig(locale.to_s, "title") || title
+    end
+
+    def localized_description(locale = I18n.locale)
+      translations.dig(locale.to_s, "description") || description
+    end
+
     def requires_quiz?
       content_type_lesson? || content_type_exercise?
     end

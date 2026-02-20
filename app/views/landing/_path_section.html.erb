@@ -16,7 +16,7 @@
                 flex items-end justify-between flex-wrap gap-[1.4rem]">
       <div>
         <p class="label-mono text-dark-muted mb-3">
-          <%= @active_route ? @active_route.topic : t("path_section.product_label") %>
+          <%= @active_route ? @active_route.localized_topic : t("path_section.product_label") %>
         </p>
         <h2 class="font-sans font-bold text-[clamp(1.6rem,3.2vw,2.2rem)] text-dark-text tracking-[-1px] leading-[1.15]">
           <%= @active_route ? t("path_section.headline_active") : t("path_section.headline_default") %>
@@ -39,7 +39,7 @@
          data-path-viz-back-label-value="<%= t('path_viz.back_button') %>"
          class="pt-[0.5rem] pb-6 relative"
          role="img"
-         aria-label="<%= @active_route ? t('path_section.aria_active', topic: @active_route.topic, count: @route_nodes&.size || 6) : t('path_section.aria_default') %>">
+         aria-label="<%= @active_route ? t('path_section.aria_active', topic: @active_route.localized_topic, count: @route_nodes&.size || 6) : t('path_section.aria_default') %>">
       <div data-path-viz-target="container" class="max-w-[840px] mx-auto"></div>
     </div>
 

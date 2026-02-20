@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_02_18_180003) do
+ActiveRecord::Schema[8.1].define(version: 2026_02_20_180001) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -275,10 +275,12 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_18_180003) do
     t.jsonb "generation_params", default: {}
     t.string "generation_status"
     t.uuid "learning_profile_id", null: false
+    t.string "locale", default: "en", null: false
     t.integer "status", default: 0, null: false
     t.string "subject_area"
     t.string "topic", null: false
     t.integer "total_steps", default: 0
+    t.jsonb "translations", default: {}, null: false
     t.datetime "updated_at", null: false
     t.index ["ai_interaction_id"], name: "idx_learning_routes_on_ai_interaction"
     t.index ["generation_status"], name: "idx_learning_routes_on_generation_status"
@@ -323,6 +325,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_18_180003) do
     t.jsonb "prerequisites", default: []
     t.integer "status", default: 0, null: false
     t.string "title", null: false
+    t.jsonb "translations", default: {}, null: false
     t.datetime "updated_at", null: false
     t.index ["fsrs_next_review_at"], name: "idx_route_steps_on_fsrs_next_review"
     t.index ["fsrs_state"], name: "idx_route_steps_on_fsrs_state"

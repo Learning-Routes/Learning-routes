@@ -116,10 +116,10 @@
           <div style="flex:1; min-width:0;">
             <p style="font-family:'DM Sans',sans-serif; font-weight:600; font-size:0.78rem; color:#1C1812; margin:0 0 0.1rem; line-height:1.35;">
               <span style="font-weight:400; color:#6D665B;"><%= user.name.split.first %></span> <%= t("community.completed") %>
-              <span style="color:#1C1812;"><%= step.title.truncate(35) %></span>
+              <span style="color:#1C1812;"><%= step.localized_title.truncate(35) %></span>
             </p>
             <p style="font-family:'DM Sans',sans-serif; font-size:0.68rem; color:#A09889; margin:0;">
-              <%= step.learning_route&.topic&.truncate(30) %>
+              <%= step.learning_route&.localized_topic&.truncate(30) %>
             </p>
           </div>
 
@@ -176,10 +176,10 @@
           </div>
           <div style="flex:1; min-width:0;">
             <h3 style="font-family:'DM Sans',sans-serif; font-weight:600; font-size:0.85rem; color:#1C1812; margin:0 0 0.2rem; letter-spacing:-0.2px;">
-              <%= route.topic.truncate(30) %>
+              <%= route.localized_topic.truncate(30) %>
             </h3>
             <p style="font-family:'DM Sans',sans-serif; font-size:0.7rem; color:#A09889; margin:0 0 0.6rem;">
-              <%= t("community.steps_label", count: route.total_steps) %> &middot; <%= route.subject_area || t("community.general") %>
+              <%= t("community.steps_label", count: route.total_steps) %> &middot; <%= route.localized_subject_area || t("community.general") %>
             </p>
             <div style="height:3px; background:rgba(28,24,18,0.05); border-radius:2px; overflow:hidden;">
               <div style="width:<%= progress %>%; height:100%; background:<%= accent %>; border-radius:2px;"></div>

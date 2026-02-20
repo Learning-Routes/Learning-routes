@@ -9,7 +9,7 @@
       <svg aria-hidden="true" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
       </svg>
-      <span class="truncate max-w-[200px]"><%= prev_step.title %></span>
+      <span class="truncate max-w-[200px]"><%= prev_step.localized_title %></span>
     <% end %>
   <% else %>
     <div></div>
@@ -19,7 +19,7 @@
 
   <% if next_step %>
     <%= link_to route_step_path(@route, next_step), class: "flex items-center gap-2 text-sm text-gray-400 hover:text-white transition" do %>
-      <span class="truncate max-w-[200px]"><%= next_step.title %></span>
+      <span class="truncate max-w-[200px]"><%= next_step.localized_title %></span>
       <svg aria-hidden="true" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
       </svg>

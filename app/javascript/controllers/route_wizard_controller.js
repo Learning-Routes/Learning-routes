@@ -5,7 +5,7 @@ export default class extends Controller {
     "step", "form", "stepBar", "stepLabel", "stepName", "percentLabel",
     "continueBtn", "btnText", "chips", "navLeft", "bottomHint", "footer",
     "topicInputs", "goalInputs", "levelInput", "paceInput",
-    "customInput", "customInputWrap", "topicGrid",
+    "customInput", "customInputWrap", "topicGrid", "errorBanner",
     "bar0", "bar1", "bar2", "bar3", "bar4",
     "styleAnswer1", "styleAnswer2", "styleAnswer3",
     "styleAnswer4", "styleAnswer5", "styleAnswer6",
@@ -28,6 +28,7 @@ export default class extends Controller {
     this.selectedPace = ""
     this.styleAnswers = {}
     this.isAnimating = false
+    this._allowSubmit = false
 
     this.updateUI()
     this.validateStep()
@@ -47,11 +48,35 @@ export default class extends Controller {
     return val || fallback || key
   }
 
+  // Prevent accidental form submissions (Enter key in text input)
+  handleSubmit(event) {
+    if (!this._allowSubmit) {
+      event.preventDefault()
+      // If user pressed Enter on step 0 and the step is valid, advance instead
+      if (this.isCurrentStepValid()) {
+        this.next()
+      }
+      return
+    }
+    this._allowSubmit = false
+  }
+
+  // Prevent Enter key from submitting when in custom topic input
+  preventEnterSubmit(event) {
+    if (event.key === "Enter") {
+      event.preventDefault()
+      if (this.isCurrentStepValid()) {
+        this.next()
+      }
+    }
+  }
+
   next() {
     if (this.isAnimating) return
     if (!this.isCurrentStepValid()) return
 
     if (this.stepValue === 4) {
+      this._allowSubmit = true
       this.formTarget.requestSubmit()
       return
     }
@@ -100,8 +125,10 @@ export default class extends Controller {
     const level = card.dataset.level
     const color = card.dataset.color
 
-    this.stepTargets.find(el => parseInt(el.dataset.step) === 1)
-      .querySelectorAll("[data-level]").forEach(el => {
+    const stepEl = this.stepTargets.find(el => parseInt(el.dataset.step) === 1)
+    if (!stepEl) return
+
+    stepEl.querySelectorAll("[data-level]").forEach(el => {
         el.style.background = "#FDFCFA"
         el.style.borderColor = "rgba(28,24,18,0.06)"
         const icon = el.querySelector("div:first-child")
@@ -128,7 +155,7 @@ export default class extends Controller {
     if (ring) ring.style.borderColor = color
 
     this.selectedLevel = level
-    this.levelInputTarget.value = level
+    if (this.hasLevelInputTarget) this.levelInputTarget.value = level
     this.validateStep()
   }
 
@@ -188,8 +215,10 @@ export default class extends Controller {
     this.styleAnswers[question] = option
 
     // Update hidden field
-    const target = this[`styleAnswer${question}Target`]
-    if (target) target.value = option
+    const targetName = `hasStyleAnswer${question}Target`
+    if (this[targetName]) {
+      this[`styleAnswer${question}Target`].value = option
+    }
 
     // Update progress counter
     this.updateStyleProgress()
@@ -240,7 +269,7 @@ export default class extends Controller {
     if (sorted[0][1] === sorted[1][1]) dominant = "multimodal"
 
     const stylesI18n = this.i18nValue.styles || {}
-    const styleInfo = stylesI18n[dominant] || stylesI18n["multimodal"] || { emoji: "🧩", name: "Multimodal", desc: "" }
+    const styleInfo = stylesI18n[dominant] || stylesI18n["multimodal"] || { emoji: "\u{1F9E9}", name: "Multimodal", desc: "" }
 
     if (this.hasStyleResultCardTarget) {
       this.styleResultCardTarget.style.display = "block"
@@ -264,8 +293,10 @@ export default class extends Controller {
     const pace = card.dataset.pace
     const color = card.dataset.color
 
-    this.stepTargets.find(el => parseInt(el.dataset.step) === 4)
-      .querySelectorAll("[data-pace]").forEach(el => {
+    const stepEl = this.stepTargets.find(el => parseInt(el.dataset.step) === 4)
+    if (!stepEl) return
+
+    stepEl.querySelectorAll("[data-pace]").forEach(el => {
         el.style.background = "#FDFCFA"
         el.style.borderColor = "rgba(28,24,18,0.06)"
         const icon = el.querySelector("div:first-child")
@@ -290,22 +321,37 @@ export default class extends Controller {
     }
 
     this.selectedPace = pace
-    this.paceInputTarget.value = pace
+    if (this.hasPaceInputTarget) this.paceInputTarget.value = pace
     this.validateStep()
   }
 
   updateCustomTopic() {
-    const val = this.customInputTarget.value.trim()
-    const wrap = this.customInputWrapTarget
-    wrap.style.borderColor = val.length > 0
-      ? "#5BA88035"
-      : "rgba(28,24,18,0.06)"
+    const val = this.hasCustomInputTarget ? this.customInputTarget.value.trim() : ""
+    if (this.hasCustomInputWrapTarget) {
+      this.customInputWrapTarget.style.borderColor = val.length > 0
+        ? "#5BA88035"
+        : "rgba(28,24,18,0.06)"
+    }
     this.validateStep()
+  }
+
+  // Show validation errors as a temporary banner
+  showError(message) {
+    if (this.hasErrorBannerTarget) {
+      this.errorBannerTarget.textContent = message
+      this.errorBannerTarget.style.display = "block"
+      this.errorBannerTarget.style.opacity = "1"
+      setTimeout(() => {
+        this.errorBannerTarget.style.opacity = "0"
+        setTimeout(() => { this.errorBannerTarget.style.display = "none" }, 300)
+      }, 4000)
+    }
   }
 
   // --- Private helpers ---
 
   syncTopicInputs() {
+    if (!this.hasTopicInputsTarget) return
     this.topicInputsTarget.innerHTML = ""
     this.selectedTopics.forEach(topic => {
       const input = document.createElement("input")
@@ -317,6 +363,7 @@ export default class extends Controller {
   }
 
   syncGoalInputs() {
+    if (!this.hasGoalInputsTarget) return
     this.goalInputsTarget.innerHTML = ""
     this.selectedGoals.forEach(goal => {
       const input = document.createElement("input")
@@ -329,8 +376,11 @@ export default class extends Controller {
 
   isCurrentStepValid() {
     switch (this.stepValue) {
-      case 0:
-        return this.selectedTopics.size > 0 || this.customInputTarget.value.trim().length > 0
+      case 0: {
+        const hasTopics = this.selectedTopics.size > 0
+        const hasCustom = this.hasCustomInputTarget && this.customInputTarget.value.trim().length > 0
+        return hasTopics || hasCustom
+      }
       case 1:
         return this.selectedLevel !== ""
       case 2:
@@ -346,6 +396,8 @@ export default class extends Controller {
 
   validateStep() {
     const valid = this.isCurrentStepValid()
+    if (!this.hasContinueBtnTarget) return
+
     const btn = this.continueBtnTarget
 
     if (valid) {
@@ -384,9 +436,12 @@ export default class extends Controller {
       this.percentLabelTarget.textContent = `${(step + 1) * 20}%`
     }
 
-    // Progress bars — 5 segments
-    const bars = [this.bar0Target, this.bar1Target, this.bar2Target, this.bar3Target, this.bar4Target]
-    bars.forEach((bar, i) => {
+    // Progress bars — 5 segments (with defensive guards)
+    const barTargets = ["bar0", "bar1", "bar2", "bar3", "bar4"]
+    barTargets.forEach((name, i) => {
+      const hasMethod = `has${name.charAt(0).toUpperCase() + name.slice(1)}Target`
+      if (!this[hasMethod]) return
+      const bar = this[`${name}Target`]
       if (i < step) {
         bar.style.width = "100%"
         bar.style.opacity = "0.7"
@@ -423,6 +478,7 @@ export default class extends Controller {
   }
 
   updateChips() {
+    if (!this.hasChipsTarget) return
     const chips = this.chipsTarget
     chips.innerHTML = ""
 
@@ -442,9 +498,11 @@ export default class extends Controller {
       this.addChip(chips, `+${this.selectedTopics.size - 2}`)
     }
 
-    const custom = this.customInputTarget.value.trim()
-    if (custom) {
-      this.addChip(chips, `\u270F\uFE0F ${custom.substring(0, 15)}${custom.length > 15 ? "\u2026" : ""}`)
+    if (this.hasCustomInputTarget) {
+      const custom = this.customInputTarget.value.trim()
+      if (custom) {
+        this.addChip(chips, `\u270F\uFE0F ${custom.substring(0, 15)}${custom.length > 15 ? "\u2026" : ""}`)
+      }
     }
 
     if (this.stepValue >= 2 && this.selectedLevel) {
@@ -474,30 +532,43 @@ export default class extends Controller {
       return
     }
 
-    fromEl.style.transition = "opacity 0.2s ease, transform 0.2s ease"
-    fromEl.style.opacity = "0"
-    fromEl.style.transform = `translateX(${-20 * direction}px)`
+    // Safety timeout — never stay locked more than 1 second
+    if (this._animSafetyTimer) clearTimeout(this._animSafetyTimer)
+    this._animSafetyTimer = setTimeout(() => { this.isAnimating = false }, 1000)
 
-    setTimeout(() => {
-      fromEl.style.display = "none"
-      fromEl.style.transition = ""
-      fromEl.style.opacity = ""
-      fromEl.style.transform = ""
+    try {
+      fromEl.style.transition = "opacity 0.2s ease, transform 0.2s ease"
+      fromEl.style.opacity = "0"
+      fromEl.style.transform = `translateX(${-20 * direction}px)`
 
-      toEl.style.display = "block"
-      toEl.style.opacity = "0"
-      toEl.style.transform = `translateX(${20 * direction}px)`
+      setTimeout(() => {
+        try {
+          fromEl.style.display = "none"
+          fromEl.style.transition = ""
+          fromEl.style.opacity = ""
+          fromEl.style.transform = ""
 
-      requestAnimationFrame(() => {
-        toEl.style.transition = "opacity 0.35s cubic-bezier(0.16,1,0.3,1), transform 0.35s cubic-bezier(0.16,1,0.3,1)"
-        toEl.style.opacity = "1"
-        toEl.style.transform = "translateX(0)"
+          toEl.style.display = "block"
+          toEl.style.opacity = "0"
+          toEl.style.transform = `translateX(${20 * direction}px)`
 
-        setTimeout(() => {
-          toEl.style.transition = ""
+          requestAnimationFrame(() => {
+            toEl.style.transition = "opacity 0.35s cubic-bezier(0.16,1,0.3,1), transform 0.35s cubic-bezier(0.16,1,0.3,1)"
+            toEl.style.opacity = "1"
+            toEl.style.transform = "translateX(0)"
+
+            setTimeout(() => {
+              toEl.style.transition = ""
+              this.isAnimating = false
+              if (this._animSafetyTimer) clearTimeout(this._animSafetyTimer)
+            }, 350)
+          })
+        } catch (e) {
           this.isAnimating = false
-        }, 350)
-      })
-    }, 200)
+        }
+      }, 200)
+    } catch (e) {
+      this.isAnimating = false
+    }
   }
 }

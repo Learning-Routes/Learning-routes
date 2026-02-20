@@ -29,16 +29,19 @@ class RouteWizardController < ApplicationController
         format.html { redirect_to new_route_wizard_path }
       end
     else
+      error_msg = @route_request.errors.full_messages.join(". ")
       respond_to do |format|
         format.turbo_stream {
-          render turbo_stream: turbo_stream.replace(
-            "wizard-container",
-            partial: "route_wizard/wizard_card",
-            locals: { route_request: @route_request }
-          )
+          # Show error banner without replacing the wizard (preserves Stimulus state)
+          render turbo_stream: turbo_stream.replace("wizard-error-banner") {
+            tag.div(id: "wizard-error-banner", "data-route-wizard-target": "errorBanner",
+              style: "max-width:560px; width:100%; margin-bottom:10px; padding:10px 16px; border-radius:10px; background:rgba(176,96,80,0.08); border:1px solid rgba(176,96,80,0.15); font-family:'DM Sans',sans-serif; font-size:0.78rem; color:#B06050;") {
+              error_msg
+            }
+          }
         }
         format.html {
-          flash.now[:alert] = @route_request.errors.full_messages.join(", ")
+          flash.now[:alert] = error_msg
           render :new, status: :unprocessable_entity
         }
       end
