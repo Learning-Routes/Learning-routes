@@ -98,15 +98,15 @@
       </div>
       <div>
         <p style="font-family:'DM Sans',sans-serif; font-size:0.7rem; color:#A09889; margin:0 0 0.2rem;"><%= t("dashboard.profile_level") %></p>
-        <p style="font-family:'DM Sans',sans-serif; font-size:0.82rem; font-weight:500; color:#1C1812; margin:0;"><%= @profile.current_level ? t("settings.learning.level_#{@profile.current_level}", default: @profile.current_level.capitalize) : "—" %></p>
+        <p style="font-family:'DM Sans',sans-serif; font-size:0.82rem; font-weight:500; color:#1C1812; margin:0;"><%= @profile.current_level ? t("profile_values.levels.#{@profile.current_level}", default: @profile.current_level.capitalize) : "—" %></p>
       </div>
       <div>
         <p style="font-family:'DM Sans',sans-serif; font-size:0.7rem; color:#A09889; margin:0 0 0.2rem;"><%= t("dashboard.profile_style") %></p>
-        <p style="font-family:'DM Sans',sans-serif; font-size:0.82rem; font-weight:500; color:#1C1812; margin:0;"><%= @profile.learning_style&.presence&.map(&:capitalize)&.join(", ") || "—" %></p>
+        <p style="font-family:'DM Sans',sans-serif; font-size:0.82rem; font-weight:500; color:#1C1812; margin:0;"><%= @profile.learning_style&.presence&.map { |s| t("profile_values.styles.#{s}", default: s.humanize) }&.join(", ") || "—" %></p>
       </div>
       <div>
         <p style="font-family:'DM Sans',sans-serif; font-size:0.7rem; color:#A09889; margin:0 0 0.2rem;"><%= t("dashboard.profile_timeline") %></p>
-        <p style="font-family:'DM Sans',sans-serif; font-size:0.82rem; font-weight:500; color:#1C1812; margin:0;"><%= @profile.timeline&.humanize || "—" %></p>
+        <p style="font-family:'DM Sans',sans-serif; font-size:0.82rem; font-weight:500; color:#1C1812; margin:0;"><%= @profile.timeline ? t("profile_values.timelines.#{@profile.timeline}", default: @profile.timeline.humanize) : "—" %></p>
       </div>
     </div>
   </div>
