@@ -6,11 +6,11 @@
       <div class="space-y-2 text-sm">
         <div class="flex justify-between">
           <span class="text-gray-500"><%= t('learning_engine.sidebar.type') %></span>
-          <span class="text-gray-300"><%= @step.content_type&.capitalize || "—" %></span>
+          <span class="text-gray-300"><%= @step.content_type ? t("content_types.#{@step.content_type}", default: @step.content_type.capitalize) : "—" %></span>
         </div>
         <div class="flex justify-between">
           <span class="text-gray-500"><%= t('learning_engine.sidebar.level') %></span>
-          <span class="text-gray-300"><%= @step.level&.upcase || "—" %></span>
+          <span class="text-gray-300"><%= @step.level ? t("content_levels.#{@step.level}", default: @step.level.upcase) : "—" %></span>
         </div>
         <% if @step.estimated_minutes.to_i > 0 %>
           <div class="flex justify-between">

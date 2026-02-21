@@ -23,7 +23,7 @@
   </div>
 
   <%# === Card Container === %>
-  <div style="max-width:560px; width:100%; background:#FDFCFA; border-radius:20px; border:1px solid rgba(28,24,18,0.06); padding:36px 36px 28px; box-shadow:0 4px 24px rgba(28,24,18,0.04); opacity:0; transform:translateY(12px); animation:wizardCardEnter 0.5s cubic-bezier(0.16,1,0.3,1) 0.15s both;">
+  <div style="max-width:560px; width:100%; background:#FDFCFA; border-radius:20px; border:1px solid rgba(28,24,18,0.06); padding:24px 20px 24px; box-shadow:0 4px 24px rgba(28,24,18,0.04); opacity:0; transform:translateY(12px); animation:wizardCardEnter 0.5s cubic-bezier(0.16,1,0.3,1) 0.15s both;">
 
     <%# ============================================================ %>
     <%# STEP 0 — TOPIC %>
@@ -32,7 +32,7 @@
       <h2 style="font-family:'DM Sans',sans-serif; font-weight:700; font-size:1.8rem; letter-spacing:-0.3px; color:#1C1812; margin:0 0 6px;"><%= t("wizard.step0.heading") %></h2>
       <p style="font-family:'DM Sans',sans-serif; font-weight:400; font-size:0.82rem; color:#9E9587; margin:0 0 32px;"><%= t("wizard.step0.subtext") %></p>
 
-      <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:10px; margin-bottom:28px;" data-route-wizard-target="topicGrid">
+      <div style="display:grid; grid-template-columns:repeat(2, 1fr); gap:10px; margin-bottom:28px;" class="wizard-topic-grid" data-route-wizard-target="topicGrid">
         <% [
           { id: "programming", emoji: "💻", color: "#8B80C4" },
           { id: "languages", emoji: "🌍", color: "#6E9BC8" },

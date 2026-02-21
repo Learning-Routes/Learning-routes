@@ -1,4 +1,4 @@
-<% content_for(:title, t("assessments.results.title_prefix") + @step.title) %>
+<% content_for(:title, t("assessments.results.title_prefix") + @step.localized_title) %>
 
 <div class="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8 py-10">
   <!-- Score card -->
@@ -65,11 +65,11 @@
   <!-- Actions -->
   <div class="flex items-center justify-center gap-4 mt-8">
     <%= link_to t("assessments.results.back_to_route"), learning_routes_engine.route_path(@route),
-        class: "rounded-lg px-4 py-2 text-sm font-medium text-gray-300 bg-gray-800 hover:bg-gray-700 border border-white/[0.06] transition" %>
+        class: "rounded-lg px-4 py-2.5 text-sm font-medium text-gray-300 bg-gray-800 hover:bg-gray-700 border border-white/[0.06] transition" %>
     <% next_step = @route.route_steps.where("position > ?", @step.position).where(status: [:available]).order(:position).first %>
     <% if next_step %>
       <%= link_to t("assessments.results.continue"), learning_routes_engine.route_step_path(@route, next_step),
-          class: "rounded-lg px-4 py-2 text-sm font-semibold text-white bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-400 hover:to-purple-400 transition" %>
+          class: "rounded-lg px-4 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-400 hover:to-purple-400 transition" %>
     <% end %>
   </div>
 </div>

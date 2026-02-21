@@ -25,7 +25,7 @@
       <div class="space-y-2">
         <% @due_reviews.first(3).each do |step| %>
           <%= link_to route_step_path(@route, step), class: "block text-sm text-amber-200 hover:text-white transition" do %>
-            <%= step.title %>
+            <%= step.localized_title %>
           <% end %>
         <% end %>
       </div>

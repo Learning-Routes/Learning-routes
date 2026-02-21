@@ -5,8 +5,8 @@
         <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
       </svg>
       <div>
-        <p class="text-sm font-medium text-green-300">Review recorded</p>
-        <p class="text-xs text-gray-500">Next review: <%= @step.fsrs_next_review_at&.strftime("%b %d, %Y") || "TBD" %></p>
+        <p class="text-sm font-medium text-green-300"><%= t("learning_engine.review.recorded") %></p>
+        <p class="text-xs text-gray-500"><%= t("learning_engine.review.next_review") %> <%= @step.fsrs_next_review_at ? l(@step.fsrs_next_review_at, format: "%b %d, %Y") : "TBD" %></p>
       </div>
     </div>
   </div>

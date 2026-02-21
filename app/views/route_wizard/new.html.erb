@@ -1,5 +1,14 @@
 <% content_for(:title) { t("wizard.title") } %>
 <% content_for(:hide_navbar) { true } %>
+<% content_for(:head) do %>
+  <style>
+    @media (min-width: 480px) {
+      .wizard-topic-grid { grid-template-columns: repeat(3, 1fr) !important; }
+    }
+  </style>
+<% end %>
+
+
 
 <%
   wizard_i18n = {

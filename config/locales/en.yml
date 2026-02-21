@@ -51,6 +51,7 @@ en:
   # ── How It Works ──
   how_it_works:
     label: "3 steps"
+    step_label: "STEP %{n}"
     headline: "From zero to mastering a topic."
     steps:
       - title: "Tell us your goal"
@@ -188,6 +189,31 @@ en:
       submit: "Update password"
       errors: "%{count} error(s) prevented saving:"
 
+  # ── Mailer ──
+  mailer:
+    reset_password:
+      heading: "Reset your password"
+      greeting: "Hi %{name},"
+      body: "Someone requested a password reset for your Learning Routes account. Click the button below to set a new password:"
+      cta: "Reset Password"
+      expiry: "This link will expire in 1 hour."
+      ignore: "If you didn't request this, you can safely ignore this email."
+    verify_email:
+      heading: "Welcome to Learning Routes, %{name}!"
+      body: "Please verify your email address by clicking the button below:"
+      cta: "Verify Email"
+      expiry: "This link will expire in 24 hours."
+      ignore: "If you didn't create an account, you can ignore this email."
+
+  # ── Locale Toggle ──
+  locale_toggle:
+    switch_to_es: "Cambiar a español"
+    switch_to_en: "Switch to English"
+
+  # ── Auth Alerts ──
+  auth_alerts:
+    google_coming_soon: "Google OAuth coming soon"
+
   # ── Flash messages ──
   flash:
     welcome: "Welcome to Learning Routes! Check your email to verify your account."
@@ -275,6 +301,7 @@ en:
 
   # ── Landing status labels ──
   landing:
+    page_title: "Learning Routes — Learn anything, the right way"
     status:
       completed: "Completed"
       in_progress: "In progress"
@@ -323,6 +350,9 @@ en:
     desc: "AI creates a personalized path based on your goals"
 
   # ── Expanded Route Overlay ──
+  route_card_aria: "Open route details"
+  overlay_aria: "Route details"
+
   expanded_route:
     close: "Close"
     open_route: "Open Route"
@@ -596,6 +626,8 @@ en:
 
   # ── Onboarding ──
   onboarding:
+    progress: "Step %{step} of %{total}"
+    progress_aria: "Onboarding progress"
     interests:
       heading: "What do you want to learn?"
       subtitle: "Choose a topic or type your own — AI will build your route."
@@ -740,6 +772,8 @@ en:
       hard: "Hard"
       good: "Good"
       easy: "Easy"
+      recorded: "Review recorded"
+      next_review: "Next review:"
     sidebar:
       step_info: "Step Info"
       type: "Type"
@@ -812,6 +846,7 @@ en:
       next: "Next"
       submit: "Submit Assessment"
       confirm: "Are you sure you want to submit? You cannot change your answers after submission."
+      short_answer_placeholder: "Type your answer here..."
       sidebar_heading: "Questions"
       answered: "%{count} of %{total} answered"
     results:
@@ -833,10 +868,52 @@ en:
     notes:
       placeholder: "Add your notes..."
 
+  # ── Content Levels ──
+  content_levels:
+    beginner: "BEGINNER"
+    intermediate: "INTERMEDIATE"
+    advanced: "ADVANCED"
+
+  # ── Question Types ──
+  question_types:
+    multiple_choice: "Multiple choice"
+    short_answer: "Short answer"
+    code: "Code"
+
+  # ── Content Types ──
+  content_types:
+    lesson: "Lesson"
+    exercise: "Exercise"
+    assessment: "Assessment"
+    review: "Review"
+
+  # ── Assessment Types ──
+  assessment_types:
+    initial_assessment: "Initial assessment"
+    mid_route: "Mid-route"
+    final_assessment: "Final assessment"
+    gap_assessment: "Gap assessment"
+    step_quiz: "Step quiz"
+
+  # ── AI Orchestrator ──
+  ai_orchestrator:
+    failed: "Failed"
+    try_again: "Please try again later."
+    completed: "Completed"
+
+  # ── Form Errors ──
+  form_errors:
+    prevented_saving:
+      one: "1 error prevented saving:"
+      other: "%{count} errors prevented saving:"
+
   # ── Layout strings ──
   layout:
+    skip_to_content: "Skip to main content"
+    menu_aria: "Menu"
     learning:
       dashboard: "Dashboard"
+      progress_aria: "Route progress: %{percent}%"
       step_of: "Step %{current} of %{total}"
       complete_step: "Complete Step"
       completed: "Completed!"
