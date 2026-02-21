@@ -1,17 +1,17 @@
-<% content_for(:title, "Set up your profile — Learning Routes") %>
+<% content_for(:title, t("layout.onboarding.title")) %>
 
 <div class="onb-enter" data-controller="onboarding">
   <%# === Segmented progress bar === %>
   <div style="margin-bottom:2.2rem;">
     <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:0.6rem;">
       <span style="font-family:'DM Sans',sans-serif; font-size:0.78rem; font-weight:500; color:#1C1812;">
-        Step <%= @step_number %> of <%= @total_steps %> — <span style="color:#6D665B;"><%= @step_label %></span>
+        <%= t("onboarding.progress", step: @step_number, total: @total_steps) %> — <span style="color:#6D665B;"><%= @step_label %></span>
       </span>
       <span style="font-family:'DM Mono',monospace; font-size:0.65rem; color:#A09889;">
         <%= (@step_number.to_f / @total_steps * 100).round %>%
       </span>
     </div>
-    <div style="display:flex; gap:0.35rem;" role="progressbar" aria-valuenow="<%= @step_number %>" aria-valuemin="1" aria-valuemax="<%= @total_steps %>" aria-label="Onboarding progress">
+    <div style="display:flex; gap:0.35rem;" role="progressbar" aria-valuenow="<%= @step_number %>" aria-valuemin="1" aria-valuemax="<%= @total_steps %>" aria-label="<%= t("onboarding.progress_aria") %>">
       <% @total_steps.times do |i| %>
         <div style="flex:1; height:4px; border-radius:2px; background:<%= i < @step_number ? '#2C261E' : 'rgba(28,24,18,0.08)' %>; transition:background 0.4s ease;"></div>
       <% end %>

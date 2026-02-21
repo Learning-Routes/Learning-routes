@@ -1,4 +1,4 @@
-<% content_for(:title, t("assessments.show.title_prefix") + @step.title) %>
+<% content_for(:title, t("assessments.show.title_prefix") + @step.localized_title) %>
 
 <div class="mx-auto max-w-2xl px-4 sm:px-6 lg:px-8 py-12">
   <div class="bg-gray-900 border border-white/[0.06] rounded-2xl p-8 text-center">
@@ -10,7 +10,7 @@
       </svg>
     </div>
 
-    <h1 class="text-xl font-bold text-white mb-2"><%= @step.title %></h1>
+    <h1 class="text-xl font-bold text-white mb-2"><%= @step.localized_title %></h1>
 
     <p class="text-sm text-gray-400 mb-8">
       <%= t("assessments.show.description") %>
@@ -40,7 +40,7 @@
           <span class="text-sm font-medium <%= @existing_result.passed? ? 'text-green-400' : 'text-red-400' %>">
             <%= @existing_result.score.round(1) %>% — <%= @existing_result.passed? ? t("assessments.show.passed") : t("assessments.show.not_passed") %>
           </span>
-          <span class="text-xs text-gray-500"><%= @existing_result.created_at.strftime("%d %b %Y") %></span>
+          <span class="text-xs text-gray-500"><%= l(@existing_result.created_at, format: "%d %b %Y") %></span>
         </div>
       </div>
     <% end %>
@@ -48,14 +48,14 @@
     <%# Actions %>
     <div class="flex items-center justify-center gap-4">
       <%= link_to learning_routes_engine.route_path(@route),
-          class: "rounded-lg px-4 py-2.5 text-sm font-medium text-gray-300 bg-gray-800 hover:bg-gray-700 border border-white/[0.06] transition" do %>
+          class: "rounded-lg px-4 py-3 text-sm font-medium text-gray-300 bg-gray-800 hover:bg-gray-700 border border-white/[0.06] transition" do %>
         <%= t("assessments.show.back_to_route") %>
       <% end %>
 
       <%= button_to t("assessments.show.start_exam"),
           assessments.start_assessment_path(@assessment),
           method: :post,
-          class: "rounded-lg px-6 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-400 hover:to-purple-400 transition cursor-pointer" %>
+          class: "rounded-lg px-6 py-3 text-sm font-semibold text-white bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-400 hover:to-purple-400 transition cursor-pointer" %>
     </div>
   </div>
 </div>

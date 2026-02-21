@@ -39,7 +39,7 @@
           <label style="font-family:'DM Sans',sans-serif; font-size:0.78rem; font-weight:500; color:#6D665B; margin-bottom:0.5rem; display:block;">
             <%= t("onboarding.goal.timeline_label") %>
           </label>
-          <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:0.5rem;">
+          <div style="display:grid; grid-template-columns:repeat(2, 1fr); gap:0.5rem;" class="onb-timeline-grid">
             <% %w[1_month 3_months 6_months 1_year].each do |value| %>
               <label style="cursor:pointer; display:block;" data-selectable-card-target="card">
                 <input type="radio" name="timeline" value="<%= value %>"

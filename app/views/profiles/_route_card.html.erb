@@ -31,7 +31,7 @@
         .reject { |w| w.blank? || w.length < 4 || w.length > 35 }
         .first(4)
     end
-    sats << s.content_type.humanize if sats.empty?
+    sats << t("content_types.#{s.content_type}", default: s.content_type.humanize) if sats.empty?
 
     {
       label: s.localized_title,
@@ -55,7 +55,7 @@
   }
 %>
 
-<div role="button" tabindex="0" aria-label="Open route details" data-action="click->expanded-route#open keydown.enter->expanded-route#open keydown.space->expanded-route#open"
+<div role="button" tabindex="0" aria-label="<%= t("route_card_aria") %>" data-action="click->expanded-route#open keydown.enter->expanded-route#open keydown.space->expanded-route#open"
      data-route="<%= route_json.to_json %>"
      style="display:block; background:#FEFDFB; border:1px solid rgba(28,24,18,0.04); border-radius:18px; cursor:pointer; transition:all 0.25s cubic-bezier(0.22,1,0.36,1); overflow:hidden;"
      class="card-hover">

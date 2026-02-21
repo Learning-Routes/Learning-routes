@@ -1,15 +1,15 @@
-<h1 style="font-size: 22px; font-weight: 700; color: #1C1812; margin: 0 0 16px;">Welcome to Learning Routes, <%= @user.name %>!</h1>
+<h1 style="font-size: 22px; font-weight: 700; color: #1C1812; margin: 0 0 16px;"><%= t("mailer.verify_email.heading", name: @user.name) %></h1>
 
-<p style="font-size: 15px; line-height: 1.6; color: #1C1812; margin: 0 0 24px;">Please verify your email address by clicking the button below:</p>
+<p style="font-size: 15px; line-height: 1.6; color: #1C1812; margin: 0 0 24px;"><%= t("mailer.verify_email.body") %></p>
 
 <table role="presentation" cellpadding="0" cellspacing="0" style="margin: 0 0 24px;">
   <tr>
     <td style="background-color: #2C261E; border-radius: 8px;">
-      <a href="<%= @url %>" style="display: inline-block; padding: 12px 28px; font-size: 15px; font-weight: 600; color: #F5F1EB; text-decoration: none;">Verify Email</a>
+      <a href="<%= @url %>" style="display: inline-block; padding: 12px 28px; font-size: 15px; font-weight: 600; color: #F5F1EB; text-decoration: none;"><%= t("mailer.verify_email.cta") %></a>
     </td>
   </tr>
 </table>
 
-<p style="font-size: 13px; line-height: 1.5; color: #6D665B; margin: 0 0 8px;">This link will expire in 24 hours.</p>
+<p style="font-size: 13px; line-height: 1.5; color: #6D665B; margin: 0 0 8px;"><%= t("mailer.verify_email.expiry") %></p>
 
-<p style="font-size: 13px; line-height: 1.5; color: #A09889; margin: 0;">If you didn't create an account, you can ignore this email.</p>
+<p style="font-size: 13px; line-height: 1.5; color: #A09889; margin: 0;"><%= t("mailer.verify_email.ignore") %></p>

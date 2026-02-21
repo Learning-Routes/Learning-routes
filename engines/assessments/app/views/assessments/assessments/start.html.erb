@@ -30,7 +30,7 @@
             <div class="flex items-center justify-between mb-4">
               <span class="text-xs text-gray-500"><%= t("assessments.exam.question_of", current: index + 1, total: @questions.count) %></span>
               <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium bg-gray-800 text-gray-400">
-                <%= question.question_type.humanize %>
+                <%= t("question_types.#{question.question_type}", default: question.question_type.humanize) %>
               </span>
             </div>
 
@@ -65,12 +65,12 @@
         <!-- Navigation + Submit -->
         <div class="flex items-center justify-between mt-6">
           <button type="button" data-action="click->question-nav#previous"
-                  class="rounded-lg px-4 py-2 text-sm font-medium text-gray-300 bg-gray-800 hover:bg-gray-700 border border-white/[0.06] transition">
+                  class="rounded-lg px-4 py-2.5 text-sm font-medium text-gray-300 bg-gray-800 hover:bg-gray-700 border border-white/[0.06] transition">
             <%= t("assessments.exam.previous") %>
           </button>
 
           <button type="button" data-action="click->question-nav#next"
-                  class="rounded-lg px-4 py-2 text-sm font-medium text-gray-300 bg-gray-800 hover:bg-gray-700 border border-white/[0.06] transition">
+                  class="rounded-lg px-4 py-2.5 text-sm font-medium text-gray-300 bg-gray-800 hover:bg-gray-700 border border-white/[0.06] transition">
             <%= t("assessments.exam.next") %>
           </button>
         </div>

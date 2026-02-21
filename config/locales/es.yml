@@ -53,6 +53,7 @@ es:
   # ── How It Works ──
   how_it_works:
     label: "3 pasos"
+    step_label: "PASO %{n}"
     headline: "De cero a dominar un tema."
     steps:
       - title: "Cuéntanos tu objetivo"
@@ -190,6 +191,31 @@ es:
       submit: "Actualizar contraseña"
       errors: "%{count} error(es) impidieron guardar:"
 
+  # ── Correos ──
+  mailer:
+    reset_password:
+      heading: "Restablece tu contraseña"
+      greeting: "Hola %{name},"
+      body: "Alguien solicitó restablecer la contraseña de tu cuenta de Learning Routes. Haz clic en el botón para establecer una nueva contraseña:"
+      cta: "Restablecer contraseña"
+      expiry: "Este enlace expirará en 1 hora."
+      ignore: "Si no solicitaste esto, puedes ignorar este correo."
+    verify_email:
+      heading: "¡Bienvenido a Learning Routes, %{name}!"
+      body: "Por favor verifica tu correo electrónico haciendo clic en el botón:"
+      cta: "Verificar correo"
+      expiry: "Este enlace expirará en 24 horas."
+      ignore: "Si no creaste una cuenta, puedes ignorar este correo."
+
+  # ── Cambio de idioma ──
+  locale_toggle:
+    switch_to_es: "Cambiar a español"
+    switch_to_en: "Switch to English"
+
+  # ── Alertas de autenticación ──
+  auth_alerts:
+    google_coming_soon: "Google OAuth próximamente"
+
   # ── Flash messages ──
   flash:
     welcome: "¡Bienvenido a Learning Routes! Revisa tu correo para verificar tu cuenta."
@@ -277,6 +303,7 @@ es:
 
   # ── Landing status labels ──
   landing:
+    page_title: "Learning Routes — Aprende lo que quieras, de la forma correcta"
     status:
       completed: "Completado"
       in_progress: "En progreso"
@@ -325,6 +352,9 @@ es:
     desc: "La IA crea un camino personalizado según tus objetivos"
 
   # ── Expanded Route Overlay ──
+  route_card_aria: "Abrir detalles de ruta"
+  overlay_aria: "Detalles de ruta"
+
   expanded_route:
     close: "Cerrar"
     open_route: "Abrir Ruta"
@@ -598,6 +628,8 @@ es:
 
   # ── Onboarding ──
   onboarding:
+    progress: "Paso %{step} de %{total}"
+    progress_aria: "Progreso de configuración"
     interests:
       heading: "¿Qué quieres aprender?"
       subtitle: "Elige un tema o escribe el tuyo — la IA creará tu ruta."
@@ -742,6 +774,8 @@ es:
       hard: "Difícil"
       good: "Bien"
       easy: "Fácil"
+      recorded: "Repaso registrado"
+      next_review: "Próximo repaso:"
     sidebar:
       step_info: "Info del paso"
       type: "Tipo"
@@ -814,6 +848,7 @@ es:
       next: "Siguiente"
       submit: "Enviar evaluación"
       confirm: "¿Estás seguro de enviar? No podrás cambiar tus respuestas después."
+      short_answer_placeholder: "Escribe tu respuesta aquí..."
       sidebar_heading: "Preguntas"
       answered: "%{count} de %{total} respondidas"
     results:
@@ -835,10 +870,52 @@ es:
     notes:
       placeholder: "Agrega tus notas..."
 
+  # ── Niveles de contenido ──
+  content_levels:
+    beginner: "PRINCIPIANTE"
+    intermediate: "INTERMEDIO"
+    advanced: "AVANZADO"
+
+  # ── Tipos de pregunta ──
+  question_types:
+    multiple_choice: "Opción múltiple"
+    short_answer: "Respuesta corta"
+    code: "Código"
+
+  # ── Tipos de contenido ──
+  content_types:
+    lesson: "Lección"
+    exercise: "Ejercicio"
+    assessment: "Evaluación"
+    review: "Repaso"
+
+  # ── Tipos de evaluación ──
+  assessment_types:
+    initial_assessment: "Evaluación inicial"
+    mid_route: "Evaluación intermedia"
+    final_assessment: "Evaluación final"
+    gap_assessment: "Evaluación de brechas"
+    step_quiz: "Quiz del paso"
+
+  # ── AI Orchestrator ──
+  ai_orchestrator:
+    failed: "Falló"
+    try_again: "Por favor, inténtalo de nuevo más tarde."
+    completed: "Completado"
+
+  # ── Errores de formulario ──
+  form_errors:
+    prevented_saving:
+      one: "1 error impidió guardar:"
+      other: "%{count} errores impidieron guardar:"
+
   # ── Layout strings ──
   layout:
+    skip_to_content: "Saltar al contenido principal"
+    menu_aria: "Menú"
     learning:
       dashboard: "Panel"
+      progress_aria: "Progreso de la ruta: %{percent}%"
       step_of: "Paso %{current} de %{total}"
       complete_step: "Completar paso"
       completed: "¡Completado!"

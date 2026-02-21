@@ -134,7 +134,7 @@
 <div data-controller="profile-tabs">
 
   <%# Tab bar %>
-  <div role="tablist" style="display:flex; gap:0; border-bottom:1px solid rgba(28,24,18,0.06); margin-bottom:1.2rem;">
+  <div role="tablist" style="display:flex; gap:0; border-bottom:1px solid rgba(28,24,18,0.06); margin-bottom:1.2rem; overflow-x:auto; -webkit-overflow-scrolling:touch;">
     <% [t("profile.tabs.my_routes"), t("profile.tabs.achievements"), t("profile.tabs.activity")].each_with_index do |label, i| %>
       <button data-profile-tabs-target="tab" data-action="click->profile-tabs#switch" data-index="<%= i %>"
               style="font-family:'DM Sans',sans-serif; font-size:0.82rem; font-weight:<%= i == 0 ? '600' : '400' %>; color:<%= i == 0 ? '#1C1812' : '#A09889' %>; background:none; border:none; cursor:pointer; padding:0.6rem 1.2rem; position:relative; transition:color 0.2s;">
@@ -156,7 +156,7 @@
     }
   %>
   <div id="panel-routes" role="tabpanel" aria-labelledby="tab-0" data-profile-tabs-target="panel" data-controller="expanded-route" data-expanded-route-i18n-value="<%= expanded_route_i18n.to_json %>">
-    <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(340px, 1fr)); gap:0.8rem;">
+    <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(min(340px, 100%), 1fr)); gap:0.8rem;">
       <% @routes.each do |route| %>
         <%= render "profiles/route_card", route: route, accent_color: route_accent_color(route) %>
       <% end %>

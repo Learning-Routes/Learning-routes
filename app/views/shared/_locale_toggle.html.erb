@@ -7,7 +7,7 @@
             border-radius:8px; padding:0.3rem 0.6rem; cursor:pointer; transition:all 0.2s;
             line-height:1;",
     class: "locale-toggle",
-    title: other_locale == :es ? "Cambiar a español" : "Switch to English",
+    title: other_locale == :es ? t("locale_toggle.switch_to_es") : t("locale_toggle.switch_to_en"),
     data: { turbo: false } do %>
   <%= label %>
 <% end %>
