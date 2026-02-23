@@ -1,0 +1,137 @@
+<%# Voice Recorder Component
+     locals: step (RouteStep) %>
+
+<div data-controller="voice-recorder"
+     data-voice-recorder-step-id-value="<%= step.id %>"
+     data-voice-recorder-submit-url-value="<%= assessments.voice_responses_path(step_id: step.id) %>"
+     data-voice-recorder-max-duration-value="180"
+     data-voice-recorder-mic-error-message-value="<%= t("voice_recorder.mic_error") %>"
+     class="rounded-xl bg-gray-800/50 border border-white/[0.06] p-5">
+
+  <p class="text-xs font-medium text-gray-400 uppercase tracking-wider mb-4" style="font-family: 'DM Mono', monospace;">
+    <%= t("voice_recorder.label") %>
+  </p>
+
+  <!-- Idle State: Ready to record -->
+  <div data-voice-recorder-target="idleState">
+    <div class="flex flex-col items-center gap-3 py-4">
+      <p class="text-sm text-gray-400"><%= t("voice_recorder.prompt") %></p>
+      <button data-action="click->voice-recorder#startRecording"
+              class="w-16 h-16 rounded-full bg-red-500 hover:bg-red-400 flex items-center justify-center transition-all hover:scale-105 shadow-lg shadow-red-500/25">
+        <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"/>
+        </svg>
+      </button>
+      <p class="text-xs text-gray-500"><%= t("voice_recorder.max_duration") %></p>
+    </div>
+  </div>
+
+  <!-- Recording State -->
+  <div data-voice-recorder-target="recordingState" class="hidden">
+    <div class="flex flex-col items-center gap-4 py-4">
+      <!-- Recording indicator -->
+      <div class="flex items-center gap-2">
+        <div class="w-3 h-3 rounded-full bg-red-500 animate-pulse"></div>
+        <span class="text-sm font-medium text-red-400"><%= t("voice_recorder.recording") %></span>
+      </div>
+
+      <!-- Waveform animation -->
+      <div class="flex items-center gap-0.5 h-12">
+        <% 20.times do |i| %>
+          <div class="w-1 bg-red-400 rounded-full animate-pulse"
+               style="height: <%= rand(8..48) %>px; animation-delay: <%= i * 0.05 %>s; animation-duration: <%= 0.5 + rand * 0.5 %>s"></div>
+        <% end %>
+      </div>
+
+      <!-- Timer -->
+      <span data-voice-recorder-target="timer" class="text-lg font-mono text-white">0:00</span>
+
+      <!-- Stop button -->
+      <button data-action="click->voice-recorder#stopRecording"
+              class="w-14 h-14 rounded-full bg-gray-700 hover:bg-gray-600 flex items-center justify-center transition-colors">
+        <div class="w-5 h-5 rounded-sm bg-red-400"></div>
+      </button>
+    </div>
+  </div>
+
+  <!-- Preview State -->
+  <div data-voice-recorder-target="previewState" class="hidden">
+    <div class="flex flex-col items-center gap-4 py-4">
+      <p class="text-sm text-gray-400"><%= t("voice_recorder.listen_before_submit") %></p>
+
+      <!-- Audio preview -->
+      <audio data-voice-recorder-target="previewAudio" controls class="w-full max-w-sm" style="height: 40px;"></audio>
+
+      <!-- Actions -->
+      <div class="flex items-center gap-3">
+        <button data-action="click->voice-recorder#reRecord"
+                class="px-4 py-2 text-sm font-medium text-gray-400 hover:text-white bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors">
+          <%= t("voice_recorder.re_record") %>
+        </button>
+        <button data-action="click->voice-recorder#submitRecording"
+                class="px-5 py-2 text-sm font-semibold text-white bg-indigo-500 hover:bg-indigo-400 rounded-lg transition-colors">
+          <%= t("voice_recorder.submit_response") %>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Submitting State -->
+  <div data-voice-recorder-target="submittingState" class="hidden">
+    <div class="flex flex-col items-center gap-3 py-6">
+      <div class="w-8 h-8 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
+      <p class="text-sm text-gray-400"><%= t("voice_recorder.submitting") %></p>
+    </div>
+  </div>
+
+  <!-- Evaluating State -->
+  <div data-voice-recorder-target="evaluatingState" class="hidden">
+    <div class="flex flex-col items-center gap-3 py-6">
+      <div class="relative">
+        <div class="w-12 h-12 rounded-full bg-purple-500/20 animate-ping absolute inset-0"></div>
+        <div class="w-12 h-12 rounded-full bg-purple-500/30 flex items-center justify-center relative">
+          <svg class="w-6 h-6 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+          </svg>
+        </div>
+      </div>
+      <p class="text-sm text-gray-300"><%= t("voice_recorder.evaluating") %></p>
+      <p class="text-xs text-gray-500"><%= t("voice_recorder.evaluating_detail") %></p>
+    </div>
+  </div>
+
+  <!-- Result State -->
+  <div data-voice-recorder-target="resultState" class="hidden">
+    <div class="py-4 space-y-4">
+      <!-- Score -->
+      <div class="text-center">
+        <p class="text-3xl font-bold text-white" data-score></p>
+        <p class="text-xs text-gray-500 mt-1"><%= t("voice_recorder.score_label") %></p>
+      </div>
+
+      <!-- Feedback -->
+      <div class="rounded-lg bg-gray-900/50 p-4">
+        <p class="text-sm text-gray-300 leading-relaxed" data-feedback></p>
+      </div>
+
+      <!-- Transcript -->
+      <details class="rounded-lg bg-gray-900/50">
+        <summary class="px-4 py-2 text-xs text-gray-500 cursor-pointer hover:text-gray-400">
+          <%= t("voice_recorder.view_transcript") %>
+        </summary>
+        <p class="px-4 pb-3 text-sm text-gray-400" data-transcript></p>
+      </details>
+
+      <!-- Try again -->
+      <div class="text-center">
+        <button data-action="click->voice-recorder#reRecord"
+                class="text-sm text-indigo-400 hover:text-indigo-300 transition-colors">
+          <%= t("voice_recorder.try_again") %>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Status messages -->
+  <div data-voice-recorder-target="status" class="hidden mt-3 text-center text-sm text-red-400"></div>
+</div>

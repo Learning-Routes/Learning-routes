@@ -191,6 +191,52 @@ es:
       submit: "Actualizar contraseña"
       errors: "%{count} error(es) impidieron guardar:"
 
+  # Audio lesson system
+  audio_lesson:
+    label: "Lección de Audio"
+    step_n: "Paso %{n}"
+    view_transcript: "Ver transcripción"
+    show_what_learned: "Demuestra lo que aprendiste"
+    reflection_question: "Pregunta de reflexión"
+    comprehension_quiz: "Quiz de comprensión"
+    start_quiz: "Iniciar Quiz"
+  audio_player:
+    generating: "Generando audio de la lección..."
+    generating_wait: "Esto puede tomar unos segundos"
+    key_points: "Puntos clave"
+    error_generating: "Error al generar el audio"
+    retry: "Reintentar"
+    skip_back: "Retroceder 10s"
+    skip_forward: "Avanzar 10s"
+  voice_recorder:
+    label: "Respuesta de voz"
+    prompt: "Graba tu respuesta explicando lo que aprendiste"
+    max_duration: "Máximo 3 minutos"
+    recording: "Grabando..."
+    listen_before_submit: "Escucha tu respuesta antes de enviar"
+    re_record: "Grabar de nuevo"
+    submit_response: "Enviar respuesta"
+    submitting: "Enviando audio..."
+    evaluating: "Evaluando tu respuesta con IA..."
+    evaluating_detail: "Transcribiendo y analizando tu explicación"
+    score_label: "Puntuación"
+    view_transcript: "Ver transcripción"
+    try_again: "Intentar de nuevo"
+    mic_error: "No se pudo acceder al micrófono. Verifica los permisos."
+  voice_evaluation:
+    evaluating_response: "Evaluando tu respuesta..."
+    error_evaluating: "Error al evaluar la respuesta"
+    result_label: "Resultado de evaluación"
+    out_of_points: "de 100 puntos"
+    strengths: "Fortalezas"
+    improvements: "Áreas de mejora"
+    your_transcript: "Tu transcripción"
+    understanding:
+      excellent: "Excelente"
+      good: "Bueno"
+      developing: "En desarrollo"
+      needs_review: "Necesita revisión"
+
   # ── Correos ──
   mailer:
     reset_password:

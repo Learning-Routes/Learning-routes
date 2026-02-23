@@ -9,6 +9,7 @@ module AiOrchestrator
       "exam_questions"       => 1.hour,
       "quick_grading"        => 0,          # Never cache grading
       "voice_narration"      => 7.days,
+      "voice_evaluation"     => 0,          # Never cache evaluations
       "image_generation"     => 7.days,
       "quick_images"         => 7.days,
       "gap_analysis"         => 0,          # Never cache gap analysis
@@ -21,7 +22,7 @@ module AiOrchestrator
     }.freeze
 
     # Tasks that should never be cached
-    NON_CACHEABLE = %w[quick_grading gap_analysis exercise_hint].freeze
+    NON_CACHEABLE = %w[quick_grading gap_analysis exercise_hint voice_evaluation].freeze
 
     def self.fetch(task_type:, prompt:, model:)
       return nil if NON_CACHEABLE.include?(task_type.to_s)

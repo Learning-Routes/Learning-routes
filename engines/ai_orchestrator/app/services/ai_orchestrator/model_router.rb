@@ -8,6 +8,7 @@ module AiOrchestrator
       exam_questions:       { primary: "claude-opus-4-6", fallback: "gpt-5.2" },
       quick_grading:        { primary: "claude-haiku-4-5", fallback: "gpt-5.1-codex-mini" },
       voice_narration:      { primary: "elevenlabs", fallback: nil },
+      voice_evaluation:     { primary: "claude-haiku-4-5", fallback: "claude-opus-4-6" },
       image_generation:     { primary: "nanobanana-pro", fallback: "nanobanana-flash" },
       quick_images:         { primary: "nanobanana-flash", fallback: "nanobanana-pro" },
       gap_analysis:         { primary: "claude-opus-4-6", fallback: "gpt-5.2" },

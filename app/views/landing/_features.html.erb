@@ -1,38 +1,39 @@
 <section class="px-5 sm:px-8 pb-20" id="features">
-  <div class="max-w-[720px] mx-auto">
+  <div class="max-w-[840px] mx-auto">
 
     <%# Gradient separator %>
     <div class="h-px mb-16"
          style="background: linear-gradient(90deg, transparent, rgba(28,24,18,0.06), transparent);"></div>
 
     <%# Section header %>
-    <div class="animate-enter mb-10">
+    <div class="animate-enter mb-12">
       <p class="label-mono text-muted mb-2"><%= t("features.label") %></p>
       <h2 class="font-sans font-bold text-[clamp(1.4rem,3vw,1.9rem)] tracking-[-0.8px] text-txt">
         <%= t("features.headline") %>
       </h2>
     </div>
 
-    <%# Numbered list %>
-    <div>
+    <%# 2-column feature grid %>
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-10 gap-y-8">
       <% t("features.items").each_with_index do |feat, i| %>
-        <div class="animate-enter grid grid-cols-[3.5rem_1fr] py-[1.6rem] border-t border-lr"
+        <div class="animate-enter"
              style="animation-delay: <%= (i * 0.08 + 0.1).round(2) %>s;">
 
-          <%# Number %>
-          <div class="font-mono text-[0.6rem] text-faint pt-[0.15rem]">
+          <%# Number badge %>
+          <span class="inline-block font-mono text-[0.58rem] tracking-[0.08em] text-faint mb-3"
+                style="padding:0.25rem 0.55rem; border:1px solid rgba(28,24,18,0.08); border-radius:6px;">
             <%= String(i + 1).rjust(2, "0") %>
-          </div>
+          </span>
 
-          <%# Content %>
-          <div>
-            <h3 class="font-sans text-[0.92rem] font-semibold text-txt tracking-[-0.3px] mb-[0.4rem]">
-              <%= feat[:title] || feat["title"] %>
-            </h3>
-            <p class="font-sans text-[0.8rem] text-sub leading-[1.8] max-w-[500px]">
-              <%= feat[:desc] || feat["desc"] %>
-            </p>
-          </div>
+          <%# Title %>
+          <h3 class="font-sans text-[0.95rem] font-semibold text-txt tracking-[-0.3px] mb-[0.35rem] leading-snug">
+            <%= feat[:title] || feat["title"] %>
+          </h3>
+
+          <%# Description %>
+          <p class="font-sans text-[0.8rem] text-sub leading-[1.75]">
+            <%= feat[:desc] || feat["desc"] %>
+          </p>
         </div>
       <% end %>
     </div>

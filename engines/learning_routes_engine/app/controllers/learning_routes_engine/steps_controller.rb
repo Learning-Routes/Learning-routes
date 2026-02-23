@@ -73,6 +73,12 @@ module LearningRoutesEngine
     end
 
     def load_step_content
+      # For audio delivery format, handle audio-specific content loading
+      if @step.delivery_format == "audio"
+        load_audio_content
+        return
+      end
+
       case @step.content_type
       when "lesson"
         @content = ContentEngine::AiContent.where(route_step: @step).by_type(:text).first
@@ -100,6 +106,32 @@ module LearningRoutesEngine
       when "review"
         @retrievability = SpacedRepetition.new.retrievability(@step)
         @review_steps = @route.route_steps.completed_steps.where.not(id: @step.id).order(:position).limit(20)
+      end
+    end
+
+    # Load content for audio delivery format steps
+    def load_audio_content
+      @content = ContentEngine::AiContent.where(route_step: @step).by_type(:text).first
+
+      # If no text content yet, generate it first
+      unless @content
+        begin
+          LearningRoutesEngine::ContentGenerationJob.perform_later(@step.id)
+        rescue => e
+          Rails.logger.error("Content generation failed for audio step ##{@step.id}: #{e.message}")
+        end
+        @content_generating = true
+        return
+      end
+
+      # If text content exists but audio hasn't been generated, trigger on-demand
+      if @content.needs_audio?
+        begin
+          ContentEngine::AudioGenerationJob.perform_later(@step.id)
+          @content.mark_audio_generating!
+        rescue => e
+          Rails.logger.error("Audio generation failed for step ##{@step.id}: #{e.message}")
+        end
       end
     end
 

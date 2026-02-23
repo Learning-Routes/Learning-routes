@@ -14,7 +14,8 @@ export default class extends Controller {
   static values = {
     stepId: String,
     submitUrl: String,
-    maxDuration: { type: Number, default: 180 } // 3 minutes max
+    maxDuration: { type: Number, default: 180 }, // 3 minutes max
+    micErrorMessage: { type: String, default: "Could not access microphone. Check your permissions." }
   }
 
   connect() {
@@ -226,7 +227,7 @@ export default class extends Controller {
 
   showMicError() {
     if (this.hasStatusTarget) {
-      this.statusTarget.textContent = "No se pudo acceder al micrófono. Verifica los permisos."
+      this.statusTarget.textContent = this.micErrorMessageValue
       this.statusTarget.classList.remove("hidden")
     }
   }

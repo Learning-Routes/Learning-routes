@@ -1,0 +1,16 @@
+<%# Audio Generation Failed State
+     locals: step_id (String), error (String) %>
+
+<div id="audio-player-<%= step_id %>" class="rounded-2xl bg-gray-900 border border-red-500/20 p-6">
+  <div class="flex flex-col items-center gap-3 py-6">
+    <svg class="w-12 h-12 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/>
+    </svg>
+    <p class="text-sm font-medium text-red-300"><%= t("audio_player.error_generating") %></p>
+    <p class="text-xs text-gray-500"><%= error.to_s.truncate(100) %></p>
+    <button onclick="window.location.reload()"
+            class="mt-2 px-4 py-2 text-sm font-medium text-indigo-400 hover:text-indigo-300 bg-indigo-500/10 hover:bg-indigo-500/20 rounded-lg transition-colors">
+      <%= t("audio_player.retry") %>
+    </button>
+  </div>
+</div>
