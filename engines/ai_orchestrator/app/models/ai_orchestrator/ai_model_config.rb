@@ -15,6 +15,7 @@ module AiOrchestrator
       exam_questions
       quick_grading
       voice_narration
+      voice_evaluation
       image_generation
       quick_images
       gap_analysis

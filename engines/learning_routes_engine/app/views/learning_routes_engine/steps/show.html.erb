@@ -5,15 +5,20 @@
     <!-- Main content area -->
     <div class="flex-1 max-w-3xl">
       <turbo-frame id="step_content_<%= @step.id %>">
-        <% case @step.content_type %>
-        <% when "lesson" %>
-          <%= render "lesson" %>
-        <% when "exercise" %>
-          <%= render "exercise" %>
-        <% when "assessment" %>
-          <%= render "assessment" %>
-        <% when "review" %>
-          <%= render "review" %>
+        <% if @step.delivery_format == "audio" %>
+          <%# Audio-based lesson: player + voice response + quiz %>
+          <%= render "content_engine/audio/audio_lesson", step: @step, route: @route %>
+        <% else %>
+          <% case @step.content_type %>
+          <% when "lesson" %>
+            <%= render "lesson" %>
+          <% when "exercise" %>
+            <%= render "exercise" %>
+          <% when "assessment" %>
+            <%= render "assessment" %>
+          <% when "review" %>
+            <%= render "review" %>
+          <% end %>
         <% end %>
       </turbo-frame>
 

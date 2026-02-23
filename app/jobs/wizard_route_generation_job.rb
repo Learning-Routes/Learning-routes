@@ -67,6 +67,12 @@ class WizardRouteGenerationJob < ApplicationJob
         end
 
         request.update!(status: "completed", learning_route: route)
+
+        # Pre-generate audio for the first audio step (hybrid approach)
+        first_audio_step = route.route_steps.where(delivery_format: "audio").order(:position).first
+        if first_audio_step
+          ContentEngine::AudioGenerationJob.perform_later(first_audio_step.id)
+        end
       end
 
       Turbo::StreamsChannel.broadcast_replace_to(

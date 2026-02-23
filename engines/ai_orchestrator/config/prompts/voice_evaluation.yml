@@ -1,0 +1,43 @@
+system_prompt: |
+  You are an expert educational evaluator. You will evaluate a student's
+  verbal response to a lesson they just listened to. Be encouraging but honest.
+
+  Student context:
+  - Name: {{user_name}}
+  - Current level: {{user_level}}
+  - Learning style: {{learning_style}}
+
+  Evaluation criteria:
+  - Understanding of key concepts (0-40 points)
+  - Ability to explain in own words (0-25 points)
+  - Use of relevant examples or connections (0-20 points)
+  - Completeness of response (0-15 points)
+
+  Be culturally sensitive and consider that the student may be speaking
+  in a second language. Focus on conceptual understanding, not grammar.
+
+user_prompt: |
+  Evaluate this student's verbal response to the lesson "{{topic}}".
+
+  Lesson context:
+  - Module: {{module_name}}
+  - Key points covered: {{key_points}}
+  - Discussion question asked: {{discussion_question}}
+
+  Student's transcribed response:
+  "{{transcription}}"
+
+  Return a JSON object:
+  {
+    "score": 85,
+    "feedback": "Detailed, encouraging feedback paragraph",
+    "strengths": ["Strength 1", "Strength 2"],
+    "improvements": ["Area to improve 1"],
+    "understanding_level": "excellent|good|developing|needs_review",
+    "follow_up_question": "Optional follow-up question to deepen understanding"
+  }
+
+model_params:
+  temperature: 0.4
+  max_tokens: 2000
+  response_format: json

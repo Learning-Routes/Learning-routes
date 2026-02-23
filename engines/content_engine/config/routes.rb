@@ -17,4 +17,12 @@ ContentEngine::Engine.routes.draw do
   end
 
   resources :notes, only: [:create, :update, :destroy]
+
+  # Audio content endpoints
+  resources :audio, only: [:show] do
+    member do
+      post :generate
+      get :status
+    end
+  end
 end
