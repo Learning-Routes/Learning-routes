@@ -5,7 +5,7 @@ module ContentEngine
 
     def create
       step = LearningRoutesEngine::RouteStep.find(params[:route_step_id])
-      authorize_step_owner!(step)
+      return unless authorize_step_owner!(step)
 
       @note = UserNote.new(
         user: current_user,
@@ -63,7 +63,9 @@ module ContentEngine
     def authorize_step_owner!(step)
       unless step.learning_route.learning_profile.user_id == current_user.id
         head :forbidden
+        return false
       end
+      true
     end
   end
 end

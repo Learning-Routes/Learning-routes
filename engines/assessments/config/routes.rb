@@ -11,4 +11,7 @@ Assessments::Engine.routes.draw do
       post :submit
     end
   end
+
+  # Voice response endpoints
+  resources :voice_responses, only: [:create, :show]
 end
