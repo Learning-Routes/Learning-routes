@@ -2,24 +2,44 @@ import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
   static targets = ["modal", "formView", "successView", "urlField", "description",
-                     "visibilityBtn", "submitBtn", "copyBtn", "routeSelect"]
+                     "visibilityBtn", "submitBtn", "copyBtn", "routeSelect", "modalCard"]
   static values = { url: String, routeId: String }
 
   connect() {
     this._visibility = "public"
+    this._boundKeydown = this._handleKeydown.bind(this)
+  }
+
+  disconnect() {
+    document.removeEventListener("keydown", this._boundKeydown)
   }
 
   open(event) {
-    event?.preventDefault()
-    if (this.hasModalTarget) this.modalTarget.classList.remove("hidden")
+    if (event) event.preventDefault()
+    if (!this.hasModalTarget) return
+    this.modalTarget.style.display = "flex"
     document.body.style.overflow = "hidden"
+    document.addEventListener("keydown", this._boundKeydown)
   }
 
   close(event) {
-    event?.preventDefault()
-    if (this.hasModalTarget) this.modalTarget.classList.add("hidden")
+    if (event) event.preventDefault()
+    if (!this.hasModalTarget) return
+    this.modalTarget.style.display = "none"
     document.body.style.overflow = ""
+    document.removeEventListener("keydown", this._boundKeydown)
     this._resetForm()
+  }
+
+  backdropClick(event) {
+    // Only close if clicking the backdrop itself, not the modal card
+    if (event.target === event.currentTarget) {
+      this.close(event)
+    }
+  }
+
+  stopPropagation(event) {
+    event.stopPropagation()
   }
 
   selectVisibility(event) {
@@ -35,18 +55,27 @@ export default class extends Controller {
   }
 
   selectRoute(event) {
+    event.preventDefault()
     this.routeIdValue = event.currentTarget.dataset.routeId
-    // Highlight selected route
+
     this.routeSelectTargets.forEach(el => {
-      el.style.borderColor = el.dataset.routeId === this.routeIdValue ? "#2C261E" : "rgba(28,24,18,0.1)"
-      el.style.background = el.dataset.routeId === this.routeIdValue ? "rgba(44,38,30,0.04)" : "transparent"
+      const isSelected = el.dataset.routeId === this.routeIdValue
+      el.style.borderColor = isSelected ? "#2C261E" : "rgba(28,24,18,0.1)"
+      el.style.background = isSelected ? "rgba(44,38,30,0.04)" : "transparent"
     })
   }
 
   async submit(event) {
     event.preventDefault()
     const routeId = this.routeIdValue
-    if (!routeId) return
+    if (!routeId) {
+      // Flash the route list to indicate selection needed
+      this.routeSelectTargets.forEach(el => {
+        el.style.borderColor = "#B06050"
+        setTimeout(() => { el.style.borderColor = "rgba(28,24,18,0.1)" }, 800)
+      })
+      return
+    }
 
     const btn = this.submitBtnTarget
     btn.disabled = true
@@ -78,6 +107,7 @@ export default class extends Controller {
         btn.style.opacity = "1"
       }
     } catch (e) {
+      console.error("Share failed:", e)
       btn.disabled = false
       btn.style.opacity = "1"
     }
@@ -88,37 +118,43 @@ export default class extends Controller {
     const url = this.urlFieldTarget.value
     navigator.clipboard.writeText(url).then(() => {
       const btn = this.copyBtnTarget
-      const orig = btn.textContent
+      const orig = btn.textContent.trim()
       btn.textContent = "✓"
       setTimeout(() => { btn.textContent = orig }, 1500)
     })
   }
 
-  closeOnOutsideClick(event) {
-    if (event.target === this.element) this.close(event)
+  _handleKeydown(event) {
+    if (event.key === "Escape") this.close(event)
   }
 
   _showSuccess(shareUrl) {
-    if (this.hasFormViewTarget) this.formViewTarget.classList.add("hidden")
-    if (this.hasSuccessViewTarget) this.successViewTarget.classList.remove("hidden")
+    if (this.hasFormViewTarget) this.formViewTarget.style.display = "none"
+    if (this.hasSuccessViewTarget) this.successViewTarget.style.display = "block"
     if (this.hasUrlFieldTarget) {
-      this.urlFieldTarget.value = shareUrl.startsWith("http") ? shareUrl : window.location.origin + shareUrl
+      const fullUrl = shareUrl.startsWith("http") ? shareUrl : window.location.origin + shareUrl
+      this.urlFieldTarget.value = fullUrl
     }
   }
 
   _resetForm() {
-    if (this.hasFormViewTarget) this.formViewTarget.classList.remove("hidden")
-    if (this.hasSuccessViewTarget) this.successViewTarget.classList.add("hidden")
+    if (this.hasFormViewTarget) this.formViewTarget.style.display = ""
+    if (this.hasSuccessViewTarget) this.successViewTarget.style.display = "none"
     if (this.hasDescriptionTarget) this.descriptionTarget.value = ""
     if (this.hasSubmitBtnTarget) {
       this.submitBtnTarget.disabled = false
       this.submitBtnTarget.style.opacity = "1"
     }
+    this.routeIdValue = ""
     this._visibility = "public"
     this.visibilityBtnTargets.forEach(b => {
       const isDefault = b.dataset.visibility === "public"
       b.style.borderColor = isDefault ? "#2C261E" : "#E0DBCF"
       b.style.background = isDefault ? "rgba(44,38,30,0.05)" : "transparent"
+    })
+    this.routeSelectTargets.forEach(el => {
+      el.style.borderColor = "rgba(28,24,18,0.1)"
+      el.style.background = "transparent"
     })
   }
 }
