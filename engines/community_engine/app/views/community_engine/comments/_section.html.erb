@@ -1,24 +1,29 @@
-<div class="mt-8">
+<div style="margin-top:2rem;" data-controller="comment-reply comment-edit"
+     data-comment-edit-cancel-text-value="<%= t('community_engine.comments.cancel') %>"
+     data-comment-edit-save-text-value="<%= t('community_engine.comments.save') %>">
   <%# Header %>
-  <h3 class="text-lg font-bold text-[#1C1812] mb-4" style="font-family: 'DM Sans', sans-serif;">
+  <h3 style="font-family:'DM Sans',sans-serif; font-weight:700; font-size:1.1rem; color:var(--color-txt, #1C1812); margin:0 0 1rem;">
     <%= t("community_engine.comments.heading", count: commentable.comments.count) %>
   </h3>
 
   <%# Top-level comment form %>
-  <div class="mb-6">
+  <div style="margin-bottom:1.5rem;">
     <%= render "community_engine/comments/form", commentable: commentable %>
   </div>
 
   <%# Comments list with real-time updates %>
   <%= turbo_stream_from "comments_#{commentable.class.name.parameterize}_#{commentable.id}" %>
 
-  <div id="comments_<%= commentable.class.name.parameterize %>_<%= commentable.id %>" class="divide-y divide-[#E8E4DC]">
+  <div id="comments_<%= commentable.class.name.parameterize %>_<%= commentable.id %>"
+       style="border-top:1px solid var(--color-faint, rgba(28,24,18,0.06));">
     <% commentable.comments.top_level.includes(:user, replies: :user).recent.each do |comment| %>
-      <%= render "community_engine/comments/comment", comment: comment %>
+      <div style="border-bottom:1px solid var(--color-faint, rgba(28,24,18,0.06));">
+        <%= render "community_engine/comments/comment", comment: comment %>
+      </div>
     <% end %>
 
     <% if commentable.comments.none? %>
-      <p class="py-8 text-center text-sm text-[#9B9590]" style="font-family: 'DM Sans', sans-serif;">
+      <p style="padding:2rem 0; text-align:center; font-family:'DM Sans',sans-serif; font-size:0.82rem; color:var(--color-muted, #9B9590);">
         <%= t("community_engine.comments.empty") %>
       </p>
     <% end %>

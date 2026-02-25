@@ -8,7 +8,8 @@
      data-follow-following-text-value="<%= t('community_engine.follows.following') %>">
   <button data-action="click->follow#toggle"
           data-follow-target="button"
-          style="font-family:'DM Sans',sans-serif; font-size:0.72rem; font-weight:500; padding:0.3rem 0.85rem; border-radius:11px; cursor:pointer; transition:all 0.15s; <%= following ? 'background:transparent; border:1px solid #CCC5B8; color:#1C1812;' : 'background:#2C261E; border:1px solid #2C261E; color:#F5F1EB;' %>">
+          style="font-family:'DM Sans',sans-serif; font-size:0.72rem; font-weight:500; padding:0.3rem 0.85rem; border-radius:11px; cursor:pointer; transition:all 0.15s;
+                 <%= following ? "background:transparent; border:1px solid var(--color-faint, #CCC5B8); color:var(--color-txt, #1C1812);" : "background:var(--color-accent, #2C261E); border:1px solid var(--color-accent, #2C261E); color:var(--color-accent-text, #F5F1EB);" %>">
     <span data-follow-target="label"><%= following ? t("community_engine.follows.following") : t("community_engine.follows.follow") %></span>
   </button>
 </div>

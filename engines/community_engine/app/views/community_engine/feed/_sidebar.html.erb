@@ -5,15 +5,15 @@
       profile = current_user.learning_profile
       shareable_routes = profile&.learning_routes&.where(status: "active")&.order(updated_at: :desc) || []
       already_shared_ids = current_user.shared_routes.pluck(:learning_route_id)
-      unsahred_routes = shareable_routes.reject { |r| already_shared_ids.include?(r.id) }
+      unshared_routes = shareable_routes.reject { |r| already_shared_ids.include?(r.id) }
     %>
     <div data-controller="share"
          data-share-url-value="<%= community_engine.shared_routes_path %>"
          data-share-route-id-value="">
       <button data-action="click->share#open"
               style="width:100%; display:flex; align-items:center; justify-content:center; gap:0.5rem;
-                     font-family:'DM Sans',sans-serif; font-size:0.82rem; font-weight:600; color:#F5F1EB;
-                     background:#2C261E; border:none; border-radius:11px; padding:0.75rem 1rem;
+                     font-family:'DM Sans',sans-serif; font-size:0.82rem; font-weight:600; color:var(--color-accent-text, #F5F1EB);
+                     background:var(--color-accent, #2C261E); border:none; border-radius:11px; padding:0.75rem 1rem;
                      cursor:pointer; transition:all 0.2s; box-shadow:0 1px 3px rgba(28,24,18,0.12);">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/>
@@ -23,7 +23,7 @@
         <%= t("community_engine.feed.sidebar.share_my_routes") %>
       </button>
 
-      <%# Share modal (hidden by default) %>
+      <%# Share modal (hidden by default) — keeps own light theme since it's an overlay %>
       <div data-share-target="modal"
            style="display:none; position:fixed; inset:0; z-index:200; align-items:center; justify-content:center; padding:1rem;"
            data-action="click->share#backdropClick">
@@ -31,9 +31,9 @@
         <%# Backdrop %>
         <div style="position:absolute; inset:0; background:rgba(0,0,0,0.5); backdrop-filter:blur(4px); pointer-events:none;"></div>
 
-        <%# Modal card (stop propagation so backdrop click doesn't fire) %>
+        <%# Modal card %>
         <div data-action="click->share#stopPropagation"
-             style="position:relative; background:white; border-radius:20px; width:100%; max-width:440px; max-height:80vh; overflow-y:auto;
+             style="position:relative; background:#FEFDFB; border-radius:20px; width:100%; max-width:440px; max-height:80vh; overflow-y:auto;
                     box-shadow:0 24px 48px rgba(0,0,0,0.2);">
 
           <%# Header %>
@@ -49,12 +49,12 @@
           <%# Form view %>
           <div data-share-target="formView" style="padding:1.25rem 1.5rem;">
             <%# Route picker %>
-            <% if unsahred_routes.any? %>
+            <% if unshared_routes.any? %>
               <p style="font-family:'DM Sans',sans-serif; font-size:0.78rem; font-weight:500; color:#6D665B; margin:0 0 0.6rem;">
                 <%= t("community_engine.share_modal.select_route") %>
               </p>
               <div style="display:flex; flex-direction:column; gap:0.5rem; margin-bottom:1.2rem; max-height:200px; overflow-y:auto;">
-                <% unsahred_routes.each do |route| %>
+                <% unshared_routes.each do |route| %>
                   <button type="button"
                           data-action="click->share#selectRoute"
                           data-share-target="routeSelect"
@@ -104,16 +104,16 @@
               <% end %>
             </div>
 
-            <%# Description %>
+            <%# Description — add context text to shares %>
             <textarea data-share-target="description"
                       placeholder="<%= t('community_engine.share_modal.description_placeholder') %>"
-                      rows="2"
+                      rows="3"
                       style="width:100%; box-sizing:border-box; padding:0.7rem 0.9rem; border-radius:11px; border:1px solid rgba(28,24,18,0.1);
                              font-family:'DM Sans',sans-serif; font-size:0.82rem; color:#1C1812; background:#F9F7F3; resize:none; outline:none;
                              transition:border-color 0.2s; margin-bottom:1rem;"></textarea>
 
             <%# Submit %>
-            <% if unsahred_routes.any? %>
+            <% if unshared_routes.any? %>
               <button data-action="click->share#submit"
                       data-share-target="submitBtn"
                       style="width:100%; padding:0.75rem 1rem; border-radius:11px; border:none; background:#2C261E; color:#F5F1EB;
@@ -155,28 +155,33 @@
   <% end %>
 
   <%# Top learners %>
-  <div style="background:rgba(255,255,255,0.6); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); border:1px solid rgba(28,24,18,0.06); border-radius:14px; padding:1.25rem;">
-    <h3 style="font-family:'DM Sans',sans-serif; font-weight:700; font-size:0.82rem; color:#1C1812; margin:0 0 1rem;">
+  <div style="background:var(--color-card, rgba(255,255,255,0.6)); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px);
+              border:1px solid var(--color-faint, rgba(28,24,18,0.06)); border-radius:14px; padding:1.25rem;">
+    <h3 style="font-family:'DM Sans',sans-serif; font-weight:700; font-size:0.82rem; color:var(--color-txt, #1C1812); margin:0 0 1rem;">
       <%= t("community_engine.feed.sidebar.top_learners") %>
     </h3>
     <% if @top_learners.any? %>
       <div style="display:flex; flex-direction:column; gap:0.75rem;">
         <% @top_learners.each_with_index do |learner, i| %>
           <div style="display:flex; align-items:center; gap:0.6rem;">
-            <span style="width:18px; text-align:right; font-family:'DM Mono',monospace; font-size:0.65rem; font-weight:700; color:#9B9590;">
+            <span style="width:18px; text-align:right; font-family:'DM Mono',monospace; font-size:0.65rem; font-weight:700; color:var(--color-muted, #9B9590);">
               <%= i + 1 %>
             </span>
-            <div style="width:30px; height:30px; border-radius:50%; background:#2C261E; display:flex; align-items:center; justify-content:center; color:#F5F1EB; font-family:'DM Sans',sans-serif; font-size:0.65rem; font-weight:700; flex-shrink:0;">
+            <div style="width:30px; height:30px; border-radius:50%; background:var(--color-accent, #2C261E);
+                        display:flex; align-items:center; justify-content:center; color:var(--color-accent-text, #F5F1EB);
+                        font-family:'DM Sans',sans-serif; font-size:0.65rem; font-weight:700; flex-shrink:0;">
               <%= learner.name.to_s.first&.upcase || "?" %>
             </div>
             <div style="flex:1; min-width:0;">
-              <p style="font-family:'DM Sans',sans-serif; font-size:0.82rem; font-weight:500; color:#1C1812; margin:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+              <p style="font-family:'DM Sans',sans-serif; font-size:0.82rem; font-weight:500; color:var(--color-txt, #1C1812); margin:0;
+                        overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
                 <%= learner.name %>
               </p>
             </div>
             <% if current_user && learner.id != current_user.id %>
               <% if current_user.following?(learner) %>
-                <span style="font-family:'DM Mono',monospace; font-size:0.6rem; color:#9B9590; padding:0.2rem 0.5rem; border-radius:6px; background:rgba(28,24,18,0.04);">
+                <span style="font-family:'DM Mono',monospace; font-size:0.6rem; color:var(--color-muted, #9B9590); padding:0.2rem 0.5rem; border-radius:6px;
+                             background:var(--color-faint, rgba(28,24,18,0.04));">
                   <%= t("community_engine.follows.following") %>
                 </span>
               <% else %>
@@ -187,15 +192,16 @@
         <% end %>
       </div>
     <% else %>
-      <p style="font-family:'DM Sans',sans-serif; font-size:0.75rem; color:#9B9590; text-align:center; padding:1rem 0;">
+      <p style="font-family:'DM Sans',sans-serif; font-size:0.75rem; color:var(--color-muted, #9B9590); text-align:center; padding:1rem 0;">
         <%= t("community_engine.feed.sidebar.no_learners") %>
       </p>
     <% end %>
   </div>
 
   <%# Platform stats %>
-  <div style="background:rgba(255,255,255,0.6); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); border:1px solid rgba(28,24,18,0.06); border-radius:14px; padding:1.25rem;">
-    <h3 style="font-family:'DM Sans',sans-serif; font-weight:700; font-size:0.82rem; color:#1C1812; margin:0 0 1rem;">
+  <div style="background:var(--color-card, rgba(255,255,255,0.6)); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px);
+              border:1px solid var(--color-faint, rgba(28,24,18,0.06)); border-radius:14px; padding:1.25rem;">
+    <h3 style="font-family:'DM Sans',sans-serif; font-weight:700; font-size:0.82rem; color:var(--color-txt, #1C1812); margin:0 0 1rem;">
       <%= t("community_engine.feed.sidebar.platform_stats") %>
     </h3>
     <div style="display:flex; flex-direction:column; gap:0.7rem;">
@@ -205,8 +211,8 @@
         [t("community_engine.feed.stats.shared"), @stats[:total_shared]]
       ].each do |label, value| %>
         <div style="display:flex; align-items:center; justify-content:space-between;">
-          <span style="font-family:'DM Sans',sans-serif; font-size:0.75rem; color:#6B6560;"><%= label %></span>
-          <span style="font-family:'DM Mono',monospace; font-size:0.82rem; font-weight:700; color:#1C1812;"><%= value %></span>
+          <span style="font-family:'DM Sans',sans-serif; font-size:0.75rem; color:var(--color-sub, #6B6560);"><%= label %></span>
+          <span style="font-family:'DM Mono',monospace; font-size:0.82rem; font-weight:700; color:var(--color-txt, #1C1812);"><%= value %></span>
         </div>
       <% end %>
     </div>
@@ -221,18 +227,22 @@
         .limit(3)
     %>
     <% if suggested.any? %>
-      <div style="background:rgba(255,255,255,0.6); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); border:1px solid rgba(28,24,18,0.06); border-radius:14px; padding:1.25rem;">
-        <h3 style="font-family:'DM Sans',sans-serif; font-weight:700; font-size:0.82rem; color:#1C1812; margin:0 0 1rem;">
+      <div style="background:var(--color-card, rgba(255,255,255,0.6)); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px);
+                  border:1px solid var(--color-faint, rgba(28,24,18,0.06)); border-radius:14px; padding:1.25rem;">
+        <h3 style="font-family:'DM Sans',sans-serif; font-weight:700; font-size:0.82rem; color:var(--color-txt, #1C1812); margin:0 0 1rem;">
           <%= t("community_engine.feed.sidebar.suggested") %>
         </h3>
         <div style="display:flex; flex-direction:column; gap:0.75rem;">
           <% suggested.each do |user| %>
             <div style="display:flex; align-items:center; gap:0.6rem;">
-              <div style="width:30px; height:30px; border-radius:50%; background:#2C261E; display:flex; align-items:center; justify-content:center; color:#F5F1EB; font-family:'DM Sans',sans-serif; font-size:0.65rem; font-weight:700; flex-shrink:0;">
+              <div style="width:30px; height:30px; border-radius:50%; background:var(--color-accent, #2C261E);
+                          display:flex; align-items:center; justify-content:center; color:var(--color-accent-text, #F5F1EB);
+                          font-family:'DM Sans',sans-serif; font-size:0.65rem; font-weight:700; flex-shrink:0;">
                 <%= user.name.to_s.first&.upcase || "?" %>
               </div>
               <div style="flex:1; min-width:0;">
-                <p style="font-family:'DM Sans',sans-serif; font-size:0.82rem; font-weight:500; color:#1C1812; margin:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+                <p style="font-family:'DM Sans',sans-serif; font-size:0.82rem; font-weight:500; color:var(--color-txt, #1C1812); margin:0;
+                          overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
                   <%= user.name %>
                 </p>
               </div>

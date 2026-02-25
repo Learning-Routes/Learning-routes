@@ -34,7 +34,7 @@ module CommunityEngine
     end
 
     def share_url
-      "/community/shared_routes/#{share_token}"
+      "/community_engine/shared_routes/#{share_token}"
     end
 
     private

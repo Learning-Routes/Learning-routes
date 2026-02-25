@@ -1,14 +1,24 @@
 <% content_for(:title, @route.localized_topic) %>
 
 <div style="max-width:900px; margin:0 auto; padding:2rem 1rem;">
+  <%# Back link %>
+  <div style="margin-bottom:1.5rem;">
+    <%= link_to community_engine.feed_path,
+          style: "display:inline-flex; align-items:center; gap:0.4rem; font-family:'DM Sans',sans-serif; font-size:0.78rem;
+                 color:var(--color-muted, #9B9590); text-decoration:none; transition:color 0.15s;" do %>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      <%= t("community_engine.shared_routes_ui.back_to_feed") %>
+    <% end %>
+  </div>
+
   <%# Header %>
-  <div style="margin-bottom:2.5rem;">
-    <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:1.5rem; margin-bottom:1.25rem;">
+  <div style="margin-bottom:2rem;">
+    <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:1.5rem; margin-bottom:1rem;">
       <div style="flex:1; min-width:0;">
-        <h1 style="font-family:'DM Sans',sans-serif; font-weight:700; font-size:1.75rem; letter-spacing:-0.5px; color:#1C1812; margin:0 0 0.4rem;">
+        <h1 style="font-family:'DM Sans',sans-serif; font-weight:700; font-size:1.75rem; letter-spacing:-0.5px; color:var(--color-txt, #1C1812); margin:0 0 0.4rem;">
           <%= @route.localized_topic %>
         </h1>
-        <p style="font-family:'DM Mono',monospace; font-size:0.75rem; color:#6B6560; margin:0;">
+        <p style="font-family:'DM Mono',monospace; font-size:0.72rem; color:var(--color-muted, #6B6560); margin:0;">
           <%= @route.localized_subject_area %> · <%= @route.difficulty_level %> · <%= @steps.size %> <%= t("community_engine.shared_routes_ui.steps") %>
         </p>
       </div>
@@ -21,25 +31,30 @@
                 liked: @shared_route.liked_by?(current_user),
                 likes_count: @shared_route.likes_count %>
 
-          <%= button_to community_engine.clone_shared_route_path(@shared_route),
-                method: :post,
-                style: "padding:0.5rem 1rem; border-radius:11px; background:#2C261E; color:#F5F1EB; font-family:'DM Sans',sans-serif; font-size:0.82rem; font-weight:500; border:none; cursor:pointer; transition:background 0.15s;" do %>
-            <%= t("community_engine.shared_routes_ui.clone_route") %>
+          <% if @shared_route.user_id != current_user.id %>
+            <%= button_to community_engine.clone_shared_route_path(@shared_route),
+                  method: :post,
+                  style: "padding:0.5rem 1rem; border-radius:11px; background:var(--color-accent, #2C261E); color:var(--color-accent-text, #F5F1EB);
+                         font-family:'DM Sans',sans-serif; font-size:0.78rem; font-weight:500; border:none; cursor:pointer; transition:opacity 0.15s;" do %>
+              <%= t("community_engine.shared_routes_ui.clone_route") %>
+            <% end %>
           <% end %>
         </div>
       <% end %>
     </div>
 
     <%# Author + share date %>
-    <div style="display:flex; align-items:center; gap:0.75rem;">
-      <div style="width:32px; height:32px; border-radius:50%; background:#2C261E; display:flex; align-items:center; justify-content:center; color:#F5F1EB; font-family:'DM Sans',sans-serif; font-size:0.65rem; font-weight:700;">
+    <div style="display:flex; align-items:center; gap:0.6rem;">
+      <div style="width:32px; height:32px; border-radius:50%; background:var(--color-accent, #2C261E);
+                  display:flex; align-items:center; justify-content:center; color:var(--color-accent-text, #F5F1EB);
+                  font-family:'DM Sans',sans-serif; font-size:0.65rem; font-weight:700;">
         <%= @shared_route.user.name.to_s.first&.upcase || "?" %>
       </div>
       <div>
-        <span style="font-family:'DM Sans',sans-serif; font-size:0.82rem; font-weight:600; color:#1C1812;">
+        <span style="font-family:'DM Sans',sans-serif; font-size:0.82rem; font-weight:600; color:var(--color-txt, #1C1812);">
           <%= @shared_route.user.name %>
         </span>
-        <span style="font-family:'DM Mono',monospace; font-size:0.7rem; color:#9B9590; margin-left:0.5rem;">
+        <span style="font-family:'DM Mono',monospace; font-size:0.68rem; color:var(--color-muted, #9B9590); margin-left:0.5rem;">
           <%= t("community_engine.shared_routes_ui.shared_on") %> <%= l(@shared_route.created_at.to_date, format: :long) %>
         </span>
       </div>
@@ -47,61 +62,84 @@
 
     <%# Description %>
     <% if @shared_route.description.present? %>
-      <p style="margin-top:1rem; font-family:'DM Sans',sans-serif; font-size:0.88rem; color:#3D3730; line-height:1.6; background:rgba(255,255,255,0.6); backdrop-filter:blur(20px); border:1px solid rgba(28,24,18,0.06); border-radius:14px; padding:1rem 1.25rem;">
-        <%= @shared_route.description %>
-      </p>
+      <div style="margin-top:1rem; background:rgba(255,255,255,0.5); backdrop-filter:blur(20px); border:1px solid var(--color-faint, rgba(28,24,18,0.06));
+                  border-radius:14px; padding:1rem 1.25rem;">
+        <p style="font-family:'DM Sans',sans-serif; font-size:0.88rem; color:var(--color-sub, #3D3730); line-height:1.6; margin:0;">
+          <%= simple_format(@shared_route.description, {}, wrapper_tag: "span") %>
+        </p>
+      </div>
     <% end %>
   </div>
 
-  <%# Steps list %>
+  <%# Route overview / steps list %>
   <div style="margin-bottom:2.5rem;">
-    <h2 style="font-family:'DM Sans',sans-serif; font-weight:700; font-size:1.1rem; color:#1C1812; margin:0 0 1rem;">
+    <h2 style="font-family:'DM Sans',sans-serif; font-weight:700; font-size:1.1rem; color:var(--color-txt, #1C1812); margin:0 0 1rem;">
       <%= t("community_engine.shared_routes_ui.route_steps") %>
     </h2>
 
     <div style="display:flex; flex-direction:column; gap:0.5rem;">
-      <% @steps.each do |step| %>
-        <div style="display:flex; align-items:center; gap:1rem; padding:1rem 1.25rem; background:rgba(255,255,255,0.6); backdrop-filter:blur(20px); border:1px solid rgba(28,24,18,0.06); border-radius:14px; transition:box-shadow 0.15s;">
-          <%# Position number %>
-          <span style="flex-shrink:0; width:32px; height:32px; border-radius:50%; background:#2C261E; display:flex; align-items:center; justify-content:center; color:#F5F1EB; font-family:'DM Mono',monospace; font-size:0.7rem; font-weight:700;">
-            <%= step.position %>
-          </span>
+      <% @steps.each_with_index do |step, idx| %>
+        <div style="display:flex; gap:1rem; padding:1rem 1.25rem; background:rgba(255,255,255,0.5); backdrop-filter:blur(20px);
+                    border:1px solid var(--color-faint, rgba(28,24,18,0.06)); border-radius:14px; transition:box-shadow 0.15s;">
+          <%# Step number with connector line %>
+          <div style="display:flex; flex-direction:column; align-items:center; gap:0.25rem;">
+            <span style="flex-shrink:0; width:32px; height:32px; border-radius:50%; background:var(--color-accent, #2C261E);
+                         display:flex; align-items:center; justify-content:center; color:var(--color-accent-text, #F5F1EB);
+                         font-family:'DM Mono',monospace; font-size:0.7rem; font-weight:700;">
+              <%= step.position %>
+            </span>
+            <% unless idx == @steps.size - 1 %>
+              <div style="width:2px; height:8px; background:var(--color-faint, rgba(28,24,18,0.1)); border-radius:1px;"></div>
+            <% end %>
+          </div>
 
           <%# Step info %>
           <div style="flex:1; min-width:0;">
-            <p style="font-family:'DM Sans',sans-serif; font-size:0.88rem; font-weight:500; color:#1C1812; margin:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
-              <%= step.localized_title %>
-            </p>
+            <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.2rem;">
+              <p style="font-family:'DM Sans',sans-serif; font-size:0.88rem; font-weight:500; color:var(--color-txt, #1C1812); margin:0;
+                        overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1;">
+                <%= step.localized_title %>
+              </p>
+              <%# Content type badge %>
+              <span style="flex-shrink:0; padding:0.2rem 0.5rem; border-radius:7px; font-family:'DM Mono',monospace; font-size:0.55rem; font-weight:500;
+                           background:var(--color-faint, rgba(28,24,18,0.06)); color:var(--color-muted, #6B6560);">
+                <%= t("content_types.#{step.content_type}", default: step.content_type) %>
+              </span>
+            </div>
+
+            <%# Step description if available %>
+            <% if step.respond_to?(:description) && step.description.present? %>
+              <p style="font-family:'DM Sans',sans-serif; font-size:0.75rem; color:var(--color-muted, #9B9590); margin:0.2rem 0 0; line-height:1.5;
+                        display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;">
+                <%= step.description %>
+              </p>
+            <% end %>
+
+            <%# Duration %>
+            <% if step.respond_to?(:estimated_minutes) && step.estimated_minutes.present? %>
+              <span style="font-family:'DM Mono',monospace; font-size:0.62rem; color:var(--color-muted, #9B9590); margin-top:0.3rem; display:inline-block;">
+                ~<%= step.estimated_minutes %> <%= t("units.min") %>
+              </span>
+            <% end %>
           </div>
-
-          <%# Content type badge %>
-          <span style="flex-shrink:0; padding:0.25rem 0.6rem; border-radius:7px; font-family:'DM Mono',monospace; font-size:0.6rem; font-weight:500; background:rgba(28,24,18,0.06); color:#6B6560;">
-            <%= t("content_types.#{step.content_type}") %>
-          </span>
-
-          <%# Duration %>
-          <% if step.respond_to?(:estimated_minutes) && step.estimated_minutes.present? %>
-            <span style="flex-shrink:0; font-family:'DM Mono',monospace; font-size:0.7rem; color:#9B9590;">
-              <%= step.estimated_minutes %> <%= t("units.min") %>
-            </span>
-          <% end %>
         </div>
       <% end %>
     </div>
   </div>
 
   <%# Stats row %>
-  <div style="display:flex; align-items:center; gap:1.5rem; margin-bottom:2.5rem; font-family:'DM Mono',monospace; font-size:0.82rem; color:#6B6560;">
-    <span style="display:inline-flex; align-items:center; gap:0.4rem;">
+  <div style="display:flex; align-items:center; gap:1.5rem; margin-bottom:2.5rem; padding:0.75rem 1rem; border-radius:14px;
+              background:rgba(255,255,255,0.4); backdrop-filter:blur(20px); border:1px solid var(--color-faint, rgba(28,24,18,0.06));">
+    <span style="display:inline-flex; align-items:center; gap:0.4rem; font-family:'DM Mono',monospace; font-size:0.78rem; color:var(--color-muted, #6B6560);">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
       <%= @shared_route.likes_count %> <%= t("community_engine.shared_routes_ui.likes") %>
     </span>
-    <span style="display:inline-flex; align-items:center; gap:0.4rem;">
+    <span style="display:inline-flex; align-items:center; gap:0.4rem; font-family:'DM Mono',monospace; font-size:0.78rem; color:var(--color-muted, #6B6560);">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
       <%= @shared_route.comments_count %> <%= t("community_engine.shared_routes_ui.comments_label") %>
     </span>
-    <span style="display:inline-flex; align-items:center; gap:0.4rem;">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012-2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+    <span style="display:inline-flex; align-items:center; gap:0.4rem; font-family:'DM Mono',monospace; font-size:0.78rem; color:var(--color-muted, #6B6560);">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
       <%= @shared_route.clones_count %> <%= t("community_engine.shared_routes_ui.clones") %>
     </span>
   </div>
@@ -111,28 +149,32 @@
     <%= render "community_engine/comments/section", commentable: @shared_route %>
   <% else %>
     <div style="margin-top:2rem;">
-      <h3 style="font-family:'DM Sans',sans-serif; font-weight:700; font-size:1.1rem; color:#1C1812; margin:0 0 1rem;">
+      <h3 style="font-family:'DM Sans',sans-serif; font-weight:700; font-size:1.1rem; color:var(--color-txt, #1C1812); margin:0 0 1rem;">
         <%= t("community_engine.comments.heading", count: @shared_route.comments_count) %>
       </h3>
       <% if @comments.any? %>
-        <div style="display:flex; flex-direction:column; gap:0;">
+        <div>
           <% @comments.each do |comment| %>
-            <div style="display:flex; gap:0.75rem; padding:1rem 0; border-bottom:1px solid rgba(28,24,18,0.06);">
-              <div style="flex-shrink:0; width:32px; height:32px; border-radius:50%; background:#2C261E; display:flex; align-items:center; justify-content:center; color:#F5F1EB; font-family:'DM Sans',sans-serif; font-size:0.65rem; font-weight:700;">
+            <div style="display:flex; gap:0.75rem; padding:1rem 0; border-bottom:1px solid var(--color-faint, rgba(28,24,18,0.06));">
+              <div style="flex-shrink:0; width:32px; height:32px; border-radius:50%; background:var(--color-accent, #2C261E);
+                          display:flex; align-items:center; justify-content:center; color:var(--color-accent-text, #F5F1EB);
+                          font-family:'DM Sans',sans-serif; font-size:0.65rem; font-weight:700;">
                 <%= comment.user.name.to_s.first&.upcase || "?" %>
               </div>
               <div>
                 <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.3rem;">
-                  <span style="font-family:'DM Sans',sans-serif; font-size:0.82rem; font-weight:600; color:#1C1812;"><%= comment.user.name %></span>
-                  <span style="font-family:'DM Mono',monospace; font-size:0.65rem; color:#9B9590;"><%= time_ago_in_words(comment.created_at) %></span>
+                  <span style="font-family:'DM Sans',sans-serif; font-size:0.82rem; font-weight:600; color:var(--color-txt, #1C1812);"><%= comment.user.name %></span>
+                  <span style="font-family:'DM Mono',monospace; font-size:0.65rem; color:var(--color-muted, #9B9590);"><%= time_ago_in_words(comment.created_at) %></span>
                 </div>
-                <p style="font-family:'DM Sans',sans-serif; font-size:0.82rem; color:#3D3730; margin:0; line-height:1.5;"><%= comment.body %></p>
+                <p style="font-family:'DM Sans',sans-serif; font-size:0.82rem; color:var(--color-sub, #3D3730); margin:0; line-height:1.5;"><%= comment.body %></p>
               </div>
             </div>
           <% end %>
         </div>
       <% end %>
-      <p style="margin-top:1rem; font-family:'DM Sans',sans-serif; font-size:0.82rem; color:#9B9590; text-align:center; background:rgba(255,255,255,0.6); backdrop-filter:blur(20px); border:1px solid rgba(28,24,18,0.06); border-radius:14px; padding:1rem;">
+      <p style="margin-top:1rem; font-family:'DM Sans',sans-serif; font-size:0.82rem; color:var(--color-muted, #9B9590); text-align:center;
+                background:rgba(255,255,255,0.4); backdrop-filter:blur(20px); border:1px solid var(--color-faint, rgba(28,24,18,0.06));
+                border-radius:14px; padding:1rem;">
         <%= t("community_engine.shared_routes_ui.login_to_comment") %>
       </p>
     </div>
