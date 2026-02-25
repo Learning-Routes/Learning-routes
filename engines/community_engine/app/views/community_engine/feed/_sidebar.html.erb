@@ -24,15 +24,16 @@
       </button>
 
       <%# Share modal (hidden by default) %>
-      <div data-share-target="modal" class="hidden"
-           style="position:fixed; inset:0; z-index:200; display:flex; align-items:center; justify-content:center; padding:1rem;"
-           data-action="keydown.esc->share#close click->share#closeOnOutsideClick">
+      <div data-share-target="modal"
+           style="display:none; position:fixed; inset:0; z-index:200; align-items:center; justify-content:center; padding:1rem;"
+           data-action="click->share#backdropClick">
 
         <%# Backdrop %>
-        <div style="position:absolute; inset:0; background:rgba(0,0,0,0.5); backdrop-filter:blur(4px);"></div>
+        <div style="position:absolute; inset:0; background:rgba(0,0,0,0.5); backdrop-filter:blur(4px); pointer-events:none;"></div>
 
-        <%# Modal card %>
-        <div style="position:relative; background:white; border-radius:20px; width:100%; max-width:440px; max-height:80vh; overflow-y:auto;
+        <%# Modal card (stop propagation so backdrop click doesn't fire) %>
+        <div data-action="click->share#stopPropagation"
+             style="position:relative; background:white; border-radius:20px; width:100%; max-width:440px; max-height:80vh; overflow-y:auto;
                     box-shadow:0 24px 48px rgba(0,0,0,0.2);">
 
           <%# Header %>
@@ -123,7 +124,7 @@
           </div>
 
           <%# Success view %>
-          <div data-share-target="successView" class="hidden" style="padding:1.5rem; text-align:center;">
+          <div data-share-target="successView" style="display:none; padding:1.5rem; text-align:center;">
             <div style="width:48px; height:48px; margin:0 auto 0.75rem; border-radius:50%; background:rgba(91,168,128,0.12);
                         display:flex; align-items:center; justify-content:center;">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
