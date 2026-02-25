@@ -1,7 +1,5 @@
+<% if activity.user %>
 <%
-  # Skip if user was deleted
-  next unless activity.user
-
   # Determine if this activity links to a shared route
   shared_route = case activity.trackable
                  when CommunityEngine::SharedRoute then activity.trackable
@@ -103,3 +101,4 @@
     </div>
   </div>
 </div>
+<% end %>
