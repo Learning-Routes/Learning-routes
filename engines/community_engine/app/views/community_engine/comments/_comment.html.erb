@@ -13,11 +13,11 @@
       <span style="font-family:'DM Sans',sans-serif; font-size:0.82rem; font-weight:600; color:var(--color-txt, #1C1812);">
         <%= comment.user.name %>
       </span>
-      <span style="font-family:'DM Mono',monospace; font-size:0.65rem; color:var(--color-muted, #A09889);">
+      <span style="font-family:'DM Mono',monospace; font-size:0.65rem; color:var(--color-muted, #887F72);">
         <%= time_ago_in_words(comment.created_at) %>
       </span>
       <% if comment.edited? %>
-        <span style="font-family:'DM Mono',monospace; font-size:0.55rem; color:var(--color-muted, #A09889); background:var(--color-faint, rgba(28,24,18,0.06)); padding:0.15rem 0.4rem; border-radius:6px;">
+        <span style="font-family:'DM Mono',monospace; font-size:0.55rem; color:var(--color-muted, #887F72); background:var(--color-faint, rgba(28,24,18,0.06)); padding:0.15rem 0.4rem; border-radius:6px;">
           <%= t("community_engine.comments.edited") %>
         </span>
       <% end %>
@@ -33,7 +33,7 @@
       <%= render "community_engine/likes/button", likeable: comment, liked: (defined?(current_user) && current_user ? comment.liked_by?(current_user) : false), likes_count: comment.likes_count %>
 
       <% if comment.top_level? %>
-        <button style="font-family:'DM Sans',sans-serif; font-size:0.72rem; color:var(--color-muted, #A09889); background:none; border:none; cursor:pointer; padding:0.2rem 0; transition:color 0.2s;"
+        <button style="font-family:'DM Sans',sans-serif; font-size:0.72rem; color:var(--color-muted, #887F72); background:none; border:none; cursor:pointer; padding:0.2rem 0; transition:color 0.2s;"
                 data-action="click->comment-reply#show"
                 data-comment-id="<%= comment.id %>">
           <%= t("community_engine.comments.reply") %>
@@ -41,13 +41,13 @@
       <% end %>
 
       <% if defined?(current_user) && current_user && comment.owned_by?(current_user) %>
-        <button style="font-family:'DM Sans',sans-serif; font-size:0.72rem; color:var(--color-muted, #A09889); background:none; border:none; cursor:pointer; padding:0.2rem 0; transition:color 0.2s;"
+        <button style="font-family:'DM Sans',sans-serif; font-size:0.72rem; color:var(--color-muted, #887F72); background:none; border:none; cursor:pointer; padding:0.2rem 0; transition:color 0.2s;"
                 data-action="click->comment-edit#show"
                 data-comment-id="<%= comment.id %>">
           <%= t("community_engine.comments.edit") %>
         </button>
         <%= button_to community_engine.comment_path(comment), method: :delete,
-              style: "font-family:'DM Sans',sans-serif; font-size:0.72rem; color:var(--color-muted, #A09889); background:none; border:none; cursor:pointer; padding:0.2rem 0; transition:color 0.2s;",
+              style: "font-family:'DM Sans',sans-serif; font-size:0.72rem; color:var(--color-muted, #887F72); background:none; border:none; cursor:pointer; padding:0.2rem 0; transition:color 0.2s;",
               data: { turbo_confirm: t("community_engine.comments.delete_confirm") } do %>
           <%= t("community_engine.comments.delete") %>
         <% end %>
