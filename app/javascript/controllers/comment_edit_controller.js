@@ -28,12 +28,14 @@ export default class extends Controller {
       return
     }
 
-    // Build inline edit form
+    // Build inline edit form — data-turbo="true" ensures Turbo intercepts the submission
     const form = document.createElement("form")
     form.action = `/community_engine/comments/${commentId}`
     form.method = "post"
     form.dataset.editForm = ""
+    form.dataset.turbo = "true"
     form.style.marginBottom = "0.5rem"
+    form.setAttribute("accept-charset", "UTF-8")
 
     const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content
 

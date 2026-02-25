@@ -49,6 +49,7 @@ export default class extends Controller {
 
     this.visibilityBtnTargets.forEach(b => {
       const isActive = b.dataset.visibility === this._visibility
+      // Modal is always light-themed so these colors are correct
       b.style.borderColor = isActive ? "#2C261E" : "#E0DBCF"
       b.style.background = isActive ? "rgba(44,38,30,0.05)" : "transparent"
     })
@@ -60,6 +61,7 @@ export default class extends Controller {
 
     this.routeSelectTargets.forEach(el => {
       const isSelected = el.dataset.routeId === this.routeIdValue
+      // Modal is always light-themed so these colors are correct
       el.style.borderColor = isSelected ? "#2C261E" : "rgba(28,24,18,0.1)"
       el.style.background = isSelected ? "rgba(44,38,30,0.04)" : "transparent"
     })
