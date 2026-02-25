@@ -4,7 +4,7 @@
   <div style="flex-shrink:0; width:32px; height:32px; border-radius:50%; background:var(--color-accent, #2C261E);
               display:flex; align-items:center; justify-content:center; color:var(--color-accent-text, #F5F1EB);
               font-family:'DM Sans',sans-serif; font-size:0.65rem; font-weight:700;">
-    <%= comment.user.name.first.upcase %>
+    <%= comment.user.name.to_s.first&.upcase || "?" %>
   </div>
 
   <div style="flex:1; min-width:0;">
