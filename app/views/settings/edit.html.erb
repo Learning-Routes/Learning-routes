@@ -96,6 +96,30 @@
               data: { auth_form_target: "input", action: "focus->auth-form#inputFocus blur->auth-form#inputBlur" } %>
         </div>
 
+        <%# Appearance (theme) %>
+        <div>
+          <p style="font-family:'DM Sans',sans-serif; font-size:0.78rem; font-weight:500; color:#6D665B; margin:0 0 0.5rem;">
+            <%= t("settings.preferences.theme_label") %>
+          </p>
+          <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
+            <% [
+              ["system", t("settings.preferences.theme_system")],
+              ["light", t("settings.preferences.theme_light")],
+              ["dark", t("settings.preferences.theme_dark")]
+            ].each do |value, label| %>
+              <label style="display:flex; align-items:center; gap:0.4rem; font-family:'DM Sans',sans-serif; font-size:0.82rem; color:#1C1812;
+                            padding:0.55rem 1rem; border-radius:10px; border:1px solid rgba(28,24,18,0.1); background:white; cursor:pointer; transition:all 0.2s;"
+                     onmouseover="this.style.borderColor='rgba(28,24,18,0.22)'"
+                     onmouseout="this.style.borderColor='rgba(28,24,18,0.1)'">
+                <input type="radio" name="user[theme]" value="<%= value %>"
+                       <%= "checked" if @user.theme == value %>
+                       style="accent-color:#2C261E;">
+                <%= label %>
+              </label>
+            <% end %>
+          </div>
+        </div>
+
         <%# Timezone %>
         <div>
           <%= f.label :timezone, t("settings.preferences.timezone_label"),

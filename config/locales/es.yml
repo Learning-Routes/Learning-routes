@@ -212,6 +212,11 @@ es:
     switch_to_es: "Cambiar a español"
     switch_to_en: "Switch to English"
 
+  theme_toggle:
+    switch_to_system: "Tema del sistema"
+    switch_to_light: "Tema claro"
+    switch_to_dark: "Tema oscuro"
+
   # ── Alertas de autenticación ──
   auth_alerts:
     google_coming_soon: "Google OAuth próximamente"
@@ -1037,6 +1042,10 @@ es:
       locale_en: "English"
       locale_es: "Español"
       timezone_label: "Zona horaria"
+      theme_label: "Apariencia"
+      theme_system: "Sistema"
+      theme_light: "Claro"
+      theme_dark: "Oscuro"
     learning:
       heading: "Perfil de aprendizaje"
       level_label: "Nivel actual"
@@ -1224,6 +1233,7 @@ es:
         platform_stats: "Estadísticas"
         suggested: "Sugeridos para Seguir"
         no_suggestions: "Sin sugerencias por ahora."
+        share_my_routes: "Compartir Mis Rutas"
     notifications_ui:
       title: "Notificaciones"
       mark_all_read: "Marcar todo como leído"
@@ -1243,6 +1253,9 @@ es:
       share: "Compartir"
     share_modal:
       title: "Compartir Ruta"
+      select_route: "Selecciona una ruta para compartir"
+      all_shared: "¡Todas tus rutas ya están compartidas!"
+      steps: "pasos"
       visibility_label: "Visibilidad"
       visibility:
         public: "Pública"

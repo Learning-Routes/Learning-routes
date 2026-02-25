@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="<%= I18n.locale %>">
+<html lang="<%= I18n.locale %>" data-controller="theme" data-theme-preference-value="<%= current_theme %>">
   <head>
     <title><%= content_for(:title) || t("layout.app_name") %></title>
     <meta charset="utf-8">
@@ -20,6 +20,14 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300..700;1,9..40,300..700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+    <script>
+      (function(){
+        var p = "<%= current_theme %>";
+        var t = p === "system" ? (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light") : p;
+        document.documentElement.setAttribute("data-theme", t);
+      })();
+    </script>
 
     <%= stylesheet_link_tag "tailwind", "application", "data-turbo-track": "reload" %>
     <%= javascript_importmap_tags %>

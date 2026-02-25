@@ -44,9 +44,7 @@ module Assessments
     def authorize_assessment_owner!
       step = @assessment.route_step
       route = step.learning_route
-      unless route.learning_profile.user_id == current_user.id
-        head :forbidden
-      end
+      return head(:forbidden) unless route.learning_profile.user_id == current_user.id
     end
 
     def grade_with_ai!(question, answer)
@@ -73,8 +71,8 @@ module Assessments
           feedback: result["feedback"]
         )
       end
-    rescue => e
-      Rails.logger.error("[AnswersController] AI grading failed: #{e.message}")
+    rescue StandardError => e
+      Rails.logger.error("[AnswersController] AI grading failed: #{e.class}: #{e.message}")
     end
   end
 end

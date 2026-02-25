@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="<%= I18n.locale %>">
+<html lang="<%= I18n.locale %>" data-controller="theme" data-theme-preference-value="<%= current_theme %>">
   <head>
     <title><%= content_for(:title) || t("layout.app_name") %></title>
     <meta charset="utf-8">
@@ -21,18 +21,28 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300..700;1,9..40,300..700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 
+    <%# Prevent flash of wrong theme before JS loads %>
+    <script>
+      (function(){
+        var p = "<%= current_theme %>";
+        var t = p === "system" ? (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light") : p;
+        document.documentElement.setAttribute("data-theme", t);
+      })();
+    </script>
+
     <%= stylesheet_link_tag "tailwind", "application", "data-turbo-track": "reload" %>
     <%= javascript_importmap_tags %>
   </head>
 
-  <body style="margin:0; min-height:100vh; font-family:'DM Sans',sans-serif; background:#F5F1EB; color:#1C1812;">
+  <body style="margin:0; min-height:100vh; font-family:'DM Sans',sans-serif; background:var(--color-bg); color:var(--color-txt); transition:background-color 0.3s, color 0.3s;">
     <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-[200] focus:bg-accent focus:text-accent-text focus:px-4 focus:py-2 focus:rounded-btn focus:text-sm focus:font-semibold"><%= t("layout.skip_to_content") %></a>
 
     <%# === Subtle background texture (fixed, decorative) === %>
     <div style="position:fixed; inset:0; pointer-events:none; z-index:0;
                 background:
                   radial-gradient(ellipse at 15% 25%, rgba(139,128,196,0.035) 0%, transparent 55%),
-                  radial-gradient(ellipse at 85% 65%, rgba(91,168,128,0.03) 0%, transparent 50%);"></div>
+                  radial-gradient(ellipse at 85% 65%, rgba(91,168,128,0.03) 0%, transparent 50%);"
+         class="theme-bg-texture"></div>
 
     <%# === Authenticated navbar (hidden when content_for(:hide_navbar) is set) === %>
     <% unless content_for?(:hide_navbar) %>

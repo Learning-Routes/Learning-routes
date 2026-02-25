@@ -1,11 +1,24 @@
 module CommunityEngine
   class LikesController < ApplicationController
+    ALLOWED_LIKEABLE_TYPES = %w[
+      LearningRoutesEngine::LearningRoute
+      LearningRoutesEngine::RouteStep
+      CommunityEngine::SharedRoute
+      CommunityEngine::Comment
+    ].freeze
+
     def toggle
       likeable_type = params[:likeable_type]
       likeable_id = params[:likeable_id]
 
-      # Find the likeable object
+      unless likeable_type.in?(ALLOWED_LIKEABLE_TYPES)
+        return head(:bad_request)
+      end
+
       likeable = likeable_type.constantize.find(likeable_id)
+
+      # Authorization: only allow liking accessible resources
+      return head(:forbidden) unless can_like?(likeable)
 
       existing_like = Like.find_by(user: current_user, likeable_type: likeable_type, likeable_id: likeable_id)
 
@@ -16,11 +29,10 @@ module CommunityEngine
         Like.create!(user: current_user, likeable: likeable)
         @liked = true
 
-        # Track activity and notify
         ActivityTracker.track!(user: current_user, action: "liked", trackable: likeable)
 
         owner = find_likeable_owner(likeable)
-        if owner
+        if owner && owner != current_user
           NotificationService.notify!(
             user: owner,
             actor: current_user,
@@ -46,6 +58,21 @@ module CommunityEngine
     end
 
     private
+
+    def can_like?(likeable)
+      case likeable
+      when CommunityEngine::SharedRoute
+        likeable.visibility == "public" || likeable.user_id == current_user.id
+      when CommunityEngine::Comment
+        true
+      when LearningRoutesEngine::LearningRoute
+        likeable.learning_profile&.user_id == current_user.id
+      when LearningRoutesEngine::RouteStep
+        likeable.learning_route&.learning_profile&.user_id == current_user.id
+      else
+        false
+      end
+    end
 
     def find_likeable_owner(likeable)
       case likeable

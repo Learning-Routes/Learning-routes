@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_02_24_000007) do
+ActiveRecord::Schema[8.1].define(version: 2026_02_25_204430) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -208,6 +208,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_24_000007) do
     t.uuid "user_id", null: false
     t.index ["commentable_type", "commentable_id"], name: "idx_comments_on_commentable"
     t.index ["parent_id"], name: "index_community_engine_comments_on_parent_id"
+    t.index ["user_id", "created_at"], name: "index_community_engine_comments_on_user_id_and_created_at"
     t.index ["user_id"], name: "index_community_engine_comments_on_user_id"
   end
 
@@ -245,6 +246,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_24_000007) do
     t.index ["actor_id"], name: "index_community_engine_notifications_on_actor_id"
     t.index ["user_id", "notification_type"], name: "idx_notifications_user_type"
     t.index ["user_id", "read_at", "created_at"], name: "idx_notifications_user_unread"
+    t.index ["user_id"], name: "index_community_engine_notifications_on_user_id"
   end
 
   create_table "community_engine_shared_routes", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -259,6 +261,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_24_000007) do
     t.datetime "updated_at", null: false
     t.uuid "user_id", null: false
     t.string "visibility", default: "public", null: false
+    t.index ["cloned_from_id"], name: "index_community_engine_shared_routes_on_cloned_from_id"
     t.index ["learning_route_id"], name: "index_community_engine_shared_routes_on_learning_route_id"
     t.index ["share_token"], name: "index_community_engine_shared_routes_on_share_token", unique: true
     t.index ["user_id"], name: "index_community_engine_shared_routes_on_user_id"
@@ -335,6 +338,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_24_000007) do
     t.string "password_digest", null: false
     t.string "remember_token"
     t.integer "role", default: 0, null: false
+    t.string "theme", default: "system", null: false
     t.string "timezone", default: "UTC", null: false
     t.datetime "updated_at", null: false
     t.index ["email"], name: "index_core_users_on_email", unique: true
@@ -475,6 +479,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_24_000007) do
   add_foreign_key "assessments_voice_responses", "core_users", column: "user_id"
   add_foreign_key "assessments_voice_responses", "learning_routes_engine_route_steps", column: "route_step_id"
   add_foreign_key "community_engine_activities", "core_users", column: "user_id"
+  add_foreign_key "community_engine_comments", "community_engine_comments", column: "parent_id", on_delete: :cascade
   add_foreign_key "community_engine_comments", "core_users", column: "user_id"
   add_foreign_key "community_engine_follows", "core_users", column: "followed_id"
   add_foreign_key "community_engine_follows", "core_users", column: "follower_id"

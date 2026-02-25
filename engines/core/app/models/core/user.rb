@@ -21,12 +21,15 @@ module Core
 
     enum :role, { student: 0, teacher: 1, admin: 2 }
 
+    VALID_THEMES = %w[light dark system].freeze
+
     validates :email, presence: true,
                       uniqueness: { case_sensitive: false },
                       format: { with: URI::MailTo::EMAIL_REGEXP }
     validates :name, presence: true, length: { minimum: 2, maximum: 100 }
     validates :password, length: { minimum: 8 }, if: -> { password.present? }
     validates :locale, inclusion: { in: %w[en es] }
+    validates :theme, inclusion: { in: VALID_THEMES }
     validates :role, presence: true
 
     normalizes :email, with: ->(email) { email.strip.downcase }
@@ -52,6 +55,20 @@ module Core
 
     def can_create_routes?
       true
+    end
+
+    # --- Theme helpers ---
+
+    def dark_theme?
+      theme == "dark"
+    end
+
+    def light_theme?
+      theme == "light"
+    end
+
+    def system_theme?
+      theme == "system"
     end
 
     # --- Email verification ---

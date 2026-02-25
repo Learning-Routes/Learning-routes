@@ -2,12 +2,31 @@ module CommunityEngine
   class CommentsController < ApplicationController
     before_action :set_comment, only: [:update, :destroy]
 
+    ALLOWED_COMMENTABLE_TYPES = %w[
+      LearningRoutesEngine::LearningRoute
+      LearningRoutesEngine::RouteStep
+      CommunityEngine::SharedRoute
+    ].freeze
+
     def create
       @comment = Comment.new(comment_params)
       @comment.user = current_user
 
+      # Validate commentable type whitelist
+      unless @comment.commentable_type.in?(ALLOWED_COMMENTABLE_TYPES)
+        return head(:bad_request)
+      end
+
+      # Authorization: verify user can comment on this resource
+      return head(:forbidden) unless can_comment_on?(@comment.commentable)
+
+      # Validate parent belongs to same commentable
+      if @comment.parent_id.present?
+        parent = Comment.find_by(id: @comment.parent_id)
+        return head(:bad_request) unless parent && parent.commentable_id == @comment.commentable_id && parent.commentable_type == @comment.commentable_type
+      end
+
       if @comment.save
-        # Track activity
         ActivityTracker.track!(
           user: current_user,
           action: "commented",
@@ -15,9 +34,8 @@ module CommunityEngine
           metadata: { comment_id: @comment.id, preview: @comment.body.truncate(100) }
         )
 
-        # Notify the owner of the commentable
         owner = find_commentable_owner(@comment)
-        if owner
+        if owner && owner != current_user
           NotificationService.notify!(
             user: owner,
             actor: current_user,
@@ -27,8 +45,7 @@ module CommunityEngine
           )
         end
 
-        # If it's a reply, also notify the parent comment owner
-        if @comment.parent.present? && @comment.parent.user_id != owner&.id
+        if @comment.parent.present? && @comment.parent.user_id != owner&.id && @comment.parent.user_id != current_user.id
           NotificationService.notify!(
             user: @comment.parent.user,
             actor: current_user,
@@ -63,7 +80,7 @@ module CommunityEngine
     end
 
     def destroy
-      return head(:forbidden) unless @comment.owned_by?(current_user) || current_user.role == "admin"
+      return head(:forbidden) unless @comment.owned_by?(current_user) || current_user.admin?
 
       @comment.destroy
       respond_to do |format|
@@ -80,6 +97,19 @@ module CommunityEngine
 
     def comment_params
       params.require(:comment).permit(:body, :commentable_type, :commentable_id, :parent_id)
+    end
+
+    def can_comment_on?(commentable)
+      case commentable
+      when CommunityEngine::SharedRoute
+        commentable.visibility == "public" || commentable.user_id == current_user.id
+      when LearningRoutesEngine::LearningRoute
+        commentable.learning_profile&.user_id == current_user.id
+      when LearningRoutesEngine::RouteStep
+        commentable.learning_route&.learning_profile&.user_id == current_user.id
+      else
+        false
+      end
     end
 
     def find_commentable_owner(comment)

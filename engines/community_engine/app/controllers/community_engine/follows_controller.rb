@@ -1,10 +1,12 @@
 module CommunityEngine
   class FollowsController < ApplicationController
     def create
-      @followed_user = Core::User.find(params[:followed_id])
+      @followed_user = Core::User.find_by(id: params[:followed_id])
+      return head(:not_found) unless @followed_user
+      return head(:unprocessable_entity) if @followed_user == current_user
 
-      follow = Follow.new(follower: current_user, followed: @followed_user)
-      if follow.save
+      follow = Follow.find_or_initialize_by(follower: current_user, followed: @followed_user)
+      if follow.new_record? && follow.save
         ActivityTracker.track!(user: current_user, action: "followed", trackable: @followed_user)
         NotificationService.notify!(
           user: @followed_user,
@@ -27,7 +29,9 @@ module CommunityEngine
     end
 
     def destroy
-      follow = Follow.find_by!(follower: current_user, followed_id: params[:id])
+      follow = current_user.active_follows.find_by(followed_id: params[:id])
+      return head(:not_found) unless follow
+
       @followed_user = follow.followed
       follow.destroy
 

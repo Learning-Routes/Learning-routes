@@ -2,6 +2,7 @@ module Core
   class ApplicationController < ActionController::Base
     before_action :set_current_session
     before_action :set_locale
+    before_action :set_theme
 
     rescue_from ActiveRecord::RecordNotFound, with: :record_not_found
 
@@ -20,6 +21,19 @@ module Core
       I18n.locale
     end
     helper_method :current_locale
+
+    def set_theme
+      @current_theme = if current_user
+        current_user.theme
+      else
+        cookies[:theme] || "system"
+      end
+    end
+
+    def current_theme
+      @current_theme || "system"
+    end
+    helper_method :current_theme
 
     def record_not_found
       respond_to do |format|
@@ -80,7 +94,6 @@ module Core
       )
       session[:core_session_id] = sess.id
 
-      # Reset memoized values so current_user reflects the new session
       remove_instance_variable(:@current_user) if defined?(@current_user)
       remove_instance_variable(:@current_session) if defined?(@current_session)
 
