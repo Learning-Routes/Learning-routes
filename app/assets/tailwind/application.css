@@ -16,7 +16,7 @@
   --color-card: #FEFDFB;
   --color-txt: #1C1812;
   --color-sub: #6D665B;
-  --color-muted: #A09889;
+  --color-muted: #887F72;
   --color-faint: #CCC5B8;
   --color-accent: #2C261E;
   --color-accent-text: #F5F1EB;
@@ -87,7 +87,7 @@ html[data-theme="dark"] {
   --color-card: #221F18;
   --color-txt: #E8E4DC;
   --color-sub: #A09889;
-  --color-muted: #706858;
+  --color-muted: #8A8070;
   --color-faint: #3D3730;
   --color-accent: #E8E4DC;
   --color-accent-text: #1A1710;

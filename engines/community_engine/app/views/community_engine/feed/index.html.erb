@@ -11,7 +11,7 @@
     <h1 style="font-family:'DM Sans',sans-serif; font-weight:700; font-size:1.5rem; letter-spacing:-0.5px; color:var(--color-txt, #1C1812); margin:0 0 0.4rem;">
       <%= t("community_engine.feed.title") %>
     </h1>
-    <div style="display:flex; align-items:center; gap:0.75rem; font-family:'DM Mono',monospace; font-size:0.7rem; color:var(--color-muted, #A09889);">
+    <div style="display:flex; align-items:center; gap:0.75rem; font-family:'DM Mono',monospace; font-size:0.7rem; color:var(--color-muted, #887F72);">
       <span><%= @stats[:total_users] %> <%= t("community_engine.feed.stats.learners") %></span>
       <span style="width:3px; height:3px; border-radius:50%; background:var(--color-faint, #CCC5B8);"></span>
       <span><%= @stats[:total_routes] %> <%= t("community_engine.feed.stats.routes") %></span>
@@ -33,7 +33,7 @@
         ].each do |tab_id, tab_label| %>
           <% active = @tab == tab_id %>
           <%= link_to community_engine.feed_path(tab: (tab_id == "all" ? nil : tab_id)),
-                style: "display:inline-block; padding:0.5rem 1.25rem; border-radius:11px; font-family:'DM Sans',sans-serif; font-size:0.82rem; font-weight:500; text-decoration:none; transition:all 0.15s; #{active ? "background:var(--color-accent, #2C261E); color:var(--color-accent-text, #F5F1EB); box-shadow:0 1px 3px rgba(0,0,0,0.1);" : "color:var(--color-muted, #A09889);"}",
+                style: "display:inline-block; padding:0.5rem 1.25rem; border-radius:11px; font-family:'DM Sans',sans-serif; font-size:0.82rem; font-weight:500; text-decoration:none; transition:all 0.15s; #{active ? "background:var(--color-accent, #2C261E); color:var(--color-accent-text, #F5F1EB); box-shadow:0 1px 3px rgba(0,0,0,0.1);" : "color:var(--color-muted, #887F72);"}",
                 data: { turbo_action: "replace" } do %>
             <%= tab_label %>
           <% end %>
