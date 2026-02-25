@@ -1,0 +1,74 @@
+<div>
+  <% if trending_routes.any? %>
+    <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:0.75rem;">
+      <% trending_routes.each do |shared_route| %>
+        <% route = shared_route.learning_route %>
+        <div style="background:rgba(255,255,255,0.6); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); border:1px solid rgba(28,24,18,0.06); border-radius:14px; padding:1.25rem; transition:box-shadow 0.15s;">
+          <%# Route topic + level %>
+          <div style="margin-bottom:0.75rem;">
+            <h3 style="font-family:'DM Sans',sans-serif; font-weight:600; font-size:0.92rem; color:#1C1812; margin:0 0 0.2rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+              <%= route.localized_topic %>
+            </h3>
+            <p style="font-family:'DM Mono',monospace; font-size:0.65rem; color:#9B9590; margin:0;">
+              <%= route.localized_subject_area %> · <%= route.difficulty_level %>
+            </p>
+          </div>
+
+          <%# Author %>
+          <div style="display:flex; align-items:center; gap:0.4rem; margin-bottom:0.75rem;">
+            <div style="width:22px; height:22px; border-radius:50%; background:#2C261E; display:flex; align-items:center; justify-content:center; color:#F5F1EB; font-family:'DM Sans',sans-serif; font-size:0.55rem; font-weight:700;">
+              <%= shared_route.user.name.to_s.first&.upcase || "?" %>
+            </div>
+            <span style="font-family:'DM Sans',sans-serif; font-size:0.72rem; color:#6B6560;">
+              <%= shared_route.user.name %>
+            </span>
+          </div>
+
+          <%# Stats row %>
+          <div style="display:flex; align-items:center; gap:1rem; margin-bottom:0.75rem; font-family:'DM Mono',monospace; font-size:0.65rem; color:#9B9590;">
+            <span style="display:inline-flex; align-items:center; gap:0.25rem;">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+              <%= shared_route.likes_count %>
+            </span>
+            <span style="display:inline-flex; align-items:center; gap:0.25rem;">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+              <%= shared_route.comments_count %>
+            </span>
+            <span style="display:inline-flex; align-items:center; gap:0.25rem;">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+              <%= shared_route.clones_count %>
+            </span>
+          </div>
+
+          <%# Action buttons %>
+          <div style="display:flex; align-items:center; gap:0.5rem;">
+            <%= link_to community_engine.shared_route_path(shared_route.share_token),
+                  style: "flex:1; text-align:center; padding:0.45rem 0.75rem; border-radius:11px; background:#2C261E; color:#F5F1EB; font-family:'DM Sans',sans-serif; font-size:0.72rem; font-weight:500; text-decoration:none; transition:background 0.15s;" do %>
+              <%= t("community_engine.feed.trending.view_route") %>
+            <% end %>
+
+            <%= button_to community_engine.clone_shared_route_path(shared_route),
+                  method: :post,
+                  style: "flex:1; text-align:center; padding:0.45rem 0.75rem; border-radius:11px; border:1px solid #CCC5B8; background:transparent; color:#1C1812; font-family:'DM Sans',sans-serif; font-size:0.72rem; font-weight:500; cursor:pointer; transition:background 0.15s;" do %>
+              <%= t("community_engine.feed.trending.clone_route") %>
+            <% end %>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  <% else %>
+    <div style="background:rgba(255,255,255,0.6); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); border:1px solid rgba(28,24,18,0.06); border-radius:14px; padding:3rem 2rem; text-align:center;">
+      <div style="width:48px; height:48px; margin:0 auto 1rem; border-radius:14px; background:rgba(28,24,18,0.04); display:flex; align-items:center; justify-content:center;">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#9B9590" stroke-width="1.5">
+          <path d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <p style="font-family:'DM Sans',sans-serif; font-size:0.88rem; font-weight:600; color:#1C1812; margin:0 0 0.3rem;">
+        <%= t("community_engine.feed.trending.empty_title") %>
+      </p>
+      <p style="font-family:'DM Sans',sans-serif; font-size:0.78rem; color:#9B9590; margin:0; max-width:320px; margin-left:auto; margin-right:auto; line-height:1.5;">
+        <%= t("community_engine.feed.trending.empty_subtitle") %>
+      </p>
+    </div>
+  <% end %>
+</div>

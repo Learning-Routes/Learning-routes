@@ -103,7 +103,7 @@ module LearningRoutesEngine
         id: SecureRandom.uuid,
         status: "completed",
         response: response_text,
-        model: "claude-opus-4-6",
+        model: "claude-opus-4-5",
         completed?: true
       )
 

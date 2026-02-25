@@ -1,0 +1,7 @@
+<% if comment.errors.any? %>
+  <div class="p-3 rounded-[11px] bg-red-50 border border-red-200 mb-3">
+    <% comment.errors.full_messages.each do |msg| %>
+      <p class="text-sm text-red-600" style="font-family: 'DM Sans', sans-serif;"><%= msg %></p>
+    <% end %>
+  </div>
+<% end %>

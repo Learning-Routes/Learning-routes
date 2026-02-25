@@ -6,6 +6,7 @@ Rails.application.routes.draw do
   mount Assessments::Engine => "/assessments", as: "assessments"
   mount AiOrchestrator::Engine => "/ai", as: "ai_orchestrator"
   mount Analytics::Engine => "/analytics", as: "analytics"
+  mount CommunityEngine::Engine => "/community_engine", as: "community_engine"
 
   # Locale switcher
   patch "locale", to: "locale#update", as: :locale

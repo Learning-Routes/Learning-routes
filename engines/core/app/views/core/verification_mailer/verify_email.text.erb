@@ -1,9 +1,9 @@
-Welcome to Learning Routes, <%= @user.name %>!
+<%= t("verification_mailer.verify_email.subject", name: @user.name) %>
 
-Please verify your email address by visiting the link below:
+<%= t("verification_mailer.verify_email.body") %>
 
 <%= @url %>
 
-This link will expire in 24 hours.
+<%= t("verification_mailer.verify_email.expiry") %>
 
-If you didn't create an account, you can ignore this email.
+<%= t("verification_mailer.verify_email.ignore") %>

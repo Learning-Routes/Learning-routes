@@ -28,7 +28,7 @@ module ContentEngine
         @grading_result = parser.parse!
         store_exercise_submission!(params[:answer], @grading_result)
       else
-        @error = "Grading failed. Please try again."
+        @error = t("flash.grading_failed")
       end
 
       respond_to do |format|
@@ -59,7 +59,7 @@ module ContentEngine
         @rendered_hint = MarkdownRenderer.render(@hint)
         increment_hint_count!
       else
-        @error = "Could not generate hint."
+        @error = t("flash.hint_failed")
       end
 
       respond_to do |format|
@@ -69,7 +69,7 @@ module ContentEngine
     end
 
     def run_code
-      @output = "Code sandbox coming soon. Your code has been saved."
+      @output = t("flash.code_sandbox_placeholder")
       respond_to do |format|
         format.turbo_stream
         format.json { render json: { output: @output, status: "placeholder" } }

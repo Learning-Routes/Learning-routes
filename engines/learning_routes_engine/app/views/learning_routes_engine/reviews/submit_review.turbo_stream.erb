@@ -6,7 +6,7 @@
       </svg>
       <div>
         <p class="text-sm font-medium text-green-300"><%= t("learning_engine.review.recorded") %></p>
-        <p class="text-xs text-gray-500"><%= t("learning_engine.review.next_review") %> <%= @step.fsrs_next_review_at ? l(@step.fsrs_next_review_at, format: "%b %d, %Y") : "TBD" %></p>
+        <p class="text-xs text-gray-500"><%= t("learning_engine.review.next_review") %> <%= @step.fsrs_next_review_at ? l(@step.fsrs_next_review_at, format: "%b %d, %Y") : t("step_complete.review_tbd") %></p>
       </div>
     </div>
   </div>

@@ -3,7 +3,7 @@ require "test_helper"
 module AiOrchestrator
   class AiInteractionTest < ActiveSupport::TestCase
     def valid_attributes
-      { model: "claude-opus-4-6", prompt: "test prompt", status: :pending }
+      { model: "claude-opus-4-5", prompt: "test prompt", status: :pending }
     end
 
     test "requires model" do
@@ -13,7 +13,7 @@ module AiOrchestrator
     end
 
     test "requires prompt" do
-      interaction = AiInteraction.new(model: "claude-opus-4-6", prompt: nil)
+      interaction = AiInteraction.new(model: "claude-opus-4-5", prompt: nil)
       assert_not interaction.valid?
       assert_includes interaction.errors[:prompt], "can't be blank"
     end
@@ -79,7 +79,7 @@ module AiOrchestrator
     end
 
     test "scopes: by_model" do
-      assert_equal "claude-opus-4-6", AiInteraction.by_model("claude-opus-4-6").where_values_hash["model"]
+      assert_equal "claude-opus-4-5", AiInteraction.by_model("claude-opus-4-5").where_values_hash["model"]
     end
 
     test "scopes: by_task" do

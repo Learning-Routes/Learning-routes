@@ -4,6 +4,20 @@ module Core
 
     has_many :sessions, dependent: :destroy
     has_many :route_requests, class_name: "::RouteRequest", foreign_key: :user_id, dependent: :destroy
+    has_one :learning_profile, class_name: "LearningRoutesEngine::LearningProfile", dependent: :destroy
+
+    # Community associations
+    has_many :comments, class_name: "CommunityEngine::Comment", dependent: :destroy
+    has_many :likes, class_name: "CommunityEngine::Like", dependent: :destroy
+    has_many :activities, class_name: "CommunityEngine::Activity", dependent: :destroy
+    has_many :notifications, class_name: "CommunityEngine::Notification", dependent: :destroy
+    has_many :shared_routes, class_name: "CommunityEngine::SharedRoute", dependent: :destroy
+
+    # Follower relationships
+    has_many :active_follows, class_name: "CommunityEngine::Follow", foreign_key: :follower_id, dependent: :destroy
+    has_many :passive_follows, class_name: "CommunityEngine::Follow", foreign_key: :followed_id, dependent: :destroy
+    has_many :following, through: :active_follows, source: :followed
+    has_many :followers, through: :passive_follows, source: :follower
 
     enum :role, { student: 0, teacher: 1, admin: 2 }
 
@@ -76,5 +90,15 @@ module Core
 
     generates_token_for :email_verification, expires_in: 24.hours
     generates_token_for :password_reset, expires_in: 1.hour
+
+    # --- Community helpers ---
+
+    def following?(other_user)
+      active_follows.exists?(followed_id: other_user.id)
+    end
+
+    def unread_notifications_count
+      notifications.unread.count
+    end
   end
 end

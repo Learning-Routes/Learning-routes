@@ -2,7 +2,13 @@ import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
   static targets = ["navItem", "questionPanel", "currentIndicator"]
-  static values = { currentIndex: { type: Number, default: 0 }, totalQuestions: Number }
+  static values = {
+    currentIndex: { type: Number, default: 0 },
+    totalQuestions: Number,
+    savedText: { type: String, default: "Saved!" },
+    saveText: { type: String, default: "Save Answer" },
+    answeredTemplate: { type: String, default: "__count__ of __total__ answered" }
+  }
 
   connect() {
     this.answeredSet = new Set()
@@ -91,9 +97,9 @@ export default class extends Controller {
         this.answeredSet.add(index)
         this.updateNavItem(index)
         this.updateDisplay()
-        btn.textContent = "Saved!"
+        btn.textContent = this.savedTextValue
         clearTimeout(this._buttonResetTimeout)
-        this._buttonResetTimeout = setTimeout(() => { btn.textContent = "Save Answer" }, 1500)
+        this._buttonResetTimeout = setTimeout(() => { btn.textContent = this.saveTextValue }, 1500)
 
         const html = await response.text()
         if (html.includes("turbo-stream")) Turbo.renderStreamMessage(html)
@@ -113,7 +119,9 @@ export default class extends Controller {
 
   updateDisplay() {
     if (this.hasCurrentIndicatorTarget) {
-      this.currentIndicatorTarget.textContent = `${this.answeredSet.size} of ${this.totalQuestionsValue} answered`
+      this.currentIndicatorTarget.textContent = this.answeredTemplateValue
+        .replace("__count__", this.answeredSet.size)
+        .replace("__total__", this.totalQuestionsValue)
     }
   }
 }

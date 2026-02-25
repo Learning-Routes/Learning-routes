@@ -1,76 +1,113 @@
 <%# Evaluation Result (Turbo Stream replacement)
      locals: voice_response (VoiceResponse) %>
 
-<div id="voice-evaluation-<%= voice_response.id %>"
-     class="rounded-xl bg-gray-800/50 border border-white/[0.06] p-5">
+<% score = voice_response.score.to_i %>
+<% ai_eval = voice_response.ai_evaluation || {} %>
+<% score_color = score >= 70 ? "#4ADE80" : score >= 50 ? "#FACC15" : "#F87171" %>
 
-  <p class="text-xs font-medium text-gray-400 uppercase tracking-wider mb-4" style="font-family: 'DM Mono', monospace;">
+<div id="voice_evaluation_<%= voice_response.id %>"
+     class="rounded-[14px] p-5"
+     style="background: rgba(28,25,18,0.5); border: 1px solid rgba(232,228,220,0.06);">
+
+  <p class="text-xs font-medium uppercase tracking-wider mb-4"
+     style="color: #7A7264; font-family: 'DM Mono', monospace;">
     <%= t("voice_evaluation.result_label") %>
   </p>
 
-  <!-- Score Circle -->
+  <%# ── Score Circle ── %>
   <div class="text-center mb-5">
-    <% score_color = voice_response.score.to_i >= 70 ? "text-green-400" : voice_response.score.to_i >= 50 ? "text-yellow-400" : "text-red-400" %>
-    <div class="inline-flex items-center justify-center w-20 h-20 rounded-full border-2 <%= score_color.gsub('text-', 'border-') %>">
-      <span class="text-2xl font-bold <%= score_color %>"><%= voice_response.score %></span>
+    <div class="inline-flex items-center justify-center w-20 h-20 rounded-full"
+         style="border: 2px solid <%= score_color %>;">
+      <span class="text-2xl font-bold" style="color: <%= score_color %>; font-family: 'DM Sans', sans-serif;">
+        <%= score %>
+      </span>
     </div>
-    <p class="text-xs text-gray-500 mt-2"><%= t("voice_evaluation.out_of_points") %></p>
+    <p class="text-xs mt-2" style="color: #605848; font-family: 'DM Mono', monospace;">
+      <%= t("voice_evaluation.out_of_points") %>
+    </p>
   </div>
 
-  <!-- Feedback -->
+  <%# ── Feedback ── %>
   <% if voice_response.feedback_text.present? %>
-    <div class="rounded-lg bg-gray-900/50 p-4 mb-4">
-      <p class="text-sm text-gray-300 leading-relaxed"><%= voice_response.feedback_text %></p>
+    <div class="rounded-[11px] p-4 mb-4" style="background: rgba(28,25,18,0.6);">
+      <p class="text-sm leading-relaxed" style="color: #B0A898; font-family: 'DM Sans', sans-serif;">
+        <%= voice_response.feedback_text %>
+      </p>
     </div>
   <% end %>
 
-  <!-- Strengths -->
-  <% if voice_response.strengths.any? %>
-    <div class="mb-3">
-      <p class="text-xs font-medium text-green-400 mb-1.5"><%= t("voice_evaluation.strengths") %></p>
-      <% voice_response.strengths.each do |s| %>
-        <p class="text-sm text-gray-300 flex items-start gap-2 mb-1">
-          <span class="text-green-400">+</span> <%= s %>
-        </p>
-      <% end %>
+  <%# ── Strengths ── %>
+  <% if voice_response.strengths.present? && voice_response.strengths.any? %>
+    <div class="mb-4">
+      <p class="text-xs font-medium mb-1.5" style="color: #4ADE80; font-family: 'DM Mono', monospace;">
+        <%= t("voice_evaluation.strengths") %>
+      </p>
+      <ul class="space-y-1">
+        <% voice_response.strengths.each do |s| %>
+          <li class="flex items-start gap-2 text-sm" style="color: #E8E4DC; font-family: 'DM Sans', sans-serif;">
+            <span style="color: #4ADE80;" class="mt-0.5 flex-shrink-0">+</span>
+            <span><%= s %></span>
+          </li>
+        <% end %>
+      </ul>
     </div>
   <% end %>
 
-  <!-- Improvements -->
-  <% if voice_response.improvements.any? %>
-    <div class="mb-3">
-      <p class="text-xs font-medium text-yellow-400 mb-1.5"><%= t("voice_evaluation.improvements") %></p>
-      <% voice_response.improvements.each do |i| %>
-        <p class="text-sm text-gray-300 flex items-start gap-2 mb-1">
-          <span class="text-yellow-400">&rarr;</span> <%= i %>
-        </p>
-      <% end %>
+  <%# ── Improvements ── %>
+  <% if voice_response.improvements.present? && voice_response.improvements.any? %>
+    <div class="mb-4">
+      <p class="text-xs font-medium mb-1.5" style="color: #FACC15; font-family: 'DM Mono', monospace;">
+        <%= t("voice_evaluation.improvements") %>
+      </p>
+      <ul class="space-y-1">
+        <% voice_response.improvements.each do |imp| %>
+          <li class="flex items-start gap-2 text-sm" style="color: #E8E4DC; font-family: 'DM Sans', sans-serif;">
+            <span style="color: #FACC15;" class="mt-0.5 flex-shrink-0">&rarr;</span>
+            <span><%= imp %></span>
+          </li>
+        <% end %>
+      </ul>
     </div>
   <% end %>
 
-  <!-- Transcript -->
-  <% if voice_response.transcription.present? %>
-    <details class="mt-4 rounded-lg bg-gray-900/50">
-      <summary class="px-4 py-2 text-xs text-gray-500 cursor-pointer hover:text-gray-400">
-        <%= t("voice_evaluation.your_transcript") %>
-      </summary>
-      <p class="px-4 pb-3 text-sm text-gray-400 italic">"<%= voice_response.transcription %>"</p>
-    </details>
-  <% end %>
-
-  <!-- Understanding Level Badge -->
-  <% if voice_response.ai_evaluation.dig("understanding_level").present? %>
-    <% level = voice_response.ai_evaluation["understanding_level"] %>
-    <% badge_classes = {
-      "excellent" => "bg-green-500/10 text-green-400 border-green-500/20",
-      "good" => "bg-blue-500/10 text-blue-400 border-blue-500/20",
-      "developing" => "bg-yellow-500/10 text-yellow-400 border-yellow-500/20",
-      "needs_review" => "bg-red-500/10 text-red-400 border-red-500/20"
+  <%# ── Understanding Level Badge ── %>
+  <% if ai_eval["understanding_level"].present? %>
+    <% level = ai_eval["understanding_level"] %>
+    <% badge_styles = {
+      "excellent"    => "background: rgba(74,222,128,0.1); color: #4ADE80; border: 1px solid rgba(74,222,128,0.2);",
+      "good"         => "background: rgba(96,165,250,0.1); color: #60A5FA; border: 1px solid rgba(96,165,250,0.2);",
+      "developing"   => "background: rgba(250,204,21,0.1); color: #FACC15; border: 1px solid rgba(250,204,21,0.2);",
+      "needs_review" => "background: rgba(248,113,113,0.1); color: #F87171; border: 1px solid rgba(248,113,113,0.2);"
     } %>
-    <div class="mt-4 text-center">
-      <span class="inline-block px-3 py-1 text-xs font-medium rounded-full border <%= badge_classes[level] || badge_classes["developing"] %>">
+    <div class="text-center mb-4">
+      <span class="inline-block px-3 py-1 text-xs font-medium rounded-full"
+            style="<%= badge_styles[level] || badge_styles["developing"] %>; font-family: 'DM Mono', monospace;">
         <%= t("voice_evaluation.understanding.#{level}", default: level.humanize) %>
       </span>
     </div>
   <% end %>
+
+  <%# ── Transcript ── %>
+  <% if voice_response.transcription.present? %>
+    <details class="rounded-[11px] mb-4" style="background: rgba(28,25,18,0.6);">
+      <summary class="px-4 py-2 text-xs cursor-pointer transition-colors"
+               style="color: #605848; font-family: 'DM Sans', sans-serif;"
+               onmouseover="this.style.color='#7A7264'" onmouseout="this.style.color='#605848'">
+        <%= t("voice_evaluation.your_transcript") %>
+      </summary>
+      <p class="px-4 pb-3 text-sm italic" style="color: #7A7264; font-family: 'DM Sans', sans-serif;">
+        "<%= voice_response.transcription %>"
+      </p>
+    </details>
+  <% end %>
+
+  <%# ── Retry Button ── %>
+  <div class="text-center">
+    <button onclick="window.location.reload()"
+            class="text-sm transition-colors"
+            style="color: #818CF8; font-family: 'DM Sans', sans-serif;"
+            onmouseover="this.style.color='#A5B4FC'" onmouseout="this.style.color='#818CF8'">
+      <%= t("voice_evaluation.retry") %>
+    </button>
+  </div>
 </div>

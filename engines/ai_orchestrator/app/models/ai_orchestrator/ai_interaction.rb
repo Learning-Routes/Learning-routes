@@ -1,5 +1,12 @@
 module AiOrchestrator
   class AiInteraction < ApplicationRecord
+    # The DB column "cache_key" conflicts with ActiveRecord's reserved
+    # method. Allow it — instance-level access shadows class method safely.
+    def self.dangerous_attribute_method?(method_name)
+      return false if method_name == "cache_key"
+      super
+    end
+
     belongs_to :user, class_name: "Core::User", optional: true
 
     enum :status, { pending: 0, processing: 1, completed: 2, failed: 3, timeout: 4 }
@@ -19,7 +26,7 @@ module AiOrchestrator
 
     SUPPORTED_MODELS = %w[
       gpt-5.2
-      claude-opus-4-6
+      claude-opus-4-5
       claude-haiku-4-5
       claude-sonnet-4-5
       gpt-5.1-codex-mini

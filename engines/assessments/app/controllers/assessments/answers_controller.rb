@@ -23,7 +23,7 @@ module Assessments
         is_correct = params[:answer].to_s.strip.downcase == question.correct_answer.to_s.strip.downcase
         @answer.update!(
           correct: is_correct,
-          feedback: is_correct ? "Correct!" : "Incorrect. #{question.explanation}"
+          feedback: is_correct ? t("flash.correct") : t("flash.incorrect", explanation: question.explanation)
         )
       elsif question.short_answer? || question.code?
         grade_with_ai!(question, @answer)

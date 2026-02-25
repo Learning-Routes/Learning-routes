@@ -118,16 +118,28 @@ class RouteRequest < ApplicationRecord
       secondary = "#{sorted[0][0]}+#{sorted[1][0]}"
     end
 
+    # Map VARK scores to actual delivery formats (audio, text, interactive).
+    # Visual → text (illustrated content), Auditory → audio,
+    # Reading → text, Kinesthetic → interactive.
     total = scores.values.sum.to_f
+    min_pct = 15
     content_mix = if total > 0
-      {
-        video: ((scores[:visual] / total) * 100).round,
-        audio: ((scores[:auditory] / total) * 100).round,
-        text: ((scores[:reading] / total) * 100).round,
-        interactive: ((scores[:kinesthetic] / total) * 100).round
+      pcts = {
+        audio: (scores[:auditory] / total * 100).round,
+        text: ((scores[:visual] + scores[:reading]) / total * 100).round,
+        interactive: (scores[:kinesthetic] / total * 100).round
       }
+      # Enforce minimum 15% per format, stealing from the largest
+      pcts.each_key do |k|
+        next if pcts[k] >= min_pct
+        deficit = min_pct - pcts[k]
+        pcts[k] = min_pct
+        largest = pcts.max_by { |_, v| v }.first
+        pcts[largest] -= deficit
+      end
+      pcts
     else
-      { video: 25, audio: 25, text: 25, interactive: 25 }
+      { audio: 30, text: 35, interactive: 35 }
     end
 
     self.learning_style_result = {

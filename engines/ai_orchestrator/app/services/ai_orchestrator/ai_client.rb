@@ -2,7 +2,7 @@ module AiOrchestrator
   class AiClient
     RUBY_LLM_MODELS = %w[
       gpt-5.2 gpt-5.1-codex-mini
-      claude-opus-4-6 claude-haiku-4-5 claude-sonnet-4-5
+      claude-opus-4-5 claude-haiku-4-5 claude-sonnet-4-5
     ].freeze
 
     class RequestError < StandardError; end
@@ -76,7 +76,7 @@ module AiOrchestrator
         },
         body: {
           text: text,
-          model_id: "eleven_turbo_v2_5",
+          model_id: merged[:model_id] || "eleven_multilingual_v2",
           voice_settings: {
             stability: merged[:stability] || 0.5,
             similarity_boost: merged[:similarity_boost] || 0.75

@@ -34,21 +34,15 @@ module ContentEngine
     end
 
     def needs_audio?
-      audio_status == "pending" && audio_url.blank?
+      audio_status == "pending"
     end
 
     def mark_audio_generating!
       update!(audio_status: "generating")
     end
 
-    def mark_audio_ready!(url:, duration: nil, voice: nil, transcript: nil)
-      update!(
-        audio_status: "ready",
-        audio_url: url,
-        audio_duration: duration,
-        voice_id: voice,
-        audio_transcript: transcript
-      )
+    def mark_audio_ready!(url, duration = nil)
+      update!(audio_status: "ready", audio_url: url, audio_duration: duration)
     end
 
     def mark_audio_failed!

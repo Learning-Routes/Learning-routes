@@ -191,52 +191,6 @@ es:
       submit: "Actualizar contraseña"
       errors: "%{count} error(es) impidieron guardar:"
 
-  # Audio lesson system
-  audio_lesson:
-    label: "Lección de Audio"
-    step_n: "Paso %{n}"
-    view_transcript: "Ver transcripción"
-    show_what_learned: "Demuestra lo que aprendiste"
-    reflection_question: "Pregunta de reflexión"
-    comprehension_quiz: "Quiz de comprensión"
-    start_quiz: "Iniciar Quiz"
-  audio_player:
-    generating: "Generando audio de la lección..."
-    generating_wait: "Esto puede tomar unos segundos"
-    key_points: "Puntos clave"
-    error_generating: "Error al generar el audio"
-    retry: "Reintentar"
-    skip_back: "Retroceder 10s"
-    skip_forward: "Avanzar 10s"
-  voice_recorder:
-    label: "Respuesta de voz"
-    prompt: "Graba tu respuesta explicando lo que aprendiste"
-    max_duration: "Máximo 3 minutos"
-    recording: "Grabando..."
-    listen_before_submit: "Escucha tu respuesta antes de enviar"
-    re_record: "Grabar de nuevo"
-    submit_response: "Enviar respuesta"
-    submitting: "Enviando audio..."
-    evaluating: "Evaluando tu respuesta con IA..."
-    evaluating_detail: "Transcribiendo y analizando tu explicación"
-    score_label: "Puntuación"
-    view_transcript: "Ver transcripción"
-    try_again: "Intentar de nuevo"
-    mic_error: "No se pudo acceder al micrófono. Verifica los permisos."
-  voice_evaluation:
-    evaluating_response: "Evaluando tu respuesta..."
-    error_evaluating: "Error al evaluar la respuesta"
-    result_label: "Resultado de evaluación"
-    out_of_points: "de 100 puntos"
-    strengths: "Fortalezas"
-    improvements: "Áreas de mejora"
-    your_transcript: "Tu transcripción"
-    understanding:
-      excellent: "Excelente"
-      good: "Bueno"
-      developing: "En desarrollo"
-      needs_review: "Necesita revisión"
-
   # ── Correos ──
   mailer:
     reset_password:
@@ -261,6 +215,9 @@ es:
   # ── Alertas de autenticación ──
   auth_alerts:
     google_coming_soon: "Google OAuth próximamente"
+    validation_required: "Este campo es obligatorio"
+    validation_email: "Ingresa un email válido"
+    validation_min_length: "Debe tener al menos %{min} caracteres"
 
   # ── Flash messages ──
   flash:
@@ -279,6 +236,19 @@ es:
     onboarding_complete: "¡Bienvenido! Estamos creando tu ruta de aprendizaje personalizada."
     must_sign_in: "Debes iniciar sesión."
     not_authorized: "No tienes autorización para realizar esta acción."
+    step_completed: "¡Paso completado!"
+    step_not_available: "Este paso aún no está disponible."
+    assessment_not_submitted: "La evaluación aún no ha sido enviada."
+    assessment_submitted: "¡Evaluación enviada! Puntuación: %{score}%"
+    review_recorded: "Repaso registrado."
+    invalid_rating: "Calificación inválida."
+    ai_generation_failed: "La generación de IA falló. Inténtalo de nuevo."
+    grading_failed: "La calificación falló. Inténtalo de nuevo."
+    hint_failed: "No se pudo generar la pista."
+    code_sandbox_placeholder: "Sandbox de código próximamente. Tu código ha sido guardado."
+    route_generation_failed: "Error al generar la ruta. Inténtalo de nuevo."
+    correct: "¡Correcto!"
+    incorrect: "Incorrecto. %{explanation}"
 
   # ── Path Visualization ──
   path_viz:
@@ -350,6 +320,10 @@ es:
   # ── Landing status labels ──
   landing:
     page_title: "Learning Routes — Aprende lo que quieras, de la forma correcta"
+    meta_description: "Rutas de aprendizaje personalizadas con IA. Aprende programación, matemáticas, idiomas y más."
+    og_title: "Learning Routes — Aprende lo que quieras, de la forma correcta"
+    og_description: "Rutas de aprendizaje personalizadas con IA. Aprende programación, matemáticas, idiomas y más."
+    twitter_description: "Rutas de aprendizaje personalizadas con IA."
     status:
       completed: "Completado"
       in_progress: "En progreso"
@@ -364,6 +338,10 @@ es:
     experience: "Experiencia"
     xp_format: "%{current} / %{next} XP"
     no_badges: "Completa actividades para desbloquear logros."
+    followers: "seguidores"
+    following_count: "siguiendo"
+    no_shared_routes: "Aún no has compartido ninguna ruta."
+    level_badge: "NV"
     stats:
       routes: "Rutas"
       lessons: "Lecciones"
@@ -373,6 +351,7 @@ es:
       my_routes: "Mis Rutas"
       achievements: "Logros"
       activity: "Actividad"
+      shared_routes: "Rutas Compartidas"
     loading_achievements: "Cargando logros…"
     loading_activity: "Cargando actividad…"
     learning_profile: "Perfil de Aprendizaje"
@@ -631,6 +610,7 @@ es:
     polymath_desc: "Rutas en 3+ temas diferentes"
     route_complete: "Ruta Completa"
     route_complete_desc: "Termina una ruta por completo"
+    unlocked_label: "desbloqueado"
 
   # ── Activity ──
   activity:
@@ -656,6 +636,64 @@ es:
       today: "Hoy, %{time}"
       yesterday: "Ayer, %{time}"
 
+  # ── Términos de Servicio ──
+  terms:
+    title: "Términos de Servicio"
+    last_updated: "Última actualización:"
+    last_updated_date: "19 de febrero de 2026"
+    acceptance:
+      heading: "1. Aceptación de los Términos"
+      body: 'Al acceder o utilizar Learning Routes ("el Servicio"), aceptas estos Términos de Servicio. Si no estás de acuerdo con estos términos, por favor no utilices el Servicio.'
+    description:
+      heading: "2. Descripción del Servicio"
+      body: "Learning Routes es una plataforma de aprendizaje impulsada por IA que genera rutas de aprendizaje personalizadas, evaluaciones y recomendaciones de contenido. El Servicio se proporciona tal cual y puede ser actualizado o modificado en cualquier momento."
+    accounts:
+      heading: "3. Cuentas de Usuario"
+      body: "Eres responsable de mantener la confidencialidad de tus credenciales de cuenta y de todas las actividades que ocurran bajo tu cuenta. Debes proporcionar información precisa al crear una cuenta."
+    acceptable_use:
+      heading: "4. Uso Aceptable"
+      body: "Aceptas no hacer mal uso del Servicio ni ayudar a otros a hacerlo. No puedes intentar obtener acceso no autorizado, interferir con el Servicio o usarlo para cualquier propósito ilegal."
+    intellectual_property:
+      heading: "5. Propiedad Intelectual"
+      body: "El Servicio y su contenido original, características y funcionalidad son propiedad de Learning Routes y están protegidos por las leyes de propiedad intelectual aplicables. El contenido de aprendizaje generado por IA se proporciona para uso educativo personal."
+    liability:
+      heading: "6. Limitación de Responsabilidad"
+      body: "Learning Routes no será responsable de ningún daño indirecto, incidental, especial o consecuente resultante de tu uso del Servicio. El contenido de aprendizaje es generado por IA y no debe considerarse asesoramiento profesional."
+    contact:
+      heading: "7. Contacto"
+      body_html: 'Para preguntas sobre estos Términos, contáctanos en <a href="mailto:hello@learning-routes.com" class="text-accent underline">hello@learning-routes.com</a>.'
+
+  # ── Política de Privacidad ──
+  privacy:
+    title: "Política de Privacidad"
+    last_updated: "Última actualización:"
+    last_updated_date: "19 de febrero de 2026"
+    collection:
+      heading: "1. Información que Recopilamos"
+      body: "Recopilamos la información que proporcionas al crear una cuenta (dirección de correo electrónico, nombre) y datos sobre tus preferencias de aprendizaje, progreso e interacciones con la plataforma."
+    usage:
+      heading: "2. Cómo Usamos tu Información"
+      body: "Tu información se utiliza para personalizar tus rutas de aprendizaje, generar evaluaciones adaptativas, rastrear tu progreso y mejorar el Servicio. Utilizamos modelos de IA para procesar tus datos de aprendizaje y generar contenido adaptado a tu nivel y objetivos."
+    storage:
+      heading: "3. Almacenamiento y Seguridad de Datos"
+      body: "Tus datos se almacenan de forma segura utilizando cifrado estándar de la industria. Utilizamos bases de datos PostgreSQL alojadas en infraestructura segura. Implementamos medidas de seguridad apropiadas para proteger contra el acceso o divulgación no autorizados."
+    ai_processing:
+      heading: "4. Procesamiento de IA"
+      body: "Learning Routes utiliza servicios de IA de terceros para generar contenido de aprendizaje y evaluaciones. Tus preferencias de aprendizaje y datos de progreso pueden enviarse a proveedores de IA para generar contenido personalizado. No compartimos información de identificación personal con proveedores de IA."
+    cookies:
+      heading: "5. Cookies"
+      body: "Utilizamos cookies esenciales para mantener tu sesión y recordar tus preferencias. No utilizamos cookies de seguimiento de terceros ni cookies publicitarias."
+    rights:
+      heading: "6. Tus Derechos"
+      body: "Puedes solicitar acceso, corrección o eliminación de tus datos personales en cualquier momento contactándonos. Puedes eliminar tu cuenta y todos los datos asociados desde la configuración de tu perfil."
+    contact:
+      heading: "7. Contacto"
+      body_html: 'Para preguntas relacionadas con la privacidad, contáctanos en <a href="mailto:hello@learning-routes.com" class="text-accent underline">hello@learning-routes.com</a>.'
+
+  # ── Editor de Código ──
+  code_editor:
+    copy: "Copiar"
+    copied: "¡Copiado!"
 
   # ── Roles de Usuario ──
   user_roles:
@@ -890,6 +928,8 @@ es:
       title_prefix: "Evaluación - "
       question_of: "Pregunta %{current} de %{total}"
       save_answer: "Guardar respuesta"
+      saved: "¡Guardado!"
+      answered_template: "__count__ de __total__ respondidas"
       previous: "Anterior"
       next: "Siguiente"
       submit: "Enviar evaluación"
@@ -968,6 +1008,9 @@ es:
     onboarding:
       save_exit: "Guardar y salir"
       title: "Configura tu perfil — Learning Routes"
+    app_name: "Learning Routes"
+    dismiss: "Cerrar"
+    mailer_footer: "Learning Routes — learning-routes.com"
 
   # ── Ajustes ──
   settings:
@@ -975,10 +1018,10 @@ es:
     heading: "Ajustes"
     subheading: "Gestiona tu cuenta, preferencias y perfil de aprendizaje."
     saved: "Ajustes guardados correctamente."
-    password_updated: "Contrase\u00f1a actualizada correctamente."
-    wrong_current_password: "La contrase\u00f1a actual es incorrecta."
+    password_updated: "Contraseña actualizada correctamente."
+    wrong_current_password: "La contraseña actual es incorrecta."
     errors:
-      one: "1 error impidi\u00f3 guardar:"
+      one: "1 error impidió guardar:"
       other: "%{count} errores impidieron guardar:"
     back_to_profile: "Volver al perfil"
     save: "Guardar cambios"
@@ -986,13 +1029,13 @@ es:
       heading: "Cuenta"
       name_label: "Nombre"
       name_placeholder: "Tu nombre"
-      email_label: "Correo electr\u00f3nico"
+      email_label: "Correo electrónico"
       email_placeholder: "tu@correo.com"
     preferences:
       heading: "Preferencias"
       locale_label: "Idioma"
       locale_en: "English"
-      locale_es: "Espa\u00f1ol"
+      locale_es: "Español"
       timezone_label: "Zona horaria"
     learning:
       heading: "Perfil de aprendizaje"
@@ -1001,10 +1044,10 @@ es:
       level_intermediate: "Intermedio"
       level_advanced: "Avanzado"
       interests_label: "Intereses"
-      interest_programming: "Programaci\u00f3n"
+      interest_programming: "Programación"
       interest_web_development: "Desarrollo Web"
       interest_data_science: "Ciencia de datos"
-      interest_mobile_development: "Desarrollo m\u00f3vil"
+      interest_mobile_development: "Desarrollo móvil"
       interest_devops: "DevOps"
       interest_cybersecurity: "Ciberseguridad"
       interest_ai_ml: "IA y Machine Learning"
@@ -1013,20 +1056,204 @@ es:
       style_visual: "Visual"
       style_auditory: "Auditivo"
       style_reading: "Lectura"
-      style_kinesthetic: "Kinest\u00e9sico"
+      style_kinesthetic: "Kinestésico"
       goal_label: "Objetivo"
-      goal_placeholder: "\u00bfQu\u00e9 quieres lograr?"
+      goal_placeholder: "¿Qué quieres lograr?"
       timeline_label: "Plazo"
       timeline_1_month: "1 mes"
       timeline_3_months: "3 meses"
       timeline_6_months: "6 meses"
-      timeline_1_year: "1 a\u00f1o"
+      timeline_1_year: "1 año"
     password:
-      heading: "Cambiar contrase\u00f1a"
-      current_label: "Contrase\u00f1a actual"
-      current_placeholder: "Ingresa tu contrase\u00f1a actual"
-      new_label: "Nueva contrase\u00f1a"
-      new_placeholder: "M\u00ednimo 8 caracteres"
-      confirm_label: "Confirmar contrase\u00f1a"
-      confirm_placeholder: "Repite la nueva contrase\u00f1a"
-      submit: "Actualizar contrase\u00f1a"
+      heading: "Cambiar contraseña"
+      current_label: "Contraseña actual"
+      current_placeholder: "Ingresa tu contraseña actual"
+      new_label: "Nueva contraseña"
+      new_placeholder: "Mínimo 8 caracteres"
+      confirm_label: "Confirmar contraseña"
+      confirm_placeholder: "Repite la nueva contraseña"
+      submit: "Actualizar contraseña"
+
+  # ── Plantillas de correo ──
+
+  password_mailer:
+    reset_password:
+      subject: "Restablecer tu contraseña"
+      greeting: "Hola %{name},"
+      body: "Alguien solicitó un restablecimiento de contraseña para tu cuenta de Learning Routes. Visita el siguiente enlace para establecer una nueva contraseña:"
+      expiry: "Este enlace expirará en 1 hora."
+      ignore: "Si no solicitaste esto, puedes ignorar este correo."
+  verification_mailer:
+    verify_email:
+      subject: "¡Bienvenido a Learning Routes, %{name}!"
+      body: "Por favor verifica tu dirección de correo visitando el siguiente enlace:"
+      expiry: "Este enlace expirará en 24 horas."
+      ignore: "Si no creaste una cuenta, puedes ignorar este correo."
+
+  # ── Etiquetas de acciones turbo stream ──
+  content_actions:
+    hint: "Pista"
+    deep_dive: "Profundización"
+    alternative_explanation: "Explicación alternativa"
+    practical_example: "Ejemplo práctico"
+    simplified: "Simplificado"
+    score: "Puntuación"
+
+  # ── Paso completado ──
+  step_complete:
+    completed: "¡Completado!"
+    continue_next: "Continuar al siguiente paso"
+    review_tbd: "Por determinar"
+
+  # ── Layout y miscelánea ──
+
+  # ── Unidades ──
+  units:
+    min: "min"
+    seconds_short: "s"
+    tokens: "tokens"
+    level: "Nivel %{n}"
+
+  # Audio lesson system
+  audio_lesson:
+    label: "Lección de Audio"
+    step_n: "Paso %{n}"
+    view_transcript: "Ver transcripción"
+    show_what_learned: "Demuestra lo que aprendiste"
+    reflection_question: "Pregunta de reflexión"
+    comprehension_quiz: "Quiz de comprensión"
+    start_quiz: "Iniciar Quiz"
+  audio_player:
+    generating: "Generando audio de la lección..."
+    generating_wait: "Esto puede tomar unos segundos"
+    key_points: "Puntos clave"
+    error_generating: "Error al generar el audio"
+    retry: "Reintentar"
+    skip_back: "Retroceder 10s"
+    skip_forward: "Avanzar 10s"
+    retry_generation: "Reintentar generación"
+  voice_recorder:
+    label: "Respuesta de voz"
+    prompt: "Graba tu respuesta explicando lo que aprendiste"
+    max_duration: "Máximo 3 minutos"
+    recording: "Grabando..."
+    listen_before_submit: "Escucha tu respuesta antes de enviar"
+    re_record: "Grabar de nuevo"
+    submit_response: "Enviar respuesta"
+    submitting: "Enviando audio..."
+    evaluating: "Evaluando tu respuesta con IA..."
+    evaluating_detail: "Transcribiendo y analizando tu explicación"
+    score_label: "Puntuación"
+    view_transcript: "Ver transcripción"
+    try_again: "Intentar de nuevo"
+    mic_error: "No se pudo acceder al micrófono. Verifica los permisos."
+  voice_evaluation:
+    evaluating_response: "Evaluando tu respuesta..."
+    error_evaluating: "Error al evaluar la respuesta"
+    result_label: "Resultado de evaluación"
+    out_of_points: "de 100 puntos"
+    strengths: "Fortalezas"
+    improvements: "Áreas de mejora"
+    your_transcript: "Tu transcripción"
+    understanding:
+      excellent: "Excelente"
+      good: "Bueno"
+      developing: "En desarrollo"
+      needs_review: "Necesita revisión"
+    retry: "Reintentar"
+    evaluating_detail: "Transcribiendo y analizando tu explicación"
+    understanding_label: "Nivel de comprensión"
+    feedback_label: "Retroalimentación"
+
+  # ── Community Engine ──
+  community_engine:
+    comments:
+      heading: "Comentarios (%{count})"
+      empty: "Sé el primero en comentar"
+      placeholder: "Escribe un comentario..."
+      reply_placeholder: "Escribe tu respuesta..."
+      submit_btn: "Comentar"
+      reply_btn: "Responder"
+      reply: "Responder"
+      edit: "Editar"
+      delete: "Eliminar"
+      delete_confirm: "¿Eliminar este comentario?"
+      edited: "(editado)"
+    follows:
+      follow: "Seguir"
+      following: "Siguiendo"
+    shared_routes:
+      shared: "Ruta compartida"
+      cloned: "Ruta clonada exitosamente"
+      unshared: "Ruta ya no es pública"
+    activities:
+      commented: "comentó en"
+      liked: "dio like a"
+      followed: "empezó a seguir a"
+      shared: "compartió"
+      completed_step: "completó el paso"
+      completed_route: "completó la ruta"
+      cloned_route: "clonó la ruta"
+    notifications:
+      new_comment: "comentó en tu contenido"
+      new_like: "dio like a tu contenido"
+      new_follower: "empezó a seguirte"
+      comment_reply: "respondió a tu comentario"
+      route_shared: "compartió una ruta"
+    feed:
+      title: "Comunidad"
+      tabs:
+        all: "Todos"
+        following: "Siguiendo"
+        trending: "Trending"
+      stats:
+        learners: "aprendices"
+        routes: "rutas"
+        shared: "compartidas"
+      empty:
+        title: "No hay actividad reciente"
+        subtitle: "La actividad de la comunidad aparecerá aquí."
+      trending:
+        view_route: "Ver Ruta"
+        clone_route: "Clonar Ruta"
+        empty_title: "No hay rutas en tendencia"
+        empty_subtitle: "Las rutas compartidas aparecerán aquí a medida que la comunidad crezca."
+      sidebar:
+        top_learners: "Top Aprendices"
+        no_learners: "Aún no hay aprendices."
+        platform_stats: "Estadísticas"
+        suggested: "Sugeridos para Seguir"
+        no_suggestions: "Sin sugerencias por ahora."
+    notifications_ui:
+      title: "Notificaciones"
+      mark_all_read: "Marcar todo como leído"
+      mark_read: "Marcar leído"
+      view_all: "Ver todas las notificaciones"
+      empty: "Aún no hay notificaciones"
+      empty_subtitle: "Te notificaremos cuando alguien interactúe con tu contenido."
+    shared_routes_ui:
+      steps: "pasos"
+      clone_route: "Clonar esta Ruta"
+      shared_on: "Compartida el"
+      route_steps: "Pasos de la Ruta"
+      likes: "likes"
+      comments_label: "comentarios"
+      clones: "clones"
+      login_to_comment: "Inicia sesión para dejar un comentario."
+      share: "Compartir"
+    share_modal:
+      title: "Compartir Ruta"
+      visibility_label: "Visibilidad"
+      visibility:
+        public: "Pública"
+        public_desc: "Visible para todos"
+        unlisted: "Solo con enlace"
+        unlisted_desc: "Solo con el link"
+        private: "Privada"
+        private_desc: "Solo tú"
+      description_label: "Descripción (opcional)"
+      description_placeholder: "Agrega una breve descripción de esta ruta..."
+      share_btn: "Compartir"
+      success: "¡Ruta compartida exitosamente!"
+      copy: "Copiar"
+      done: "Listo"

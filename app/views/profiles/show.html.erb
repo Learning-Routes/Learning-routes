@@ -12,7 +12,7 @@
       <span style="font-family:'DM Sans',sans-serif; font-weight:800; font-size:1.6rem; color:#6D665B; letter-spacing:0.5px;"><%= initials %></span>
       <%# Level badge overlaid on avatar %>
       <div style="position:absolute; bottom:-6px; right:-6px; background:#1C1812; color:#F5F1EB; font-family:'DM Mono',monospace; font-size:0.55rem; font-weight:500; padding:0.2rem 0.5rem; border-radius:8px; letter-spacing:0.5px; border:2px solid #F5F1EB;">
-        NV.<%= @level %>
+        <%= t("profile.level_badge") %>.<%= @level %>
       </div>
     </div>
 
@@ -40,6 +40,17 @@
         <span style="margin:0 0.4rem; opacity:0.4;">&middot;</span>
         <%= t("profile.member_since", date: l(@member_since, format: "%b %Y")) %>
       </p>
+
+
+<%# Followers / Following counts %>
+<div style="display:flex; align-items:center; gap:1rem; margin-top:0.5rem;">
+  <span style="font-family:'DM Sans',sans-serif; font-size:0.78rem; color:#6D665B;">
+    <strong style="color:#1C1812;"><%= @user.followers.count %></strong> <%= t("profile.followers") %>
+  </span>
+  <span style="font-family:'DM Sans',sans-serif; font-size:0.78rem; color:#6D665B;">
+    <strong style="color:#1C1812;"><%= @user.following.count %></strong> <%= t("profile.following_count") %>
+  </span>
+</div>
 
       <%# Interests as tags %>
       <% if @profile&.interests&.any? %>
@@ -135,7 +146,7 @@
 
   <%# Tab bar %>
   <div role="tablist" style="display:flex; gap:0; border-bottom:1px solid rgba(28,24,18,0.06); margin-bottom:1.2rem; overflow-x:auto; -webkit-overflow-scrolling:touch;">
-    <% [t("profile.tabs.my_routes"), t("profile.tabs.achievements"), t("profile.tabs.activity")].each_with_index do |label, i| %>
+    <% [t("profile.tabs.my_routes"), t("profile.tabs.achievements"), t("profile.tabs.activity"), t("profile.tabs.shared_routes")].each_with_index do |label, i| %>
       <button data-profile-tabs-target="tab" data-action="click->profile-tabs#switch" data-index="<%= i %>"
               style="font-family:'DM Sans',sans-serif; font-size:0.82rem; font-weight:<%= i == 0 ? '600' : '400' %>; color:<%= i == 0 ? '#1C1812' : '#A09889' %>; background:none; border:none; cursor:pointer; padding:0.6rem 1.2rem; position:relative; transition:color 0.2s;">
         <%= label %>
@@ -186,6 +197,45 @@
       </div>
     </turbo-frame>
   </div>
+
+
+<%# === Panel 4: Shared Routes === %>
+<div id="panel-shared" role="tabpanel" aria-labelledby="tab-3" data-profile-tabs-target="panel" style="display:none;">
+  <% shared_routes = current_user.shared_routes.includes(learning_route: :route_steps).order(created_at: :desc) %>
+  <% if shared_routes.any? %>
+    <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(min(340px, 100%), 1fr)); gap:0.8rem;">
+      <% shared_routes.each do |sr| %>
+        <div style="background:rgba(255,255,255,0.5); border:1px solid rgba(28,24,18,0.05); border-radius:14px; padding:1.2rem;">
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:0.5rem;">
+            <h3 style="font-family:'DM Sans',sans-serif; font-weight:600; font-size:0.9rem; color:#1C1812; margin:0;">
+              <%= sr.learning_route.topic %>
+            </h3>
+            <span style="font-family:'DM Mono',monospace; font-size:0.6rem; padding:0.2rem 0.5rem; border-radius:6px; background:rgba(28,24,18,0.04); color:#6D665B;">
+              <%= t("community_engine.share_modal.visibility.#{sr.visibility}") %>
+            </span>
+          </div>
+          <div style="display:flex; align-items:center; gap:1rem; font-family:'DM Mono',monospace; font-size:0.65rem; color:#9B9590; margin-bottom:0.8rem;">
+            <span><%= sr.likes_count %> <%= t("community_engine.shared_routes_ui.likes") %></span>
+            <span><%= sr.comments_count %> <%= t("community_engine.shared_routes_ui.comments_label") %></span>
+            <span><%= sr.clones_count %> <%= t("community_engine.shared_routes_ui.clones") %></span>
+          </div>
+          <div style="display:flex; align-items:center; gap:0.5rem;">
+            <%= link_to community_engine.shared_route_path(sr.share_token),
+                  style: "font-family:'DM Sans',sans-serif; font-size:0.72rem; font-weight:500; color:#2C261E; text-decoration:none; padding:0.35rem 0.8rem; border-radius:8px; background:rgba(28,24,18,0.05); transition:background 0.15s;" do %>
+              <%= t("community_engine.feed.trending.view_route") %>
+            <% end %>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  <% else %>
+    <div style="text-align:center; padding:2.5rem;">
+      <p style="font-family:'DM Sans',sans-serif; font-size:0.82rem; color:#A09889; margin:0;">
+        <%= t("profile.no_shared_routes") %>
+      </p>
+    </div>
+  <% end %>
+</div>
 
 </div>
 

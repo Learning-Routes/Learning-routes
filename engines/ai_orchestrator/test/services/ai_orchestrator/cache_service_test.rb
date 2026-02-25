@@ -60,10 +60,10 @@ module AiOrchestrator
 
     test "different models have different cache keys" do
       CacheService.store(task_type: "lesson_content", prompt: "test", model: "gpt-5.2", response: "gpt")
-      CacheService.store(task_type: "lesson_content", prompt: "test", model: "claude-opus-4-6", response: "claude")
+      CacheService.store(task_type: "lesson_content", prompt: "test", model: "claude-opus-4-5", response: "claude")
 
       gpt = CacheService.fetch(task_type: "lesson_content", prompt: "test", model: "gpt-5.2")
-      claude = CacheService.fetch(task_type: "lesson_content", prompt: "test", model: "claude-opus-4-6")
+      claude = CacheService.fetch(task_type: "lesson_content", prompt: "test", model: "claude-opus-4-5")
 
       assert_equal "gpt", gpt[:content]
       assert_equal "claude", claude[:content]

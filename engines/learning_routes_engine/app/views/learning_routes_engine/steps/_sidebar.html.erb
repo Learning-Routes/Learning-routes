@@ -21,7 +21,7 @@
         <% if @step.bloom_level.to_i > 0 %>
           <div class="flex justify-between">
             <span class="text-gray-500"><%= t('learning_engine.sidebar.blooms') %></span>
-            <span class="text-gray-300"><%= Assessments::Question::BLOOM_LEVELS[@step.bloom_level.to_i] rescue "Level #{@step.bloom_level}" %></span>
+            <span class="text-gray-300"><%= Assessments::Question::BLOOM_LEVELS[@step.bloom_level.to_i] rescue t("units.level", n: @step.bloom_level) %></span>
           </div>
         <% end %>
       </div>

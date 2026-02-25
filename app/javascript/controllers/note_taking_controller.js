@@ -62,7 +62,7 @@ export default class extends Controller {
 
       if (response.ok && this.hasSavedIndicatorTarget) {
         this.savedIndicatorTarget.classList.remove("hidden")
-        this.savedIndicatorTarget.textContent = "Saved"
+
         this._indicatorTimeout = setTimeout(() => {
           if (this.hasSavedIndicatorTarget) this.savedIndicatorTarget.classList.add("hidden")
         }, 2000)

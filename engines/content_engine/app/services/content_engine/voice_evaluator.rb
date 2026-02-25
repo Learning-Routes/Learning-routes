@@ -1,116 +1,93 @@
 module ContentEngine
   class VoiceEvaluator
-    class EvaluationError < StandardError; end
+    def self.evaluate!(voice_response)
+      new(voice_response).evaluate!
+    end
 
     def initialize(voice_response)
       @response = voice_response
       @step = voice_response.route_step
-      @route = @step.learning_route
-      @profile = @route.learning_profile
-      @user = voice_response.user
     end
 
     def evaluate!
-      @response.update!(status: "evaluating")
+      @response.update!(status: "transcribing")
+      transcription = transcribe_audio
+      @response.update!(transcription: transcription, status: "evaluating")
 
-      begin
-        # Step 1: Transcribe audio if not already transcribed
-        transcription = @response.transcription
-        if transcription.blank?
-          transcription = transcribe_audio
-          @response.update!(transcription: transcription, status: "evaluating")
-        end
+      evaluation = evaluate_response(transcription)
 
-        # Step 2: Get lesson context for evaluation
-        ai_content = ContentEngine::AiContent.where(route_step: @step).by_type(:text).first
-        narration_data = ai_content&.metadata&.dig("narration") || {}
-
-        # Step 3: Evaluate via LLM prompt template
-        interaction = AiOrchestrator::Orchestrate.call(
-          task_type: :voice_evaluation,
-          variables: {
-            topic: @step.title,
-            module_name: @step.title,
-            key_points: (narration_data["key_points"] || []).join(", "),
-            discussion_question: (narration_data["discussion_questions"] || []).first.to_s,
-            transcription: transcription
-          },
-          user: @user,
-          async: false
-        )
-
-        unless interaction.completed?
-          raise EvaluationError, "Voice evaluation failed"
-        end
-
-        # Step 4: Parse and save evaluation
-        evaluation = parse_json_response(interaction.response)
-
-        @response.update!(
-          status: "completed",
-          score: evaluation["score"] || 0,
-          ai_evaluation: evaluation
-        )
-
-        @response
-      rescue => e
-        @response.update!(status: "failed")
-        Rails.logger.error("[VoiceEvaluator] Failed for response #{@response.id}: #{e.message}")
-        raise EvaluationError, "Voice evaluation failed: #{e.message}"
-      end
+      @response.update!(
+        ai_evaluation: evaluation,
+        score: evaluation["score"].to_i,
+        status: "completed"
+      )
+      @response
+    rescue => e
+      @response.update!(status: "failed")
+      raise e
     end
 
     private
 
     def transcribe_audio
-      # For now, use ElevenLabs speech-to-text or a simple fallback
-      # This can be extended to use Whisper or ElevenLabs STT
-      if @response.audio_blob_key.present?
-        transcribe_via_api(@response.audio_blob_key)
-      else
-        ""
+      audio_path = Rails.root.join("storage", "voice_responses", @response.audio_blob_key)
+      api_key = Rails.application.credentials.dig(:elevenlabs, :api_key) || ENV["ELEVENLABS_API_KEY"]
+
+      uri = URI("https://api.elevenlabs.io/v1/speech-to-text")
+
+      request = Net::HTTP::Post.new(uri)
+      request["xi-api-key"] = api_key
+
+      form_data = [
+        ["file", File.open(audio_path, "rb")],
+        ["model_id", "scribe_v1"]
+      ]
+      request.set_form(form_data, "multipart/form-data")
+
+      http = Net::HTTP.new(uri.hostname, uri.port)
+      http.use_ssl = true
+      http.read_timeout = 60
+      response = http.request(request)
+
+      unless response.is_a?(Net::HTTPSuccess)
+        raise "ElevenLabs STT error: #{response.code} - #{response.body}"
       end
+
+      JSON.parse(response.body)["text"]
     end
 
-    def transcribe_via_api(audio_key)
-      # Using ElevenLabs speech-to-text endpoint
-      api_key = Rails.application.credentials.dig(:elevenlabs, :api_key) || ENV["ELEVENLABS_API_KEY"]
-      audio_path = Rails.root.join("storage", "voice_responses", audio_key)
+    def evaluate_response(transcription)
+      content = @step.ai_contents.order(created_at: :desc).first
+      route = @step.learning_route
+      profile = route.learning_profile
 
-      return "" unless File.exist?(audio_path)
-
-      response = HTTParty.post(
-        "https://api.elevenlabs.io/v1/speech-to-text",
-        headers: {
-          "xi-api-key" => api_key
+      interaction = AiOrchestrator::Orchestrate.call(
+        task_type: :voice_evaluation,
+        variables: {
+          narration_script: content&.audio_transcript || content&.body || "",
+          discussion_question: content&.metadata&.dig("discussion_questions")&.first || "",
+          student_transcription: transcription,
+          student_level: profile&.current_level || "beginner",
+          locale: route.locale || "en"
         },
-        multipart: true,
-        body: {
-          file: File.open(audio_path, "rb"),
-          model_id: "scribe_v1"
-        },
-        timeout: 60
+        user: profile&.user,
+        async: false
       )
 
-      if response.success?
-        parsed = JSON.parse(response.body)
-        parsed["text"] || ""
-      else
-        Rails.logger.error("[VoiceEvaluator] Transcription failed: #{response.code}")
-        ""
+      unless interaction.completed?
+        raise "Voice evaluation failed: #{interaction.error_message}"
       end
-    rescue => e
-      Rails.logger.error("[VoiceEvaluator] Transcription error: #{e.message}")
-      ""
+
+      parse_json_response(interaction.response)
     end
 
     def parse_json_response(response_text)
-      json_match = response_text.match(/\{[\s\S]*\}/)
+      json_match = response_text.to_s.match(/\{[\s\S]*\}/)
       return {} unless json_match
 
       JSON.parse(json_match[0])
     rescue JSON::ParserError
-      { "feedback" => response_text, "score" => 0 }
+      { "score" => 0, "feedback" => response_text }
     end
   end
 end

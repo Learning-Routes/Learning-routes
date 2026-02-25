@@ -18,6 +18,18 @@
     </div>
   </div>
 
+
+<!-- Social actions -->
+<div class="flex items-center gap-3 mt-4">
+  <%= render "community_engine/likes/button", likeable: @route, liked: @route.liked_by?(current_user), likes_count: @route.likes.count %>
+  <button data-action="click->share#open"
+          class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[11px] text-sm font-medium text-gray-400 hover:text-white hover:bg-white/[0.06] border border-white/[0.06] transition-colors"
+          style="font-family: 'DM Sans', sans-serif;">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <%= t("community_engine.shared_routes_ui.share", default: "Share") %>
+  </button>
+</div>
+
   <!-- Due reviews -->
   <% if @due_reviews.any? %>
     <div class="mb-8 bg-amber-900/20 border border-amber-700/30 rounded-xl p-5">
@@ -99,4 +111,11 @@
       </div>
     <% end %>
   </div>
+
+<!-- Comments section -->
+<div class="mt-10 pt-8 border-t border-white/[0.06]">
+  <div class="[&_h3]:text-gray-200 [&_p]:text-gray-300 [&_span]:text-gray-400 [&_textarea]:bg-gray-900 [&_textarea]:border-gray-700 [&_textarea]:text-gray-200 [&_textarea]:placeholder-gray-500 [&_button[type=submit]]:bg-gray-700 [&_button[type=submit]]:text-gray-200">
+    <%= render "community_engine/comments/section", commentable: @route %>
+  </div>
+</div>
 </div>

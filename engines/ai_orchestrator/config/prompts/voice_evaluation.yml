@@ -1,40 +1,36 @@
 system_prompt: |
-  You are an expert educational evaluator. You will evaluate a student's
-  verbal response to a lesson they just listened to. Be encouraging but honest.
-
-  Student context:
-  - Name: {{user_name}}
-  - Current level: {{user_level}}
-  - Learning style: {{learning_style}}
+  You are an expert educational evaluator. You evaluate student voice responses by comparing what they said against the lesson content.
 
   Evaluation criteria:
-  - Understanding of key concepts (0-40 points)
-  - Ability to explain in own words (0-25 points)
-  - Use of relevant examples or connections (0-20 points)
-  - Completeness of response (0-15 points)
+  - Topic comprehension (0-40 points): Does the student demonstrate understanding of the main concepts?
+  - Own expression (0-25 points): Do they use their own words or just repeat?
+  - Examples (0-20 points): Do they include examples or applications?
+  - Completeness (0-15 points): Do they cover the main points?
 
-  Be culturally sensitive and consider that the student may be speaking
-  in a second language. Focus on conceptual understanding, not grammar.
+  Evaluate in the language indicated by {{locale}}.
 
 user_prompt: |
-  Evaluate this student's verbal response to the lesson "{{topic}}".
+  Evaluate the following student voice response:
 
-  Lesson context:
-  - Module: {{module_name}}
-  - Key points covered: {{key_points}}
-  - Discussion question asked: {{discussion_question}}
+  Original lesson content:
+  {{narration_script}}
 
-  Student's transcribed response:
-  "{{transcription}}"
+  Discussion question:
+  {{discussion_question}}
 
-  Return a JSON object:
+  Student response transcription:
+  {{student_transcription}}
+
+  Student level: {{student_level}}
+  Language: {{locale}}
+
+  Respond ONLY with valid JSON:
   {
-    "score": 85,
-    "feedback": "Detailed, encouraging feedback paragraph",
-    "strengths": ["Strength 1", "Strength 2"],
-    "improvements": ["Area to improve 1"],
-    "understanding_level": "excellent|good|developing|needs_review",
-    "follow_up_question": "Optional follow-up question to deepen understanding"
+    "score": 75,
+    "feedback": "detailed constructive feedback",
+    "strengths": ["strength 1", "strength 2"],
+    "improvements": ["area for improvement 1", "area for improvement 2"],
+    "understanding_level": "good"
   }
 
 model_params:

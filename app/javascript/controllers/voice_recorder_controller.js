@@ -1,161 +1,146 @@
 import { Controller } from "@hotwired/stimulus"
 
 // Voice Recorder Controller
-// Records user audio responses using MediaRecorder API
+// State machine: idle → recording → preview → submitting → evaluating → result
 export default class extends Controller {
   static targets = [
-    "recordBtn", "stopBtn", "submitBtn",
-    "preview", "previewAudio",
-    "timer", "status",
-    "idleState", "recordingState", "previewState", "submittingState",
-    "evaluatingState", "resultState"
+    "recordButton", "stopButton", "previewButton", "submitButton",
+    "timer", "waveform",
+    "stateIdle", "stateRecording", "statePreview",
+    "stateSubmitting", "stateEvaluating", "stateResult"
   ]
 
   static values = {
-    stepId: String,
     submitUrl: String,
-    maxDuration: { type: Number, default: 180 }, // 3 minutes max
-    micErrorMessage: { type: String, default: "Could not access microphone. Check your permissions." }
+    stepId: String,
+    evaluationUrl: String,
+    maxDuration: { type: Number, default: 120 }
   }
 
   connect() {
     this.mediaRecorder = null
     this.audioChunks = []
     this.recordingBlob = null
+    this.previewAudio = null
     this.timerInterval = null
     this.elapsedSeconds = 0
+    this.pollTimer = null
     this.stream = null
+    this.showState("idle")
   }
 
   disconnect() {
-    if (this.evalPollTimer) clearInterval(this.evalPollTimer)
-    this.stopRecording()
-    this.releaseStream()
+    this.cleanup()
   }
 
-  // --- Recording ---
+  // ── Recording ──
 
   async startRecording() {
     try {
       this.stream = await navigator.mediaDevices.getUserMedia({
-        audio: {
-          echoCancellation: true,
-          noiseSuppression: true,
-          sampleRate: 44100
-        }
+        audio: { echoCancellation: true, noiseSuppression: true, sampleRate: 44100 }
       })
 
       this.audioChunks = []
       this.mediaRecorder = new MediaRecorder(this.stream, {
-        mimeType: this.getSupportedMimeType()
+        mimeType: this._supportedMimeType()
       })
 
-      this.mediaRecorder.ondataavailable = (event) => {
-        if (event.data.size > 0) {
-          this.audioChunks.push(event.data)
-        }
+      this.mediaRecorder.ondataavailable = (e) => {
+        if (e.data.size > 0) this.audioChunks.push(e.data)
       }
 
       this.mediaRecorder.onstop = () => {
         this.recordingBlob = new Blob(this.audioChunks, { type: this.mediaRecorder.mimeType })
-        this.showPreview()
+        this.showState("preview")
       }
 
-      this.mediaRecorder.start(100) // collect data every 100ms
-      this.showRecording()
-      this.startTimer()
+      this.mediaRecorder.start(100)
+      this.showState("recording")
+      this._startTimer()
 
-      // Auto-stop after max duration
-      this.maxDurationTimeout = setTimeout(() => {
-        this.stopRecording()
-      }, this.maxDurationValue * 1000)
-
+      this._maxTimeout = setTimeout(() => this.stopRecording(), this.maxDurationValue * 1000)
     } catch (err) {
-      console.error("[VoiceRecorder] Microphone access denied:", err)
-      this.showMicError()
+      console.error("[VoiceRecorder] Mic access denied:", err)
     }
   }
 
   stopRecording() {
-    if (this.maxDurationTimeout) {
-      clearTimeout(this.maxDurationTimeout)
-    }
+    clearTimeout(this._maxTimeout)
 
-    if (this.mediaRecorder && this.mediaRecorder.state === "recording") {
+    if (this.mediaRecorder?.state === "recording") {
       this.mediaRecorder.stop()
     }
 
-    this.stopTimer()
+    this._stopTimer()
+    this._releaseStream()
   }
 
-  // --- Preview ---
+  // ── Preview ──
 
-  showPreview() {
-    if (this.recordingBlob && this.hasPreviewAudioTarget) {
-      const url = URL.createObjectURL(this.recordingBlob)
-      this.previewAudioTarget.src = url
+  playPreview() {
+    if (!this.recordingBlob) return
+
+    if (this.previewAudio) {
+      this.previewAudio.pause()
+      URL.revokeObjectURL(this.previewAudio.src)
     }
 
-    this.showState("preview")
-    this.releaseStream()
+    const url = URL.createObjectURL(this.recordingBlob)
+    this.previewAudio = new Audio(url)
+    this.previewAudio.play().catch(err => {
+      console.error("[VoiceRecorder] Preview playback failed:", err)
+    })
   }
 
-  reRecord() {
-    this.recordingBlob = null
-    this.audioChunks = []
-    this.showState("idle")
-  }
+  // ── Submit ──
 
-  // --- Submit ---
-
-  async submitRecording() {
+  async submit() {
     if (!this.recordingBlob) return
 
     this.showState("submitting")
 
     try {
       const formData = new FormData()
-      formData.append("audio_file", this.recordingBlob, `voice_response_${this.stepIdValue}.webm`)
-      formData.append("step_id", this.stepIdValue)
+      formData.append("audio", this.recordingBlob, `voice_${this.stepIdValue}.webm`)
+      formData.append("route_step_id", this.stepIdValue)
 
       const response = await fetch(this.submitUrlValue, {
         method: "POST",
         headers: {
-          "X-CSRF-Token": this.csrfToken(),
+          "X-CSRF-Token": this._csrfToken(),
           "Accept": "application/json"
         },
         body: formData
       })
 
-      const data = await response.json()
-
-      if (data.status === "evaluating") {
-        this.showState("evaluating")
-        this.startEvaluationPolling(data.voice_response_id)
-      } else {
-        this.showState("idle")
+      if (!response.ok) {
+        throw new Error(`Upload failed: ${response.status}`)
       }
+
+      const data = await response.json()
+      this.showState("evaluating")
+      this.pollEvaluation(data.id)
     } catch (err) {
       console.error("[VoiceRecorder] Submit failed:", err)
       this.showState("idle")
     }
   }
 
-  // --- Evaluation Polling ---
+  // ── Evaluation Polling ──
 
-  startEvaluationPolling(responseId) {
-    this.evalPollTimer = setInterval(async () => {
+  pollEvaluation(voiceResponseId) {
+    this.pollTimer = setInterval(async () => {
       try {
-        const response = await fetch(`/assessments/voice_responses/${responseId}`, {
-          headers: { "Accept": "application/json" }
-        })
+        const url = `${this.evaluationUrlValue}/${voiceResponseId}`
+        const response = await fetch(url, { headers: { "Accept": "application/json" } })
         const data = await response.json()
 
         if (data.status === "completed") {
-          clearInterval(this.evalPollTimer)
-          this.showEvaluationResult(data)
+          clearInterval(this.pollTimer)
+          this.showResult(data)
         } else if (data.status === "failed") {
-          clearInterval(this.evalPollTimer)
+          clearInterval(this.pollTimer)
           this.showState("idle")
         }
       } catch (err) {
@@ -164,104 +149,130 @@ export default class extends Controller {
     }, 3000)
   }
 
-  showEvaluationResult(data) {
+  // ── Result ──
+
+  showResult(data) {
     this.showState("result")
 
-    if (this.hasResultStateTarget) {
-      const el = this.resultStateTarget
-      const scoreEl = el.querySelector("[data-score]")
-      const feedbackEl = el.querySelector("[data-feedback]")
-      const transcriptEl = el.querySelector("[data-transcript]")
+    if (!this.hasStateResultTarget) return
 
-      if (scoreEl) scoreEl.textContent = `${data.score}/100`
-      if (feedbackEl) feedbackEl.textContent = data.evaluation?.feedback || ""
-      if (transcriptEl) transcriptEl.textContent = data.transcription || ""
+    const el = this.stateResultTarget
+    const scoreEl = el.querySelector("[data-score]")
+    const feedbackEl = el.querySelector("[data-feedback]")
+    const transcriptEl = el.querySelector("[data-transcript]")
+    const strengthsEl = el.querySelector("[data-strengths]")
+    const improvementsEl = el.querySelector("[data-improvements]")
+
+    if (scoreEl) scoreEl.textContent = `${data.score ?? 0}/100`
+    if (feedbackEl) feedbackEl.textContent = data.ai_evaluation?.feedback || ""
+    if (transcriptEl) transcriptEl.textContent = data.transcription || ""
+
+    if (strengthsEl && data.ai_evaluation?.strengths) {
+      strengthsEl.innerHTML = data.ai_evaluation.strengths
+        .map(s => `<li class="text-sm text-gray-300">+ ${this._escapeHtml(s)}</li>`)
+        .join("")
+    }
+
+    if (improvementsEl && data.ai_evaluation?.improvements) {
+      improvementsEl.innerHTML = data.ai_evaluation.improvements
+        .map(s => `<li class="text-sm text-gray-300">&rarr; ${this._escapeHtml(s)}</li>`)
+        .join("")
     }
   }
 
-  // --- Timer ---
+  // ── Retry ──
 
-  startTimer() {
+  retry() {
+    this.recordingBlob = null
+    this.audioChunks = []
+
+    if (this.previewAudio) {
+      this.previewAudio.pause()
+      URL.revokeObjectURL(this.previewAudio.src)
+      this.previewAudio = null
+    }
+
+    this.showState("idle")
+  }
+
+  // ── Timer ──
+
+  updateTimer() {
+    if (!this.hasTimerTarget) return
+    const remaining = Math.max(0, this.maxDurationValue - this.elapsedSeconds)
+    const mins = Math.floor(remaining / 60)
+    const secs = remaining % 60
+    this.timerTarget.textContent = `${mins}:${secs.toString().padStart(2, "0")}`
+  }
+
+  // ── State Management ──
+
+  showState(state) {
+    const states = ["idle", "recording", "preview", "submitting", "evaluating", "result"]
+
+    states.forEach(s => {
+      const hasMethod = `hasState${s.charAt(0).toUpperCase() + s.slice(1)}Target`
+      const targetMethod = `state${s.charAt(0).toUpperCase() + s.slice(1)}Target`
+
+      if (this[hasMethod]) {
+        this[targetMethod].classList.toggle("hidden", s !== state)
+      }
+    })
+  }
+
+  // ── Private ──
+
+  _startTimer() {
     this.elapsedSeconds = 0
-    this.updateTimerDisplay()
-
+    this.updateTimer()
     this.timerInterval = setInterval(() => {
       this.elapsedSeconds++
-      this.updateTimerDisplay()
-
-      if (this.elapsedSeconds >= this.maxDurationValue) {
-        this.stopRecording()
-      }
+      this.updateTimer()
+      if (this.elapsedSeconds >= this.maxDurationValue) this.stopRecording()
     }, 1000)
   }
 
-  stopTimer() {
+  _stopTimer() {
     if (this.timerInterval) {
       clearInterval(this.timerInterval)
       this.timerInterval = null
     }
   }
 
-  updateTimerDisplay() {
-    if (this.hasTimerTarget) {
-      const mins = Math.floor(this.elapsedSeconds / 60)
-      const secs = this.elapsedSeconds % 60
-      this.timerTarget.textContent = `${mins}:${secs.toString().padStart(2, "0")}`
-    }
-  }
-
-  // --- State Management ---
-
-  showState(state) {
-    const states = ["idle", "recording", "preview", "submitting", "evaluating", "result"]
-
-    states.forEach(s => {
-      const target = `${s}StateTarget`
-      const hasTarget = `has${s.charAt(0).toUpperCase() + s.slice(1)}StateTarget`
-
-      if (this[hasTarget] && this[target]) {
-        this[target].classList.toggle("hidden", s !== state)
-      }
-    })
-  }
-
-  showMicError() {
-    if (this.hasStatusTarget) {
-      this.statusTarget.textContent = this.micErrorMessageValue
-      this.statusTarget.classList.remove("hidden")
-    }
-  }
-
-  showRecording() {
-    this.showState("recording")
-  }
-
-  // --- Helpers ---
-
-  getSupportedMimeType() {
-    const types = [
-      "audio/webm;codecs=opus",
-      "audio/webm",
-      "audio/ogg;codecs=opus",
-      "audio/mp4"
-    ]
-
-    for (const type of types) {
-      if (MediaRecorder.isTypeSupported(type)) return type
-    }
-
-    return "audio/webm"
-  }
-
-  releaseStream() {
+  _releaseStream() {
     if (this.stream) {
       this.stream.getTracks().forEach(track => track.stop())
       this.stream = null
     }
   }
 
-  csrfToken() {
-    const meta = document.querySelector('meta[name="csrf-token"]')
-    return meta ? meta.content : ""
+  cleanup() {
+    clearTimeout(this._maxTimeout)
+    clearInterval(this.pollTimer)
+    this._stopTimer()
+    this._releaseStream()
+
+    if (this.previewAudio) {
+      this.previewAudio.pause()
+      URL.revokeObjectURL(this.previewAudio.src)
+    }
+  }
+
+  _supportedMimeType() {
+    const types = ["audio/webm;codecs=opus", "audio/webm", "audio/ogg;codecs=opus", "audio/mp4"]
+    for (const type of types) {
+      if (MediaRecorder.isTypeSupported(type)) return type
+    }
+    return "audio/webm"
+  }
+
+  _csrfToken() {
+    return document.querySelector('meta[name="csrf-token"]')?.content || ""
+  }
+
+  _escapeHtml(str) {
+    const div = document.createElement("div")
+    div.textContent = str
+    return div.innerHTML
   }
 }

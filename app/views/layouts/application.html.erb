@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="<%= I18n.locale %>">
   <head>
-    <title><%= content_for(:title) || "Learning Routes" %></title>
+    <title><%= content_for(:title) || t("layout.app_name") %></title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -50,7 +50,7 @@
           <div data-controller="flash"
                style="background:rgba(91,168,128,0.1); border:1px solid rgba(91,168,128,0.18); border-radius:12px; padding:0.75rem 1rem; margin-bottom:0.5rem; display:flex; align-items:center; justify-content:space-between;">
             <p style="font-family:'DM Sans',sans-serif; font-size:0.8rem; font-weight:500; color:#3D7A5A; margin:0;"><%= flash[:notice] %></p>
-            <button data-action="click->flash#dismiss" style="background:none; border:none; cursor:pointer; color:#3D7A5A; padding:0.2rem; opacity:0.6;" aria-label="Dismiss">
+            <button data-action="click->flash#dismiss" style="background:none; border:none; cursor:pointer; color:#3D7A5A; padding:0.2rem; opacity:0.6;" aria-label="<%= t(%(layout.dismiss)) %>">
               <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M3 3l8 8M11 3l-8 8"/></svg>
             </button>
           </div>
@@ -59,7 +59,7 @@
           <div data-controller="flash"
                style="background:rgba(176,96,80,0.08); border:1px solid rgba(176,96,80,0.15); border-radius:12px; padding:0.75rem 1rem; margin-bottom:0.5rem; display:flex; align-items:center; justify-content:space-between;">
             <p style="font-family:'DM Sans',sans-serif; font-size:0.8rem; font-weight:500; color:#B06050; margin:0;"><%= flash[:alert] %></p>
-            <button data-action="click->flash#dismiss" style="background:none; border:none; cursor:pointer; color:#B06050; padding:0.2rem; opacity:0.6;" aria-label="Dismiss">
+            <button data-action="click->flash#dismiss" style="background:none; border:none; cursor:pointer; color:#B06050; padding:0.2rem; opacity:0.6;" aria-label="<%= t(%(layout.dismiss)) %>">
               <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M3 3l8 8M11 3l-8 8"/></svg>
             </button>
           </div>

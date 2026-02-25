@@ -15,12 +15,15 @@ module ContentEngine
         formatter = RougeHTMLFormatter.new
         highlighted = formatter.format(lexer.lex(code))
 
+        copy_label = ERB::Util.html_escape(I18n.t("code_editor.copy"))
+        copied_label = ERB::Util.html_escape(I18n.t("code_editor.copied"))
+
         <<~HTML
-          <div class="code-block" data-controller="copy-code">
+          <div class="code-block" data-controller="copy-code" data-copy-code-copied-text-value="#{copied_label}">
             <div class="flex items-center justify-between px-4 py-2 border-b border-white/[0.06]">
               <span class="text-xs text-gray-500 font-mono">#{ERB::Util.html_escape(language)}</span>
               <button data-action="click->copy-code#copy" data-copy-code-target="button"
-                      class="text-xs text-gray-500 hover:text-white transition">Copy</button>
+                      class="text-xs text-gray-500 hover:text-white transition">#{copy_label}</button>
             </div>
             <pre class="p-5 text-sm leading-relaxed overflow-x-auto"><code data-copy-code-target="code">#{highlighted}</code></pre>
           </div>
@@ -52,6 +55,7 @@ module ContentEngine
                  img hr sup sub kbd mark abbr details summary],
         attributes: %w[href src alt title class style id target rel
                        data-controller data-action data-copy-code-target
+                       data-copy-code-copied-text-value
                        colspan rowspan]
       )
       sanitized.html_safe

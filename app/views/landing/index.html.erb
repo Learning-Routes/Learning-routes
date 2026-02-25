@@ -1,22 +1,22 @@
 <% content_for(:title, t("landing.page_title")) %>
 
 <% content_for(:head) do %>
-  <meta name="description" content="AI-powered personalized learning routes. Learn programming, math, languages, and more.">
-  <meta property="og:title" content="Learning Routes — Learn anything, the right way">
-  <meta property="og:description" content="AI-powered personalized learning routes. Learn programming, math, languages, and more.">
+  <meta name="description" content="<%= t('landing.meta_description') %>">
+  <meta property="og:title" content="<%= t('landing.og_title') %>">
+  <meta property="og:description" content="<%= t('landing.og_description') %>">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://learning-routes.com">
   <meta property="og:site_name" content="Learning Routes">
   <meta name="twitter:card" content="summary">
-  <meta name="twitter:title" content="Learning Routes — Learn anything, the right way">
-  <meta name="twitter:description" content="AI-powered personalized learning routes.">
+  <meta name="twitter:title" content="<%= t('landing.og_title') %>">
+  <meta name="twitter:description" content="<%= t('landing.twitter_description') %>">
   <script type="application/ld+json">
     {
       "@context": "https://schema.org",
       "@type": "WebApplication",
       "name": "Learning Routes",
       "url": "https://learning-routes.com",
-      "description": "AI-powered personalized learning routes. Learn programming, math, languages, and more.",
+      "description": "<%= j t('landing.meta_description') %>",
       "applicationCategory": "EducationalApplication",
       "operatingSystem": "Web",
       "offers": {

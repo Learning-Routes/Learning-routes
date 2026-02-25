@@ -3,7 +3,7 @@ require "test_helper"
 module AiOrchestrator
   class ModelRouterTest < ActiveSupport::TestCase
     test "returns primary model for assessment_questions" do
-      assert_equal "claude-opus-4-6", ModelRouter.model_for(:assessment_questions)
+      assert_equal "gpt-5.2", ModelRouter.model_for(:assessment_questions)
     end
 
     test "returns primary model for route_generation" do
@@ -11,11 +11,11 @@ module AiOrchestrator
     end
 
     test "returns primary model for quick_grading" do
-      assert_equal "claude-haiku-4-5", ModelRouter.model_for(:quick_grading)
+      assert_equal "gpt-5.1-codex-mini", ModelRouter.model_for(:quick_grading)
     end
 
     test "returns primary model for voice_narration" do
-      assert_equal "elevenlabs", ModelRouter.model_for(:voice_narration)
+      assert_equal "gpt-5.1-codex-mini", ModelRouter.model_for(:voice_narration)
     end
 
     test "returns primary model for image_generation" do
@@ -23,11 +23,11 @@ module AiOrchestrator
     end
 
     test "returns fallback for assessment_questions" do
-      assert_equal "gpt-5.2", ModelRouter.fallback_for(:assessment_questions)
+      assert_equal "gpt-5.1-codex-mini", ModelRouter.fallback_for(:assessment_questions)
     end
 
-    test "returns nil fallback for voice_narration" do
-      assert_nil ModelRouter.fallback_for(:voice_narration)
+    test "returns fallback for voice_narration" do
+      assert_equal "gpt-5.2", ModelRouter.fallback_for(:voice_narration)
     end
 
     test "returns fallback for image_generation" do
@@ -68,7 +68,7 @@ module AiOrchestrator
         "success"
       end
 
-      assert_equal "claude-haiku-4-5", yielded_model
+      assert_equal "gpt-5.1-codex-mini", yielded_model
     end
 
     test "execute falls back when primary raises" do
@@ -79,11 +79,11 @@ module AiOrchestrator
 
       router.execute do |model, params|
         models_tried << model
-        raise "API error" if model == "claude-opus-4-6"
+        raise "API error" if model == "gpt-5.2"
         "fallback success"
       end
 
-      assert_equal ["claude-opus-4-6", "gpt-5.2"], models_tried
+      assert_equal ["gpt-5.2", "gpt-5.1-codex-mini"], models_tried
     end
 
     test "execute raises AllModelsUnavailable when both fail" do
@@ -97,7 +97,7 @@ module AiOrchestrator
       end
     end
 
-    test "execute raises AllModelsUnavailable when no fallback available" do
+    test "execute raises AllModelsUnavailable when both models fail" do
       router = ModelRouter.new(task_type: :voice_narration)
       Rails.cache.clear
 

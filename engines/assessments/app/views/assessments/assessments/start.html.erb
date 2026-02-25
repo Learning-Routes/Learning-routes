@@ -5,7 +5,10 @@
     <!-- Questions area -->
     <div class="flex-1" data-controller="exam-timer question-nav"
          data-exam-timer-duration-seconds-value="<%= (@questions.count * 120).clamp(300, 3600) %>"
-         data-question-nav-total-questions-value="<%= @questions.count %>">
+         data-question-nav-total-questions-value="<%= @questions.count %>"
+         data-question-nav-saved-text-value="<%= t('assessments.exam.saved') %>"
+         data-question-nav-save-text-value="<%= t('assessments.exam.save_answer') %>"
+         data-question-nav-answered-template-value="<%= t('assessments.exam.answered_template') %>">
 
       <!-- Header with timer -->
       <div class="flex items-center justify-between mb-6">

@@ -1,137 +1,208 @@
 <%# Voice Recorder Component
      locals: step (RouteStep) %>
 
+<%= turbo_stream_from "step_content_#{step.id}" %>
+
 <div data-controller="voice-recorder"
      data-voice-recorder-step-id-value="<%= step.id %>"
-     data-voice-recorder-submit-url-value="<%= assessments.voice_responses_path(step_id: step.id) %>"
-     data-voice-recorder-max-duration-value="180"
-     data-voice-recorder-mic-error-message-value="<%= t("voice_recorder.mic_error") %>"
-     class="rounded-xl bg-gray-800/50 border border-white/[0.06] p-5">
+     data-voice-recorder-submit-url-value="<%= assessments.voice_responses_path(route_step_id: step.id) %>"
+     data-voice-recorder-evaluation-url-value="<%= assessments.voice_responses_path %>"
+     data-voice-recorder-max-duration-value="120"
+     class="rounded-[14px] p-5"
+     style="background: rgba(28,25,18,0.5); border: 1px solid rgba(232,228,220,0.06);">
 
-  <p class="text-xs font-medium text-gray-400 uppercase tracking-wider mb-4" style="font-family: 'DM Mono', monospace;">
+  <p class="text-xs font-medium uppercase tracking-wider mb-4"
+     style="color: #7A7264; font-family: 'DM Mono', monospace;">
     <%= t("voice_recorder.label") %>
   </p>
 
-  <!-- Idle State: Ready to record -->
-  <div data-voice-recorder-target="idleState">
+  <%# ── 1. Idle State ── %>
+  <div data-voice-recorder-target="stateIdle">
     <div class="flex flex-col items-center gap-3 py-4">
-      <p class="text-sm text-gray-400"><%= t("voice_recorder.prompt") %></p>
-      <button data-action="click->voice-recorder#startRecording"
-              class="w-16 h-16 rounded-full bg-red-500 hover:bg-red-400 flex items-center justify-center transition-all hover:scale-105 shadow-lg shadow-red-500/25">
+      <p class="text-sm" style="color: #7A7264; font-family: 'DM Sans', sans-serif;">
+        <%= t("voice_recorder.prompt") %>
+      </p>
+
+      <button data-voice-recorder-target="recordButton"
+              data-action="click->voice-recorder#startRecording"
+              class="w-16 h-16 rounded-full flex items-center justify-center transition-all hover:scale-105"
+              style="background: #EF4444; box-shadow: 0 8px 24px rgba(239,68,68,0.25);"
+              onmouseover="this.style.background='#F87171'" onmouseout="this.style.background='#EF4444'">
         <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"/>
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"/>
         </svg>
       </button>
-      <p class="text-xs text-gray-500"><%= t("voice_recorder.max_duration") %></p>
+
+      <p class="text-xs" style="color: #605848; font-family: 'DM Mono', monospace;">
+        <%= t("voice_recorder.max_duration") %>
+      </p>
     </div>
   </div>
 
-  <!-- Recording State -->
-  <div data-voice-recorder-target="recordingState" class="hidden">
+  <%# ── 2. Recording State ── %>
+  <div data-voice-recorder-target="stateRecording" class="hidden">
     <div class="flex flex-col items-center gap-4 py-4">
-      <!-- Recording indicator -->
+      <%# Recording indicator %>
       <div class="flex items-center gap-2">
-        <div class="w-3 h-3 rounded-full bg-red-500 animate-pulse"></div>
-        <span class="text-sm font-medium text-red-400"><%= t("voice_recorder.recording") %></span>
+        <div class="w-3 h-3 rounded-full animate-pulse" style="background: #EF4444;"></div>
+        <span class="text-sm font-medium" style="color: #F87171; font-family: 'DM Sans', sans-serif;">
+          <%= t("voice_recorder.recording") %>
+        </span>
       </div>
 
-      <!-- Waveform animation -->
-      <div class="flex items-center gap-0.5 h-12">
-        <% 20.times do |i| %>
-          <div class="w-1 bg-red-400 rounded-full animate-pulse"
-               style="height: <%= rand(8..48) %>px; animation-delay: <%= i * 0.05 %>s; animation-duration: <%= 0.5 + rand * 0.5 %>s"></div>
-        <% end %>
+      <%# Waveform animation (5 bars) %>
+      <div data-voice-recorder-target="waveform" class="flex items-end justify-center gap-1 h-12">
+        <div class="w-1.5 rounded-full animate-pulse" style="background: #F87171; height: 12px; animation-duration: 0.6s;"></div>
+        <div class="w-1.5 rounded-full animate-pulse" style="background: #F87171; height: 32px; animation-delay: 0.15s; animation-duration: 0.5s;"></div>
+        <div class="w-1.5 rounded-full animate-pulse" style="background: #F87171; height: 48px; animation-delay: 0.05s; animation-duration: 0.7s;"></div>
+        <div class="w-1.5 rounded-full animate-pulse" style="background: #F87171; height: 28px; animation-delay: 0.2s; animation-duration: 0.55s;"></div>
+        <div class="w-1.5 rounded-full animate-pulse" style="background: #F87171; height: 16px; animation-delay: 0.1s; animation-duration: 0.65s;"></div>
       </div>
 
-      <!-- Timer -->
-      <span data-voice-recorder-target="timer" class="text-lg font-mono text-white">0:00</span>
+      <%# Timer countdown %>
+      <span data-voice-recorder-target="timer" class="text-lg text-white" style="font-family: 'DM Mono', monospace;">
+        2:00
+      </span>
 
-      <!-- Stop button -->
-      <button data-action="click->voice-recorder#stopRecording"
-              class="w-14 h-14 rounded-full bg-gray-700 hover:bg-gray-600 flex items-center justify-center transition-colors">
-        <div class="w-5 h-5 rounded-sm bg-red-400"></div>
+      <%# Stop button %>
+      <button data-voice-recorder-target="stopButton"
+              data-action="click->voice-recorder#stopRecording"
+              class="w-14 h-14 rounded-full flex items-center justify-center transition-colors"
+              style="background: #2C261E;"
+              onmouseover="this.style.background='#3D362C'" onmouseout="this.style.background='#2C261E'">
+        <div class="w-5 h-5 rounded-sm" style="background: #F87171;"></div>
       </button>
     </div>
   </div>
 
-  <!-- Preview State -->
-  <div data-voice-recorder-target="previewState" class="hidden">
+  <%# ── 3. Preview State ── %>
+  <div data-voice-recorder-target="statePreview" class="hidden">
     <div class="flex flex-col items-center gap-4 py-4">
-      <p class="text-sm text-gray-400"><%= t("voice_recorder.listen_before_submit") %></p>
+      <p class="text-sm" style="color: #7A7264; font-family: 'DM Sans', sans-serif;">
+        <%= t("voice_recorder.listen_before_submit") %>
+      </p>
 
-      <!-- Audio preview -->
-      <audio data-voice-recorder-target="previewAudio" controls class="w-full max-w-sm" style="height: 40px;"></audio>
-
-      <!-- Actions -->
+      <%# Action buttons %>
       <div class="flex items-center gap-3">
-        <button data-action="click->voice-recorder#reRecord"
-                class="px-4 py-2 text-sm font-medium text-gray-400 hover:text-white bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors">
+        <%# Play preview %>
+        <button data-voice-recorder-target="previewButton"
+                data-action="click->voice-recorder#playPreview"
+                class="w-11 h-11 rounded-full flex items-center justify-center transition-colors"
+                style="background: #2C261E;"
+                onmouseover="this.style.background='#3D362C'" onmouseout="this.style.background='#2C261E'">
+          <svg class="w-5 h-5 ml-0.5" style="color: #E8E4DC;" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M8 5v14l11-7z"/>
+          </svg>
+        </button>
+
+        <%# Re-record %>
+        <button data-action="click->voice-recorder#retry"
+                class="px-4 py-2.5 text-sm font-medium transition-colors rounded-[11px]"
+                style="color: #7A7264; background: #2C261E; font-family: 'DM Sans', sans-serif;"
+                onmouseover="this.style.background='#3D362C';this.style.color='#E8E4DC'" onmouseout="this.style.background='#2C261E';this.style.color='#7A7264'">
           <%= t("voice_recorder.re_record") %>
         </button>
-        <button data-action="click->voice-recorder#submitRecording"
-                class="px-5 py-2 text-sm font-semibold text-white bg-indigo-500 hover:bg-indigo-400 rounded-lg transition-colors">
+
+        <%# Submit %>
+        <button data-voice-recorder-target="submitButton"
+                data-action="click->voice-recorder#submit"
+                class="px-5 py-2.5 text-sm font-semibold text-white transition-colors rounded-[11px]"
+                style="background: #6366F1; font-family: 'DM Sans', sans-serif;"
+                onmouseover="this.style.background='#818CF8'" onmouseout="this.style.background='#6366F1'">
           <%= t("voice_recorder.submit_response") %>
         </button>
       </div>
     </div>
   </div>
 
-  <!-- Submitting State -->
-  <div data-voice-recorder-target="submittingState" class="hidden">
+  <%# ── 4. Submitting State ── %>
+  <div data-voice-recorder-target="stateSubmitting" class="hidden">
     <div class="flex flex-col items-center gap-3 py-6">
-      <div class="w-8 h-8 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
-      <p class="text-sm text-gray-400"><%= t("voice_recorder.submitting") %></p>
+      <div class="w-8 h-8 rounded-full animate-spin"
+           style="border: 2px solid #6366F1; border-top-color: transparent;"></div>
+      <p class="text-sm" style="color: #7A7264; font-family: 'DM Sans', sans-serif;">
+        <%= t("voice_recorder.submitting") %>
+      </p>
     </div>
   </div>
 
-  <!-- Evaluating State -->
-  <div data-voice-recorder-target="evaluatingState" class="hidden">
+  <%# ── 5. Evaluating State ── %>
+  <div data-voice-recorder-target="stateEvaluating" class="hidden">
     <div class="flex flex-col items-center gap-3 py-6">
       <div class="relative">
-        <div class="w-12 h-12 rounded-full bg-purple-500/20 animate-ping absolute inset-0"></div>
-        <div class="w-12 h-12 rounded-full bg-purple-500/30 flex items-center justify-center relative">
-          <svg class="w-6 h-6 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+        <div class="w-12 h-12 rounded-full animate-ping absolute inset-0" style="background: rgba(168,85,247,0.15);"></div>
+        <div class="w-12 h-12 rounded-full flex items-center justify-center relative" style="background: rgba(168,85,247,0.2);">
+          <svg class="w-6 h-6" style="color: #C084FC;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
           </svg>
         </div>
       </div>
-      <p class="text-sm text-gray-300"><%= t("voice_recorder.evaluating") %></p>
-      <p class="text-xs text-gray-500"><%= t("voice_recorder.evaluating_detail") %></p>
+      <p class="text-sm" style="color: #E8E4DC; font-family: 'DM Sans', sans-serif;">
+        <%= t("voice_recorder.evaluating") %>
+      </p>
+      <p class="text-xs" style="color: #605848; font-family: 'DM Sans', sans-serif;">
+        <%= t("voice_recorder.evaluating_detail") %>
+      </p>
     </div>
   </div>
 
-  <!-- Result State -->
-  <div data-voice-recorder-target="resultState" class="hidden">
+  <%# ── 6. Result State ── %>
+  <div data-voice-recorder-target="stateResult" class="hidden">
     <div class="py-4 space-y-4">
-      <!-- Score -->
+
+      <%# Score circle — JS fills data-score with "NN/100", color set by controller %>
       <div class="text-center">
-        <p class="text-3xl font-bold text-white" data-score></p>
-        <p class="text-xs text-gray-500 mt-1"><%= t("voice_recorder.score_label") %></p>
+        <div class="inline-flex items-center justify-center w-20 h-20 rounded-full"
+             style="border: 2px solid #7A7264;">
+          <span class="text-2xl font-bold" style="color: #E8E4DC; font-family: 'DM Sans', sans-serif;" data-score></span>
+        </div>
+        <p class="text-xs mt-2" style="color: #605848; font-family: 'DM Mono', monospace;">
+          <%= t("voice_recorder.score_label") %>
+        </p>
       </div>
 
-      <!-- Feedback -->
-      <div class="rounded-lg bg-gray-900/50 p-4">
-        <p class="text-sm text-gray-300 leading-relaxed" data-feedback></p>
+      <%# Feedback %>
+      <div class="rounded-[11px] p-4" style="background: rgba(28,25,18,0.6);">
+        <p class="text-sm leading-relaxed" style="color: #B0A898; font-family: 'DM Sans', sans-serif;" data-feedback></p>
       </div>
 
-      <!-- Transcript -->
-      <details class="rounded-lg bg-gray-900/50">
-        <summary class="px-4 py-2 text-xs text-gray-500 cursor-pointer hover:text-gray-400">
+      <%# Strengths %>
+      <div>
+        <p class="text-xs font-medium mb-1.5" style="color: #4ADE80; font-family: 'DM Mono', monospace;">
+          <%= t("voice_evaluation.strengths") %>
+        </p>
+        <ul data-strengths class="space-y-1"></ul>
+      </div>
+
+      <%# Improvements %>
+      <div>
+        <p class="text-xs font-medium mb-1.5" style="color: #FACC15; font-family: 'DM Mono', monospace;">
+          <%= t("voice_evaluation.improvements") %>
+        </p>
+        <ul data-improvements class="space-y-1"></ul>
+      </div>
+
+      <%# Transcript %>
+      <details class="rounded-[11px]" style="background: rgba(28,25,18,0.6);">
+        <summary class="px-4 py-2 text-xs cursor-pointer transition-colors"
+                 style="color: #605848; font-family: 'DM Sans', sans-serif;"
+                 onmouseover="this.style.color='#7A7264'" onmouseout="this.style.color='#605848'">
           <%= t("voice_recorder.view_transcript") %>
         </summary>
-        <p class="px-4 pb-3 text-sm text-gray-400" data-transcript></p>
+        <p class="px-4 pb-3 text-sm italic" style="color: #7A7264; font-family: 'DM Sans', sans-serif;" data-transcript></p>
       </details>
 
-      <!-- Try again -->
+      <%# Retry button %>
       <div class="text-center">
-        <button data-action="click->voice-recorder#reRecord"
-                class="text-sm text-indigo-400 hover:text-indigo-300 transition-colors">
+        <button data-action="click->voice-recorder#retry"
+                class="text-sm transition-colors"
+                style="color: #818CF8; font-family: 'DM Sans', sans-serif;"
+                onmouseover="this.style.color='#A5B4FC'" onmouseout="this.style.color='#818CF8'">
           <%= t("voice_recorder.try_again") %>
         </button>
       </div>
     </div>
   </div>
-
-  <!-- Status messages -->
-  <div data-voice-recorder-target="status" class="hidden mt-3 text-center text-sm text-red-400"></div>
 </div>
