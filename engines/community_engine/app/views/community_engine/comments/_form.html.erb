@@ -3,10 +3,10 @@
   <%= form_with url: community_engine.comments_path, method: :post do |f| %>
     <div id="comment_form_errors"></div>
 
-    <%= f.hidden_field :commentable_type, value: commentable.class.name %>
-    <%= f.hidden_field :commentable_id, value: commentable.id %>
+    <input type="hidden" name="comment[commentable_type]" value="<%= commentable.class.name %>">
+    <input type="hidden" name="comment[commentable_id]" value="<%= commentable.id %>">
     <% if parent_id %>
-      <%= f.hidden_field :parent_id, value: parent_id %>
+      <input type="hidden" name="comment[parent_id]" value="<%= parent_id %>">
     <% end %>
 
     <textarea name="comment[body]"
