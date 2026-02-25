@@ -77,6 +77,106 @@
   }
 }
 
+/* ==========================================================================
+   DARK THEME — Override CSS custom properties when [data-theme="dark"]
+   Triggered by theme toggle or system preference (via Stimulus controller)
+   ========================================================================== */
+
+html[data-theme="dark"] {
+  --color-bg: #1A1710;
+  --color-card: #221F18;
+  --color-txt: #E8E4DC;
+  --color-sub: #A09889;
+  --color-muted: #706858;
+  --color-faint: #3D3730;
+  --color-accent: #E8E4DC;
+  --color-accent-text: #1A1710;
+  --color-link: #D4A84B;
+}
+
+html[data-theme="dark"] ::selection {
+  background: rgba(200, 180, 140, 0.2);
+}
+
+/* Dark nav scroll state */
+html[data-theme="dark"] .nav-scrolled {
+  background: rgba(26, 23, 16, 0.92);
+  border-bottom-color: rgba(255, 255, 255, 0.06);
+}
+
+/* Dark card hover */
+html[data-theme="dark"] .card-hover:hover {
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3), 0 2px 8px rgba(0, 0, 0, 0.2);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Dark auth components */
+html[data-theme="dark"] .auth-card {
+  background: rgba(34, 31, 24, 0.85);
+  border-color: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+html[data-theme="dark"] .auth-input {
+  background: #2A2620;
+  border-color: rgba(255, 255, 255, 0.1);
+  color: #E8E4DC;
+}
+html[data-theme="dark"] .auth-input::placeholder {
+  color: #706858;
+}
+html[data-theme="dark"] .auth-input:focus {
+  border-color: rgba(255, 255, 255, 0.2);
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.04);
+}
+
+html[data-theme="dark"] .auth-btn {
+  background: #E8E4DC;
+  color: #1A1710;
+}
+
+html[data-theme="dark"] .auth-google-btn {
+  background: #2A2620;
+  border-color: rgba(255, 255, 255, 0.1);
+  color: #E8E4DC;
+}
+
+/* Dark nav links */
+html[data-theme="dark"] .nav-link:hover {
+  color: #E8E4DC !important;
+}
+
+/* Dark footer links */
+html[data-theme="dark"] .footer-link:hover {
+  color: #E8E4DC !important;
+}
+html[data-theme="dark"] .social-link:hover {
+  color: #E8E4DC !important;
+}
+
+/* Dark background texture (suppress on dark) */
+html[data-theme="dark"] .theme-bg-texture {
+  opacity: 0.4;
+}
+
+/* Dark border variants */
+html[data-theme="dark"] .border-lr {
+  border-color: rgba(255, 255, 255, 0.06);
+}
+html[data-theme="dark"] .border-lr-hover {
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+/* App navbar — theme-aware backgrounds */
+.app-navbar {
+  background: rgba(245, 241, 235, 0.88);
+  border-bottom: 1px solid rgba(28, 24, 18, 0.04);
+}
+html[data-theme="dark"] .app-navbar {
+  background: rgba(26, 23, 16, 0.92);
+  border-bottom-color: rgba(255, 255, 255, 0.06);
+}
+
 /* --- Reduced motion: disable all animations for users who prefer it --- */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {

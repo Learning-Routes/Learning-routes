@@ -20,15 +20,20 @@ class ProfilesController < ApplicationController
     @active_routes = @routes.select(&:active?)
     @completed_routes = @routes.select(&:completed?)
 
-    # Stats
-    @total_steps_completed = @routes.sum { |r| r.route_steps.count(&:completed?) }
+    # Pre-compute completed steps per route in a single query
+    route_ids = @routes.map(&:id)
+    completed_by_route = LearningRoutesEngine::RouteStep
+      .where(learning_route_id: route_ids, status: :completed)
+      .group(:learning_route_id)
+      .count
+
+    @total_steps_completed = completed_by_route.values.sum
     @total_steps = @routes.sum(&:total_steps)
     @study_minutes = Analytics::StudySession.for_user(@user).sum(:duration_minutes)
     @assessment_results = Assessments::AssessmentResult.for_user(@user)
     @avg_accuracy = @assessment_results.any? ? @assessment_results.average(:score).to_f.round(1) : 0
 
-    # Per-route stats for route cards
-    route_ids = @routes.map(&:id)
+    # Per-route stats for route cards (no N+1)
     study_minutes_by_route = Analytics::StudySession.for_user(@user)
                                .where(learning_route_id: route_ids)
                                .group(:learning_route_id)
@@ -37,7 +42,7 @@ class ProfilesController < ApplicationController
     @routes.each do |r|
       @route_stats[r.id] = {
         study_minutes: study_minutes_by_route[r.id] || 0,
-        lessons_completed: r.route_steps.count(&:completed?),
+        lessons_completed: completed_by_route[r.id] || 0,
         accuracy: @avg_accuracy
       }
     end
@@ -57,16 +62,25 @@ class ProfilesController < ApplicationController
     # Streak
     @streak = calculate_streak
     @member_since = @user.created_at
+
+    # Shared routes for the "Share My Routes" feature
+    @shared_routes = current_user.shared_routes.includes(:learning_route).order(created_at: :desc)
+    @shareable_routes = @routes.reject { |r| @shared_routes.any? { |sr| sr.learning_route_id == r.id } }
   end
 
   private
 
-  # --- Tab data loaders (for Turbo Frame requests) ---
-
   def load_achievements_data
     @routes = @profile&.learning_routes&.includes(:route_steps)&.order(updated_at: :desc) || []
     @completed_routes = @routes.select(&:completed?)
-    @total_steps_completed = @routes.sum { |r| r.route_steps.count(&:completed?) }
+
+    route_ids = @routes.map(&:id)
+    completed_by_route = LearningRoutesEngine::RouteStep
+      .where(learning_route_id: route_ids, status: :completed)
+      .group(:learning_route_id)
+      .count
+    @total_steps_completed = completed_by_route.values.sum
+
     @study_minutes = Analytics::StudySession.for_user(@user).sum(:duration_minutes)
     @assessment_results = Assessments::AssessmentResult.for_user(@user)
     @avg_accuracy = @assessment_results.any? ? @assessment_results.average(:score).to_f.round(1) : 0
@@ -76,8 +90,6 @@ class ProfilesController < ApplicationController
   def load_activity_data
     @routes = @profile&.learning_routes&.includes(:route_steps)&.order(updated_at: :desc) || []
   end
-
-  # --- XP helpers ---
 
   def xp_threshold(level)
     (level * level * 50)

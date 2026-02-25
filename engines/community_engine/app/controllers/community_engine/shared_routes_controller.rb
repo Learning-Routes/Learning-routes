@@ -3,7 +3,9 @@ module CommunityEngine
     skip_before_action :authenticate_user!, only: [:show]
 
     def create
-      route = LearningRoutesEngine::LearningRoute.find(params[:learning_route_id])
+      route = current_user.learning_profile&.learning_routes&.find_by(id: params[:learning_route_id])
+      return head(:forbidden) unless route
+
       @shared_route = RouteSharer.share!(route, current_user, visibility: params[:visibility] || "public", description: params[:description])
 
       ActivityTracker.track!(user: current_user, action: "shared", trackable: @shared_route)
@@ -19,11 +21,17 @@ module CommunityEngine
       @shared_route = SharedRoute.find_by!(share_token: params[:id])
       @route = @shared_route.learning_route
       @steps = @route.route_steps.order(:position)
-      @comments = @shared_route.comments.top_level.includes(:user, :replies).recent
+      @comments = @shared_route.comments.top_level.includes(:user, replies: :user).recent
     end
 
     def clone
       shared_route = SharedRoute.find(params[:id])
+
+      # Only allow cloning public/unlisted shared routes
+      unless shared_route.visibility.in?(%w[public unlisted])
+        return head(:forbidden)
+      end
+
       new_route = RouteSharer.clone!(shared_route, current_user)
 
       ActivityTracker.track!(user: current_user, action: "cloned_route", trackable: shared_route)

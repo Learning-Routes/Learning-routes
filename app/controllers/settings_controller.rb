@@ -19,6 +19,9 @@ class SettingsController < ApplicationController
       cookies[:locale] = { value: @user.locale, expires: 1.year.from_now }
       I18n.locale = @user.locale.to_sym
 
+      # Sync theme cookie with DB value
+      cookies[:theme] = { value: @user.theme, expires: 1.year.from_now }
+
       redirect_to settings_path, notice: t("settings.saved")
     else
       render :edit, status: :unprocessable_entity
@@ -46,7 +49,7 @@ class SettingsController < ApplicationController
   end
 
   def user_params
-    params.require(:user).permit(:name, :email, :locale, :timezone)
+    params.require(:user).permit(:name, :email, :locale, :timezone, :theme)
   end
 
   def profile_params

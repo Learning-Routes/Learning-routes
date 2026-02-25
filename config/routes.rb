@@ -11,6 +11,9 @@ Rails.application.routes.draw do
   # Locale switcher
   patch "locale", to: "locale#update", as: :locale
 
+  # Theme switcher
+  patch "theme", to: "theme#update", as: :theme
+
   # Dashboard
   get "dashboard", to: redirect("/profile"), as: :dashboard
 

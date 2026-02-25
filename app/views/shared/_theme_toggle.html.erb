@@ -1,0 +1,30 @@
+<%# Theme toggle — cycles: system → light → dark → system %>
+<%
+  current_theme = if current_user
+    current_user.theme
+  else
+    cookies[:theme] || "system"
+  end
+  next_theme = case current_theme
+               when "system" then "light"
+               when "light"  then "dark"
+               when "dark"   then "system"
+               else "system"
+               end
+%>
+<%= button_to main_app.theme_path, method: :patch, params: { theme: next_theme },
+    style: "font-family:'DM Mono',monospace; font-size:0.65rem; font-weight:500; letter-spacing:0.8px;
+            color:var(--color-muted, #A09889); background:transparent; border:1px solid rgba(160,152,137,0.2);
+            border-radius:8px; padding:0.3rem 0.6rem; cursor:pointer; transition:all 0.2s;
+            line-height:1; display:inline-flex; align-items:center; gap:0.3rem;",
+    class: "theme-toggle",
+    title: t("theme_toggle.switch_to_#{next_theme}"),
+    data: { turbo: false } do %>
+  <% if current_theme == "system" %>
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+  <% elsif current_theme == "light" %>
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+  <% else %>
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+  <% end %>
+<% end %>

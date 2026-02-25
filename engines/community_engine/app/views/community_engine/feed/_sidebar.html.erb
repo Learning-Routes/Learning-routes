@@ -1,4 +1,158 @@
 <div style="display:flex; flex-direction:column; gap:1.25rem;">
+  <%# Share My Routes — button + modal %>
+  <% if current_user %>
+    <%
+      profile = current_user.learning_profile
+      shareable_routes = profile&.learning_routes&.where(status: "active")&.order(updated_at: :desc) || []
+      already_shared_ids = current_user.shared_routes.pluck(:learning_route_id)
+      unsahred_routes = shareable_routes.reject { |r| already_shared_ids.include?(r.id) }
+    %>
+    <div data-controller="share"
+         data-share-url-value="<%= community_engine.shared_routes_path %>"
+         data-share-route-id-value="">
+      <button data-action="click->share#open"
+              style="width:100%; display:flex; align-items:center; justify-content:center; gap:0.5rem;
+                     font-family:'DM Sans',sans-serif; font-size:0.82rem; font-weight:600; color:#F5F1EB;
+                     background:#2C261E; border:none; border-radius:11px; padding:0.75rem 1rem;
+                     cursor:pointer; transition:all 0.2s; box-shadow:0 1px 3px rgba(28,24,18,0.12);">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/>
+          <polyline points="16 6 12 2 8 6"/>
+          <line x1="12" y1="2" x2="12" y2="15"/>
+        </svg>
+        <%= t("community_engine.feed.sidebar.share_my_routes") %>
+      </button>
+
+      <%# Share modal (hidden by default) %>
+      <div data-share-target="modal" class="hidden"
+           style="position:fixed; inset:0; z-index:200; display:flex; align-items:center; justify-content:center; padding:1rem;"
+           data-action="keydown.esc->share#close click->share#closeOnOutsideClick">
+
+        <%# Backdrop %>
+        <div style="position:absolute; inset:0; background:rgba(0,0,0,0.5); backdrop-filter:blur(4px);"></div>
+
+        <%# Modal card %>
+        <div style="position:relative; background:white; border-radius:20px; width:100%; max-width:440px; max-height:80vh; overflow-y:auto;
+                    box-shadow:0 24px 48px rgba(0,0,0,0.2);">
+
+          <%# Header %>
+          <div style="display:flex; align-items:center; justify-content:space-between; padding:1.25rem 1.5rem; border-bottom:1px solid rgba(28,24,18,0.06);">
+            <h3 style="font-family:'DM Sans',sans-serif; font-weight:700; font-size:1.05rem; color:#1C1812; margin:0;">
+              <%= t("community_engine.share_modal.title") %>
+            </h3>
+            <button data-action="click->share#close" style="color:#9B9590; background:none; border:none; cursor:pointer; padding:0.2rem;">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+            </button>
+          </div>
+
+          <%# Form view %>
+          <div data-share-target="formView" style="padding:1.25rem 1.5rem;">
+            <%# Route picker %>
+            <% if unsahred_routes.any? %>
+              <p style="font-family:'DM Sans',sans-serif; font-size:0.78rem; font-weight:500; color:#6D665B; margin:0 0 0.6rem;">
+                <%= t("community_engine.share_modal.select_route") %>
+              </p>
+              <div style="display:flex; flex-direction:column; gap:0.5rem; margin-bottom:1.2rem; max-height:200px; overflow-y:auto;">
+                <% unsahred_routes.each do |route| %>
+                  <button type="button"
+                          data-action="click->share#selectRoute"
+                          data-share-target="routeSelect"
+                          data-route-id="<%= route.id %>"
+                          style="display:flex; align-items:center; gap:0.6rem; padding:0.7rem 0.9rem; border-radius:11px;
+                                 border:1px solid rgba(28,24,18,0.1); background:transparent; cursor:pointer; transition:all 0.15s; text-align:left;">
+                    <div style="width:32px; height:32px; border-radius:8px; background:rgba(91,168,128,0.12); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#5BA880" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v8M8 12h8"/></svg>
+                    </div>
+                    <div style="flex:1; min-width:0;">
+                      <p style="font-family:'DM Sans',sans-serif; font-size:0.82rem; font-weight:500; color:#1C1812; margin:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+                        <%= route.localized_topic %>
+                      </p>
+                      <p style="font-family:'DM Mono',monospace; font-size:0.62rem; color:#9B9590; margin:0.15rem 0 0;">
+                        <%= route.route_steps.count %> <%= t("community_engine.share_modal.steps") %>
+                      </p>
+                    </div>
+                  </button>
+                <% end %>
+              </div>
+            <% else %>
+              <p style="font-family:'DM Sans',sans-serif; font-size:0.82rem; color:#9B9590; text-align:center; padding:1rem 0; margin:0 0 1rem;">
+                <%= t("community_engine.share_modal.all_shared") %>
+              </p>
+            <% end %>
+
+            <%# Visibility selector %>
+            <p style="font-family:'DM Sans',sans-serif; font-size:0.78rem; font-weight:500; color:#6D665B; margin:0 0 0.5rem;">
+              <%= t("community_engine.share_modal.visibility_label") %>
+            </p>
+            <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:0.4rem; margin-bottom:1rem;">
+              <% [
+                ["public", t("community_engine.share_modal.visibility.public"), t("community_engine.share_modal.visibility.public_desc")],
+                ["unlisted", t("community_engine.share_modal.visibility.unlisted"), t("community_engine.share_modal.visibility.unlisted_desc")],
+                ["private", t("community_engine.share_modal.visibility.private"), t("community_engine.share_modal.visibility.private_desc")]
+              ].each do |value, label, desc| %>
+                <button type="button"
+                        data-action="click->share#selectVisibility"
+                        data-share-target="visibilityBtn"
+                        data-visibility="<%= value %>"
+                        style="padding:0.65rem 0.5rem; border-radius:11px; border:1px solid <%= value == 'public' ? '#2C261E' : '#E0DBCF' %>;
+                               background:<%= value == 'public' ? 'rgba(44,38,30,0.05)' : 'transparent' %>;
+                               cursor:pointer; text-align:center; transition:all 0.15s;">
+                  <span style="display:block; font-family:'DM Sans',sans-serif; font-size:0.78rem; font-weight:500; color:#1C1812;"><%= label %></span>
+                  <span style="display:block; font-family:'DM Mono',monospace; font-size:0.55rem; color:#9B9590; margin-top:0.2rem;"><%= desc %></span>
+                </button>
+              <% end %>
+            </div>
+
+            <%# Description %>
+            <textarea data-share-target="description"
+                      placeholder="<%= t('community_engine.share_modal.description_placeholder') %>"
+                      rows="2"
+                      style="width:100%; box-sizing:border-box; padding:0.7rem 0.9rem; border-radius:11px; border:1px solid rgba(28,24,18,0.1);
+                             font-family:'DM Sans',sans-serif; font-size:0.82rem; color:#1C1812; background:#F9F7F3; resize:none; outline:none;
+                             transition:border-color 0.2s; margin-bottom:1rem;"></textarea>
+
+            <%# Submit %>
+            <% if unsahred_routes.any? %>
+              <button data-action="click->share#submit"
+                      data-share-target="submitBtn"
+                      style="width:100%; padding:0.75rem 1rem; border-radius:11px; border:none; background:#2C261E; color:#F5F1EB;
+                             font-family:'DM Sans',sans-serif; font-size:0.85rem; font-weight:600; cursor:pointer; transition:all 0.2s;">
+                <%= t("community_engine.share_modal.share_btn") %>
+              </button>
+            <% end %>
+          </div>
+
+          <%# Success view %>
+          <div data-share-target="successView" class="hidden" style="padding:1.5rem; text-align:center;">
+            <div style="width:48px; height:48px; margin:0 auto 0.75rem; border-radius:50%; background:rgba(91,168,128,0.12);
+                        display:flex; align-items:center; justify-content:center;">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+            </div>
+            <p style="font-family:'DM Sans',sans-serif; font-size:0.88rem; font-weight:500; color:#1C1812; margin:0 0 1rem;">
+              <%= t("community_engine.share_modal.success") %>
+            </p>
+            <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:1rem;">
+              <input type="text" data-share-target="urlField" readonly
+                     style="flex:1; padding:0.6rem 0.8rem; border-radius:11px; border:1px solid rgba(28,24,18,0.1);
+                            font-family:'DM Mono',monospace; font-size:0.75rem; color:#1C1812; background:#F9F7F3; outline:none;">
+              <button data-action="click->share#copyUrl" data-share-target="copyBtn"
+                      style="flex-shrink:0; padding:0.6rem 1rem; border-radius:11px; border:none; background:#2C261E; color:#F5F1EB;
+                             font-family:'DM Sans',sans-serif; font-size:0.78rem; font-weight:500; cursor:pointer;">
+                <%= t("community_engine.share_modal.copy") %>
+              </button>
+            </div>
+            <button data-action="click->share#close"
+                    style="width:100%; padding:0.65rem 1rem; border-radius:11px; border:1px solid rgba(28,24,18,0.1);
+                           background:transparent; font-family:'DM Sans',sans-serif; font-size:0.82rem; font-weight:500;
+                           color:#1C1812; cursor:pointer; transition:all 0.2s;">
+              <%= t("community_engine.share_modal.done") %>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  <% end %>
+
   <%# Top learners %>
   <div style="background:rgba(255,255,255,0.6); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); border:1px solid rgba(28,24,18,0.06); border-radius:14px; padding:1.25rem;">
     <h3 style="font-family:'DM Sans',sans-serif; font-weight:700; font-size:0.82rem; color:#1C1812; margin:0 0 1rem;">
