@@ -19,7 +19,7 @@ export default class extends Controller {
     this.activeTabValue = tab
 
     // Load content via Turbo Frame
-    const url = tab === "all" ? "/community/feed" : `/community/feed/${tab}`
+    const url = tab === "all" ? "/community_engine/feed" : `/community_engine/feed/${tab}`
     const frame = this.contentTarget.querySelector("turbo-frame")
     if (frame) frame.src = url
   }

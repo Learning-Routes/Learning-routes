@@ -9,7 +9,7 @@
     <%# === Left: Logo === %>
     <%= link_to main_app.root_path, style: "display:flex; align-items:center; gap:0.5rem; text-decoration:none;" do %>
       <%= render "shared/logo", size: 28 %>
-      <span style="font-family:'DM Sans',sans-serif; font-weight:800; font-size:0.95rem; letter-spacing:-0.6px; color:#1C1812;">Learning Routes</span>
+      <span style="font-family:'DM Sans',sans-serif; font-weight:800; font-size:0.95rem; letter-spacing:-0.6px; color:var(--color-txt, #1C1812);">Learning Routes</span>
     <% end %>
 
     <%# === Center: Nav links (desktop) === %>
@@ -25,7 +25,7 @@
       <% nav_links.each do |link| %>
         <% is_active = link[:match] && controller_name == link[:match] %>
         <%= link_to link[:path],
-            style: "position:relative; font-family:'DM Sans',sans-serif; font-size:0.78rem; font-weight:#{is_active ? '600' : '400'}; color:#{is_active ? '#1C1812' : '#A09889'}; text-decoration:none; padding:0.35rem 0; transition:color 0.2s;",
+            style: "position:relative; font-family:'DM Sans',sans-serif; font-size:0.78rem; font-weight:#{is_active ? '600' : '400'}; color:#{is_active ? 'var(--color-txt, #1C1812)' : 'var(--color-muted, #A09889)'}; text-decoration:none; padding:0.35rem 0; transition:color 0.2s;",
             class: "nav-link" do %>
           <%= link[:label] %>
           <% if is_active %>
@@ -50,7 +50,7 @@
 
       <%# Sign out (desktop) %>
       <%= button_to core.sign_out_path, method: :delete,
-          style: "font-family:'DM Sans',sans-serif; font-size:0.72rem; font-weight:500; color:#A09889; background:none; border:none; cursor:pointer; padding:0.3rem 0; transition:color 0.2s;",
+          style: "font-family:'DM Sans',sans-serif; font-size:0.72rem; font-weight:500; color:var(--color-muted, #A09889); background:none; border:none; cursor:pointer; padding:0.3rem 0; transition:color 0.2s;",
           class: "hidden md:block nav-link" do %>
         <%= t("nav.sign_out") %>
       <% end %>
@@ -63,7 +63,7 @@
       </div>
 
       <%# Settings gear (desktop) %>
-      <%= link_to main_app.settings_path, style: "color:#A09889; transition:color 0.2s; padding:0.2rem;", class: "hidden md:inline-flex nav-link", title: t("nav.settings") do %>
+      <%= link_to main_app.settings_path, style: "color:var(--color-muted, #A09889); transition:color 0.2s; padding:0.2rem;", class: "hidden md:inline-flex nav-link", title: t("nav.settings") do %>
         <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
         </svg>
@@ -74,14 +74,14 @@
       <%= link_to main_app.profile_path, style: "text-decoration:none;" do %>
         <div style="width:32px; height:32px; border-radius:10px; background:linear-gradient(135deg, rgba(139,128,196,0.2), rgba(110,155,200,0.2)); display:flex; align-items:center; justify-content:center; flex-shrink:0; transition:transform 0.15s;"
              class="avatar-hover">
-          <span style="font-family:'DM Sans',sans-serif; font-weight:700; font-size:0.7rem; color:#6D665B; letter-spacing:0.3px;"><%= initials %></span>
+          <span style="font-family:'DM Sans',sans-serif; font-weight:700; font-size:0.7rem; color:var(--color-sub, #6D665B); letter-spacing:0.3px;"><%= initials %></span>
         </div>
       <% end %>
 
       <%# Mobile hamburger %>
       <button data-action="click->app-nav#toggleMenu"
               data-app-nav-target="menuBtn"
-              style="padding:0.4rem; margin-right:-0.4rem; color:#1C1812; background:none; border:none; cursor:pointer;"
+              style="padding:0.4rem; margin-right:-0.4rem; color:var(--color-txt, #1C1812); background:none; border:none; cursor:pointer;"
               class="inline-flex md:hidden" aria-label="<%= t("layout.menu_aria") %>" aria-expanded="false" aria-controls="app-mobile-menu">
         <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true">
           <path d="M3 6h14M3 10h14M3 14h14"/>
@@ -91,7 +91,7 @@
   </div>
 
   <%# === Mobile menu === %>
-  <div id="app-mobile-menu" data-app-nav-target="menu" style="display:none; border-top:1px solid rgba(28,24,18,0.04); padding:0.75rem clamp(1rem,3vw,2.25rem) 1rem;" class="md:hidden">
+  <div id="app-mobile-menu" data-app-nav-target="menu" style="display:none; border-top:1px solid var(--color-faint, rgba(28,24,18,0.04)); padding:0.75rem clamp(1rem,3vw,2.25rem) 1rem;" class="md:hidden">
     <div style="display:flex; flex-direction:column; gap:0.5rem;">
       <%
         nav_links = [
@@ -104,17 +104,17 @@
       <% nav_links.each do |link| %>
         <% is_active = link[:match] && controller_name == link[:match] %>
         <%= link_to link[:label], link[:path],
-            style: "font-family:'DM Sans',sans-serif; font-size:0.88rem; font-weight:#{is_active ? '600' : '400'}; color:#{is_active ? '#1C1812' : '#6D665B'}; text-decoration:none; padding:0.45rem 0; transition:color 0.2s;" %>
+            style: "font-family:'DM Sans',sans-serif; font-size:0.88rem; font-weight:#{is_active ? '600' : '400'}; color:#{is_active ? 'var(--color-txt, #1C1812)' : 'var(--color-sub, #6D665B)'}; text-decoration:none; padding:0.45rem 0; transition:color 0.2s;" %>
       <% end %>
       <%= link_to t("nav.settings"), main_app.settings_path,
-          style: "font-family:'DM Sans',sans-serif; font-size:0.88rem; font-weight:#{controller_name == 'settings' ? '600' : '400'}; color:#{controller_name == 'settings' ? '#1C1812' : '#6D665B'}; text-decoration:none; padding:0.45rem 0; transition:color 0.2s;" %>
+          style: "font-family:'DM Sans',sans-serif; font-size:0.88rem; font-weight:#{controller_name == 'settings' ? '600' : '400'}; color:#{controller_name == 'settings' ? 'var(--color-txt, #1C1812)' : 'var(--color-sub, #6D665B)'}; text-decoration:none; padding:0.45rem 0; transition:color 0.2s;" %>
       <div style="display:flex; align-items:center; gap:0.6rem; padding:0.45rem 0;">
         <%= render "shared/theme_toggle" %>
         <%= render "shared/locale_toggle" %>
       </div>
-      <div style="padding-top:0.5rem; border-top:1px solid rgba(28,24,18,0.04); margin-top:0.25rem;">
+      <div style="padding-top:0.5rem; border-top:1px solid var(--color-faint, rgba(28,24,18,0.04)); margin-top:0.25rem;">
         <%= button_to t("nav.sign_out"), core.sign_out_path, method: :delete,
-            style: "font-family:'DM Sans',sans-serif; font-size:0.88rem; font-weight:400; color:#A09889; background:none; border:none; cursor:pointer; padding:0.45rem 0;" %>
+            style: "font-family:'DM Sans',sans-serif; font-size:0.88rem; font-weight:400; color:var(--color-muted, #A09889); background:none; border:none; cursor:pointer; padding:0.45rem 0;" %>
       </div>
     </div>
   </div>

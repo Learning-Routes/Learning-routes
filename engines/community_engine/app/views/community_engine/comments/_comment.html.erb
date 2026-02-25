@@ -1,36 +1,39 @@
-<div id="comment_<%= comment.id %>" class="flex gap-3 py-4 <%= comment.parent_id? ? 'ml-10 border-l-2 border-[#E8E4DC] pl-4' : '' %>">
+<div id="comment_<%= comment.id %>"
+     style="display:flex; gap:0.75rem; padding:1rem 0; <%= comment.parent_id? ? 'margin-left:2.5rem; border-left:2px solid var(--color-faint, #E8E4DC); padding-left:1rem;' : '' %>">
   <%# Avatar %>
-  <div class="flex-shrink-0 w-8 h-8 rounded-full bg-[#2C261E] flex items-center justify-center text-[#F5F1EB] text-xs font-bold"
-       style="font-family: 'DM Sans', sans-serif;">
+  <div style="flex-shrink:0; width:32px; height:32px; border-radius:50%; background:var(--color-accent, #2C261E);
+              display:flex; align-items:center; justify-content:center; color:var(--color-accent-text, #F5F1EB);
+              font-family:'DM Sans',sans-serif; font-size:0.65rem; font-weight:700;">
     <%= comment.user.name.first.upcase %>
   </div>
 
-  <div class="flex-1 min-w-0">
+  <div style="flex:1; min-width:0;">
     <%# Header: name + time + edited badge %>
-    <div class="flex items-center gap-2 mb-1">
-      <span class="text-sm font-semibold text-[#1C1812]" style="font-family: 'DM Sans', sans-serif;">
+    <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.3rem;">
+      <span style="font-family:'DM Sans',sans-serif; font-size:0.82rem; font-weight:600; color:var(--color-txt, #1C1812);">
         <%= comment.user.name %>
       </span>
-      <span class="text-xs text-[#9B9590]" style="font-family: 'DM Mono', monospace;">
+      <span style="font-family:'DM Mono',monospace; font-size:0.65rem; color:var(--color-muted, #9B9590);">
         <%= time_ago_in_words(comment.created_at) %>
       </span>
       <% if comment.edited? %>
-        <span class="text-[10px] text-[#9B9590] bg-[#E8E4DC] px-1.5 py-0.5 rounded-md" style="font-family: 'DM Mono', monospace;"><%= t("community_engine.comments.edited") %></span>
+        <span style="font-family:'DM Mono',monospace; font-size:0.55rem; color:var(--color-muted, #9B9590); background:var(--color-faint, rgba(28,24,18,0.06)); padding:0.15rem 0.4rem; border-radius:6px;">
+          <%= t("community_engine.comments.edited") %>
+        </span>
       <% end %>
     </div>
 
     <%# Body %>
-    <p class="text-sm text-[#3D3730] leading-relaxed mb-2" style="font-family: 'DM Sans', sans-serif;">
+    <p data-comment-body style="font-family:'DM Sans',sans-serif; font-size:0.82rem; color:var(--color-sub, #3D3730); line-height:1.6; margin:0 0 0.5rem;">
       <%= simple_format(comment.body, {}, wrapper_tag: "span") %>
     </p>
 
     <%# Actions %>
-    <div class="flex items-center gap-3">
+    <div style="display:flex; align-items:center; gap:0.75rem;">
       <%= render "community_engine/likes/button", likeable: comment, liked: (defined?(current_user) && current_user ? comment.liked_by?(current_user) : false), likes_count: comment.likes_count %>
 
       <% if comment.top_level? %>
-        <button class="text-xs text-[#6B6560] hover:text-[#1C1812] transition-colors"
-                style="font-family: 'DM Sans', sans-serif;"
+        <button style="font-family:'DM Sans',sans-serif; font-size:0.72rem; color:var(--color-muted, #6B6560); background:none; border:none; cursor:pointer; padding:0.2rem 0; transition:color 0.2s;"
                 data-action="click->comment-reply#show"
                 data-comment-id="<%= comment.id %>">
           <%= t("community_engine.comments.reply") %>
@@ -38,15 +41,13 @@
       <% end %>
 
       <% if defined?(current_user) && current_user && comment.owned_by?(current_user) %>
-        <button class="text-xs text-[#6B6560] hover:text-[#1C1812] transition-colors"
-                style="font-family: 'DM Sans', sans-serif;"
+        <button style="font-family:'DM Sans',sans-serif; font-size:0.72rem; color:var(--color-muted, #6B6560); background:none; border:none; cursor:pointer; padding:0.2rem 0; transition:color 0.2s;"
                 data-action="click->comment-edit#show"
                 data-comment-id="<%= comment.id %>">
           <%= t("community_engine.comments.edit") %>
         </button>
         <%= button_to community_engine.comment_path(comment), method: :delete,
-              class: "text-xs text-[#6B6560] hover:text-red-500 transition-colors",
-              style: "font-family: 'DM Sans', sans-serif;",
+              style: "font-family:'DM Sans',sans-serif; font-size:0.72rem; color:var(--color-muted, #6B6560); background:none; border:none; cursor:pointer; padding:0.2rem 0; transition:color 0.2s;",
               data: { turbo_confirm: t("community_engine.comments.delete_confirm") } do %>
           <%= t("community_engine.comments.delete") %>
         <% end %>
@@ -54,13 +55,13 @@
     </div>
 
     <%# Reply form placeholder %>
-    <div id="reply_form_<%= comment.id %>" class="hidden mt-3">
+    <div id="reply_form_<%= comment.id %>" style="display:none; margin-top:0.75rem;">
       <%= render "community_engine/comments/form", commentable: comment.commentable, parent_id: comment.id %>
     </div>
 
     <%# Nested replies (max 2 levels) %>
     <% if comment.top_level? && comment.replies.any? %>
-      <div class="mt-3 space-y-0">
+      <div style="margin-top:0.75rem;">
         <% comment.replies.order(created_at: :asc).each do |reply| %>
           <%= render "community_engine/comments/comment", comment: reply %>
         <% end %>

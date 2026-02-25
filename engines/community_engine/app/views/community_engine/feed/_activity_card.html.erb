@@ -1,41 +1,44 @@
-<div style="background:rgba(255,255,255,0.6); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); border:1px solid rgba(28,24,18,0.06); border-radius:14px; padding:1rem 1.2rem; transition:box-shadow 0.15s;">
+<div style="background:var(--color-card, rgba(255,255,255,0.6)); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px);
+            border:1px solid var(--color-faint, rgba(28,24,18,0.06)); border-radius:14px; padding:1rem 1.2rem; transition:box-shadow 0.15s;">
   <div style="display:flex; align-items:flex-start; gap:0.75rem;">
     <%# Avatar %>
-    <div style="width:36px; height:36px; border-radius:50%; background:#2C261E; display:flex; align-items:center; justify-content:center; color:#F5F1EB; font-family:'DM Sans',sans-serif; font-size:0.7rem; font-weight:700; flex-shrink:0;">
+    <div style="width:36px; height:36px; border-radius:50%; background:var(--color-accent, #2C261E);
+                display:flex; align-items:center; justify-content:center; color:var(--color-accent-text, #F5F1EB);
+                font-family:'DM Sans',sans-serif; font-size:0.7rem; font-weight:700; flex-shrink:0;">
       <%= activity.user.name.to_s.first&.upcase || "?" %>
     </div>
 
     <div style="flex:1; min-width:0;">
       <%# Action line %>
-      <p style="font-family:'DM Sans',sans-serif; font-size:0.82rem; color:#3D3730; margin:0 0 0.2rem; line-height:1.5;">
-        <span style="font-weight:600; color:#1C1812;"><%= activity.user.name %></span>
-        <span style="color:#6B6560;"> <%= activity.action_text %></span>
+      <p style="font-family:'DM Sans',sans-serif; font-size:0.82rem; color:var(--color-sub, #3D3730); margin:0 0 0.2rem; line-height:1.5;">
+        <span style="font-weight:600; color:var(--color-txt, #1C1812);"><%= activity.user.name %></span>
+        <span style="color:var(--color-muted, #6B6560);"> <%= activity.action_text %></span>
         <% if activity.trackable.present? %>
           <% case activity.trackable %>
           <% when LearningRoutesEngine::LearningRoute %>
-            <span style="font-weight:500; color:#2C261E;"><%= activity.trackable.localized_topic %></span>
+            <span style="font-weight:500; color:var(--color-txt, #2C261E);"><%= activity.trackable.localized_topic %></span>
           <% when LearningRoutesEngine::RouteStep %>
-            <span style="font-weight:500; color:#2C261E;"><%= activity.trackable.localized_title %></span>
+            <span style="font-weight:500; color:var(--color-txt, #2C261E);"><%= activity.trackable.localized_title %></span>
           <% when CommunityEngine::SharedRoute %>
-            <span style="font-weight:500; color:#2C261E;"><%= activity.trackable.learning_route&.localized_topic %></span>
+            <span style="font-weight:500; color:var(--color-txt, #2C261E);"><%= activity.trackable.learning_route&.localized_topic %></span>
           <% when Core::User %>
-            <span style="font-weight:500; color:#2C261E;"><%= activity.trackable.name %></span>
+            <span style="font-weight:500; color:var(--color-txt, #2C261E);"><%= activity.trackable.name %></span>
           <% else %>
             <% if activity.metadata&.dig("preview").present? %>
-              <span style="font-weight:500; color:#2C261E;"><%= activity.metadata["preview"].truncate(60) %></span>
+              <span style="font-weight:500; color:var(--color-txt, #2C261E);"><%= activity.metadata["preview"].truncate(60) %></span>
             <% end %>
           <% end %>
         <% end %>
       </p>
 
       <%# Timestamp %>
-      <span style="font-family:'DM Mono',monospace; font-size:0.65rem; color:#9B9590;">
+      <span style="font-family:'DM Mono',monospace; font-size:0.65rem; color:var(--color-muted, #9B9590);">
         <%= time_ago_in_words(activity.created_at) %>
       </span>
     </div>
 
     <%# Action icon %>
-    <div style="flex-shrink:0; color:#9B9590;">
+    <div style="flex-shrink:0; color:var(--color-muted, #9B9590);">
       <% case activity.action %>
       <% when "commented" %>
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" stroke-linecap="round" stroke-linejoin="round"/></svg>

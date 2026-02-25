@@ -6,16 +6,18 @@
       <% end %>
     </div>
   <% else %>
-    <div style="background:rgba(255,255,255,0.6); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); border:1px solid rgba(28,24,18,0.06); border-radius:14px; padding:3rem 2rem; text-align:center;">
-      <div style="width:48px; height:48px; margin:0 auto 1rem; border-radius:14px; background:rgba(28,24,18,0.04); display:flex; align-items:center; justify-content:center;">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#9B9590" stroke-width="1.5">
+    <div style="background:var(--color-card, rgba(255,255,255,0.6)); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px);
+                border:1px solid var(--color-faint, rgba(28,24,18,0.06)); border-radius:14px; padding:3rem 2rem; text-align:center;">
+      <div style="width:48px; height:48px; margin:0 auto 1rem; border-radius:14px; background:var(--color-faint, rgba(28,24,18,0.04));
+                  display:flex; align-items:center; justify-content:center;">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--color-muted, #9B9590)" stroke-width="1.5">
           <path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
       </div>
-      <p style="font-family:'DM Sans',sans-serif; font-size:0.88rem; font-weight:600; color:#1C1812; margin:0 0 0.3rem;">
+      <p style="font-family:'DM Sans',sans-serif; font-size:0.88rem; font-weight:600; color:var(--color-txt, #1C1812); margin:0 0 0.3rem;">
         <%= t("community_engine.feed.empty.title") %>
       </p>
-      <p style="font-family:'DM Sans',sans-serif; font-size:0.78rem; color:#9B9590; margin:0; max-width:320px; margin-left:auto; margin-right:auto; line-height:1.5;">
+      <p style="font-family:'DM Sans',sans-serif; font-size:0.78rem; color:var(--color-muted, #9B9590); margin:0; max-width:320px; margin-left:auto; margin-right:auto; line-height:1.5;">
         <%= t("community_engine.feed.empty.subtitle") %>
       </p>
     </div>

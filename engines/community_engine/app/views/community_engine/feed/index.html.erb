@@ -8,14 +8,14 @@
 <div style="max-width:1100px; margin:0 auto; padding:2rem 1.5rem;">
   <%# Page header %>
   <div style="margin-bottom:2rem;">
-    <h1 style="font-family:'DM Sans',sans-serif; font-weight:700; font-size:1.5rem; letter-spacing:-0.5px; color:#1C1812; margin:0 0 0.4rem;">
+    <h1 style="font-family:'DM Sans',sans-serif; font-weight:700; font-size:1.5rem; letter-spacing:-0.5px; color:var(--color-txt, #1C1812); margin:0 0 0.4rem;">
       <%= t("community_engine.feed.title") %>
     </h1>
-    <div style="display:flex; align-items:center; gap:0.75rem; font-family:'DM Mono',monospace; font-size:0.7rem; color:#9B9590;">
+    <div style="display:flex; align-items:center; gap:0.75rem; font-family:'DM Mono',monospace; font-size:0.7rem; color:var(--color-muted, #9B9590);">
       <span><%= @stats[:total_users] %> <%= t("community_engine.feed.stats.learners") %></span>
-      <span style="width:3px; height:3px; border-radius:50%; background:#CCC5B8;"></span>
+      <span style="width:3px; height:3px; border-radius:50%; background:var(--color-faint, #CCC5B8);"></span>
       <span><%= @stats[:total_routes] %> <%= t("community_engine.feed.stats.routes") %></span>
-      <span style="width:3px; height:3px; border-radius:50%; background:#CCC5B8;"></span>
+      <span style="width:3px; height:3px; border-radius:50%; background:var(--color-faint, #CCC5B8);"></span>
       <span><%= @stats[:total_shared] %> <%= t("community_engine.feed.stats.shared") %></span>
     </div>
   </div>
@@ -24,7 +24,8 @@
     <%# Main content area %>
     <div style="flex:1; min-width:0;">
       <%# Tab bar %>
-      <div style="display:flex; align-items:center; gap:0.25rem; margin-bottom:1.5rem; padding:0.25rem; background:rgba(28,24,18,0.04); border-radius:14px; width:fit-content;">
+      <div style="display:flex; align-items:center; gap:0.25rem; margin-bottom:1.5rem; padding:0.25rem;
+                  background:var(--color-faint, rgba(28,24,18,0.04)); border-radius:14px; width:fit-content;">
         <% [
           ["all", t("community_engine.feed.tabs.all")],
           ["following", t("community_engine.feed.tabs.following")],
@@ -32,7 +33,7 @@
         ].each do |tab_id, tab_label| %>
           <% active = @tab == tab_id %>
           <%= link_to community_engine.feed_path(tab: (tab_id == "all" ? nil : tab_id)),
-                style: "display:inline-block; padding:0.5rem 1.25rem; border-radius:11px; font-family:'DM Sans',sans-serif; font-size:0.82rem; font-weight:500; text-decoration:none; transition:all 0.15s; #{active ? 'background:#2C261E; color:#F5F1EB; box-shadow:0 1px 3px rgba(0,0,0,0.1);' : 'color:#6B6560;'}",
+                style: "display:inline-block; padding:0.5rem 1.25rem; border-radius:11px; font-family:'DM Sans',sans-serif; font-size:0.82rem; font-weight:500; text-decoration:none; transition:all 0.15s; #{active ? "background:var(--color-accent, #2C261E); color:var(--color-accent-text, #F5F1EB); box-shadow:0 1px 3px rgba(0,0,0,0.1);" : "color:var(--color-muted, #6B6560);"}",
                 data: { turbo_action: "replace" } do %>
             <%= tab_label %>
           <% end %>

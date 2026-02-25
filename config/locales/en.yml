@@ -1188,6 +1188,8 @@ en:
       delete: "Delete"
       delete_confirm: "Delete this comment?"
       edited: "(edited)"
+      cancel: "Cancel"
+      save: "Save"
     follows:
       follow: "Follow"
       following: "Following"
@@ -1251,6 +1253,7 @@ en:
       clones: "clones"
       login_to_comment: "Log in to leave a comment."
       share: "Share"
+      back_to_feed: "Back to feed"
     share_modal:
       title: "Share Route"
       select_route: "Select a route to share"

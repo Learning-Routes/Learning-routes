@@ -11,24 +11,29 @@ export default class extends Controller {
 
   disconnect() {
     if (this.polling) clearInterval(this.polling)
+    document.removeEventListener("click", this._boundClose)
   }
 
   toggle(event) {
     event.preventDefault()
+    event.stopPropagation()
     this.open = !this.open
     if (this.hasDropdownTarget) {
-      this.dropdownTarget.classList.toggle("hidden", !this.open)
+      this.dropdownTarget.style.display = this.open ? "block" : "none"
     }
     if (this.open) {
-      document.addEventListener("click", this.closeOnOutsideClick)
+      this._boundClose = this.closeOnOutsideClick.bind(this)
+      document.addEventListener("click", this._boundClose)
+    } else {
+      document.removeEventListener("click", this._boundClose)
     }
   }
 
-  closeOnOutsideClick = (event) => {
+  closeOnOutsideClick(event) {
     if (!this.element.contains(event.target)) {
       this.open = false
-      if (this.hasDropdownTarget) this.dropdownTarget.classList.add("hidden")
-      document.removeEventListener("click", this.closeOnOutsideClick)
+      if (this.hasDropdownTarget) this.dropdownTarget.style.display = "none"
+      document.removeEventListener("click", this._boundClose)
     }
   }
 
@@ -38,7 +43,7 @@ export default class extends Controller {
       .then(data => {
         if (this.hasBadgeTarget) {
           this.badgeTarget.textContent = data.count > 99 ? "99+" : data.count
-          this.badgeTarget.classList.toggle("hidden", data.count === 0)
+          this.badgeTarget.style.display = data.count === 0 ? "none" : "inline-block"
         }
       })
       .catch(() => {})
@@ -47,28 +52,28 @@ export default class extends Controller {
   markRead(event) {
     const id = event.currentTarget.dataset.notificationId
     const token = document.querySelector('meta[name="csrf-token"]')?.content
-    fetch(`/community/notifications/${id}/mark_read`, {
+    fetch(`/community_engine/notifications/${id}/mark_read`, {
       method: "PATCH",
       headers: { "X-CSRF-Token": token }
     })
-    event.currentTarget.classList.remove("bg-amber-50/10")
-    event.currentTarget.classList.add("opacity-60")
+    event.currentTarget.style.background = "transparent"
+    event.currentTarget.style.opacity = "0.5"
   }
 
   markAllRead(event) {
     event.preventDefault()
     const token = document.querySelector('meta[name="csrf-token"]')?.content
-    fetch("/community/notifications/mark_all_read", {
+    fetch("/community_engine/notifications/mark_all_read", {
       method: "POST",
       headers: { "X-CSRF-Token": token }
     }).then(() => {
       if (this.hasBadgeTarget) {
         this.badgeTarget.textContent = "0"
-        this.badgeTarget.classList.add("hidden")
+        this.badgeTarget.style.display = "none"
       }
       this.element.querySelectorAll(".notification-item").forEach(el => {
-        el.classList.remove("bg-amber-50/10")
-        el.classList.add("opacity-60")
+        el.style.background = "transparent"
+        el.style.opacity = "0.5"
       })
     })
   }

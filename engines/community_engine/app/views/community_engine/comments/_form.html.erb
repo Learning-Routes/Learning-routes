@@ -1,6 +1,6 @@
 <% parent_id = local_assigns[:parent_id] %>
 <div id="comment_form_<%= commentable.class.name.parameterize %>_<%= commentable.id %><%= parent_id ? "_reply_#{parent_id}" : '' %>">
-  <%= form_with url: community_engine.comments_path, method: :post, class: "space-y-3" do |f| %>
+  <%= form_with url: community_engine.comments_path, method: :post do |f| %>
     <div id="comment_form_errors"></div>
 
     <%= f.hidden_field :commentable_type, value: commentable.class.name %>
@@ -13,13 +13,14 @@
               placeholder="<%= parent_id ? t('community_engine.comments.reply_placeholder') : t('community_engine.comments.placeholder') %>"
               required
               rows="3"
-              class="w-full px-4 py-3 rounded-[14px] bg-[#F5F1EB] border border-[#E0DBCF] text-sm text-[#1C1812] placeholder-[#9B9590] focus:outline-none focus:ring-2 focus:ring-[#2C261E]/20 focus:border-[#2C261E] resize-none"
-              style="font-family: 'DM Sans', sans-serif;"></textarea>
+              style="width:100%; box-sizing:border-box; padding:0.7rem 0.9rem; border-radius:14px; border:1px solid var(--color-faint, rgba(28,24,18,0.08));
+                     background:var(--color-bg, #F5F1EB); color:var(--color-txt, #1C1812); font-family:'DM Sans',sans-serif; font-size:0.82rem;
+                     resize:none; outline:none; transition:border-color 0.2s; margin-bottom:0.5rem;"></textarea>
 
-    <div class="flex justify-end">
+    <div style="display:flex; justify-content:flex-end;">
       <button type="submit"
-              class="px-4 py-2 rounded-[11px] bg-[#2C261E] text-[#F5F1EB] text-sm font-medium hover:bg-[#3D3730] transition-colors"
-              style="font-family: 'DM Sans', sans-serif;">
+              style="padding:0.5rem 1rem; border-radius:11px; border:none; background:var(--color-accent, #2C261E); color:var(--color-accent-text, #F5F1EB);
+                     font-family:'DM Sans',sans-serif; font-size:0.82rem; font-weight:500; cursor:pointer; transition:opacity 0.15s;">
         <%= parent_id ? t("community_engine.comments.reply_btn") : t("community_engine.comments.submit_btn") %>
       </button>
     </div>
