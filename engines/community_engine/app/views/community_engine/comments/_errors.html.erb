@@ -1,7 +1,7 @@
 <% if comment.errors.any? %>
-  <div class="p-3 rounded-[11px] bg-red-50 border border-red-200 mb-3">
+  <div style="padding:0.7rem 0.85rem; border-radius:11px; background:rgba(176,96,80,0.08); border:1px solid rgba(176,96,80,0.15); margin-bottom:0.75rem;">
     <% comment.errors.full_messages.each do |msg| %>
-      <p class="text-sm text-red-600" style="font-family: 'DM Sans', sans-serif;"><%= msg %></p>
+      <p style="font-family:'DM Sans',sans-serif; font-size:0.78rem; font-weight:500; color:#B06050; margin:0;"><%= msg %></p>
     <% end %>
   </div>
 <% end %>
