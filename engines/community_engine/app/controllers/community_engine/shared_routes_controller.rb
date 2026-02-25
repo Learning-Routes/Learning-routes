@@ -25,7 +25,7 @@ module CommunityEngine
     end
 
     def clone
-      shared_route = SharedRoute.find(params[:id])
+      shared_route = SharedRoute.find_by!(share_token: params[:id])
 
       # Only allow cloning public/unlisted shared routes
       unless shared_route.visibility.in?(%w[public unlisted])
@@ -40,7 +40,7 @@ module CommunityEngine
     end
 
     def destroy
-      shared_route = current_user.shared_routes.find(params[:id])
+      shared_route = current_user.shared_routes.find_by!(share_token: params[:id])
       RouteSharer.unshare!(shared_route)
       redirect_back(fallback_location: root_path, notice: t("community_engine.shared_routes.unshared"))
     end

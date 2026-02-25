@@ -24,6 +24,10 @@ module CommunityEngine
         .order(likes_count: :desc, comments_count: :desc)
     }
 
+    def to_param
+      share_token
+    end
+
     def public?
       visibility == "public"
     end

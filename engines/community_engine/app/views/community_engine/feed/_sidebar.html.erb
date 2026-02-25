@@ -164,7 +164,7 @@
       <div style="display:flex; flex-direction:column; gap:0.75rem;">
         <% @top_learners.each_with_index do |learner, i| %>
           <div style="display:flex; align-items:center; gap:0.6rem;">
-            <span style="width:18px; text-align:right; font-family:'DM Mono',monospace; font-size:0.65rem; font-weight:700; color:var(--color-muted, #9B9590);">
+            <span style="width:18px; text-align:right; font-family:'DM Mono',monospace; font-size:0.65rem; font-weight:700; color:var(--color-muted, #A09889);">
               <%= i + 1 %>
             </span>
             <div style="width:30px; height:30px; border-radius:50%; background:var(--color-accent, #2C261E);
@@ -180,7 +180,7 @@
             </div>
             <% if current_user && learner.id != current_user.id %>
               <% if current_user.following?(learner) %>
-                <span style="font-family:'DM Mono',monospace; font-size:0.6rem; color:var(--color-muted, #9B9590); padding:0.2rem 0.5rem; border-radius:6px;
+                <span style="font-family:'DM Mono',monospace; font-size:0.6rem; color:var(--color-muted, #A09889); padding:0.2rem 0.5rem; border-radius:6px;
                              background:var(--color-faint, rgba(28,24,18,0.04));">
                   <%= t("community_engine.follows.following") %>
                 </span>
@@ -192,7 +192,7 @@
         <% end %>
       </div>
     <% else %>
-      <p style="font-family:'DM Sans',sans-serif; font-size:0.75rem; color:var(--color-muted, #9B9590); text-align:center; padding:1rem 0;">
+      <p style="font-family:'DM Sans',sans-serif; font-size:0.75rem; color:var(--color-muted, #A09889); text-align:center; padding:1rem 0;">
         <%= t("community_engine.feed.sidebar.no_learners") %>
       </p>
     <% end %>
@@ -211,7 +211,7 @@
         [t("community_engine.feed.stats.shared"), @stats[:total_shared]]
       ].each do |label, value| %>
         <div style="display:flex; align-items:center; justify-content:space-between;">
-          <span style="font-family:'DM Sans',sans-serif; font-size:0.75rem; color:var(--color-sub, #6B6560);"><%= label %></span>
+          <span style="font-family:'DM Sans',sans-serif; font-size:0.75rem; color:var(--color-sub, #6D665B);"><%= label %></span>
           <span style="font-family:'DM Mono',monospace; font-size:0.82rem; font-weight:700; color:var(--color-txt, #1C1812);"><%= value %></span>
         </div>
       <% end %>
