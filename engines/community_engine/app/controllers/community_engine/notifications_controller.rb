@@ -5,7 +5,9 @@ module CommunityEngine
     end
 
     def mark_read
-      notification = current_user.notifications.find(params[:id])
+      notification = current_user.notifications.find_by(id: params[:id])
+      return head(:not_found) unless notification
+
       notification.mark_as_read!
       head :ok
     end

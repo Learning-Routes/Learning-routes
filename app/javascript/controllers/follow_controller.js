@@ -38,14 +38,17 @@ export default class extends Controller {
       this.labelTarget.textContent = this.followingValue ? this.followingTextValue : this.followTextValue
     }
     if (this.hasButtonTarget) {
+      const root = document.documentElement
+      const style = getComputedStyle(root)
       if (this.followingValue) {
         this.buttonTarget.style.background = "transparent"
-        this.buttonTarget.style.border = "1px solid #CCC5B8"
-        this.buttonTarget.style.color = "#1C1812"
+        this.buttonTarget.style.border = `1px solid ${style.getPropertyValue("--color-faint").trim() || "#CCC5B8"}`
+        this.buttonTarget.style.color = style.getPropertyValue("--color-txt").trim() || "#1C1812"
       } else {
-        this.buttonTarget.style.background = "#2C261E"
-        this.buttonTarget.style.border = "1px solid #2C261E"
-        this.buttonTarget.style.color = "#F5F1EB"
+        const accent = style.getPropertyValue("--color-accent").trim() || "#2C261E"
+        this.buttonTarget.style.background = accent
+        this.buttonTarget.style.border = `1px solid ${accent}`
+        this.buttonTarget.style.color = style.getPropertyValue("--color-accent-text").trim() || "#F5F1EB"
       }
     }
   }
