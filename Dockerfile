@@ -50,6 +50,8 @@ COPY engines/ai_orchestrator/ai_orchestrator.gemspec engines/ai_orchestrator/
 COPY engines/ai_orchestrator/lib/ai_orchestrator/version.rb engines/ai_orchestrator/lib/ai_orchestrator/
 COPY engines/analytics/analytics.gemspec engines/analytics/
 COPY engines/analytics/lib/analytics/version.rb engines/analytics/lib/analytics/
+COPY engines/community_engine/community_engine.gemspec engines/community_engine/
+COPY engines/community_engine/lib/community_engine/version.rb engines/community_engine/lib/community_engine/
 
 RUN bundle install && \
     rm -rf ~/.bundle/ "${BUNDLE_PATH}"/ruby/*/cache "${BUNDLE_PATH}"/ruby/*/bundler/gems/*/.git && \
