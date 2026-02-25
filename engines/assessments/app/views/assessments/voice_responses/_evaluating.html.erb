@@ -1,17 +1,35 @@
 <%# Evaluating State (Turbo Stream replacement)
-     locals: voice_response (VoiceResponse), step (RouteStep) %>
+     locals: voice_response (VoiceResponse) %>
 
-<div id="voice-interaction-<%= step.id %>" class="rounded-xl bg-gray-800/50 border border-white/[0.06] p-5">
+<div id="voice_evaluation_<%= voice_response.id %>"
+     class="rounded-[14px] p-5"
+     style="background: rgba(28,25,18,0.5); border: 1px solid rgba(232,228,220,0.06);">
   <div class="flex flex-col items-center gap-3 py-6">
+    <%# Pulsing AI brain icon %>
     <div class="relative">
-      <div class="w-12 h-12 rounded-full bg-purple-500/20 animate-ping absolute inset-0"></div>
-      <div class="w-12 h-12 rounded-full bg-purple-500/30 flex items-center justify-center relative">
-        <svg class="w-6 h-6 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+      <div class="w-14 h-14 rounded-full animate-ping absolute inset-0"
+           style="background: rgba(168,85,247,0.12);"></div>
+      <div class="w-14 h-14 rounded-full flex items-center justify-center relative"
+           style="background: rgba(168,85,247,0.18);">
+        <svg class="w-7 h-7" style="color: #C084FC;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
         </svg>
       </div>
     </div>
-    <p class="text-sm text-gray-300"><%= t("voice_evaluation.evaluating_response") %></p>
-    <p class="text-xs text-gray-500">ID: <%= voice_response.id.to_s.first(8) %></p>
+
+    <p class="text-sm font-medium" style="color: #E8E4DC; font-family: 'DM Sans', sans-serif;">
+      <%= t("voice_evaluation.evaluating_response") %>
+    </p>
+    <p class="text-xs" style="color: #605848; font-family: 'DM Sans', sans-serif;">
+      <%= t("voice_evaluation.evaluating_detail") %>
+    </p>
+
+    <%# Animated dots %>
+    <div class="flex items-center gap-1.5 mt-1">
+      <div class="w-2 h-2 rounded-full animate-pulse" style="background: #A855F7; animation-delay: 0s;"></div>
+      <div class="w-2 h-2 rounded-full animate-pulse" style="background: #A855F7; animation-delay: 0.3s;"></div>
+      <div class="w-2 h-2 rounded-full animate-pulse" style="background: #A855F7; animation-delay: 0.6s;"></div>
+    </div>
   </div>
 </div>

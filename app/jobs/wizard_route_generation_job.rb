@@ -20,7 +20,7 @@ class WizardRouteGenerationJob < ApplicationJob
 
       # Extract learning style data
       style_result = request.learning_style_result || {}
-      content_mix = style_result["content_mix"] || { "video" => 25, "audio" => 25, "text" => 25, "interactive" => 25 }
+      content_mix = style_result["content_mix"] || { "audio" => 30, "text" => 35, "interactive" => 35 }
 
       ActiveRecord::Base.transaction do
         route = LearningRoutesEngine::LearningRoute.create!(
@@ -115,21 +115,29 @@ class WizardRouteGenerationJob < ApplicationJob
     end
   end
 
-  # Distribute delivery format types across steps based on learning style percentages
+  # Distribute delivery format types across steps based on learning style percentages.
+  # Enforce a minimum of 15% for audio and text so every route has variety.
   def assign_delivery_formats(step_count, content_mix)
-    video_pct = (content_mix["video"] || content_mix[:video] || 25).to_f
-    audio_pct = (content_mix["audio"] || content_mix[:audio] || 25).to_f
-    text_pct = (content_mix["text"] || content_mix[:text] || 25).to_f
-    interactive_pct = (content_mix["interactive"] || content_mix[:interactive] || 25).to_f
+    raw_audio = (content_mix["audio"] || content_mix[:audio] || 0).to_f
+    raw_text  = (content_mix["text"]  || content_mix[:text]  || 0).to_f
+    raw_interactive = (content_mix["interactive"] || content_mix[:interactive] || 0).to_f
+
+    # Guarantee minimums: at least 15% audio, 15% text
+    audio_pct = [raw_audio, 15].max
+    text_pct  = [raw_text, 15].max
+    interactive_pct = [raw_interactive, 10].max
+
+    # Remaining goes to text (the most universal format)
+    used = audio_pct + text_pct + interactive_pct
+    text_pct += [100 - used, 0].max
 
     pool = []
-    pool += Array.new((video_pct / 100.0 * step_count).round, "video")
-    pool += Array.new((audio_pct / 100.0 * step_count).round, "audio")
-    pool += Array.new((text_pct / 100.0 * step_count).round, "text")
-    pool += Array.new((interactive_pct / 100.0 * step_count).round, "interactive")
+    pool += Array.new([(audio_pct / 100.0 * step_count).round, 1].max, "audio")
+    pool += Array.new([(text_pct / 100.0 * step_count).round, 1].max, "text")
+    pool += Array.new([(interactive_pct / 100.0 * step_count).round, 1].max, "interactive")
 
-    # Fill remainder with "mixed"
-    pool << "mixed" while pool.length < step_count
+    # Fill remainder with "text"
+    pool << "text" while pool.length < step_count
     # Trim excess
     pool = pool.first(step_count)
 

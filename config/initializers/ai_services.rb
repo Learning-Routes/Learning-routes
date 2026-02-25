@@ -1,19 +1,14 @@
 # AI Services Configuration
-# API keys are loaded from Rails credentials (bin/rails credentials:edit)
+# API keys are loaded from ENV (set in .env) or Rails credentials as fallback.
 #
-# Expected credentials structure:
-#   openai:
-#     api_key: sk-...
-#   anthropic:
-#     api_key: sk-ant-...
-#   gemini:
-#     api_key: ...
-#   elevenlabs:
-#     api_key: ...
-#     default_voice_id: ...
-#   nanobanana:
-#     api_key: ...
-#     api_url: https://api.nanobanana.com/v1
+# Required ENV variables:
+#   OPENAI_API_KEY=sk-...        (primary AI provider)
+#   ELEVENLABS_API_KEY=...       (text-to-speech)
+#
+# Optional ENV variables:
+#   ANTHROPIC_API_KEY=sk-ant-... (not used as primary, available as fallback)
+#   GEMINI_API_KEY=...
+#   NANOBANANA_API_KEY=...       (image generation)
 
 Rails.application.config.after_initialize do
   # Configure RubyLLM (unified provider for OpenAI, Anthropic, Gemini)
@@ -35,7 +30,7 @@ Rails.application.config.ai_model_defaults = {
   code_generation:      { temperature: 0.3, max_tokens: 4096 },
   exam_questions:       { temperature: 0.6, max_tokens: 4096 },
   quick_grading:        { temperature: 0.2, max_tokens: 1024 },
-  voice_narration:      { stability: 0.5, similarity_boost: 0.75 },
+  voice_narration:      { temperature: 0.6, max_tokens: 4096 },
   image_generation:     { width: 1024, height: 1024 },
   quick_images:         { width: 512, height: 512 },
   gap_analysis:         { temperature: 0.4, max_tokens: 4096 },

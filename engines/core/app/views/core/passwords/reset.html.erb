@@ -3,6 +3,9 @@
 <%# === Glassmorphic auth card === %>
 <div class="auth-enter"
      data-controller="auth-form"
+     data-auth-form-required-msg-value="<%= t('auth_alerts.validation_required') %>"
+     data-auth-form-email-msg-value="<%= t('auth_alerts.validation_email') %>"
+     data-auth-form-min-length-msg-value="<%= t('auth_alerts.validation_min_length') %>"
      style="width:100%; max-width:440px; padding:2.2rem 2rem;
             background:rgba(255,255,255,0.55); backdrop-filter:blur(50px) saturate(1.4); -webkit-backdrop-filter:blur(50px) saturate(1.4);
             border:1px solid rgba(28,24,18,0.07); border-radius:20px;

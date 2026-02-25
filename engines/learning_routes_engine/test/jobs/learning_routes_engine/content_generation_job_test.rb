@@ -40,7 +40,7 @@ module LearningRoutesEngine
         id: SecureRandom.uuid,
         status: "completed",
         response: "<h1>Introduction to Ruby</h1><p>Ruby is a dynamic language...</p>",
-        model: "claude-opus-4-6",
+        model: "claude-opus-4-5",
         completed?: true
       )
 
@@ -60,7 +60,7 @@ module LearningRoutesEngine
         id: SecureRandom.uuid,
         status: "failed",
         response: nil,
-        model: "claude-opus-4-6",
+        model: "claude-opus-4-5",
         completed?: false
       )
 

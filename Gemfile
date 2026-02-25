@@ -60,6 +60,7 @@ gem "content_engine", path: "engines/content_engine"
 gem "assessments", path: "engines/assessments"
 gem "ai_orchestrator", path: "engines/ai_orchestrator"
 gem "analytics", path: "engines/analytics"
+gem "community_engine", path: "engines/community_engine"
 
 group :development, :test do
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
@@ -92,3 +93,5 @@ gem "redcarpet", "~> 3.6"
 
 # Code syntax highlighting (server-side)
 gem "rouge", "~> 4.4"
+
+gem "rails-i18n", "~> 8.1"

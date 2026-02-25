@@ -8,7 +8,7 @@
   <%= turbo_stream.append "ai_supplementary_#{@step.id}" do %>
     <div class="bg-gray-900 border border-indigo-500/20 rounded-xl p-5 lesson-content" data-controller="math-renderer" data-math-renderer-target="content">
       <div class="flex items-center gap-2 mb-3">
-        <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium bg-indigo-900/50 text-indigo-300">Alternative Explanation</span>
+        <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium bg-indigo-900/50 text-indigo-300"><%= t("content_actions.alternative_explanation") %></span>
       </div>
       <%= @rendered_html %>
     </div>

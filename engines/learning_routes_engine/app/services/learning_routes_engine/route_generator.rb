@@ -3,6 +3,7 @@ module LearningRoutesEngine
     class GenerationError < StandardError; end
 
     LEVEL_DISTRIBUTION = { nv1: 0.3, nv2: 0.4, nv3: 0.3 }.freeze
+    DEFAULT_CONTENT_MIX = { "audio" => 30, "text" => 35, "interactive" => 35 }.freeze
 
     BLOOM_LEVELS = {
       nv1: [1, 2],     # Remember, Understand
@@ -89,6 +90,13 @@ module LearningRoutesEngine
         # Partition modules by level
         nv1_modules, nv2_modules, nv3_modules = partition_modules(modules)
 
+        # Count total lesson/exercise steps to pre-assign delivery formats
+        lesson_count = [nv1_modules, nv2_modules, nv3_modules].sum do |mods|
+          mods.sum { |m| (m["lessons"] || []).size }
+        end
+        @delivery_formats = assign_delivery_formats(lesson_count)
+        @format_index = 0
+
         # NV1: lessons → exercises → checkpoint quiz → level-up exam
         position, previous_step_id = create_level_steps!(route, nv1_modules, :nv1, position, previous_step_id)
         position, previous_step_id = create_assessment_step!(route, :nv1, "Level-Up Exam: NV1 → NV2", position, previous_step_id)
@@ -108,6 +116,12 @@ module LearningRoutesEngine
         # Unlock the first step
         first_step = route.route_steps.order(:position).first
         first_step&.unlock!
+
+        # Pre-generate audio for the first audio step
+        first_audio_step = route.route_steps.where(delivery_format: "audio").order(:position).first
+        if first_audio_step
+          ContentEngine::AudioGenerationJob.perform_later(first_audio_step.id)
+        end
       end
     end
 
@@ -142,6 +156,9 @@ module LearningRoutesEngine
           content_type = map_content_type(lesson["type"])
           bloom = lesson["bloom_level"] || bloom_range.sample
 
+          format = @delivery_formats[@format_index] || "text"
+          @format_index += 1
+
           step = route.route_steps.create!(
             position: position,
             title: lesson["title"] || "#{mod['name']} - Lesson",
@@ -151,6 +168,7 @@ module LearningRoutesEngine
             status: :locked,
             estimated_minutes: lesson["estimated_minutes"] || 30,
             bloom_level: bloom,
+            delivery_format: format,
             prerequisites: previous_step_id ? [previous_step_id] : [],
             metadata: { module_name: mod["name"] }
           )
@@ -223,6 +241,22 @@ module LearningRoutesEngine
         ai_interaction_id: interaction.id,
         ai_model_used: interaction.model
       )
+    end
+
+    # Distribute delivery formats across lesson steps using default content mix.
+    # Ensures every route gets a mix of audio, text, and interactive steps.
+    def assign_delivery_formats(step_count)
+      return ["text"] if step_count <= 0
+
+      mix = DEFAULT_CONTENT_MIX
+      pool = []
+      pool += Array.new([(mix["audio"] / 100.0 * step_count).round, 1].max, "audio")
+      pool += Array.new([(mix["text"] / 100.0 * step_count).round, 1].max, "text")
+      pool += Array.new([(mix["interactive"] / 100.0 * step_count).round, 1].max, "interactive")
+
+      pool << "text" while pool.length < step_count
+      pool = pool.first(step_count)
+      pool.shuffle
     end
 
     def map_content_type(type_str)

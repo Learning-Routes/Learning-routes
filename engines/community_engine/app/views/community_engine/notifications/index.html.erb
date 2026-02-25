@@ -1,0 +1,67 @@
+<% content_for(:title, t("community_engine.notifications_ui.title")) %>
+
+<div style="max-width:700px; margin:0 auto; padding:2rem 1.5rem;">
+  <%# Header %>
+  <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:1.5rem;">
+    <h1 style="font-family:'DM Sans',sans-serif; font-weight:700; font-size:1.5rem; letter-spacing:-0.5px; color:#1C1812; margin:0;">
+      <%= t("community_engine.notifications_ui.title") %>
+    </h1>
+    <% if @notifications.any?(&:unread?) %>
+      <%= button_to community_engine.mark_all_read_notifications_path,
+            method: :post,
+            style: "font-family:'DM Sans',sans-serif; font-size:0.75rem; font-weight:500; color:#6B6560; padding:0.4rem 0.8rem; border-radius:11px; background:transparent; border:1px solid rgba(28,24,18,0.08); cursor:pointer; transition:all 0.15s;" do %>
+        <%= t("community_engine.notifications_ui.mark_all_read") %>
+      <% end %>
+    <% end %>
+  </div>
+
+  <%# Notification list %>
+  <div style="display:flex; flex-direction:column; gap:0.5rem;">
+    <% if @notifications.any? %>
+      <% @notifications.each do |notification| %>
+        <% next unless notification.actor %>
+        <div style="display:flex; align-items:flex-start; gap:0.8rem; padding:1rem 1.2rem; border-radius:14px; background:rgba(255,255,255,<%= notification.unread? ? '0.8' : '0.4' %>); border:1px solid rgba(28,24,18,<%= notification.unread? ? '0.06' : '0.03' %>); <%= 'backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px);' if notification.unread? %>">
+          <%# Actor avatar %>
+          <div style="width:36px; height:36px; border-radius:50%; background:#2C261E; display:flex; align-items:center; justify-content:center; color:#F5F1EB; font-family:'DM Sans',sans-serif; font-size:0.7rem; font-weight:700; flex-shrink:0;">
+            <%= notification.actor.name.to_s.first&.upcase || "?" %>
+          </div>
+
+          <div style="flex:1; min-width:0;">
+            <p style="font-family:'DM Sans',sans-serif; font-size:0.82rem; color:#3D3730; margin:0 0 0.2rem; line-height:1.5;">
+              <span style="font-weight:600; color:#1C1812;"><%= notification.actor.name %></span>
+              <span style="color:#6B6560;"> <%= notification.notification_text %></span>
+            </p>
+            <span style="font-family:'DM Mono',monospace; font-size:0.65rem; color:#9B9590;">
+              <%= time_ago_in_words(notification.created_at) %>
+            </span>
+          </div>
+
+          <% if notification.unread? %>
+            <div style="display:flex; align-items:center; gap:0.5rem; flex-shrink:0;">
+              <span style="width:8px; height:8px; border-radius:50%; background:#6E9BC8;"></span>
+              <%= button_to community_engine.mark_read_notification_path(notification),
+                    method: :patch,
+                    style: "font-family:'DM Sans',sans-serif; font-size:0.65rem; color:#9B9590; background:none; border:none; cursor:pointer; text-decoration:underline; text-underline-offset:2px;" do %>
+                <%= t("community_engine.notifications_ui.mark_read") %>
+              <% end %>
+            </div>
+          <% end %>
+        </div>
+      <% end %>
+    <% else %>
+      <div style="background:rgba(255,255,255,0.6); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); border:1px solid rgba(28,24,18,0.06); border-radius:14px; padding:3rem 2rem; text-align:center;">
+        <div style="width:48px; height:48px; margin:0 auto 1rem; border-radius:14px; background:rgba(28,24,18,0.04); display:flex; align-items:center; justify-content:center;">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#9B9590" stroke-width="1.5">
+            <path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <p style="font-family:'DM Sans',sans-serif; font-size:0.88rem; font-weight:600; color:#1C1812; margin:0 0 0.3rem;">
+          <%= t("community_engine.notifications_ui.empty") %>
+        </p>
+        <p style="font-family:'DM Sans',sans-serif; font-size:0.78rem; color:#9B9590; margin:0; max-width:320px; margin-left:auto; margin-right:auto; line-height:1.5;">
+          <%= t("community_engine.notifications_ui.empty_subtitle") %>
+        </p>
+      </div>
+    <% end %>
+  </div>
+</div>

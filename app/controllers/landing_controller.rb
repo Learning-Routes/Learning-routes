@@ -37,7 +37,7 @@ class LandingController < ApplicationController
     steps.each_with_index.map do |step, i|
       {
         id: "s#{i}",
-        label: step.title.truncate(18),
+        label: step.localized_title.truncate(18),
         tag: content_type_tag(step.content_type),
         color: status_color(step.status),
         side: i.even? ? "left" : "right",

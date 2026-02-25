@@ -1,0 +1,6 @@
+<%= turbo_stream.append "comments_#{@comment.commentable_type.parameterize}_#{@comment.commentable_id}" do %>
+  <%= render "community_engine/comments/comment", comment: @comment %>
+<% end %>
+<%= turbo_stream.replace "comment_form_#{@comment.commentable_type.parameterize}_#{@comment.commentable_id}" do %>
+  <%= render "community_engine/comments/form", commentable: @comment.commentable %>
+<% end %>

@@ -87,13 +87,13 @@ puts "  Created #{steps_data.size} route steps"
 
 # === AI Orchestrator: Model Configs ===
 model_configs = [
-  { model_name: "claude-opus-4-6", task_type: "assessment_questions", priority: 0, fallback_model: "gpt-5.2" },
-  { model_name: "gpt-5.2", task_type: "route_generation", priority: 0, fallback_model: "claude-opus-4-6" },
-  { model_name: "claude-opus-4-6", task_type: "lesson_content", priority: 0, fallback_model: "gpt-5.2" },
-  { model_name: "gpt-5.2", task_type: "code_generation", priority: 0, fallback_model: "claude-opus-4-6" },
-  { model_name: "claude-opus-4-6", task_type: "exam_questions", priority: 0, fallback_model: "gpt-5.2" },
-  { model_name: "claude-haiku-4-5", task_type: "quick_grading", priority: 0, fallback_model: "gpt-5.1-codex-mini" },
-  { model_name: "elevenlabs", task_type: "voice_narration", priority: 0, fallback_model: nil },
+  { model_name: "gpt-5.2", task_type: "assessment_questions", priority: 0, fallback_model: "gpt-5.1-codex-mini" },
+  { model_name: "gpt-5.2", task_type: "route_generation", priority: 0, fallback_model: "gpt-5.1-codex-mini" },
+  { model_name: "gpt-5.2", task_type: "lesson_content", priority: 0, fallback_model: "gpt-5.1-codex-mini" },
+  { model_name: "gpt-5.2", task_type: "code_generation", priority: 0, fallback_model: "gpt-5.1-codex-mini" },
+  { model_name: "gpt-5.2", task_type: "exam_questions", priority: 0, fallback_model: "gpt-5.1-codex-mini" },
+  { model_name: "gpt-5.1-codex-mini", task_type: "quick_grading", priority: 0, fallback_model: "gpt-5.2" },
+  { model_name: "gpt-5.1-codex-mini", task_type: "voice_narration", priority: 0, fallback_model: "gpt-5.2" },
   { model_name: "nanobanana-pro", task_type: "image_generation", priority: 0, fallback_model: "nanobanana-flash" },
   { model_name: "nanobanana-flash", task_type: "quick_images", priority: 0, fallback_model: "nanobanana-pro" }
 ]

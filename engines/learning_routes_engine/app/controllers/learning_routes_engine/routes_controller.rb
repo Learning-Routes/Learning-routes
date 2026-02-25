@@ -20,7 +20,7 @@ module LearningRoutesEngine
 
     def authorize_route_owner!
       unless @route.learning_profile.user_id == current_user.id
-        redirect_to main_app.dashboard_path, alert: "Not authorized."
+        redirect_to main_app.dashboard_path, alert: t("flash.not_authorized")
       end
     end
   end

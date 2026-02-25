@@ -7,7 +7,7 @@
   <div style="display:flex; align-items:center; justify-content:space-between; max-width:1100px; margin:0 auto; padding:0 clamp(1rem,3vw,2.25rem); height:56px;">
 
     <%# === Left: Logo === %>
-    <%= link_to root_path, style: "display:flex; align-items:center; gap:0.5rem; text-decoration:none;" do %>
+    <%= link_to main_app.root_path, style: "display:flex; align-items:center; gap:0.5rem; text-decoration:none;" do %>
       <%= render "shared/logo", size: 28 %>
       <span style="font-family:'DM Sans',sans-serif; font-weight:800; font-size:0.95rem; letter-spacing:-0.6px; color:#1C1812;">Learning Routes</span>
     <% end %>
@@ -16,10 +16,10 @@
     <div style="display:flex; align-items:center; gap:1.8rem;" class="hidden md:flex">
       <%
         nav_links = [
-          { label: t("nav.explore"), path: root_path, match: "landing" },
-          { label: t("nav.my_routes"), path: dashboard_path, match: "dashboard" },
-          { label: t("nav.profile"), path: profile_path, match: "profiles" },
-          { label: t("nav.community"), path: community_path, match: "community" }
+          { label: t("nav.explore"), path: main_app.root_path, match: "landing" },
+          { label: t("nav.my_routes"), path: main_app.profile_path, match: "profiles" },
+          { label: t("nav.profile"), path: main_app.profile_path, match: "profiles" },
+          { label: t("nav.community"), path: main_app.community_path, match: "community" }
         ]
       %>
       <% nav_links.each do |link| %>
@@ -50,8 +50,15 @@
         <%= t("nav.sign_out") %>
       <% end %>
 
+      <%# Notification bell (desktop) %>
+      <div class="hidden md:block">
+        <% if current_user %>
+          <%= render "community_engine/notifications/dropdown" %>
+        <% end %>
+      </div>
+
       <%# Settings gear (desktop) %>
-      <%= link_to settings_path, style: "color:#A09889; transition:color 0.2s; padding:0.2rem;", class: "hidden md:inline-flex nav-link", title: t("nav.settings") do %>
+      <%= link_to main_app.settings_path, style: "color:#A09889; transition:color 0.2s; padding:0.2rem;", class: "hidden md:inline-flex nav-link", title: t("nav.settings") do %>
         <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
         </svg>
@@ -59,7 +66,7 @@
 
       <%# User avatar — links to profile %>
       <% initials = current_user.name.to_s.split.map(&:first).join.upcase.slice(0,2) %>
-      <%= link_to profile_path, style: "text-decoration:none;" do %>
+      <%= link_to main_app.profile_path, style: "text-decoration:none;" do %>
         <div style="width:32px; height:32px; border-radius:10px; background:linear-gradient(135deg, rgba(139,128,196,0.2), rgba(110,155,200,0.2)); display:flex; align-items:center; justify-content:center; flex-shrink:0; transition:transform 0.15s;"
              class="avatar-hover">
           <span style="font-family:'DM Sans',sans-serif; font-weight:700; font-size:0.7rem; color:#6D665B; letter-spacing:0.3px;"><%= initials %></span>
@@ -83,10 +90,10 @@
     <div style="display:flex; flex-direction:column; gap:0.5rem;">
       <%
         nav_links = [
-          { label: t("nav.explore"), path: root_path, match: "landing" },
-          { label: t("nav.my_routes"), path: dashboard_path, match: "dashboard" },
-          { label: t("nav.profile"), path: profile_path, match: "profiles" },
-          { label: t("nav.community"), path: community_path, match: "community" }
+          { label: t("nav.explore"), path: main_app.root_path, match: "landing" },
+          { label: t("nav.my_routes"), path: main_app.profile_path, match: "profiles" },
+          { label: t("nav.profile"), path: main_app.profile_path, match: "profiles" },
+          { label: t("nav.community"), path: main_app.community_path, match: "community" }
         ]
       %>
       <% nav_links.each do |link| %>
@@ -94,7 +101,7 @@
         <%= link_to link[:label], link[:path],
             style: "font-family:'DM Sans',sans-serif; font-size:0.88rem; font-weight:#{is_active ? '600' : '400'}; color:#{is_active ? '#1C1812' : '#6D665B'}; text-decoration:none; padding:0.45rem 0; transition:color 0.2s;" %>
       <% end %>
-      <%= link_to t("nav.settings"), settings_path,
+      <%= link_to t("nav.settings"), main_app.settings_path,
           style: "font-family:'DM Sans',sans-serif; font-size:0.88rem; font-weight:#{controller_name == 'settings' ? '600' : '400'}; color:#{controller_name == 'settings' ? '#1C1812' : '#6D665B'}; text-decoration:none; padding:0.45rem 0; transition:color 0.2s;" %>
       <div style="padding:0.45rem 0;">
         <%= render "shared/locale_toggle" %>

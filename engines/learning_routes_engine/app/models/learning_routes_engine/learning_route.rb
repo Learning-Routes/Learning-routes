@@ -6,6 +6,11 @@ module LearningRoutesEngine
     has_many :knowledge_gaps, dependent: :destroy
     has_many :reinforcement_routes, dependent: :destroy
 
+    # Community associations
+    has_many :comments, as: :commentable, class_name: "CommunityEngine::Comment", dependent: :destroy
+    has_many :likes, as: :likeable, class_name: "CommunityEngine::Like", dependent: :destroy
+    has_one :shared_route, class_name: "CommunityEngine::SharedRoute", dependent: :destroy
+
     enum :status, { draft: 0, active: 1, completed: 2, paused: 3 }
 
     validates :topic, presence: true, length: { maximum: 255 }
@@ -54,6 +59,14 @@ module LearningRoutesEngine
 
     def localized_subject_area(locale = I18n.locale)
       translations.dig(locale.to_s, "subject_area") || subject_area
+    end
+
+    def liked_by?(user)
+      likes.exists?(user_id: user.id)
+    end
+
+    def shared?
+      shared_route.present?
     end
   end
 end

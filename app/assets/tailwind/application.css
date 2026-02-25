@@ -390,6 +390,7 @@
 @source "../../../engines/assessments/app/views";
 @source "../../../engines/analytics/app/views";
 @source "../../../engines/ai_orchestrator/app/views";
+@source "../../../engines/community_engine/app/views";
 
 /* ==========================================================================
    ROUGE SYNTAX HIGHLIGHTING (dark code blocks)
@@ -484,4 +485,9 @@
     grid-template-columns: 1fr !important;
   }
 }
+
+/* Like button animation */
+.like-pulse { animation: likePulse 0.3s ease; }
+@keyframes likePulse { 0% { transform: scale(1); } 50% { transform: scale(1.3); } 100% { transform: scale(1); } }
+.liked { color: #ef4444; }
 

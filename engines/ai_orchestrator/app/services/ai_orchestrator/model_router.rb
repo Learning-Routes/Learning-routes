@@ -1,30 +1,30 @@
 module AiOrchestrator
   class ModelRouter
     ROUTING_TABLE = {
-      assessment_questions: { primary: "claude-opus-4-6", fallback: "gpt-5.2" },
-      route_generation:     { primary: "gpt-5.2", fallback: "claude-opus-4-6" },
-      lesson_content:       { primary: "claude-opus-4-6", fallback: "gpt-5.2" },
-      code_generation:      { primary: "gpt-5.2", fallback: "claude-opus-4-6" },
-      exam_questions:       { primary: "claude-opus-4-6", fallback: "gpt-5.2" },
-      quick_grading:        { primary: "claude-haiku-4-5", fallback: "gpt-5.1-codex-mini" },
-      voice_narration:      { primary: "elevenlabs", fallback: nil },
-      voice_evaluation:     { primary: "claude-haiku-4-5", fallback: "claude-opus-4-6" },
+      assessment_questions: { primary: "gpt-5.2", fallback: "gpt-5.1-codex-mini" },
+      route_generation:     { primary: "gpt-5.2", fallback: "gpt-5.1-codex-mini" },
+      lesson_content:       { primary: "gpt-5.2", fallback: "gpt-5.1-codex-mini" },
+      code_generation:      { primary: "gpt-5.2", fallback: "gpt-5.1-codex-mini" },
+      exam_questions:       { primary: "gpt-5.2", fallback: "gpt-5.1-codex-mini" },
+      quick_grading:        { primary: "gpt-5.1-codex-mini", fallback: "gpt-5.2" },
+      voice_narration:      { primary: "gpt-5.1-codex-mini", fallback: "gpt-5.2" },
+      voice_evaluation:     { primary: "gpt-5.1-codex-mini", fallback: "gpt-5.2" },
       image_generation:     { primary: "nanobanana-pro", fallback: "nanobanana-flash" },
       quick_images:         { primary: "nanobanana-flash", fallback: "nanobanana-pro" },
-      gap_analysis:         { primary: "claude-opus-4-6", fallback: "gpt-5.2" },
-      reinforcement_generation: { primary: "gpt-5.2", fallback: "claude-opus-4-6" },
-      explain_differently:       { primary: "claude-opus-4-6", fallback: "gpt-5.2" },
-      give_example:              { primary: "claude-opus-4-6", fallback: "gpt-5.2" },
-      simplify_content:          { primary: "claude-haiku-4-5", fallback: "gpt-5.1-codex-mini" },
-      exercise_hint:             { primary: "claude-haiku-4-5", fallback: "gpt-5.1-codex-mini" },
-      step_quiz:                 { primary: "claude-haiku-4-5", fallback: "claude-opus-4-6" }
+      gap_analysis:         { primary: "gpt-5.2", fallback: "gpt-5.1-codex-mini" },
+      reinforcement_generation: { primary: "gpt-5.2", fallback: "gpt-5.1-codex-mini" },
+      explain_differently:       { primary: "gpt-5.2", fallback: "gpt-5.1-codex-mini" },
+      give_example:              { primary: "gpt-5.2", fallback: "gpt-5.1-codex-mini" },
+      simplify_content:          { primary: "gpt-5.1-codex-mini", fallback: "gpt-5.2" },
+      exercise_hint:             { primary: "gpt-5.1-codex-mini", fallback: "gpt-5.2" },
+      step_quiz:                 { primary: "gpt-5.1-codex-mini", fallback: "gpt-5.2" }
     }.freeze
 
     # Per-model rate limits (requests per minute)
     RATE_LIMITS = {
       "gpt-5.2"            => 60,
       "gpt-5.1-codex-mini" => 120,
-      "claude-opus-4-6"    => 40,
+      "claude-opus-4-5"    => 40,
       "claude-haiku-4-5"   => 200,
       "claude-sonnet-4-5"  => 80,
       "elevenlabs"         => 20,

@@ -10,7 +10,10 @@
 
 <%# Wrapper to stack card + legal vertically %>
 <div style="display:flex; flex-direction:column; align-items:center; width:100%; max-width:440px;"
-     data-controller="auth-form">
+     data-controller="auth-form"
+     data-auth-form-required-msg-value="<%= t('auth_alerts.validation_required') %>"
+     data-auth-form-email-msg-value="<%= t('auth_alerts.validation_email') %>"
+     data-auth-form-min-length-msg-value="<%= t('auth_alerts.validation_min_length') %>">
 
   <%# === Glassmorphic auth card === %>
   <div class="auth-enter"

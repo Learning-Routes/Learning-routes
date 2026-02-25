@@ -23,13 +23,13 @@ module LearningRoutesEngine
       route = @step.learning_route
 
       unless route.learning_profile.user_id == current_user.id
-        redirect_to main_app.dashboard_path, alert: "Not authorized."
+        redirect_to main_app.dashboard_path, alert: t("flash.not_authorized")
         return
       end
 
       rating = params[:rating].to_i
       unless rating.between?(1, 5)
-        redirect_to reviews_path, alert: "Invalid rating."
+        redirect_to reviews_path, alert: t("flash.invalid_rating")
         return
       end
 
@@ -37,7 +37,7 @@ module LearningRoutesEngine
       tracker.record_review!(@step, rating)
 
       respond_to do |format|
-        format.html { redirect_to reviews_path, notice: "Review recorded." }
+        format.html { redirect_to reviews_path, notice: t("flash.review_recorded") }
         format.turbo_stream
       end
     end

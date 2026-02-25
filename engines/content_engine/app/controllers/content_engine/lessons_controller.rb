@@ -58,7 +58,7 @@ module ContentEngine
         )
         @rendered_html = MarkdownRenderer.render(interaction.response)
       else
-        @error = "AI generation failed. Please try again."
+        @error = t("flash.ai_generation_failed")
       end
 
       respond_to do |format|

@@ -1,5 +1,12 @@
 module AiOrchestrator
   class AiModelConfig < ApplicationRecord
+    # The DB column "model_name" conflicts with ActiveRecord's reserved
+    # class method. Allow it — instance-level access shadows class method safely.
+    def self.dangerous_attribute_method?(method_name)
+      return false if method_name == "model_name"
+      super
+    end
+
     validates :model_name, presence: true
     validates :task_type, presence: true
     validates :priority, numericality: { greater_than_or_equal_to: 0 }

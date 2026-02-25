@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_02_20_180001) do
+ActiveRecord::Schema[8.1].define(version: 2026_02_24_000007) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -163,8 +163,113 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_20_180001) do
     t.index ["user_id"], name: "index_assessments_user_answers_on_user_id"
   end
 
+  create_table "assessments_voice_responses", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.jsonb "ai_evaluation", default: {}
+    t.uuid "assessment_result_id"
+    t.string "audio_blob_key", null: false
+    t.datetime "created_at", null: false
+    t.uuid "route_step_id", null: false
+    t.integer "score"
+    t.string "status", default: "pending", null: false
+    t.text "transcription"
+    t.datetime "updated_at", null: false
+    t.uuid "user_id", null: false
+    t.index ["assessment_result_id"], name: "index_assessments_voice_responses_on_assessment_result_id"
+    t.index ["route_step_id"], name: "index_assessments_voice_responses_on_route_step_id"
+    t.index ["status"], name: "index_assessments_voice_responses_on_status"
+    t.index ["user_id", "route_step_id"], name: "idx_voice_responses_user_step"
+    t.index ["user_id"], name: "index_assessments_voice_responses_on_user_id"
+  end
+
+  create_table "community_engine_activities", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.string "action", null: false
+    t.datetime "created_at", null: false
+    t.jsonb "metadata", default: {}
+    t.uuid "trackable_id", null: false
+    t.string "trackable_type", null: false
+    t.datetime "updated_at", null: false
+    t.uuid "user_id", null: false
+    t.index ["action"], name: "index_community_engine_activities_on_action"
+    t.index ["created_at"], name: "index_community_engine_activities_on_created_at"
+    t.index ["trackable_type", "trackable_id"], name: "idx_activities_on_trackable"
+    t.index ["user_id", "created_at"], name: "idx_activities_user_timeline"
+  end
+
+  create_table "community_engine_comments", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.text "body", null: false
+    t.uuid "commentable_id", null: false
+    t.string "commentable_type", null: false
+    t.datetime "created_at", null: false
+    t.datetime "edited_at"
+    t.integer "likes_count", default: 0, null: false
+    t.uuid "parent_id"
+    t.integer "replies_count", default: 0, null: false
+    t.datetime "updated_at", null: false
+    t.uuid "user_id", null: false
+    t.index ["commentable_type", "commentable_id"], name: "idx_comments_on_commentable"
+    t.index ["parent_id"], name: "index_community_engine_comments_on_parent_id"
+    t.index ["user_id"], name: "index_community_engine_comments_on_user_id"
+  end
+
+  create_table "community_engine_follows", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.uuid "followed_id", null: false
+    t.uuid "follower_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["followed_id"], name: "index_community_engine_follows_on_followed_id"
+    t.index ["follower_id", "followed_id"], name: "idx_follows_unique", unique: true
+    t.index ["follower_id"], name: "index_community_engine_follows_on_follower_id"
+  end
+
+  create_table "community_engine_likes", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.uuid "likeable_id", null: false
+    t.string "likeable_type", null: false
+    t.datetime "updated_at", null: false
+    t.uuid "user_id", null: false
+    t.index ["likeable_type", "likeable_id"], name: "idx_likes_on_likeable"
+    t.index ["user_id", "likeable_type", "likeable_id"], name: "idx_likes_unique_per_user", unique: true
+    t.index ["user_id"], name: "index_community_engine_likes_on_user_id"
+  end
+
+  create_table "community_engine_notifications", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "actor_id", null: false
+    t.datetime "created_at", null: false
+    t.jsonb "metadata", default: {}
+    t.uuid "notifiable_id", null: false
+    t.string "notifiable_type", null: false
+    t.string "notification_type", null: false
+    t.datetime "read_at"
+    t.datetime "updated_at", null: false
+    t.uuid "user_id", null: false
+    t.index ["actor_id"], name: "index_community_engine_notifications_on_actor_id"
+    t.index ["user_id", "notification_type"], name: "idx_notifications_user_type"
+    t.index ["user_id", "read_at", "created_at"], name: "idx_notifications_user_unread"
+  end
+
+  create_table "community_engine_shared_routes", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "cloned_from_id"
+    t.integer "clones_count", default: 0, null: false
+    t.integer "comments_count", default: 0, null: false
+    t.datetime "created_at", null: false
+    t.text "description"
+    t.uuid "learning_route_id", null: false
+    t.integer "likes_count", default: 0, null: false
+    t.string "share_token", null: false
+    t.datetime "updated_at", null: false
+    t.uuid "user_id", null: false
+    t.string "visibility", default: "public", null: false
+    t.index ["learning_route_id"], name: "index_community_engine_shared_routes_on_learning_route_id"
+    t.index ["share_token"], name: "index_community_engine_shared_routes_on_share_token", unique: true
+    t.index ["user_id"], name: "index_community_engine_shared_routes_on_user_id"
+    t.index ["visibility", "created_at"], name: "idx_shared_routes_public_feed"
+  end
+
   create_table "content_engine_ai_contents", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.string "ai_model"
+    t.float "audio_duration"
+    t.string "audio_status", default: "pending", null: false
+    t.text "audio_transcript"
     t.string "audio_url"
     t.text "body"
     t.boolean "cached", default: false, null: false
@@ -176,7 +281,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_20_180001) do
     t.uuid "route_step_id", null: false
     t.integer "tokens_used", default: 0
     t.datetime "updated_at", null: false
+    t.string "voice_id"
     t.index ["ai_model"], name: "index_content_engine_ai_contents_on_ai_model"
+    t.index ["audio_status"], name: "index_content_engine_ai_contents_on_audio_status"
     t.index ["cached"], name: "index_content_engine_ai_contents_on_cached"
     t.index ["content_type"], name: "index_content_engine_ai_contents_on_content_type"
     t.index ["route_step_id"], name: "index_content_engine_ai_contents_on_route_step_id"
@@ -220,6 +327,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_20_180001) do
     t.datetime "created_at", null: false
     t.string "email", null: false
     t.datetime "email_verified_at"
+    t.integer "followers_count", default: 0, null: false
+    t.integer "following_count", default: 0, null: false
     t.string "locale", default: "en", null: false
     t.string "name", null: false
     t.boolean "onboarding_completed", default: false, null: false
@@ -267,6 +376,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_20_180001) do
   create_table "learning_routes_engine_learning_routes", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.uuid "ai_interaction_id"
     t.string "ai_model_used"
+    t.integer "comments_count", default: 0, null: false
     t.jsonb "content_preferences", default: {}, null: false
     t.datetime "created_at", null: false
     t.integer "current_step", default: 0
@@ -275,6 +385,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_20_180001) do
     t.jsonb "generation_params", default: {}
     t.string "generation_status"
     t.uuid "learning_profile_id", null: false
+    t.integer "likes_count", default: 0, null: false
     t.string "locale", default: "en", null: false
     t.integer "status", default: 0, null: false
     t.string "subject_area"
@@ -303,6 +414,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_20_180001) do
 
   create_table "learning_routes_engine_route_steps", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.integer "bloom_level"
+    t.integer "comments_count", default: 0, null: false
     t.datetime "completed_at"
     t.integer "content_type", default: 0, null: false
     t.datetime "created_at", null: false
@@ -320,6 +432,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_20_180001) do
     t.integer "fsrs_state", default: 0
     t.uuid "learning_route_id", null: false
     t.integer "level", default: 0, null: false
+    t.integer "likes_count", default: 0, null: false
     t.jsonb "metadata", default: {}
     t.integer "position", null: false
     t.jsonb "prerequisites", default: []
@@ -358,6 +471,18 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_20_180001) do
   add_foreign_key "assessments_assessment_results", "assessments_assessments", column: "assessment_id"
   add_foreign_key "assessments_questions", "assessments_assessments", column: "assessment_id"
   add_foreign_key "assessments_user_answers", "assessments_questions", column: "question_id"
+  add_foreign_key "assessments_voice_responses", "assessments_assessment_results", column: "assessment_result_id"
+  add_foreign_key "assessments_voice_responses", "core_users", column: "user_id"
+  add_foreign_key "assessments_voice_responses", "learning_routes_engine_route_steps", column: "route_step_id"
+  add_foreign_key "community_engine_activities", "core_users", column: "user_id"
+  add_foreign_key "community_engine_comments", "core_users", column: "user_id"
+  add_foreign_key "community_engine_follows", "core_users", column: "followed_id"
+  add_foreign_key "community_engine_follows", "core_users", column: "follower_id"
+  add_foreign_key "community_engine_likes", "core_users", column: "user_id"
+  add_foreign_key "community_engine_notifications", "core_users", column: "actor_id"
+  add_foreign_key "community_engine_notifications", "core_users", column: "user_id"
+  add_foreign_key "community_engine_shared_routes", "core_users", column: "user_id"
+  add_foreign_key "community_engine_shared_routes", "learning_routes_engine_learning_routes", column: "learning_route_id"
   add_foreign_key "core_sessions", "core_users", column: "user_id", on_delete: :cascade
   add_foreign_key "learning_routes_engine_knowledge_gaps", "learning_routes_engine_learning_routes", column: "learning_route_id"
   add_foreign_key "learning_routes_engine_learning_routes", "learning_routes_engine_learning_profiles", column: "learning_profile_id"

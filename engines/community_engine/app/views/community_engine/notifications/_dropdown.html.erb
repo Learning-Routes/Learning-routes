@@ -1,0 +1,81 @@
+<div class="relative"
+     data-controller="notifications"
+     data-notifications-url-value="<%= community_engine.unread_count_notifications_path %>">
+
+  <%= turbo_stream_from "notifications_#{current_user.id}" %>
+
+  <%# Bell trigger %>
+  <button data-action="click->notifications#toggle" class="relative p-2 rounded-[11px] text-[#6B6560] hover:text-[#1C1812] hover:bg-[#E8E4DC] transition-colors">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+      <path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    <span id="notification_badge"
+          data-notifications-target="badge"
+          class="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 flex items-center justify-center rounded-full bg-red-500 text-white text-[10px] font-bold leading-none hidden"
+          style="font-family: 'DM Mono', monospace;">
+      0
+    </span>
+  </button>
+
+  <%# Dropdown panel %>
+  <div data-notifications-target="dropdown"
+       class="hidden absolute right-0 top-full mt-2 w-80 sm:w-96 bg-[#1C1812] rounded-[14px] shadow-2xl border border-[#2C261E] z-50 overflow-hidden">
+
+    <%# Header %>
+    <div class="flex items-center justify-between px-4 py-3 border-b border-[#2C261E]">
+      <h3 class="text-sm font-bold text-[#E8E4DC]" style="font-family: 'DM Sans', sans-serif;">
+        <%= t("community_engine.notifications_ui.title") %>
+      </h3>
+      <button data-action="click->notifications#markAllRead"
+              class="text-xs text-[#9B9590] hover:text-[#E8E4DC] transition-colors"
+              style="font-family: 'DM Sans', sans-serif;">
+        <%= t("community_engine.notifications_ui.mark_all_read") %>
+      </button>
+    </div>
+
+    <%# Notification list %>
+    <div data-notifications-target="list" class="max-h-80 overflow-y-auto">
+      <% notifications = current_user.notifications.recent.includes(:actor, :notifiable).limit(15) %>
+      <% if notifications.any? %>
+        <% notifications.each do |notification| %>
+          <div class="notification-item flex items-start gap-3 px-4 py-3 border-b border-[#2C261E]/50 cursor-pointer hover:bg-[#2C261E]/50 transition-colors <%= notification.unread? ? 'bg-amber-50/10' : 'opacity-60' %>"
+               data-action="click->notifications#markRead"
+               data-notification-id="<%= notification.id %>">
+            <%# Actor avatar %>
+            <div class="flex-shrink-0 w-8 h-8 rounded-full bg-[#3D3730] flex items-center justify-center text-[#E8E4DC] text-xs font-bold"
+                 style="font-family: 'DM Sans', sans-serif;">
+              <%= notification.actor.name.first.upcase %>
+            </div>
+            <div class="flex-1 min-w-0">
+              <p class="text-sm text-[#E8E4DC] leading-snug" style="font-family: 'DM Sans', sans-serif;">
+                <span class="font-semibold"><%= notification.actor.name %></span>
+                <span class="text-[#9B9590]"><%= notification.notification_text %></span>
+              </p>
+              <span class="text-[10px] text-[#6B6560] mt-0.5 block" style="font-family: 'DM Mono', monospace;">
+                <%= time_ago_in_words(notification.created_at) %>
+              </span>
+            </div>
+            <% if notification.unread? %>
+              <span class="flex-shrink-0 w-2 h-2 rounded-full bg-blue-400 mt-2"></span>
+            <% end %>
+          </div>
+        <% end %>
+      <% else %>
+        <div class="px-4 py-8 text-center">
+          <p class="text-sm text-[#6B6560]" style="font-family: 'DM Sans', sans-serif;">
+            <%= t("community_engine.notifications_ui.empty") %>
+          </p>
+        </div>
+      <% end %>
+    </div>
+
+    <%# Footer %>
+    <div class="px-4 py-2.5 border-t border-[#2C261E]">
+      <%= link_to community_engine.notifications_path,
+            class: "block text-center text-xs text-[#9B9590] hover:text-[#E8E4DC] transition-colors",
+            style: "font-family: 'DM Sans', sans-serif;" do %>
+        <%= t("community_engine.notifications_ui.view_all") %>
+      <% end %>
+    </div>
+  </div>
+</div>

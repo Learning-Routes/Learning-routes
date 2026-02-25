@@ -12,7 +12,7 @@ module Assessments
       @route = @step.learning_route
 
       unless @result.score.present?
-        redirect_to assessments.assessment_path(@assessment), alert: "Assessment not yet submitted."
+        redirect_to assessments.assessment_path(@assessment), alert: t("flash.assessment_not_submitted")
         return
       end
 
@@ -65,7 +65,7 @@ module Assessments
         learning_route: route
       )
 
-      redirect_to result_path(@result), notice: "Assessment submitted! Score: #{score.round(1)}%"
+      redirect_to result_path(@result), notice: t("flash.assessment_submitted", score: score.round(1))
     end
 
     private
@@ -76,7 +76,7 @@ module Assessments
 
     def authorize_result_owner!
       unless @result.user_id == current_user.id
-        redirect_to main_app.dashboard_path, alert: "Not authorized."
+        redirect_to main_app.dashboard_path, alert: t("flash.not_authorized")
       end
     end
 

@@ -2,18 +2,18 @@ require "test_helper"
 
 module AiOrchestrator
   class CostTrackerTest < ActiveSupport::TestCase
-    test "estimates cost for claude-opus-4-6" do
-      cost = CostTracker.estimate_cost(model: "claude-opus-4-6", input_tokens: 1_000_000, output_tokens: 0)
+    test "estimates cost for claude-opus-4-5" do
+      cost = CostTracker.estimate_cost(model: "claude-opus-4-5", input_tokens: 1_000_000, output_tokens: 0)
       assert_equal 500, cost
     end
 
-    test "estimates output cost for claude-opus-4-6" do
-      cost = CostTracker.estimate_cost(model: "claude-opus-4-6", input_tokens: 0, output_tokens: 1_000_000)
+    test "estimates output cost for claude-opus-4-5" do
+      cost = CostTracker.estimate_cost(model: "claude-opus-4-5", input_tokens: 0, output_tokens: 1_000_000)
       assert_equal 2500, cost
     end
 
     test "estimates combined cost" do
-      cost = CostTracker.estimate_cost(model: "claude-opus-4-6", input_tokens: 1000, output_tokens: 500)
+      cost = CostTracker.estimate_cost(model: "claude-opus-4-5", input_tokens: 1000, output_tokens: 500)
       # (1000/1M * 500) + (500/1M * 2500) = 0.5 + 1.25 = 1.75 -> ceil = 2
       assert_equal 2, cost
     end

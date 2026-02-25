@@ -1,0 +1,26 @@
+<div class="mt-8">
+  <%# Header %>
+  <h3 class="text-lg font-bold text-[#1C1812] mb-4" style="font-family: 'DM Sans', sans-serif;">
+    <%= t("community_engine.comments.heading", count: commentable.comments.count) %>
+  </h3>
+
+  <%# Top-level comment form %>
+  <div class="mb-6">
+    <%= render "community_engine/comments/form", commentable: commentable %>
+  </div>
+
+  <%# Comments list with real-time updates %>
+  <%= turbo_stream_from "comments_#{commentable.class.name.parameterize}_#{commentable.id}" %>
+
+  <div id="comments_<%= commentable.class.name.parameterize %>_<%= commentable.id %>" class="divide-y divide-[#E8E4DC]">
+    <% commentable.comments.top_level.includes(:user, replies: :user).recent.each do |comment| %>
+      <%= render "community_engine/comments/comment", comment: comment %>
+    <% end %>
+
+    <% if commentable.comments.none? %>
+      <p class="py-8 text-center text-sm text-[#9B9590]" style="font-family: 'DM Sans', sans-serif;">
+        <%= t("community_engine.comments.empty") %>
+      </p>
+    <% end %>
+  </div>
+</div>

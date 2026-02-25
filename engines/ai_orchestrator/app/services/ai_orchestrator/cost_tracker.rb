@@ -4,7 +4,7 @@ module AiOrchestrator
     PRICING = {
       "gpt-5.2"            => { input: 175, output: 1400 },
       "gpt-5.1-codex-mini" => { input: 25, output: 200 },
-      "claude-opus-4-6"    => { input: 500, output: 2500 },
+      "claude-opus-4-5"    => { input: 500, output: 2500 },
       "claude-haiku-4-5"   => { input: 100, output: 500 },
       "claude-sonnet-4-5"  => { input: 300, output: 1500 },
       "elevenlabs"         => { flat: 0 },

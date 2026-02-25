@@ -45,7 +45,7 @@ module Assessments
       step = @assessment.route_step
       route = step.learning_route
       unless route.learning_profile.user_id == current_user.id
-        redirect_to main_app.dashboard_path, alert: "Not authorized."
+        redirect_to main_app.dashboard_path, alert: t("flash.not_authorized")
       end
     end
   end

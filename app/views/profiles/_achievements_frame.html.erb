@@ -26,7 +26,7 @@
     <div style="background:<%= ach[:unlocked] ? '#FEFDFB' : 'transparent' %>; border:1px solid rgba(28,24,18,<%= ach[:unlocked] ? '0.04' : '0.05' %>); border-radius:14px; padding:16px; display:flex; align-items:center; gap:12px; opacity:<%= ach[:unlocked] ? '1' : '0.4' %>;">
 
       <%# Icon %>
-      <div role="img" aria-label="<%= ach[:title] %><%= ' (unlocked)' if ach[:unlocked] %>" style="width:42px; height:42px; border-radius:12px; background:<%= ach[:color] %><%= ach[:unlocked] ? '1A' : '06' %>; display:flex; align-items:center; justify-content:center; flex-shrink:0; font-size:1.2rem;<%= ' filter:grayscale(1);' unless ach[:unlocked] %>">
+      <div role="img" aria-label="<%= ach[:title] %><%= " (#{t('achievements.unlocked_label')})" if ach[:unlocked] %>" style="width:42px; height:42px; border-radius:12px; background:<%= ach[:color] %><%= ach[:unlocked] ? '1A' : '06' %>; display:flex; align-items:center; justify-content:center; flex-shrink:0; font-size:1.2rem;<%= ' filter:grayscale(1);' unless ach[:unlocked] %>">
         <%= ach[:emoji] %>
       </div>
 

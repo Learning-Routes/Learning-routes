@@ -43,7 +43,7 @@ module LearningRoutesEngine
         .order(:position).first
 
       respond_to do |format|
-        format.html { redirect_to route_step_path(@route, next_available || @step), notice: "Step completed!" }
+        format.html { redirect_to route_step_path(@route, next_available || @step), notice: t("flash.step_completed") }
         format.turbo_stream
       end
     end
@@ -57,14 +57,14 @@ module LearningRoutesEngine
 
     def authorize_route_owner!
       unless @route.learning_profile.user_id == current_user.id
-        redirect_to main_app.dashboard_path, alert: "Not authorized."
+        redirect_to main_app.dashboard_path, alert: t("flash.not_authorized")
       end
     end
 
     def ensure_step_accessible!
       if @step.locked?
         redirect_to learning_routes_engine.route_path(@route),
-                    alert: "This step is not yet available."
+                    alert: t("flash.step_not_available")
       end
     end
 

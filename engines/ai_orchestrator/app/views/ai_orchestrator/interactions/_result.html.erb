@@ -4,7 +4,7 @@
       <span class="inline-block w-2 h-2 bg-green-500 rounded-full"></span>
       <span class="text-sm font-medium text-green-800"><%= t("ai_orchestrator.completed") %></span>
       <span class="text-xs text-gray-500">
-        <%= interaction.latency_seconds %>s &middot; <%= interaction.total_tokens %> tokens
+        <%= interaction.latency_seconds %><%= t("units.seconds_short") %> &middot; <%= interaction.total_tokens %> <%= t("units.tokens") %>
       </span>
     </div>
     <div class="prose prose-sm max-w-none">

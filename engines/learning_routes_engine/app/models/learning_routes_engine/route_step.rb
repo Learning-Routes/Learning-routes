@@ -16,6 +16,10 @@ module LearningRoutesEngine
              foreign_key: :route_step_id,
              dependent: :destroy
 
+    # Community associations
+    has_many :comments, as: :commentable, class_name: "CommunityEngine::Comment", dependent: :destroy
+    has_many :likes, as: :likeable, class_name: "CommunityEngine::Like", dependent: :destroy
+
     enum :level, { nv1: 0, nv2: 1, nv3: 2 }, prefix: true
     enum :content_type, { lesson: 0, exercise: 1, assessment: 2, review: 3 }, prefix: true
     enum :status, { locked: 0, available: 1, in_progress: 2, completed: 3 }
@@ -72,11 +76,15 @@ module LearningRoutesEngine
     end
 
     def audio_content
-      ai_contents.where(content_type: :text).first
+      ai_contents.order(created_at: :desc).first
     end
 
     def audio_ready?
       audio_content&.audio_ready? || false
+    end
+
+    def liked_by?(user)
+      likes.exists?(user_id: user.id)
     end
   end
 end

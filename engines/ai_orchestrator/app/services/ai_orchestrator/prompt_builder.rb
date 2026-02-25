@@ -1,6 +1,6 @@
 module AiOrchestrator
   class PromptBuilder
-    TEMPLATES_PATH = File.expand_path("../../../../../../config/prompts", __dir__)
+    TEMPLATES_PATH = File.expand_path("../../../../../config/prompts", __dir__)
 
     def initialize(task_type:, variables: {}, user: nil)
       @task_type = task_type.to_s
@@ -47,7 +47,7 @@ module AiOrchestrator
     end
 
     def engine_templates_path
-      File.expand_path("../../../../config/prompts", __dir__)
+      File.expand_path("../../../config/prompts", __dir__)
     end
 
     def interpolate(template)

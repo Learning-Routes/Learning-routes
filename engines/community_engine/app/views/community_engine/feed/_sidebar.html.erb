@@ -1,0 +1,91 @@
+<div style="display:flex; flex-direction:column; gap:1.25rem;">
+  <%# Top learners %>
+  <div style="background:rgba(255,255,255,0.6); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); border:1px solid rgba(28,24,18,0.06); border-radius:14px; padding:1.25rem;">
+    <h3 style="font-family:'DM Sans',sans-serif; font-weight:700; font-size:0.82rem; color:#1C1812; margin:0 0 1rem;">
+      <%= t("community_engine.feed.sidebar.top_learners") %>
+    </h3>
+    <% if @top_learners.any? %>
+      <div style="display:flex; flex-direction:column; gap:0.75rem;">
+        <% @top_learners.each_with_index do |learner, i| %>
+          <div style="display:flex; align-items:center; gap:0.6rem;">
+            <span style="width:18px; text-align:right; font-family:'DM Mono',monospace; font-size:0.65rem; font-weight:700; color:#9B9590;">
+              <%= i + 1 %>
+            </span>
+            <div style="width:30px; height:30px; border-radius:50%; background:#2C261E; display:flex; align-items:center; justify-content:center; color:#F5F1EB; font-family:'DM Sans',sans-serif; font-size:0.65rem; font-weight:700; flex-shrink:0;">
+              <%= learner.name.to_s.first&.upcase || "?" %>
+            </div>
+            <div style="flex:1; min-width:0;">
+              <p style="font-family:'DM Sans',sans-serif; font-size:0.82rem; font-weight:500; color:#1C1812; margin:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+                <%= learner.name %>
+              </p>
+            </div>
+            <% if current_user && learner.id != current_user.id %>
+              <% if current_user.following?(learner) %>
+                <span style="font-family:'DM Mono',monospace; font-size:0.6rem; color:#9B9590; padding:0.2rem 0.5rem; border-radius:6px; background:rgba(28,24,18,0.04);">
+                  <%= t("community_engine.follows.following") %>
+                </span>
+              <% else %>
+                <%= render "community_engine/follows/button", user: learner, following: false %>
+              <% end %>
+            <% end %>
+          </div>
+        <% end %>
+      </div>
+    <% else %>
+      <p style="font-family:'DM Sans',sans-serif; font-size:0.75rem; color:#9B9590; text-align:center; padding:1rem 0;">
+        <%= t("community_engine.feed.sidebar.no_learners") %>
+      </p>
+    <% end %>
+  </div>
+
+  <%# Platform stats %>
+  <div style="background:rgba(255,255,255,0.6); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); border:1px solid rgba(28,24,18,0.06); border-radius:14px; padding:1.25rem;">
+    <h3 style="font-family:'DM Sans',sans-serif; font-weight:700; font-size:0.82rem; color:#1C1812; margin:0 0 1rem;">
+      <%= t("community_engine.feed.sidebar.platform_stats") %>
+    </h3>
+    <div style="display:flex; flex-direction:column; gap:0.7rem;">
+      <% [
+        [t("community_engine.feed.stats.learners"), @stats[:total_users]],
+        [t("community_engine.feed.stats.routes"), @stats[:total_routes]],
+        [t("community_engine.feed.stats.shared"), @stats[:total_shared]]
+      ].each do |label, value| %>
+        <div style="display:flex; align-items:center; justify-content:space-between;">
+          <span style="font-family:'DM Sans',sans-serif; font-size:0.75rem; color:#6B6560;"><%= label %></span>
+          <span style="font-family:'DM Mono',monospace; font-size:0.82rem; font-weight:700; color:#1C1812;"><%= value %></span>
+        </div>
+      <% end %>
+    </div>
+  </div>
+
+  <%# Suggested follows %>
+  <% if current_user %>
+    <%
+      suggested = Core::User.where.not(id: current_user.id)
+        .where.not(id: current_user.following.select(:id))
+        .order(Arel.sql("RANDOM()"))
+        .limit(3)
+    %>
+    <% if suggested.any? %>
+      <div style="background:rgba(255,255,255,0.6); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); border:1px solid rgba(28,24,18,0.06); border-radius:14px; padding:1.25rem;">
+        <h3 style="font-family:'DM Sans',sans-serif; font-weight:700; font-size:0.82rem; color:#1C1812; margin:0 0 1rem;">
+          <%= t("community_engine.feed.sidebar.suggested") %>
+        </h3>
+        <div style="display:flex; flex-direction:column; gap:0.75rem;">
+          <% suggested.each do |user| %>
+            <div style="display:flex; align-items:center; gap:0.6rem;">
+              <div style="width:30px; height:30px; border-radius:50%; background:#2C261E; display:flex; align-items:center; justify-content:center; color:#F5F1EB; font-family:'DM Sans',sans-serif; font-size:0.65rem; font-weight:700; flex-shrink:0;">
+                <%= user.name.to_s.first&.upcase || "?" %>
+              </div>
+              <div style="flex:1; min-width:0;">
+                <p style="font-family:'DM Sans',sans-serif; font-size:0.82rem; font-weight:500; color:#1C1812; margin:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+                  <%= user.name %>
+                </p>
+              </div>
+              <%= render "community_engine/follows/button", user: user, following: false %>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+  <% end %>
+</div>
