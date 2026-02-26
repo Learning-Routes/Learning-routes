@@ -5,6 +5,7 @@ module CommunityEngine
       LearningRoutesEngine::RouteStep
       CommunityEngine::SharedRoute
       CommunityEngine::Comment
+      CommunityEngine::Post
     ].freeze
 
     def toggle
@@ -63,7 +64,7 @@ module CommunityEngine
       case likeable
       when CommunityEngine::SharedRoute
         likeable.visibility == "public" || likeable.user_id == current_user.id
-      when CommunityEngine::Comment
+      when CommunityEngine::Comment, CommunityEngine::Post
         true
       when LearningRoutesEngine::LearningRoute
         likeable.learning_profile&.user_id == current_user.id
@@ -82,7 +83,7 @@ module CommunityEngine
         likeable.learning_route&.learning_profile&.user
       when CommunityEngine::SharedRoute
         likeable.user
-      when CommunityEngine::Comment
+      when CommunityEngine::Comment, CommunityEngine::Post
         likeable.user
       end
     end

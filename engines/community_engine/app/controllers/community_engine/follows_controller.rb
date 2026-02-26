@@ -24,7 +24,7 @@ module CommunityEngine
             locals: { user: @followed_user, following: true }
           )
         }
-        format.html { redirect_back(fallback_location: root_path) }
+        format.html { redirect_back(fallback_location: main_app.root_path) }
       end
     end
 
@@ -43,7 +43,7 @@ module CommunityEngine
             locals: { user: @followed_user, following: false }
           )
         }
-        format.html { redirect_back(fallback_location: root_path) }
+        format.html { redirect_back(fallback_location: main_app.root_path) }
       end
     end
   end

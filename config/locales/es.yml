@@ -1205,6 +1205,19 @@ es:
       completed_step: "completó el paso"
       completed_route: "completó la ruta"
       cloned_route: "clonó la ruta"
+      posted: "publicó"
+    posts:
+      placeholder: "Comparte un pensamiento con la comunidad..."
+      submit: "Publicar"
+      delete: "Eliminar"
+      delete_confirm: "¿Eliminar esta publicación?"
+      created: "Publicación creada"
+      deleted: "Publicación eliminada"
+      unauthorized: "Solo puedes eliminar tus propias publicaciones"
+    ratings:
+      rate_star: "Calificar %{n} estrellas"
+      no_ratings: "Sin calificaciones"
+      rated: "Calificación guardada"
     notifications:
       new_comment: "comentó en tu contenido"
       new_like: "dio like a tu contenido"
@@ -1229,6 +1242,8 @@ es:
         clone_route: "Clonar Ruta"
         empty_title: "No hay rutas en tendencia"
         empty_subtitle: "Las rutas compartidas aparecerán aquí a medida que la comunidad crezca."
+      posts_heading: "Publicaciones de la Comunidad"
+      posts_empty: "Aún no hay publicaciones. ¡Sé el primero en compartir un pensamiento!"
       sidebar:
         top_learners: "Top Aprendices"
         no_learners: "Aún no hay aprendices."
@@ -1236,6 +1251,8 @@ es:
         suggested: "Sugeridos para Seguir"
         no_suggestions: "Sin sugerencias por ahora."
         share_my_routes: "Compartir Mis Rutas"
+      floating_thoughts:
+        title: "Lo que dicen los aprendices"
     notifications_ui:
       title: "Notificaciones"
       mark_all_read: "Marcar todo como leído"

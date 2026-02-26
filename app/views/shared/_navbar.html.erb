@@ -3,7 +3,7 @@
        class="flex items-center justify-between h-[58px] px-[clamp(1.5rem,5vw,4rem)] border-b border-transparent transition-all duration-300">
 
     <%# === Logo === %>
-    <%= link_to root_path, class: "flex items-center gap-[0.55rem] no-underline" do %>
+    <%= link_to main_app.root_path, class: "flex items-center gap-[0.55rem] no-underline" do %>
       <%= render "shared/logo", size: 28 %>
       <span class="font-sans font-bold text-[0.92rem] tracking-[-0.5px] text-txt">Learning Routes</span>
     <% end %>
@@ -18,7 +18,7 @@
       </a>
 
       <% if current_user %>
-        <%= link_to t("nav.dashboard"), dashboard_path,
+        <%= link_to t("nav.dashboard"), main_app.dashboard_path,
             class: "font-sans text-[0.8rem] font-medium text-muted hover:text-txt focus-visible:text-txt focus-visible:outline-none focus-visible:underline transition-colors duration-200" %>
       <% else %>
         <%= link_to t("nav.sign_in"), core.sign_in_path,
@@ -29,7 +29,7 @@
       <%= render "shared/locale_toggle" %>
 
       <% if current_user %>
-        <%= link_to t("nav.profile"), profile_path,
+        <%= link_to t("nav.profile"), main_app.profile_path,
             class: "inline-flex items-center justify-center font-sans text-[0.8rem] font-semibold
                     bg-accent text-accent-text px-[1.15rem] py-[0.48rem] rounded-btn btn-shadow
                     hover-lift tracking-[-0.2px]" %>
@@ -63,7 +63,7 @@
       </a>
 
       <% if current_user %>
-        <%= link_to t("nav.dashboard"), dashboard_path,
+        <%= link_to t("nav.dashboard"), main_app.dashboard_path,
             data: { action: "navbar#closeMenu" },
             class: "font-sans text-[0.88rem] font-medium text-sub hover:text-txt focus-visible:text-txt focus-visible:outline-none focus-visible:underline transition-colors py-1" %>
       <% else %>
@@ -79,7 +79,7 @@
 
       <div class="pt-2">
         <% if current_user %>
-          <%= link_to t("nav.profile"), profile_path,
+          <%= link_to t("nav.profile"), main_app.profile_path,
               class: "inline-flex items-center justify-center font-sans text-[0.85rem] font-semibold
                       bg-accent text-accent-text px-5 py-2.5 rounded-btn btn-shadow w-full" %>
         <% else %>

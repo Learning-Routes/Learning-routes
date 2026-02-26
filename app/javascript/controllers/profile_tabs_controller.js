@@ -15,7 +15,8 @@ export default class extends Controller {
   showTab(index) {
     this.tabTargets.forEach((tab, i) => {
       const isActive = i === index
-      tab.style.color = isActive ? "#1C1812" : "#A09889"
+      const cs = getComputedStyle(document.documentElement)
+      tab.style.color = isActive ? (cs.getPropertyValue("--color-txt").trim() || "#1C1812") : (cs.getPropertyValue("--color-muted").trim() || "#887F72")
       tab.style.fontWeight = isActive ? "600" : "400"
       tab.setAttribute("aria-selected", isActive ? "true" : "false")
       tab.setAttribute("tabindex", isActive ? "0" : "-1")

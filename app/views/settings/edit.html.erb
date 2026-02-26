@@ -4,10 +4,10 @@
 
   <%# === Page heading === %>
   <div style="margin-bottom:1.8rem;">
-    <h1 style="font-family:'DM Sans',sans-serif; font-weight:700; font-size:1.6rem; letter-spacing:-0.7px; color:#1C1812; margin:0 0 0.3rem; line-height:1.2;">
+    <h1 style="font-family:'DM Sans',sans-serif; font-weight:700; font-size:1.6rem; letter-spacing:-0.7px; color:var(--color-txt); margin:0 0 0.3rem; line-height:1.2;">
       <%= t("settings.heading") %>
     </h1>
-    <p style="font-family:'DM Sans',sans-serif; font-size:0.82rem; color:#9E9587; margin:0;">
+    <p style="font-family:'DM Sans',sans-serif; font-size:0.82rem; color:var(--color-muted); margin:0;">
       <%= t("settings.subheading") %>
     </p>
   </div>
@@ -35,11 +35,11 @@
     <%# ============================================ %>
     <%# SECTION 1: Account                          %>
     <%# ============================================ %>
-    <div style="background:rgba(255,255,255,0.55); backdrop-filter:blur(50px) saturate(1.4); -webkit-backdrop-filter:blur(50px) saturate(1.4);
-                border:1px solid rgba(28,24,18,0.07); border-radius:20px; padding:1.8rem 1.6rem;
+    <div style="background:var(--color-card-glass); backdrop-filter:blur(50px) saturate(1.4); -webkit-backdrop-filter:blur(50px) saturate(1.4);
+                border:1px solid var(--color-border-subtle); border-radius:20px; padding:1.8rem 1.6rem;
                 box-shadow:0 8px 32px rgba(28,24,18,0.06), 0 1px 3px rgba(28,24,18,0.03); margin-bottom:1rem;">
 
-      <h2 style="font-family:'DM Sans',sans-serif; font-weight:600; font-size:1rem; color:#1C1812; margin:0 0 1.2rem; letter-spacing:-0.3px;">
+      <h2 style="font-family:'DM Sans',sans-serif; font-weight:600; font-size:1rem; color:var(--color-txt); margin:0 0 1.2rem; letter-spacing:-0.3px;">
         <%= t("settings.account.heading") %>
       </h2>
 
@@ -47,9 +47,9 @@
         <%# Name %>
         <div>
           <%= f.label :name, t("settings.account.name_label"),
-              style: "display:block; font-family:'DM Sans',sans-serif; font-size:0.78rem; font-weight:500; color:#6D665B; margin-bottom:0.45rem;" %>
+              style: "display:block; font-family:'DM Sans',sans-serif; font-size:0.78rem; font-weight:500; color:var(--color-sub); margin-bottom:0.45rem;" %>
           <%= f.text_field :name,
-              style: "display:block; width:100%; box-sizing:border-box; font-family:'DM Sans',sans-serif; font-size:0.92rem; color:#1C1812; padding:0.78rem 0.95rem; border-radius:10px; border:1px solid rgba(28,24,18,0.1); background:white; outline:none; transition:border-color 0.2s, box-shadow 0.2s;",
+              style: "display:block; width:100%; box-sizing:border-box; font-family:'DM Sans',sans-serif; font-size:0.92rem; color:var(--color-txt); padding:0.78rem 0.95rem; border-radius:10px; border:1px solid var(--color-border-subtle); background:var(--color-card); outline:none; transition:border-color 0.2s, box-shadow 0.2s;",
               placeholder: t("settings.account.name_placeholder"),
               required: true,
               autocomplete: "name",
@@ -59,9 +59,9 @@
         <%# Email %>
         <div>
           <%= f.label :email, t("settings.account.email_label"),
-              style: "display:block; font-family:'DM Sans',sans-serif; font-size:0.78rem; font-weight:500; color:#6D665B; margin-bottom:0.45rem;" %>
+              style: "display:block; font-family:'DM Sans',sans-serif; font-size:0.78rem; font-weight:500; color:var(--color-sub); margin-bottom:0.45rem;" %>
           <%= f.email_field :email,
-              style: "display:block; width:100%; box-sizing:border-box; font-family:'DM Sans',sans-serif; font-size:0.92rem; color:#1C1812; padding:0.78rem 0.95rem; border-radius:10px; border:1px solid rgba(28,24,18,0.1); background:white; outline:none; transition:border-color 0.2s, box-shadow 0.2s;",
+              style: "display:block; width:100%; box-sizing:border-box; font-family:'DM Sans',sans-serif; font-size:0.92rem; color:var(--color-txt); padding:0.78rem 0.95rem; border-radius:10px; border:1px solid var(--color-border-subtle); background:var(--color-card); outline:none; transition:border-color 0.2s, box-shadow 0.2s;",
               placeholder: t("settings.account.email_placeholder"),
               required: true,
               autocomplete: "email",
@@ -73,11 +73,11 @@
     <%# ============================================ %>
     <%# SECTION 2: Preferences                      %>
     <%# ============================================ %>
-    <div style="background:rgba(255,255,255,0.55); backdrop-filter:blur(50px) saturate(1.4); -webkit-backdrop-filter:blur(50px) saturate(1.4);
-                border:1px solid rgba(28,24,18,0.07); border-radius:20px; padding:1.8rem 1.6rem;
+    <div style="background:var(--color-card-glass); backdrop-filter:blur(50px) saturate(1.4); -webkit-backdrop-filter:blur(50px) saturate(1.4);
+                border:1px solid var(--color-border-subtle); border-radius:20px; padding:1.8rem 1.6rem;
                 box-shadow:0 8px 32px rgba(28,24,18,0.06), 0 1px 3px rgba(28,24,18,0.03); margin-bottom:1rem;">
 
-      <h2 style="font-family:'DM Sans',sans-serif; font-weight:600; font-size:1rem; color:#1C1812; margin:0 0 1.2rem; letter-spacing:-0.3px;">
+      <h2 style="font-family:'DM Sans',sans-serif; font-weight:600; font-size:1rem; color:var(--color-txt); margin:0 0 1.2rem; letter-spacing:-0.3px;">
         <%= t("settings.preferences.heading") %>
       </h2>
 
@@ -85,20 +85,20 @@
         <%# Language %>
         <div>
           <%= f.label :locale, t("settings.preferences.locale_label"),
-              style: "display:block; font-family:'DM Sans',sans-serif; font-size:0.78rem; font-weight:500; color:#6D665B; margin-bottom:0.45rem;" %>
+              style: "display:block; font-family:'DM Sans',sans-serif; font-size:0.78rem; font-weight:500; color:var(--color-sub); margin-bottom:0.45rem;" %>
           <%= f.select :locale,
               options_for_select([
                 [t("settings.preferences.locale_en"), "en"],
                 [t("settings.preferences.locale_es"), "es"]
               ], @user.locale),
               {},
-              style: "display:block; width:100%; box-sizing:border-box; font-family:'DM Sans',sans-serif; font-size:0.92rem; color:#1C1812; padding:0.78rem 0.95rem; border-radius:10px; border:1px solid rgba(28,24,18,0.1); background:white; outline:none; transition:border-color 0.2s, box-shadow 0.2s; cursor:pointer;",
+              style: "display:block; width:100%; box-sizing:border-box; font-family:'DM Sans',sans-serif; font-size:0.92rem; color:var(--color-txt); padding:0.78rem 0.95rem; border-radius:10px; border:1px solid var(--color-border-subtle); background:var(--color-card); outline:none; transition:border-color 0.2s, box-shadow 0.2s; cursor:pointer;",
               data: { auth_form_target: "input", action: "focus->auth-form#inputFocus blur->auth-form#inputBlur" } %>
         </div>
 
         <%# Appearance (theme) %>
         <div>
-          <p style="font-family:'DM Sans',sans-serif; font-size:0.78rem; font-weight:500; color:#6D665B; margin:0 0 0.5rem;">
+          <p style="font-family:'DM Sans',sans-serif; font-size:0.78rem; font-weight:500; color:var(--color-sub); margin:0 0 0.5rem;">
             <%= t("settings.preferences.theme_label") %>
           </p>
           <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
@@ -107,13 +107,13 @@
               ["light", t("settings.preferences.theme_light")],
               ["dark", t("settings.preferences.theme_dark")]
             ].each do |value, label| %>
-              <label style="display:flex; align-items:center; gap:0.4rem; font-family:'DM Sans',sans-serif; font-size:0.82rem; color:#1C1812;
-                            padding:0.55rem 1rem; border-radius:10px; border:1px solid rgba(28,24,18,0.1); background:white; cursor:pointer; transition:all 0.2s;"
+              <label style="display:flex; align-items:center; gap:0.4rem; font-family:'DM Sans',sans-serif; font-size:0.82rem; color:var(--color-txt);
+                            padding:0.55rem 1rem; border-radius:10px; border:1px solid var(--color-border-subtle); background:var(--color-card); cursor:pointer; transition:all 0.2s;"
                      onmouseover="this.style.borderColor='rgba(28,24,18,0.22)'"
                      onmouseout="this.style.borderColor='rgba(28,24,18,0.1)'">
                 <input type="radio" name="user[theme]" value="<%= value %>"
                        <%= "checked" if @user.theme == value %>
-                       style="accent-color:#2C261E;">
+                       style="accent-color:var(--color-accent);">
                 <%= label %>
               </label>
             <% end %>
@@ -123,11 +123,11 @@
         <%# Timezone %>
         <div>
           <%= f.label :timezone, t("settings.preferences.timezone_label"),
-              style: "display:block; font-family:'DM Sans',sans-serif; font-size:0.78rem; font-weight:500; color:#6D665B; margin-bottom:0.45rem;" %>
+              style: "display:block; font-family:'DM Sans',sans-serif; font-size:0.78rem; font-weight:500; color:var(--color-sub); margin-bottom:0.45rem;" %>
           <%= f.time_zone_select :timezone,
               ActiveSupport::TimeZone.all,
               { default: @user.timezone || "UTC" },
-              style: "display:block; width:100%; box-sizing:border-box; font-family:'DM Sans',sans-serif; font-size:0.92rem; color:#1C1812; padding:0.78rem 0.95rem; border-radius:10px; border:1px solid rgba(28,24,18,0.1); background:white; outline:none; transition:border-color 0.2s, box-shadow 0.2s; cursor:pointer;",
+              style: "display:block; width:100%; box-sizing:border-box; font-family:'DM Sans',sans-serif; font-size:0.92rem; color:var(--color-txt); padding:0.78rem 0.95rem; border-radius:10px; border:1px solid var(--color-border-subtle); background:var(--color-card); outline:none; transition:border-color 0.2s, box-shadow 0.2s; cursor:pointer;",
               data: { auth_form_target: "input", action: "focus->auth-form#inputFocus blur->auth-form#inputBlur" } %>
         </div>
       </div>
@@ -136,11 +136,11 @@
     <%# ============================================ %>
     <%# SECTION 3: Learning Profile                 %>
     <%# ============================================ %>
-    <div style="background:rgba(255,255,255,0.55); backdrop-filter:blur(50px) saturate(1.4); -webkit-backdrop-filter:blur(50px) saturate(1.4);
-                border:1px solid rgba(28,24,18,0.07); border-radius:20px; padding:1.8rem 1.6rem;
+    <div style="background:var(--color-card-glass); backdrop-filter:blur(50px) saturate(1.4); -webkit-backdrop-filter:blur(50px) saturate(1.4);
+                border:1px solid var(--color-border-subtle); border-radius:20px; padding:1.8rem 1.6rem;
                 box-shadow:0 8px 32px rgba(28,24,18,0.06), 0 1px 3px rgba(28,24,18,0.03); margin-bottom:1rem;">
 
-      <h2 style="font-family:'DM Sans',sans-serif; font-weight:600; font-size:1rem; color:#1C1812; margin:0 0 1.2rem; letter-spacing:-0.3px;">
+      <h2 style="font-family:'DM Sans',sans-serif; font-weight:600; font-size:1rem; color:var(--color-txt); margin:0 0 1.2rem; letter-spacing:-0.3px;">
         <%= t("settings.learning.heading") %>
       </h2>
 
@@ -148,18 +148,18 @@
 
         <%# Current Level %>
         <div>
-          <p style="font-family:'DM Sans',sans-serif; font-size:0.78rem; font-weight:500; color:#6D665B; margin:0 0 0.5rem;">
+          <p style="font-family:'DM Sans',sans-serif; font-size:0.78rem; font-weight:500; color:var(--color-sub); margin:0 0 0.5rem;">
             <%= t("settings.learning.level_label") %>
           </p>
           <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
             <% %w[beginner intermediate advanced].each do |level| %>
-              <label style="display:flex; align-items:center; gap:0.4rem; font-family:'DM Sans',sans-serif; font-size:0.82rem; color:#1C1812;
-                            padding:0.55rem 1rem; border-radius:10px; border:1px solid rgba(28,24,18,0.1); background:white; cursor:pointer; transition:all 0.2s;"
+              <label style="display:flex; align-items:center; gap:0.4rem; font-family:'DM Sans',sans-serif; font-size:0.82rem; color:var(--color-txt);
+                            padding:0.55rem 1rem; border-radius:10px; border:1px solid var(--color-border-subtle); background:var(--color-card); cursor:pointer; transition:all 0.2s;"
                      onmouseover="this.style.borderColor='rgba(28,24,18,0.22)'"
                      onmouseout="this.style.borderColor='rgba(28,24,18,0.1)'">
                 <input type="radio" name="learning_profile[current_level]" value="<%= level %>"
                        <%= "checked" if @profile.current_level == level %>
-                       style="accent-color:#2C261E;">
+                       style="accent-color:var(--color-accent);">
                 <%= t("settings.learning.level_#{level}") %>
               </label>
             <% end %>
@@ -168,19 +168,19 @@
 
         <%# Interests %>
         <div>
-          <p style="font-family:'DM Sans',sans-serif; font-size:0.78rem; font-weight:500; color:#6D665B; margin:0 0 0.5rem;">
+          <p style="font-family:'DM Sans',sans-serif; font-size:0.78rem; font-weight:500; color:var(--color-sub); margin:0 0 0.5rem;">
             <%= t("settings.learning.interests_label") %>
           </p>
           <% interest_options = %w[programming web_development data_science mobile_development devops cybersecurity ai_ml databases] %>
           <div style="display:flex; gap:0.4rem; flex-wrap:wrap;">
             <% interest_options.each do |interest| %>
-              <label style="display:flex; align-items:center; gap:0.35rem; font-family:'DM Sans',sans-serif; font-size:0.78rem; color:#1C1812;
-                            padding:0.45rem 0.8rem; border-radius:9px; border:1px solid rgba(28,24,18,0.1); background:white; cursor:pointer; transition:all 0.2s;"
+              <label style="display:flex; align-items:center; gap:0.35rem; font-family:'DM Sans',sans-serif; font-size:0.78rem; color:var(--color-txt);
+                            padding:0.45rem 0.8rem; border-radius:9px; border:1px solid var(--color-border-subtle); background:var(--color-card); cursor:pointer; transition:all 0.2s;"
                      onmouseover="this.style.borderColor='rgba(28,24,18,0.22)'"
                      onmouseout="this.style.borderColor='rgba(28,24,18,0.1)'">
                 <input type="checkbox" name="learning_profile[interests][]" value="<%= interest %>"
                        <%= "checked" if @profile.interests&.include?(interest) %>
-                       style="accent-color:#2C261E; width:14px; height:14px;">
+                       style="accent-color:var(--color-accent); width:14px; height:14px;">
                 <%= t("settings.learning.interest_#{interest}", default: interest.humanize) %>
               </label>
             <% end %>
@@ -189,18 +189,18 @@
 
         <%# Learning Style %>
         <div>
-          <p style="font-family:'DM Sans',sans-serif; font-size:0.78rem; font-weight:500; color:#6D665B; margin:0 0 0.5rem;">
+          <p style="font-family:'DM Sans',sans-serif; font-size:0.78rem; font-weight:500; color:var(--color-sub); margin:0 0 0.5rem;">
             <%= t("settings.learning.style_label") %>
           </p>
           <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
             <% %w[visual auditory reading kinesthetic].each do |style| %>
-              <label style="display:flex; align-items:center; gap:0.35rem; font-family:'DM Sans',sans-serif; font-size:0.82rem; color:#1C1812;
-                            padding:0.5rem 0.9rem; border-radius:10px; border:1px solid rgba(28,24,18,0.1); background:white; cursor:pointer; transition:all 0.2s;"
+              <label style="display:flex; align-items:center; gap:0.35rem; font-family:'DM Sans',sans-serif; font-size:0.82rem; color:var(--color-txt);
+                            padding:0.5rem 0.9rem; border-radius:10px; border:1px solid var(--color-border-subtle); background:var(--color-card); cursor:pointer; transition:all 0.2s;"
                      onmouseover="this.style.borderColor='rgba(28,24,18,0.22)'"
                      onmouseout="this.style.borderColor='rgba(28,24,18,0.1)'">
                 <input type="checkbox" name="learning_profile[learning_style][]" value="<%= style %>"
                        <%= "checked" if @profile.learning_style&.include?(style) %>
-                       style="accent-color:#2C261E; width:14px; height:14px;">
+                       style="accent-color:var(--color-accent); width:14px; height:14px;">
                 <%= t("settings.learning.style_#{style}") %>
               </label>
             <% end %>
@@ -209,12 +209,12 @@
 
         <%# Goal %>
         <div>
-          <label style="display:block; font-family:'DM Sans',sans-serif; font-size:0.78rem; font-weight:500; color:#6D665B; margin-bottom:0.45rem;"
+          <label style="display:block; font-family:'DM Sans',sans-serif; font-size:0.78rem; font-weight:500; color:var(--color-sub); margin-bottom:0.45rem;"
                  for="learning_profile_goal">
             <%= t("settings.learning.goal_label") %>
           </label>
           <textarea name="learning_profile[goal]" id="learning_profile_goal" rows="3"
-                    style="display:block; width:100%; box-sizing:border-box; font-family:'DM Sans',sans-serif; font-size:0.92rem; color:#1C1812; padding:0.78rem 0.95rem; border-radius:10px; border:1px solid rgba(28,24,18,0.1); background:white; outline:none; transition:border-color 0.2s, box-shadow 0.2s; resize:vertical;"
+                    style="display:block; width:100%; box-sizing:border-box; font-family:'DM Sans',sans-serif; font-size:0.92rem; color:var(--color-txt); padding:0.78rem 0.95rem; border-radius:10px; border:1px solid var(--color-border-subtle); background:var(--color-card); outline:none; transition:border-color 0.2s, box-shadow 0.2s; resize:vertical;"
                     placeholder="<%= t('settings.learning.goal_placeholder') %>"
                     data-auth-form-target="input"
                     data-action="focus->auth-form#inputFocus blur->auth-form#inputBlur"><%= @profile.goal %></textarea>
@@ -222,12 +222,12 @@
 
         <%# Timeline %>
         <div>
-          <label style="display:block; font-family:'DM Sans',sans-serif; font-size:0.78rem; font-weight:500; color:#6D665B; margin-bottom:0.45rem;"
+          <label style="display:block; font-family:'DM Sans',sans-serif; font-size:0.78rem; font-weight:500; color:var(--color-sub); margin-bottom:0.45rem;"
                  for="learning_profile_timeline">
             <%= t("settings.learning.timeline_label") %>
           </label>
           <select name="learning_profile[timeline]" id="learning_profile_timeline"
-                  style="display:block; width:100%; box-sizing:border-box; font-family:'DM Sans',sans-serif; font-size:0.92rem; color:#1C1812; padding:0.78rem 0.95rem; border-radius:10px; border:1px solid rgba(28,24,18,0.1); background:white; outline:none; transition:border-color 0.2s, box-shadow 0.2s; cursor:pointer;"
+                  style="display:block; width:100%; box-sizing:border-box; font-family:'DM Sans',sans-serif; font-size:0.92rem; color:var(--color-txt); padding:0.78rem 0.95rem; border-radius:10px; border:1px solid var(--color-border-subtle); background:var(--color-card); outline:none; transition:border-color 0.2s, box-shadow 0.2s; cursor:pointer;"
                   data-auth-form-target="input"
                   data-action="focus->auth-form#inputFocus blur->auth-form#inputBlur">
             <% %w[1_month 3_months 6_months 1_year].each do |tl| %>
@@ -241,7 +241,7 @@
     <%# === Save button === %>
     <div style="margin-bottom:1.8rem;">
       <%= f.submit t("settings.save"),
-          style: "display:block; width:100%; font-family:'DM Sans',sans-serif; font-size:0.9rem; font-weight:600; color:#F5F1EB; background:#2C261E; padding:0.85rem 1rem; border-radius:11px; border:none; cursor:pointer; transition:all 0.2s; box-shadow:0 1px 3px rgba(28,24,18,0.12), 0 1px 2px rgba(28,24,18,0.06);",
+          style: "display:block; width:100%; font-family:'DM Sans',sans-serif; font-size:0.9rem; font-weight:600; color:var(--color-accent-text); background:var(--color-accent); padding:0.85rem 1rem; border-radius:11px; border:none; cursor:pointer; transition:all 0.2s; box-shadow:0 1px 3px rgba(28,24,18,0.12), 0 1px 2px rgba(28,24,18,0.06);",
           data: { auth_form_target: "submit", action: "mouseenter->auth-form#submitOver mouseleave->auth-form#submitOut" } %>
     </div>
   <% end %>
@@ -249,11 +249,11 @@
   <%# ============================================ %>
   <%# SECTION 4: Change Password (separate form)  %>
   <%# ============================================ %>
-  <div style="background:rgba(255,255,255,0.55); backdrop-filter:blur(50px) saturate(1.4); -webkit-backdrop-filter:blur(50px) saturate(1.4);
-              border:1px solid rgba(28,24,18,0.07); border-radius:20px; padding:1.8rem 1.6rem;
+  <div style="background:var(--color-card-glass); backdrop-filter:blur(50px) saturate(1.4); -webkit-backdrop-filter:blur(50px) saturate(1.4);
+              border:1px solid var(--color-border-subtle); border-radius:20px; padding:1.8rem 1.6rem;
               box-shadow:0 8px 32px rgba(28,24,18,0.06), 0 1px 3px rgba(28,24,18,0.03); margin-bottom:1rem;">
 
-    <h2 style="font-family:'DM Sans',sans-serif; font-weight:600; font-size:1rem; color:#1C1812; margin:0 0 1.2rem; letter-spacing:-0.3px;">
+    <h2 style="font-family:'DM Sans',sans-serif; font-weight:600; font-size:1rem; color:var(--color-txt); margin:0 0 1.2rem; letter-spacing:-0.3px;">
       <%= t("settings.password.heading") %>
     </h2>
 
@@ -262,9 +262,9 @@
         <%# Current password %>
         <div>
           <%= f.label :current_password, t("settings.password.current_label"),
-              style: "display:block; font-family:'DM Sans',sans-serif; font-size:0.78rem; font-weight:500; color:#6D665B; margin-bottom:0.45rem;" %>
+              style: "display:block; font-family:'DM Sans',sans-serif; font-size:0.78rem; font-weight:500; color:var(--color-sub); margin-bottom:0.45rem;" %>
           <%= f.password_field :current_password,
-              style: "display:block; width:100%; box-sizing:border-box; font-family:'DM Sans',sans-serif; font-size:0.92rem; color:#1C1812; padding:0.78rem 0.95rem; border-radius:10px; border:1px solid rgba(28,24,18,0.1); background:white; outline:none; transition:border-color 0.2s, box-shadow 0.2s;",
+              style: "display:block; width:100%; box-sizing:border-box; font-family:'DM Sans',sans-serif; font-size:0.92rem; color:var(--color-txt); padding:0.78rem 0.95rem; border-radius:10px; border:1px solid var(--color-border-subtle); background:var(--color-card); outline:none; transition:border-color 0.2s, box-shadow 0.2s;",
               placeholder: t("settings.password.current_placeholder"),
               required: true,
               autocomplete: "current-password",
@@ -274,9 +274,9 @@
         <%# New password %>
         <div>
           <%= f.label :new_password, t("settings.password.new_label"),
-              style: "display:block; font-family:'DM Sans',sans-serif; font-size:0.78rem; font-weight:500; color:#6D665B; margin-bottom:0.45rem;" %>
+              style: "display:block; font-family:'DM Sans',sans-serif; font-size:0.78rem; font-weight:500; color:var(--color-sub); margin-bottom:0.45rem;" %>
           <%= f.password_field :new_password,
-              style: "display:block; width:100%; box-sizing:border-box; font-family:'DM Sans',sans-serif; font-size:0.92rem; color:#1C1812; padding:0.78rem 0.95rem; border-radius:10px; border:1px solid rgba(28,24,18,0.1); background:white; outline:none; transition:border-color 0.2s, box-shadow 0.2s;",
+              style: "display:block; width:100%; box-sizing:border-box; font-family:'DM Sans',sans-serif; font-size:0.92rem; color:var(--color-txt); padding:0.78rem 0.95rem; border-radius:10px; border:1px solid var(--color-border-subtle); background:var(--color-card); outline:none; transition:border-color 0.2s, box-shadow 0.2s;",
               placeholder: t("settings.password.new_placeholder"),
               required: true,
               minlength: 8,
@@ -287,9 +287,9 @@
         <%# Confirm password %>
         <div>
           <%= f.label :new_password_confirmation, t("settings.password.confirm_label"),
-              style: "display:block; font-family:'DM Sans',sans-serif; font-size:0.78rem; font-weight:500; color:#6D665B; margin-bottom:0.45rem;" %>
+              style: "display:block; font-family:'DM Sans',sans-serif; font-size:0.78rem; font-weight:500; color:var(--color-sub); margin-bottom:0.45rem;" %>
           <%= f.password_field :new_password_confirmation,
-              style: "display:block; width:100%; box-sizing:border-box; font-family:'DM Sans',sans-serif; font-size:0.92rem; color:#1C1812; padding:0.78rem 0.95rem; border-radius:10px; border:1px solid rgba(28,24,18,0.1); background:white; outline:none; transition:border-color 0.2s, box-shadow 0.2s;",
+              style: "display:block; width:100%; box-sizing:border-box; font-family:'DM Sans',sans-serif; font-size:0.92rem; color:var(--color-txt); padding:0.78rem 0.95rem; border-radius:10px; border:1px solid var(--color-border-subtle); background:var(--color-card); outline:none; transition:border-color 0.2s, box-shadow 0.2s;",
               placeholder: t("settings.password.confirm_placeholder"),
               required: true,
               autocomplete: "new-password",
@@ -299,7 +299,7 @@
         <%# Submit %>
         <div style="margin-top:0.3rem;">
           <%= f.submit t("settings.password.submit"),
-              style: "display:block; width:100%; font-family:'DM Sans',sans-serif; font-size:0.88rem; font-weight:600; color:#2C261E; background:transparent; padding:0.78rem 1rem; border-radius:11px; border:1px solid rgba(28,24,18,0.15); cursor:pointer; transition:all 0.2s;",
+              style: "display:block; width:100%; font-family:'DM Sans',sans-serif; font-size:0.88rem; font-weight:600; color:var(--color-txt); background:transparent; padding:0.78rem 1rem; border-radius:11px; border:1px solid var(--color-border-subtle); cursor:pointer; transition:all 0.2s;",
               data: { action: "mouseenter->auth-form#oauthOver mouseleave->auth-form#oauthOut" } %>
         </div>
       </div>
@@ -307,9 +307,9 @@
   </div>
 
   <%# === Back to profile link === %>
-  <p style="text-align:center; margin:1rem 0 0; font-family:'DM Sans',sans-serif; font-size:0.78rem; color:#A09889;">
+  <p style="text-align:center; margin:1rem 0 0; font-family:'DM Sans',sans-serif; font-size:0.78rem; color:var(--color-muted);">
     <%= link_to t("settings.back_to_profile"), profile_path,
-        style: "color:#8B6D28; text-decoration:none; font-weight:600;" %>
+        style: "color:var(--color-link); text-decoration:none; font-weight:600;" %>
   </p>
 
 </div>

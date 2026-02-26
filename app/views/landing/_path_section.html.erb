@@ -5,7 +5,7 @@
 %>
 
 <%# Gradient fade into dark section %>
-<div class="h-20 mt-8" style="background: linear-gradient(180deg, #F5F1EB 0%, rgba(28,25,18,0.03) 100%);"></div>
+<div class="h-20 mt-8" style="background: linear-gradient(180deg, var(--color-bg, #F5F1EB) 0%, transparent 100%);"></div>
 
 <section class="max-w-[1100px] mx-auto px-4">
   <div class="section-dark rounded-section relative overflow-hidden"
@@ -59,4 +59,4 @@
 </section>
 
 <%# Gradient fade back to light %>
-<div class="h-20" style="background: linear-gradient(180deg, rgba(28,25,18,0.03) 0%, #F5F1EB 100%);"></div>
+<div class="h-20" style="background: linear-gradient(180deg, transparent 0%, var(--color-bg, #F5F1EB) 100%);"></div>

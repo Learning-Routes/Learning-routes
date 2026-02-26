@@ -249,6 +249,27 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_25_204430) do
     t.index ["user_id"], name: "index_community_engine_notifications_on_user_id"
   end
 
+  create_table "community_engine_posts", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.text "body", null: false
+    t.integer "comments_count", default: 0, null: false
+    t.datetime "created_at", null: false
+    t.integer "likes_count", default: 0, null: false
+    t.datetime "updated_at", null: false
+    t.uuid "user_id", null: false
+    t.index ["created_at"], name: "index_community_engine_posts_on_created_at"
+    t.index ["user_id"], name: "index_community_engine_posts_on_user_id"
+  end
+
+  create_table "community_engine_ratings", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.integer "score", null: false
+    t.uuid "shared_route_id", null: false
+    t.datetime "updated_at", null: false
+    t.uuid "user_id", null: false
+    t.index ["shared_route_id"], name: "index_community_engine_ratings_on_shared_route_id"
+    t.index ["user_id", "shared_route_id"], name: "idx_ce_ratings_user_shared_route", unique: true
+  end
+
   create_table "community_engine_shared_routes", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.uuid "cloned_from_id"
     t.integer "clones_count", default: 0, null: false
@@ -257,6 +278,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_25_204430) do
     t.text "description"
     t.uuid "learning_route_id", null: false
     t.integer "likes_count", default: 0, null: false
+    t.integer "ratings_count", default: 0, null: false
+    t.integer "ratings_sum", default: 0, null: false
     t.string "share_token", null: false
     t.datetime "updated_at", null: false
     t.uuid "user_id", null: false
@@ -486,6 +509,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_25_204430) do
   add_foreign_key "community_engine_likes", "core_users", column: "user_id"
   add_foreign_key "community_engine_notifications", "core_users", column: "actor_id"
   add_foreign_key "community_engine_notifications", "core_users", column: "user_id"
+  add_foreign_key "community_engine_posts", "core_users", column: "user_id"
+  add_foreign_key "community_engine_ratings", "community_engine_shared_routes", column: "shared_route_id"
+  add_foreign_key "community_engine_ratings", "core_users", column: "user_id"
   add_foreign_key "community_engine_shared_routes", "core_users", column: "user_id"
   add_foreign_key "community_engine_shared_routes", "learning_routes_engine_learning_routes", column: "learning_route_id"
   add_foreign_key "core_sessions", "core_users", column: "user_id", on_delete: :cascade

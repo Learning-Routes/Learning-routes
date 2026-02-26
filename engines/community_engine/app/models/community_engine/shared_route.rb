@@ -7,6 +7,7 @@ module CommunityEngine
     has_many :comments, as: :commentable, class_name: "CommunityEngine::Comment", dependent: :destroy
     has_many :likes, as: :likeable, class_name: "CommunityEngine::Like", dependent: :destroy
     has_many :clones, class_name: "CommunityEngine::SharedRoute", foreign_key: :cloned_from_id
+    has_many :ratings, class_name: "CommunityEngine::Rating", dependent: :destroy
 
     VISIBILITIES = %w[public unlisted private].freeze
 
@@ -35,6 +36,25 @@ module CommunityEngine
     def liked_by?(user)
       return false unless user
       likes.exists?(user_id: user.id)
+    end
+
+    def average_rating
+      return 0.0 if ratings_count.zero?
+      (ratings_sum.to_f / ratings_count).round(1)
+    end
+
+    def rated_by?(user)
+      return false unless user
+      ratings.exists?(user_id: user.id)
+    end
+
+    def user_rating(user)
+      return nil unless user
+      ratings.find_by(user_id: user.id)&.score
+    end
+
+    def best_comment
+      comments.top_level.popular.includes(:user).first
     end
 
     def share_url

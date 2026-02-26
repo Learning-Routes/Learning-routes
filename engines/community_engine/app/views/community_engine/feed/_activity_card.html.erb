@@ -56,6 +56,16 @@
         </p>
       <% end %>
 
+      <%# Star rating (read-only in feed) %>
+      <% if shared_route %>
+        <div style="margin-top:0.35rem;">
+          <%= render "community_engine/ratings/stars", shared_route: shared_route, interactive: false %>
+        </div>
+
+        <%# Inline floating thought — best comment from this shared route %>
+        <%= render "community_engine/feed/inline_thought", shared_route: shared_route %>
+      <% end %>
+
       <%# Stats + timestamp row %>
       <div style="display:flex; align-items:center; gap:0.75rem; margin-top:0.4rem;">
         <span style="font-family:'DM Mono',monospace; font-size:0.65rem; color:var(--color-muted, #887F72);">

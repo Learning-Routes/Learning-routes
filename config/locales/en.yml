@@ -1205,6 +1205,19 @@ en:
       completed_step: "completed the step"
       completed_route: "completed the route"
       cloned_route: "cloned the route"
+      posted: "posted"
+    posts:
+      placeholder: "Share a thought with the community..."
+      submit: "Post"
+      delete: "Delete"
+      delete_confirm: "Delete this post?"
+      created: "Post created"
+      deleted: "Post deleted"
+      unauthorized: "You can only delete your own posts"
+    ratings:
+      rate_star: "Rate %{n} stars"
+      no_ratings: "No ratings yet"
+      rated: "Rating saved"
     notifications:
       new_comment: "commented on your content"
       new_like: "liked your content"
@@ -1229,6 +1242,8 @@ en:
         clone_route: "Clone Route"
         empty_title: "No trending routes"
         empty_subtitle: "Shared routes will appear here as the community grows."
+      posts_heading: "Community Posts"
+      posts_empty: "No posts yet. Be the first to share a thought!"
       sidebar:
         top_learners: "Top Learners"
         no_learners: "No learners yet."
@@ -1236,6 +1251,8 @@ en:
         suggested: "Suggested to Follow"
         no_suggestions: "No suggestions right now."
         share_my_routes: "Share My Routes"
+      floating_thoughts:
+        title: "What learners are saying"
     notifications_ui:
       title: "Notifications"
       mark_all_read: "Mark all as read"

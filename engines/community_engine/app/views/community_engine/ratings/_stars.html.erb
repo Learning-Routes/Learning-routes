@@ -1,0 +1,48 @@
+<%# Star rating display + interactive rating for shared routes
+     Locals: shared_route, interactive (boolean — show clickable stars) %>
+<%
+  avg = shared_route.average_rating
+  count = shared_route.ratings_count
+  user_score = defined?(current_user) && current_user ? shared_route.user_rating(current_user) : nil
+%>
+<div id="rating_<%= shared_route.share_token %>"
+     data-controller="<%= interactive ? 'star-rating' : '' %>"
+     <% if interactive %>
+       data-star-rating-url-value="<%= community_engine.rate_shared_route_path(shared_route) %>"
+       data-star-rating-current-value="<%= user_score || 0 %>"
+     <% end %>
+     style="display:inline-flex; align-items:center; gap:0.5rem;">
+
+  <%# Stars %>
+  <div style="display:inline-flex; align-items:center; gap:0.15rem;">
+    <% 5.times do |i| %>
+      <% star_num = i + 1 %>
+      <% filled = interactive ? (user_score && star_num <= user_score) : (star_num <= avg.round) %>
+      <% if interactive %>
+        <button type="button"
+                data-star-rating-target="star"
+                data-action="click->star-rating#rate mouseenter->star-rating#hover mouseleave->star-rating#unhover"
+                data-score="<%= star_num %>"
+                style="background:none; border:none; cursor:pointer; padding:0.1rem; line-height:0; transition:transform 0.12s;"
+                aria-label="<%= t('community_engine.ratings.rate_star', n: star_num) %>">
+          <svg width="16" height="16" viewBox="0 0 24 24" stroke="<%= filled ? '#B09848' : 'var(--color-muted, #887F72)' %>" stroke-width="1.5" fill="<%= filled ? '#B09848' : 'none' %>">
+            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+          </svg>
+        </button>
+      <% else %>
+        <svg width="14" height="14" viewBox="0 0 24 24" stroke="<%= filled ? '#B09848' : 'var(--color-muted, #887F72)' %>" stroke-width="1.5" fill="<%= filled ? '#B09848' : 'none' %>">
+          <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+        </svg>
+      <% end %>
+    <% end %>
+  </div>
+
+  <%# Rating text %>
+  <span style="font-family:'DM Mono',monospace; font-size:0.65rem; color:var(--color-muted, #887F72);">
+    <% if count > 0 %>
+      <%= avg %> (<%= count %>)
+    <% else %>
+      <%= t("community_engine.ratings.no_ratings") %>
+    <% end %>
+  </span>
+</div>

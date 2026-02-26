@@ -13,7 +13,7 @@ module CommunityEngine
       respond_to do |format|
         format.turbo_stream
         format.json { render json: { share_token: @shared_route.share_token, share_url: @shared_route.share_url } }
-        format.html { redirect_back(fallback_location: root_path, notice: t("community_engine.shared_routes.shared")) }
+        format.html { redirect_back(fallback_location: main_app.root_path, notice: t("community_engine.shared_routes.shared")) }
       end
     end
 
@@ -42,7 +42,7 @@ module CommunityEngine
     def destroy
       shared_route = current_user.shared_routes.find_by!(share_token: params[:id])
       RouteSharer.unshare!(shared_route)
-      redirect_back(fallback_location: root_path, notice: t("community_engine.shared_routes.unshared"))
+      redirect_back(fallback_location: main_app.root_path, notice: t("community_engine.shared_routes.unshared"))
     end
   end
 end

@@ -40,11 +40,40 @@
         <% end %>
       </div>
 
+      <%# Floating thoughts — best comments from shared routes %>
+      <%= render "community_engine/feed/floating_thoughts", thoughts: @floating_thoughts || [] %>
+
+      <%# Post form (logged-in users) %>
+      <% if defined?(current_user) && current_user %>
+        <%= render "community_engine/posts/post_form" %>
+      <% end %>
+
       <%# Feed content %>
       <% if @tab == "trending" %>
         <%= render "community_engine/feed/trending_list", trending_routes: @trending_routes || [] %>
       <% else %>
+        <%# Shared route activities %>
         <%= render "community_engine/feed/activity_list", activities: @activities %>
+
+        <%# Community posts section %>
+        <div style="margin-top:2rem;">
+          <h2 style="font-family:'DM Sans',sans-serif; font-weight:700; font-size:1.05rem; color:var(--color-txt, #1C1812); margin:0 0 1rem;">
+            <%= t("community_engine.feed.posts_heading") %>
+          </h2>
+          <div id="posts_list" style="display:flex; flex-direction:column; gap:0.75rem;">
+            <% if @posts.present? && @posts.any? %>
+              <% @posts.each do |post| %>
+                <%= render "community_engine/posts/post", post: post %>
+              <% end %>
+            <% else %>
+              <p style="font-family:'DM Sans',sans-serif; font-size:0.82rem; color:var(--color-muted, #887F72); text-align:center;
+                        padding:2rem; background:var(--color-card, rgba(255,255,255,0.6)); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px);
+                        border:1px solid var(--color-faint, rgba(28,24,18,0.06)); border-radius:14px;">
+                <%= t("community_engine.feed.posts_empty") %>
+              </p>
+            <% end %>
+          </div>
+        </div>
       <% end %>
     </div>
 

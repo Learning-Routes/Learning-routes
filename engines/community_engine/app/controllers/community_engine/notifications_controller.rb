@@ -18,7 +18,7 @@ module CommunityEngine
         format.turbo_stream {
           render turbo_stream: turbo_stream.update("notification_badge", html: "")
         }
-        format.html { redirect_back(fallback_location: root_path) }
+        format.html { redirect_back(fallback_location: main_app.root_path) }
       end
     end
 
