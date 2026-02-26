@@ -52,11 +52,8 @@
       <% if @tab == "trending" %>
         <%= render "community_engine/feed/trending_list", trending_routes: @trending_routes || [] %>
       <% else %>
-        <%# Shared route activities %>
-        <%= render "community_engine/feed/activity_list", activities: @activities %>
-
-        <%# Community posts section %>
-        <div style="margin-top:2rem;">
+        <%# Community posts section (comments/interaction at the top) %>
+        <div style="margin-bottom:2rem;">
           <h2 style="font-family:'DM Sans',sans-serif; font-weight:700; font-size:1.05rem; color:var(--color-txt, #1C1812); margin:0 0 1rem;">
             <%= t("community_engine.feed.posts_heading") %>
           </h2>
@@ -74,6 +71,9 @@
             <% end %>
           </div>
         </div>
+
+        <%# Shared route activities (below posts) %>
+        <%= render "community_engine/feed/activity_list", activities: @activities %>
       <% end %>
     </div>
 
