@@ -1,6 +1,6 @@
 <div>
   <% if activities.any? %>
-    <div style="display:flex; flex-direction:column; gap:0.75rem;">
+    <div style="display:flex; flex-direction:column; gap:1.25rem;">
       <% activities.each do |activity| %>
         <%= render "community_engine/feed/activity_card", activity: activity %>
       <% end %>
