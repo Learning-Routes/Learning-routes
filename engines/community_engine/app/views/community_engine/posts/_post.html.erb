@@ -32,23 +32,34 @@
         <%= post.body %>
       </p>
 
-      <%# Inline floating thought — best comment on this post %>
+      <%# Inline floating thought — side-popping circle with featured comment %>
       <% best_comment = post.comments.order(created_at: :desc).includes(:user).first %>
       <% if best_comment %>
         <div data-controller="floating-thoughts"
              data-floating-thoughts-interval-value="8000"
-             style="position:relative; min-height:50px; margin-top:0.6rem; overflow:hidden;">
+             style="position:relative; margin-top:0.5rem; height:36px;">
           <div data-floating-thoughts-target="thought"
-               style="position:relative; opacity:0; transform:translateY(8px);
-                      background:var(--color-tint, rgba(28,24,18,0.04)); border-radius:11px;
-                      padding:0.55rem 0.8rem; border-left:2px solid var(--color-accent, #2C261E);">
-            <p style="font-family:'DM Sans',sans-serif; font-size:0.8rem; color:var(--color-sub, #6D665B);
-                     line-height:1.45; margin:0; font-style:italic;">
-              "<%= best_comment.body.truncate(100) %>"
-            </p>
-            <span style="font-family:'DM Mono',monospace; font-size:0.6rem; color:var(--color-muted, #887F72); margin-top:0.2rem; display:block;">
-              — <%= best_comment.user&.name || "?" %>
-            </span>
+               style="position:absolute; left:0; top:0; opacity:0; transform:translateX(-8px);
+                      display:inline-flex; align-items:center; gap:0.5rem; max-width:100%;
+                      transition:opacity 0.5s ease, transform 0.5s ease;">
+            <div style="flex-shrink:0; width:28px; height:28px; border-radius:50%;
+                        background:var(--color-accent, #2C261E); color:var(--color-accent-text, #F5F1EB);
+                        display:flex; align-items:center; justify-content:center;
+                        font-family:'DM Sans',sans-serif; font-size:0.55rem; font-weight:700;
+                        box-shadow:0 2px 8px rgba(0,0,0,0.1);">
+              <%= best_comment.user&.name.to_s.first&.upcase || "?" %>
+            </div>
+            <div style="position:relative; background:var(--color-tint, rgba(28,24,18,0.05)); border-radius:10px;
+                        padding:0.3rem 0.55rem; max-width:250px; border:1px solid var(--color-faint, rgba(28,24,18,0.06));">
+              <div style="position:absolute; left:-5px; top:50%; transform:translateY(-50%);
+                          width:0; height:0; border-top:5px solid transparent; border-bottom:5px solid transparent;
+                          border-right:5px solid var(--color-tint, rgba(28,24,18,0.05));"></div>
+              <p style="font-family:'DM Sans',sans-serif; font-size:0.7rem; color:var(--color-sub, #6D665B);
+                       line-height:1.3; margin:0; font-style:italic;
+                       overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+                "<%= best_comment.body.truncate(50) %>"
+              </p>
+            </div>
           </div>
         </div>
       <% end %>

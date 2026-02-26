@@ -1,21 +1,20 @@
 <% content_for(:title, t("auth.reset.title")) %>
 
 <%# === Glassmorphic auth card === %>
-<div class="auth-enter"
+<div class="auth-enter auth-card"
      data-controller="auth-form"
      data-auth-form-required-msg-value="<%= t('auth_alerts.validation_required') %>"
      data-auth-form-email-msg-value="<%= t('auth_alerts.validation_email') %>"
      data-auth-form-min-length-msg-value="<%= t('auth_alerts.validation_min_length') %>"
      style="width:100%; max-width:440px; padding:2.2rem 2rem;
-            background:rgba(255,255,255,0.55); backdrop-filter:blur(50px) saturate(1.4); -webkit-backdrop-filter:blur(50px) saturate(1.4);
-            border:1px solid rgba(28,24,18,0.07); border-radius:20px;
+            border-radius:20px;
             box-shadow:0 8px 32px rgba(28,24,18,0.06), 0 1px 3px rgba(28,24,18,0.03);">
 
   <%# === Heading === %>
-  <h1 style="font-family:'DM Sans',sans-serif; font-weight:700; font-size:1.6rem; letter-spacing:-0.7px; color:#1C1812; margin:0 0 0.4rem; line-height:1.2;">
+  <h1 style="font-family:'DM Sans',sans-serif; font-weight:700; font-size:1.6rem; letter-spacing:-0.7px; color:var(--color-txt, #1C1812); margin:0 0 0.4rem; line-height:1.2;">
     <%= t("auth.reset.heading") %>
   </h1>
-  <p style="font-family:'DM Sans',sans-serif; font-size:0.82rem; color:#A09889; margin:0 0 1.4rem; line-height:1.5;">
+  <p style="font-family:'DM Sans',sans-serif; font-size:0.82rem; color:var(--color-muted, #A09889); margin:0 0 1.4rem; line-height:1.5;">
     <%= t("auth.reset.subtext") %>
   </p>
 
@@ -24,13 +23,13 @@
 
     <%# Form errors %>
     <% if @user.errors.any? %>
-      <div role="alert" style="background:rgba(176,96,80,0.08); border:1px solid rgba(176,96,80,0.15); border-radius:10px; padding:0.75rem 0.9rem; margin-bottom:1rem;">
-        <p style="font-family:'DM Sans',sans-serif; font-size:0.76rem; font-weight:500; color:#B06050; margin:0 0 0.3rem;">
+      <div role="alert" class="auth-errors" style="background:rgba(176,96,80,0.08); border:1px solid rgba(176,96,80,0.15); border-radius:10px; padding:0.75rem 0.9rem; margin-bottom:1rem; color:#B06050;">
+        <p style="font-family:'DM Sans',sans-serif; font-size:0.76rem; font-weight:500; color:inherit; margin:0 0 0.3rem;">
           <%= t("auth.reset.errors", count: @user.errors.count) %>
         </p>
         <ul style="margin:0; padding-left:1rem;">
           <% @user.errors.full_messages.each do |message| %>
-            <li style="font-family:'DM Sans',sans-serif; font-size:0.72rem; color:#B06050; line-height:1.5;"><%= message %></li>
+            <li style="font-family:'DM Sans',sans-serif; font-size:0.72rem; color:inherit; line-height:1.5;"><%= message %></li>
           <% end %>
         </ul>
       </div>
@@ -41,9 +40,10 @@
       <%# New password %>
       <div>
         <%= f.label :password, t("auth.reset.password_label"),
-            style: "display:block; font-family:'DM Sans',sans-serif; font-size:0.78rem; font-weight:500; color:#6D665B; margin-bottom:0.45rem;" %>
+            style: "display:block; font-family:'DM Sans',sans-serif; font-size:0.78rem; font-weight:500; color:var(--color-sub, #6D665B); margin-bottom:0.45rem;" %>
         <%= f.password_field :password,
-            style: "display:block; width:100%; box-sizing:border-box; font-family:'DM Sans',sans-serif; font-size:0.92rem; color:#1C1812; padding:0.78rem 0.95rem; border-radius:10px; border:1px solid rgba(28,24,18,0.1); background:white; outline:none; transition:border-color 0.2s, box-shadow 0.2s;",
+            class: "auth-input",
+            style: "display:block; width:100%; box-sizing:border-box; font-family:'DM Sans',sans-serif; font-size:0.92rem; padding:0.78rem 0.95rem; border-radius:10px; outline:none; transition:border-color 0.2s, box-shadow 0.2s;",
             placeholder: t("auth.reset.password_placeholder"),
             required: true,
             minlength: 8,
@@ -55,9 +55,10 @@
       <%# Confirm password %>
       <div>
         <%= f.label :password_confirmation, t("auth.reset.confirm_label"),
-            style: "display:block; font-family:'DM Sans',sans-serif; font-size:0.78rem; font-weight:500; color:#6D665B; margin-bottom:0.45rem;" %>
+            style: "display:block; font-family:'DM Sans',sans-serif; font-size:0.78rem; font-weight:500; color:var(--color-sub, #6D665B); margin-bottom:0.45rem;" %>
         <%= f.password_field :password_confirmation,
-            style: "display:block; width:100%; box-sizing:border-box; font-family:'DM Sans',sans-serif; font-size:0.92rem; color:#1C1812; padding:0.78rem 0.95rem; border-radius:10px; border:1px solid rgba(28,24,18,0.1); background:white; outline:none; transition:border-color 0.2s, box-shadow 0.2s;",
+            class: "auth-input",
+            style: "display:block; width:100%; box-sizing:border-box; font-family:'DM Sans',sans-serif; font-size:0.92rem; padding:0.78rem 0.95rem; border-radius:10px; outline:none; transition:border-color 0.2s, box-shadow 0.2s;",
             placeholder: t("auth.reset.confirm_placeholder"),
             required: true,
             autocomplete: "new-password",
@@ -67,7 +68,8 @@
       <%# Submit %>
       <div style="margin-top:0.3rem;">
         <%= f.submit t("auth.reset.submit"),
-            style: "display:block; width:100%; font-family:'DM Sans',sans-serif; font-size:0.9rem; font-weight:600; color:#F5F1EB; background:#2C261E; padding:0.85rem 1rem; border-radius:11px; border:none; cursor:pointer; transition:all 0.2s; box-shadow:0 1px 3px rgba(28,24,18,0.12), 0 1px 2px rgba(28,24,18,0.06);",
+            class: "auth-btn",
+            style: "display:block; width:100%; font-family:'DM Sans',sans-serif; font-size:0.9rem; font-weight:600; padding:0.85rem 1rem; border-radius:11px; border:none; cursor:pointer; transition:all 0.2s; box-shadow:0 1px 3px rgba(28,24,18,0.12), 0 1px 2px rgba(28,24,18,0.06);",
             data: { auth_form_target: "submit", action: "mouseenter->auth-form#submitOver mouseleave->auth-form#submitOut" } %>
       </div>
     </div>

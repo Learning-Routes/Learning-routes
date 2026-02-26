@@ -160,6 +160,28 @@ html[data-theme="dark"] .auth-google-btn {
   color: #E8E4DC;
 }
 
+/* Dark auth errors */
+html[data-theme="dark"] .auth-errors {
+  background: rgba(220, 120, 100, 0.1);
+  border-color: rgba(220, 120, 100, 0.2);
+  color: #E8A090;
+}
+html[data-theme="dark"] .auth-errors li {
+  color: #E8A090;
+}
+
+/* Dark auth flash messages */
+html[data-theme="dark"] .auth-flash-notice {
+  background: rgba(91, 168, 128, 0.12);
+  border-color: rgba(91, 168, 128, 0.2);
+  color: #7FD4A5;
+}
+html[data-theme="dark"] .auth-flash-alert {
+  background: rgba(220, 120, 100, 0.1);
+  border-color: rgba(220, 120, 100, 0.2);
+  color: #E8A090;
+}
+
 /* Dark nav links */
 html[data-theme="dark"] .nav-link:hover {
   color: #E8E4DC !important;

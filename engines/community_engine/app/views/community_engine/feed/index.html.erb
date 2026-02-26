@@ -5,13 +5,13 @@
   @media (min-width: 1024px) { .community-sidebar { display: block !important; } }
 </style>
 
-<div style="max-width:1400px; margin:0 auto; padding:2rem 2.5rem;">
+<div style="max-width:1400px; margin:0 auto; padding:2.5rem clamp(1.5rem, 4vw, 3rem);">
   <%# Page header %>
-  <div style="margin-bottom:2rem;">
-    <h1 style="font-family:'DM Sans',sans-serif; font-weight:700; font-size:1.5rem; letter-spacing:-0.5px; color:var(--color-txt, #1C1812); margin:0 0 0.4rem;">
+  <div style="margin-bottom:2.5rem;">
+    <h1 style="font-family:'DM Sans',sans-serif; font-weight:700; font-size:1.8rem; letter-spacing:-0.5px; color:var(--color-txt, #1C1812); margin:0 0 0.5rem;">
       <%= t("community_engine.feed.title") %>
     </h1>
-    <div style="display:flex; align-items:center; gap:0.75rem; font-family:'DM Mono',monospace; font-size:0.7rem; color:var(--color-muted, #887F72);">
+    <div style="display:flex; align-items:center; gap:0.75rem; font-family:'DM Mono',monospace; font-size:0.78rem; color:var(--color-muted, #887F72);">
       <span><%= @stats[:total_users] %> <%= t("community_engine.feed.stats.learners") %></span>
       <span style="width:3px; height:3px; border-radius:50%; background:var(--color-faint, #CCC5B8);"></span>
       <span><%= @stats[:total_routes] %> <%= t("community_engine.feed.stats.routes") %></span>
@@ -20,11 +20,11 @@
     </div>
   </div>
 
-  <div style="display:flex; gap:2rem;">
+  <div style="display:flex; gap:2.5rem;">
     <%# Main content area %>
     <div style="flex:1; min-width:0;">
       <%# Tab bar %>
-      <div style="display:flex; align-items:center; gap:0.25rem; margin-bottom:1.5rem; padding:0.25rem;
+      <div style="display:flex; align-items:center; gap:0.3rem; margin-bottom:2rem; padding:0.3rem;
                   background:var(--color-faint, rgba(28,24,18,0.04)); border-radius:14px; width:fit-content;">
         <% [
           ["all", t("community_engine.feed.tabs.all")],
@@ -33,7 +33,7 @@
         ].each do |tab_id, tab_label| %>
           <% active = @tab == tab_id %>
           <%= link_to community_engine.feed_path(tab: (tab_id == "all" ? nil : tab_id)),
-                style: "display:inline-block; padding:0.5rem 1.25rem; border-radius:11px; font-family:'DM Sans',sans-serif; font-size:0.82rem; font-weight:500; text-decoration:none; transition:all 0.15s; #{active ? "background:var(--color-accent, #2C261E); color:var(--color-accent-text, #F5F1EB); box-shadow:0 1px 3px rgba(0,0,0,0.1);" : "color:var(--color-muted, #887F72);"}",
+                style: "display:inline-block; padding:0.6rem 1.5rem; border-radius:11px; font-family:'DM Sans',sans-serif; font-size:0.9rem; font-weight:500; text-decoration:none; transition:all 0.15s; #{active ? "background:var(--color-accent, #2C261E); color:var(--color-accent-text, #F5F1EB); box-shadow:0 1px 3px rgba(0,0,0,0.1);" : "color:var(--color-muted, #887F72);"}",
                 data: { turbo_action: "replace" } do %>
             <%= tab_label %>
           <% end %>
@@ -45,8 +45,8 @@
         <%= render "community_engine/feed/trending_list", trending_routes: @trending_routes || [] %>
       <% else %>
         <%# === COMMENTS / POSTS SECTION (at the very top) === %>
-        <div style="margin-bottom:2rem;">
-          <h2 style="font-family:'DM Sans',sans-serif; font-weight:700; font-size:1.25rem; color:var(--color-txt, #1C1812); margin:0 0 1.25rem;">
+        <div style="margin-bottom:2.5rem;">
+          <h2 style="font-family:'DM Sans',sans-serif; font-weight:700; font-size:1.35rem; color:var(--color-txt, #1C1812); margin:0 0 1.25rem;">
             <%= t("community_engine.feed.posts_heading") %>
           </h2>
 
@@ -55,14 +55,14 @@
             <%= render "community_engine/posts/post_form" %>
           <% end %>
 
-          <div id="posts_list" style="display:flex; flex-direction:column; gap:0.75rem;">
+          <div id="posts_list" style="display:flex; flex-direction:column; gap:1rem;">
             <% if @posts.present? && @posts.any? %>
               <% @posts.each do |post| %>
                 <%= render "community_engine/posts/post", post: post %>
               <% end %>
             <% else %>
-              <p style="font-family:'DM Sans',sans-serif; font-size:0.82rem; color:var(--color-muted, #887F72); text-align:center;
-                        padding:2rem; background:var(--color-card, rgba(255,255,255,0.6)); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px);
+              <p style="font-family:'DM Sans',sans-serif; font-size:0.92rem; color:var(--color-muted, #887F72); text-align:center;
+                        padding:2.5rem; background:var(--color-card, rgba(255,255,255,0.6)); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px);
                         border:1px solid var(--color-faint, rgba(28,24,18,0.06)); border-radius:14px;">
                 <%= t("community_engine.feed.posts_empty") %>
               </p>
@@ -74,12 +74,15 @@
         <%= render "community_engine/feed/floating_thoughts", thoughts: @floating_thoughts || [] %>
 
         <%# === SHARED ROUTE ACTIVITIES (below comments) === %>
+        <h2 style="font-family:'DM Sans',sans-serif; font-weight:700; font-size:1.35rem; color:var(--color-txt, #1C1812); margin:0 0 1.25rem;">
+          <%= t("community_engine.feed.tabs.all") %>
+        </h2>
         <%= render "community_engine/feed/activity_list", activities: @activities %>
       <% end %>
     </div>
 
     <%# Sidebar (desktop only) %>
-    <div class="community-sidebar" style="width:300px; flex-shrink:0;">
+    <div class="community-sidebar" style="width:340px; flex-shrink:0;">
       <%= render "community_engine/feed/sidebar" %>
     </div>
   </div>
