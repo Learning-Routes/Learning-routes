@@ -48,7 +48,7 @@ gem "image_processing", "~> 1.2"
 
 # === AI Services ===
 # Unified multi-provider AI API (OpenAI, Anthropic, Gemini) [https://rubyllm.com]
-gem "ruby_llm", "~> 1.1"
+gem "ruby_llm", "~> 1.12"
 
 # HTTP client for ElevenLabs and Nano Banana REST APIs
 gem "httparty", "~> 0.22"
