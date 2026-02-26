@@ -40,23 +40,21 @@
         <% end %>
       </div>
 
-      <%# Floating thoughts — best comments from shared routes %>
-      <%= render "community_engine/feed/floating_thoughts", thoughts: @floating_thoughts || [] %>
-
-      <%# Post form (logged-in users) %>
-      <% if defined?(current_user) && current_user %>
-        <%= render "community_engine/posts/post_form" %>
-      <% end %>
-
       <%# Feed content %>
       <% if @tab == "trending" %>
         <%= render "community_engine/feed/trending_list", trending_routes: @trending_routes || [] %>
       <% else %>
-        <%# Community posts section (comments/interaction at the top) %>
+        <%# === COMMENTS / POSTS SECTION (at the very top) === %>
         <div style="margin-bottom:2rem;">
           <h2 style="font-family:'DM Sans',sans-serif; font-weight:700; font-size:1.05rem; color:var(--color-txt, #1C1812); margin:0 0 1rem;">
             <%= t("community_engine.feed.posts_heading") %>
           </h2>
+
+          <%# Post form (logged-in users) %>
+          <% if defined?(current_user) && current_user %>
+            <%= render "community_engine/posts/post_form" %>
+          <% end %>
+
           <div id="posts_list" style="display:flex; flex-direction:column; gap:0.75rem;">
             <% if @posts.present? && @posts.any? %>
               <% @posts.each do |post| %>
@@ -72,7 +70,10 @@
           </div>
         </div>
 
-        <%# Shared route activities (below posts) %>
+        <%# Floating thoughts — best comments highlighting (between posts and routes) %>
+        <%= render "community_engine/feed/floating_thoughts", thoughts: @floating_thoughts || [] %>
+
+        <%# === SHARED ROUTE ACTIVITIES (below comments) === %>
         <%= render "community_engine/feed/activity_list", activities: @activities %>
       <% end %>
     </div>
