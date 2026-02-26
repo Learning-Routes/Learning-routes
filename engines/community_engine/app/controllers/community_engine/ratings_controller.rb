@@ -4,7 +4,7 @@ module CommunityEngine
       @shared_route = SharedRoute.find_by!(share_token: params[:id])
 
       # Only allow rating public/unlisted routes that you don't own
-      unless @shared_route.visibility.in?(%w[public unlisted]) || @shared_route.user_id == current_user.id
+      unless @shared_route.visibility.in?(%w[public unlisted]) && @shared_route.user_id != current_user.id
         return head(:forbidden)
       end
 

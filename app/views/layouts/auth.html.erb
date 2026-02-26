@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="<%= I18n.locale %>">
+<html lang="<%= I18n.locale %>" data-controller="theme" data-theme-preference-value="<%= current_theme %>">
   <head>
     <title><%= content_for(:title) || t("layout.app_name") %></title>
     <meta charset="utf-8">
@@ -18,12 +18,21 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300..700;1,9..40,300..700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 
+    <%# Prevent flash of wrong theme before JS loads %>
+    <script>
+      (function(){
+        var p = "<%= current_theme %>";
+        var t = p === "system" ? (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light") : p;
+        document.documentElement.setAttribute("data-theme", t);
+      })();
+    </script>
+
     <%= stylesheet_link_tag "tailwind", "application", "data-turbo-track": "reload" %>
     <%= javascript_importmap_tags %>
 
   </head>
 
-  <body style="margin:0; min-height:100vh; font-family:'DM Sans',sans-serif; background:linear-gradient(170deg,#F5F1EB 0%,#EDE8E0 40%,#F2EEE7 100%); display:flex; flex-direction:column; overflow-x:hidden;">
+  <body style="margin:0; min-height:100vh; font-family:'DM Sans',sans-serif; background:var(--color-bg, linear-gradient(170deg,#F5F1EB 0%,#EDE8E0 40%,#F2EEE7 100%)); display:flex; flex-direction:column; overflow-x:hidden;">
     <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-[200] focus:bg-accent focus:text-accent-text focus:px-4 focus:py-2 focus:rounded-btn focus:text-sm focus:font-semibold"><%= t("layout.skip_to_content") %></a>
 
     <%# === Animated particle canvas === %>
@@ -34,22 +43,26 @@
     <nav style="position:relative; z-index:10; display:flex; align-items:center; justify-content:space-between; padding:1.2rem clamp(1.5rem,5vw,3rem);">
       <%= link_to main_app.root_path, style: "display:flex; align-items:center; gap:0.55rem; text-decoration:none;" do %>
         <%= render "shared/logo", size: 26 %>
-        <span style="font-family:'DM Sans',sans-serif; font-weight:700; font-size:0.9rem; color:#1C1812; letter-spacing:-0.3px;">Learning Routes</span>
+        <span style="font-family:'DM Sans',sans-serif; font-weight:700; font-size:0.9rem; color:var(--color-txt, #1C1812); letter-spacing:-0.3px;">Learning Routes</span>
       <% end %>
 
-      <% if content_for?(:auth_toggle) %>
-        <%= yield :auth_toggle %>
-      <% end %>
+      <div style="display:flex; align-items:center; gap:0.6rem;">
+        <%= render "shared/theme_toggle" %>
+        <%= render "shared/locale_toggle" %>
+        <% if content_for?(:auth_toggle) %>
+          <%= yield :auth_toggle %>
+        <% end %>
+      </div>
     </nav>
 
     <%# === Flash messages === %>
     <% if flash[:notice] %>
-      <div role="status" class="auth-enter" style="max-width:440px; margin:0 auto 0.8rem; padding:0.6rem 0.85rem; border-radius:10px; font-family:'DM Sans',sans-serif; font-size:0.75rem; font-weight:500; background:rgba(91,168,128,0.1); border:1px solid rgba(91,168,128,0.18); color:#3D7A5A;">
+      <div role="status" class="auth-enter auth-flash-notice" style="max-width:440px; margin:0 auto 0.8rem; padding:0.6rem 0.85rem; border-radius:10px; font-family:'DM Sans',sans-serif; font-size:0.75rem; font-weight:500; background:rgba(91,168,128,0.1); border:1px solid rgba(91,168,128,0.18); color:#3D7A5A;">
         <%= flash[:notice] %>
       </div>
     <% end %>
     <% if flash[:alert] %>
-      <div role="alert" class="auth-enter" style="max-width:440px; margin:0 auto 0.8rem; padding:0.6rem 0.85rem; border-radius:10px; font-family:'DM Sans',sans-serif; font-size:0.75rem; font-weight:500; background:rgba(176,96,80,0.08); border:1px solid rgba(176,96,80,0.15); color:#B06050;">
+      <div role="alert" class="auth-enter auth-flash-alert" style="max-width:440px; margin:0 auto 0.8rem; padding:0.6rem 0.85rem; border-radius:10px; font-family:'DM Sans',sans-serif; font-size:0.75rem; font-weight:500; background:rgba(176,96,80,0.08); border:1px solid rgba(176,96,80,0.15); color:#B06050;">
         <%= flash[:alert] %>
       </div>
     <% end %>
