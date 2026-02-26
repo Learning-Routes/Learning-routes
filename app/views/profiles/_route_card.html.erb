@@ -57,7 +57,7 @@
 
 <div role="button" tabindex="0" aria-label="<%= t("route_card_aria") %>" data-action="click->expanded-route#open keydown.enter->expanded-route#open keydown.space->expanded-route#open"
      data-route="<%= route_json.to_json %>"
-     style="display:block; background:#FEFDFB; border:1px solid rgba(28,24,18,0.04); border-radius:18px; cursor:pointer; transition:all 0.25s cubic-bezier(0.22,1,0.36,1); overflow:hidden;"
+     style="display:block; background:var(--color-card); border:1px solid var(--color-border-subtle); border-radius:18px; cursor:pointer; transition:all 0.25s cubic-bezier(0.22,1,0.36,1); overflow:hidden;"
      class="card-hover">
 
   <%# === Compact Route SVG === %>
@@ -73,14 +73,14 @@
 
     <%# Title + status badge row %>
     <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:0.8rem; margin-bottom:0.45rem;">
-      <h3 style="font-family:'DM Sans',sans-serif; font-weight:700; font-size:0.95rem; color:#1C1812; margin:0; letter-spacing:-0.3px; line-height:1.3;">
+      <h3 style="font-family:'DM Sans',sans-serif; font-weight:700; font-size:0.95rem; color:var(--color-txt); margin:0; letter-spacing:-0.3px; line-height:1.3;">
         <span style="margin-right:0.3rem;"><%= topic_emoji_for(route.topic) %></span><%= route.localized_topic %>
       </h3>
       <% badge_style = case route.status
                         when 'active' then "background:rgba(91,168,128,0.1); color:#3D7A5A"
                         when 'completed' then "background:rgba(110,155,200,0.1); color:#4A7A9E"
                         when 'paused' then "background:rgba(176,152,72,0.1); color:#8B6D28"
-                        else "background:rgba(28,24,18,0.05); color:#6D665B"
+                        else "background:var(--color-tint); color:var(--color-sub)"
                         end %>
       <span style="font-family:'DM Mono',monospace; font-size:0.55rem; letter-spacing:0.5px; text-transform:uppercase; padding:0.2rem 0.55rem; border-radius:6px; flex-shrink:0; white-space:nowrap; <%= badge_style %>">
         <%= t("dashboard.status.#{route.status}") %>
@@ -88,7 +88,7 @@
     </div>
 
     <%# Subtitle %>
-    <p style="font-family:'DM Sans',sans-serif; font-size:0.72rem; color:#A09889; margin:0 0 0.8rem; line-height:1.35;">
+    <p style="font-family:'DM Sans',sans-serif; font-size:0.72rem; color:var(--color-muted); margin:0 0 0.8rem; line-height:1.35;">
       <%= route.localized_subject_area %>
     </p>
 
@@ -97,7 +97,7 @@
       <span style="font-family:'DM Mono',monospace; font-size:0.72rem; font-weight:500; color:<%= accent_color %>; background:<%= accent_color %>0D; padding:0.18rem 0.55rem; border-radius:7px; flex-shrink:0;">
         <%= progress %>%
       </span>
-      <div style="flex:1; height:3px; background:rgba(28,24,18,0.05); border-radius:2px; overflow:hidden;">
+      <div style="flex:1; height:3px; background:var(--color-tint-strong); border-radius:2px; overflow:hidden;">
         <div style="width:<%= progress %>%; height:100%; background:<%= accent_color %>; border-radius:2px; transition:width 0.4s cubic-bezier(0.22,1,0.36,1);"></div>
       </div>
     </div>
@@ -106,24 +106,24 @@
     <% stats = @route_stats&.dig(route.id) || {} %>
     <div style="display:flex; align-items:center; gap:1.2rem;">
       <div style="display:flex; flex-direction:column; align-items:flex-start;">
-        <span style="font-family:'DM Mono',monospace; font-size:0.78rem; font-weight:500; color:#1C1812; letter-spacing:-0.2px;">
+        <span style="font-family:'DM Mono',monospace; font-size:0.78rem; font-weight:500; color:var(--color-txt); letter-spacing:-0.2px;">
           <%= format_study_time(stats[:study_minutes] || 0) %>
         </span>
-        <span style="font-family:'DM Sans',sans-serif; font-size:0.62rem; color:#A09889;"><%= t("route_card.time") %></span>
+        <span style="font-family:'DM Sans',sans-serif; font-size:0.62rem; color:var(--color-muted);"><%= t("route_card.time") %></span>
       </div>
-      <div style="width:1px; height:22px; background:rgba(28,24,18,0.06);"></div>
+      <div style="width:1px; height:22px; background:var(--color-border-subtle);"></div>
       <div style="display:flex; flex-direction:column; align-items:flex-start;">
-        <span style="font-family:'DM Mono',monospace; font-size:0.78rem; font-weight:500; color:#1C1812; letter-spacing:-0.2px;">
+        <span style="font-family:'DM Mono',monospace; font-size:0.78rem; font-weight:500; color:var(--color-txt); letter-spacing:-0.2px;">
           <%= stats[:lessons_completed] || completed_count %>
         </span>
-        <span style="font-family:'DM Sans',sans-serif; font-size:0.62rem; color:#A09889;"><%= t("route_card.lessons") %></span>
+        <span style="font-family:'DM Sans',sans-serif; font-size:0.62rem; color:var(--color-muted);"><%= t("route_card.lessons") %></span>
       </div>
-      <div style="width:1px; height:22px; background:rgba(28,24,18,0.06);"></div>
+      <div style="width:1px; height:22px; background:var(--color-border-subtle);"></div>
       <div style="display:flex; flex-direction:column; align-items:flex-start;">
-        <span style="font-family:'DM Mono',monospace; font-size:0.78rem; font-weight:500; color:#1C1812; letter-spacing:-0.2px;">
+        <span style="font-family:'DM Mono',monospace; font-size:0.78rem; font-weight:500; color:var(--color-txt); letter-spacing:-0.2px;">
           <%= stats[:accuracy]&.positive? ? "#{stats[:accuracy]}%" : "—" %>
         </span>
-        <span style="font-family:'DM Sans',sans-serif; font-size:0.62rem; color:#A09889;"><%= t("route_card.accuracy") %></span>
+        <span style="font-family:'DM Sans',sans-serif; font-size:0.62rem; color:var(--color-muted);"><%= t("route_card.accuracy") %></span>
       </div>
     </div>
   </div>

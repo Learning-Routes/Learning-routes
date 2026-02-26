@@ -1,0 +1,23 @@
+<%# Inline floating thought bubble for a single shared route's best comment.
+     Locals: shared_route %>
+<%
+  best = shared_route.best_comment
+%>
+<% if best %>
+  <div data-controller="floating-thoughts"
+       data-floating-thoughts-interval-value="8000"
+       style="position:relative; min-height:52px; margin-top:0.5rem; overflow:hidden;">
+    <div data-floating-thoughts-target="thought"
+         style="position:relative; opacity:0; transform:translateY(8px);
+                background:var(--color-tint, rgba(28,24,18,0.04)); border-radius:11px;
+                padding:0.55rem 0.75rem; border-left:2px solid var(--color-accent, #2C261E);">
+      <p style="font-family:'DM Sans',sans-serif; font-size:0.75rem; color:var(--color-sub, #6D665B);
+               line-height:1.4; margin:0; font-style:italic;">
+        "<%= best.body.truncate(100) %>"
+      </p>
+      <span style="font-family:'DM Mono',monospace; font-size:0.55rem; color:var(--color-muted, #887F72); margin-top:0.2rem; display:block;">
+        — <%= best.user&.name || "?" %>
+      </span>
+    </div>
+  </div>
+<% end %>

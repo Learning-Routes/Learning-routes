@@ -3,7 +3,7 @@ module CommunityEngine
     belongs_to :user, class_name: "Core::User"
     belongs_to :trackable, polymorphic: true
 
-    ACTIONS = %w[commented liked followed shared completed_step completed_route cloned_route].freeze
+    ACTIONS = %w[commented liked followed shared completed_step completed_route cloned_route posted].freeze
 
     validates :action, presence: true, inclusion: { in: ACTIONS }
 

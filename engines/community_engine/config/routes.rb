@@ -24,10 +24,14 @@ CommunityEngine::Engine.routes.draw do
     end
   end
 
+  # Posts
+  resources :posts, only: [:create, :destroy]
+
   # Shared Routes
   resources :shared_routes, only: [:create, :show, :destroy] do
     member do
       post :clone
+      post :rate, to: "ratings#create"
     end
   end
 end

@@ -36,6 +36,11 @@
             </p>
           <% end %>
 
+          <%# Star rating (read-only) %>
+          <div style="margin-bottom:0.5rem;">
+            <%= render "community_engine/ratings/stars", shared_route: shared_route, interactive: false %>
+          </div>
+
           <%# Stats row %>
           <div style="display:flex; align-items:center; gap:1rem; margin-bottom:0.75rem; font-family:'DM Mono',monospace; font-size:0.65rem; color:var(--color-muted, #887F72);">
             <span style="display:inline-flex; align-items:center; gap:0.25rem;">

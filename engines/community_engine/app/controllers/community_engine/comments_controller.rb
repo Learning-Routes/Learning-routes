@@ -6,6 +6,7 @@ module CommunityEngine
       LearningRoutesEngine::LearningRoute
       LearningRoutesEngine::RouteStep
       CommunityEngine::SharedRoute
+      CommunityEngine::Post
     ].freeze
 
     def create
@@ -56,12 +57,12 @@ module CommunityEngine
 
         respond_to do |format|
           format.turbo_stream
-          format.html { redirect_back(fallback_location: root_path) }
+          format.html { redirect_back(fallback_location: main_app.root_path) }
         end
       else
         respond_to do |format|
           format.turbo_stream { render turbo_stream: turbo_stream.replace("comment_form_errors", partial: "community_engine/comments/errors", locals: { comment: @comment }) }
-          format.html { redirect_back(fallback_location: root_path, alert: @comment.errors.full_messages.join(", ")) }
+          format.html { redirect_back(fallback_location: main_app.root_path, alert: @comment.errors.full_messages.join(", ")) }
         end
       end
     end
@@ -72,7 +73,7 @@ module CommunityEngine
       if @comment.update(body: params[:comment][:body], edited_at: Time.current)
         respond_to do |format|
           format.turbo_stream
-          format.html { redirect_back(fallback_location: root_path) }
+          format.html { redirect_back(fallback_location: main_app.root_path) }
         end
       else
         head :unprocessable_entity
@@ -85,7 +86,7 @@ module CommunityEngine
       @comment.destroy
       respond_to do |format|
         format.turbo_stream { render turbo_stream: turbo_stream.remove("comment_#{@comment.id}") }
-        format.html { redirect_back(fallback_location: root_path) }
+        format.html { redirect_back(fallback_location: main_app.root_path) }
       end
     end
 
@@ -103,6 +104,8 @@ module CommunityEngine
       case commentable
       when CommunityEngine::SharedRoute
         commentable.visibility == "public" || commentable.user_id == current_user.id
+      when CommunityEngine::Post
+        true
       when LearningRoutesEngine::LearningRoute
         commentable.learning_profile&.user_id == current_user.id
       when LearningRoutesEngine::RouteStep
@@ -121,7 +124,7 @@ module CommunityEngine
         commentable.learning_route&.learning_profile&.user
       when CommunityEngine::SharedRoute
         commentable.user
-      when CommunityEngine::Comment
+      when CommunityEngine::Comment, CommunityEngine::Post
         commentable.user
       end
     end

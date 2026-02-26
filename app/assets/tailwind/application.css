@@ -82,6 +82,14 @@
    Triggered by theme toggle or system preference (via Stimulus controller)
    ========================================================================== */
 
+/* Semi-transparent theme tokens (glassmorphic cards, subtle borders, tints) */
+:root {
+  --color-card-glass: rgba(255, 255, 255, 0.6);
+  --color-border-subtle: rgba(28, 24, 18, 0.06);
+  --color-tint: rgba(28, 24, 18, 0.04);
+  --color-tint-strong: rgba(28, 24, 18, 0.08);
+}
+
 html[data-theme="dark"] {
   --color-bg: #1A1710;
   --color-card: #221F18;
@@ -92,6 +100,11 @@ html[data-theme="dark"] {
   --color-accent: #E8E4DC;
   --color-accent-text: #1A1710;
   --color-link: #D4A84B;
+
+  --color-card-glass: rgba(34, 31, 24, 0.75);
+  --color-border-subtle: rgba(255, 255, 255, 0.06);
+  --color-tint: rgba(255, 255, 255, 0.06);
+  --color-tint-strong: rgba(255, 255, 255, 0.1);
 }
 
 html[data-theme="dark"] ::selection {
@@ -102,6 +115,12 @@ html[data-theme="dark"] ::selection {
 html[data-theme="dark"] .nav-scrolled {
   background: rgba(26, 23, 16, 0.92);
   border-bottom-color: rgba(255, 255, 255, 0.06);
+}
+
+/* Dark section-dark: slightly lighter so it stands out from body bg */
+html[data-theme="dark"] .section-dark {
+  background: linear-gradient(180deg, #242018 0%, #1F1C14 100%);
+  border: 1px solid rgba(255, 255, 255, 0.04);
 }
 
 /* Dark card hover */

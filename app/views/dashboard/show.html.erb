@@ -2,10 +2,10 @@
 
 <%# === Header === %>
 <div style="margin-bottom:2rem;">
-  <h1 style="font-family:'DM Sans',sans-serif; font-weight:700; font-size:1.5rem; letter-spacing:-0.5px; color:#1C1812; margin:0 0 0.3rem;">
+  <h1 style="font-family:'DM Sans',sans-serif; font-weight:700; font-size:1.5rem; letter-spacing:-0.5px; color:var(--color-txt); margin:0 0 0.3rem;">
     <%= t("dashboard.greeting", name: current_user.name.to_s.split.first || current_user.name) %>
   </h1>
-  <p style="font-family:'DM Sans',sans-serif; font-size:0.85rem; color:#A09889; margin:0;">
+  <p style="font-family:'DM Sans',sans-serif; font-size:0.85rem; color:var(--color-muted); margin:0;">
     <%= t("dashboard.subheading") %>
   </p>
 </div>
@@ -32,23 +32,23 @@
     <% @routes.each do |route| %>
       <%= link_to learning_routes_engine.route_path(route),
           class: "card-hover",
-          style: "display:block; background:rgba(255,255,255,0.6); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); border:1px solid rgba(28,24,18,0.06); border-radius:14px; padding:1.2rem 1.3rem; text-decoration:none;" do %>
+          style: "display:block; background:var(--color-card-glass); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); border:1px solid var(--color-border-subtle); border-radius:14px; padding:1.2rem 1.3rem; text-decoration:none;" do %>
         <div style="display:flex; align-items:center; justify-content:space-between; gap:1rem;">
           <div style="width:38px; height:38px; border-radius:11px; background:<%= route_accent_color(route) %>12; display:flex; align-items:center; justify-content:center; flex-shrink:0; font-size:1.15rem;">
             <%= topic_emoji_for(route.topic) %>
           </div>
           <div style="flex:1; min-width:0;">
-            <h3 style="font-family:'DM Sans',sans-serif; font-weight:600; font-size:0.92rem; color:#1C1812; margin:0 0 0.3rem; letter-spacing:-0.2px;">
+            <h3 style="font-family:'DM Sans',sans-serif; font-weight:600; font-size:0.92rem; color:var(--color-txt); margin:0 0 0.3rem; letter-spacing:-0.2px;">
               <%= route.localized_topic %>
             </h3>
-            <p style="font-family:'DM Sans',sans-serif; font-size:0.75rem; color:#A09889; margin:0;">
+            <p style="font-family:'DM Sans',sans-serif; font-size:0.75rem; color:var(--color-muted); margin:0;">
               <% if route.subject_area.present? %><%= route.localized_subject_area %> &middot; <% end %><%= t("dashboard.steps_progress", completed: route.route_steps.count(&:completed?), total: route.total_steps) %>
             </p>
           </div>
           <div style="display:flex; align-items:center; gap:1rem; flex-shrink:0;">
             <div style="text-align:right;">
-              <span style="font-family:'DM Mono',monospace; font-size:0.82rem; font-weight:500; color:#1C1812;"><%= route.progress_percentage %>%</span>
-              <div style="width:5rem; height:4px; background:rgba(28,24,18,0.06); border-radius:2px; margin-top:0.35rem;">
+              <span style="font-family:'DM Mono',monospace; font-size:0.82rem; font-weight:500; color:var(--color-txt);"><%= route.progress_percentage %>%</span>
+              <div style="width:5rem; height:4px; background:var(--color-tint-strong); border-radius:2px; margin-top:0.35rem;">
                 <div style="width:<%= route.progress_percentage %>%; height:100%; background:#5BA880; border-radius:2px; transition:width 0.3s;"></div>
               </div>
             </div>
@@ -56,7 +56,7 @@
                               when 'active' then 'background:rgba(91,168,128,0.1); color:#3D7A5A'
                               when 'completed' then 'background:rgba(110,155,200,0.1); color:#4A7A9E'
                               when 'paused' then 'background:rgba(176,152,72,0.1); color:#8B6D28'
-                              else 'background:rgba(28,24,18,0.05); color:#6D665B'
+                              else "background:var(--color-tint); color:var(--color-sub)"
                               end %>
             <span style="font-family:'DM Mono',monospace; font-size:0.6rem; letter-spacing:0.5px; text-transform:uppercase; padding:0.25rem 0.55rem; border-radius:6px; <%= badge_colors %>">
               <%= t("dashboard.status.#{route.status}") %>
@@ -69,17 +69,17 @@
 
 <% else %>
   <%# === Empty state: no routes yet === %>
-  <div style="background:rgba(255,255,255,0.5); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); border:1px solid rgba(28,24,18,0.06); border-radius:20px; padding:3rem 2rem; text-align:center;">
+  <div style="background:var(--color-card-glass); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); border:1px solid var(--color-border-subtle); border-radius:20px; padding:3rem 2rem; text-align:center;">
 
     <%# Decorative route icon %>
     <div style="width:56px; height:56px; border-radius:14px; background:linear-gradient(135deg, rgba(139,128,196,0.12), rgba(91,168,128,0.12)); display:inline-flex; align-items:center; justify-content:center; margin-bottom:1.2rem;">
       <%= render "shared/logo", size: 28 %>
     </div>
 
-    <h2 style="font-family:'DM Sans',sans-serif; font-weight:700; font-size:1.15rem; color:#1C1812; margin:0 0 0.5rem; letter-spacing:-0.3px;">
+    <h2 style="font-family:'DM Sans',sans-serif; font-weight:700; font-size:1.15rem; color:var(--color-txt); margin:0 0 0.5rem; letter-spacing:-0.3px;">
       <%= t("dashboard.empty_heading") %>
     </h2>
-    <p style="font-family:'DM Sans',sans-serif; font-size:0.82rem; color:#A09889; margin:0; max-width:340px; margin-left:auto; margin-right:auto; line-height:1.5;">
+    <p style="font-family:'DM Sans',sans-serif; font-size:0.82rem; color:var(--color-muted); margin:0; max-width:340px; margin-left:auto; margin-right:auto; line-height:1.5;">
       <%= t("dashboard.empty_body") %>
     </p>
   </div>
@@ -87,26 +87,26 @@
 
 <%# === Profile summary === %>
 <% if @profile %>
-  <div style="margin-top:1.5rem; background:rgba(255,255,255,0.45); border:1px solid rgba(28,24,18,0.06); border-radius:14px; padding:1.2rem 1.3rem;">
-    <p style="font-family:'DM Mono',monospace; font-size:0.6rem; letter-spacing:1.5px; text-transform:uppercase; color:#A09889; margin:0 0 0.8rem;">
+  <div style="margin-top:1.5rem; background:var(--color-card-glass); border:1px solid var(--color-border-subtle); border-radius:14px; padding:1.2rem 1.3rem;">
+    <p style="font-family:'DM Mono',monospace; font-size:0.6rem; letter-spacing:1.5px; text-transform:uppercase; color:var(--color-muted); margin:0 0 0.8rem;">
       <%= t("dashboard.profile_heading") %>
     </p>
     <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(140px, 1fr)); gap:0.8rem;">
       <div>
-        <p style="font-family:'DM Sans',sans-serif; font-size:0.7rem; color:#A09889; margin:0 0 0.2rem;"><%= t("dashboard.profile_interests") %></p>
-        <p style="font-family:'DM Sans',sans-serif; font-size:0.82rem; font-weight:500; color:#1C1812; margin:0;"><%= @profile.interests&.presence&.map { |i| t("interests.#{i}", default: i.humanize) }&.join(", ") || "—" %></p>
+        <p style="font-family:'DM Sans',sans-serif; font-size:0.7rem; color:var(--color-muted); margin:0 0 0.2rem;"><%= t("dashboard.profile_interests") %></p>
+        <p style="font-family:'DM Sans',sans-serif; font-size:0.82rem; font-weight:500; color:var(--color-txt); margin:0;"><%= @profile.interests&.presence&.map { |i| t("interests.#{i}", default: i.humanize) }&.join(", ") || "—" %></p>
       </div>
       <div>
-        <p style="font-family:'DM Sans',sans-serif; font-size:0.7rem; color:#A09889; margin:0 0 0.2rem;"><%= t("dashboard.profile_level") %></p>
-        <p style="font-family:'DM Sans',sans-serif; font-size:0.82rem; font-weight:500; color:#1C1812; margin:0;"><%= @profile.current_level ? t("profile_values.levels.#{@profile.current_level}", default: @profile.current_level.capitalize) : "—" %></p>
+        <p style="font-family:'DM Sans',sans-serif; font-size:0.7rem; color:var(--color-muted); margin:0 0 0.2rem;"><%= t("dashboard.profile_level") %></p>
+        <p style="font-family:'DM Sans',sans-serif; font-size:0.82rem; font-weight:500; color:var(--color-txt); margin:0;"><%= @profile.current_level ? t("profile_values.levels.#{@profile.current_level}", default: @profile.current_level.capitalize) : "—" %></p>
       </div>
       <div>
-        <p style="font-family:'DM Sans',sans-serif; font-size:0.7rem; color:#A09889; margin:0 0 0.2rem;"><%= t("dashboard.profile_style") %></p>
-        <p style="font-family:'DM Sans',sans-serif; font-size:0.82rem; font-weight:500; color:#1C1812; margin:0;"><%= @profile.learning_style&.presence&.map { |s| t("profile_values.styles.#{s}", default: s.humanize) }&.join(", ") || "—" %></p>
+        <p style="font-family:'DM Sans',sans-serif; font-size:0.7rem; color:var(--color-muted); margin:0 0 0.2rem;"><%= t("dashboard.profile_style") %></p>
+        <p style="font-family:'DM Sans',sans-serif; font-size:0.82rem; font-weight:500; color:var(--color-txt); margin:0;"><%= @profile.learning_style&.presence&.map { |s| t("profile_values.styles.#{s}", default: s.humanize) }&.join(", ") || "—" %></p>
       </div>
       <div>
-        <p style="font-family:'DM Sans',sans-serif; font-size:0.7rem; color:#A09889; margin:0 0 0.2rem;"><%= t("dashboard.profile_timeline") %></p>
-        <p style="font-family:'DM Sans',sans-serif; font-size:0.82rem; font-weight:500; color:#1C1812; margin:0;"><%= @profile.timeline ? t("profile_values.timelines.#{@profile.timeline}", default: @profile.timeline.humanize) : "—" %></p>
+        <p style="font-family:'DM Sans',sans-serif; font-size:0.7rem; color:var(--color-muted); margin:0 0 0.2rem;"><%= t("dashboard.profile_timeline") %></p>
+        <p style="font-family:'DM Sans',sans-serif; font-size:0.82rem; font-weight:500; color:var(--color-txt); margin:0;"><%= @profile.timeline ? t("profile_values.timelines.#{@profile.timeline}", default: @profile.timeline.humanize) : "—" %></p>
       </div>
     </div>
   </div>
