@@ -78,9 +78,15 @@
     <% end %>
 
     <%# === Main content === %>
-    <main id="main-content" style="position:relative; z-index:1; max-width:840px; margin:0 auto; padding:44px 24px 80px;">
-      <%= yield %>
-    </main>
+    <% if content_for?(:full_width) %>
+      <main id="main-content" style="position:relative; z-index:1; margin:0 auto; padding:44px 0 80px;">
+        <%= yield %>
+      </main>
+    <% else %>
+      <main id="main-content" style="position:relative; z-index:1; max-width:840px; margin:0 auto; padding:44px 24px 80px;">
+        <%= yield %>
+      </main>
+    <% end %>
 
   </body>
 </html>
