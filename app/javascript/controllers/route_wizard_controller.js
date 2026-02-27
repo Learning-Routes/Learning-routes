@@ -37,12 +37,19 @@ export default class extends Controller {
     this.isAnimating = false
     this._allowSubmit = false
     this.styleSaved = false
+    this._timers = []
 
     // Load saved preferences
     this._loadSavedPrefs()
 
     this.updateUI()
     this.validateStep()
+  }
+
+  disconnect() {
+    if (this._animSafetyTimer) clearTimeout(this._animSafetyTimer)
+    this._timers.forEach(t => clearTimeout(t))
+    this._timers = []
   }
 
   t(key, fallback) {
@@ -486,12 +493,12 @@ export default class extends Controller {
       this.selectedHours = prefs.weekly_hours
       if (this.hasHoursInputTarget) this.hoursInputTarget.value = prefs.weekly_hours
       // Visually select the card
-      setTimeout(() => this._preselectTimeCard("hoursGrid", "hours", prefs.weekly_hours), 100)
+      this._timers.push(setTimeout(() => this._preselectTimeCard("hoursGrid", "hours", prefs.weekly_hours), 100))
     }
     if (prefs.session_minutes) {
       this.selectedSession = prefs.session_minutes
       if (this.hasSessionInputTarget) this.sessionInputTarget.value = prefs.session_minutes
-      setTimeout(() => this._preselectTimeCard("sessionGrid", "minutes", prefs.session_minutes), 100)
+      this._timers.push(setTimeout(() => this._preselectTimeCard("sessionGrid", "minutes", prefs.session_minutes), 100))
     }
   }
 
