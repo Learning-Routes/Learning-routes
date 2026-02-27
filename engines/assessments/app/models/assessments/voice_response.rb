@@ -8,6 +8,8 @@ module Assessments
 
     STATUSES = %w[pending transcribing evaluating completed failed].freeze
 
+    validates :status, inclusion: { in: STATUSES }, allow_nil: true
+
     scope :by_user, ->(user_id) { where(user_id: user_id) }
     scope :by_step, ->(step_id) { where(route_step_id: step_id) }
     scope :completed, -> { where(status: "completed") }

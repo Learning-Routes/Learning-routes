@@ -4,6 +4,7 @@ module LearningRoutesEngine
 
     has_many :learning_routes, dependent: :destroy
 
+    validates :user_id, uniqueness: true
     validates :current_level, presence: true,
               inclusion: { in: %w[beginner intermediate advanced] }
 
