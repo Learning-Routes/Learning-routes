@@ -4,7 +4,7 @@
   <!-- Route header -->
   <div class="mb-8">
     <div class="flex items-center gap-3 mb-2">
-      <%= link_to main_app.dashboard_path, class: "text-gray-400 hover:text-white transition" do %>
+      <%= link_to main_app.dashboard_path, class: "text-gray-400 hover:text-white transition", aria: { label: t('layout.learning.dashboard') } do %>
         <svg aria-hidden="true" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
         </svg>
@@ -58,7 +58,7 @@
                   <%= 'hover:border-indigo-500/30 cursor-pointer' if accessible %>
                   <%= 'opacity-50' if step.locked? %>">
         <% if accessible %>
-          <%= link_to route_step_path(@route, step), class: "absolute inset-0 z-10" do %><% end %>
+          <%= link_to route_step_path(@route, step), class: "absolute inset-0 z-10", aria: { label: step.localized_title }, tabindex: "-1" do %><% end %>
         <% end %>
 
         <div class="flex items-center gap-4">
@@ -87,6 +87,7 @@
                               when 'exercise' then 'bg-emerald-900/50 text-emerald-300'
                               when 'assessment' then 'bg-orange-900/50 text-orange-300'
                               when 'review' then 'bg-purple-900/50 text-purple-300'
+                              else 'bg-gray-800 text-gray-400'
                               end %>">
                 <%= t("learning_engine.#{step.content_type}.badge") %>
               </span>
