@@ -101,6 +101,7 @@
   --color-status-paused-bg: rgba(176, 152, 72, 0.1);
   --color-status-paused-text: #8B6D28;
   --color-progress-bar: #5BA880;
+  --color-faint-text: #CCC5B8;
 }
 
 html[data-theme="dark"] {
@@ -131,6 +132,7 @@ html[data-theme="dark"] {
   --color-status-paused-bg: rgba(176, 152, 72, 0.15);
   --color-status-paused-text: #D4B85C;
   --color-progress-bar: #5BA880;
+  --color-faint-text: #6A6050;
 }
 
 html[data-theme="dark"] ::selection {
