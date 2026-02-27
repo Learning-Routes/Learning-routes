@@ -1,45 +1,36 @@
-<%# Floating thought bubbles showing best comments from shared routes.
+<%# Floating thoughts — compact scrolling banner.
+     Shows best comments from shared routes as a horizontal ticker.
      Locals: thoughts (array of hashes: { comment:, route_topic:, author_name: }) %>
 <% if thoughts.present? && thoughts.any? %>
-<div data-controller="floating-thoughts"
-     data-floating-thoughts-interval-value="5000"
-     style="position:relative; min-height:100px; margin-bottom:2rem; overflow:hidden;">
-
-  <%# Section label %>
-  <p style="font-family:'DM Mono',monospace; font-size:0.68rem; text-transform:uppercase; letter-spacing:0.08em;
-            color:var(--color-muted, #887F72); margin:0 0 0.85rem;">
-    <%= t("community_engine.feed.floating_thoughts.title") %>
-  </p>
-
-  <% thoughts.each do |thought| %>
-    <div data-floating-thoughts-target="thought"
-         style="position:absolute; top:1.8rem; left:0; right:0; opacity:0; transform:translateY(12px);
-                background:var(--color-card, rgba(255,255,255,0.6)); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px);
-                border:1px solid var(--color-faint, rgba(28,24,18,0.06)); border-radius:16px;
-                padding:1rem 1.25rem; box-shadow:0 2px 12px rgba(0,0,0,0.04);">
-      <%# Speech bubble arrow %>
-      <div style="position:absolute; top:-6px; left:1.5rem; width:12px; height:12px; background:var(--color-card, rgba(255,255,255,0.6));
-                  border-left:1px solid var(--color-faint, rgba(28,24,18,0.06)); border-top:1px solid var(--color-faint, rgba(28,24,18,0.06));
-                  transform:rotate(45deg);"></div>
-
-      <p style="font-family:'DM Sans',sans-serif; font-size:0.9rem; color:var(--color-sub, #6D665B);
-               line-height:1.55; margin:0 0 0.5rem; font-style:italic;">
-        "<%= thought[:comment].truncate(140) %>"
-      </p>
-      <div style="display:flex; align-items:center; gap:0.5rem;">
-        <div style="width:22px; height:22px; border-radius:50%; background:var(--color-accent, #2C261E);
-                    display:flex; align-items:center; justify-content:center; color:var(--color-accent-text, #F5F1EB);
-                    font-family:'DM Sans',sans-serif; font-size:0.5rem; font-weight:700;">
+<div style="background:var(--color-tint, rgba(28,24,18,0.03)); border:1px solid var(--color-faint, rgba(28,24,18,0.06));
+            border-radius:10px; padding:0.65rem 1rem; overflow:hidden;">
+  <div data-controller="floating-thoughts"
+       data-floating-thoughts-interval-value="5000"
+       style="position:relative; min-height:1.6rem;">
+    <% thoughts.each do |thought| %>
+      <div data-floating-thoughts-target="thought"
+           style="position:absolute; inset:0; opacity:0; transform:translateY(4px);
+                  display:flex; align-items:center; gap:0.5rem;
+                  transition:opacity 0.4s ease, transform 0.4s ease;">
+        <%# Mini avatar %>
+        <div style="flex-shrink:0; width:22px; height:22px; border-radius:50%;
+                    background:var(--color-accent, #2C261E); color:var(--color-accent-text, #F5F1EB);
+                    display:flex; align-items:center; justify-content:center;
+                    font-family:'DM Sans',sans-serif; font-size:0.48rem; font-weight:700;">
           <%= thought[:author_name].to_s.first&.upcase || "?" %>
         </div>
-        <span style="font-family:'DM Sans',sans-serif; font-size:0.76rem; font-weight:500; color:var(--color-txt, #1C1812);">
-          <%= thought[:author_name] %>
-        </span>
-        <span style="font-family:'DM Mono',monospace; font-size:0.66rem; color:var(--color-muted, #887F72);">
-          on <%= thought[:route_topic].to_s.truncate(40) %>
+        <%# Comment text %>
+        <p style="font-family:'DM Sans',sans-serif; font-size:0.75rem; color:var(--color-sub, #6D665B);
+                 line-height:1.3; margin:0; font-style:italic; flex:1; min-width:0;
+                 overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+          "<%= thought[:comment].truncate(100) %>"
+        </p>
+        <%# Author + route context %>
+        <span style="flex-shrink:0; font-family:'DM Mono',monospace; font-size:0.6rem; color:var(--color-muted, #887F72); white-space:nowrap;">
+          <%= thought[:author_name] %> · <%= thought[:route_topic].to_s.truncate(25) %>
         </span>
       </div>
-    </div>
-  <% end %>
+    <% end %>
+  </div>
 </div>
 <% end %>
