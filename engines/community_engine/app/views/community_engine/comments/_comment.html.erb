@@ -4,14 +4,14 @@
   <div style="flex-shrink:0; width:32px; height:32px; border-radius:50%; background:var(--color-accent, #2C261E);
               display:flex; align-items:center; justify-content:center; color:var(--color-accent-text, #F5F1EB);
               font-family:'DM Sans',sans-serif; font-size:0.65rem; font-weight:700;">
-    <%= comment.user.name.to_s.first&.upcase || "?" %>
+    <%= comment.user&.name.to_s.first&.upcase || "?" %>
   </div>
 
   <div style="flex:1; min-width:0;">
     <%# Header: name + time + edited badge %>
     <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.3rem;">
       <span style="font-family:'DM Sans',sans-serif; font-size:0.82rem; font-weight:600; color:var(--color-txt, #1C1812);">
-        <%= comment.user.name %>
+        <%= comment.user&.name || t("community_engine.comments.deleted_user") %>
       </span>
       <span style="font-family:'DM Mono',monospace; font-size:0.65rem; color:var(--color-muted, #887F72);">
         <%= time_ago_in_words(comment.created_at) %>

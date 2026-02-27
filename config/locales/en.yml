@@ -1266,6 +1266,7 @@ en:
       edited: "(edited)"
       cancel: "Cancel"
       save: "Save"
+      deleted_user: "Deleted user"
     follows:
       follow: "Follow"
       following: "Following"
