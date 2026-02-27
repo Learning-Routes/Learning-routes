@@ -49,13 +49,13 @@
             <div style="text-align:right;">
               <span style="font-family:'DM Mono',monospace; font-size:0.82rem; font-weight:500; color:var(--color-txt);"><%= route.progress_percentage %>%</span>
               <div style="width:5rem; height:4px; background:var(--color-tint-strong); border-radius:2px; margin-top:0.35rem;">
-                <div style="width:<%= route.progress_percentage %>%; height:100%; background:#5BA880; border-radius:2px; transition:width 0.3s;"></div>
+                <div style="width:<%= route.progress_percentage %>%; height:100%; background:var(--color-progress-bar, #5BA880); border-radius:2px; transition:width 0.3s;"></div>
               </div>
             </div>
             <% badge_colors = case route.status
-                              when 'active' then 'background:rgba(91,168,128,0.1); color:#3D7A5A'
-                              when 'completed' then 'background:rgba(110,155,200,0.1); color:#4A7A9E'
-                              when 'paused' then 'background:rgba(176,152,72,0.1); color:#8B6D28'
+                              when 'active' then 'background:var(--color-status-active-bg, rgba(91,168,128,0.1)); color:var(--color-status-active-text, #3D7A5A)'
+                              when 'completed' then 'background:var(--color-status-completed-bg, rgba(110,155,200,0.1)); color:var(--color-status-completed-text, #4A7A9E)'
+                              when 'paused' then 'background:var(--color-status-paused-bg, rgba(176,152,72,0.1)); color:var(--color-status-paused-text, #8B6D28)'
                               else "background:var(--color-tint); color:var(--color-sub)"
                               end %>
             <span style="font-family:'DM Mono',monospace; font-size:0.6rem; letter-spacing:0.5px; text-transform:uppercase; padding:0.25rem 0.55rem; border-radius:6px; <%= badge_colors %>">

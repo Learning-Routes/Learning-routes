@@ -28,7 +28,7 @@ module LearningRoutesEngine
       end
 
       rating = params[:rating].to_i
-      unless rating.between?(1, 5)
+      unless rating.between?(1, 4)
         redirect_to reviews_path, alert: t("flash.invalid_rating")
         return
       end
