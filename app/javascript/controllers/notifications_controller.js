@@ -7,6 +7,7 @@ export default class extends Controller {
   connect() {
     this.polling = setInterval(() => this.fetchUnreadCount(), this.pollIntervalValue)
     this.open = false
+    this._boundClose = this.closeOnOutsideClick.bind(this)
   }
 
   disconnect() {
@@ -22,7 +23,6 @@ export default class extends Controller {
       this.dropdownTarget.style.display = this.open ? "block" : "none"
     }
     if (this.open) {
-      this._boundClose = this.closeOnOutsideClick.bind(this)
       document.addEventListener("click", this._boundClose)
     } else {
       document.removeEventListener("click", this._boundClose)

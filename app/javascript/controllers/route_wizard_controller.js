@@ -20,7 +20,8 @@ export default class extends Controller {
     step: { type: Number, default: 0 },
     generating: { type: Boolean, default: false },
     i18n: { type: Object, default: {} },
-    savedPrefs: { type: Object, default: {} }
+    savedPrefs: { type: Object, default: {} },
+    homeUrl: { type: String, default: "/profile" }
   }
 
   connect() {
@@ -606,7 +607,7 @@ export default class extends Controller {
     if (this.hasNavLeftTarget) {
       if (step === 0) {
         this.navLeftTarget.innerHTML = `
-          <a href="/profile" style="display:flex; align-items:center; gap:10px; text-decoration:none; color:var(--color-txt, #1C1812);">
+          <a href="${this.homeUrlValue}" style="display:flex; align-items:center; gap:10px; text-decoration:none; color:var(--color-txt, #1C1812);">
             <span style="font-family:'DM Sans',sans-serif; font-weight:700; font-size:0.9rem; letter-spacing:-0.5px; color:var(--color-txt, #1C1812);">Learning Routes</span>
           </a>`
       } else {
@@ -732,7 +733,7 @@ export default class extends Controller {
       fromEl.style.opacity = "0"
       fromEl.style.transform = `translateX(${-20 * direction}px)`
 
-      setTimeout(() => {
+      const t1 = setTimeout(() => {
         try {
           fromEl.style.display = "none"
           fromEl.style.transition = ""
@@ -748,16 +749,18 @@ export default class extends Controller {
             toEl.style.opacity = "1"
             toEl.style.transform = "translateX(0)"
 
-            setTimeout(() => {
+            const t2 = setTimeout(() => {
               toEl.style.transition = ""
               this.isAnimating = false
               if (this._animSafetyTimer) clearTimeout(this._animSafetyTimer)
             }, 300)
+            this._timers.push(t2)
           })
         } catch (e) {
           this.isAnimating = false
         }
       }, 200)
+      this._timers.push(t1)
     } catch (e) {
       this.isAnimating = false
     }

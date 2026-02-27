@@ -3,7 +3,8 @@ import { Controller } from "@hotwired/stimulus"
 export default class extends Controller {
   static values = {
     url: String,
-    requestId: String
+    requestId: String,
+    fallbackUrl: { type: String, default: "/routes/create" }
   }
 
   static targets = ["dotsText"]
@@ -45,12 +46,12 @@ export default class extends Controller {
       } else if (data.status === "failed") {
         clearInterval(this.pollInterval)
         clearInterval(this.dotInterval)
-        window.location.href = "/routes/create"
+        window.location.href = this.fallbackUrlValue
       } else if (Date.now() - this.startedAt > 90000) {
         // Timeout after 90 seconds — job likely not processing
         clearInterval(this.pollInterval)
         clearInterval(this.dotInterval)
-        window.location.href = "/routes/create"
+        window.location.href = this.fallbackUrlValue
       }
     } catch (e) {
       // Silently continue polling on network errors
