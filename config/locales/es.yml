@@ -709,6 +709,7 @@ es:
     study_session: "Sesión de estudio"
     study_duration: "%{minutes} min de aprendizaje"
     session_completed: "Sesión completada"
+    unknown_route: "Ruta"
     time:
       today: "Hoy, %{time}"
       yesterday: "Ayer, %{time}"

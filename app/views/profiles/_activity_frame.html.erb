@@ -18,7 +18,7 @@
     activities << {
       type: step.content_type_assessment? ? :exam_pass : :lesson_completed,
       title: step.localized_title,
-      desc: step.learning_route.localized_topic,
+      desc: step.learning_route&.localized_topic || t("activity.unknown_route"),
       time: step.completed_at,
       color: step.content_type_assessment? ? "#B09848" : "#5BA880"
     }

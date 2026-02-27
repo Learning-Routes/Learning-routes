@@ -6,14 +6,19 @@ module CommunityEngine
       return head(:unprocessable_entity) if @followed_user == current_user
 
       follow = Follow.find_or_initialize_by(follower: current_user, followed: @followed_user)
-      if follow.new_record? && follow.save
-        ActivityTracker.track!(user: current_user, action: "followed", trackable: @followed_user)
-        NotificationService.notify!(
-          user: @followed_user,
-          actor: current_user,
-          notifiable: follow,
-          notification_type: "new_follower"
-        )
+      if follow.new_record?
+        begin
+          follow.save!
+          ActivityTracker.track!(user: current_user, action: "followed", trackable: @followed_user)
+          NotificationService.notify!(
+            user: @followed_user,
+            actor: current_user,
+            notifiable: follow,
+            notification_type: "new_follower"
+          )
+        rescue ActiveRecord::RecordNotUnique
+          # Another request already created this follow — no-op
+        end
       end
 
       respond_to do |format|
