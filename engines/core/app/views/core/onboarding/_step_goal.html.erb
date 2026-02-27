@@ -2,10 +2,10 @@
   <div data-controller="selectable-card">
     <%# === Heading === %>
     <div style="text-align:center; margin-bottom:2rem;">
-      <h2 style="font-family:'DM Sans',sans-serif; font-weight:600; font-size:1.5rem; color:#1C1812; letter-spacing:-0.5px; margin:0 0 0.5rem;">
+      <h2 style="font-family:'DM Sans',sans-serif; font-weight:600; font-size:1.5rem; color:var(--color-txt, #1C1812); letter-spacing:-0.5px; margin:0 0 0.5rem;">
         <em style="font-style:italic;"><%= t("onboarding.goal.heading") %></em>
       </h2>
-      <p style="font-family:'DM Sans',sans-serif; font-size:0.85rem; color:#6D665B; margin:0;">
+      <p style="font-family:'DM Sans',sans-serif; font-size:0.85rem; color:var(--color-sub, #6D665B); margin:0;">
         <%= t("onboarding.goal.subtitle") %>
       </p>
     </div>
@@ -22,21 +22,21 @@
       <div style="display:flex; flex-direction:column; gap:1.3rem; margin-bottom:2rem;">
         <%# === Goal textarea === %>
         <div>
-          <label for="goal_textarea" style="font-family:'DM Sans',sans-serif; font-size:0.78rem; font-weight:500; color:#6D665B; margin-bottom:0.4rem; display:block;">
+          <label for="goal_textarea" style="font-family:'DM Sans',sans-serif; font-size:0.78rem; font-weight:500; color:var(--color-sub, #6D665B); margin-bottom:0.4rem; display:block;">
             <%= t("onboarding.goal.label") %>
           </label>
           <textarea name="goal" id="goal_textarea" rows="3"
-                    style="width:100%; padding:0.7rem 0.9rem; border-radius:10px; border:1.5px solid rgba(28,24,18,0.1); background:white; font-family:'DM Sans',sans-serif; font-size:0.85rem; color:#1C1812; outline:none; transition:border-color 0.2s, box-shadow 0.2s; resize:none; box-sizing:border-box; line-height:1.6;"
+                    style="width:100%; padding:0.7rem 0.9rem; border-radius:10px; border:1.5px solid var(--color-border-subtle, rgba(28,24,18,0.1)); background:white; font-family:'DM Sans',sans-serif; font-size:0.85rem; color:var(--color-txt, #1C1812); outline:none; transition:border-color 0.2s, box-shadow 0.2s; resize:none; box-sizing:border-box; line-height:1.6;"
                     placeholder="<%= t("onboarding.goal.placeholder") %>"
                     onfocus="this.style.borderColor='rgba(28,24,18,0.22)';this.style.boxShadow='0 0 0 3px rgba(28,24,18,0.05)'"
                     onblur="this.style.borderColor='rgba(28,24,18,0.1)';this.style.boxShadow='none'"
                     required><%= profile.goal %></textarea>
-          <span style="font-family:'DM Sans',sans-serif; font-size:0.65rem; color:#CCC5B8; margin-top:0.3rem; display:block; text-align:right;"><%= t("onboarding.goal.max_chars") %></span>
+          <span style="font-family:'DM Sans',sans-serif; font-size:0.65rem; color:var(--color-faint, #CCC5B8); margin-top:0.3rem; display:block; text-align:right;"><%= t("onboarding.goal.max_chars") %></span>
         </div>
 
         <%# === Timeline === %>
         <div>
-          <label style="font-family:'DM Sans',sans-serif; font-size:0.78rem; font-weight:500; color:#6D665B; margin-bottom:0.5rem; display:block;">
+          <label style="font-family:'DM Sans',sans-serif; font-size:0.78rem; font-weight:500; color:var(--color-sub, #6D665B); margin-bottom:0.5rem; display:block;">
             <%= t("onboarding.goal.timeline_label") %>
           </label>
           <div style="display:grid; grid-template-columns:repeat(2, 1fr); gap:0.5rem;" class="onb-timeline-grid">
@@ -47,10 +47,10 @@
                        <%= "checked" if profile.timeline == value %>
                        data-action="change->selectable-card#toggle">
                 <div data-card-visual
-                     style="padding:0.6rem; border-radius:10px; border:1.5px solid rgba(28,24,18,0.08); background:#FEFDFB; text-align:center; transition:all 0.2s ease;"
+                     style="padding:0.6rem; border-radius:10px; border:1.5px solid var(--color-border-subtle, rgba(28,24,18,0.08)); background:var(--color-card, #FEFDFB); text-align:center; transition:all 0.2s ease;"
                      onmouseenter="this.style.boxShadow='0 2px 6px rgba(28,24,18,0.04)'"
                      onmouseleave="this.style.boxShadow='none'">
-                  <span style="font-family:'DM Sans',sans-serif; font-weight:500; font-size:0.78rem; color:#1C1812;"><%= t("profile_values.timelines.#{value}") %></span>
+                  <span style="font-family:'DM Sans',sans-serif; font-weight:500; font-size:0.78rem; color:var(--color-txt, #1C1812);"><%= t("profile_values.timelines.#{value}") %></span>
                 </div>
               </label>
             <% end %>
@@ -61,19 +61,19 @@
       <%# === Navigation buttons === %>
       <div style="display:flex; justify-content:space-between; align-items:center;">
         <%= link_to t("onboarding.goal.back"), core.onboarding_path(step: "learning_style"),
-            style: "font-family:'DM Sans',sans-serif; font-weight:500; font-size:0.82rem; color:#6D665B; text-decoration:none; padding:0.65rem 1.2rem; border-radius:11px; border:1px solid rgba(28,24,18,0.08); transition:all 0.2s ease; display:inline-flex; align-items:center;",
+            style: "font-family:'DM Sans',sans-serif; font-weight:500; font-size:0.82rem; color:var(--color-sub, #6D665B); text-decoration:none; padding:0.65rem 1.2rem; border-radius:11px; border:1px solid rgba(28,24,18,0.08); transition:all 0.2s ease; display:inline-flex; align-items:center;",
             onmouseenter: "this.style.borderColor='rgba(28,24,18,0.15)';this.style.color='#1C1812'",
             onmouseleave: "this.style.borderColor='rgba(28,24,18,0.08)';this.style.color='#6D665B'",
             data: { turbo_frame: "onboarding_step" } %>
         <%= f.submit t("onboarding.goal.finish"),
-            style: "font-family:'DM Sans',sans-serif; font-weight:600; font-size:0.82rem; color:#F5F1EB; background:#5BA880; border:none; border-radius:11px; padding:0.65rem 1.6rem; cursor:pointer; transition:all 0.2s ease; box-shadow:0 1px 3px rgba(91,168,128,0.2),0 1px 2px rgba(91,168,128,0.1); letter-spacing:-0.2px;",
+            style: "font-family:'DM Sans',sans-serif; font-weight:600; font-size:0.82rem; color:var(--color-accent-text, #F5F1EB); background:#5BA880; border:none; border-radius:11px; padding:0.65rem 1.6rem; cursor:pointer; transition:all 0.2s ease; box-shadow:0 1px 3px rgba(91,168,128,0.2),0 1px 2px rgba(91,168,128,0.1); letter-spacing:-0.2px;",
             onmouseenter: "this.style.boxShadow='0 4px 16px rgba(91,168,128,0.25)';this.style.transform='translateY(-1px)'",
             onmouseleave: "this.style.boxShadow='0 1px 3px rgba(91,168,128,0.2),0 1px 2px rgba(91,168,128,0.1)';this.style.transform='translateY(0)'" %>
       </div>
     <% end %>
 
     <%# === Footer help text === %>
-    <p style="font-family:'DM Sans',sans-serif; font-size:0.72rem; color:#A09889; text-align:center; margin:1.5rem 0 0;">
+    <p style="font-family:'DM Sans',sans-serif; font-size:0.72rem; color:var(--color-sub, #A09889); text-align:center; margin:1.5rem 0 0;">
       <%= t("onboarding.goal.footer") %>
     </p>
   </div>

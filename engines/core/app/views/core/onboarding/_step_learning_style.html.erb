@@ -2,10 +2,10 @@
   <div data-controller="checkbox-group selectable-card">
     <%# === Heading === %>
     <div style="text-align:center; margin-bottom:2rem;">
-      <h2 style="font-family:'DM Sans',sans-serif; font-weight:600; font-size:1.5rem; color:#1C1812; letter-spacing:-0.5px; margin:0 0 0.5rem;">
+      <h2 style="font-family:'DM Sans',sans-serif; font-weight:600; font-size:1.5rem; color:var(--color-txt, #1C1812); letter-spacing:-0.5px; margin:0 0 0.5rem;">
         <em style="font-style:italic;"><%= t("onboarding.style.heading") %></em>
       </h2>
-      <p style="font-family:'DM Sans',sans-serif; font-size:0.85rem; color:#6D665B; margin:0;">
+      <p style="font-family:'DM Sans',sans-serif; font-size:0.85rem; color:var(--color-sub, #6D665B); margin:0;">
         <%= t("onboarding.style.subtitle") %>
       </p>
     </div>
@@ -33,13 +33,13 @@
                    <%= "checked" if profile.learning_style&.include?(value) %>
                    data-action="change->checkbox-group#update change->selectable-card#toggle">
             <div data-card-visual
-                 style="display:flex; align-items:center; padding:1rem 1rem; border-radius:12px; border:1.5px solid rgba(28,24,18,0.08); background:#FEFDFB; transition:all 0.2s ease;"
+                 style="display:flex; align-items:center; padding:1rem 1rem; border-radius:12px; border:1.5px solid var(--color-border-subtle, rgba(28,24,18,0.08)); background:var(--color-card, #FEFDFB); transition:all 0.2s ease;"
                  onmouseenter="this.style.boxShadow='0 2px 8px rgba(28,24,18,0.04)'"
                  onmouseleave="this.style.boxShadow='none'">
               <span style="font-size:1.4rem; margin-right:0.8rem; flex-shrink:0;"><%= emoji %></span>
               <div>
-                <span style="font-family:'DM Sans',sans-serif; font-weight:600; font-size:0.85rem; color:#1C1812; display:block; letter-spacing:-0.2px;"><%= t("onboarding.style.#{value}") %></span>
-                <span style="font-family:'DM Sans',sans-serif; font-size:0.72rem; color:#A09889; display:block; margin-top:0.15rem;"><%= t("onboarding.style.#{value}_desc") %></span>
+                <span style="font-family:'DM Sans',sans-serif; font-weight:600; font-size:0.85rem; color:var(--color-txt, #1C1812); display:block; letter-spacing:-0.2px;"><%= t("onboarding.style.#{value}") %></span>
+                <span style="font-family:'DM Sans',sans-serif; font-size:0.72rem; color:var(--color-sub, #A09889); display:block; margin-top:0.15rem;"><%= t("onboarding.style.#{value}_desc") %></span>
               </div>
             </div>
           </label>
@@ -49,12 +49,12 @@
       <%# === Navigation buttons === %>
       <div style="display:flex; justify-content:space-between; align-items:center;">
         <%= link_to t("onboarding.style.back"), core.onboarding_path(step: "level"),
-            style: "font-family:'DM Sans',sans-serif; font-weight:500; font-size:0.82rem; color:#6D665B; text-decoration:none; padding:0.65rem 1.2rem; border-radius:11px; border:1px solid rgba(28,24,18,0.08); transition:all 0.2s ease; display:inline-flex; align-items:center;",
+            style: "font-family:'DM Sans',sans-serif; font-weight:500; font-size:0.82rem; color:var(--color-sub, #6D665B); text-decoration:none; padding:0.65rem 1.2rem; border-radius:11px; border:1px solid rgba(28,24,18,0.08); transition:all 0.2s ease; display:inline-flex; align-items:center;",
             onmouseenter: "this.style.borderColor='rgba(28,24,18,0.15)';this.style.color='#1C1812'",
             onmouseleave: "this.style.borderColor='rgba(28,24,18,0.08)';this.style.color='#6D665B'",
             data: { turbo_frame: "onboarding_step" } %>
         <%= f.submit t("onboarding.style.continue"),
-            style: "font-family:'DM Sans',sans-serif; font-weight:600; font-size:0.82rem; color:#F5F1EB; background:#2C261E; border:none; border-radius:11px; padding:0.65rem 1.6rem; cursor:pointer; transition:all 0.2s ease; box-shadow:0 1px 3px rgba(28,24,18,0.12),0 1px 2px rgba(28,24,18,0.06); letter-spacing:-0.2px;",
+            style: "font-family:'DM Sans',sans-serif; font-weight:600; font-size:0.82rem; color:var(--color-accent-text, #F5F1EB); background:var(--color-accent, #2C261E); border:none; border-radius:11px; padding:0.65rem 1.6rem; cursor:pointer; transition:all 0.2s ease; box-shadow:0 1px 3px rgba(28,24,18,0.12),0 1px 2px rgba(28,24,18,0.06); letter-spacing:-0.2px;",
             onmouseenter: "this.style.boxShadow='0 4px 16px rgba(28,24,18,0.18)';this.style.transform='translateY(-1px)'",
             onmouseleave: "this.style.boxShadow='0 1px 3px rgba(28,24,18,0.12),0 1px 2px rgba(28,24,18,0.06)';this.style.transform='translateY(0)'",
             data: { checkbox_group_target: "submit" } %>
@@ -62,7 +62,7 @@
     <% end %>
 
     <%# === Footer help text === %>
-    <p style="font-family:'DM Sans',sans-serif; font-size:0.72rem; color:#A09889; text-align:center; margin:1.5rem 0 0;">
+    <p style="font-family:'DM Sans',sans-serif; font-size:0.72rem; color:var(--color-sub, #A09889); text-align:center; margin:1.5rem 0 0;">
       <%= t("onboarding.style.footer") %>
     </p>
   </div>
