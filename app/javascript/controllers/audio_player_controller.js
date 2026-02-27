@@ -41,6 +41,7 @@ export default class extends Controller {
   }
 
   disconnect() {
+    this.unbindAudioEvents()
     if (this.audio) {
       this.audio.pause()
       this.audio.src = ""
@@ -51,34 +52,29 @@ export default class extends Controller {
   // --- Audio Events ---
 
   bindAudioEvents() {
-    this.audio.addEventListener("loadedmetadata", () => {
-      this.updateTotalTime()
-      this.showPlayer()
-    })
+    this._onLoadedMetadata = () => { this.updateTotalTime(); this.showPlayer() }
+    this._onTimeUpdate = () => { this.updateProgress(); this.updateCurrentTime() }
+    this._onProgress = () => { this.updateBuffered() }
+    this._onEnded = () => { this.isPlaying = false; this.updatePlayButton(); this.onAudioEnded() }
+    this._onError = (e) => { console.error("[AudioPlayer] Error:", e); this.showError() }
+    this._onCanPlay = () => { this.showPlayer() }
 
-    this.audio.addEventListener("timeupdate", () => {
-      this.updateProgress()
-      this.updateCurrentTime()
-    })
+    this.audio.addEventListener("loadedmetadata", this._onLoadedMetadata)
+    this.audio.addEventListener("timeupdate", this._onTimeUpdate)
+    this.audio.addEventListener("progress", this._onProgress)
+    this.audio.addEventListener("ended", this._onEnded)
+    this.audio.addEventListener("error", this._onError)
+    this.audio.addEventListener("canplay", this._onCanPlay)
+  }
 
-    this.audio.addEventListener("progress", () => {
-      this.updateBuffered()
-    })
-
-    this.audio.addEventListener("ended", () => {
-      this.isPlaying = false
-      this.updatePlayButton()
-      this.onAudioEnded()
-    })
-
-    this.audio.addEventListener("error", (e) => {
-      console.error("[AudioPlayer] Error:", e)
-      this.showError()
-    })
-
-    this.audio.addEventListener("canplay", () => {
-      this.showPlayer()
-    })
+  unbindAudioEvents() {
+    if (!this.audio) return
+    this.audio.removeEventListener("loadedmetadata", this._onLoadedMetadata)
+    this.audio.removeEventListener("timeupdate", this._onTimeUpdate)
+    this.audio.removeEventListener("progress", this._onProgress)
+    this.audio.removeEventListener("ended", this._onEnded)
+    this.audio.removeEventListener("error", this._onError)
+    this.audio.removeEventListener("canplay", this._onCanPlay)
   }
 
   // --- Playback Controls ---

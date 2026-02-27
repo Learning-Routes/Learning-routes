@@ -97,7 +97,7 @@ module LearningRoutesEngine
 
     def authorize_route_owner!
       unless @route.learning_profile.user_id == current_user.id
-        redirect_to main_app.dashboard_path, alert: I18n.t("learning_engine.not_authorized")
+        redirect_to main_app.dashboard_path, alert: t("learning_engine.not_authorized")
       end
     end
 
@@ -105,7 +105,7 @@ module LearningRoutesEngine
       @quiz = @step.step_quiz
       unless @quiz
         redirect_to learning_routes_engine.route_step_path(@route, @step),
-                    alert: I18n.t("learning_engine.step_quiz.not_ready")
+                    alert: t("learning_engine.step_quiz.not_ready")
       end
     end
 

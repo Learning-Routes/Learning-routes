@@ -22,22 +22,25 @@ module LearningRoutesEngine
       )
 
       if interaction.completed?
-        ContentEngine::AiContent.create!(
-          route_step: step,
-          content_type: :text,
-          body: interaction.response,
-          ai_model: interaction.model,
-          metadata: {
-            learning_route_id: route.id,
-            ai_interaction_id: interaction.id,
-            bloom_level: step.bloom_level
-          }
-        )
+        ActiveRecord::Base.transaction do
+          ContentEngine::AiContent.create!(
+            route_step: step,
+            content_type: :text,
+            body: interaction.response,
+            ai_model: interaction.model,
+            metadata: {
+              learning_route_id: route.id,
+              ai_interaction_id: interaction.id,
+              bloom_level: step.bloom_level
+            }
+          )
 
-        step.update!(metadata: step.metadata.merge(content_generated: true))
+          step.update!(metadata: step.metadata.merge(content_generated: true))
+        end
+
         Rails.logger.info("[ContentGenerationJob] Content generated for step #{route_step_id}")
 
-        # Generate step quiz for lesson/exercise steps
+        # Generate step quiz for lesson/exercise steps (enqueued after transaction commits)
         if step.requires_quiz?
           StepQuizGenerationJob.perform_later(route_step_id)
         end
