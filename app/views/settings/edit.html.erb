@@ -1,6 +1,9 @@
 <% content_for(:title, t("settings.title")) %>
 
-<div style="max-width:560px; margin:0 auto;" data-controller="auth-form">
+<div style="max-width:560px; margin:0 auto;" data-controller="auth-form"
+     data-auth-form-required-msg-value="<%= t('auth_alerts.validation_required') %>"
+     data-auth-form-email-msg-value="<%= t('auth_alerts.validation_email') %>"
+     data-auth-form-min-length-msg-value="<%= t('auth_alerts.validation_min_length') %>">
 
   <%# === Page heading === %>
   <div style="margin-bottom:1.8rem;">
