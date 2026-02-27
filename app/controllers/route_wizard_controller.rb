@@ -102,7 +102,7 @@ class RouteWizardController < ApplicationController
       profile.saved_style_answers = request.learning_style_answers
       profile.saved_style_result = request.learning_style_result if request.learning_style_result.present?
       dominant = request.learning_style_result&.dig("dominant") || request.learning_style_result&.dig(:dominant)
-      profile.learning_style = dominant
+      profile.learning_style = Array(dominant).compact
     end
 
     # Save other preferences
