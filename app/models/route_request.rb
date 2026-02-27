@@ -100,13 +100,13 @@ class RouteRequest < ApplicationRecord
   def learning_style_answers_complete
     return if learning_style_answers.blank?
     answers = learning_style_answers.is_a?(Hash) ? learning_style_answers : {}
-    if answers.keys.length > 0 && answers.keys.length < 6
+    if answers.keys.length > 0 && answers.keys.length < 12
       errors.add(:learning_style_answers, I18n.t("route_request.errors.incomplete_style"))
     end
   end
 
   def should_calculate_style?
-    learning_style_answers.is_a?(Hash) && learning_style_answers.keys.length == 6
+    learning_style_answers.is_a?(Hash) && learning_style_answers.keys.length == 12
   end
 
   def calculate_style_result

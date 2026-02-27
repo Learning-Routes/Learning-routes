@@ -11,6 +11,8 @@ export default class extends Controller {
     "line0", "line1", "line2", "line3", "line4",
     "styleAnswer1", "styleAnswer2", "styleAnswer3",
     "styleAnswer4", "styleAnswer5", "styleAnswer6",
+    "styleAnswer7", "styleAnswer8", "styleAnswer9",
+    "styleAnswer10", "styleAnswer11", "styleAnswer12",
     "styleProgress", "styleResultCard", "styleResultIcon",
     "styleResultName", "styleResultDesc", "styleDoneMsg",
     "savedStyleBanner", "savedStyleText", "styleHeader", "styleQuestionsWrap"
@@ -298,7 +300,7 @@ export default class extends Controller {
 
     // Auto-scroll to next unanswered question
     const nextQ = parseInt(question) + 1
-    if (nextQ <= 6 && !this.styleAnswers[String(nextQ)]) {
+    if (nextQ <= 12 && !this.styleAnswers[String(nextQ)]) {
       setTimeout(() => {
         const nextEl = this.element.querySelector(`[data-style-question="${nextQ}"]`)
         if (nextEl) {
@@ -307,7 +309,7 @@ export default class extends Controller {
       }, 150)
     }
 
-    if (Object.keys(this.styleAnswers).length === 6) {
+    if (Object.keys(this.styleAnswers).length === 12) {
       this.showStyleResult()
     }
 
@@ -319,7 +321,7 @@ export default class extends Controller {
     this.styleAnswers = {}
 
     // Clear hidden fields
-    for (let i = 1; i <= 6; i++) {
+    for (let i = 1; i <= 12; i++) {
       const target = `hasStyleAnswer${i}Target`
       if (this[target]) this[`styleAnswer${i}Target`].value = ""
     }
@@ -354,10 +356,10 @@ export default class extends Controller {
   updateStyleProgress() {
     const answered = Object.keys(this.styleAnswers).length
     if (this.hasStyleProgressTarget) {
-      const template = this.t("progress_of_6", ":done of 6")
+      const template = this.t("progress_of_6", ":done of 12")
       this.styleProgressTarget.textContent = template.replace(":done", answered)
     }
-    if (answered === 6 && this.hasStyleDoneMsgTarget) {
+    if (answered === 12 && this.hasStyleDoneMsgTarget) {
       this.styleDoneMsgTarget.style.opacity = "1"
       this.styleDoneMsgTarget.style.transform = "translateY(0)"
     }
@@ -457,7 +459,7 @@ export default class extends Controller {
       const answers = prefs.style_answers
       const result = prefs.style_result
 
-      if (Object.keys(answers).length >= 6) {
+      if (Object.keys(answers).length >= 12) {
         this.styleSaved = true
         this.styleAnswers = { ...answers }
 
@@ -553,7 +555,7 @@ export default class extends Controller {
       case 3:
         return this.selectedHours > 0 && this.selectedSession > 0
       case 4:
-        return this.styleSaved || Object.keys(this.styleAnswers).length === 6
+        return this.styleSaved || Object.keys(this.styleAnswers).length === 12
       case 5:
         return this.selectedPace !== ""
       default:

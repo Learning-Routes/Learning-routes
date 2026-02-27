@@ -36,12 +36,12 @@
     <% if flash[:notice] || flash[:alert] %>
       <div class="mx-auto max-w-md px-4 mb-6">
         <% if flash[:notice] %>
-          <div style="background:rgba(91,168,128,0.1); border:1px solid rgba(91,168,128,0.18); color:#3D7A5A; border-radius:10px; padding:0.6rem 0.85rem; font-size:0.78rem; font-weight:500;">
+          <div style="background:var(--color-flash-notice-bg, rgba(91,168,128,0.1)); border:1px solid var(--color-flash-notice-border, rgba(91,168,128,0.18)); color:var(--color-flash-notice-text, #3D7A5A); border-radius:10px; padding:0.6rem 0.85rem; font-size:0.78rem; font-weight:500;">
             <%= flash[:notice] %>
           </div>
         <% end %>
         <% if flash[:alert] %>
-          <div style="background:rgba(176,96,80,0.08); border:1px solid rgba(176,96,80,0.15); color:#B06050; border-radius:10px; padding:0.6rem 0.85rem; font-size:0.78rem; font-weight:500;">
+          <div style="background:var(--color-flash-alert-bg, rgba(176,96,80,0.08)); border:1px solid var(--color-flash-alert-border, rgba(176,96,80,0.15)); color:var(--color-flash-alert-text, #B06050); border-radius:10px; padding:0.6rem 0.85rem; font-size:0.78rem; font-weight:500;">
             <%= flash[:alert] %>
           </div>
         <% end %>
