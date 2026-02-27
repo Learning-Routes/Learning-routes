@@ -154,16 +154,16 @@ class RouteRequestTest < ActiveSupport::TestCase
     assert rr.errors[:learning_style_answers].any?
   end
 
-  test "complete 6 style answers are valid" do
+  test "complete 12 style answers are valid" do
     rr = RouteRequest.new(valid_attrs.merge(
-      learning_style_answers: { "1" => "1v", "2" => "2a", "3" => "3r", "4" => "4k", "5" => "5v", "6" => "6a" }
+      learning_style_answers: { "1" => "1v", "2" => "2a", "3" => "3r", "4" => "4k", "5" => "5v", "6" => "6a", "7" => "7r", "8" => "8k", "9" => "9v", "10" => "10a", "11" => "11r", "12" => "12k" }
     ))
     assert rr.valid?
   end
 
-  test "style result is calculated on save when all 6 answers present" do
+  test "style result is calculated on save when all 12 answers present" do
     rr = RouteRequest.new(valid_attrs.merge(
-      learning_style_answers: { "1" => "1v", "2" => "2v", "3" => "3v", "4" => "4v", "5" => "5a", "6" => "6a" }
+      learning_style_answers: { "1" => "1v", "2" => "2v", "3" => "3v", "4" => "4v", "5" => "5a", "6" => "6a", "7" => "7v", "8" => "8v", "9" => "9v", "10" => "10v", "11" => "11a", "12" => "12v" }
     ))
     rr.save!
     assert_not_nil rr.learning_style_result
@@ -173,7 +173,7 @@ class RouteRequestTest < ActiveSupport::TestCase
   test "content_mix never has negative values" do
     # All kinesthetic — should have high interactive, low audio/text with minimums
     rr = RouteRequest.new(valid_attrs.merge(
-      learning_style_answers: { "1" => "1k", "2" => "2k", "3" => "3k", "4" => "4k", "5" => "5k", "6" => "6k" }
+      learning_style_answers: { "1" => "1k", "2" => "2k", "3" => "3k", "4" => "4k", "5" => "5k", "6" => "6k", "7" => "7k", "8" => "8k", "9" => "9k", "10" => "10k", "11" => "11k", "12" => "12k" }
     ))
     rr.save!
     mix = rr.learning_style_result["content_mix"]

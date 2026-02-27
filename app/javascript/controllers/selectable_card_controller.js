@@ -28,12 +28,13 @@ export default class extends Controller {
   applyStyle(card, checked) {
     const div = card.querySelector("[data-card-visual]")
     if (!div) return
+    const style = getComputedStyle(document.documentElement)
     if (checked) {
-      div.style.borderColor = "#2C261E"
-      div.style.background = "rgba(44,38,30,0.04)"
+      div.style.borderColor = style.getPropertyValue("--color-txt").trim() || "#2C261E"
+      div.style.background = style.getPropertyValue("--color-tint").trim() || "rgba(44,38,30,0.04)"
     } else {
-      div.style.borderColor = "rgba(28,24,18,0.08)"
-      div.style.background = "#FEFDFB"
+      div.style.borderColor = style.getPropertyValue("--color-border-subtle").trim() || "rgba(28,24,18,0.08)"
+      div.style.background = style.getPropertyValue("--color-card").trim() || "#FEFDFB"
     }
   }
 }

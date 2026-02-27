@@ -443,7 +443,7 @@ en:
       no_topics: "You must select at least one topic or enter a custom one"
       invalid_goals: "contains invalid options: %{invalid}"
       invalid_topics: "contains invalid options: %{invalid}"
-      incomplete_style: "you must answer all 6 questions in the test"
+      incomplete_style: "you must answer all 12 questions in the test"
 
   # ── Route Wizard ──
   wizard:
