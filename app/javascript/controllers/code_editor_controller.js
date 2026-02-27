@@ -33,6 +33,12 @@ export default class extends Controller {
       textarea.value = this.initialCodeValue || ""
       this.editorContainerTarget.appendChild(textarea)
       this.fallbackTextarea = textarea
+      // Sync fallback textarea to hidden input for form submission
+      if (this.hasHiddenInputTarget) {
+        textarea.addEventListener("input", () => {
+          this.hiddenInputTarget.value = textarea.value
+        })
+      }
     }
   }
 

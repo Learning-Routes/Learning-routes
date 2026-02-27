@@ -146,7 +146,7 @@
   <%# Tab bar %>
   <div role="tablist" style="display:flex; gap:0; border-bottom:1px solid var(--color-border-subtle); margin-bottom:1.2rem; overflow-x:auto; -webkit-overflow-scrolling:touch;">
     <% [t("profile.tabs.my_routes"), t("profile.tabs.achievements"), t("profile.tabs.activity"), t("profile.tabs.shared_routes")].each_with_index do |label, i| %>
-      <button data-profile-tabs-target="tab" data-action="click->profile-tabs#switch" data-index="<%= i %>"
+      <button id="tab-<%= i %>" role="tab" aria-selected="<%= i == 0 %>" data-profile-tabs-target="tab" data-action="click->profile-tabs#switch" data-index="<%= i %>"
               style="font-family:'DM Sans',sans-serif; font-size:0.82rem; font-weight:<%= i == 0 ? '600' : '400' %>; color:<%= i == 0 ? 'var(--color-txt)' : 'var(--color-muted)' %>; background:none; border:none; cursor:pointer; padding:0.6rem 1.2rem; position:relative; transition:color 0.2s;">
         <%= label %>
         <span data-underline style="position:absolute; bottom:-1px; left:0.6rem; right:0.6rem; height:2px; background:#5BA880; border-radius:1px; transition:opacity 0.2s, transform 0.2s; opacity:<%= i == 0 ? '1' : '0' %>; transform:scaleX(<%= i == 0 ? '1' : '0' %>);"></span>
@@ -199,7 +199,7 @@
 
   <%# === Panel 4: Shared Routes === %>
   <div id="panel-shared" role="tabpanel" aria-labelledby="tab-3" data-profile-tabs-target="panel" style="display:none;">
-    <% shared_routes = current_user.shared_routes.includes(learning_route: :route_steps).order(created_at: :desc) %>
+    <% shared_routes = @user.shared_routes.includes(learning_route: :route_steps).order(created_at: :desc) %>
     <% if shared_routes.any? %>
       <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(min(340px, 100%), 1fr)); gap:0.8rem;">
         <% shared_routes.each do |sr| %>
