@@ -41,6 +41,11 @@ export default class extends Controller {
     const w = this.element.clientWidth
     if (w === 0) return
 
+    // Read CSS vars for dark mode support
+    const rootStyle = getComputedStyle(document.documentElement)
+    const cardBg = rootStyle.getPropertyValue("--color-card").trim() || "#FEFDFB"
+    const mutedColor = rootStyle.getPropertyValue("--color-muted").trim() || "#A09889"
+
     const h = 80
     const padX = 28
     const padY = 20
@@ -185,7 +190,7 @@ export default class extends Controller {
         circle.setAttribute("cx", pos.x)
         circle.setAttribute("cy", pos.y)
         circle.setAttribute("r", nodeR)
-        circle.setAttribute("fill", "#FEFDFB")
+        circle.setAttribute("fill", cardBg)
         circle.setAttribute("stroke", color)
         circle.setAttribute("stroke-width", "1.5")
         circle.setAttribute("opacity", "0.7")
@@ -211,7 +216,7 @@ export default class extends Controller {
         text.setAttribute("x", pos.x)
         text.setAttribute("y", pos.y + nodeR + 12)
         text.setAttribute("text-anchor", "middle")
-        text.setAttribute("fill", pos.status === "locked" ? "rgba(28,24,18,0.2)" : "#A09889")
+        text.setAttribute("fill", pos.status === "locked" ? "rgba(28,24,18,0.2)" : mutedColor)
         text.setAttribute("font-family", "'DM Sans', sans-serif")
         text.setAttribute("font-size", "8.5")
         text.setAttribute("font-weight", pos.status === "in_progress" ? "600" : "400")

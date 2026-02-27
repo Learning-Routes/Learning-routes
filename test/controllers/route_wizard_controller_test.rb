@@ -62,7 +62,9 @@ class RouteWizardControllerTest < ActionDispatch::IntegrationTest
         session_minutes: "30",
         learning_style_answers: {
           "1" => "1v", "2" => "2a", "3" => "3r",
-          "4" => "4k", "5" => "5v", "6" => "6a"
+          "4" => "4k", "5" => "5v", "6" => "6a",
+          "7" => "7r", "8" => "8k", "9" => "9v",
+          "10" => "10a", "11" => "11r", "12" => "12k"
         }
       }
     }
@@ -74,7 +76,7 @@ class RouteWizardControllerTest < ActionDispatch::IntegrationTest
     assert_equal "steady", rr.pace
     assert_equal 10, rr.weekly_hours
     assert_equal 30, rr.session_minutes
-    assert_equal 6, rr.learning_style_answers.keys.length
+    assert_equal 12, rr.learning_style_answers.keys.length
   end
 
   test "create saves preferences to learning profile" do
@@ -90,7 +92,9 @@ class RouteWizardControllerTest < ActionDispatch::IntegrationTest
         session_minutes: "45",
         learning_style_answers: {
           "1" => "1v", "2" => "2v", "3" => "3v",
-          "4" => "4v", "5" => "5a", "6" => "6a"
+          "4" => "4v", "5" => "5a", "6" => "6a",
+          "7" => "7v", "8" => "8v", "9" => "9v",
+          "10" => "10a", "11" => "11a", "12" => "12v"
         }
       }
     }

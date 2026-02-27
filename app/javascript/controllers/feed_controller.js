@@ -8,12 +8,16 @@ export default class extends Controller {
     event.preventDefault()
     const tab = event.currentTarget.dataset.tab
 
-    // Update active tab styling
+    // Update active tab styling using CSS vars for dark mode support
+    const style = getComputedStyle(document.documentElement)
+    const activeColor = style.getPropertyValue("--color-txt").trim() || "#1C1812"
+    const inactiveColor = style.getPropertyValue("--color-sub").trim() || "#6D665B"
+    const borderColor = style.getPropertyValue("--color-txt").trim() || "#2C261E"
+
     this.element.querySelectorAll("[data-tab]").forEach(el => {
-      el.classList.toggle("border-b-2", el.dataset.tab === tab)
-      el.classList.toggle("border-[#2C261E]", el.dataset.tab === tab)
-      el.classList.toggle("text-[#1C1812]", el.dataset.tab === tab)
-      el.classList.toggle("text-[#6D665B]", el.dataset.tab !== tab)
+      const isActive = el.dataset.tab === tab
+      el.style.color = isActive ? activeColor : inactiveColor
+      el.style.borderBottom = isActive ? `2px solid ${borderColor}` : "2px solid transparent"
     })
 
     this.activeTabValue = tab

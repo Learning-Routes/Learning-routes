@@ -18,7 +18,7 @@ class WizardRouteGenerationJobTest < ActiveSupport::TestCase
       pace: "steady",
       goals: ["career"],
       status: "pending",
-      learning_style_answers: { "1" => "1v", "2" => "2a", "3" => "3r", "4" => "4k", "5" => "5v", "6" => "6a" }
+      learning_style_answers: { "1" => "1v", "2" => "2a", "3" => "3r", "4" => "4k", "5" => "5v", "6" => "6a", "7" => "7r", "8" => "8k", "9" => "9v", "10" => "10a", "11" => "11r", "12" => "12k" }
     }.merge(overrides))
   end
 

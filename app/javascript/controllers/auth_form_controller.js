@@ -65,9 +65,10 @@ export default class extends Controller {
   }
 
   _showError(input, message) {
-    // Style the input border red
-    input.style.borderColor = "#C0614D"
-    input.style.boxShadow = "0 0 0 3px rgba(192,97,77,0.1)"
+    // Style the input border red — use CSS var for dark mode support
+    const alertColor = getComputedStyle(document.documentElement).getPropertyValue("--color-flash-alert-text").trim() || "#C0614D"
+    input.style.borderColor = alertColor
+    input.style.boxShadow = `0 0 0 3px ${alertColor}1A`
 
     // Insert error message below input
     const errorEl = document.createElement("p")
@@ -77,7 +78,7 @@ export default class extends Controller {
       fontFamily: "'DM Sans', sans-serif",
       fontSize: "0.72rem",
       fontWeight: "500",
-      color: "#C0614D",
+      color: alertColor,
       margin: "0.35rem 0 0 0.2rem",
       lineHeight: "1"
     })

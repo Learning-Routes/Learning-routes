@@ -47,11 +47,15 @@ export default class extends Controller {
     const btn = event.currentTarget
     this._visibility = btn.dataset.visibility
 
+    const rs = getComputedStyle(document.documentElement)
+    const activeBorder = rs.getPropertyValue("--color-txt").trim() || "#2C261E"
+    const inactiveBorder = rs.getPropertyValue("--color-border-subtle").trim() || "#E0DBCF"
+    const activeBg = rs.getPropertyValue("--color-tint").trim() || "rgba(44,38,30,0.05)"
+
     this.visibilityBtnTargets.forEach(b => {
       const isActive = b.dataset.visibility === this._visibility
-      // Modal is always light-themed so these colors are correct
-      b.style.borderColor = isActive ? "#2C261E" : "#E0DBCF"
-      b.style.background = isActive ? "rgba(44,38,30,0.05)" : "transparent"
+      b.style.borderColor = isActive ? activeBorder : inactiveBorder
+      b.style.background = isActive ? activeBg : "transparent"
     })
   }
 
@@ -59,11 +63,15 @@ export default class extends Controller {
     event.preventDefault()
     this.routeIdValue = event.currentTarget.dataset.routeId
 
+    const rs2 = getComputedStyle(document.documentElement)
+    const selBorder = rs2.getPropertyValue("--color-txt").trim() || "#2C261E"
+    const unselBorder = rs2.getPropertyValue("--color-border-subtle").trim() || "rgba(28,24,18,0.1)"
+    const selBg = rs2.getPropertyValue("--color-tint").trim() || "rgba(44,38,30,0.04)"
+
     this.routeSelectTargets.forEach(el => {
       const isSelected = el.dataset.routeId === this.routeIdValue
-      // Modal is always light-themed so these colors are correct
-      el.style.borderColor = isSelected ? "#2C261E" : "rgba(28,24,18,0.1)"
-      el.style.background = isSelected ? "rgba(44,38,30,0.04)" : "transparent"
+      el.style.borderColor = isSelected ? selBorder : unselBorder
+      el.style.background = isSelected ? selBg : "transparent"
     })
   }
 
@@ -72,9 +80,11 @@ export default class extends Controller {
     const routeId = this.routeIdValue
     if (!routeId) {
       // Flash the route list to indicate selection needed
+      const alertColor = getComputedStyle(document.documentElement).getPropertyValue("--color-flash-alert-text").trim() || "#B06050"
+      const defaultBorder = getComputedStyle(document.documentElement).getPropertyValue("--color-border-subtle").trim() || "rgba(28,24,18,0.1)"
       this.routeSelectTargets.forEach(el => {
-        el.style.borderColor = "#B06050"
-        setTimeout(() => { el.style.borderColor = "rgba(28,24,18,0.1)" }, 800)
+        el.style.borderColor = alertColor
+        setTimeout(() => { el.style.borderColor = defaultBorder }, 800)
       })
       return
     }
@@ -149,13 +159,18 @@ export default class extends Controller {
     }
     this.routeIdValue = ""
     this._visibility = "public"
+    const rs = getComputedStyle(document.documentElement)
+    const aBorder = rs.getPropertyValue("--color-txt").trim() || "#2C261E"
+    const iBorder = rs.getPropertyValue("--color-border-subtle").trim() || "#E0DBCF"
+    const aBg = rs.getPropertyValue("--color-tint").trim() || "rgba(44,38,30,0.05)"
+
     this.visibilityBtnTargets.forEach(b => {
       const isDefault = b.dataset.visibility === "public"
-      b.style.borderColor = isDefault ? "#2C261E" : "#E0DBCF"
-      b.style.background = isDefault ? "rgba(44,38,30,0.05)" : "transparent"
+      b.style.borderColor = isDefault ? aBorder : iBorder
+      b.style.background = isDefault ? aBg : "transparent"
     })
     this.routeSelectTargets.forEach(el => {
-      el.style.borderColor = "rgba(28,24,18,0.1)"
+      el.style.borderColor = iBorder
       el.style.background = "transparent"
     })
   }
