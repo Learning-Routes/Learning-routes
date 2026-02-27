@@ -19,32 +19,34 @@ module CommunityEngine
     def self.clone!(shared_route, user)
       original_route = shared_route.learning_route
 
-      # Deep clone the learning route
-      new_route = original_route.dup
-      new_route.assign_attributes(
-        status: "active",
-        generation_status: "completed",
-        current_step: 0
-      )
+      ActiveRecord::Base.transaction do
+        # Deep clone the learning route
+        new_route = original_route.dup
+        new_route.assign_attributes(
+          status: "active",
+          generation_status: "completed",
+          current_step: 0
+        )
 
-      # Associate with user's learning profile
-      profile = user.learning_profile || LearningRoutesEngine::LearningProfile.find_or_create_by!(user: user) { |p| p.current_level = "nv1" }
-      new_route.learning_profile = profile
-      new_route.save!
+        # Associate with user's learning profile
+        profile = user.learning_profile || LearningRoutesEngine::LearningProfile.find_or_create_by!(user: user) { |p| p.current_level = "nv1" }
+        new_route.learning_profile = profile
+        new_route.save!
 
-      # Clone all steps
-      original_route.route_steps.order(:position).each do |step|
-        new_step = step.dup
-        new_step.learning_route = new_route
-        new_step.status = step.position == 1 ? "available" : "locked"
-        new_step.completed_at = nil
-        new_step.save!
+        # Clone all steps (positions are 0-indexed)
+        original_route.route_steps.order(:position).each do |step|
+          new_step = step.dup
+          new_step.learning_route = new_route
+          new_step.status = step.position == 0 ? "available" : "locked"
+          new_step.completed_at = nil
+          new_step.save!
+        end
+
+        # Track the clone after all steps are successfully created
+        SharedRoute.where(id: shared_route.id).update_all("clones_count = clones_count + 1")
+
+        new_route
       end
-
-      # Track the clone
-      SharedRoute.where(id: shared_route.id).update_all("clones_count = clones_count + 1")
-
-      new_route
     end
   end
 end

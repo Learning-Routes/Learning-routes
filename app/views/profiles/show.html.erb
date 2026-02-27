@@ -44,10 +44,10 @@
       <%# Followers / Following counts %>
       <div style="display:flex; align-items:center; gap:1rem; margin-top:0.5rem;">
         <span style="font-family:'DM Sans',sans-serif; font-size:0.78rem; color:var(--color-sub);">
-          <strong style="color:var(--color-txt);"><%= @user.followers.count %></strong> <%= t("profile.followers") %>
+          <strong style="color:var(--color-txt);"><%= @followers_count %></strong> <%= t("profile.followers") %>
         </span>
         <span style="font-family:'DM Sans',sans-serif; font-size:0.78rem; color:var(--color-sub);">
-          <strong style="color:var(--color-txt);"><%= @user.following.count %></strong> <%= t("profile.following_count") %>
+          <strong style="color:var(--color-txt);"><%= @following_count %></strong> <%= t("profile.following_count") %>
         </span>
       </div>
 
@@ -206,7 +206,7 @@
           <div style="background:var(--color-card-glass); border:1px solid var(--color-border-subtle); border-radius:14px; padding:1.2rem;">
             <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:0.5rem;">
               <h3 style="font-family:'DM Sans',sans-serif; font-weight:600; font-size:0.9rem; color:var(--color-txt); margin:0;">
-                <%= sr.learning_route.topic %>
+                <%= sr.learning_route&.localized_topic || t("activity.unknown_route") %>
               </h3>
               <span style="font-family:'DM Mono',monospace; font-size:0.6rem; padding:0.2rem 0.5rem; border-radius:6px; background:var(--color-tint); color:var(--color-sub);">
                 <%= t("community_engine.share_modal.visibility.#{sr.visibility}") %>
