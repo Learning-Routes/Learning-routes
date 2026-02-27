@@ -569,7 +569,7 @@ export default class extends Controller {
 
     if (valid) {
       btn.disabled = false
-      btn.style.background = "linear-gradient(135deg, var(--color-accent, #2C261E), var(--color-accent, #2C261E)dd)"
+      btn.style.background = "var(--color-accent, #2C261E)"
       btn.style.color = "var(--color-accent-text, #FEFDFB)"
       btn.style.boxShadow = "0 2px 12px rgba(28,24,18,0.15)"
       btn.style.cursor = "pointer"
