@@ -792,6 +792,17 @@ en:
   onboarding:
     progress: "Step %{step} of %{total}"
     progress_aria: "Onboarding progress"
+    step_labels:
+      interests: "Topic"
+      level: "Level"
+      learning_style: "Style"
+      goal: "Goal"
+    errors:
+      interests_blank: "please select at least one topic"
+      style_blank: "please select at least one style"
+      goal_blank: "can't be blank"
+      goal_too_long: "is too long (maximum 500 characters)"
+      timeline_blank: "please select a timeline"
     interests:
       heading: "What do you want to learn?"
       subtitle: "Choose a topic or type your own — AI will build your route."
