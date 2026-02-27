@@ -2,7 +2,7 @@ class RouteRequest < ApplicationRecord
   belongs_to :user, class_name: "Core::User"
   belongs_to :learning_route, class_name: "LearningRoutesEngine::LearningRoute", optional: true
 
-  VALID_TOPICS = %w[programming languages math science business arts].freeze
+  VALID_TOPICS = %w[programming web_dev data_science mobile_dev languages math science business design music writing health].freeze
   VALID_LEVELS = %w[beginner basic intermediate advanced].freeze
   VALID_GOALS = %w[career personal exam project switch teaching].freeze
   VALID_PACES = %w[relaxed steady intensive].freeze
@@ -26,11 +26,17 @@ class RouteRequest < ApplicationRecord
 
   TOPIC_LABELS = {
     "programming" => "Programación",
+    "web_dev" => "Desarrollo Web",
+    "data_science" => "Ciencia de Datos",
+    "mobile_dev" => "Desarrollo Móvil",
     "languages" => "Idiomas",
     "math" => "Matemáticas",
     "science" => "Ciencias",
     "business" => "Negocios",
-    "arts" => "Arte y Diseño"
+    "design" => "Diseño",
+    "music" => "Música",
+    "writing" => "Escritura",
+    "health" => "Salud y Bienestar"
   }.freeze
 
   STYLE_LABELS = {

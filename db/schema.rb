@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_02_25_204430) do
+ActiveRecord::Schema[8.1].define(version: 2026_02_27_175838) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -393,9 +393,15 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_25_204430) do
     t.string "goal"
     t.jsonb "interests", default: []
     t.jsonb "learning_style", default: []
+    t.jsonb "preferred_goals", default: []
+    t.string "preferred_pace"
+    t.jsonb "saved_style_answers", default: {}
+    t.jsonb "saved_style_result", default: {}
+    t.integer "session_minutes"
     t.string "timeline"
     t.datetime "updated_at", null: false
     t.uuid "user_id", null: false
+    t.integer "weekly_hours"
     t.index ["current_level"], name: "idx_on_current_level_1784842c74"
     t.index ["user_id"], name: "index_learning_routes_engine_learning_profiles_on_user_id"
   end
@@ -485,10 +491,12 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_25_204430) do
     t.jsonb "learning_style_result", default: {}, null: false
     t.string "level", null: false
     t.string "pace", null: false
+    t.integer "session_minutes"
     t.string "status", default: "pending", null: false
     t.jsonb "topics", default: [], null: false
     t.datetime "updated_at", null: false
     t.uuid "user_id", null: false
+    t.integer "weekly_hours"
     t.index ["learning_route_id"], name: "index_route_requests_on_learning_route_id"
     t.index ["status"], name: "index_route_requests_on_status"
     t.index ["user_id", "created_at"], name: "index_route_requests_on_user_id_and_created_at"

@@ -2,15 +2,40 @@
 <% content_for(:hide_navbar) { true } %>
 <% content_for(:head) do %>
   <style>
-    @media (min-width: 480px) {
+    @media (min-width: 560px) {
       .wizard-topic-grid { grid-template-columns: repeat(3, 1fr) !important; }
+    }
+    @media (min-width: 768px) {
+      .wizard-topic-grid { grid-template-columns: repeat(4, 1fr) !important; }
+    }
+    @keyframes wizardCardEnter {
+      from { opacity: 0; transform: translateY(16px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes nodePulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(91,168,128,0.3); }
+      50% { box-shadow: 0 0 0 6px rgba(91,168,128,0); }
+    }
+    @keyframes routePathDash {
+      to { stroke-dashoffset: 0; }
     }
   </style>
 <% end %>
 
-
-
 <%
+  # Build saved preferences hash for pre-filling
+  saved_prefs = {}
+  if @saved_profile
+    if @saved_profile.saved_style_answers.present? && @saved_profile.saved_style_answers.keys.length >= 6
+      saved_prefs[:style_answers] = @saved_profile.saved_style_answers
+      saved_prefs[:style_result] = @saved_profile.saved_style_result
+    end
+    saved_prefs[:pace] = @saved_profile.preferred_pace if @saved_profile.preferred_pace.present?
+    saved_prefs[:goals] = @saved_profile.preferred_goals if @saved_profile.preferred_goals.present?
+    saved_prefs[:weekly_hours] = @saved_profile.weekly_hours if @saved_profile.weekly_hours.present?
+    saved_prefs[:session_minutes] = @saved_profile.session_minutes if @saved_profile.session_minutes.present?
+  end
+
   wizard_i18n = {
     step_label: t("wizard.step_label", n: ":n"),
     step_of: t("wizard.step_of"),
@@ -19,25 +44,34 @@
       t("wizard.step1.step_name"),
       t("wizard.step2.step_name"),
       t("wizard.step3.step_name"),
-      t("wizard.step4.step_name")
+      t("wizard.step4.step_name"),
+      t("wizard.step5.step_name")
     ],
     continue_text: t("wizard.continue"),
     generate_text: t("wizard.generate"),
     back_text: t("wizard.back"),
-    progress_of_6: t("wizard.step3.progress", done: ":done"),
+    progress_of_6: t("wizard.step4.progress", done: ":done"),
+    saved_style_badge: t("wizard.step4.saved_badge"),
+    retake_text: t("wizard.step4.retake"),
     topics: {
-      "programming" => "💻 " + t("wizard.step0.topics.programming"),
-      "languages" => "🌍 " + t("wizard.step0.topics.languages"),
-      "math" => "📐 " + t("wizard.step0.topics.math"),
-      "science" => "🔬 " + t("wizard.step0.topics.science"),
-      "business" => "📊 " + t("wizard.step0.topics.business"),
-      "arts" => "🎨 " + t("wizard.step0.topics.arts")
+      "programming" => t("wizard.step0.topics.programming"),
+      "web_dev" => t("wizard.step0.topics.web_dev"),
+      "data_science" => t("wizard.step0.topics.data_science"),
+      "mobile_dev" => t("wizard.step0.topics.mobile_dev"),
+      "languages" => t("wizard.step0.topics.languages"),
+      "math" => t("wizard.step0.topics.math"),
+      "science" => t("wizard.step0.topics.science"),
+      "business" => t("wizard.step0.topics.business"),
+      "design" => t("wizard.step0.topics.design"),
+      "music" => t("wizard.step0.topics.music"),
+      "writing" => t("wizard.step0.topics.writing"),
+      "health" => t("wizard.step0.topics.health")
     },
     levels: {
-      "beginner" => "🌱 " + t("wizard.step1.levels.beginner"),
-      "basic" => "🌿 " + t("wizard.step1.levels.basic"),
-      "intermediate" => "🌳 " + t("wizard.step1.levels.intermediate"),
-      "advanced" => "🏔️ " + t("wizard.step1.levels.advanced")
+      "beginner" => t("wizard.step1.levels.beginner"),
+      "basic" => t("wizard.step1.levels.basic"),
+      "intermediate" => t("wizard.step1.levels.intermediate"),
+      "advanced" => t("wizard.step1.levels.advanced")
     },
     styles: {
       "visual" => { "emoji" => "🎬", "name" => t("wizard.styles.visual"), "desc" => t("wizard.styles.visual_desc") },
@@ -53,21 +87,22 @@
      data-controller="route-wizard"
      data-route-wizard-generating-value="<%= @generating %>"
      data-route-wizard-i18n-value="<%= wizard_i18n.to_json %>"
-     style="min-height:100vh; display:flex; flex-direction:column;">
+     data-route-wizard-saved-prefs-value="<%= saved_prefs.to_json %>"
+     style="min-height:100vh; display:flex; flex-direction:column; background:var(--color-bg, #F5F1EB);">
 
   <%# === Mini wizard nav === %>
   <nav style="padding:14px 32px; display:flex; justify-content:space-between; align-items:center; position:relative; z-index:10;">
     <div data-route-wizard-target="navLeft" style="display:flex; align-items:center; gap:10px; cursor:pointer;">
-      <a href="<%= profile_path %>" style="display:flex; align-items:center; gap:10px; text-decoration:none; color:#1C1812;">
+      <a href="<%= profile_path %>" style="display:flex; align-items:center; gap:10px; text-decoration:none; color:var(--color-txt, #1C1812);">
         <%= render "shared/logo", size: 26 %>
-        <span style="font-family:'DM Sans',sans-serif; font-weight:700; font-size:0.9rem; letter-spacing:-0.5px; color:#1C1812;">Learning Routes</span>
+        <span style="font-family:'DM Sans',sans-serif; font-weight:700; font-size:0.9rem; letter-spacing:-0.5px; color:var(--color-txt, #1C1812);">Learning Routes</span>
       </a>
     </div>
-    <a href="<%= profile_path %>" style="font-family:'DM Sans',sans-serif; font-size:0.72rem; color:#9E9587; text-decoration:none; cursor:pointer;"><%= t("wizard.save_and_exit") %></a>
+    <a href="<%= profile_path %>" style="font-family:'DM Sans',sans-serif; font-size:0.72rem; color:var(--color-muted, #9E9587); text-decoration:none; cursor:pointer;"><%= t("wizard.save_and_exit") %></a>
   </nav>
 
   <%# === Content area === %>
-  <div style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:flex-start; padding:20px 24px 60px; position:relative; z-index:1;">
+  <div style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:flex-start; padding:12px 24px 60px; position:relative; z-index:1;">
     <% if @generating %>
       <%= render "route_wizard/generating", route_request: @route_request %>
     <% else %>

@@ -451,7 +451,7 @@ en:
     save_and_exit: "Save and exit"
     back: "Back"
     step_label: "Step %{n}"
-    step_of: "of 5"
+    step_of: "of 6"
     styles:
       visual: "Visual"
       visual_desc: "You learn best with images, videos, and diagrams"
@@ -465,10 +465,16 @@ en:
       multimodal_desc: "You combine several styles — you're versatile"
     step0:
       heading: "What do you want to learn?"
-      subtext: "Choose a topic or type your own — AI will build your route."
+      subtext: "Choose one or more topics — AI will build your route."
       topics:
         programming: "Programming"
-        programming_desc: "Code, frameworks, algorithms"
+        programming_desc: "Code, algorithms, data structures"
+        web_dev: "Web Development"
+        web_dev_desc: "Frontend, backend, fullstack"
+        data_science: "Data Science"
+        data_science_desc: "ML, AI, analytics"
+        mobile_dev: "Mobile Dev"
+        mobile_dev_desc: "iOS, Android, cross-platform"
         languages: "Languages"
         languages_desc: "English, Spanish, French…"
         math: "Mathematics"
@@ -477,8 +483,14 @@ en:
         science_desc: "Physics, chemistry, biology"
         business: "Business"
         business_desc: "Marketing, finance, strategy"
-        arts: "Art & Design"
-        arts_desc: "Drawing, music, photography"
+        design: "Design"
+        design_desc: "UI/UX, graphic, illustration"
+        music: "Music"
+        music_desc: "Theory, instruments, production"
+        writing: "Writing"
+        writing_desc: "Creative, technical, copywriting"
+        health: "Health & Fitness"
+        health_desc: "Nutrition, exercise, wellness"
       custom_label: "Or type something specific"
       custom_placeholder: "E.g.: Machine Learning, Guitar, Cooking…"
       step_name: "— Topic"
@@ -507,11 +519,21 @@ en:
         teaching: "Teach others"
       step_name: "— Goal"
     step3:
+      heading: "How much time can you invest?"
+      subtext: "This helps us design your ideal session length and schedule."
+      weekly_label: "Weekly time commitment"
+      session_label: "Preferred session length"
+      per_week: "per week"
+      per_session: "per session"
+      step_name: "— Time"
+    step4:
       mini_test: "MINI-TEST"
       all_answered: "✓ All answered"
       heading: "How do you learn best?"
       subtext: "Answer quickly — there are no wrong answers."
       progress: "%{done} of 6"
+      saved_badge: "Learning style saved"
+      retake: "Retake test"
       questions:
         q1:
           scenario: "You need to learn to use new software for work."
@@ -558,7 +580,7 @@ en:
       result_label: "Your dominant style:"
       result_note: "This is used to personalize your route"
       step_name: "— Style"
-    step4:
+    step5:
       heading: "Set your pace."
       subtext: "You can always change it later."
       paces:

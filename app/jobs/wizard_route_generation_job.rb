@@ -18,6 +18,14 @@ class WizardRouteGenerationJob < ApplicationJob
         p.interests = request.topics
       end
 
+      # Update profile with latest preferences
+      profile.update(
+        current_level: map_level(request.level),
+        interests: request.topics.presence || profile.interests,
+        weekly_hours: request.weekly_hours || profile.weekly_hours,
+        session_minutes: request.session_minutes || profile.session_minutes
+      )
+
       # Extract learning style data
       style_result = request.learning_style_result || {}
       content_mix = style_result["content_mix"] || { "audio" => 30, "text" => 35, "interactive" => 35 }
@@ -39,7 +47,9 @@ class WizardRouteGenerationJob < ApplicationJob
             level: request.level,
             goals: request.goals,
             pace: request.pace,
-            learning_style: style_result["dominant"]
+            learning_style: style_result["dominant"],
+            weekly_hours: request.weekly_hours,
+            session_minutes: request.session_minutes
           },
           content_preferences: {
             primary_style: style_result["dominant"],
@@ -150,11 +160,17 @@ class WizardRouteGenerationJob < ApplicationJob
     es_templates = step_templates_es(request.level)
     en_templates = step_templates_en(request.level)
 
-    minutes_range = case request.pace
-    when "relaxed" then (40..55)
-    when "steady" then (25..40)
-    when "intensive" then (15..25)
-    else (25..40)
+    # Use session_minutes if available, otherwise infer from pace
+    minutes_range = if request.session_minutes.present? && request.session_minutes > 0
+      base = request.session_minutes
+      ((base * 0.7).to_i..[base, 10].max)
+    else
+      case request.pace
+      when "relaxed" then (40..55)
+      when "steady" then (25..40)
+      when "intensive" then (15..25)
+      else (25..40)
+      end
     end
 
     # Primary templates based on user locale
