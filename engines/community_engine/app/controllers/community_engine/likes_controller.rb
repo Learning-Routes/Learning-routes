@@ -27,7 +27,27 @@ module CommunityEngine
         existing_like.destroy
         @liked = false
       else
-        Like.create!(user: current_user, likeable: likeable)
+        begin
+          Like.create!(user: current_user, likeable: likeable)
+        rescue ActiveRecord::RecordNotUnique
+          # Race condition: like was created between find_by and create
+          existing_like = Like.find_by(user: current_user, likeable_type: likeable_type, likeable_id: likeable_id)
+          existing_like&.destroy
+          @liked = false
+
+          @likeable = likeable
+          @likes_count = likeable.likes.count
+          return respond_to do |format|
+            format.turbo_stream {
+              render turbo_stream: turbo_stream.replace(
+                "like_button_#{likeable_type.parameterize}_#{likeable_id}",
+                partial: "community_engine/likes/button",
+                locals: { likeable: @likeable, liked: @liked, likes_count: @likes_count }
+              )
+            }
+            format.json { render json: { liked: @liked, likes_count: @likes_count } }
+          end
+        end
         @liked = true
 
         ActivityTracker.track!(user: current_user, action: "liked", trackable: likeable)

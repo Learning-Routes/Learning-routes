@@ -40,7 +40,7 @@ class RouteWizardController < ApplicationController
         format.turbo_stream {
           render turbo_stream: turbo_stream.replace("wizard-error-banner") {
             tag.div(id: "wizard-error-banner", "data-route-wizard-target": "errorBanner",
-              style: "max-width:640px; width:100%; margin-bottom:10px; padding:10px 16px; border-radius:10px; background:rgba(176,96,80,0.08); border:1px solid rgba(176,96,80,0.15); font-family:'DM Sans',sans-serif; font-size:0.78rem; color:#B06050;") {
+              style: "max-width:640px; width:100%; margin-bottom:10px; padding:10px 16px; border-radius:10px; background:var(--color-flash-alert-bg, rgba(176,96,80,0.08)); border:1px solid var(--color-flash-alert-border, rgba(176,96,80,0.15)); font-family:'DM Sans',sans-serif; font-size:0.78rem; color:var(--color-flash-alert-text, #B06050);") {
               error_msg
             }
           }
@@ -98,7 +98,7 @@ class RouteWizardController < ApplicationController
     profile.current_level ||= map_level_for_profile(request.level)
 
     # Save learning style if answered
-    if request.learning_style_answers.present? && request.learning_style_answers.keys.length == 6
+    if request.learning_style_answers.present? && request.learning_style_answers.keys.length == 12
       profile.saved_style_answers = request.learning_style_answers
       profile.saved_style_result = request.learning_style_result if request.learning_style_result.present?
       dominant = request.learning_style_result&.dig("dominant") || request.learning_style_result&.dig(:dominant)

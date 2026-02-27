@@ -531,7 +531,7 @@ en:
       all_answered: "✓ All answered"
       heading: "How do you learn best?"
       subtext: "Answer quickly — there are no wrong answers."
-      progress: "%{done} of 6"
+      progress: "%{done} of 12"
       saved_badge: "Learning style saved"
       retake: "Retake test"
       questions:
@@ -577,6 +577,48 @@ en:
             a: "I call someone to guide me by phone while I assemble"
             r: "I read the written instructions step by step"
             k: "I ignore the instructions and start assembling by intuition"
+        q7:
+          scenario: "You want to learn a new language."
+          options:
+            v: "I watch movies and series with subtitles in that language"
+            a: "I listen to conversations and repeat phrases out loud"
+            r: "I study grammar rules and vocabulary lists"
+            k: "I try to have conversations with native speakers right away"
+        q8:
+          scenario: "You need to understand how a machine or device works."
+          options:
+            v: "I look for a diagram or schematic showing the parts"
+            a: "I ask someone who knows to walk me through how it works"
+            r: "I read the technical specifications or user manual"
+            k: "I take it apart and examine the pieces myself"
+        q9:
+          scenario: "You're preparing a presentation for a group."
+          options:
+            v: "I create slides with images, charts, and visual flow"
+            a: "I rehearse by talking through it out loud several times"
+            r: "I write a detailed script or outline first"
+            k: "I practice presenting in front of someone and get feedback"
+        q10:
+          scenario: "You want to learn to play a musical instrument."
+          options:
+            v: "I watch tutorial videos showing finger positions and technique"
+            a: "I listen to songs repeatedly and try to play by ear"
+            r: "I read sheet music or follow written chord charts"
+            k: "I pick up the instrument and start experimenting with sounds"
+        q11:
+          scenario: "You're facing a complex problem at work or school."
+          options:
+            v: "I draw a flowchart or visual map of the problem"
+            a: "I talk it through with a colleague or friend to think out loud"
+            r: "I write down the problem details and research solutions"
+            k: "I try different solutions hands-on until something works"
+        q12:
+          scenario: "You want to learn about a historical event or period."
+          options:
+            v: "I watch documentaries or look at timelines and infographics"
+            a: "I listen to history podcasts or audiobooks"
+            r: "I read articles, books, or encyclopedia entries about it"
+            k: "I visit museums, historical sites, or do re-enactment activities"
       result_label: "Your dominant style:"
       result_note: "This is used to personalize your route"
       step_name: "— Style"

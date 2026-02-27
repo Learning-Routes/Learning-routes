@@ -88,6 +88,12 @@
   --color-border-subtle: rgba(28, 24, 18, 0.06);
   --color-tint: rgba(28, 24, 18, 0.04);
   --color-tint-strong: rgba(28, 24, 18, 0.08);
+  --color-flash-notice-bg: rgba(91, 168, 128, 0.1);
+  --color-flash-notice-border: rgba(91, 168, 128, 0.18);
+  --color-flash-notice-text: #3D7A5A;
+  --color-flash-alert-bg: rgba(176, 96, 80, 0.08);
+  --color-flash-alert-border: rgba(176, 96, 80, 0.15);
+  --color-flash-alert-text: #B06050;
 }
 
 html[data-theme="dark"] {
@@ -105,6 +111,12 @@ html[data-theme="dark"] {
   --color-border-subtle: rgba(255, 255, 255, 0.06);
   --color-tint: rgba(255, 255, 255, 0.06);
   --color-tint-strong: rgba(255, 255, 255, 0.1);
+  --color-flash-notice-bg: rgba(91, 168, 128, 0.12);
+  --color-flash-notice-border: rgba(91, 168, 128, 0.25);
+  --color-flash-notice-text: #7BC8A0;
+  --color-flash-alert-bg: rgba(176, 96, 80, 0.12);
+  --color-flash-alert-border: rgba(176, 96, 80, 0.25);
+  --color-flash-alert-text: #D4887A;
 }
 
 html[data-theme="dark"] ::selection {

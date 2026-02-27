@@ -531,7 +531,7 @@ es:
       all_answered: "✓ Todas respondidas"
       heading: "¿Cómo aprendes mejor?"
       subtext: "Responde rápido — no hay respuestas correctas."
-      progress: "%{done} de 6"
+      progress: "%{done} de 12"
       saved_badge: "Estilo de aprendizaje guardado"
       retake: "Repetir test"
       questions:
@@ -577,6 +577,48 @@ es:
             a: "Llamo a alguien que me guíe por teléfono mientras armo"
             r: "Leo las instrucciones escritas paso a paso"
             k: "Ignoro las instrucciones y empiezo a armar por intuición"
+        q7:
+          scenario: "Quieres aprender un idioma nuevo."
+          options:
+            v: "Veo películas y series con subtítulos en ese idioma"
+            a: "Escucho conversaciones y repito frases en voz alta"
+            r: "Estudio reglas gramaticales y listas de vocabulario"
+            k: "Intento conversar con hablantes nativos desde el principio"
+        q8:
+          scenario: "Necesitas entender cómo funciona una máquina o dispositivo."
+          options:
+            v: "Busco un diagrama o esquema que muestre las partes"
+            a: "Le pido a alguien que sepa que me explique cómo funciona"
+            r: "Leo las especificaciones técnicas o el manual de usuario"
+            k: "Lo desarmo y examino las piezas yo mismo"
+        q9:
+          scenario: "Estás preparando una presentación para un grupo."
+          options:
+            v: "Creo diapositivas con imágenes, gráficos y flujo visual"
+            a: "Ensayo hablando en voz alta varias veces"
+            r: "Escribo un guión detallado o esquema primero"
+            k: "Practico presentando frente a alguien y pido retroalimentación"
+        q10:
+          scenario: "Quieres aprender a tocar un instrumento musical."
+          options:
+            v: "Veo videos tutoriales mostrando posiciones y técnica"
+            a: "Escucho canciones repetidamente e intento tocar de oído"
+            r: "Leo partituras o sigo tablas de acordes escritas"
+            k: "Agarro el instrumento y empiezo a experimentar con sonidos"
+        q11:
+          scenario: "Enfrentas un problema complejo en el trabajo o la escuela."
+          options:
+            v: "Dibujo un diagrama de flujo o mapa visual del problema"
+            a: "Lo discuto con un colega o amigo para pensar en voz alta"
+            r: "Escribo los detalles del problema e investigo soluciones"
+            k: "Pruebo diferentes soluciones de forma práctica hasta que algo funcione"
+        q12:
+          scenario: "Quieres aprender sobre un evento o período histórico."
+          options:
+            v: "Veo documentales o miro líneas de tiempo e infografías"
+            a: "Escucho podcasts o audiolibros de historia"
+            r: "Leo artículos, libros o entradas de enciclopedia sobre el tema"
+            k: "Visito museos, sitios históricos o hago actividades de recreación"
       result_label: "Tu estilo dominante:"
       result_note: "Esto se usa para personalizar tu ruta"
       step_name: "— Estilo"

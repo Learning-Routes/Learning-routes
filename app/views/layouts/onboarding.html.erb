@@ -57,12 +57,12 @@
 
     <%# === Flash messages === %>
     <% if flash[:notice] %>
-      <div role="status" style="max-width:620px; margin:0 auto 0.8rem; padding:0.6rem 0.85rem; border-radius:10px; font-family:'DM Sans',sans-serif; font-size:0.75rem; font-weight:500; background:rgba(91,168,128,0.1); border:1px solid rgba(91,168,128,0.18); color:#3D7A5A;">
+      <div role="status" style="max-width:620px; margin:0 auto 0.8rem; padding:0.6rem 0.85rem; border-radius:10px; font-family:'DM Sans',sans-serif; font-size:0.75rem; font-weight:500; background:var(--color-flash-notice-bg, rgba(91,168,128,0.1)); border:1px solid var(--color-flash-notice-border, rgba(91,168,128,0.18)); color:var(--color-flash-notice-text, #3D7A5A);">
         <%= flash[:notice] %>
       </div>
     <% end %>
     <% if flash[:alert] %>
-      <div role="alert" style="max-width:620px; margin:0 auto 0.8rem; padding:0.6rem 0.85rem; border-radius:10px; font-family:'DM Sans',sans-serif; font-size:0.75rem; font-weight:500; background:rgba(176,96,80,0.08); border:1px solid rgba(176,96,80,0.15); color:#B06050;">
+      <div role="alert" style="max-width:620px; margin:0 auto 0.8rem; padding:0.6rem 0.85rem; border-radius:10px; font-family:'DM Sans',sans-serif; font-size:0.75rem; font-weight:500; background:var(--color-flash-alert-bg, rgba(176,96,80,0.08)); border:1px solid var(--color-flash-alert-border, rgba(176,96,80,0.15)); color:var(--color-flash-alert-text, #B06050);">
         <%= flash[:alert] %>
       </div>
     <% end %>

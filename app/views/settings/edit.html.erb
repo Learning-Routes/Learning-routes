@@ -20,13 +20,13 @@
     <%# Form errors %>
     <% errors = @user.errors.full_messages + @profile.errors.full_messages %>
     <% if errors.any? %>
-      <div role="alert" style="background:rgba(176,96,80,0.08); border:1px solid rgba(176,96,80,0.15); border-radius:12px; padding:0.75rem 0.9rem; margin-bottom:1.2rem;">
-        <p style="font-family:'DM Sans',sans-serif; font-size:0.76rem; font-weight:500; color:#B06050; margin:0 0 0.3rem;">
+      <div role="alert" style="background:var(--color-flash-alert-bg, rgba(176,96,80,0.08)); border:1px solid var(--color-flash-alert-border, rgba(176,96,80,0.15)); border-radius:12px; padding:0.75rem 0.9rem; margin-bottom:1.2rem;">
+        <p style="font-family:'DM Sans',sans-serif; font-size:0.76rem; font-weight:500; color:var(--color-flash-alert-text, #B06050); margin:0 0 0.3rem;">
           <%= t("settings.errors", count: errors.size) %>
         </p>
         <ul style="margin:0; padding-left:1rem;">
           <% errors.each do |message| %>
-            <li style="font-family:'DM Sans',sans-serif; font-size:0.72rem; color:#B06050; line-height:1.5;"><%= message %></li>
+            <li style="font-family:'DM Sans',sans-serif; font-size:0.72rem; color:var(--color-flash-alert-text, #B06050); line-height:1.5;"><%= message %></li>
           <% end %>
         </ul>
       </div>

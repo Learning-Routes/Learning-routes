@@ -286,12 +286,18 @@
             3 => { v: "🎨", a: "🔊", r: "✍️", k: "🧪" },
             4 => { v: "📊", a: "💬", r: "📄", k: "🔧" },
             5 => { v: "📹", a: "👨‍🍳", r: "📋", k: "🍳" },
-            6 => { v: "📐", a: "📞", r: "📑", k: "🔨" }
+            6 => { v: "📐", a: "📞", r: "📑", k: "🔨" },
+            7 => { v: "🎥", a: "🗣️", r: "📚", k: "💬" },
+            8 => { v: "📋", a: "👂", r: "📄", k: "🔩" },
+            9 => { v: "📊", a: "🎤", r: "📝", k: "🧑‍🏫" },
+            10 => { v: "🎹", a: "🎵", r: "🎼", k: "🎸" },
+            11 => { v: "🗺️", a: "🤝", r: "📓", k: "⚙️" },
+            12 => { v: "🎞️", a: "🎙️", r: "📖", k: "🏛️" }
           }
           style_map = { "v" => "visual", "a" => "auditory", "r" => "reading", "k" => "kinesthetic" }
         %>
 
-        <% (1..6).each_with_index do |qnum, qi| %>
+        <% (1..12).each_with_index do |qnum, qi| %>
           <% if qi > 0 %>
             <div style="height:1px; background:var(--color-faint, rgba(28,24,18,0.04)); margin:2px 0;"></div>
           <% end %>
@@ -327,11 +333,11 @@
       </div>
 
       <%# Hidden fields for style answers %>
-      <% (1..6).each do |i| %>
+      <% (1..12).each do |i| %>
         <input type="hidden" name="route_request[learning_style_answers][<%= i %>]" value="" data-route-wizard-target="styleAnswer<%= i %>">
       <% end %>
 
-      <%# Result Preview Card (hidden until all 6 answered) %>
+      <%# Result Preview Card (hidden until all 12 answered) %>
       <div data-route-wizard-target="styleResultCard" style="display:none; opacity:0; transform:translateY(8px); transition:opacity 0.4s ease 0.2s, transform 0.4s ease 0.2s; margin-top:16px; border-radius:12px; background:rgba(139,128,196,0.04); border:1px solid rgba(139,128,196,0.08); padding:12px 16px;">
         <div style="font-family:'DM Sans',sans-serif; font-weight:400; font-size:0.65rem; color:var(--color-muted, #A09889); margin-bottom:4px;"><%= t("wizard.step4.result_label") %></div>
         <div style="display:flex; align-items:center; gap:8px; margin-bottom:3px;">

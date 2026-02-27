@@ -12,9 +12,9 @@
 
     <%= form_with(url: core.onboarding_update_step_path(step: "interests"), method: :patch, data: { turbo_frame: "onboarding_step" }) do |f| %>
       <% if profile.errors.any? %>
-        <div role="alert" style="margin-bottom:1rem; padding:0.6rem 0.85rem; border-radius:10px; background:rgba(176,96,80,0.08); border:1px solid rgba(176,96,80,0.15);">
+        <div role="alert" style="margin-bottom:1rem; padding:0.6rem 0.85rem; border-radius:10px; background:var(--color-flash-alert-bg, rgba(176,96,80,0.08)); border:1px solid var(--color-flash-alert-border, rgba(176,96,80,0.15));">
           <% profile.errors.full_messages.each do |msg| %>
-            <p style="font-family:'DM Sans',sans-serif; font-size:0.75rem; font-weight:500; color:#B06050; margin:0;"><%= msg %></p>
+            <p style="font-family:'DM Sans',sans-serif; font-size:0.75rem; font-weight:500; color:var(--color-flash-alert-text, #B06050); margin:0;"><%= msg %></p>
           <% end %>
         </div>
       <% end %>

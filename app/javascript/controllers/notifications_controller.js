@@ -59,7 +59,7 @@ export default class extends Controller {
     event.currentTarget.style.background = "transparent"
     event.currentTarget.style.opacity = "0.6"
     // Remove unread dot if present
-    const dot = event.currentTarget.querySelector("span[style*='background:#60A5FA']")
+    const dot = event.currentTarget.querySelector("[data-unread-dot]")
     if (dot) dot.style.display = "none"
   }
 
@@ -77,7 +77,7 @@ export default class extends Controller {
       this.element.querySelectorAll(".notification-item").forEach(el => {
         el.style.background = "transparent"
         el.style.opacity = "0.6"
-        const dot = el.querySelector("span[style*='background:#60A5FA']")
+        const dot = el.querySelector("[data-unread-dot]")
         if (dot) dot.style.display = "none"
       })
     })
