@@ -2,10 +2,10 @@
 
 <%# === Header === %>
 <div style="margin-bottom:2rem;">
-  <h1 style="font-family:'DM Sans',sans-serif; font-weight:700; font-size:1.5rem; letter-spacing:-0.5px; color:#1C1812; margin:0 0 0.3rem;">
+  <h1 style="font-family:'DM Sans',sans-serif; font-weight:700; font-size:1.5rem; letter-spacing:-0.5px; color:var(--color-txt, #1C1812); margin:0 0 0.3rem;">
     <%= t("community.heading") %>
   </h1>
-  <p style="font-family:'DM Sans',sans-serif; font-size:0.85rem; color:#A09889; margin:0;">
+  <p style="font-family:'DM Sans',sans-serif; font-size:0.85rem; color:var(--color-sub, #A09889); margin:0;">
     <%= t("community.subtext") %>
   </p>
 </div>
@@ -21,11 +21,11 @@
     ]
   %>
   <% global_stats.each do |stat| %>
-    <div style="background:rgba(255,255,255,0.5); border:1px solid rgba(28,24,18,0.05); border-radius:14px; padding:1.1rem 1rem; text-align:center;">
+    <div style="background:var(--color-card-glass, rgba(255,255,255,0.5)); border:1px solid var(--color-border-subtle, rgba(28,24,18,0.05)); border-radius:14px; padding:1.1rem 1rem; text-align:center;">
       <p style="font-family:'DM Mono',monospace; font-size:1.35rem; font-weight:500; color:<%= stat[:color] %>; margin:0 0 0.3rem; letter-spacing:-0.5px;">
         <%= stat[:value] %>
       </p>
-      <p style="font-family:'DM Mono',monospace; font-size:0.58rem; letter-spacing:1.2px; text-transform:uppercase; color:#A09889; margin:0;">
+      <p style="font-family:'DM Mono',monospace; font-size:0.58rem; letter-spacing:1.2px; text-transform:uppercase; color:var(--color-sub, #A09889); margin:0;">
         <%= stat[:label] %>
       </p>
     </div>
@@ -36,7 +36,7 @@
 <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem; align-items:start;" class="community-grid">
 
   <%# === Left: Top Learners === %>
-  <div style="background:rgba(255,255,255,0.6); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); border:1px solid rgba(28,24,18,0.06); border-radius:18px; padding:1.4rem 1.3rem;">
+  <div style="background:var(--color-card-glass, rgba(255,255,255,0.6)); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); border:1px solid var(--color-border-subtle, rgba(28,24,18,0.06)); border-radius:18px; padding:1.4rem 1.3rem;">
 
     <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:1.2rem;">
       <div style="width:28px; height:28px; border-radius:8px; background:rgba(176,152,72,0.1); display:flex; align-items:center; justify-content:center;">
@@ -44,19 +44,19 @@
           <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
         </svg>
       </div>
-      <h2 style="font-family:'DM Sans',sans-serif; font-weight:700; font-size:1rem; color:#1C1812; margin:0; letter-spacing:-0.3px;">
+      <h2 style="font-family:'DM Sans',sans-serif; font-weight:700; font-size:1rem; color:var(--color-txt, #1C1812); margin:0; letter-spacing:-0.3px;">
         <%= t("community.top_learners") %>
       </h2>
     </div>
 
     <div style="display:flex; flex-direction:column; gap:0;">
       <% @top_learners.each_with_index do |learner, i| %>
-        <div style="display:flex; align-items:center; gap:0.8rem; padding:0.7rem 0.4rem; <%= 'border-bottom:1px solid rgba(28,24,18,0.04);' unless i == @top_learners.size - 1 %>">
+        <div style="display:flex; align-items:center; gap:0.8rem; padding:0.7rem 0.4rem; <%= "border-bottom:1px solid var(--color-border-subtle, rgba(28,24,18,0.04));" unless i == @top_learners.size - 1 %>">
 
           <%# Rank badge %>
           <% rank_colors = { 0 => "#B09848", 1 => "#A09889", 2 => "#8B6D28" } %>
-          <div style="width:24px; height:24px; border-radius:7px; background:<%= rank_colors[i] ? "#{rank_colors[i]}15" : 'rgba(28,24,18,0.04)' %>; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
-            <span style="font-family:'DM Mono',monospace; font-size:0.6rem; font-weight:600; color:<%= rank_colors[i] || '#6D665B' %>;">
+          <div style="width:24px; height:24px; border-radius:7px; background:<%= rank_colors[i] ? "#{rank_colors[i]}15" : 'var(--color-tint, rgba(28,24,18,0.04))' %>; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+            <span style="font-family:'DM Mono',monospace; font-size:0.6rem; font-weight:600; color:<%= rank_colors[i] || 'var(--color-sub, #6D665B)' %>;">
               <%= i + 1 %>
             </span>
           </div>
@@ -64,12 +64,12 @@
           <%# Avatar %>
           <% initials = learner.name.to_s.split.map(&:first).join.upcase.slice(0,2) %>
           <div style="width:32px; height:32px; border-radius:10px; background:linear-gradient(135deg, rgba(139,128,196,0.18), rgba(110,155,200,0.18)); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
-            <span style="font-family:'DM Sans',sans-serif; font-weight:700; font-size:0.65rem; color:#6D665B;"><%= initials %></span>
+            <span style="font-family:'DM Sans',sans-serif; font-weight:700; font-size:0.65rem; color:var(--color-sub, #6D665B);"><%= initials %></span>
           </div>
 
           <%# Name + steps %>
           <div style="flex:1; min-width:0;">
-            <p style="font-family:'DM Sans',sans-serif; font-weight:600; font-size:0.82rem; color:#1C1812; margin:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+            <p style="font-family:'DM Sans',sans-serif; font-weight:600; font-size:0.82rem; color:var(--color-txt, #1C1812); margin:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
               <%= learner.name %>
             </p>
           </div>
@@ -83,14 +83,14 @@
 
       <% if @top_learners.empty? %>
         <div style="text-align:center; padding:2rem 1rem;">
-          <p style="font-family:'DM Sans',sans-serif; font-size:0.82rem; color:#A09889; margin:0;"><%= t("community.no_learners") %></p>
+          <p style="font-family:'DM Sans',sans-serif; font-size:0.82rem; color:var(--color-sub, #A09889); margin:0;"><%= t("community.no_learners") %></p>
         </div>
       <% end %>
     </div>
   </div>
 
   <%# === Right: Recent Activity Feed === %>
-  <div style="background:rgba(255,255,255,0.6); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); border:1px solid rgba(28,24,18,0.06); border-radius:18px; padding:1.4rem 1.3rem;">
+  <div style="background:var(--color-card-glass, rgba(255,255,255,0.6)); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); border:1px solid var(--color-border-subtle, rgba(28,24,18,0.06)); border-radius:18px; padding:1.4rem 1.3rem;">
 
     <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:1.2rem;">
       <div style="width:28px; height:28px; border-radius:8px; background:rgba(91,168,128,0.1); display:flex; align-items:center; justify-content:center;">
@@ -98,7 +98,7 @@
           <circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>
         </svg>
       </div>
-      <h2 style="font-family:'DM Sans',sans-serif; font-weight:700; font-size:1rem; color:#1C1812; margin:0; letter-spacing:-0.3px;">
+      <h2 style="font-family:'DM Sans',sans-serif; font-weight:700; font-size:1rem; color:var(--color-txt, #1C1812); margin:0; letter-spacing:-0.3px;">
         <%= t("community.recent_activity") %>
       </h2>
     </div>
@@ -107,24 +107,24 @@
       <% @recent_completions.each_with_index do |step, i| %>
         <% user = step.learning_route&.learning_profile&.user %>
         <% next unless user %>
-        <div style="display:flex; align-items:flex-start; gap:0.7rem; padding:0.65rem 0.2rem; <%= 'border-bottom:1px solid rgba(28,24,18,0.035);' unless i == @recent_completions.size - 1 %>">
+        <div style="display:flex; align-items:flex-start; gap:0.7rem; padding:0.65rem 0.2rem; <%= "border-bottom:1px solid var(--color-border-subtle, rgba(28,24,18,0.035));" unless i == @recent_completions.size - 1 %>">
 
           <%# Status dot %>
           <div style="width:6px; height:6px; border-radius:50%; background:#5BA880; margin-top:7px; flex-shrink:0; box-shadow:0 0 6px rgba(91,168,128,0.4);"></div>
 
           <%# Content %>
           <div style="flex:1; min-width:0;">
-            <p style="font-family:'DM Sans',sans-serif; font-weight:600; font-size:0.78rem; color:#1C1812; margin:0 0 0.1rem; line-height:1.35;">
-              <span style="font-weight:400; color:#6D665B;"><%= user.name.split.first %></span> <%= t("community.completed") %>
-              <span style="color:#1C1812;"><%= step.localized_title.truncate(35) %></span>
+            <p style="font-family:'DM Sans',sans-serif; font-weight:600; font-size:0.78rem; color:var(--color-txt, #1C1812); margin:0 0 0.1rem; line-height:1.35;">
+              <span style="font-weight:400; color:var(--color-sub, #6D665B);"><%= user.name.split.first %></span> <%= t("community.completed") %>
+              <span style="color:var(--color-txt, #1C1812);"><%= step.localized_title.truncate(35) %></span>
             </p>
-            <p style="font-family:'DM Sans',sans-serif; font-size:0.68rem; color:#A09889; margin:0;">
+            <p style="font-family:'DM Sans',sans-serif; font-size:0.68rem; color:var(--color-sub, #A09889); margin:0;">
               <%= step.learning_route&.localized_topic&.truncate(30) %>
             </p>
           </div>
 
           <%# Timestamp %>
-          <span style="font-family:'DM Mono',monospace; font-size:0.58rem; color:#CCC5B8; flex-shrink:0; white-space:nowrap; margin-top:2px;">
+          <span style="font-family:'DM Mono',monospace; font-size:0.58rem; color:var(--color-faint, #CCC5B8); flex-shrink:0; white-space:nowrap; margin-top:2px;">
             <% if step.completed_at %>
               <% if step.completed_at.to_date == Date.current %>
                 <%= t("community.time.today") %>, <%= l(step.completed_at, format: "%H:%M") %>
@@ -140,7 +140,7 @@
 
       <% if @recent_completions.empty? %>
         <div style="text-align:center; padding:2rem 1rem;">
-          <p style="font-family:'DM Sans',sans-serif; font-size:0.82rem; color:#A09889; margin:0;"><%= t("community.no_activity") %></p>
+          <p style="font-family:'DM Sans',sans-serif; font-size:0.82rem; color:var(--color-sub, #A09889); margin:0;"><%= t("community.no_activity") %></p>
         </div>
       <% end %>
     </div>
@@ -156,7 +156,7 @@
         <polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/>
       </svg>
     </div>
-    <h2 style="font-family:'DM Sans',sans-serif; font-weight:700; font-size:1rem; color:#1C1812; margin:0; letter-spacing:-0.3px;">
+    <h2 style="font-family:'DM Sans',sans-serif; font-weight:700; font-size:1rem; color:var(--color-txt, #1C1812); margin:0; letter-spacing:-0.3px;">
       <%= t("community.popular_routes") %>
     </h2>
   </div>
@@ -169,19 +169,19 @@
         accent = route_accent_color(route)
         topic_emoji = topic_emoji_for(route.topic)
       %>
-      <div style="background:rgba(255,255,255,0.5); border:1px solid rgba(28,24,18,0.05); border-radius:14px; padding:1.1rem 1.2rem; transition:all 0.2s;" class="card-hover">
+      <div style="background:var(--color-card-glass, rgba(255,255,255,0.5)); border:1px solid var(--color-border-subtle, rgba(28,24,18,0.05)); border-radius:14px; padding:1.1rem 1.2rem; transition:all 0.2s;" class="card-hover">
         <div style="display:flex; align-items:flex-start; gap:0.8rem;">
           <div style="width:36px; height:36px; border-radius:10px; background:<%= accent %>12; display:flex; align-items:center; justify-content:center; flex-shrink:0; font-size:1.1rem;">
             <%= topic_emoji %>
           </div>
           <div style="flex:1; min-width:0;">
-            <h3 style="font-family:'DM Sans',sans-serif; font-weight:600; font-size:0.85rem; color:#1C1812; margin:0 0 0.2rem; letter-spacing:-0.2px;">
+            <h3 style="font-family:'DM Sans',sans-serif; font-weight:600; font-size:0.85rem; color:var(--color-txt, #1C1812); margin:0 0 0.2rem; letter-spacing:-0.2px;">
               <%= route.localized_topic.truncate(30) %>
             </h3>
-            <p style="font-family:'DM Sans',sans-serif; font-size:0.7rem; color:#A09889; margin:0 0 0.6rem;">
+            <p style="font-family:'DM Sans',sans-serif; font-size:0.7rem; color:var(--color-sub, #A09889); margin:0 0 0.6rem;">
               <%= t("community.steps_label", count: route.total_steps) %> &middot; <%= route.localized_subject_area || t("community.general") %>
             </p>
-            <div style="height:3px; background:rgba(28,24,18,0.05); border-radius:2px; overflow:hidden;">
+            <div style="height:3px; background:var(--color-border-subtle, rgba(28,24,18,0.05)); border-radius:2px; overflow:hidden;">
               <div style="width:<%= progress %>%; height:100%; background:<%= accent %>; border-radius:2px;"></div>
             </div>
           </div>
@@ -190,8 +190,8 @@
     <% end %>
 
     <% if @popular_routes.empty? %>
-      <div style="grid-column:1/-1; text-align:center; padding:2rem; background:rgba(255,255,255,0.4); border:1px solid rgba(28,24,18,0.05); border-radius:14px;">
-        <p style="font-family:'DM Sans',sans-serif; font-size:0.85rem; color:#A09889; margin:0;"><%= t("community.no_routes") %></p>
+      <div style="grid-column:1/-1; text-align:center; padding:2rem; background:var(--color-card-glass, rgba(255,255,255,0.4)); border:1px solid var(--color-border-subtle, rgba(28,24,18,0.05)); border-radius:14px;">
+        <p style="font-family:'DM Sans',sans-serif; font-size:0.85rem; color:var(--color-sub, #A09889); margin:0;"><%= t("community.no_routes") %></p>
       </div>
     <% end %>
   </div>

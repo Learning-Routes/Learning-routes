@@ -67,7 +67,7 @@
 <% if activities.any? %>
   <div style="display:flex; flex-direction:column;">
     <% activities.each_with_index do |act, i| %>
-      <div style="display:flex; align-items:flex-start; gap:14px; padding:14px 2px; <%= 'border-bottom:1px solid rgba(28,24,18,0.035);' unless i == activities.size - 1 %>">
+      <div style="display:flex; align-items:flex-start; gap:14px; padding:14px 2px; <%= "border-bottom:1px solid var(--color-border-subtle, rgba(28,24,18,0.035));" unless i == activities.size - 1 %>">
 
         <%# Color dot with accessible label %>
         <div style="display:flex; align-items:center; gap:6px; margin-top:7px; flex-shrink:0;">
@@ -76,17 +76,17 @@
 
         <%# Content %>
         <div style="flex:1; min-width:0;">
-          <p style="font-family:'DM Sans',sans-serif; font-weight:600; font-size:0.8rem; color:#1C1812; margin:0 0 0.15rem; line-height:1.35;">
+          <p style="font-family:'DM Sans',sans-serif; font-weight:600; font-size:0.8rem; color:var(--color-txt, #1C1812); margin:0 0 0.15rem; line-height:1.35;">
             <span style="font-family:'DM Mono',monospace; font-size:0.55rem; letter-spacing:0.5px; text-transform:uppercase; color:<%= act[:color] %>; margin-right:0.35rem;"><%= t("activity.types.#{act[:type]}", default: act[:type].to_s.humanize) %></span>
             <%= act[:title] %>
           </p>
-          <p style="font-family:'DM Sans',sans-serif; font-size:0.72rem; color:#A09889; margin:0; line-height:1.35;">
+          <p style="font-family:'DM Sans',sans-serif; font-size:0.72rem; color:var(--color-sub, #A09889); margin:0; line-height:1.35;">
             <%= act[:desc] %>
           </p>
         </div>
 
         <%# Timestamp %>
-        <span style="font-family:'DM Mono',monospace; font-size:0.62rem; color:#CCC5B8; flex-shrink:0; white-space:nowrap; margin-top:2px;">
+        <span style="font-family:'DM Mono',monospace; font-size:0.62rem; color:var(--color-faint, #CCC5B8); flex-shrink:0; white-space:nowrap; margin-top:2px;">
           <% if act[:time] %>
             <% if act[:time].to_date == Date.current %>
               <%= t("activity.time.today", time: act[:time].strftime("%H:%M")) %>
@@ -108,8 +108,8 @@
         <path d="M12 7v5l3 2"/>
       </svg>
     </div>
-    <p style="font-family:'DM Sans',sans-serif; font-size:0.85rem; font-weight:500; color:#1C1812; margin:0 0 0.3rem;"><%= t("activity.no_recent") %></p>
-    <p style="font-family:'DM Sans',sans-serif; font-size:0.75rem; color:#A09889; margin:0;"><%= t("activity.no_recent_desc") %></p>
+    <p style="font-family:'DM Sans',sans-serif; font-size:0.85rem; font-weight:500; color:var(--color-txt, #1C1812); margin:0 0 0.3rem;"><%= t("activity.no_recent") %></p>
+    <p style="font-family:'DM Sans',sans-serif; font-size:0.75rem; color:var(--color-sub, #A09889); margin:0;"><%= t("activity.no_recent_desc") %></p>
   </div>
 <% end %>
 

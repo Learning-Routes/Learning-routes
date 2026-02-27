@@ -3,7 +3,7 @@
 <% label = current_locale == :es ? "EN" : "ES" %>
 <%= button_to main_app.locale_path, method: :patch, params: { locale: other_locale },
     style: "font-family:'DM Mono',monospace; font-size:0.65rem; font-weight:500; letter-spacing:0.8px;
-            color:#A09889; background:transparent; border:1px solid rgba(160,152,137,0.2);
+            color:var(--color-muted, #A09889); background:transparent; border:1px solid var(--color-border-subtle, rgba(160,152,137,0.2));
             border-radius:8px; padding:0.3rem 0.6rem; cursor:pointer; transition:all 0.2s;
             line-height:1;",
     class: "locale-toggle",

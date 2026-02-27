@@ -16,7 +16,7 @@
           <stop offset="100%" stop-color="#5BA880"/>
         </linearGradient>
       </defs>
-      <circle cx="60" cy="60" r="48" stroke="rgba(28,24,18,0.04)" stroke-width="1.5" fill="none"/>
+      <circle cx="60" cy="60" r="48" stroke="var(--color-border-subtle, rgba(28,24,18,0.04))" stroke-width="1.5" fill="none"/>
       <circle cx="60" cy="60" r="48" stroke="url(#gen-grad)" stroke-width="2.5" fill="none"
               stroke-dasharray="80 220" stroke-linecap="round" opacity="0.6">
         <animateTransform attributeName="transform" type="rotate" values="0 60 60;360 60 60" dur="1.8s" repeatCount="indefinite"/>
@@ -33,10 +33,10 @@
 
   <%# === Text === %>
   <div style="text-align:center;">
-    <div style="font-family:'DM Sans',sans-serif; font-weight:700; font-size:1.3rem; color:#1C1812; margin-bottom:8px; letter-spacing:-0.3px;">
+    <div style="font-family:'DM Sans',sans-serif; font-weight:700; font-size:1.3rem; color:var(--color-txt, #1C1812); margin-bottom:8px; letter-spacing:-0.3px;">
       <%= t("wizard.generating.title") %><span data-route-generating-target="dotsText"></span>
     </div>
-    <div style="font-family:'DM Sans',sans-serif; font-weight:400; font-size:0.78rem; color:#9E9587; max-width:300px; line-height:1.5;">
+    <div style="font-family:'DM Sans',sans-serif; font-weight:400; font-size:0.78rem; color:var(--color-muted, #9E9587); max-width:300px; line-height:1.5;">
       <%= t("wizard.generating.desc") %>
     </div>
   </div>

@@ -23,7 +23,7 @@
 
 <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:12px;">
   <% sorted.each do |ach| %>
-    <div style="background:<%= ach[:unlocked] ? '#FEFDFB' : 'transparent' %>; border:1px solid rgba(28,24,18,<%= ach[:unlocked] ? '0.04' : '0.05' %>); border-radius:14px; padding:16px; display:flex; align-items:center; gap:12px; opacity:<%= ach[:unlocked] ? '1' : '0.4' %>;">
+    <div style="background:<%= ach[:unlocked] ? 'var(--color-card, #FEFDFB)' : 'transparent' %>; border:1px solid var(--color-border-subtle, rgba(28,24,18,0.05)); border-radius:14px; padding:16px; display:flex; align-items:center; gap:12px; opacity:<%= ach[:unlocked] ? '1' : '0.4' %>;">
 
       <%# Icon %>
       <div role="img" aria-label="<%= ach[:title] %><%= " (#{t('achievements.unlocked_label')})" if ach[:unlocked] %>" style="width:42px; height:42px; border-radius:12px; background:<%= ach[:color] %><%= ach[:unlocked] ? '1A' : '06' %>; display:flex; align-items:center; justify-content:center; flex-shrink:0; font-size:1.2rem;<%= ' filter:grayscale(1);' unless ach[:unlocked] %>">
@@ -32,13 +32,13 @@
 
       <%# Text %>
       <div style="flex:1; min-width:0;">
-        <p style="font-family:'DM Sans',sans-serif; font-size:0.8rem; font-weight:600; color:#1C1812; margin:0 0 0.15rem;">
+        <p style="font-family:'DM Sans',sans-serif; font-size:0.8rem; font-weight:600; color:var(--color-txt, #1C1812); margin:0 0 0.15rem;">
           <%= ach[:title] %>
           <% if ach[:unlocked] %>
             <svg aria-hidden="true" width="12" height="12" viewBox="0 0 16 16" fill="none" style="vertical-align:-1px; margin-left:3px;"><path d="M3 8l3.5 3.5L13 5" stroke="#5BA880" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
           <% end %>
         </p>
-        <p style="font-family:'DM Sans',sans-serif; font-size:0.68rem; color:#A09889; margin:0;">
+        <p style="font-family:'DM Sans',sans-serif; font-size:0.68rem; color:var(--color-sub, #A09889); margin:0;">
           <%= ach[:desc] %>
         </p>
       </div>
