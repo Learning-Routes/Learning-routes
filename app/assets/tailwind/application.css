@@ -94,6 +94,13 @@
   --color-flash-alert-bg: rgba(176, 96, 80, 0.08);
   --color-flash-alert-border: rgba(176, 96, 80, 0.15);
   --color-flash-alert-text: #B06050;
+  --color-status-active-bg: rgba(91, 168, 128, 0.1);
+  --color-status-active-text: #3D7A5A;
+  --color-status-completed-bg: rgba(110, 155, 200, 0.1);
+  --color-status-completed-text: #4A7A9E;
+  --color-status-paused-bg: rgba(176, 152, 72, 0.1);
+  --color-status-paused-text: #8B6D28;
+  --color-progress-bar: #5BA880;
 }
 
 html[data-theme="dark"] {
@@ -117,6 +124,13 @@ html[data-theme="dark"] {
   --color-flash-alert-bg: rgba(176, 96, 80, 0.12);
   --color-flash-alert-border: rgba(176, 96, 80, 0.25);
   --color-flash-alert-text: #D4887A;
+  --color-status-active-bg: rgba(91, 168, 128, 0.15);
+  --color-status-active-text: #7BC8A0;
+  --color-status-completed-bg: rgba(110, 155, 200, 0.15);
+  --color-status-completed-text: #8AB8D8;
+  --color-status-paused-bg: rgba(176, 152, 72, 0.15);
+  --color-status-paused-text: #D4B85C;
+  --color-progress-bar: #5BA880;
 }
 
 html[data-theme="dark"] ::selection {

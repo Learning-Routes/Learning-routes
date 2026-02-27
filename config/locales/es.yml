@@ -990,6 +990,9 @@ es:
 
   # ── Assessments Engine ──
   assessments:
+    answers:
+      correct: "Correcto"
+      incorrect: "Incorrecto"
     show:
       title_prefix: "Evaluación - "
       description: "Pon a prueba tu comprensión de este tema."
