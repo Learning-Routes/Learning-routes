@@ -52,10 +52,10 @@
           <%= t("onboarding.interests.custom_label") %>
         </label>
         <input type="text" name="custom_interest" id="custom_interest"
-               style="width:100%; padding:0.7rem 0.9rem; border-radius:10px; border:1.5px solid var(--color-border-subtle, rgba(28,24,18,0.1)); background:white; font-family:'DM Sans',sans-serif; font-size:0.85rem; color:var(--color-txt, #1C1812); outline:none; transition:border-color 0.2s, box-shadow 0.2s; box-sizing:border-box;"
+               style="width:100%; padding:0.7rem 0.9rem; border-radius:10px; border:1.5px solid var(--color-border-subtle, rgba(28,24,18,0.1)); background:var(--color-card, #FEFDFB); font-family:'DM Sans',sans-serif; font-size:0.85rem; color:var(--color-txt, #1C1812); outline:none; transition:border-color 0.2s, box-shadow 0.2s; box-sizing:border-box;"
                placeholder="<%= t("onboarding.interests.custom_placeholder") %>"
-               onfocus="this.style.borderColor='rgba(28,24,18,0.22)';this.style.boxShadow='0 0 0 3px rgba(28,24,18,0.05)'"
-               onblur="this.style.borderColor='rgba(28,24,18,0.1)';this.style.boxShadow='none'"
+               onfocus="this.style.borderColor='var(--color-faint)';this.style.boxShadow='0 0 0 3px var(--color-tint)'"
+               onblur="this.style.borderColor='var(--color-border-subtle)';this.style.boxShadow='none'"
                data-action="input->checkbox-group#update">
       </div>
 

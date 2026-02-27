@@ -14,7 +14,7 @@
 %>
 <%= button_to main_app.theme_path, method: :patch, params: { theme: next_theme },
     style: "font-family:'DM Mono',monospace; font-size:0.65rem; font-weight:500; letter-spacing:0.8px;
-            color:var(--color-muted, #887F72); background:transparent; border:1px solid rgba(160,152,137,0.2);
+            color:var(--color-muted, #887F72); background:transparent; border:1px solid var(--color-border-subtle, rgba(160,152,137,0.2));
             border-radius:8px; padding:0.3rem 0.6rem; cursor:pointer; transition:all 0.2s;
             line-height:1; display:inline-flex; align-items:center; gap:0.3rem;",
     class: "theme-toggle",
