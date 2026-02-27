@@ -72,27 +72,27 @@ class RouteRequest < ApplicationRecord
 
   def must_have_at_least_one_topic
     if topics.blank? && custom_topic.blank?
-      errors.add(:base, "Debes seleccionar al menos un tema o escribir uno personalizado")
+      errors.add(:base, I18n.t("route_request.errors.no_topics"))
     end
   end
 
   def goals_must_be_valid
     return if goals.blank?
     invalid = goals - VALID_GOALS
-    errors.add(:goals, "contiene opciones inválidas: #{invalid.join(', ')}") if invalid.any?
+    errors.add(:goals, I18n.t("route_request.errors.invalid_goals", invalid: invalid.join(", "))) if invalid.any?
   end
 
   def topics_must_be_valid
     return if topics.blank?
     invalid = topics - VALID_TOPICS
-    errors.add(:topics, "contiene opciones inválidas: #{invalid.join(', ')}") if invalid.any?
+    errors.add(:topics, I18n.t("route_request.errors.invalid_topics", invalid: invalid.join(", "))) if invalid.any?
   end
 
   def learning_style_answers_complete
     return if learning_style_answers.blank?
     answers = learning_style_answers.is_a?(Hash) ? learning_style_answers : {}
     if answers.keys.length > 0 && answers.keys.length < 6
-      errors.add(:learning_style_answers, "debes responder las 6 preguntas del test")
+      errors.add(:learning_style_answers, I18n.t("route_request.errors.incomplete_style"))
     end
   end
 
