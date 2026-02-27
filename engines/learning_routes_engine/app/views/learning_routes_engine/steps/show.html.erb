@@ -22,23 +22,21 @@
         <% end %>
       </turbo-frame>
 
-
-<!-- Step social actions -->
-<div class="flex items-center gap-3 mt-6 mb-4">
-  <%= render "community_engine/likes/button", likeable: @step, liked: @step.liked_by?(current_user), likes_count: @step.likes.count %>
-</div>
+      <!-- Step social actions -->
+      <div class="flex items-center gap-3 mt-6 mb-4">
+        <%= render "community_engine/likes/button", likeable: @step, liked: @step.liked_by?(current_user), likes_count: @step.likes.count %>
+      </div>
 
       <!-- Navigation -->
       <%= render "navigation" %>
+
+      <!-- Comments section -->
+      <div class="mt-10 pt-8 border-t border-white/[0.06]">
+        <div class="[&_h3]:text-gray-200 [&_p]:text-gray-300 [&_span]:text-gray-400 [&_textarea]:bg-gray-900 [&_textarea]:border-gray-700 [&_textarea]:text-gray-200 [&_textarea]:placeholder-gray-500 [&_button[type=submit]]:bg-gray-700 [&_button[type=submit]]:text-gray-200">
+          <%= render "community_engine/comments/section", commentable: @step %>
+        </div>
+      </div>
     </div>
-
-
-<!-- Comments section -->
-<div class="mt-10 pt-8 border-t border-white/[0.06]">
-  <div class="[&_h3]:text-gray-200 [&_p]:text-gray-300 [&_span]:text-gray-400 [&_textarea]:bg-gray-900 [&_textarea]:border-gray-700 [&_textarea]:text-gray-200 [&_textarea]:placeholder-gray-500 [&_button[type=submit]]:bg-gray-700 [&_button[type=submit]]:text-gray-200">
-    <%= render "community_engine/comments/section", commentable: @step %>
-  </div>
-</div>
 
     <!-- Sidebar -->
     <%= render "sidebar" %>

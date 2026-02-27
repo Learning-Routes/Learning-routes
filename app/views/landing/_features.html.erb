@@ -3,7 +3,7 @@
 
     <%# Gradient separator %>
     <div class="h-px mb-16"
-         style="background: linear-gradient(90deg, transparent, rgba(28,24,18,0.06), transparent);"></div>
+         style="background: linear-gradient(90deg, transparent, var(--color-border-subtle, rgba(28,24,18,0.06)), transparent);"></div>
 
     <%# Section header %>
     <div class="animate-enter mb-12">
@@ -21,7 +21,7 @@
 
           <%# Number badge %>
           <span class="inline-block font-mono text-[0.58rem] tracking-[0.08em] text-faint mb-3"
-                style="padding:0.25rem 0.55rem; border:1px solid rgba(28,24,18,0.08); border-radius:6px;">
+                style="padding:0.25rem 0.55rem; border:1px solid var(--color-border-subtle, rgba(28,24,18,0.08)); border-radius:6px;">
             <%= String(i + 1).rjust(2, "0") %>
           </span>
 
