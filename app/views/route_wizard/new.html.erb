@@ -2,11 +2,11 @@
 <% content_for(:hide_navbar) { true } %>
 <% content_for(:head) do %>
   <style>
-    @media (min-width: 560px) {
-      .wizard-topic-grid { grid-template-columns: repeat(3, 1fr) !important; }
+    @media (min-width: 480px) {
+      .wizard-topic-grid { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; }
     }
-    @media (min-width: 768px) {
-      .wizard-topic-grid { grid-template-columns: repeat(4, 1fr) !important; }
+    @media (min-width: 820px) {
+      .wizard-topic-grid { grid-template-columns: repeat(4, minmax(0, 1fr)) !important; }
     }
     @keyframes wizardCardEnter {
       from { opacity: 0; transform: translateY(16px); }

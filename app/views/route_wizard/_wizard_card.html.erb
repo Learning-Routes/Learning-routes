@@ -43,7 +43,7 @@
   <%# === Card Container === %>
   <div style="max-width:640px; width:100%; background:var(--color-card, rgba(253,252,250,0.95)); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px);
               border-radius:20px; border:1px solid var(--color-faint, rgba(28,24,18,0.06));
-              padding:28px 24px 24px; box-shadow:0 4px 24px rgba(28,24,18,0.04);
+              padding:28px 24px 24px; box-shadow:0 4px 24px rgba(28,24,18,0.04); overflow:hidden;
               opacity:0; transform:translateY(12px); animation:wizardCardEnter 0.5s cubic-bezier(0.16,1,0.3,1) 0.15s both;">
 
     <%# ============================================================ %>
@@ -53,7 +53,7 @@
       <h2 style="font-family:'DM Sans',sans-serif; font-weight:700; font-size:1.6rem; letter-spacing:-0.4px; color:var(--color-txt, #1C1812); margin:0 0 4px; line-height:1.2;"><%= t("wizard.step0.heading") %></h2>
       <p style="font-family:'DM Sans',sans-serif; font-weight:400; font-size:0.8rem; color:var(--color-muted, #9E9587); margin:0 0 24px;"><%= t("wizard.step0.subtext") %></p>
 
-      <div style="display:grid; grid-template-columns:repeat(2, 1fr); gap:8px; margin-bottom:20px;" class="wizard-topic-grid" data-route-wizard-target="topicGrid">
+      <div style="display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:8px; margin-bottom:20px;" class="wizard-topic-grid" data-route-wizard-target="topicGrid">
         <% [
           { id: "programming", icon: "terminal", color: "#8B80C4" },
           { id: "web_dev", icon: "globe", color: "#6E9BC8" },
