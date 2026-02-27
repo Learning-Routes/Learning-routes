@@ -437,6 +437,14 @@ es:
       today: "Hoy"
       yesterday: "Ayer"
 
+  # ── Route Request Validations ──
+  route_request:
+    errors:
+      no_topics: "Debes seleccionar al menos un tema o escribir uno personalizado"
+      invalid_goals: "contiene opciones inválidas: %{invalid}"
+      invalid_topics: "contiene opciones inválidas: %{invalid}"
+      incomplete_style: "debes responder las 6 preguntas del test"
+
   # ── Route Wizard ──
   wizard:
     title: "Crear Ruta — Learning Routes"

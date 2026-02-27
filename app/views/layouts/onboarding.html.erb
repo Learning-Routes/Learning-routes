@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="<%= I18n.locale %>">
+<html lang="<%= I18n.locale %>" data-controller="theme" data-theme-preference-value="<%= current_theme %>">
   <head>
     <title><%= content_for(:title) || t("layout.onboarding.title") %></title>
     <meta charset="utf-8">
@@ -18,6 +18,15 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300..700;1,9..40,300..700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 
+    <%# Prevent flash of wrong theme before JS loads %>
+    <script>
+      (function(){
+        var p = "<%= current_theme %>";
+        var t = p === "system" ? (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light") : p;
+        document.documentElement.setAttribute("data-theme", t);
+      })();
+    </script>
+
     <%= stylesheet_link_tag "tailwind", "application", "data-turbo-track": "reload" %>
     <%= javascript_importmap_tags %>
 
@@ -31,20 +40,19 @@
     </style>
   </head>
 
-  <body style="margin:0; min-height:100vh; font-family:'DM Sans',sans-serif; background:#F5F1EB; color:#1C1812;">
+  <body style="margin:0; min-height:100vh; font-family:'DM Sans',sans-serif; background:var(--color-bg, #F5F1EB); color:var(--color-txt, #1C1812);">
     <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-[200] focus:px-4 focus:py-2 focus:rounded-lg focus:text-sm focus:font-semibold" style="background:#2C261E; color:#F5F1EB;"><%= t("layout.skip_to_content") %></a>
 
     <%# === Minimal onboarding navbar === %>
     <nav style="display:flex; align-items:center; justify-content:space-between; padding:1rem clamp(1.5rem,5vw,3rem); max-width:720px; margin:0 auto;">
       <%= link_to main_app.root_path, style: "display:flex; align-items:center; gap:0.5rem; text-decoration:none;" do %>
         <%= render "shared/logo", size: 26 %>
-        <span style="font-family:'DM Sans',sans-serif; font-weight:700; font-size:0.88rem; color:#1C1812; letter-spacing:-0.3px;">Learning Routes</span>
+        <span style="font-family:'DM Sans',sans-serif; font-weight:700; font-size:0.88rem; color:var(--color-txt, #1C1812); letter-spacing:-0.3px;">Learning Routes</span>
       <% end %>
 
       <%= link_to t("layout.onboarding.save_exit"), main_app.root_path,
-            style: "font-family:'DM Sans',sans-serif; font-size:0.78rem; font-weight:500; color:#A09889; text-decoration:none; transition:color 0.2s;",
-            onmouseenter: "this.style.color='#1C1812'",
-            onmouseleave: "this.style.color='#A09889'" %>
+            style: "font-family:'DM Sans',sans-serif; font-size:0.78rem; font-weight:500; color:var(--color-muted, #A09889); text-decoration:none; transition:color 0.2s;",
+            class: "nav-link" %>
     </nav>
 
     <%# === Flash messages === %>
