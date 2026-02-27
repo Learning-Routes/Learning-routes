@@ -7,8 +7,10 @@ module ContentEngine
       content = @step.ai_contents.with_audio_ready.first
 
       if content&.audio_url
-        file_path = Rails.root.join(content.audio_url.delete_prefix("/"))
-        if File.exist?(file_path)
+        file_path = Rails.root.join(content.audio_url.delete_prefix("/")).expand_path
+        audio_root = Rails.root.join("storage", "audio").expand_path.to_s
+
+        if file_path.to_s.start_with?(audio_root) && File.exist?(file_path)
           send_file file_path, type: "audio/mpeg", disposition: :inline
         else
           head :not_found
