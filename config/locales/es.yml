@@ -792,6 +792,17 @@ es:
   onboarding:
     progress: "Paso %{step} de %{total}"
     progress_aria: "Progreso de configuración"
+    step_labels:
+      interests: "Tema"
+      level: "Nivel"
+      learning_style: "Estilo"
+      goal: "Meta"
+    errors:
+      interests_blank: "selecciona al menos un tema"
+      style_blank: "selecciona al menos un estilo"
+      goal_blank: "no puede estar vacío"
+      goal_too_long: "es demasiado largo (máximo 500 caracteres)"
+      timeline_blank: "selecciona un plazo"
     interests:
       heading: "¿Qué quieres aprender?"
       subtitle: "Elige un tema o escribe el tuyo — la IA creará tu ruta."

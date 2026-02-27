@@ -7,13 +7,12 @@ module Core
     before_action :set_or_build_profile
 
     STEPS = %w[interests level learning_style goal].freeze
-    STEP_LABELS = { "interests" => "Topic", "level" => "Level", "learning_style" => "Style", "goal" => "Goal" }.freeze
 
     def show
       @step = current_step
       @step_number = STEPS.index(@step) + 1
       @total_steps = STEPS.size
-      @step_label = STEP_LABELS[@step]
+      @step_label = I18n.t("onboarding.step_labels.#{@step}", default: @step.humanize)
       return render partial: "core/onboarding/step_#{@step}", locals: { profile: @profile } if turbo_frame_request?
     end
 
@@ -27,7 +26,7 @@ module Core
         custom = params[:custom_interest].to_s.strip
         interests << custom if custom.present?
         if interests.empty?
-          @profile.errors.add(:interests, "please select at least one topic")
+          @profile.errors.add(:interests, I18n.t("onboarding.errors.interests_blank"))
           return render_step_error
         end
         @profile.interests = interests
@@ -36,7 +35,7 @@ module Core
       when "learning_style"
         styles = Array(params[:learning_style]).reject(&:blank?)
         if styles.empty?
-          @profile.errors.add(:learning_style, "please select at least one style")
+          @profile.errors.add(:learning_style, I18n.t("onboarding.errors.style_blank"))
           return render_step_error
         end
         @profile.learning_style = styles
@@ -44,15 +43,15 @@ module Core
         goal = params[:goal].to_s.strip
         timeline = params[:timeline].to_s
         if goal.blank?
-          @profile.errors.add(:goal, "can't be blank")
+          @profile.errors.add(:goal, I18n.t("onboarding.errors.goal_blank"))
           return render_step_error
         end
         if goal.length > 500
-          @profile.errors.add(:goal, "is too long (maximum 500 characters)")
+          @profile.errors.add(:goal, I18n.t("onboarding.errors.goal_too_long"))
           return render_step_error
         end
         unless timeline.in?(%w[1_month 3_months 6_months 1_year])
-          @profile.errors.add(:timeline, "please select a timeline")
+          @profile.errors.add(:timeline, I18n.t("onboarding.errors.timeline_blank"))
           return render_step_error
         end
         @profile.goal = goal
@@ -96,7 +95,7 @@ module Core
     def render_step_error
       @step_number = STEPS.index(@step) + 1
       @total_steps = STEPS.size
-      @step_label = STEP_LABELS[@step]
+      @step_label = I18n.t("onboarding.step_labels.#{@step}", default: @step.humanize)
       render partial: "core/onboarding/step_#{@step}", locals: { profile: @profile }, status: :unprocessable_entity
     end
 
