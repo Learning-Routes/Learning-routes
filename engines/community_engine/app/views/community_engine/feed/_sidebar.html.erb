@@ -29,14 +29,14 @@
            data-action="click->share#backdropClick">
         <div style="position:absolute; inset:0; background:rgba(0,0,0,0.5); backdrop-filter:blur(4px); pointer-events:none;"></div>
         <div data-action="click->share#stopPropagation"
-             style="position:relative; background:#FEFDFB; border-radius:16px; width:100%; max-width:420px; max-height:80vh; overflow-y:auto;
+             style="position:relative; background:var(--color-card, #FEFDFB); border-radius:16px; width:100%; max-width:420px; max-height:80vh; overflow-y:auto;
                     box-shadow:0 24px 48px rgba(0,0,0,0.2);">
           <%# Header %>
-          <div style="display:flex; align-items:center; justify-content:space-between; padding:1rem 1.25rem; border-bottom:1px solid rgba(28,24,18,0.06);">
-            <h3 style="font-family:'DM Sans',sans-serif; font-weight:700; font-size:0.95rem; color:#1C1812; margin:0;">
+          <div style="display:flex; align-items:center; justify-content:space-between; padding:1rem 1.25rem; border-bottom:1px solid var(--color-border-subtle, rgba(28,24,18,0.06));">
+            <h3 style="font-family:'DM Sans',sans-serif; font-weight:700; font-size:0.95rem; color:var(--color-txt, #1C1812); margin:0;">
               <%= t("community_engine.share_modal.title") %>
             </h3>
-            <button data-action="click->share#close" style="color:#9B9590; background:none; border:none; cursor:pointer; padding:0.2rem;">
+            <button data-action="click->share#close" style="color:var(--color-muted, #9B9590); background:none; border:none; cursor:pointer; padding:0.2rem;">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
             </button>
           </div>
@@ -44,7 +44,7 @@
           <%# Form view %>
           <div data-share-target="formView" style="padding:1rem 1.25rem;">
             <% if unshared_routes.any? %>
-              <p style="font-family:'DM Sans',sans-serif; font-size:0.75rem; font-weight:500; color:#6D665B; margin:0 0 0.5rem;">
+              <p style="font-family:'DM Sans',sans-serif; font-size:0.75rem; font-weight:500; color:var(--color-sub, #6D665B); margin:0 0 0.5rem;">
                 <%= t("community_engine.share_modal.select_route") %>
               </p>
               <div style="display:flex; flex-direction:column; gap:0.4rem; margin-bottom:1rem; max-height:180px; overflow-y:auto;">
@@ -54,15 +54,15 @@
                           data-share-target="routeSelect"
                           data-route-id="<%= route.id %>"
                           style="display:flex; align-items:center; gap:0.5rem; padding:0.55rem 0.75rem; border-radius:10px;
-                                 border:1px solid rgba(28,24,18,0.1); background:transparent; cursor:pointer; transition:all 0.15s; text-align:left;">
+                                 border:1px solid var(--color-border-subtle, rgba(28,24,18,0.1)); background:transparent; cursor:pointer; transition:all 0.15s; text-align:left;">
                     <div style="width:28px; height:28px; border-radius:7px; background:rgba(91,168,128,0.12); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
                       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#5BA880" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v8M8 12h8"/></svg>
                     </div>
                     <div style="flex:1; min-width:0;">
-                      <p style="font-family:'DM Sans',sans-serif; font-size:0.78rem; font-weight:500; color:#1C1812; margin:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+                      <p style="font-family:'DM Sans',sans-serif; font-size:0.78rem; font-weight:500; color:var(--color-txt, #1C1812); margin:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
                         <%= route.localized_topic %>
                       </p>
-                      <p style="font-family:'DM Mono',monospace; font-size:0.58rem; color:#9B9590; margin:0.1rem 0 0;">
+                      <p style="font-family:'DM Mono',monospace; font-size:0.58rem; color:var(--color-muted, #9B9590); margin:0.1rem 0 0;">
                         <%= route.route_steps.count %> <%= t("community_engine.share_modal.steps") %>
                       </p>
                     </div>
@@ -70,13 +70,13 @@
                 <% end %>
               </div>
             <% else %>
-              <p style="font-family:'DM Sans',sans-serif; font-size:0.78rem; color:#9B9590; text-align:center; padding:0.75rem 0; margin:0 0 0.75rem;">
+              <p style="font-family:'DM Sans',sans-serif; font-size:0.78rem; color:var(--color-muted, #9B9590); text-align:center; padding:0.75rem 0; margin:0 0 0.75rem;">
                 <%= t("community_engine.share_modal.all_shared") %>
               </p>
             <% end %>
 
             <%# Visibility selector %>
-            <p style="font-family:'DM Sans',sans-serif; font-size:0.75rem; font-weight:500; color:#6D665B; margin:0 0 0.4rem;">
+            <p style="font-family:'DM Sans',sans-serif; font-size:0.75rem; font-weight:500; color:var(--color-sub, #6D665B); margin:0 0 0.4rem;">
               <%= t("community_engine.share_modal.visibility_label") %>
             </p>
             <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:0.35rem; margin-bottom:0.85rem;">
@@ -89,11 +89,11 @@
                         data-action="click->share#selectVisibility"
                         data-share-target="visibilityBtn"
                         data-visibility="<%= value %>"
-                        style="padding:0.5rem 0.4rem; border-radius:10px; border:1px solid <%= value == 'public' ? '#2C261E' : '#E0DBCF' %>;
-                               background:<%= value == 'public' ? 'rgba(44,38,30,0.05)' : 'transparent' %>;
+                        style="padding:0.5rem 0.4rem; border-radius:10px; border:1px solid <%= value == 'public' ? 'var(--color-accent, #2C261E)' : 'var(--color-faint, #E0DBCF)' %>;
+                               background:<%= value == 'public' ? 'var(--color-tint, rgba(44,38,30,0.05))' : 'transparent' %>;
                                cursor:pointer; text-align:center; transition:all 0.15s;">
-                  <span style="display:block; font-family:'DM Sans',sans-serif; font-size:0.72rem; font-weight:500; color:#1C1812;"><%= label %></span>
-                  <span style="display:block; font-family:'DM Mono',monospace; font-size:0.52rem; color:#9B9590; margin-top:0.15rem;"><%= desc %></span>
+                  <span style="display:block; font-family:'DM Sans',sans-serif; font-size:0.72rem; font-weight:500; color:var(--color-txt, #1C1812);"><%= label %></span>
+                  <span style="display:block; font-family:'DM Mono',monospace; font-size:0.52rem; color:var(--color-muted, #9B9590); margin-top:0.15rem;"><%= desc %></span>
                 </button>
               <% end %>
             </div>
@@ -102,14 +102,14 @@
             <textarea data-share-target="description"
                       placeholder="<%= t('community_engine.share_modal.description_placeholder') %>"
                       rows="2"
-                      style="width:100%; box-sizing:border-box; padding:0.6rem 0.8rem; border-radius:10px; border:1px solid rgba(28,24,18,0.1);
-                             font-family:'DM Sans',sans-serif; font-size:0.78rem; color:#1C1812; background:#F9F7F3; resize:none; outline:none;
+                      style="width:100%; box-sizing:border-box; padding:0.6rem 0.8rem; border-radius:10px; border:1px solid var(--color-border-subtle, rgba(28,24,18,0.1));
+                             font-family:'DM Sans',sans-serif; font-size:0.78rem; color:var(--color-txt, #1C1812); background:var(--color-bg, #F9F7F3); resize:none; outline:none;
                              transition:border-color 0.2s; margin-bottom:0.85rem;"></textarea>
 
             <% if unshared_routes.any? %>
               <button data-action="click->share#submit"
                       data-share-target="submitBtn"
-                      style="width:100%; padding:0.65rem 0.85rem; border-radius:10px; border:none; background:#2C261E; color:#F5F1EB;
+                      style="width:100%; padding:0.65rem 0.85rem; border-radius:10px; border:none; background:var(--color-accent, #2C261E); color:var(--color-accent-text, #F5F1EB);
                              font-family:'DM Sans',sans-serif; font-size:0.8rem; font-weight:600; cursor:pointer; transition:all 0.2s;">
                 <%= t("community_engine.share_modal.share_btn") %>
               </button>
@@ -122,23 +122,23 @@
                         display:flex; align-items:center; justify-content:center;">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
             </div>
-            <p style="font-family:'DM Sans',sans-serif; font-size:0.82rem; font-weight:500; color:#1C1812; margin:0 0 0.85rem;">
+            <p style="font-family:'DM Sans',sans-serif; font-size:0.82rem; font-weight:500; color:var(--color-txt, #1C1812); margin:0 0 0.85rem;">
               <%= t("community_engine.share_modal.success") %>
             </p>
             <div style="display:flex; align-items:center; gap:0.4rem; margin-bottom:0.85rem;">
               <input type="text" data-share-target="urlField" readonly
-                     style="flex:1; padding:0.5rem 0.7rem; border-radius:10px; border:1px solid rgba(28,24,18,0.1);
-                            font-family:'DM Mono',monospace; font-size:0.7rem; color:#1C1812; background:#F9F7F3; outline:none;">
+                     style="flex:1; padding:0.5rem 0.7rem; border-radius:10px; border:1px solid var(--color-border-subtle, rgba(28,24,18,0.1));
+                            font-family:'DM Mono',monospace; font-size:0.7rem; color:var(--color-txt, #1C1812); background:var(--color-bg, #F9F7F3); outline:none;">
               <button data-action="click->share#copyUrl" data-share-target="copyBtn"
-                      style="flex-shrink:0; padding:0.5rem 0.85rem; border-radius:10px; border:none; background:#2C261E; color:#F5F1EB;
+                      style="flex-shrink:0; padding:0.5rem 0.85rem; border-radius:10px; border:none; background:var(--color-accent, #2C261E); color:var(--color-accent-text, #F5F1EB);
                              font-family:'DM Sans',sans-serif; font-size:0.72rem; font-weight:500; cursor:pointer;">
                 <%= t("community_engine.share_modal.copy") %>
               </button>
             </div>
             <button data-action="click->share#close"
-                    style="width:100%; padding:0.55rem 0.85rem; border-radius:10px; border:1px solid rgba(28,24,18,0.1);
+                    style="width:100%; padding:0.55rem 0.85rem; border-radius:10px; border:1px solid var(--color-border-subtle, rgba(28,24,18,0.1));
                            background:transparent; font-family:'DM Sans',sans-serif; font-size:0.78rem; font-weight:500;
-                           color:#1C1812; cursor:pointer; transition:all 0.2s;">
+                           color:var(--color-txt, #1C1812); cursor:pointer; transition:all 0.2s;">
               <%= t("community_engine.share_modal.done") %>
             </button>
           </div>
