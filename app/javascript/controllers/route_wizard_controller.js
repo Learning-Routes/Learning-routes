@@ -2,39 +2,49 @@ import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
   static targets = [
-    "step", "form", "stepBar", "stepLabel", "stepName", "percentLabel",
+    "step", "form", "stepBar", "stepLabel", "stepName",
     "continueBtn", "btnText", "chips", "navLeft", "bottomHint", "footer",
     "topicInputs", "goalInputs", "levelInput", "paceInput",
+    "hoursInput", "sessionInput", "hoursGrid", "sessionGrid",
     "customInput", "customInputWrap", "topicGrid", "errorBanner",
-    "bar0", "bar1", "bar2", "bar3", "bar4",
+    "node0", "node1", "node2", "node3", "node4", "node5",
+    "line0", "line1", "line2", "line3", "line4",
     "styleAnswer1", "styleAnswer2", "styleAnswer3",
     "styleAnswer4", "styleAnswer5", "styleAnswer6",
     "styleProgress", "styleResultCard", "styleResultIcon",
-    "styleResultName", "styleResultDesc", "styleDoneMsg"
+    "styleResultName", "styleResultDesc", "styleDoneMsg",
+    "savedStyleBanner", "savedStyleText", "styleHeader", "styleQuestionsWrap"
   ]
 
   static values = {
     step: { type: Number, default: 0 },
     generating: { type: Boolean, default: false },
-    i18n: { type: Object, default: {} }
+    i18n: { type: Object, default: {} },
+    savedPrefs: { type: Object, default: {} }
   }
 
   connect() {
     if (this.generatingValue) return
 
+    this.totalSteps = 6
     this.selectedTopics = new Set()
     this.selectedGoals = new Set()
     this.selectedLevel = ""
     this.selectedPace = ""
+    this.selectedHours = 0
+    this.selectedSession = 0
     this.styleAnswers = {}
     this.isAnimating = false
     this._allowSubmit = false
+    this.styleSaved = false
+
+    // Load saved preferences
+    this._loadSavedPrefs()
 
     this.updateUI()
     this.validateStep()
   }
 
-  // Helper to get i18n text with fallback
   t(key, fallback) {
     const keys = key.split(".")
     let val = this.i18nValue
@@ -48,11 +58,9 @@ export default class extends Controller {
     return val || fallback || key
   }
 
-  // Prevent accidental form submissions (Enter key in text input)
   handleSubmit(event) {
     if (!this._allowSubmit) {
       event.preventDefault()
-      // If user pressed Enter on step 0 and the step is valid, advance instead
       if (this.isCurrentStepValid()) {
         this.next()
       }
@@ -61,7 +69,6 @@ export default class extends Controller {
     this._allowSubmit = false
   }
 
-  // Prevent Enter key from submitting when in custom topic input
   preventEnterSubmit(event) {
     if (event.key === "Enter") {
       event.preventDefault()
@@ -75,7 +82,8 @@ export default class extends Controller {
     if (this.isAnimating) return
     if (!this.isCurrentStepValid()) return
 
-    if (this.stepValue === 4) {
+    const lastStep = this.totalSteps - 1
+    if (this.stepValue === lastStep) {
       this._allowSubmit = true
       this.formTarget.requestSubmit()
       return
@@ -96,29 +104,49 @@ export default class extends Controller {
     this.validateStep()
   }
 
+  // ===== STEP 0: TOPICS =====
+
   toggleTopic(event) {
     const card = event.currentTarget
     const topic = card.dataset.topic
     const color = card.dataset.color
     const check = card.querySelector(".wizard-check")
+    const iconWrap = card.querySelector(".wizard-topic-icon")
 
     if (this.selectedTopics.has(topic)) {
       this.selectedTopics.delete(topic)
-      card.style.background = "#FDFCFA"
-      card.style.borderColor = "rgba(28,24,18,0.06)"
+      card.style.background = ""
+      card.style.borderColor = ""
       card.style.transform = "scale(1)"
       if (check) check.style.display = "none"
+      if (iconWrap) iconWrap.style.background = "rgba(28,24,18,0.02)"
     } else {
       this.selectedTopics.add(topic)
       card.style.background = color + "08"
       card.style.borderColor = color + "40"
-      card.style.transform = "scale(1.02)"
-      if (check) check.style.display = "flex"
+      card.style.transform = "scale(1.01)"
+      if (check) {
+        check.style.display = "flex"
+        check.style.background = color
+      }
+      if (iconWrap) iconWrap.style.background = color + "12"
     }
 
     this.syncTopicInputs()
     this.validateStep()
   }
+
+  updateCustomTopic() {
+    const val = this.hasCustomInputTarget ? this.customInputTarget.value.trim() : ""
+    if (this.hasCustomInputWrapTarget) {
+      this.customInputWrapTarget.style.borderColor = val.length > 0
+        ? "#5BA88035"
+        : ""
+    }
+    this.validateStep()
+  }
+
+  // ===== STEP 1: LEVEL =====
 
   selectLevel(event) {
     const card = event.currentTarget
@@ -129,18 +157,18 @@ export default class extends Controller {
     if (!stepEl) return
 
     stepEl.querySelectorAll("[data-level]").forEach(el => {
-        el.style.background = "#FDFCFA"
-        el.style.borderColor = "rgba(28,24,18,0.06)"
-        const icon = el.querySelector("div:first-child")
-        if (icon) icon.style.background = "rgba(28,24,18,0.02)"
-        const dot = el.querySelector(".wizard-radio-dot")
-        if (dot) {
-          dot.style.transform = "scale(0)"
-          dot.style.background = "transparent"
-        }
-        const ring = dot?.parentElement
-        if (ring) ring.style.borderColor = "rgba(28,24,18,0.1)"
-      })
+      el.style.background = ""
+      el.style.borderColor = ""
+      const icon = el.querySelector("div:first-child")
+      if (icon) icon.style.background = "rgba(28,24,18,0.02)"
+      const dot = el.querySelector(".wizard-radio-dot")
+      if (dot) {
+        dot.style.transform = "scale(0)"
+        dot.style.background = "transparent"
+      }
+      const ring = dot?.parentElement
+      if (ring) ring.style.borderColor = "rgba(28,24,18,0.1)"
+    })
 
     card.style.background = color + "08"
     card.style.borderColor = color + "40"
@@ -159,6 +187,8 @@ export default class extends Controller {
     this.validateStep()
   }
 
+  // ===== STEP 2: GOALS =====
+
   toggleGoal(event) {
     const card = event.currentTarget
     const goal = card.dataset.goal
@@ -167,8 +197,8 @@ export default class extends Controller {
 
     if (this.selectedGoals.has(goal)) {
       this.selectedGoals.delete(goal)
-      card.style.background = "#FDFCFA"
-      card.style.borderColor = "rgba(28,24,18,0.06)"
+      card.style.background = ""
+      card.style.borderColor = ""
       if (label) label.style.fontWeight = "500"
       if (check) check.style.display = "none"
     } else {
@@ -183,19 +213,58 @@ export default class extends Controller {
     this.validateStep()
   }
 
-  // ===== LEARNING STYLE TEST =====
+  // ===== STEP 3: TIME COMMITMENT =====
+
+  selectHours(event) {
+    const card = event.currentTarget
+    const hours = parseInt(card.dataset.hours, 10)
+
+    if (this.hasHoursGridTarget) {
+      this.hoursGridTarget.querySelectorAll("[data-hours]").forEach(el => {
+        el.style.background = ""
+        el.style.borderColor = ""
+      })
+    }
+
+    card.style.background = "#6E9BC810"
+    card.style.borderColor = "#6E9BC840"
+
+    this.selectedHours = hours
+    if (this.hasHoursInputTarget) this.hoursInputTarget.value = hours
+    this.validateStep()
+  }
+
+  selectSession(event) {
+    const card = event.currentTarget
+    const mins = parseInt(card.dataset.minutes, 10)
+
+    if (this.hasSessionGridTarget) {
+      this.sessionGridTarget.querySelectorAll("[data-minutes]").forEach(el => {
+        el.style.background = ""
+        el.style.borderColor = ""
+      })
+    }
+
+    card.style.background = "#6E9BC810"
+    card.style.borderColor = "#6E9BC840"
+
+    this.selectedSession = mins
+    if (this.hasSessionInputTarget) this.sessionInputTarget.value = mins
+    this.validateStep()
+  }
+
+  // ===== STEP 4: LEARNING STYLE =====
 
   selectStyleAnswer(event) {
     const card = event.currentTarget
     const question = card.dataset.question
     const option = card.dataset.option
 
-    // Deselect all options in this question
     const questionContainer = card.closest("[data-style-question]")
     if (questionContainer) {
       questionContainer.querySelectorAll("[data-option]").forEach(el => {
-        el.style.background = "#FEFDFB"
-        el.style.borderColor = "rgba(28,24,18,0.06)"
+        el.style.background = ""
+        el.style.borderColor = ""
         const text = el.querySelector(".style-option-text")
         if (text) text.style.fontWeight = "400"
         const check = el.querySelector(".style-check")
@@ -203,7 +272,6 @@ export default class extends Controller {
       })
     }
 
-    // Select this option
     card.style.background = "rgba(139,128,196,0.05)"
     card.style.borderColor = "rgba(139,128,196,0.3)"
     const text = card.querySelector(".style-option-text")
@@ -211,16 +279,13 @@ export default class extends Controller {
     const check = card.querySelector(".style-check")
     if (check) check.style.display = "flex"
 
-    // Store answer
     this.styleAnswers[question] = option
 
-    // Update hidden field
     const targetName = `hasStyleAnswer${question}Target`
     if (this[targetName]) {
       this[`styleAnswer${question}Target`].value = option
     }
 
-    // Update progress counter
     this.updateStyleProgress()
 
     // Auto-scroll to next unanswered question
@@ -234,11 +299,47 @@ export default class extends Controller {
       }, 150)
     }
 
-    // Show result preview if all answered
     if (Object.keys(this.styleAnswers).length === 6) {
       this.showStyleResult()
     }
 
+    this.validateStep()
+  }
+
+  retakeStyle() {
+    this.styleSaved = false
+    this.styleAnswers = {}
+
+    // Clear hidden fields
+    for (let i = 1; i <= 6; i++) {
+      const target = `hasStyleAnswer${i}Target`
+      if (this[target]) this[`styleAnswer${i}Target`].value = ""
+    }
+
+    // Show questions, hide banner
+    if (this.hasSavedStyleBannerTarget) this.savedStyleBannerTarget.style.display = "none"
+    if (this.hasStyleHeaderTarget) this.styleHeaderTarget.style.display = "block"
+    if (this.hasStyleQuestionsWrapTarget) this.styleQuestionsWrapTarget.style.display = "flex"
+
+    // Reset question UI
+    this.element.querySelectorAll("[data-style-question] [data-option]").forEach(el => {
+      el.style.background = ""
+      el.style.borderColor = ""
+      const text = el.querySelector(".style-option-text")
+      if (text) text.style.fontWeight = "400"
+      const check = el.querySelector(".style-check")
+      if (check) check.style.display = "none"
+    })
+
+    if (this.hasStyleResultCardTarget) {
+      this.styleResultCardTarget.style.display = "none"
+      this.styleResultCardTarget.style.opacity = "0"
+    }
+    if (this.hasStyleDoneMsgTarget) {
+      this.styleDoneMsgTarget.style.opacity = "0"
+    }
+
+    this.updateStyleProgress()
     this.validateStep()
   }
 
@@ -286,28 +387,28 @@ export default class extends Controller {
     this.dominantStyleData = styleInfo
   }
 
-  // ===== PACE =====
+  // ===== STEP 5: PACE =====
 
   selectPace(event) {
     const card = event.currentTarget
     const pace = card.dataset.pace
     const color = card.dataset.color
 
-    const stepEl = this.stepTargets.find(el => parseInt(el.dataset.step) === 4)
+    const stepEl = this.stepTargets.find(el => parseInt(el.dataset.step) === 5)
     if (!stepEl) return
 
     stepEl.querySelectorAll("[data-pace]").forEach(el => {
-        el.style.background = "#FDFCFA"
-        el.style.borderColor = "rgba(28,24,18,0.06)"
-        const icon = el.querySelector("div:first-child")
-        if (icon) icon.style.background = "rgba(28,24,18,0.02)"
-        const badge = el.querySelector(".wizard-time-badge")
-        if (badge) {
-          badge.style.color = "#9E9587"
-          badge.style.opacity = "0.5"
-          badge.style.background = "rgba(28,24,18,0.02)"
-        }
-      })
+      el.style.background = ""
+      el.style.borderColor = ""
+      const icon = el.querySelector("div:first-child")
+      if (icon) icon.style.background = "rgba(28,24,18,0.02)"
+      const badge = el.querySelector(".wizard-time-badge")
+      if (badge) {
+        badge.style.color = ""
+        badge.style.opacity = "0.5"
+        badge.style.background = "rgba(28,24,18,0.02)"
+      }
+    })
 
     card.style.background = color + "08"
     card.style.borderColor = color + "40"
@@ -325,17 +426,6 @@ export default class extends Controller {
     this.validateStep()
   }
 
-  updateCustomTopic() {
-    const val = this.hasCustomInputTarget ? this.customInputTarget.value.trim() : ""
-    if (this.hasCustomInputWrapTarget) {
-      this.customInputWrapTarget.style.borderColor = val.length > 0
-        ? "#5BA88035"
-        : "rgba(28,24,18,0.06)"
-    }
-    this.validateStep()
-  }
-
-  // Show validation errors as a temporary banner
   showError(message) {
     if (this.hasErrorBannerTarget) {
       this.errorBannerTarget.textContent = message
@@ -349,6 +439,73 @@ export default class extends Controller {
   }
 
   // --- Private helpers ---
+
+  _loadSavedPrefs() {
+    const prefs = this.savedPrefsValue
+    if (!prefs || Object.keys(prefs).length === 0) return
+
+    // Pre-fill learning style if saved
+    if (prefs.style_answers && prefs.style_result) {
+      const answers = prefs.style_answers
+      const result = prefs.style_result
+
+      if (Object.keys(answers).length >= 6) {
+        this.styleSaved = true
+        this.styleAnswers = { ...answers }
+
+        // Fill hidden fields
+        for (const [q, option] of Object.entries(answers)) {
+          const target = `hasStyleAnswer${q}Target`
+          if (this[target]) this[`styleAnswer${q}Target`].value = option
+        }
+
+        // Show saved banner
+        const stylesI18n = this.i18nValue.styles || {}
+        const dominant = result.dominant || "multimodal"
+        const styleInfo = stylesI18n[dominant] || stylesI18n["multimodal"] || {}
+
+        if (this.hasSavedStyleBannerTarget) {
+          this.savedStyleBannerTarget.style.display = "block"
+          if (this.hasSavedStyleTextTarget) {
+            const badge = this.t("saved_style_badge", "Learning style saved")
+            this.savedStyleTextTarget.textContent = `${badge}: ${styleInfo.emoji || ""} ${styleInfo.name || dominant}`
+          }
+        }
+
+        // Hide questions (show retake option)
+        if (this.hasStyleHeaderTarget) this.styleHeaderTarget.style.display = "none"
+        if (this.hasStyleQuestionsWrapTarget) this.styleQuestionsWrapTarget.style.display = "none"
+
+        this.dominantStyle = dominant
+        this.dominantStyleData = styleInfo
+      }
+    }
+
+    // Pre-fill time commitment
+    if (prefs.weekly_hours) {
+      this.selectedHours = prefs.weekly_hours
+      if (this.hasHoursInputTarget) this.hoursInputTarget.value = prefs.weekly_hours
+      // Visually select the card
+      setTimeout(() => this._preselectTimeCard("hoursGrid", "hours", prefs.weekly_hours), 100)
+    }
+    if (prefs.session_minutes) {
+      this.selectedSession = prefs.session_minutes
+      if (this.hasSessionInputTarget) this.sessionInputTarget.value = prefs.session_minutes
+      setTimeout(() => this._preselectTimeCard("sessionGrid", "minutes", prefs.session_minutes), 100)
+    }
+  }
+
+  _preselectTimeCard(gridTarget, dataAttr, value) {
+    const hasTarget = `has${gridTarget.charAt(0).toUpperCase() + gridTarget.slice(1)}Target`
+    if (!this[hasTarget]) return
+    const grid = this[`${gridTarget}Target`]
+    grid.querySelectorAll(`[data-${dataAttr}]`).forEach(el => {
+      if (parseInt(el.dataset[dataAttr === "hours" ? "hours" : "minutes"], 10) === value) {
+        el.style.background = "#6E9BC810"
+        el.style.borderColor = "#6E9BC840"
+      }
+    })
+  }
 
   syncTopicInputs() {
     if (!this.hasTopicInputsTarget) return
@@ -386,8 +543,10 @@ export default class extends Controller {
       case 2:
         return this.selectedGoals.size > 0
       case 3:
-        return Object.keys(this.styleAnswers).length === 6
+        return this.selectedHours > 0 && this.selectedSession > 0
       case 4:
+        return this.styleSaved || Object.keys(this.styleAnswers).length === 6
+      case 5:
         return this.selectedPace !== ""
       default:
         return false
@@ -402,20 +561,21 @@ export default class extends Controller {
 
     if (valid) {
       btn.disabled = false
-      btn.style.background = "linear-gradient(135deg, #2C261E, #2C261Edd)"
-      btn.style.color = "#FEFDFB"
+      btn.style.background = "linear-gradient(135deg, var(--color-accent, #2C261E), var(--color-accent, #2C261E)dd)"
+      btn.style.color = "var(--color-accent-text, #FEFDFB)"
       btn.style.boxShadow = "0 2px 12px rgba(28,24,18,0.15)"
       btn.style.cursor = "pointer"
     } else {
       btn.disabled = true
       btn.style.background = "rgba(28,24,18,0.06)"
-      btn.style.color = "#D4CFC5"
+      btn.style.color = "var(--color-faint-text, #D4CFC5)"
       btn.style.boxShadow = "none"
       btn.style.cursor = "default"
     }
 
     if (this.hasBtnTextTarget) {
-      this.btnTextTarget.textContent = this.stepValue === 4
+      const lastStep = this.totalSteps - 1
+      this.btnTextTarget.textContent = this.stepValue === lastStep
         ? this.t("generate_text", "Generate route")
         : this.t("continue_text", "Continue")
     }
@@ -432,41 +592,21 @@ export default class extends Controller {
     if (this.hasStepNameTarget) {
       this.stepNameTarget.textContent = stepNames[step] || ""
     }
-    if (this.hasPercentLabelTarget) {
-      this.percentLabelTarget.textContent = `${(step + 1) * 20}%`
-    }
 
-    // Progress bars — 5 segments (with defensive guards)
-    const barTargets = ["bar0", "bar1", "bar2", "bar3", "bar4"]
-    barTargets.forEach((name, i) => {
-      const hasMethod = `has${name.charAt(0).toUpperCase() + name.slice(1)}Target`
-      if (!this[hasMethod]) return
-      const bar = this[`${name}Target`]
-      if (i < step) {
-        bar.style.width = "100%"
-        bar.style.opacity = "0.7"
-        bar.style.background = "linear-gradient(90deg, #8B80C4, #6E9BC8)"
-      } else if (i === step) {
-        bar.style.width = "50%"
-        bar.style.opacity = "0.7"
-        bar.style.background = "#5BA880"
-      } else {
-        bar.style.width = "0%"
-        bar.style.opacity = "0"
-      }
-    })
+    // Route-node progress
+    this._updateNodes(step)
 
     if (this.hasNavLeftTarget) {
       if (step === 0) {
         this.navLeftTarget.innerHTML = `
-          <a href="/profile" style="display:flex; align-items:center; gap:10px; text-decoration:none; color:#1C1812;">
-            <span style="font-family:'DM Sans',sans-serif; font-weight:700; font-size:0.9rem; letter-spacing:-0.5px; color:#1C1812;">Learning Routes</span>
+          <a href="/profile" style="display:flex; align-items:center; gap:10px; text-decoration:none; color:var(--color-txt, #1C1812);">
+            <span style="font-family:'DM Sans',sans-serif; font-weight:700; font-size:0.9rem; letter-spacing:-0.5px; color:var(--color-txt, #1C1812);">Learning Routes</span>
           </a>`
       } else {
         const backText = this.t("back_text", "Back")
         this.navLeftTarget.innerHTML = `
           <button type="button" data-action="click->route-wizard#back"
-                  style="background:none; border:none; cursor:pointer; font-family:'DM Sans',sans-serif; font-weight:400; font-size:0.78rem; color:#9E9587; padding:0;">
+                  style="background:none; border:none; cursor:pointer; font-family:'DM Sans',sans-serif; font-weight:400; font-size:0.78rem; color:var(--color-muted, #9E9587); padding:0;">
             \u2190 ${backText}
           </button>`
       }
@@ -474,6 +614,52 @@ export default class extends Controller {
 
     if (this.hasChipsTarget) {
       this.updateChips()
+    }
+  }
+
+  _updateNodes(currentStep) {
+    for (let i = 0; i < this.totalSteps; i++) {
+      const nodeTarget = `node${i}`
+      const hasNode = `has${nodeTarget.charAt(0).toUpperCase() + nodeTarget.slice(1)}Target`
+      if (!this[hasNode]) continue
+      const node = this[`${nodeTarget}Target`]
+
+      if (i < currentStep) {
+        // Completed
+        node.style.background = "#5BA880"
+        node.style.borderColor = "#5BA880"
+        node.style.color = "#fff"
+        node.style.animation = "none"
+        node.innerHTML = `<svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M3 8.5L6.5 12L13 4" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`
+      } else if (i === currentStep) {
+        // Current
+        node.style.background = "var(--color-accent, #2C261E)"
+        node.style.borderColor = "var(--color-accent, #2C261E)"
+        node.style.color = "var(--color-accent-text, #fff)"
+        node.style.animation = "nodePulse 2s ease-in-out infinite"
+        node.textContent = i + 1
+      } else {
+        // Upcoming
+        node.style.background = "transparent"
+        node.style.borderColor = "rgba(28,24,18,0.1)"
+        node.style.color = "rgba(28,24,18,0.25)"
+        node.style.animation = "none"
+        node.textContent = i + 1
+      }
+    }
+
+    // Lines
+    for (let i = 0; i < this.totalSteps - 1; i++) {
+      const lineTarget = `line${i}`
+      const hasLine = `has${lineTarget.charAt(0).toUpperCase() + lineTarget.slice(1)}Target`
+      if (!this[hasLine]) continue
+      const line = this[`${lineTarget}Target`]
+
+      if (i < currentStep) {
+        line.style.width = "100%"
+      } else {
+        line.style.width = "0%"
+      }
     }
   }
 
@@ -501,7 +687,7 @@ export default class extends Controller {
     if (this.hasCustomInputTarget) {
       const custom = this.customInputTarget.value.trim()
       if (custom) {
-        this.addChip(chips, `\u270F\uFE0F ${custom.substring(0, 15)}${custom.length > 15 ? "\u2026" : ""}`)
+        this.addChip(chips, `${custom.substring(0, 12)}${custom.length > 12 ? "\u2026" : ""}`)
       }
     }
 
@@ -509,8 +695,7 @@ export default class extends Controller {
       this.addChip(chips, levelLabels[this.selectedLevel] || this.selectedLevel)
     }
 
-    // Show learning style chip on steps 4+
-    if (this.stepValue >= 4 && this.dominantStyleData) {
+    if (this.stepValue >= 5 && this.dominantStyleData) {
       this.addChip(chips, `${this.dominantStyleData.emoji} ${this.dominantStyleData.name}`)
     }
   }
@@ -518,7 +703,7 @@ export default class extends Controller {
   addChip(container, text) {
     const chip = document.createElement("span")
     chip.textContent = text
-    chip.style.cssText = "font-family:'DM Sans',sans-serif; font-size:0.6rem; font-weight:500; color:#9E9587; padding:2px 8px; border-radius:6px; background:rgba(28,24,18,0.03);"
+    chip.style.cssText = "font-family:'DM Sans',sans-serif; font-size:0.58rem; font-weight:500; color:var(--color-muted, #9E9587); padding:2px 7px; border-radius:5px; background:rgba(28,24,18,0.03);"
     container.appendChild(chip)
   }
 
@@ -532,7 +717,6 @@ export default class extends Controller {
       return
     }
 
-    // Safety timeout — never stay locked more than 1 second
     if (this._animSafetyTimer) clearTimeout(this._animSafetyTimer)
     this._animSafetyTimer = setTimeout(() => { this.isAnimating = false }, 1000)
 
@@ -553,7 +737,7 @@ export default class extends Controller {
           toEl.style.transform = `translateX(${20 * direction}px)`
 
           requestAnimationFrame(() => {
-            toEl.style.transition = "opacity 0.35s cubic-bezier(0.16,1,0.3,1), transform 0.35s cubic-bezier(0.16,1,0.3,1)"
+            toEl.style.transition = "opacity 0.3s cubic-bezier(0.16,1,0.3,1), transform 0.3s cubic-bezier(0.16,1,0.3,1)"
             toEl.style.opacity = "1"
             toEl.style.transform = "translateX(0)"
 
@@ -561,7 +745,7 @@ export default class extends Controller {
               toEl.style.transition = ""
               this.isAnimating = false
               if (this._animSafetyTimer) clearTimeout(this._animSafetyTimer)
-            }, 350)
+            }, 300)
           })
         } catch (e) {
           this.isAnimating = false

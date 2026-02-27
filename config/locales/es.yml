@@ -451,7 +451,7 @@ es:
     save_and_exit: "Guardar y salir"
     back: "Atrás"
     step_label: "Paso %{n}"
-    step_of: "de 5"
+    step_of: "de 6"
     styles:
       visual: "Visual"
       visual_desc: "Aprendes mejor con imágenes, videos y diagramas"
@@ -465,10 +465,16 @@ es:
       multimodal_desc: "Combinas varios estilos — eres versátil"
     step0:
       heading: "¿Qué quieres aprender?"
-      subtext: "Elige un tema o escribe el tuyo — la IA construirá tu ruta."
+      subtext: "Elige uno o más temas — la IA construirá tu ruta."
       topics:
         programming: "Programación"
-        programming_desc: "Código, frameworks, algoritmos"
+        programming_desc: "Código, algoritmos, estructuras"
+        web_dev: "Desarrollo Web"
+        web_dev_desc: "Frontend, backend, fullstack"
+        data_science: "Ciencia de Datos"
+        data_science_desc: "ML, IA, analítica"
+        mobile_dev: "Desarrollo Móvil"
+        mobile_dev_desc: "iOS, Android, multiplataforma"
         languages: "Idiomas"
         languages_desc: "Inglés, español, francés…"
         math: "Matemáticas"
@@ -477,8 +483,14 @@ es:
         science_desc: "Física, química, biología"
         business: "Negocios"
         business_desc: "Marketing, finanzas, estrategia"
-        arts: "Arte y Diseño"
-        arts_desc: "Dibujo, música, fotografía"
+        design: "Diseño"
+        design_desc: "UI/UX, gráfico, ilustración"
+        music: "Música"
+        music_desc: "Teoría, instrumentos, producción"
+        writing: "Escritura"
+        writing_desc: "Creativa, técnica, copywriting"
+        health: "Salud y Bienestar"
+        health_desc: "Nutrición, ejercicio, bienestar"
       custom_label: "O escribe algo específico"
       custom_placeholder: "Ej: Machine Learning, Guitarra, Cocina…"
       step_name: "— Tema"
@@ -507,11 +519,21 @@ es:
         teaching: "Enseñar a otros"
       step_name: "— Objetivo"
     step3:
+      heading: "¿Cuánto tiempo puedes invertir?"
+      subtext: "Esto nos ayuda a diseñar la duración ideal de tus sesiones."
+      weekly_label: "Tiempo semanal disponible"
+      session_label: "Duración preferida por sesión"
+      per_week: "por semana"
+      per_session: "por sesión"
+      step_name: "— Tiempo"
+    step4:
       mini_test: "MINI-TEST"
       all_answered: "✓ Todas respondidas"
       heading: "¿Cómo aprendes mejor?"
       subtext: "Responde rápido — no hay respuestas correctas."
       progress: "%{done} de 6"
+      saved_badge: "Estilo de aprendizaje guardado"
+      retake: "Repetir test"
       questions:
         q1:
           scenario: "Necesitas aprender a usar un software nuevo para el trabajo."
@@ -558,7 +580,7 @@ es:
       result_label: "Tu estilo dominante:"
       result_note: "Esto se usa para personalizar tu ruta"
       step_name: "— Estilo"
-    step4:
+    step5:
       heading: "Establece tu ritmo."
       subtext: "Siempre puedes cambiarlo después."
       paces:
