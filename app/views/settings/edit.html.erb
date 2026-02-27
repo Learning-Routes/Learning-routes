@@ -109,8 +109,8 @@
             ].each do |value, label| %>
               <label style="display:flex; align-items:center; gap:0.4rem; font-family:'DM Sans',sans-serif; font-size:0.82rem; color:var(--color-txt);
                             padding:0.55rem 1rem; border-radius:10px; border:1px solid var(--color-border-subtle); background:var(--color-card); cursor:pointer; transition:all 0.2s;"
-                     onmouseover="this.style.borderColor='rgba(28,24,18,0.22)'"
-                     onmouseout="this.style.borderColor='rgba(28,24,18,0.1)'">
+                     onmouseover="this.style.borderColor='var(--color-faint)'"
+                     onmouseout="this.style.borderColor='var(--color-border-subtle)'">
                 <input type="radio" name="user[theme]" value="<%= value %>"
                        <%= "checked" if @user.theme == value %>
                        style="accent-color:var(--color-accent);">
@@ -155,8 +155,8 @@
             <% %w[beginner intermediate advanced].each do |level| %>
               <label style="display:flex; align-items:center; gap:0.4rem; font-family:'DM Sans',sans-serif; font-size:0.82rem; color:var(--color-txt);
                             padding:0.55rem 1rem; border-radius:10px; border:1px solid var(--color-border-subtle); background:var(--color-card); cursor:pointer; transition:all 0.2s;"
-                     onmouseover="this.style.borderColor='rgba(28,24,18,0.22)'"
-                     onmouseout="this.style.borderColor='rgba(28,24,18,0.1)'">
+                     onmouseover="this.style.borderColor='var(--color-faint)'"
+                     onmouseout="this.style.borderColor='var(--color-border-subtle)'">
                 <input type="radio" name="learning_profile[current_level]" value="<%= level %>"
                        <%= "checked" if @profile.current_level == level %>
                        style="accent-color:var(--color-accent);">
@@ -176,8 +176,8 @@
             <% interest_options.each do |interest| %>
               <label style="display:flex; align-items:center; gap:0.35rem; font-family:'DM Sans',sans-serif; font-size:0.78rem; color:var(--color-txt);
                             padding:0.45rem 0.8rem; border-radius:9px; border:1px solid var(--color-border-subtle); background:var(--color-card); cursor:pointer; transition:all 0.2s;"
-                     onmouseover="this.style.borderColor='rgba(28,24,18,0.22)'"
-                     onmouseout="this.style.borderColor='rgba(28,24,18,0.1)'">
+                     onmouseover="this.style.borderColor='var(--color-faint)'"
+                     onmouseout="this.style.borderColor='var(--color-border-subtle)'">
                 <input type="checkbox" name="learning_profile[interests][]" value="<%= interest %>"
                        <%= "checked" if @profile.interests&.include?(interest) %>
                        style="accent-color:var(--color-accent); width:14px; height:14px;">
@@ -196,8 +196,8 @@
             <% %w[visual auditory reading kinesthetic].each do |style| %>
               <label style="display:flex; align-items:center; gap:0.35rem; font-family:'DM Sans',sans-serif; font-size:0.82rem; color:var(--color-txt);
                             padding:0.5rem 0.9rem; border-radius:10px; border:1px solid var(--color-border-subtle); background:var(--color-card); cursor:pointer; transition:all 0.2s;"
-                     onmouseover="this.style.borderColor='rgba(28,24,18,0.22)'"
-                     onmouseout="this.style.borderColor='rgba(28,24,18,0.1)'">
+                     onmouseover="this.style.borderColor='var(--color-faint)'"
+                     onmouseout="this.style.borderColor='var(--color-border-subtle)'">
                 <input type="checkbox" name="learning_profile[learning_style][]" value="<%= style %>"
                        <%= "checked" if @profile.learning_style&.include?(style) %>
                        style="accent-color:var(--color-accent); width:14px; height:14px;">

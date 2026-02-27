@@ -126,7 +126,7 @@ export default class extends Controller {
       card.style.borderColor = ""
       card.style.transform = "scale(1)"
       if (check) check.style.display = "none"
-      if (iconWrap) iconWrap.style.background = "rgba(28,24,18,0.02)"
+      if (iconWrap) iconWrap.style.background = "var(--color-tint, rgba(28,24,18,0.02))"
     } else {
       this.selectedTopics.add(topic)
       card.style.background = color + "08"
@@ -167,14 +167,14 @@ export default class extends Controller {
       el.style.background = ""
       el.style.borderColor = ""
       const icon = el.querySelector("div:first-child")
-      if (icon) icon.style.background = "rgba(28,24,18,0.02)"
+      if (icon) icon.style.background = "var(--color-tint, rgba(28,24,18,0.02))"
       const dot = el.querySelector(".wizard-radio-dot")
       if (dot) {
         dot.style.transform = "scale(0)"
         dot.style.background = "transparent"
       }
       const ring = dot?.parentElement
-      if (ring) ring.style.borderColor = "rgba(28,24,18,0.1)"
+      if (ring) ring.style.borderColor = "var(--color-border-subtle, rgba(28,24,18,0.1))"
     })
 
     card.style.background = color + "08"
@@ -574,7 +574,7 @@ export default class extends Controller {
       btn.style.cursor = "pointer"
     } else {
       btn.disabled = true
-      btn.style.background = "rgba(28,24,18,0.06)"
+      btn.style.background = "var(--color-tint-strong, rgba(28,24,18,0.08))"
       btn.style.color = "var(--color-faint-text, #D4CFC5)"
       btn.style.boxShadow = "none"
       btn.style.cursor = "default"
@@ -648,8 +648,8 @@ export default class extends Controller {
       } else {
         // Upcoming
         node.style.background = "transparent"
-        node.style.borderColor = "rgba(28,24,18,0.1)"
-        node.style.color = "rgba(28,24,18,0.25)"
+        node.style.borderColor = "var(--color-border-subtle, rgba(28,24,18,0.1))"
+        node.style.color = "var(--color-faint, rgba(28,24,18,0.25))"
         node.style.animation = "none"
         node.textContent = i + 1
       }

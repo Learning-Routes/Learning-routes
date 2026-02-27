@@ -21,9 +21,9 @@
         <div data-route-wizard-target="node<%= i %>"
              style="width:28px; height:28px; border-radius:50%; flex-shrink:0; display:flex; align-items:center; justify-content:center;
                     font-family:'DM Mono',monospace; font-size:0.58rem; font-weight:600;
-                    border:2px solid <%= i == 0 ? '#5BA880' : 'rgba(28,24,18,0.1)' %>;
+                    border:2px solid <%= i == 0 ? '#5BA880' : 'var(--color-border-subtle, rgba(28,24,18,0.1))' %>;
                     background:<%= i == 0 ? '#5BA880' : 'transparent' %>;
-                    color:<%= i == 0 ? '#fff' : 'rgba(28,24,18,0.25)' %>;
+                    color:<%= i == 0 ? '#fff' : 'var(--color-faint, rgba(28,24,18,0.25))' %>;
                     transition:all 0.4s cubic-bezier(0.16,1,0.3,1);
                     <% if i == 0 %>animation:nodePulse 2s ease-in-out infinite;<% end %>">
           <%= i + 1 %>
@@ -31,7 +31,7 @@
         <%# Connector line (except after last node) %>
         <% if i < 5 %>
           <div style="flex:1; height:2px; position:relative; overflow:hidden;">
-            <div style="width:100%; height:100%; background:rgba(28,24,18,0.06);"></div>
+            <div style="width:100%; height:100%; background:var(--color-border-subtle, rgba(28,24,18,0.06));"></div>
             <div data-route-wizard-target="line<%= i %>"
                  style="position:absolute; top:0; left:0; height:100%; width:0%; background:linear-gradient(90deg, #5BA880, #6E9BC8); transition:width 0.6s cubic-bezier(0.16,1,0.3,1);"></div>
           </div>
@@ -74,7 +74,7 @@
                style="display:flex; align-items:center; gap:10px; padding:12px 14px; border-radius:12px; cursor:pointer; position:relative;
                       background:var(--color-card, #FDFCFA); border:1.5px solid var(--color-faint, rgba(28,24,18,0.06));
                       transition:all 0.25s cubic-bezier(0.16,1,0.3,1);">
-            <div class="wizard-topic-icon" style="width:32px; height:32px; border-radius:8px; background:rgba(28,24,18,0.02);
+            <div class="wizard-topic-icon" style="width:32px; height:32px; border-radius:8px; background:var(--color-tint, rgba(28,24,18,0.02));
                         display:flex; align-items:center; justify-content:center; flex-shrink:0; transition:background 0.25s;">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="<%= topic[:color] %>" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
                 <% case topic[:icon]; when "terminal" %><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/>
@@ -129,7 +129,7 @@
           { id: "advanced", color: "#B09848", icon: "award" }
         ].each do |level| %>
           <div data-action="click->route-wizard#selectLevel" data-level="<%= level[:id] %>" data-color="<%= level[:color] %>" style="display:flex; align-items:center; gap:14px; padding:16px 18px; border-radius:14px; cursor:pointer; background:var(--color-card, #FDFCFA); border:1.5px solid var(--color-faint, rgba(28,24,18,0.06)); transition:all 0.25s cubic-bezier(0.16,1,0.3,1);">
-            <div style="width:40px; height:40px; border-radius:10px; background:rgba(28,24,18,0.02); display:flex; align-items:center; justify-content:center; transition:background 0.3s;">
+            <div style="width:40px; height:40px; border-radius:10px; background:var(--color-tint, rgba(28,24,18,0.02)); display:flex; align-items:center; justify-content:center; transition:background 0.3s;">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="<%= level[:color] %>" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
                 <% case level[:icon]; when "sunrise" %><path d="M17 18a5 5 0 0 0-10 0"/><line x1="12" y1="9" x2="12" y2="2"/><line x1="4.22" y1="10.22" x2="5.64" y2="11.64"/><line x1="1" y1="18" x2="3" y2="18"/><line x1="21" y1="18" x2="23" y2="18"/><line x1="18.36" y1="11.64" x2="19.78" y2="10.22"/><line x1="23" y1="22" x2="1" y2="22"/><polyline points="8 6 12 2 16 6"/>
                 <% when "sun" %><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
@@ -142,7 +142,7 @@
               <div style="font-family:'DM Sans',sans-serif; font-weight:600; font-size:0.85rem; color:var(--color-txt, #1C1812);"><%= t("wizard.step1.levels.#{level[:id]}") %></div>
               <div style="font-family:'DM Sans',sans-serif; font-weight:400; font-size:0.68rem; color:var(--color-muted, #9E9587); margin-top:2px;"><%= t("wizard.step1.levels.#{level[:id]}_desc") %></div>
             </div>
-            <div style="width:20px; height:20px; border-radius:50%; border:2px solid rgba(28,24,18,0.1); display:flex; align-items:center; justify-content:center; transition:border-color 0.3s;">
+            <div style="width:20px; height:20px; border-radius:50%; border:2px solid var(--color-border-subtle, rgba(28,24,18,0.1)); display:flex; align-items:center; justify-content:center; transition:border-color 0.3s;">
               <div class="wizard-radio-dot" style="width:10px; height:10px; border-radius:50%; background:transparent; transform:scale(0); transition:all 0.25s cubic-bezier(0.16,1,0.3,1);"></div>
             </div>
           </div>
@@ -357,7 +357,7 @@
           { id: "intensive", color: "#B09848", icon: "flame" }
         ].each do |pace| %>
           <div data-action="click->route-wizard#selectPace" data-pace="<%= pace[:id] %>" data-color="<%= pace[:color] %>" style="display:flex; align-items:center; gap:14px; padding:18px 20px; border-radius:14px; cursor:pointer; background:var(--color-card, #FDFCFA); border:1.5px solid var(--color-faint, rgba(28,24,18,0.06)); transition:all 0.25s cubic-bezier(0.16,1,0.3,1);">
-            <div style="width:44px; height:44px; border-radius:12px; background:rgba(28,24,18,0.02); display:flex; align-items:center; justify-content:center; transition:background 0.3s;">
+            <div style="width:44px; height:44px; border-radius:12px; background:var(--color-tint, rgba(28,24,18,0.02)); display:flex; align-items:center; justify-content:center; transition:background 0.3s;">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="<%= pace[:color] %>" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
                 <% case pace[:icon]; when "coffee" %><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/>
                 <% when "activity" %><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
@@ -369,7 +369,7 @@
               <div style="font-family:'DM Sans',sans-serif; font-weight:600; font-size:0.85rem; color:var(--color-txt, #1C1812);"><%= t("wizard.step5.paces.#{pace[:id]}") %></div>
               <div style="font-family:'DM Sans',sans-serif; font-weight:400; font-size:0.68rem; color:var(--color-muted, #9E9587); margin-top:2px;"><%= t("wizard.step5.paces.#{pace[:id]}_desc") %></div>
             </div>
-            <div class="wizard-time-badge" style="font-family:'DM Mono',monospace; font-size:0.62rem; font-weight:500; padding:4px 10px; border-radius:8px; color:var(--color-muted, #9E9587); opacity:0.5; background:rgba(28,24,18,0.02); transition:all 0.3s;"><%= t("wizard.step5.paces.#{pace[:id]}_time") %></div>
+            <div class="wizard-time-badge" style="font-family:'DM Mono',monospace; font-size:0.62rem; font-weight:500; padding:4px 10px; border-radius:8px; color:var(--color-muted, #9E9587); opacity:0.5; background:var(--color-tint, rgba(28,24,18,0.02)); transition:all 0.3s;"><%= t("wizard.step5.paces.#{pace[:id]}_time") %></div>
           </div>
         <% end %>
       </div>
@@ -385,7 +385,7 @@
               data-action="click->route-wizard#next"
               data-route-wizard-target="continueBtn"
               disabled
-              style="padding:11px 24px; border-radius:11px; border:none; font-family:'DM Sans',sans-serif; font-weight:600; font-size:0.8rem; cursor:default; background:rgba(28,24,18,0.06); color:var(--color-faint-text, #D4CFC5); display:flex; align-items:center; gap:8px; transition:all 0.3s cubic-bezier(0.16,1,0.3,1);">
+              style="padding:11px 24px; border-radius:11px; border:none; font-family:'DM Sans',sans-serif; font-weight:600; font-size:0.8rem; cursor:default; background:var(--color-tint-strong, rgba(28,24,18,0.08)); color:var(--color-faint, #D4CFC5); display:flex; align-items:center; gap:8px; transition:all 0.3s cubic-bezier(0.16,1,0.3,1);">
         <span data-route-wizard-target="btnText"><%= t("wizard.continue") %></span>
         <span style="font-size:0.85rem; opacity:0.7;">→</span>
       </button>
