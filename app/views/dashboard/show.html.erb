@@ -12,16 +12,16 @@
 
 <%# === Email verification banner === %>
 <% if !current_user.email_verified? %>
-  <div style="background:rgba(176,152,72,0.08); border:1px solid rgba(176,152,72,0.15); border-radius:12px; padding:0.75rem 1rem; margin-bottom:1.2rem; display:flex; align-items:center; gap:0.6rem;">
+  <div style="background:var(--color-status-paused-bg, rgba(176,152,72,0.08)); border:1px solid rgba(176,152,72,0.15); border-radius:12px; padding:0.75rem 1rem; margin-bottom:1.2rem; display:flex; align-items:center; gap:0.6rem;">
     <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
       <path d="M8 1.5l6 11H2l6-11z" stroke="#B09848" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
       <path d="M8 6v3M8 11h.01" stroke="#B09848" stroke-width="1.2" stroke-linecap="round"/>
     </svg>
-    <p style="font-family:'DM Sans',sans-serif; font-size:0.78rem; color:#8B6D28; margin:0;">
+    <p style="font-family:'DM Sans',sans-serif; font-size:0.78rem; color:var(--color-status-paused-text, #8B6D28); margin:0;">
       <%= t("dashboard.verify_email") %>
       <%= link_to t("dashboard.resend_verification"), core.resend_verification_path,
           data: { turbo_method: :post },
-          style: "color:#8B6D28; font-weight:600; text-decoration:underline; text-underline-offset:2px;" %>
+          style: "color:var(--color-link, #8B6D28); font-weight:600; text-decoration:underline; text-underline-offset:2px;" %>
     </p>
   </div>
 <% end %>
