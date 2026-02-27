@@ -14,6 +14,9 @@ class RouteRequest < ApplicationRecord
   validates :level, presence: true, inclusion: { in: VALID_LEVELS }
   validates :pace, presence: true, inclusion: { in: VALID_PACES }
   validates :status, inclusion: { in: STATUSES }
+  validates :custom_topic, length: { maximum: 200 }, allow_blank: true
+  validates :weekly_hours, numericality: { only_integer: true, greater_than: 0, less_than_or_equal_to: 168 }, allow_nil: true
+  validates :session_minutes, numericality: { only_integer: true, greater_than: 0, less_than_or_equal_to: 480 }, allow_nil: true
   validate :must_have_at_least_one_topic
   validate :goals_must_be_valid
   validate :topics_must_be_valid
@@ -135,13 +138,20 @@ class RouteRequest < ApplicationRecord
         text: ((scores[:visual] + scores[:reading]) / total * 100).round,
         interactive: (scores[:kinesthetic] / total * 100).round
       }
-      # Enforce minimum 15% per format, stealing from the largest
-      pcts.each_key do |k|
-        next if pcts[k] >= min_pct
-        deficit = min_pct - pcts[k]
-        pcts[k] = min_pct
-        largest = pcts.max_by { |_, v| v }.first
-        pcts[largest] -= deficit
+      # Enforce minimum 15% per format without going negative
+      loop do
+        below = pcts.select { |_, v| v < min_pct }
+        break if below.empty?
+        above = pcts.select { |_, v| v > min_pct }
+        break if above.empty?
+        below.each do |k, v|
+          deficit = min_pct - v
+          largest_key = above.max_by { |_, val| val }.first
+          steal = [deficit, pcts[largest_key] - min_pct].min
+          pcts[k] += steal
+          pcts[largest_key] -= steal
+        end
+        break
       end
       pcts
     else

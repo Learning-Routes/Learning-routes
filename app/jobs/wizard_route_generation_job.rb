@@ -1,6 +1,5 @@
 class WizardRouteGenerationJob < ApplicationJob
   queue_as :default
-  retry_on StandardError, wait: 5.seconds, attempts: 2
 
   def perform(route_request_id)
     request = RouteRequest.find(route_request_id)
@@ -26,9 +25,11 @@ class WizardRouteGenerationJob < ApplicationJob
         session_minutes: request.session_minutes || profile.session_minutes
       )
 
-      # Extract learning style data
+      # Extract learning style data (handle both symbol and string keys)
       style_result = request.learning_style_result || {}
-      content_mix = style_result["content_mix"] || { "audio" => 30, "text" => 35, "interactive" => 35 }
+      content_mix = style_result["content_mix"] || style_result[:content_mix] || { "audio" => 30, "text" => 35, "interactive" => 35 }
+      dominant_style = style_result["dominant"] || style_result[:dominant]
+      secondary_style = style_result["secondary"] || style_result[:secondary]
 
       ActiveRecord::Base.transaction do
         route = LearningRoutesEngine::LearningRoute.create!(
@@ -47,13 +48,13 @@ class WizardRouteGenerationJob < ApplicationJob
             level: request.level,
             goals: request.goals,
             pace: request.pace,
-            learning_style: style_result["dominant"],
+            learning_style: dominant_style,
             weekly_hours: request.weekly_hours,
             session_minutes: request.session_minutes
           },
           content_preferences: {
-            primary_style: style_result["dominant"],
-            secondary_style: style_result["secondary"],
+            primary_style: dominant_style,
+            secondary_style: secondary_style,
             content_mix: content_mix
           }
         )
@@ -93,14 +94,14 @@ class WizardRouteGenerationJob < ApplicationJob
       )
 
     rescue => e
-      request.update!(status: "failed", error_message: e.message)
+      request.update!(status: "failed", error_message: e.message.truncate(500))
       Rails.logger.error("[WizardRouteGeneration] Failed for request #{request.id}: #{e.message}")
 
       Turbo::StreamsChannel.broadcast_replace_to(
         "route_request_#{request.id}",
         target: "generating-state",
         partial: "route_wizard/generation_failed",
-        locals: { route_request: request, error: e.message }
+        locals: { route_request: request, error: I18n.t("wizard.failed.desc") }
       )
     end
   end
@@ -126,44 +127,58 @@ class WizardRouteGenerationJob < ApplicationJob
   end
 
   # Distribute delivery format types across steps based on learning style percentages.
-  # Enforce a minimum of 15% for audio and text so every route has variety.
   def assign_delivery_formats(step_count, content_mix)
     raw_audio = (content_mix["audio"] || content_mix[:audio] || 0).to_f
     raw_text  = (content_mix["text"]  || content_mix[:text]  || 0).to_f
     raw_interactive = (content_mix["interactive"] || content_mix[:interactive] || 0).to_f
 
-    # Guarantee minimums: at least 15% audio, 15% text
-    audio_pct = [raw_audio, 15].max
-    text_pct  = [raw_text, 15].max
-    interactive_pct = [raw_interactive, 10].max
+    total = raw_audio + raw_text + raw_interactive
+    total = 100.0 if total <= 0
 
-    # Remaining goes to text (the most universal format)
-    used = audio_pct + text_pct + interactive_pct
-    text_pct += [100 - used, 0].max
+    # Normalize to 100% then enforce minimums
+    audio_pct = [(raw_audio / total * 100).round, 15].max
+    text_pct  = [(raw_text / total * 100).round, 15].max
+    interactive_pct = [(raw_interactive / total * 100).round, 10].max
+
+    # Re-normalize so they sum to 100
+    sum = audio_pct + text_pct + interactive_pct
+    if sum > 100
+      excess = sum - 100
+      # Remove excess from the largest
+      largest = [[:audio, audio_pct], [:text, text_pct], [:interactive, interactive_pct]].max_by(&:last)
+      case largest.first
+      when :audio then audio_pct -= excess
+      when :text then text_pct -= excess
+      when :interactive then interactive_pct -= excess
+      end
+    elsif sum < 100
+      text_pct += (100 - sum)
+    end
 
     pool = []
     pool += Array.new([(audio_pct / 100.0 * step_count).round, 1].max, "audio")
     pool += Array.new([(text_pct / 100.0 * step_count).round, 1].max, "text")
     pool += Array.new([(interactive_pct / 100.0 * step_count).round, 1].max, "interactive")
 
-    # Fill remainder with "text"
     pool << "text" while pool.length < step_count
-    # Trim excess
     pool = pool.first(step_count)
 
     pool.shuffle
   end
 
   def generate_fallback_route(request, locale)
-    topic = request.topic_display.first || (locale == "es" ? "Aprendizaje General" : "General Learning")
+    # Get display topic — use i18n labels for the correct locale
+    raw_topic = (request.topics.presence || []).first
+    topic_i18n = raw_topic ? I18n.t("wizard.step0.topics.#{raw_topic}", locale: locale, default: raw_topic.humanize) : nil
+    topic = topic_i18n || request.custom_topic || (locale == "es" ? "Aprendizaje General" : "General Learning")
 
     es_templates = step_templates_es(request.level)
     en_templates = step_templates_en(request.level)
 
     # Use session_minutes if available, otherwise infer from pace
     minutes_range = if request.session_minutes.present? && request.session_minutes > 0
-      base = request.session_minutes
-      ((base * 0.7).to_i..[base, 10].max)
+      base = [request.session_minutes, 10].max
+      ([(base * 0.7).to_i, 5].max..base)
     else
       case request.pace
       when "relaxed" then (40..55)
@@ -194,9 +209,12 @@ class WizardRouteGenerationJob < ApplicationJob
       }
     end
 
-    # Build route-level titles
-    en_title = locale == "en" ? "#{topic} Route" : "#{topic} Route"
-    es_title = locale == "es" ? "Ruta de #{topic}" : "Ruta de #{topic}"
+    # Build route-level titles using correct locale
+    en_topic = raw_topic ? I18n.t("wizard.step0.topics.#{raw_topic}", locale: :en, default: raw_topic.humanize) : (request.custom_topic || "General Learning")
+    es_topic = raw_topic ? I18n.t("wizard.step0.topics.#{raw_topic}", locale: :es, default: raw_topic.humanize) : (request.custom_topic || "Aprendizaje General")
+
+    en_title = "#{en_topic} Route"
+    es_title = "Ruta de #{es_topic}"
     en_subtitle = "Personalized path · #{steps.length} stages · #{request.level} level"
     es_subtitle = "Camino personalizado · #{steps.length} etapas · nivel #{request.level}"
 

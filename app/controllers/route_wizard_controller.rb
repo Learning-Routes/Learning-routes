@@ -91,6 +91,9 @@ class RouteWizardController < ApplicationController
   end
 
   def save_preferences_to_profile(request)
+    # Reload to get JSONB data with string keys (before_save uses symbols)
+    request.reload
+
     profile = LearningRoutesEngine::LearningProfile.find_or_initialize_by(user: current_user)
     profile.current_level ||= map_level_for_profile(request.level)
 
@@ -98,7 +101,8 @@ class RouteWizardController < ApplicationController
     if request.learning_style_answers.present? && request.learning_style_answers.keys.length == 6
       profile.saved_style_answers = request.learning_style_answers
       profile.saved_style_result = request.learning_style_result if request.learning_style_result.present?
-      profile.learning_style = request.learning_style_result&.dig("dominant")
+      dominant = request.learning_style_result&.dig("dominant") || request.learning_style_result&.dig(:dominant)
+      profile.learning_style = dominant
     end
 
     # Save other preferences
@@ -108,7 +112,7 @@ class RouteWizardController < ApplicationController
     profile.session_minutes = request.session_minutes if request.session_minutes.present?
 
     profile.save
-  rescue => e
+  rescue ActiveRecord::RecordInvalid, ActiveRecord::RecordNotSaved => e
     Rails.logger.warn("[RouteWizard] Failed to save preferences: #{e.message}")
   end
 
