@@ -15,22 +15,26 @@ export default class extends Controller {
     event.preventDefault()
     const token = document.querySelector('meta[name="csrf-token"]')?.content
 
-    if (this.followingValue) {
-      fetch(`${this.destroyUrlValue}/${this.userIdValue}`, {
-        method: "DELETE",
-        headers: { "X-CSRF-Token": token, "Accept": "text/vnd.turbo-stream.html" }
-      })
-    } else {
-      fetch(this.createUrlValue, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "X-CSRF-Token": token, "Accept": "text/vnd.turbo-stream.html" },
-        body: JSON.stringify({ followed_id: this.userIdValue })
-      })
-    }
-
     // Optimistic update
     this.followingValue = !this.followingValue
     this._updateUI()
+
+    const request = this.followingValue
+      ? fetch(this.createUrlValue, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "X-CSRF-Token": token, "Accept": "text/vnd.turbo-stream.html" },
+          body: JSON.stringify({ followed_id: this.userIdValue })
+        })
+      : fetch(`${this.destroyUrlValue}/${this.userIdValue}`, {
+          method: "DELETE",
+          headers: { "X-CSRF-Token": token, "Accept": "text/vnd.turbo-stream.html" }
+        })
+
+    request.catch(() => {
+      // Revert on failure
+      this.followingValue = !this.followingValue
+      this._updateUI()
+    })
   }
 
   _updateUI() {
