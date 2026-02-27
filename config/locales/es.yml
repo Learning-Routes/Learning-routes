@@ -1225,6 +1225,7 @@ es:
     ratings:
       rate_star: "Calificar %{n} estrellas"
       no_ratings: "Sin calificaciones"
+      own_route: "Otros pueden calificar"
       rated: "Calificación guardada"
     notifications:
       new_comment: "comentó en tu contenido"

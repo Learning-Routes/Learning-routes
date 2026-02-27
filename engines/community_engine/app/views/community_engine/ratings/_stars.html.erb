@@ -41,6 +41,8 @@
   <span style="font-family:'DM Mono',monospace; font-size:0.65rem; color:var(--color-muted, #887F72);">
     <% if count > 0 %>
       <%= avg %> (<%= count %>)
+    <% elsif defined?(current_user) && current_user && shared_route.user_id == current_user.id %>
+      <%= t("community_engine.ratings.own_route") %>
     <% else %>
       <%= t("community_engine.ratings.no_ratings") %>
     <% end %>
