@@ -6,7 +6,7 @@ module CommunityEngine
 
     has_many :comments, as: :commentable, class_name: "CommunityEngine::Comment", dependent: :destroy
     has_many :likes, as: :likeable, class_name: "CommunityEngine::Like", dependent: :destroy
-    has_many :clones, class_name: "CommunityEngine::SharedRoute", foreign_key: :cloned_from_id
+    has_many :clones, class_name: "CommunityEngine::SharedRoute", foreign_key: :cloned_from_id, dependent: :nullify
     has_many :ratings, class_name: "CommunityEngine::Rating", dependent: :destroy
 
     VISIBILITIES = %w[public unlisted private].freeze

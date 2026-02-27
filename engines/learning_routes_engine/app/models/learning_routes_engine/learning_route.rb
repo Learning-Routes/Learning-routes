@@ -13,8 +13,11 @@ module LearningRoutesEngine
 
     enum :status, { draft: 0, active: 1, completed: 2, paused: 3 }
 
+    GENERATION_STATUSES = %w[pending generating completed failed].freeze
+
     validates :topic, presence: true, length: { maximum: 255 }
     validates :status, presence: true
+    validates :generation_status, inclusion: { in: GENERATION_STATUSES }, allow_nil: true
     validates :current_step, numericality: { greater_than_or_equal_to: 0 }
     validates :total_steps, numericality: { greater_than_or_equal_to: 0 }
 
