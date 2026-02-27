@@ -1225,6 +1225,7 @@ en:
     ratings:
       rate_star: "Rate %{n} stars"
       no_ratings: "No ratings yet"
+      own_route: "Others can rate this"
       rated: "Rating saved"
     notifications:
       new_comment: "commented on your content"
