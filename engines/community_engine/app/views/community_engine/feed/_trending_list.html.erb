@@ -10,7 +10,7 @@
             <div style="width:24px; height:24px; border-radius:50%; background:var(--color-accent, #2C261E);
                         display:flex; align-items:center; justify-content:center; color:var(--color-accent-text, #F5F1EB);
                         font-family:'DM Sans',sans-serif; font-size:0.5rem; font-weight:700; flex-shrink:0;">
-              <%= shared_route.user.name.to_s.first&.upcase || "?" %>
+              <%= shared_route.user&.name.to_s.first&.upcase || "?" %>
             </div>
             <div style="flex:1; min-width:0;">
               <h3 style="font-family:'DM Sans',sans-serif; font-weight:600; font-size:0.85rem; color:var(--color-txt, #1C1812); margin:0;
@@ -18,7 +18,7 @@
                 <%= route.localized_topic %>
               </h3>
               <p style="font-family:'DM Mono',monospace; font-size:0.6rem; color:var(--color-muted, #887F72); margin:0;">
-                <%= shared_route.user.name %> · <%= route.localized_subject_area %>
+                <%= shared_route.user&.name || t("community_engine.comments.deleted_user") %> · <%= route.localized_subject_area %>
               </p>
             </div>
           </div>
