@@ -21,6 +21,12 @@
   --color-accent: #2C261E;
   --color-accent-text: #F5F1EB;
 
+  /* --- Colors: Dark card (route viz, product preview) --- */
+  --color-dark: #1C1912;
+  --color-dark-text: #E8E4DC;
+  --color-dark-sub: #908880;
+  --color-dark-muted: #605848;
+
   /* --- Colors: Auth pages --- */
   --color-link: #8B6D28;
 

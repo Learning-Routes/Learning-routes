@@ -46,9 +46,15 @@
                  class="footer-link"><%= t("nav.how_it_works") %></a>
             </li>
             <li>
-              <a href="<%= core.sign_up_path %>" style="font-family: 'DM Sans', sans-serif; font-size: 0.88rem;
-                                 color: var(--color-sub, #6D665B); text-decoration: none; transition: color 0.2s ease;"
-                 class="footer-link"><%= t("nav.sign_up") %></a>
+              <% if current_user %>
+                <a href="<%= main_app.dashboard_path %>" style="font-family: 'DM Sans', sans-serif; font-size: 0.88rem;
+                                   color: var(--color-sub, #6D665B); text-decoration: none; transition: color 0.2s ease;"
+                   class="footer-link"><%= t("nav.dashboard") %></a>
+              <% else %>
+                <a href="<%= core.sign_up_path %>" style="font-family: 'DM Sans', sans-serif; font-size: 0.88rem;
+                                   color: var(--color-sub, #6D665B); text-decoration: none; transition: color 0.2s ease;"
+                   class="footer-link"><%= t("nav.sign_up") %></a>
+              <% end %>
             </li>
           </ul>
         </div>
@@ -87,16 +93,29 @@
             <%= t("footer.account") %>
           </p>
           <ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.7rem;">
-            <li>
-              <a href="<%= core.sign_in_path %>" style="font-family: 'DM Sans', sans-serif; font-size: 0.88rem;
-                                 color: var(--color-sub, #6D665B); text-decoration: none; transition: color 0.2s ease;"
-                 class="footer-link"><%= t("nav.sign_in") %></a>
-            </li>
-            <li>
-              <a href="<%= core.sign_up_path %>" style="font-family: 'DM Sans', sans-serif; font-size: 0.88rem;
-                                 color: var(--color-sub, #6D665B); text-decoration: none; transition: color 0.2s ease;"
-                 class="footer-link"><%= t("nav.sign_up") %></a>
-            </li>
+            <% if current_user %>
+              <li>
+                <a href="<%= main_app.profile_path %>" style="font-family: 'DM Sans', sans-serif; font-size: 0.88rem;
+                                   color: var(--color-sub, #6D665B); text-decoration: none; transition: color 0.2s ease;"
+                   class="footer-link"><%= t("nav.profile") %></a>
+              </li>
+              <li>
+                <a href="<%= main_app.dashboard_path %>" style="font-family: 'DM Sans', sans-serif; font-size: 0.88rem;
+                                   color: var(--color-sub, #6D665B); text-decoration: none; transition: color 0.2s ease;"
+                   class="footer-link"><%= t("nav.dashboard") %></a>
+              </li>
+            <% else %>
+              <li>
+                <a href="<%= core.sign_in_path %>" style="font-family: 'DM Sans', sans-serif; font-size: 0.88rem;
+                                   color: var(--color-sub, #6D665B); text-decoration: none; transition: color 0.2s ease;"
+                   class="footer-link"><%= t("nav.sign_in") %></a>
+              </li>
+              <li>
+                <a href="<%= core.sign_up_path %>" style="font-family: 'DM Sans', sans-serif; font-size: 0.88rem;
+                                   color: var(--color-sub, #6D665B); text-decoration: none; transition: color 0.2s ease;"
+                   class="footer-link"><%= t("nav.sign_up") %></a>
+              </li>
+            <% end %>
             <li>
               <a href="<%= main_app.community_path %>" style="font-family: 'DM Sans', sans-serif; font-size: 0.88rem;
                                  color: var(--color-sub, #6D665B); text-decoration: none; transition: color 0.2s ease;"
