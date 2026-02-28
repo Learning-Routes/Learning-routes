@@ -287,6 +287,10 @@ export default class extends Controller {
 
     const { svg: s, node, pts, wrap, layout } = rowData
     const p = pts[satIndex]
+
+    // Don't show info card if satellite has no content
+    if (!p.topic && !p.desc) return
+
     const satCount = node.sats.length
 
     // 1. Dim non-focused satellites

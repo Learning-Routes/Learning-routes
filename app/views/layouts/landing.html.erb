@@ -35,11 +35,7 @@
 
   <body class="bg-bg text-txt font-sans">
     <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-[200] focus:bg-accent focus:text-accent-text focus:px-4 focus:py-2 focus:rounded-btn focus:text-sm focus:font-semibold"><%= t("layout.skip_to_content") %></a>
-    <% if current_user %>
-      <%= render "shared/app_navbar" %>
-    <% else %>
-      <%= render "shared/navbar" %>
-    <% end %>
+    <%= render "shared/navbar" %>
     <main id="main-content">
       <%= yield %>
     </main>
