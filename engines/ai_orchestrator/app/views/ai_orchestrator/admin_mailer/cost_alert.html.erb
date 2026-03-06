@@ -1,0 +1,20 @@
+<h2>AI Cost Alert</h2>
+
+<p>The <strong><%= @violation[:type] %></strong> spending limit has been exceeded.</p>
+
+<table style="border-collapse: collapse; margin: 16px 0;">
+  <tr>
+    <td style="padding: 8px 16px; border: 1px solid #ddd; font-weight: bold;">Current spend</td>
+    <td style="padding: 8px 16px; border: 1px solid #ddd;"><%= number_to_currency(@violation[:current] / 100.0) %></td>
+  </tr>
+  <tr>
+    <td style="padding: 8px 16px; border: 1px solid #ddd; font-weight: bold;">Limit</td>
+    <td style="padding: 8px 16px; border: 1px solid #ddd;"><%= number_to_currency(@violation[:limit] / 100.0) %></td>
+  </tr>
+  <tr>
+    <td style="padding: 8px 16px; border: 1px solid #ddd; font-weight: bold;">Alert type</td>
+    <td style="padding: 8px 16px; border: 1px solid #ddd;"><%= @violation[:type] %></td>
+  </tr>
+</table>
+
+<p>Review AI usage in the admin dashboard to take action.</p>

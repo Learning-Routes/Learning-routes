@@ -1,0 +1,10 @@
+AI Cost Alert
+=============
+
+The <%= @violation[:type] %> spending limit has been exceeded.
+
+Current spend: <%= number_to_currency(@violation[:current] / 100.0) %>
+Limit: <%= number_to_currency(@violation[:limit] / 100.0) %>
+Alert type: <%= @violation[:type] %>
+
+Review AI usage in the admin dashboard to take action.
