@@ -16,6 +16,22 @@ class RouteWizardController < ApplicationController
   end
 
   def create
+    # Prevent duplicate requests while one is already generating
+    existing = current_user.route_requests.pending_or_generating.first
+    if existing
+      respond_to do |format|
+        format.turbo_stream {
+          render turbo_stream: turbo_stream.replace(
+            "wizard-container",
+            partial: "route_wizard/generating",
+            locals: { route_request: existing }
+          )
+        }
+        format.html { redirect_to new_route_wizard_path }
+      end
+      return
+    end
+
     @route_request = current_user.route_requests.new(wizard_params)
 
     if @route_request.save

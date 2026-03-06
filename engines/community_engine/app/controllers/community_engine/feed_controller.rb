@@ -16,6 +16,9 @@ module CommunityEngine
         shared_only.recent.includes(:user, :trackable).limit(30)
       end
 
+      # Preload learning_route for SharedRoute trackables to avoid N+1
+      preload_shared_route_associations(@activities)
+
       @top_learners = Core::User
         .joins("INNER JOIN learning_routes_engine_learning_profiles ON learning_routes_engine_learning_profiles.user_id = core_users.id")
         .joins("INNER JOIN learning_routes_engine_learning_routes ON learning_routes_engine_learning_routes.learning_profile_id = learning_routes_engine_learning_profiles.id")
@@ -42,6 +45,7 @@ module CommunityEngine
 
     def following
       @activities = Activity.by_action("shared").from_followed_users(current_user).recent.includes(:user, :trackable).limit(30)
+      preload_shared_route_associations(@activities)
       render partial: "community_engine/feed/activity_list", locals: { activities: @activities }
     end
 
@@ -52,6 +56,11 @@ module CommunityEngine
 
     private
 
+    def preload_shared_route_associations(activities)
+      shared_routes = activities.filter_map { |a| a.trackable if a.trackable.is_a?(SharedRoute) }
+      ActiveRecord::Associations::Preloader.new(records: shared_routes, associations: :learning_route).call if shared_routes.any?
+    end
+
     def build_floating_thoughts
       top_comments = Comment
         .where(commentable_type: "CommunityEngine::SharedRoute")
@@ -59,7 +68,7 @@ module CommunityEngine
         .group("community_engine_comments.id")
         .order(Arel.sql("COUNT(community_engine_likes.id) DESC"))
         .limit(6)
-        .includes(:user, :commentable)
+        .includes(:user, commentable: :learning_route)
 
       # Fallback to recent comments if no liked ones exist
       if top_comments.empty?
@@ -67,7 +76,7 @@ module CommunityEngine
           .where(commentable_type: "CommunityEngine::SharedRoute")
           .order(created_at: :desc)
           .limit(6)
-          .includes(:user, :commentable)
+          .includes(:user, commentable: :learning_route)
       end
 
       top_comments.filter_map do |comment|

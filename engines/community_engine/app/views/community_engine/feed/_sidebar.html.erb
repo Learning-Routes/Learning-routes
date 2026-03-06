@@ -3,7 +3,7 @@
   <% if current_user %>
     <%
       profile = current_user.learning_profile
-      shareable_routes = profile&.learning_routes&.active_routes&.order(updated_at: :desc) || []
+      shareable_routes = profile&.learning_routes&.active_routes&.includes(:route_steps)&.order(updated_at: :desc) || []
       already_shared_ids = current_user.shared_routes.pluck(:learning_route_id)
       unshared_routes = shareable_routes.reject { |r| already_shared_ids.include?(r.id) }
     %>
@@ -63,7 +63,7 @@
                         <%= route.localized_topic %>
                       </p>
                       <p style="font-family:'DM Mono',monospace; font-size:0.58rem; color:var(--color-muted, #9B9590); margin:0.1rem 0 0;">
-                        <%= route.route_steps.count %> <%= t("community_engine.share_modal.steps") %>
+                        <%= route.route_steps.size %> <%= t("community_engine.share_modal.steps") %>
                       </p>
                     </div>
                   </button>
@@ -148,6 +148,7 @@
   <% end %>
 
   <%# Top learners %>
+  <% followed_ids = current_user ? current_user.active_follows.pluck(:followed_id).to_set : Set.new %>
   <div style="background:var(--color-card, rgba(255,255,255,0.6)); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px);
               border:1px solid var(--color-faint, rgba(28,24,18,0.06)); border-radius:12px; padding:1rem;">
     <h3 style="font-family:'DM Sans',sans-serif; font-weight:700; font-size:0.78rem; color:var(--color-txt, #1C1812); margin:0 0 0.75rem;">
@@ -172,7 +173,7 @@
               </p>
             </div>
             <% if current_user && learner.id != current_user.id %>
-              <% if current_user.following?(learner) %>
+              <% if followed_ids.include?(learner.id) %>
                 <span style="font-family:'DM Mono',monospace; font-size:0.55rem; color:var(--color-muted, #887F72); padding:0.15rem 0.4rem; border-radius:5px;
                              background:var(--color-faint, rgba(28,24,18,0.04));">
                   <%= t("community_engine.follows.following") %>
