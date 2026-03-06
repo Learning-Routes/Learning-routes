@@ -53,7 +53,7 @@ module Assessments
 
       # Gap analysis in background
       LearningRoutesEngine::GapAnalysisJob.perform_later(
-        route.id, @result.id
+        route.id, assessment_result_id: @result.id
       )
 
       # Complete step

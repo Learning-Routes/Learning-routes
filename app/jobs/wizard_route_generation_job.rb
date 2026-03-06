@@ -86,12 +86,16 @@ class WizardRouteGenerationJob < ApplicationJob
         end
       end
 
-      Turbo::StreamsChannel.broadcast_replace_to(
-        "route_request_#{request.id}",
-        target: "generating-state",
-        partial: "route_wizard/completed",
-        locals: { route_request: request.reload }
-      )
+      begin
+        Turbo::StreamsChannel.broadcast_replace_to(
+          "route_request_#{request.id}",
+          target: "generating-state",
+          partial: "route_wizard/completed",
+          locals: { route_request: request.reload }
+        )
+      rescue => broadcast_error
+        Rails.logger.warn("[WizardRouteGeneration] Broadcast failed for request #{request.id}: #{broadcast_error.message}")
+      end
 
     rescue => e
       request.update!(status: "failed", error_message: e.message.truncate(500))

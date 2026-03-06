@@ -31,11 +31,13 @@ module CommunityEngine
       # Floating thoughts: best comments from shared routes
       @floating_thoughts = build_floating_thoughts
 
-      @stats = {
-        total_users: Core::User.count,
-        total_routes: LearningRoutesEngine::LearningRoute.where(status: :active).count,
-        total_shared: SharedRoute.publicly_visible.count
-      }
+      @stats = Rails.cache.fetch("community_feed_stats", expires_in: 1.hour) do
+        {
+          total_users: Core::User.count,
+          total_routes: LearningRoutesEngine::LearningRoute.where(status: :active).count,
+          total_shared: SharedRoute.publicly_visible.count
+        }
+      end
     end
 
     def following
