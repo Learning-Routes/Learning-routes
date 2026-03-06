@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_03_06_230000) do
+ActiveRecord::Schema[8.1].define(version: 2026_03_06_240000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -245,6 +245,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_06_230000) do
     t.datetime "updated_at", null: false
     t.uuid "user_id", null: false
     t.index ["actor_id"], name: "index_community_engine_notifications_on_actor_id"
+    t.index ["notifiable_type", "notifiable_id"], name: "idx_notifications_on_notifiable"
     t.index ["user_id", "notification_type"], name: "idx_notifications_user_type"
     t.index ["user_id", "read_at", "created_at"], name: "idx_notifications_user_unread"
     t.index ["user_id"], name: "index_community_engine_notifications_on_user_id"
@@ -429,6 +430,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_06_230000) do
     t.datetime "updated_at", null: false
     t.index ["ai_interaction_id"], name: "idx_learning_routes_on_ai_interaction"
     t.index ["generation_status"], name: "idx_learning_routes_on_generation_status"
+    t.index ["learning_profile_id", "status"], name: "idx_learning_routes_on_profile_and_status"
     t.index ["learning_profile_id"], name: "idx_on_learning_profile_id_5e77d3d179"
     t.index ["status"], name: "index_learning_routes_engine_learning_routes_on_status"
     t.index ["topic"], name: "index_learning_routes_engine_learning_routes_on_topic"
@@ -477,6 +479,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_06_230000) do
     t.index ["fsrs_next_review_at"], name: "idx_route_steps_on_fsrs_next_review"
     t.index ["fsrs_state"], name: "idx_route_steps_on_fsrs_state"
     t.index ["learning_route_id", "position"], name: "idx_route_steps_on_route_and_position", unique: true
+    t.index ["learning_route_id", "status"], name: "idx_route_steps_on_route_and_status"
     t.index ["learning_route_id"], name: "index_learning_routes_engine_route_steps_on_learning_route_id"
     t.index ["level"], name: "index_learning_routes_engine_route_steps_on_level"
     t.index ["status"], name: "index_learning_routes_engine_route_steps_on_status"
