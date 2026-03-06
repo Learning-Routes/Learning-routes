@@ -1,14 +1,14 @@
 <div data-controller="quiz-poll"
      data-quiz-poll-url-value="<%= learning_routes_engine.check_status_route_step_step_quiz_path(route, step) %>"
      data-quiz-poll-interval-value="3000">
-  <div class="bg-gray-900 border border-white/[0.06] rounded-xl p-6 text-center">
-    <div class="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-amber-500/10 border border-amber-500/20 mb-4">
-      <svg aria-hidden="true" class="animate-spin h-5 w-5 text-amber-400" fill="none" viewBox="0 0 24 24">
-        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+  <div style="background:var(--color-card); border:1px solid var(--color-border-subtle); border-radius:0.75rem; padding:1.5rem; text-align:center;">
+    <div style="display:inline-flex; align-items:center; justify-content:center; width:3rem; height:3rem; border-radius:0.75rem; background:var(--color-warning-bg); border:1px solid var(--color-warning-border); margin-bottom:1rem;">
+      <svg aria-hidden="true" class="animate-spin" style="height:1.25rem; width:1.25rem; color:var(--color-warning);" fill="none" viewBox="0 0 24 24">
+        <circle style="opacity:0.25;" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+        <path style="opacity:0.75;" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
       </svg>
     </div>
-    <h3 class="text-sm font-semibold text-white mb-1"><%= t("learning_engine.step_quiz.generating_title") %></h3>
-    <p class="text-xs text-gray-400"><%= t("learning_engine.step_quiz.generating_desc") %></p>
+    <h3 style="font-size:0.875rem; font-weight:600; color:var(--color-txt); margin:0 0 0.25rem;"><%= t("learning_engine.step_quiz.generating_title") %></h3>
+    <p style="font-size:0.75rem; color:var(--color-sub); margin:0;"><%= t("learning_engine.step_quiz.generating_desc") %></p>
   </div>
 </div>

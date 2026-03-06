@@ -19,6 +19,7 @@ export default class extends Controller {
       "#B09848", "#B06050", "#5BA880"
     ]
 
+    this._boundLoop = this.loop.bind(this)
     this.resize()
     this.initParticles()
     this.initCircles()
@@ -101,7 +102,7 @@ export default class extends Controller {
   loop() {
     this.update()
     this.draw()
-    this.animId = requestAnimationFrame(this.loop.bind(this))
+    this.animId = requestAnimationFrame(this._boundLoop)
   }
 
   update() {

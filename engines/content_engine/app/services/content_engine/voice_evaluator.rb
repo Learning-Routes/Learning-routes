@@ -46,6 +46,7 @@ module ContentEngine
 
       http = Net::HTTP.new(uri.hostname, uri.port)
       http.use_ssl = true
+      http.open_timeout = 10
       http.read_timeout = 60
       response = http.request(request)
 

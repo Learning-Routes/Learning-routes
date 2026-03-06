@@ -44,7 +44,7 @@ module Assessments
     def authorize_assessment_owner!
       step = @assessment.route_step
       route = step.learning_route
-      return head(:forbidden) unless route.learning_profile.user_id == current_user.id
+      return head(:forbidden) unless route&.learning_profile&.user_id == current_user.id
     end
 
     def grade_with_ai!(question, answer)

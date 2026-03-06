@@ -53,7 +53,7 @@ module ContentEngine
         tags: %w[p br h1 h2 h3 h4 h5 h6 strong em b i u s del a ul ol li dl dt dd
                  blockquote pre code div span table thead tbody tr th td
                  img hr sup sub kbd mark abbr details summary],
-        attributes: %w[href src alt title class style id target rel
+        attributes: %w[href src alt title class id target rel
                        data-controller data-action data-copy-code-target
                        data-copy-code-copied-text-value
                        colspan rowspan]

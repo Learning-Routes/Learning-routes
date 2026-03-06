@@ -1,11 +1,11 @@
 <div class="space-y-6">
   <!-- Step header -->
   <div>
-    <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-blue-900/50 text-blue-300 mb-2">
+    <span style="display:inline-flex; align-items:center; border-radius:9999px; padding:0.125rem 0.625rem; font-size:0.75rem; font-weight:500; background:var(--color-badge-lesson-bg); color:var(--color-badge-lesson-text); margin-bottom:0.5rem;">
       <%= t('learning_engine.lesson.badge') %>
     </span>
-    <h1 class="text-2xl font-bold text-white"><%= @step.localized_title %></h1>
-    <p class="text-sm text-gray-400 mt-1"><%= @step.localized_description %></p>
+    <h1 style="font-size:1.5rem; font-weight:700; color:var(--color-txt); margin:0;"><%= @step.localized_title %></h1>
+    <p style="font-size:0.875rem; color:var(--color-sub); margin:0.25rem 0 0;"><%= @step.localized_description %></p>
   </div>
 
   <% if @content_generating %>
@@ -23,7 +23,7 @@
     <div id="ai_supplementary_<%= @step.id %>" class="space-y-4"></div>
   <% else %>
     <div class="text-center py-12">
-      <p class="text-gray-400"><%= t('learning_engine.lesson.no_content') %></p>
+      <p style="color:var(--color-sub);"><%= t('learning_engine.lesson.no_content') %></p>
     </div>
   <% end %>
 </div>

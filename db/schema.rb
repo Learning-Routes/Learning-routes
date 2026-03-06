@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_02_27_175838) do
+ActiveRecord::Schema[8.1].define(version: 2026_03_04_173357) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -403,7 +403,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_27_175838) do
     t.uuid "user_id", null: false
     t.integer "weekly_hours"
     t.index ["current_level"], name: "idx_on_current_level_1784842c74"
-    t.index ["user_id"], name: "index_learning_routes_engine_learning_profiles_on_user_id"
+    t.index ["user_id"], name: "index_learning_routes_engine_learning_profiles_on_user_id", unique: true
   end
 
   create_table "learning_routes_engine_learning_routes", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -479,6 +479,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_27_175838) do
     t.index ["learning_route_id"], name: "index_learning_routes_engine_route_steps_on_learning_route_id"
     t.index ["level"], name: "index_learning_routes_engine_route_steps_on_level"
     t.index ["status"], name: "index_learning_routes_engine_route_steps_on_status"
+  end
+
+  create_table "playing_with_neon", id: :serial, force: :cascade do |t|
+    t.text "name", null: false
+    t.float "value", limit: 24
   end
 
   create_table "route_requests", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|

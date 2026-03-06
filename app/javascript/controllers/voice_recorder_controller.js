@@ -59,6 +59,7 @@ export default class extends Controller {
       this.showState("recording")
       this._startTimer()
 
+      clearTimeout(this._maxTimeout)
       this._maxTimeout = setTimeout(() => this.stopRecording(), this.maxDurationValue * 1000)
     } catch (err) {
       console.error("[VoiceRecorder] Mic access denied:", err)

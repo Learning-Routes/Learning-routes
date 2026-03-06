@@ -1,19 +1,19 @@
 <div id="step_quiz_form" data-controller="step-quiz" data-step-quiz-total-value="<%= questions.size %>">
-  <div class="bg-gray-900 border border-white/[0.06] rounded-xl p-6">
+  <div style="background:var(--color-card); border:1px solid var(--color-border-subtle); border-radius:0.75rem; padding:1.5rem;">
     <%# Header %>
-    <div class="flex items-center justify-between mb-6">
-      <div class="flex items-center gap-3">
-        <div class="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20">
-          <svg aria-hidden="true" class="w-5 h-5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:1.5rem;">
+      <div style="display:flex; align-items:center; gap:0.75rem;">
+        <div style="display:inline-flex; align-items:center; justify-content:center; width:2.5rem; height:2.5rem; border-radius:0.75rem; background:var(--color-warning-bg); border:1px solid var(--color-warning-border);">
+          <svg aria-hidden="true" style="width:1.25rem; height:1.25rem; color:var(--color-warning);" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
           </svg>
         </div>
         <div>
-          <h3 class="text-sm font-semibold text-white"><%= t("learning_engine.step_quiz.title") %></h3>
-          <p class="text-xs text-gray-400"><%= t("learning_engine.step_quiz.subtitle", count: questions.size) %></p>
+          <h3 style="font-size:0.875rem; font-weight:600; color:var(--color-txt); margin:0;"><%= t("learning_engine.step_quiz.title") %></h3>
+          <p style="font-size:0.75rem; color:var(--color-sub); margin:0;"><%= t("learning_engine.step_quiz.subtitle", count: questions.size) %></p>
         </div>
       </div>
-      <span class="text-xs text-gray-500 font-mono" data-step-quiz-target="counter">
+      <span style="font-size:0.75rem; color:var(--color-muted); font-family:'DM Mono',monospace;" data-step-quiz-target="counter">
         0/<%= questions.size %>
       </span>
     </div>
@@ -23,20 +23,20 @@
                   method: :post, data: { step_quiz_target: "form" } do |f| %>
       <div class="space-y-5">
         <% questions.each_with_index do |question, idx| %>
-          <div class="rounded-lg bg-gray-800/50 border border-white/[0.04] p-4">
-            <p class="text-sm font-medium text-white mb-3">
-              <span class="text-gray-500 font-mono text-xs mr-2"><%= idx + 1 %>.</span>
+          <div style="border-radius:0.5rem; background:var(--color-tint-strong); border:1px solid var(--color-tint); padding:1rem;">
+            <p style="font-size:0.875rem; font-weight:500; color:var(--color-txt); margin:0 0 0.75rem;">
+              <span style="color:var(--color-muted); font-family:'DM Mono',monospace; font-size:0.75rem; margin-right:0.5rem;"><%= idx + 1 %>.</span>
               <%= question.body %>
             </p>
             <div class="space-y-2">
               <% Array(question.options).each do |option| %>
-                <label class="flex items-center gap-3 p-2.5 rounded-lg hover:bg-gray-700/50 cursor-pointer transition group">
+                <label style="display:flex; align-items:center; gap:0.75rem; padding:0.625rem; border-radius:0.5rem; cursor:pointer; transition:background 0.2s;">
                   <input type="radio"
                          name="answers[<%= question.id %>]"
                          value="<%= option %>"
-                         class="w-4 h-4 text-indigo-500 bg-gray-700 border-gray-600 focus:ring-indigo-500 focus:ring-offset-0"
+                         class="w-4 h-4 text-indigo-500 accent-indigo-500"
                          data-action="change->step-quiz#markAnswered">
-                  <span class="text-sm text-gray-300 group-hover:text-white transition"><%= option %></span>
+                  <span style="font-size:0.875rem; color:var(--color-sub); transition:color 0.2s;"><%= option %></span>
                 </label>
               <% end %>
             </div>
@@ -44,10 +44,10 @@
         <% end %>
       </div>
 
-      <div class="mt-6 flex items-center justify-between">
-        <p class="text-xs text-gray-500"><%= t("learning_engine.step_quiz.passing_note") %></p>
+      <div style="margin-top:1.5rem; display:flex; align-items:center; justify-content:space-between;">
+        <p style="font-size:0.75rem; color:var(--color-muted); margin:0;"><%= t("learning_engine.step_quiz.passing_note") %></p>
         <button type="submit"
-                class="rounded-lg px-5 py-2 text-sm font-semibold text-white bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-400 hover:to-purple-400 transition disabled:opacity-40 disabled:cursor-not-allowed"
+                style="border-radius:0.5rem; padding:0.5rem 1.25rem; font-size:0.875rem; font-weight:600; color:#fff; border:none; cursor:pointer; background:linear-gradient(to right, #6366f1, #a855f7); transition:opacity 0.2s;"
                 data-step-quiz-target="submitBtn"
                 disabled>
           <%= t("learning_engine.step_quiz.submit") %>

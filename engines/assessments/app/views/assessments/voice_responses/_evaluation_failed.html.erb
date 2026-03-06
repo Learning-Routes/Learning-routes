@@ -3,7 +3,7 @@
 
 <div id="voice_evaluation_<%= voice_response.id %>"
      class="rounded-[14px] p-5"
-     style="background: rgba(28,25,18,0.5); border: 1px solid rgba(248,113,113,0.15);">
+     style="background: var(--color-tint-strong); border: 1px solid rgba(248,113,113,0.15);">
   <div class="flex flex-col items-center gap-3 py-4">
     <%# Warning icon %>
     <div class="w-12 h-12 rounded-full flex items-center justify-center"
@@ -19,7 +19,7 @@
     </p>
 
     <% if error.present? %>
-      <p class="text-xs text-center max-w-xs" style="color: #605848; font-family: 'DM Sans', sans-serif;">
+      <p class="text-xs text-center max-w-xs" style="color: var(--color-faint); font-family: 'DM Sans', sans-serif;">
         <%= error.to_s.truncate(120) %>
       </p>
     <% end %>

@@ -1,10 +1,10 @@
 <div class="space-y-6">
   <div>
-    <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-orange-900/50 text-orange-300 mb-2">
-      <%= @step.metadata['assessment_type'] ? t("assessment_types.#{@step.metadata['assessment_type']}", default: @step.metadata['assessment_type'].humanize) : t('learning_engine.assessment.badge') %>
+    <span style="display:inline-flex; align-items:center; border-radius:9999px; padding:0.125rem 0.625rem; font-size:0.75rem; font-weight:500; background:var(--color-badge-assessment-bg); color:var(--color-badge-assessment-text); margin-bottom:0.5rem;">
+      <%= @step.metadata&.dig('assessment_type') ? t("assessment_types.#{@step.metadata.dig('assessment_type')}", default: @step.metadata.dig('assessment_type').humanize) : t('learning_engine.assessment.badge') %>
     </span>
-    <h1 class="text-2xl font-bold text-white"><%= @step.localized_title %></h1>
-    <p class="text-sm text-gray-400 mt-1"><%= @step.localized_description %></p>
+    <h1 style="font-size:1.5rem; font-weight:700; color:var(--color-txt); margin:0;"><%= @step.localized_title %></h1>
+    <p style="font-size:0.875rem; color:var(--color-sub); margin:0.25rem 0 0;"><%= @step.localized_description %></p>
   </div>
 
   <% if @assessment_generating %>
@@ -12,40 +12,40 @@
   <% elsif @assessment %>
     <% if @existing_result&.score.present? %>
       <!-- Already completed - show results summary -->
-      <div class="bg-gray-900 border border-white/[0.06] rounded-xl p-6 text-center">
-        <div class="text-4xl font-bold mb-2 <%= @existing_result.passed? ? 'text-green-400' : 'text-red-400' %>">
+      <div style="background:var(--color-card); border:1px solid var(--color-border-subtle); border-radius:0.75rem; padding:1.5rem; text-align:center;">
+        <div style="font-size:2.25rem; font-weight:700; margin-bottom:0.5rem; color:<%= @existing_result.passed? ? 'var(--color-positive)' : 'var(--color-negative)' %>;">
           <%= @existing_result.score.round(1) %>%
         </div>
-        <p class="text-sm text-gray-400 mb-4"><%= @existing_result.passed? ? t('learning_engine.assessment.passed') : t('learning_engine.assessment.not_passed') %> (<%= t('learning_engine.assessment.passing') %> <%= @assessment.passing_score %>%)</p>
+        <p style="font-size:0.875rem; color:var(--color-sub); margin:0 0 1rem;"><%= @existing_result.passed? ? t('learning_engine.assessment.passed') : t('learning_engine.assessment.not_passed') %> (<%= t('learning_engine.assessment.passing') %> <%= @assessment.passing_score %>%)</p>
         <%= link_to t('learning_engine.assessment.view_results'), assessments.result_path(@existing_result),
-            class: "inline-block rounded-lg px-4 py-2 text-sm font-semibold text-white bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-400 hover:to-purple-400 transition" %>
+            style: "display:inline-block; border-radius:0.5rem; padding:0.5rem 1rem; font-size:0.875rem; font-weight:600; color:#fff; text-decoration:none; background:linear-gradient(to right, #6366f1, #a855f7); transition:opacity 0.2s;" %>
       </div>
     <% else %>
       <!-- Start assessment -->
-      <div class="bg-gray-900 border border-white/[0.06] rounded-xl p-6">
-        <div class="grid grid-cols-3 gap-4 mb-6 text-center">
+      <div style="background:var(--color-card); border:1px solid var(--color-border-subtle); border-radius:0.75rem; padding:1.5rem;">
+        <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:1rem; margin-bottom:1.5rem; text-align:center;">
           <div>
-            <div class="text-2xl font-bold text-white"><%= @assessment.questions.count %></div>
-            <div class="text-xs text-gray-500"><%= t('learning_engine.assessment.questions') %></div>
+            <div style="font-size:1.5rem; font-weight:700; color:var(--color-txt);"><%= @assessment.questions.count %></div>
+            <div style="font-size:0.75rem; color:var(--color-muted);"><%= t('learning_engine.assessment.questions') %></div>
           </div>
           <div>
-            <div class="text-2xl font-bold text-white"><%= @assessment.passing_score.to_i %>%</div>
-            <div class="text-xs text-gray-500"><%= t('learning_engine.assessment.passing_score') %></div>
+            <div style="font-size:1.5rem; font-weight:700; color:var(--color-txt);"><%= @assessment.passing_score.to_i %>%</div>
+            <div style="font-size:0.75rem; color:var(--color-muted);"><%= t('learning_engine.assessment.passing_score') %></div>
           </div>
           <div>
-            <div class="text-2xl font-bold text-white">~<%= (@assessment.questions.count * 2).clamp(5, 60) %></div>
-            <div class="text-xs text-gray-500"><%= t('learning_engine.assessment.minutes') %></div>
+            <div style="font-size:1.5rem; font-weight:700; color:var(--color-txt);">~<%= (@assessment.questions.count * 2).clamp(5, 60) %></div>
+            <div style="font-size:0.75rem; color:var(--color-muted);"><%= t('learning_engine.assessment.minutes') %></div>
           </div>
         </div>
 
         <%= button_to t('learning_engine.assessment.start'), assessments.start_assessment_path(@assessment),
             method: :post,
-            class: "w-full rounded-lg px-4 py-3 text-sm font-semibold text-white bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-400 hover:to-purple-400 transition" %>
+            style: "width:100%; border-radius:0.5rem; padding:0.75rem 1rem; font-size:0.875rem; font-weight:600; color:#fff; border:none; cursor:pointer; background:linear-gradient(to right, #6366f1, #a855f7); transition:opacity 0.2s;" %>
       </div>
     <% end %>
   <% else %>
     <div class="text-center py-12">
-      <p class="text-gray-400"><%= t('learning_engine.assessment.not_generated') %></p>
+      <p style="color:var(--color-sub);"><%= t('learning_engine.assessment.not_generated') %></p>
     </div>
   <% end %>
 </div>

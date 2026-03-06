@@ -777,7 +777,7 @@ en:
   user_roles:
     student: "Student"
     admin: "Admin"
-    instructor: "Instructor"
+    teacher: "Instructor"
 
   # ── Interest Labels ──
   interests:
@@ -901,6 +901,23 @@ en:
 
   # ── Learning Engine ──
   learning_engine:
+    journey:
+      route_label: "ROUTE"
+      scroll_to_explore: "Scroll to explore"
+      back_to_profile: "Profile"
+      end_of_route: "End of route"
+      stages_topics:
+        one: "%{stages} stage · %{topics} topic"
+        other: "%{stages} stages · %{topics} topics"
+      subtitle: "Personalized path · %{stages} stages · %{topics} topics · %{subject}"
+      stage_of: "Stage %{current} of %{total}"
+      stage_navigation: "Stage navigation"
+      list_view: "List view"
+      locked: "Locked"
+      completed: "Completed"
+      nv1_label: "Fundamentals"
+      nv2_label: "Core Concepts"
+      nv3_label: "Advanced Practice"
     route:
       title_suffix: "- Learning Routes"
       reviews_due:

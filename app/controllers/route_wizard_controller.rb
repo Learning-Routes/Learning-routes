@@ -65,7 +65,7 @@ class RouteWizardController < ApplicationController
     when "failed"
       render json: {
         status: "failed",
-        error: request_record.error_message || t("flash.route_generation_failed")
+        error: t("flash.route_generation_failed")
       }
     when "generating"
       render json: { status: "generating" }

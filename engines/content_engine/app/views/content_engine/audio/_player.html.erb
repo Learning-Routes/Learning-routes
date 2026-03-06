@@ -15,7 +15,7 @@
      data-audio-player-generate-url-value="<%= content_engine.generate_audio_path(step) %>"
      data-audio-player-status-url-value="<%= content_engine.status_audio_path(step) %>"
      class="rounded-[14px]"
-     style="background: #1C1812; border: 1px solid rgba(232,228,220,0.06); padding: 1.5rem;">
+     style="background: var(--color-card); border: 1px solid var(--color-border-subtle); padding: 1.5rem;">
 
   <%# ── Loading / Generating State ── %>
   <div data-audio-player-target="loadingState" class="<%= audio_ready ? 'hidden' : '' %>">
@@ -30,10 +30,10 @@
         </div>
       </div>
       <div class="text-center">
-        <p class="text-sm font-medium" style="color: #E8E4DC; font-family: 'DM Sans', sans-serif;">
+        <p class="text-sm font-medium" style="color: var(--color-txt); font-family: 'DM Sans', sans-serif;">
           <%= t("audio_player.generating") %>
         </p>
-        <p class="text-xs mt-1" style="color: #7A7264; font-family: 'DM Sans', sans-serif;">
+        <p class="text-xs mt-1" style="color: var(--color-muted); font-family: 'DM Sans', sans-serif;">
           <%= t("audio_player.generating_wait") %>
         </p>
       </div>
@@ -54,7 +54,7 @@
 
     <%# Narration title %>
     <% if narration["title"].present? %>
-      <h3 class="text-lg font-semibold mb-4" style="color: #E8E4DC; font-family: 'DM Sans', sans-serif;">
+      <h3 class="text-lg font-semibold mb-4" style="color: var(--color-txt); font-family: 'DM Sans', sans-serif;">
         <%= narration["title"] %>
       </h3>
     <% end %>
@@ -81,18 +81,18 @@
         <div data-audio-player-target="progressBar"
              data-action="click->audio-player#seek"
              class="relative h-2 rounded-full cursor-pointer group"
-             style="background: #2C261E;">
+             style="background: var(--color-tint-strong);">
           <div data-audio-player-target="bufferedFill"
-               class="absolute inset-y-0 left-0 rounded-full" style="width: 0%; background: #3D362C;"></div>
+               class="absolute inset-y-0 left-0 rounded-full" style="width: 0%; background: var(--color-tint-hover);"></div>
           <div data-audio-player-target="progressFill"
                class="absolute inset-y-0 left-0 rounded-full transition-all duration-100" style="width: 0%; background: #6366F1;"></div>
-          <div class="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity" style="background: rgba(255,255,255,0.03);"></div>
+          <div class="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity" style="background: var(--color-tint);"></div>
         </div>
 
         <%# Time display %>
         <div class="flex justify-between mt-1.5">
-          <span data-audio-player-target="currentTime" class="text-xs" style="color: #7A7264; font-family: 'DM Mono', monospace;">0:00</span>
-          <span data-audio-player-target="totalTime" class="text-xs" style="color: #7A7264; font-family: 'DM Mono', monospace;">0:00</span>
+          <span data-audio-player-target="currentTime" class="text-xs" style="color: var(--color-muted); font-family: 'DM Mono', monospace;">0:00</span>
+          <span data-audio-player-target="totalTime" class="text-xs" style="color: var(--color-muted); font-family: 'DM Mono', monospace;">0:00</span>
         </div>
       </div>
     </div>
@@ -103,8 +103,8 @@
         <%# Skip Back 10s %>
         <button data-action="click->audio-player#skipBack"
                 class="p-1 transition-colors"
-                style="color: #7A7264;"
-                onmouseover="this.style.color='#E8E4DC'" onmouseout="this.style.color='#7A7264'"
+                style="color: var(--color-muted);"
+                onmouseover="this.style.color='var(--color-txt)'" onmouseout="this.style.color='var(--color-muted)'"
                 title="<%= t('audio_player.skip_back') %>">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -115,8 +115,8 @@
         <%# Skip Forward 10s %>
         <button data-action="click->audio-player#skipForward"
                 class="p-1 transition-colors"
-                style="color: #7A7264;"
-                onmouseover="this.style.color='#E8E4DC'" onmouseout="this.style.color='#7A7264'"
+                style="color: var(--color-muted);"
+                onmouseover="this.style.color='var(--color-txt)'" onmouseout="this.style.color='var(--color-muted)'"
                 title="<%= t('audio_player.skip_forward') %>">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -128,22 +128,22 @@
       <%# Speed control %>
       <button data-action="click->audio-player#cycleSpeed"
               class="px-3 py-1 rounded-lg text-xs transition-colors"
-              style="background: #2C261E; color: #B0A898; font-family: 'DM Mono', monospace;"
-              onmouseover="this.style.background='#3D362C'" onmouseout="this.style.background='#2C261E'">
+              style="background: var(--color-tint-strong); color: var(--color-sub); font-family: 'DM Mono', monospace;"
+              onmouseover="this.style.background='var(--color-tint-hover)'" onmouseout="this.style.background='var(--color-tint-strong)'"
         <span data-audio-player-target="speedDisplay">1.0x</span>
       </button>
     </div>
 
     <%# Key Points %>
     <% if narration["key_points"].present? %>
-      <div class="mt-5 pt-4" style="border-top: 1px solid rgba(232,228,220,0.06);">
+      <div class="mt-5 pt-4" style="border-top: 1px solid var(--color-border-subtle);">
         <p class="text-xs font-medium uppercase tracking-wider mb-2"
-           style="color: #7A7264; font-family: 'DM Mono', monospace;">
+           style="color: var(--color-muted); font-family: 'DM Mono', monospace;">
           <%= t("audio_player.key_points") %>
         </p>
         <ul class="space-y-1.5">
           <% narration["key_points"].each do |point| %>
-            <li class="flex items-start gap-2 text-sm" style="color: #E8E4DC; font-family: 'DM Sans', sans-serif;">
+            <li class="flex items-start gap-2 text-sm" style="color: var(--color-txt); font-family: 'DM Sans', sans-serif;">
               <span style="color: #818CF8;" class="mt-0.5">•</span>
               <span><%= point %></span>
             </li>
@@ -160,7 +160,7 @@
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
               d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/>
       </svg>
-      <p class="text-sm" style="color: #7A7264; font-family: 'DM Sans', sans-serif;">
+      <p class="text-sm" style="color: var(--color-muted); font-family: 'DM Sans', sans-serif;">
         <%= t("audio_player.error_generating") %>
       </p>
       <button data-action="click->audio-player#triggerGeneration"

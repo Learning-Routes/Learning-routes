@@ -3,7 +3,7 @@
     <div class="flex items-center gap-2 mb-2">
       <span class="inline-block w-2 h-2 bg-green-500 rounded-full"></span>
       <span class="text-sm font-medium text-green-800"><%= t("ai_orchestrator.completed") %></span>
-      <span class="text-xs text-gray-500">
+      <span class="text-xs" style="color:var(--color-muted);">
         <%= interaction.latency_seconds %><%= t("units.seconds_short") %> &middot; <%= interaction.total_tokens %> <%= t("units.tokens") %>
       </span>
     </div>

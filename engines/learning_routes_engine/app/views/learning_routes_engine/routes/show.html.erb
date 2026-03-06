@@ -1,102 +1,115 @@
 <% content_for(:title, "#{@route.localized_topic} #{t('learning_engine.route.title_suffix')}") %>
 
-<div class="mx-auto max-w-4xl px-6 py-10">
+<div style="max-width:56rem; margin:0 auto; padding:2.5rem 1.5rem;">
   <!-- Route header -->
-  <div class="mb-8">
-    <div class="flex items-center gap-3 mb-2">
-      <%= link_to main_app.dashboard_path, class: "text-gray-400 hover:text-white transition", aria: { label: t('layout.learning.dashboard') } do %>
-        <svg aria-hidden="true" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+  <div style="margin-bottom:2rem;">
+    <div style="display:flex; align-items:center; gap:0.75rem; margin-bottom:0.5rem;">
+      <%= link_to main_app.dashboard_path, style: "color:var(--color-sub); text-decoration:none; transition:color 0.2s;", aria: { label: t('layout.learning.dashboard') } do %>
+        <svg aria-hidden="true" style="width:1.25rem; height:1.25rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
         </svg>
       <% end %>
-      <h1 class="text-2xl font-bold text-white"><%= @route.localized_topic %></h1>
+      <h1 style="font-size:1.5rem; font-weight:700; color:var(--color-txt); margin:0;"><%= @route.localized_topic %></h1>
     </div>
 
     <!-- Progress -->
-    <div class="mt-4">
+    <div style="margin-top:1rem;">
       <%= render "learning_routes_engine/routes/progress", route: @route, summary: @progress %>
     </div>
   </div>
 
   <!-- Social actions -->
-  <div class="flex items-center gap-3 mt-4 mb-6">
+  <div style="display:flex; align-items:center; gap:0.75rem; margin-top:1rem; margin-bottom:1.5rem;">
     <%= render "community_engine/likes/button", likeable: @route, liked: @route.liked_by?(current_user), likes_count: @route.likes.count %>
   </div>
 
   <!-- Due reviews -->
   <% if @due_reviews.any? %>
-    <div class="mb-8 bg-amber-900/20 border border-amber-700/30 rounded-xl p-5">
-      <h3 class="text-sm font-semibold text-amber-300 mb-3"><%= t('learning_engine.route.reviews_due', count: @due_reviews.size) %></h3>
-      <div class="space-y-2">
+    <div style="margin-bottom:2rem; background:var(--color-due-bg); border:1px solid var(--color-due-border); border-radius:0.75rem; padding:1.25rem;">
+      <h3 style="font-size:0.875rem; font-weight:600; color:var(--color-due-heading); margin:0 0 0.75rem;"><%= t('learning_engine.route.reviews_due', count: @due_reviews.size) %></h3>
+      <div style="display:flex; flex-direction:column; gap:0.5rem;">
         <% @due_reviews.first(3).each do |step| %>
-          <%= link_to route_step_path(@route, step), class: "block text-sm text-amber-200 hover:text-white transition" do %>
+          <%= link_to route_step_path(@route, step), style: "font-size:0.875rem; color:var(--color-due-text); text-decoration:none; transition:color 0.2s;" do %>
             <%= step.localized_title %>
           <% end %>
         <% end %>
       </div>
       <% if @due_reviews.size > 3 %>
-        <%= link_to t('learning_engine.route.see_all_reviews'), reviews_path, class: "text-xs text-amber-400 hover:text-amber-200 mt-2 inline-block" %>
+        <%= link_to t('learning_engine.route.see_all_reviews'), reviews_path, style: "font-size:0.75rem; color:var(--color-due-link); text-decoration:none; margin-top:0.5rem; display:inline-block;" %>
       <% end %>
     </div>
   <% end %>
 
   <!-- Steps list -->
-  <div class="flex items-center justify-between mb-4">
-    <h2 class="text-sm font-semibold text-gray-400 uppercase tracking-wider"><%= t('learning_engine.route.steps_title', default: 'Steps') %></h2>
-    <%= link_to main_app.profile_path, class: "inline-flex items-center gap-1.5 text-xs font-medium text-gray-500 hover:text-white bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.06] rounded-lg px-3 py-1.5 transition" do %>
-      <svg aria-hidden="true" class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+  <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:1rem;">
+    <h2 style="font-size:0.875rem; font-weight:600; color:var(--color-sub); text-transform:uppercase; letter-spacing:0.05em; margin:0;"><%= t('learning_engine.route.steps_title', default: 'Steps') %></h2>
+    <%= link_to main_app.profile_path, style: "display:inline-flex; align-items:center; gap:0.375rem; font-size:0.75rem; font-weight:500; color:var(--color-muted); text-decoration:none; background:var(--color-tint); border:1px solid var(--color-border-subtle); border-radius:0.5rem; padding:0.375rem 0.75rem; transition:all 0.2s;" do %>
+      <svg aria-hidden="true" style="width:0.875rem; height:0.875rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
       </svg>
       <%= t('learning_engine.route.exit_route', default: 'Exit Route') %>
     <% end %>
   </div>
 
-  <div class="space-y-3">
+  <div style="display:flex; flex-direction:column; gap:0.75rem;">
     <% @steps.each_with_index do |step, index| %>
       <% accessible = step.completed? || step.in_progress? || step.available? %>
-      <div class="group relative bg-gray-900 rounded-xl border border-white/[0.06] p-4 transition
-                  <%= 'hover:border-indigo-500/30 cursor-pointer' if accessible %>
-                  <%= 'opacity-50' if step.locked? %>">
+      <div style="position:relative; background:var(--color-card); border-radius:0.75rem; border:1px solid var(--color-border-subtle); padding:1rem; transition:all 0.2s; <%= 'cursor:pointer;' if accessible %> <%= 'opacity:0.5;' if step.locked? %>">
         <% if accessible %>
-          <%= link_to route_step_path(@route, step), class: "absolute inset-0 z-10", aria: { label: step.localized_title }, tabindex: "-1" do %><% end %>
+          <%= link_to route_step_path(@route, step), style: "position:absolute; inset:0; z-index:10;", aria: { label: step.localized_title }, tabindex: "-1" do %><% end %>
         <% end %>
 
-        <div class="flex items-center gap-4">
+        <div style="display:flex; align-items:center; gap:1rem;">
           <!-- Status icon -->
-          <div class="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center
-                      <%= step.completed? ? 'bg-green-900/50 text-green-400' :
-                          step.in_progress? ? 'bg-indigo-900/50 text-indigo-400' :
-                          step.available? ? 'bg-gray-800 text-white' :
-                          'bg-gray-800/50 text-gray-600' %>">
+          <%
+            icon_bg = step.completed? ? 'var(--color-step-completed-bg)' :
+                      step.in_progress? ? 'var(--color-step-progress-bg)' :
+                      step.available? ? 'var(--color-step-available-bg)' :
+                      'var(--color-step-locked-bg)'
+            icon_color = step.completed? ? 'var(--color-step-completed-icon)' :
+                         step.in_progress? ? 'var(--color-step-progress-icon)' :
+                         step.available? ? 'var(--color-txt)' :
+                         'var(--color-step-locked-icon)'
+          %>
+          <div style="flex-shrink:0; width:2.5rem; height:2.5rem; border-radius:50%; display:flex; align-items:center; justify-content:center; background:<%= icon_bg %>; color:<%= icon_color %>;">
             <% if step.completed? %>
-              <svg aria-hidden="true" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+              <svg aria-hidden="true" style="width:1.25rem; height:1.25rem;" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
             <% elsif step.locked? %>
-              <svg aria-hidden="true" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"/></svg>
+              <svg aria-hidden="true" style="width:1.25rem; height:1.25rem;" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"/></svg>
             <% else %>
-              <span class="text-sm font-bold"><%= index + 1 %></span>
+              <span style="font-size:0.875rem; font-weight:700;"><%= index + 1 %></span>
             <% end %>
           </div>
 
           <!-- Step info -->
-          <div class="flex-1 min-w-0">
-            <div class="flex items-center gap-2">
-              <h3 class="text-sm font-semibold text-white truncate"><%= step.localized_title %></h3>
-              <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium
-                          <%= case step.content_type
-                              when 'lesson' then 'bg-blue-900/50 text-blue-300'
-                              when 'exercise' then 'bg-emerald-900/50 text-emerald-300'
-                              when 'assessment' then 'bg-orange-900/50 text-orange-300'
-                              when 'review' then 'bg-purple-900/50 text-purple-300'
-                              else 'bg-gray-800 text-gray-400'
-                              end %>">
+          <div style="flex:1; min-width:0;">
+            <div style="display:flex; align-items:center; gap:0.5rem;">
+              <h3 style="font-size:0.875rem; font-weight:600; color:var(--color-txt); margin:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"><%= step.localized_title %></h3>
+              <%
+                badge_bg = case step.content_type
+                           when 'lesson' then 'var(--color-badge-lesson-bg)'
+                           when 'exercise' then 'var(--color-badge-exercise-bg)'
+                           when 'assessment' then 'var(--color-badge-assessment-bg)'
+                           when 'review' then 'var(--color-badge-review-bg)'
+                           else 'var(--color-tint-strong)'
+                           end
+                badge_color = case step.content_type
+                              when 'lesson' then 'var(--color-badge-lesson-text)'
+                              when 'exercise' then 'var(--color-badge-exercise-text)'
+                              when 'assessment' then 'var(--color-badge-assessment-text)'
+                              when 'review' then 'var(--color-badge-review-text)'
+                              else 'var(--color-sub)'
+                              end
+              %>
+              <span style="display:inline-flex; align-items:center; border-radius:9999px; padding:0.125rem 0.5rem; font-size:0.75rem; font-weight:500; background:<%= badge_bg %>; color:<%= badge_color %>;">
                 <%= t("learning_engine.#{step.content_type}.badge") %>
               </span>
             </div>
-            <p class="text-xs text-gray-500 mt-0.5 truncate"><%= step.localized_description %></p>
+            <p style="font-size:0.75rem; color:var(--color-muted); margin:0.125rem 0 0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"><%= step.localized_description %></p>
           </div>
 
           <!-- Duration -->
-          <div class="flex-shrink-0 text-xs text-gray-500">
+          <div style="flex-shrink:0; font-size:0.75rem; color:var(--color-muted);">
             <% if step.estimated_minutes.to_i > 0 %>
               <%= t('learning_engine.route.duration', minutes: step.estimated_minutes) %>
             <% end %>
@@ -107,9 +120,7 @@
   </div>
 
   <!-- Comments section -->
-  <div class="mt-10 pt-8 border-t border-white/[0.06]">
-    <div class="[&_h3]:text-gray-200 [&_p]:text-gray-300 [&_span]:text-gray-400 [&_textarea]:bg-gray-900 [&_textarea]:border-gray-700 [&_textarea]:text-gray-200 [&_textarea]:placeholder-gray-500 [&_button[type=submit]]:bg-gray-700 [&_button[type=submit]]:text-gray-200">
-      <%= render "community_engine/comments/section", commentable: @route %>
-    </div>
+  <div style="margin-top:2.5rem; padding-top:2rem; border-top:1px solid var(--color-border-subtle);">
+    <%= render "community_engine/comments/section", commentable: @route %>
   </div>
 </div>

@@ -3,7 +3,7 @@
 
 <div id="voice_evaluation_<%= voice_response.id %>"
      class="rounded-[14px] p-5"
-     style="background: rgba(28,25,18,0.5); border: 1px solid rgba(232,228,220,0.06);">
+     style="background: var(--color-tint-strong); border: 1px solid var(--color-border-subtle);">
   <div class="flex flex-col items-center gap-3 py-6">
     <%# Pulsing AI brain icon %>
     <div class="relative">
@@ -18,10 +18,10 @@
       </div>
     </div>
 
-    <p class="text-sm font-medium" style="color: #E8E4DC; font-family: 'DM Sans', sans-serif;">
+    <p class="text-sm font-medium" style="color: var(--color-txt); font-family: 'DM Sans', sans-serif;">
       <%= t("voice_evaluation.evaluating_response") %>
     </p>
-    <p class="text-xs" style="color: #605848; font-family: 'DM Sans', sans-serif;">
+    <p class="text-xs" style="color: var(--color-faint); font-family: 'DM Sans', sans-serif;">
       <%= t("voice_evaluation.evaluating_detail") %>
     </p>
 

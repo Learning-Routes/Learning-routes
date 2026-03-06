@@ -30,7 +30,10 @@ module Core
     private
 
     def redirect_if_signed_in
-      redirect_to main_app.dashboard_path if current_user
+      if current_user
+        redirect_to main_app.dashboard_path
+        return
+      end
     end
   end
 end

@@ -1,7 +1,8 @@
 <div id="<%= dom_id(note) %>">
   <textarea data-action="input->note-taking#save"
             data-note-id="<%= note.id %>"
-            class="w-full bg-gray-800/50 border border-white/[0.04] rounded-lg p-3 text-sm text-gray-300 placeholder-gray-600 resize-none focus:outline-none focus:border-indigo-500/30"
+            class="w-full rounded-lg p-3 text-sm resize-none focus:outline-none"
+            style="background:var(--color-tint-strong); border:1px solid var(--color-tint); color:var(--color-sub); placeholder-color:var(--color-faint);"
             rows="4"
             placeholder="<%= t("content_engine.notes.placeholder") %>"><%= note.body %></textarea>
 </div>

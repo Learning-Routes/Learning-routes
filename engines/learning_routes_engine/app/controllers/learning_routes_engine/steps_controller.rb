@@ -56,8 +56,9 @@ module LearningRoutesEngine
     end
 
     def authorize_route_owner!
-      unless @route.learning_profile.user_id == current_user.id
+      unless @route.learning_profile&.user_id == current_user.id
         redirect_to main_app.dashboard_path, alert: t("flash.not_authorized")
+        return
       end
     end
 
@@ -65,6 +66,7 @@ module LearningRoutesEngine
       if @step.locked?
         redirect_to learning_routes_engine.route_path(@route),
                     alert: t("flash.step_not_available")
+        return
       end
     end
 

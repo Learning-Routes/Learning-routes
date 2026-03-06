@@ -10,12 +10,13 @@ module Assessments
 
       # Authorization: verify user owns this step's route
       route = step.learning_route
-      return head(:forbidden) unless route.learning_profile.user_id == current_user.id
+      return head(:forbidden) unless route.learning_profile&.user_id == current_user.id
 
       # Validate audio file
       audio = params[:audio]
       return head(:bad_request) unless audio.respond_to?(:read)
       return head(:request_entity_too_large) if audio.respond_to?(:size) && audio.size > MAX_AUDIO_SIZE
+      return head(:unsupported_media_type) if audio.respond_to?(:content_type) && !ALLOWED_CONTENT_TYPES.include?(audio.content_type)
 
       dir = Rails.root.join("storage", "voice_responses")
       FileUtils.mkdir_p(dir)

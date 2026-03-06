@@ -3,7 +3,7 @@
 
 <div id="audio_player_<%= step.id %>"
      class="rounded-[14px]"
-     style="background: #1C1812; border: 1px solid rgba(248,113,113,0.15); padding: 1.5rem;">
+     style="background: var(--color-card); border: 1px solid rgba(248,113,113,0.15); padding: 1.5rem;">
   <div class="flex flex-col items-center gap-3 py-6">
     <%# Error icon %>
     <div class="w-14 h-14 rounded-full flex items-center justify-center"
@@ -19,7 +19,7 @@
     </p>
 
     <% if error.present? %>
-      <p class="text-xs text-center max-w-xs" style="color: #605848; font-family: 'DM Sans', sans-serif;">
+      <p class="text-xs text-center max-w-xs" style="color: var(--color-faint); font-family: 'DM Sans', sans-serif;">
         <%= error.to_s.truncate(120) %>
       </p>
     <% end %>

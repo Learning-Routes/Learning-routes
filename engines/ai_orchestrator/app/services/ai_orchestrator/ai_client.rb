@@ -1,7 +1,7 @@
 module AiOrchestrator
   class AiClient
     RUBY_LLM_MODELS = %w[
-      gpt-5.2 gpt-5.1-codex-mini
+      gpt-5.2 gpt-4.1-mini
       claude-opus-4-5 claude-haiku-4-5 claude-sonnet-4-5
     ].freeze
 
@@ -35,7 +35,11 @@ module AiOrchestrator
       merged_params = model_defaults.merge(params).except(:response_format)
 
       chat.with_temperature(merged_params[:temperature]) if merged_params[:temperature]
-      chat.with_max_tokens(merged_params[:max_tokens]) if merged_params[:max_tokens]
+      if merged_params[:max_tokens]
+        # GPT-5.x models require max_completion_tokens; GPT-4.x supports max_tokens
+        token_key = @model.start_with?("gpt-5") ? :max_completion_tokens : :max_tokens
+        chat.with_params(token_key => merged_params[:max_tokens])
+      end
 
       if system_prompt.present?
         chat.with_instructions(system_prompt)

@@ -1,25 +1,26 @@
 <div id="<%= dom_id(@step, :review) %>" class="space-y-6">
   <div>
-    <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-purple-900/50 text-purple-300 mb-2">
+    <span style="display:inline-flex; align-items:center; border-radius:9999px; padding:0.125rem 0.625rem; font-size:0.75rem; font-weight:500; background:var(--color-badge-review-bg); color:var(--color-badge-review-text); margin-bottom:0.5rem;">
       <%= t('learning_engine.review.badge') %>
     </span>
-    <h1 class="text-2xl font-bold text-white"><%= @step.localized_title %></h1>
-    <p class="text-sm text-gray-400 mt-1"><%= @step.localized_description %></p>
+    <h1 style="font-size:1.5rem; font-weight:700; color:var(--color-txt); margin:0;"><%= @step.localized_title %></h1>
+    <p style="font-size:0.875rem; color:var(--color-sub); margin:0.25rem 0 0;"><%= @step.localized_description %></p>
   </div>
 
   <!-- Memory strength indicator -->
   <% if @retrievability %>
-    <div class="bg-gray-900 border border-white/[0.06] rounded-xl p-5">
-      <h3 class="text-sm font-semibold text-gray-300 mb-3"><%= t('learning_engine.review.memory_strength') %></h3>
-      <div class="flex items-center gap-4">
-        <div class="flex-1">
-          <div class="h-3 bg-gray-800 rounded-full overflow-hidden">
-            <div class="h-full rounded-full transition-all duration-500
-                        <%= @retrievability >= 0.7 ? 'bg-green-500' : @retrievability >= 0.4 ? 'bg-yellow-500' : 'bg-red-500' %>"
-                 style="width: <%= (@retrievability * 100).round %>%"></div>
+    <div style="background:var(--color-card); border:1px solid var(--color-border-subtle); border-radius:0.75rem; padding:1.25rem;">
+      <h3 style="font-size:0.875rem; font-weight:600; color:var(--color-sub); margin:0 0 0.75rem;"><%= t('learning_engine.review.memory_strength') %></h3>
+      <div style="display:flex; align-items:center; gap:1rem;">
+        <div style="flex:1;">
+          <%
+            strength_color = @retrievability >= 0.7 ? 'var(--color-positive)' : @retrievability >= 0.4 ? 'var(--color-warning)' : 'var(--color-negative)'
+          %>
+          <div style="height:0.75rem; background:var(--color-progress-track); border-radius:9999px; overflow:hidden;">
+            <div style="height:100%; border-radius:9999px; transition:width 0.5s; background:<%= strength_color %>; width:<%= (@retrievability * 100).round %>%;"></div>
           </div>
         </div>
-        <span class="text-sm font-semibold <%= @retrievability >= 0.7 ? 'text-green-400' : @retrievability >= 0.4 ? 'text-yellow-400' : 'text-red-400' %>">
+        <span style="font-size:0.875rem; font-weight:600; color:<%= strength_color %>;">
           <%= (@retrievability * 100).round %>%
         </span>
       </div>
@@ -27,40 +28,43 @@
   <% end %>
 
   <!-- Concept map placeholder -->
-  <div class="bg-gray-900 border border-white/[0.06] rounded-xl p-5" data-controller="mind-map">
-    <h3 class="text-sm font-semibold text-gray-300 mb-3"><%= t('learning_engine.review.concept_map') %></h3>
-    <div data-mind-map-target="svg" class="w-full h-64 flex items-center justify-center">
+  <div style="background:var(--color-card); border:1px solid var(--color-border-subtle); border-radius:0.75rem; padding:1.25rem;" data-controller="mind-map">
+    <h3 style="font-size:0.875rem; font-weight:600; color:var(--color-sub); margin:0 0 0.75rem;"><%= t('learning_engine.review.concept_map') %></h3>
+    <div data-mind-map-target="svg" style="width:100%; min-height:16rem; display:flex; align-items:center; justify-content:center;">
       <% if @review_steps.any? %>
-        <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 w-full">
+        <div style="display:grid; grid-template-columns:repeat(2, 1fr); gap:0.75rem; width:100;">
           <% @review_steps.each do |step| %>
-            <div class="bg-gray-800/50 border border-white/[0.04] rounded-lg p-3 text-center">
-              <div class="text-xs font-medium text-gray-300 truncate"><%= step.localized_title %></div>
-              <div class="text-xs text-gray-500 mt-1"><%= t("learning_engine.#{step.content_type}.badge") %></div>
+            <div style="background:var(--color-tint-strong); border:1px solid var(--color-tint); border-radius:0.5rem; padding:0.75rem; text-align:center;">
+              <div style="font-size:0.75rem; font-weight:500; color:var(--color-sub); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"><%= step.localized_title %></div>
+              <div style="font-size:0.75rem; color:var(--color-muted); margin-top:0.25rem;"><%= t("learning_engine.#{step.content_type}.badge") %></div>
             </div>
           <% end %>
         </div>
       <% else %>
-        <p class="text-sm text-gray-500"><%= t('learning_engine.review.no_steps') %></p>
+        <p style="font-size:0.875rem; color:var(--color-muted);"><%= t('learning_engine.review.no_steps') %></p>
       <% end %>
     </div>
   </div>
 
   <!-- FSRS Rating buttons -->
   <% unless @step.completed? %>
-    <div class="bg-gray-900 border border-white/[0.06] rounded-xl p-5">
-      <h3 class="text-sm font-semibold text-gray-300 mb-4"><%= t('learning_engine.review.prompt') %></h3>
-      <div class="grid grid-cols-4 gap-3">
-        <% [
-          [1, t('learning_engine.review.again'), "text-red-400", "bg-red-900/30 border-red-700/30 hover:bg-red-900/50"],
-          [2, t('learning_engine.review.hard'), "text-orange-400", "bg-orange-900/30 border-orange-700/30 hover:bg-orange-900/50"],
-          [3, t('learning_engine.review.good'), "text-green-400", "bg-green-900/30 border-green-700/30 hover:bg-green-900/50"],
-          [4, t('learning_engine.review.easy'), "text-blue-400", "bg-blue-900/30 border-blue-700/30 hover:bg-blue-900/50"]
-        ].each do |rating, label, text_class, bg_class| %>
+    <div style="background:var(--color-card); border:1px solid var(--color-border-subtle); border-radius:0.75rem; padding:1.25rem;">
+      <h3 style="font-size:0.875rem; font-weight:600; color:var(--color-sub); margin:0 0 1rem;"><%= t('learning_engine.review.prompt') %></h3>
+      <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:0.75rem;">
+        <%
+          ratings = [
+            [1, t('learning_engine.review.again'), 'var(--color-negative)', 'var(--color-negative-bg)', 'var(--color-negative-border)'],
+            [2, t('learning_engine.review.hard'), 'var(--color-warning)', 'var(--color-warning-bg)', 'var(--color-warning-border)'],
+            [3, t('learning_engine.review.good'), 'var(--color-positive)', 'var(--color-positive-bg)', 'var(--color-positive-border)'],
+            [4, t('learning_engine.review.easy'), 'var(--color-info)', 'var(--color-info-bg)', 'var(--color-info-border)']
+          ]
+        %>
+        <% ratings.each do |rating, label, text_color, bg_color, border_color| %>
           <%= button_to label,
               learning_routes_engine.submit_review_review_path(@step),
               params: { rating: rating },
               method: :post,
-              class: "rounded-lg px-3 py-3 text-sm font-semibold #{text_class} #{bg_class} border transition" %>
+              style: "border-radius:0.5rem; padding:0.75rem; font-size:0.875rem; font-weight:600; color:#{text_color}; background:#{bg_color}; border:1px solid #{border_color}; cursor:pointer; transition:all 0.2s;" %>
         <% end %>
       </div>
     </div>

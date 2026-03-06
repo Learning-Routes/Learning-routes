@@ -37,12 +37,12 @@ module CommunityEngine
 
     def increment_commentable_counter
       return unless commentable.respond_to?(:comments_count)
-      commentable.class.where(id: commentable_id).update_all("comments_count = comments_count + 1")
+      commentable.class.where(id: commentable_id).update_all(Arel.sql("comments_count = comments_count + 1"))
     end
 
     def decrement_commentable_counter
       return unless commentable.respond_to?(:comments_count)
-      commentable.class.where(id: commentable_id).update_all("comments_count = GREATEST(comments_count - 1, 0)")
+      commentable.class.where(id: commentable_id).update_all(Arel.sql("comments_count = GREATEST(comments_count - 1, 0)"))
     end
   end
 end

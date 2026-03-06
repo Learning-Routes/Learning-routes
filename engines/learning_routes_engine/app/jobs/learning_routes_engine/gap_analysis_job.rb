@@ -1,6 +1,7 @@
 module LearningRoutesEngine
   class GapAnalysisJob < ApplicationJob
     queue_as :default
+    retry_on StandardError, wait: :polynomially_longer, attempts: 3
 
     def perform(route_id, assessment_result_id: nil, user_feedback: nil)
       route = LearningRoute.find(route_id)

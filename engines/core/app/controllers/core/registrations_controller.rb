@@ -1,7 +1,9 @@
 module Core
   class RegistrationsController < ApplicationController
     layout "auth"
-    rate_limit to: 5, within: 3.minutes, only: :create
+    rate_limit to: 5, within: 3.minutes, only: :create, with: -> {
+      redirect_to core.sign_up_path, alert: I18n.t("flash.too_many_requests")
+    }
     before_action :redirect_if_signed_in, only: [:new, :create]
 
     def new
@@ -28,7 +30,10 @@ module Core
     end
 
     def redirect_if_signed_in
-      redirect_to main_app.dashboard_path if current_user
+      if current_user
+        redirect_to main_app.dashboard_path
+        return
+      end
     end
   end
 end

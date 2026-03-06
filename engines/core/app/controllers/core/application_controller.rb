@@ -55,15 +55,35 @@ module Core
     end
 
     def find_session_from_cookie
-      return unless session[:core_session_id]
-      sess = Core::Session.includes(:user).find_by(id: session[:core_session_id])
-      if sess && !sess.expired?
-        sess.touch_last_active! if sess.last_active_at.nil? || sess.last_active_at < 1.hour.ago
-        sess
-      else
+      if session[:core_session_id]
+        sess = Core::Session.includes(:user).find_by(id: session[:core_session_id])
+        if sess && !sess.expired?
+          sess.touch_last_active! if sess.last_active_at.nil? || sess.last_active_at < 1.hour.ago
+          return sess
+        end
         session.delete(:core_session_id)
-        nil
       end
+
+      recover_session_from_remember_token
+    end
+
+    def recover_session_from_remember_token
+      token = cookies.signed[:remember_token]
+      return unless token
+
+      user = Core::User.find_by(remember_token: token)
+      unless user
+        cookies.delete(:remember_token)
+        return
+      end
+
+      sess = user.sessions.create!(
+        ip_address: request.remote_ip,
+        user_agent: request.user_agent,
+        last_active_at: Time.current
+      )
+      session[:core_session_id] = sess.id
+      sess
     end
 
     def set_current_session
@@ -73,12 +93,14 @@ module Core
     def authenticate_user!
       unless current_user
         redirect_to core.sign_in_path, alert: t("flash.must_sign_in")
+        return
       end
     end
 
     def require_role(*roles)
       unless current_user&.role&.to_sym.in?(roles)
         redirect_to main_app.root_path, alert: t("flash.not_authorized")
+        return
       end
     end
 
@@ -102,12 +124,14 @@ module Core
         cookies.signed.permanent[:remember_token] = {
           value: token,
           httponly: true,
-          secure: Rails.env.production?
+          secure: Rails.env.production?,
+          same_site: :lax
         }
       end
     end
 
     def end_session
+      current_user&.forget! if cookies.signed[:remember_token].present?
       current_session&.destroy
       session.delete(:core_session_id)
       cookies.delete(:remember_token)

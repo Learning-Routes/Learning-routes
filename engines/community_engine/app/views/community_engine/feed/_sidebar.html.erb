@@ -3,7 +3,7 @@
   <% if current_user %>
     <%
       profile = current_user.learning_profile
-      shareable_routes = profile&.learning_routes&.where(status: "active")&.order(updated_at: :desc) || []
+      shareable_routes = profile&.learning_routes&.active_routes&.order(updated_at: :desc) || []
       already_shared_ids = current_user.shared_routes.pluck(:learning_route_id)
       unshared_routes = shareable_routes.reject { |r| already_shared_ids.include?(r.id) }
     %>

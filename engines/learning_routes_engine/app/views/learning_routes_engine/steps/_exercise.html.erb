@@ -1,10 +1,10 @@
 <div class="space-y-6">
   <div>
-    <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-emerald-900/50 text-emerald-300 mb-2">
+    <span style="display:inline-flex; align-items:center; border-radius:9999px; padding:0.125rem 0.625rem; font-size:0.75rem; font-weight:500; background:var(--color-badge-exercise-bg); color:var(--color-badge-exercise-text); margin-bottom:0.5rem;">
       <%= t('learning_engine.exercise.badge') %>
     </span>
-    <h1 class="text-2xl font-bold text-white"><%= @step.localized_title %></h1>
-    <p class="text-sm text-gray-400 mt-1"><%= @step.localized_description %></p>
+    <h1 style="font-size:1.5rem; font-weight:700; color:var(--color-txt); margin:0;"><%= @step.localized_title %></h1>
+    <p style="font-size:0.875rem; color:var(--color-sub); margin:0.25rem 0 0;"><%= @step.localized_description %></p>
   </div>
 
   <% if @content_generating %>
@@ -17,25 +17,25 @@
 
     <!-- Code editor -->
     <div data-controller="code-editor"
-         data-code-editor-language-value="<%= @step.metadata['language'] || 'javascript' %>"
+         data-code-editor-language-value="<%= @step.metadata&.dig('language') || 'javascript' %>"
          data-code-editor-step-id-value="<%= @step.id %>">
       <div class="code-block">
-        <div class="flex items-center justify-between px-4 py-2 border-b border-white/[0.06]">
-          <span class="text-xs text-gray-500 font-mono"><%= @step.metadata['language'] || 'javascript' %></span>
-          <div class="flex gap-2">
-            <button data-action="click->code-editor#reset" class="text-xs text-gray-500 hover:text-white transition"><%= t('learning_engine.exercise.reset') %></button>
+        <div style="display:flex; align-items:center; justify-content:space-between; padding:0.5rem 1rem; border-bottom:1px solid var(--color-border-subtle);">
+          <span style="font-size:0.75rem; color:var(--color-muted); font-family:'DM Mono',monospace;"><%= @step.metadata&.dig('language') || 'javascript' %></span>
+          <div style="display:flex; gap:0.5rem;">
+            <button data-action="click->code-editor#reset" style="font-size:0.75rem; color:var(--color-muted); background:none; border:none; cursor:pointer;"><%= t('learning_engine.exercise.reset') %></button>
           </div>
         </div>
         <div data-code-editor-target="editorContainer" class="min-h-[300px]"></div>
       </div>
 
-      <div class="flex gap-3 mt-4">
+      <div style="display:flex; gap:0.75rem; margin-top:1rem;">
         <button data-action="click->code-editor#submit"
-                class="rounded-lg px-4 py-2 text-sm font-semibold text-white bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-400 hover:to-purple-400 transition">
+                style="border-radius:0.5rem; padding:0.5rem 1rem; font-size:0.875rem; font-weight:600; color:#fff; border:none; cursor:pointer; background:linear-gradient(to right, #6366f1, #a855f7); transition:opacity 0.2s;">
           <%= t('learning_engine.exercise.submit') %>
         </button>
         <button data-action="click->code-editor#requestHint"
-                class="rounded-lg px-4 py-2 text-sm font-medium text-gray-300 bg-gray-800 hover:bg-gray-700 border border-white/[0.06] transition">
+                style="border-radius:0.5rem; padding:0.5rem 1rem; font-size:0.875rem; font-weight:500; color:var(--color-sub); background:var(--color-tint-strong); border:1px solid var(--color-border-subtle); cursor:pointer; transition:all 0.2s;">
           <%= t('learning_engine.exercise.hint') %>
         </button>
       </div>
@@ -48,18 +48,18 @@
     </div>
 
     <!-- Previous submissions -->
-    <% submissions = @step.metadata["submissions"] || [] %>
+    <% submissions = @step.metadata&.dig("submissions") || [] %>
     <% if submissions.any? %>
       <div class="mt-6">
-        <h3 class="text-sm font-semibold text-gray-400 mb-3"><%= t('learning_engine.exercise.previous_submissions') %></h3>
+        <h3 style="font-size:0.875rem; font-weight:600; color:var(--color-sub); margin:0 0 0.75rem;"><%= t('learning_engine.exercise.previous_submissions') %></h3>
         <div class="space-y-2">
           <% submissions.last(3).reverse.each do |sub| %>
-            <div class="bg-gray-900 border border-white/[0.06] rounded-lg p-3 text-sm">
-              <div class="flex items-center justify-between mb-1">
-                <span class="text-gray-400"><%= t('learning_engine.exercise.score') %> <span class="<%= sub['score'].to_f >= 70 ? 'text-green-400' : 'text-red-400' %>"><%= sub['score'] %>%</span></span>
-                <span class="text-xs text-gray-600"><%= sub['submitted_at'] %></span>
+            <div style="background:var(--color-card); border:1px solid var(--color-border-subtle); border-radius:0.5rem; padding:0.75rem; font-size:0.875rem;">
+              <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:0.25rem;">
+                <span style="color:var(--color-sub);"><%= t('learning_engine.exercise.score') %> <span style="color:<%= sub['score'].to_f >= 70 ? 'var(--color-positive)' : 'var(--color-negative)' %>;"><%= sub['score'] %>%</span></span>
+                <span style="font-size:0.75rem; color:var(--color-faint-text);"><%= sub['submitted_at'] %></span>
               </div>
-              <p class="text-gray-300 text-xs"><%= sub['feedback'] %></p>
+              <p style="color:var(--color-sub); font-size:0.75rem; margin:0;"><%= sub['feedback'] %></p>
             </div>
           <% end %>
         </div>
@@ -67,7 +67,7 @@
     <% end %>
   <% else %>
     <div class="text-center py-12">
-      <p class="text-gray-400"><%= t('learning_engine.exercise.no_content') %></p>
+      <p style="color:var(--color-sub);"><%= t('learning_engine.exercise.no_content') %></p>
     </div>
   <% end %>
 </div>
