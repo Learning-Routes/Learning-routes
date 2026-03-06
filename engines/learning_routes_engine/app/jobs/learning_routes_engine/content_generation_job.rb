@@ -58,9 +58,12 @@ module LearningRoutesEngine
     private
 
     # AI may return JSON with a "content" key or plain markdown.
-    # Extract the markdown body either way.
+    # Handles: raw JSON, JSON wrapped in ```json fences, or plain markdown.
     def extract_markdown(raw)
-      parsed = JSON.parse(raw)
+      # Strip markdown code fence wrapper if present
+      stripped = raw.gsub(/\A\s*```\w*\s*\n?/, "").gsub(/\n?\s*```\s*\z/, "").strip
+
+      parsed = JSON.parse(stripped)
       parsed["content"] || parsed.values.find { |v| v.is_a?(String) && v.length > 100 } || raw
     rescue JSON::ParserError
       raw
