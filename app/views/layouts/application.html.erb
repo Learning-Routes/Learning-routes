@@ -22,7 +22,7 @@
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300..700;1,9..40,300..700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 
     <%# Prevent flash of wrong theme before JS loads %>
-    <script>
+    <script nonce="<%= content_security_policy_nonce %>">
       (function(){
         var p = "<%= current_theme %>";
         var t = p === "system" ? (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light") : p;

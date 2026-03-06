@@ -20,7 +20,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.21/dist/katex.min.css">
 
     <%# Prevent flash of wrong theme before JS loads %>
-    <script>
+    <script nonce="<%= content_security_policy_nonce %>">
       (function(){
         var p = "<%= current_theme %>";
         var t = p === "system" ? (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light") : p;

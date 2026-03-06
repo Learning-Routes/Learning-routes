@@ -93,7 +93,7 @@ module LearningRoutesEngine
           RouteGenerator.new(@profile).generate!
         end
 
-        route = LearningRoute.last
+        route = LearningRoute.order(created_at: :desc).first
         assert_equal "failed", route.generation_status
       end
     end
