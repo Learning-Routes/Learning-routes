@@ -10,6 +10,10 @@ production:
     class: Core::SessionCleanupJob
     queue: low
     schedule: every day at 3am UTC
+  cost_alert_check:
+    class: AiOrchestrator::CostAlertJob
+    queue: default
+    schedule: every hour
 
 development:
   daily_streak_reset:
@@ -20,3 +24,7 @@ development:
     class: Core::SessionCleanupJob
     queue: low
     schedule: every day at 3am UTC
+  cost_alert_check:
+    class: AiOrchestrator::CostAlertJob
+    queue: default
+    schedule: every hour
