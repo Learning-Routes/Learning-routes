@@ -25,11 +25,13 @@ module LearningRoutesEngine
       )
 
       if interaction.completed?
+        body = extract_markdown(interaction.response)
+
         ActiveRecord::Base.transaction do
           ContentEngine::AiContent.create!(
             route_step: step,
             content_type: :text,
-            body: interaction.response,
+            body: body,
             ai_model: interaction.model,
             metadata: {
               learning_route_id: route.id,
@@ -50,6 +52,17 @@ module LearningRoutesEngine
       else
         Rails.logger.error("[ContentGenerationJob] AI failed for step #{route_step_id}: #{interaction.status}")
       end
+    end
+
+    private
+
+    # AI may return JSON with a "content" key or plain markdown.
+    # Extract the markdown body either way.
+    def extract_markdown(raw)
+      parsed = JSON.parse(raw)
+      parsed["content"] || parsed.values.find { |v| v.is_a?(String) && v.length > 100 } || raw
+    rescue JSON::ParserError
+      raw
     end
   end
 end
