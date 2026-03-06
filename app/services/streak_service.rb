@@ -6,31 +6,35 @@ class StreakService
 
   def record_activity!
     today = Date.current
-    return @engagement if @engagement.last_activity_date == today
 
-    first_today = !@engagement.active_today?
+    ActiveRecord::Base.transaction do
+      @engagement.lock!
+      return @engagement if @engagement.last_activity_date == today
 
-    if @engagement.last_activity_date == today - 1
-      @engagement.current_streak += 1
-    elsif @engagement.last_activity_date == today - 2 &&
-          @engagement.streak_freezes_available > 0 &&
-          !@engagement.streak_freeze_used_today
-      @engagement.streak_freezes_available -= 1
-      @engagement.streak_freeze_used_today = true
-      @engagement.current_streak += 1
-    elsif @engagement.last_activity_date.nil? || @engagement.last_activity_date < today - 1
-      @engagement.current_streak = 1
-    end
+      first_today = !@engagement.active_today?
 
-    @engagement.last_activity_date = today
-    @engagement.longest_streak = [@engagement.longest_streak, @engagement.current_streak].max
+      if @engagement.last_activity_date == today - 1
+        @engagement.current_streak += 1
+      elsif @engagement.last_activity_date == today - 2 &&
+            @engagement.streak_freezes_available > 0 &&
+            !@engagement.streak_freeze_used_today
+        @engagement.streak_freezes_available -= 1
+        @engagement.streak_freeze_used_today = true
+        @engagement.current_streak += 1
+      elsif @engagement.last_activity_date.nil? || @engagement.last_activity_date < today - 1
+        @engagement.current_streak = 1
+      end
 
-    check_streak_milestones!
-    @engagement.save!
+      @engagement.last_activity_date = today
+      @engagement.longest_streak = [@engagement.longest_streak, @engagement.current_streak].max
 
-    # Daily first activity bonus
-    if first_today
-      XpService.award(@user, XpService::XP_VALUES[:daily_first_lesson], "daily_first_lesson")
+      check_streak_milestones!
+      @engagement.save!
+
+      # Daily first activity bonus
+      if first_today
+        XpService.award(@user, XpService::XP_VALUES[:daily_first_lesson], "daily_first_lesson")
+      end
     end
 
     @engagement

@@ -9,6 +9,10 @@ export default class extends Controller {
     liked: Boolean
   }
 
+  disconnect() {
+    if (this._pulseTimer) clearTimeout(this._pulseTimer)
+  }
+
   toggle(event) {
     event.preventDefault()
 
@@ -53,7 +57,9 @@ export default class extends Controller {
       this.iconTarget.innerHTML = this.likedValue ? this.filledHeart() : this.outlineHeart()
       if (this.likedValue) {
         this.iconTarget.classList.add("like-pulse")
-        setTimeout(() => this.iconTarget.classList.remove("like-pulse"), 300)
+        this._pulseTimer = setTimeout(() => {
+          if (this.hasIconTarget) this.iconTarget.classList.remove("like-pulse")
+        }, 300)
       }
     }
   }
