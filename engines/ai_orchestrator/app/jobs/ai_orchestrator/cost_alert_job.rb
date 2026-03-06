@@ -11,8 +11,7 @@ module AiOrchestrator
           "#{violation[:current]} cents (limit: #{violation[:limit]} cents)"
         )
 
-        # TODO: Send notification email to admin when mailer is set up
-        # AdminMailer.cost_alert(violation).deliver_later
+        AdminMailer.cost_alert(violation).deliver_later
       end
     end
   end
