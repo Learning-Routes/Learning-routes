@@ -725,6 +725,102 @@ html[data-theme="dark"] .learning-nav {
   }
   .lesson-content hr { @apply my-6; border-color: var(--color-border-subtle); }
   .lesson-content img { @apply rounded-xl max-w-full my-4; }
+
+  /* Interactive lesson blocks (:::concept, :::check, :::tip, :::example, :::summary) */
+  .lesson-block {
+    @apply rounded-xl my-6 overflow-hidden;
+    border: 1px solid var(--color-border-subtle);
+    background: var(--color-tint);
+  }
+  .lesson-block__header {
+    @apply flex items-center gap-2 px-4 py-3 text-sm font-semibold;
+    border-bottom: 1px solid var(--color-border-subtle);
+    color: var(--color-txt);
+  }
+  .lesson-block__icon { @apply text-base; }
+  .lesson-block__title { @apply text-sm font-semibold; color: var(--color-txt); }
+  .lesson-block__body { @apply px-4 py-3; }
+  .lesson-block__body p { @apply mb-2 text-sm leading-relaxed; color: var(--color-sub); }
+  .lesson-block__body p:last-child { @apply mb-0; }
+  .lesson-block__body ul { @apply mb-0; }
+
+  /* Concept card — accent left border */
+  .lesson-block--concept {
+    border-left: 4px solid #6366f1;
+    background: color-mix(in srgb, #6366f1 8%, var(--color-tint));
+  }
+  /* Tip card — amber accent */
+  .lesson-block--tip {
+    border-left: 4px solid #f59e0b;
+    background: color-mix(in srgb, #f59e0b 6%, var(--color-tint));
+  }
+  /* Example card — emerald accent */
+  .lesson-block--example {
+    border-left: 4px solid #10b981;
+    background: color-mix(in srgb, #10b981 6%, var(--color-tint));
+  }
+  /* Summary card — softer background */
+  .lesson-block--summary {
+    border-left: 4px solid var(--color-txt);
+    background: color-mix(in srgb, var(--color-txt) 5%, var(--color-tint));
+  }
+  /* Knowledge check */
+  .lesson-block--check {
+    border-left: 4px solid #8b5cf6;
+    background: color-mix(in srgb, #8b5cf6 6%, var(--color-tint));
+  }
+
+  /* Check question & options */
+  .lesson-check__question {
+    @apply text-sm font-medium mb-3;
+    color: var(--color-txt);
+  }
+  .lesson-check__options { @apply flex flex-col gap-2; }
+  .lesson-check__option {
+    @apply flex items-center gap-3 rounded-lg px-4 py-3 text-sm text-left cursor-pointer transition-all;
+    border: 1px solid var(--color-border-subtle);
+    background: var(--color-card);
+    color: var(--color-sub);
+  }
+  .lesson-check__option:hover {
+    border-color: #8b5cf6;
+    background: color-mix(in srgb, #8b5cf6 8%, var(--color-card));
+  }
+  .lesson-check__letter {
+    @apply flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold shrink-0;
+    background: var(--color-tint-strong);
+    color: var(--color-sub);
+  }
+  .lesson-check__option--correct {
+    border-color: #10b981 !important;
+    background: color-mix(in srgb, #10b981 12%, var(--color-card)) !important;
+    color: var(--color-txt) !important;
+    opacity: 1 !important;
+  }
+  .lesson-check__option--correct .lesson-check__letter {
+    background: #10b981;
+    color: #fff;
+  }
+  .lesson-check__option--wrong {
+    border-color: #ef4444 !important;
+    background: color-mix(in srgb, #ef4444 10%, var(--color-card)) !important;
+    opacity: 1 !important;
+  }
+  .lesson-check__option--wrong .lesson-check__letter {
+    background: #ef4444;
+    color: #fff;
+  }
+  .lesson-check__feedback {
+    @apply mt-3 px-4 py-2 rounded-lg text-sm font-medium;
+  }
+  .lesson-check__feedback--correct {
+    background: color-mix(in srgb, #10b981 15%, var(--color-tint));
+    color: #10b981;
+  }
+  .lesson-check__feedback--wrong {
+    background: color-mix(in srgb, #ef4444 10%, var(--color-tint));
+    color: #ef4444;
+  }
 }
 
 /* ============================================================
