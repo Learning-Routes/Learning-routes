@@ -65,8 +65,8 @@ class ProfilesController < ApplicationController
       @streak = 0
     end
     @member_since = @user.created_at
-    @followers_count = @user.followers.count
-    @following_count = @user.following.count
+    @followers_count = @user.followers_count
+    @following_count = @user.following_count
 
     # Shared routes for the "Share My Routes" feature
     @shared_routes = current_user.shared_routes.includes(:learning_route).order(created_at: :desc)

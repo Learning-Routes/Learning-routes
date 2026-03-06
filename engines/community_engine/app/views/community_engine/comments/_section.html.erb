@@ -3,7 +3,7 @@
      data-comment-edit-save-text-value="<%= t('community_engine.comments.save') %>">
   <%# Header %>
   <h3 style="font-family:'DM Sans',sans-serif; font-weight:700; font-size:1.1rem; color:var(--color-txt, #1C1812); margin:0 0 1rem;">
-    <%= t("community_engine.comments.heading", count: commentable.comments.count) %>
+    <%= t("community_engine.comments.heading", count: commentable.try(:comments_count) || commentable.comments.count) %>
   </h3>
 
   <%# Top-level comment form %>

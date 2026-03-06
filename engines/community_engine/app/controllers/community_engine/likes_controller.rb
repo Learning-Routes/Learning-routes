@@ -36,7 +36,7 @@ module CommunityEngine
           @liked = false
 
           @likeable = likeable
-          @likes_count = likeable.likes.count
+          @likes_count = likeable.reload.likes_count
           return respond_to do |format|
             format.turbo_stream {
               render turbo_stream: turbo_stream.replace(
@@ -64,7 +64,7 @@ module CommunityEngine
       end
 
       @likeable = likeable
-      @likes_count = likeable.likes.count
+      @likes_count = likeable.reload.likes_count
 
       respond_to do |format|
         format.turbo_stream {
