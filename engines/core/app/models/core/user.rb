@@ -6,6 +6,10 @@ module Core
     has_many :route_requests, class_name: "::RouteRequest", foreign_key: :user_id, dependent: :destroy
     has_one :learning_profile, class_name: "LearningRoutesEngine::LearningProfile", dependent: :destroy
 
+    # Engagement
+    has_one :user_engagement, class_name: "::UserEngagement", dependent: :destroy
+    has_many :xp_transactions, class_name: "::XpTransaction", dependent: :destroy
+
     # Community associations
     has_many :comments, class_name: "CommunityEngine::Comment", dependent: :destroy
     has_many :likes, class_name: "CommunityEngine::Like", dependent: :destroy

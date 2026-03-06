@@ -1,0 +1,16 @@
+<%# Celebration trigger element — appended to #celebrations via Turbo Stream.
+    The celebration_controller reads the data values and fires the appropriate animation tier.
+    tier: "micro" | "medium" | "big" | "epic"
+    xp: integer XP amount
+    message: display message
+    level: new level number (epic only)
+    streak: streak count (for milestones)
+%>
+<div data-controller="celebration"
+     data-celebration-tier-value="<%= tier %>"
+     data-celebration-xp-value="<%= xp || 0 %>"
+     data-celebration-message-value="<%= message || '' %>"
+     data-celebration-level-value="<%= level || 0 %>"
+     data-celebration-streak-value="<%= streak || 0 %>"
+     style="display:none;">
+</div>

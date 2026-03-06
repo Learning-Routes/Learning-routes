@@ -1,0 +1,42 @@
+<%# Engagement stats bar: streak flame + XP counter + level badge %>
+<% engagement ||= current_user&.user_engagement %>
+<% return unless engagement %>
+
+<div style="display:flex; align-items:center; gap:0.65rem;">
+  <%# Streak flame %>
+  <div data-engagement-target="streak" title="<%= t('engagement.streak_days', count: engagement.current_streak) %>"
+       style="display:flex; align-items:center; gap:0.2rem; cursor:default;">
+    <span data-engagement-target="flameIcon" style="font-size:1rem; line-height:1; transition:transform 0.3s;">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="<%= engagement.streak_active? ? '#F59E0B' : 'var(--color-muted, #887F72)' %>" aria-hidden="true">
+        <path d="M12 23c-4.97 0-9-3.58-9-8 0-3.19 2.13-6.65 4-8.5 0 0 .5 3.5 3 5.5 0-5 3.5-10 6-12 0 3 1.5 5 3 6.5 1.5 1.5 2 3.5 2 5.5 0 5-4.03 9-9 9z"/>
+      </svg>
+    </span>
+    <span data-engagement-target="streakCount" style="font-family:'DM Mono',monospace; font-size:0.72rem; font-weight:600; color:var(--color-txt, #1C1812); min-width:1ch;">
+      <%= engagement.current_streak %>
+    </span>
+  </div>
+
+  <%# XP counter %>
+  <div data-engagement-target="xpWrap" title="<%= t('engagement.total_xp', count: engagement.total_xp) %>"
+       style="display:flex; align-items:center; gap:0.2rem; position:relative; cursor:default;">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--color-muted, #887F72)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+    </svg>
+    <span data-engagement-target="xpCount" style="font-family:'DM Mono',monospace; font-size:0.72rem; font-weight:600; color:var(--color-txt, #1C1812); min-width:2ch;">
+      <%= number_to_human(engagement.total_xp, precision: 1, significant: false, format: '%n%u', units: { thousand: 'k', million: 'M' }) %>
+    </span>
+    <%# Floating XP gain text — hidden by default, shown by Stimulus %>
+    <span data-engagement-target="xpFloat" style="position:absolute; top:-1.2rem; left:50%; transform:translateX(-50%); font-family:'DM Mono',monospace; font-size:0.65rem; font-weight:700; color:#5BA880; opacity:0; pointer-events:none; white-space:nowrap;">
+    </span>
+  </div>
+
+  <%# Level badge %>
+  <div data-engagement-target="levelBadge" title="<%= t('engagement.level_n', level: engagement.current_level) %>"
+       style="display:flex; align-items:center; gap:0.15rem; background:var(--color-faint, rgba(28,24,18,0.04)); border-radius:8px; padding:0.15rem 0.45rem; cursor:default; position:relative; overflow:hidden;">
+    <%# Level progress background %>
+    <div data-engagement-target="levelProgress" style="position:absolute; inset:0; width:<%= engagement.level_progress_percentage %>%; background:rgba(91,168,128,0.12); border-radius:8px; transition:width 0.6s ease;"></div>
+    <span style="font-family:'DM Mono',monospace; font-size:0.65rem; font-weight:700; color:var(--color-sub, #6D665B); position:relative; z-index:1;">
+      Nv<span data-engagement-target="levelNum"><%= engagement.current_level %></span>
+    </span>
+  </div>
+</div>
