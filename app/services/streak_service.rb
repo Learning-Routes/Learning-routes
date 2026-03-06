@@ -6,6 +6,8 @@ class StreakService
 
   def record_activity!
     today = Date.current
+    first_today = false
+    streak_milestone = nil
 
     ActiveRecord::Base.transaction do
       @engagement.lock!
@@ -28,13 +30,17 @@ class StreakService
       @engagement.last_activity_date = today
       @engagement.longest_streak = [@engagement.longest_streak, @engagement.current_streak].max
 
-      check_streak_milestones!
-      @engagement.save!
+      # Capture milestone before save
+      streak_milestone = find_streak_milestone(@engagement.current_streak)
 
-      # Daily first activity bonus
-      if first_today
-        XpService.award(@user, XpService::XP_VALUES[:daily_first_lesson], "daily_first_lesson")
-      end
+      @engagement.save!
+    end
+
+    # Award XP outside the lock (each creates its own transaction)
+    XpService.award(@user, XpService::XP_VALUES[:daily_first_lesson], "daily_first_lesson") if first_today
+
+    if streak_milestone
+      XpService.award(@user, XpService::XP_VALUES[streak_milestone], streak_milestone.to_s)
     end
 
     @engagement
@@ -42,12 +48,7 @@ class StreakService
 
   private
 
-  def check_streak_milestones!
-    streak = @engagement.current_streak
-    { 7 => :streak_bonus_7, 30 => :streak_bonus_30, 100 => :streak_bonus_100 }.each do |days, source|
-      if streak == days
-        XpService.award(@user, XpService::XP_VALUES[source], source.to_s)
-      end
-    end
+  def find_streak_milestone(streak)
+    { 7 => :streak_bonus_7, 30 => :streak_bonus_30, 100 => :streak_bonus_100 }[streak]
   end
 end

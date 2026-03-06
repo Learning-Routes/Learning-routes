@@ -102,17 +102,21 @@ module AiOrchestrator
       return unless limit
 
       key = "ai_rate_limit:#{model_name}"
-      current = Rails.cache.read(key).to_i
 
-      if current >= limit
-        raise RateLimitExceeded, "Rate limit exceeded for #{model_name}: #{current}/#{limit} rpm"
-      end
-
-      # Atomic increment; initialize to 1 if key doesn't exist yet
+      # Atomic increment-then-check: increment first, check after
       if Rails.cache.respond_to?(:increment)
-        Rails.cache.write(key, 0, expires_in: 1.minute) unless Rails.cache.read(key)
-        Rails.cache.increment(key)
+        # Initialize key if missing, then atomically increment
+        Rails.cache.write(key, 0, expires_in: 1.minute, unless_exist: true)
+        count = Rails.cache.increment(key)
+        if count > limit
+          Rails.cache.decrement(key)
+          raise RateLimitExceeded, "Rate limit exceeded for #{model_name}: #{count}/#{limit} rpm"
+        end
       else
+        current = Rails.cache.read(key).to_i
+        if current >= limit
+          raise RateLimitExceeded, "Rate limit exceeded for #{model_name}: #{current}/#{limit} rpm"
+        end
         Rails.cache.write(key, current + 1, expires_in: 1.minute)
       end
     end

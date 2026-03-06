@@ -1447,3 +1447,7 @@ es:
     quiz_passed: "Quiz aprobado!"
     perfect_score: "Puntuacion perfecta!"
     level_up: "Nivel %{level}!"
+    level_label: "NIVEL"
+    congrats: "Felicidades!"
+    new_level: "Has alcanzado un nuevo nivel"
+    continue: "Continuar"
