@@ -83,7 +83,9 @@ Rails.application.configure do
   # Enable DNS rebinding protection and other `Host` header attacks.
   config.hosts = [
     "learning-routes.com",
-    /.*\.learning-routes\.com/
+    /.*\.learning-routes\.com/,
+    "learningroutes.com",
+    /.*\.learningroutes\.com/
   ]
 
   # Skip DNS rebinding protection for the default health check endpoint.
