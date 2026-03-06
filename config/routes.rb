@@ -37,6 +37,10 @@ Rails.application.routes.draw do
   get "terms", to: "pages#terms", as: :terms
   get "privacy", to: "pages#privacy", as: :privacy
 
+  # PWA
+  get "manifest" => "rails/pwa#manifest", as: :pwa_manifest
+  get "service-worker" => "rails/pwa#service_worker", as: :pwa_service_worker
+
   # Health check endpoint for load balancers and uptime monitors
   get "up" => "rails/health#show", as: :rails_health_check
 
