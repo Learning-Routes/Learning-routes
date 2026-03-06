@@ -42,26 +42,28 @@ module LearningRoutesEngine
 
         assessment_type = ASSESSMENT_TYPE_MAP[step.metadata["assessment_type"]] || :diagnostic
 
-        assessment = Assessments::Assessment.create!(
-          route_step: step,
-          assessment_type: assessment_type,
-          passing_score: 70.0,
-        )
-
-        Array(parsed["questions"]).each do |q|
-          Assessments::Question.create!(
-            assessment: assessment,
-            body: q["question"],
-            question_type: map_question_type(q["type"]),
-            options: q["options"] || [],
-            correct_answer: q["correct_answer"],
-            explanation: q["explanation"],
-            difficulty: q["difficulty"] || 1,
-            bloom_level: q["bloom_level"] || step.bloom_level || 1
+        ActiveRecord::Base.transaction do
+          assessment = Assessments::Assessment.create!(
+            route_step: step,
+            assessment_type: assessment_type,
+            passing_score: 70.0,
           )
-        end
 
-        step.update!(metadata: step.metadata.merge(assessment_id: assessment.id, assessment_generated: true))
+          Array(parsed["questions"]).each do |q|
+            Assessments::Question.create!(
+              assessment: assessment,
+              body: q["question"],
+              question_type: map_question_type(q["type"]),
+              options: q["options"] || [],
+              correct_answer: q["correct_answer"],
+              explanation: q["explanation"],
+              difficulty: q["difficulty"] || 1,
+              bloom_level: q["bloom_level"] || step.bloom_level || 1
+            )
+          end
+
+          step.update!(metadata: step.metadata.merge(assessment_id: assessment.id, assessment_generated: true))
+        end
         Rails.logger.info("[AssessmentGenerationJob] Assessment generated for step #{route_step_id}: #{parsed['questions']&.size} questions")
       else
         Rails.logger.error("[AssessmentGenerationJob] AI failed for step #{route_step_id}: #{interaction.status}")

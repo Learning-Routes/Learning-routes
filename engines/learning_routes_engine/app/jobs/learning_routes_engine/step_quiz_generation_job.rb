@@ -40,26 +40,28 @@ module LearningRoutesEngine
         )
         parsed = parser.parse!
 
-        assessment = Assessments::Assessment.create!(
-          route_step: step,
-          assessment_type: :step_quiz,
-          passing_score: 80.0
-        )
-
-        Array(parsed["questions"]).first(5).each do |q|
-          Assessments::Question.create!(
-            assessment: assessment,
-            body: q["question"],
-            question_type: :multiple_choice,
-            options: q["options"] || [],
-            correct_answer: q["correct_answer"],
-            explanation: q["explanation"],
-            difficulty: q["difficulty"] || 1,
-            bloom_level: q["bloom_level"] || step.bloom_level || 2
+        ActiveRecord::Base.transaction do
+          assessment = Assessments::Assessment.create!(
+            route_step: step,
+            assessment_type: :step_quiz,
+            passing_score: 80.0
           )
-        end
 
-        step.update!(metadata: step.metadata.merge("step_quiz_id" => assessment.id, "step_quiz_generated" => true))
+          Array(parsed["questions"]).first(5).each do |q|
+            Assessments::Question.create!(
+              assessment: assessment,
+              body: q["question"],
+              question_type: :multiple_choice,
+              options: q["options"] || [],
+              correct_answer: q["correct_answer"],
+              explanation: q["explanation"],
+              difficulty: q["difficulty"] || 1,
+              bloom_level: q["bloom_level"] || step.bloom_level || 2
+            )
+          end
+
+          step.update!(metadata: step.metadata.merge("step_quiz_id" => assessment.id, "step_quiz_generated" => true))
+        end
         Rails.logger.info("[StepQuizGenerationJob] Quiz generated for step #{route_step_id}: #{parsed['questions']&.size} questions")
       else
         Rails.logger.error("[StepQuizGenerationJob] AI failed for step #{route_step_id}: #{interaction.status}")

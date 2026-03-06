@@ -6,10 +6,12 @@ module LearningRoutesEngine
       @route = route
       @result = assessment_result
       @user_feedback = user_feedback
-      @user = route.learning_profile.user
+      @user = route.learning_profile&.user
     end
 
     def analyze!
+      return [] unless @user
+
       gaps_data = gather_gap_sources
       return [] if gaps_data.empty?
 
