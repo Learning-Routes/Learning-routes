@@ -44,6 +44,12 @@ module LearningRoutesEngine
       if @result.passed?
         tracker = RouteProgressTracker.new(@route)
         tracker.complete_step!(@step)
+        @xp_result = tracker.xp_result
+
+        # Award quiz XP (perfect if 100%)
+        quiz_source = score >= 100 ? "quiz_perfect" : "quiz_complete"
+        quiz_xp = XpService::XP_VALUES[quiz_source.to_sym]
+        @xp_result = XpService.award(current_user, quiz_xp, quiz_source, source_id: @quiz.id.to_s)
 
         Analytics::StudySession.for_user(current_user)
           .active.where(route_step_id: @step.id)

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_03_04_173357) do
+ActiveRecord::Schema[8.1].define(version: 2026_03_06_200000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -508,6 +508,36 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_04_173357) do
     t.index ["user_id"], name: "index_route_requests_on_user_id"
   end
 
+  create_table "user_engagements", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "current_league", default: "bronze"
+    t.integer "current_level", default: 1, null: false
+    t.integer "current_streak", default: 0, null: false
+    t.date "last_activity_date"
+    t.integer "longest_streak", default: 0, null: false
+    t.jsonb "preferences", default: {}, null: false
+    t.boolean "streak_freeze_used_today", default: false
+    t.integer "streak_freezes_available", default: 1, null: false
+    t.integer "total_xp", default: 0, null: false
+    t.datetime "updated_at", null: false
+    t.uuid "user_id", null: false
+    t.jsonb "weekly_xp", default: {}, null: false
+    t.integer "xp_to_next_level", default: 100, null: false
+    t.index ["user_id"], name: "index_user_engagements_on_user_id", unique: true
+  end
+
+  create_table "xp_transactions", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.integer "amount", null: false
+    t.datetime "created_at", null: false
+    t.jsonb "metadata", default: {}
+    t.string "source_id"
+    t.string "source_type", null: false
+    t.datetime "updated_at", null: false
+    t.uuid "user_id", null: false
+    t.index ["user_id", "created_at"], name: "index_xp_transactions_on_user_id_and_created_at"
+    t.index ["user_id"], name: "index_xp_transactions_on_user_id"
+  end
+
   add_foreign_key "assessments_assessment_results", "assessments_assessments", column: "assessment_id"
   add_foreign_key "assessments_questions", "assessments_assessments", column: "assessment_id"
   add_foreign_key "assessments_user_answers", "assessments_questions", column: "question_id"
@@ -535,4 +565,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_04_173357) do
   add_foreign_key "learning_routes_engine_route_steps", "learning_routes_engine_learning_routes", column: "learning_route_id"
   add_foreign_key "route_requests", "core_users", column: "user_id"
   add_foreign_key "route_requests", "learning_routes_engine_learning_routes", column: "learning_route_id"
+  add_foreign_key "user_engagements", "core_users", column: "user_id"
+  add_foreign_key "xp_transactions", "core_users", column: "user_id"
 end

@@ -41,6 +41,7 @@ module LearningRoutesEngine
 
       tracker = RouteProgressTracker.new(@route)
       tracker.complete_step!(@step)
+      @xp_result = tracker.xp_result
       finish_study_session!
 
       next_available = @route.route_steps

@@ -1433,3 +1433,17 @@ es:
       success: "¡Ruta compartida exitosamente!"
       copy: "Copiar"
       done: "Listo"
+  engagement:
+    streak_days:
+      one: "Racha de %{count} dia"
+      other: "Racha de %{count} dias"
+    total_xp:
+      one: "%{count} XP"
+      other: "%{count} XP"
+    level_n: "Nivel %{level}"
+  celebration:
+    step_complete: "Etapa completada!"
+    route_complete: "Ruta completada!"
+    quiz_passed: "Quiz aprobado!"
+    perfect_score: "Puntuacion perfecta!"
+    level_up: "Nivel %{level}!"

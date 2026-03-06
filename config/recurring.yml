@@ -1,10 +1,14 @@
 # Solid Queue recurring tasks
 # https://github.com/rails/solid_queue#recurring-tasks
-#
-# Add cron-like recurring jobs here. Examples:
-#
-# production:
-#   periodic_cleanup:
-#     class: CleanupJob
-#     queue: maintenance
-#     schedule: every day at 3am
+
+production:
+  daily_streak_reset:
+    class: DailyStreakCheckJob
+    queue: low
+    schedule: every day at 6am UTC
+
+development:
+  daily_streak_reset:
+    class: DailyStreakCheckJob
+    queue: low
+    schedule: every day at 6am UTC

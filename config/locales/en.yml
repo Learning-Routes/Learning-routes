@@ -1433,3 +1433,17 @@ en:
       success: "Route shared successfully!"
       copy: "Copy"
       done: "Done"
+  engagement:
+    streak_days:
+      one: "%{count} day streak"
+      other: "%{count} day streak"
+    total_xp:
+      one: "%{count} XP"
+      other: "%{count} XP"
+    level_n: "Level %{level}"
+  celebration:
+    step_complete: "Step completed!"
+    route_complete: "Route completed!"
+    quiz_passed: "Quiz passed!"
+    perfect_score: "Perfect score!"
+    level_up: "Level %{level}!"

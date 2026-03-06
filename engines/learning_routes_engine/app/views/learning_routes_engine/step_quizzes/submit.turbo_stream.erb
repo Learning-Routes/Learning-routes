@@ -33,8 +33,33 @@
   <% progress = LearningRoutesEngine::RouteProgressTracker.new(@route).progress_summary %>
   <%= turbo_stream.replace "route_progress_bar" do %>
     <div id="route_progress_bar"
-         class="h-full bg-gradient-to-r from-indigo-500 to-purple-500 transition-all duration-700"
-         style="width: <%= progress[:percentage] %>%"></div>
+         style="height:100%; background:linear-gradient(to right, #6366f1, #a855f7); transition:width 0.7s ease; width:<%= progress[:percentage] %>%;"></div>
+  <% end %>
+
+  <%# Update engagement stats %>
+  <% engagement = current_user.user_engagement %>
+  <% if engagement %>
+    <%= turbo_stream.replace "engagement_stats" do %>
+      <div id="engagement_stats"
+           data-controller="engagement"
+           data-engagement-xp-value="<%= engagement.total_xp %>"
+           data-engagement-level-value="<%= engagement.current_level %>"
+           data-engagement-streak-value="<%= engagement.current_streak %>"
+           data-engagement-progress-value="<%= engagement.level_progress_percentage %>"
+           data-engagement-xp-gained-value="<%= @result.score >= 100 ? XpService::XP_VALUES[:quiz_perfect] : XpService::XP_VALUES[:quiz_complete] %>"
+           data-engagement-leveled-up-value="false"
+           class="hidden md:flex">
+        <%= render "shared/engagement_bar", engagement: engagement %>
+      </div>
+    <% end %>
+  <% end %>
+
+  <%# Celebration %>
+  <% quiz_xp = @result.score >= 100 ? XpService::XP_VALUES[:quiz_perfect] + XpService::XP_VALUES[:step_complete] : XpService::XP_VALUES[:quiz_complete] + XpService::XP_VALUES[:step_complete] %>
+  <%= turbo_stream.append "celebrations" do %>
+    <%= render "shared/celebration", tier: @result.score >= 100 ? "big" : "medium",
+        xp: quiz_xp, message: @result.score >= 100 ? t("celebration.perfect_score") : t("celebration.quiz_passed"),
+        level: 0, streak: 0 %>
   <% end %>
 
 <% else %>

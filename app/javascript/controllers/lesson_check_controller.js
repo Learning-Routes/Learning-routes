@@ -27,11 +27,38 @@ export default class extends Controller {
     if (isCorrect) {
       btn.classList.add("lesson-check__option--correct")
       this._showFeedback(true)
+      this._microCelebration(btn)
     } else {
       btn.classList.add("lesson-check__option--wrong")
       btn.style.opacity = "1"
       this._showFeedback(false)
     }
+  }
+
+  _microCelebration(btn) {
+    // Green pulse + floating "+10 XP"
+    btn.style.transition = "box-shadow 0.3s"
+    btn.style.boxShadow = "inset 0 0 0 2px rgba(91,168,128,0.4), 0 0 12px rgba(91,168,128,0.15)"
+    setTimeout(() => { btn.style.boxShadow = "" }, 600)
+
+    // Floating XP
+    const span = document.createElement("span")
+    span.textContent = "+10 XP"
+    span.style.cssText = `
+      position:absolute; top:-0.3rem; right:0.5rem;
+      font-family:'DM Mono',monospace; font-size:0.78rem; font-weight:700;
+      color:#B09848; pointer-events:none; opacity:1; z-index:10;
+      transition:all 0.9s cubic-bezier(0.16,1,0.3,1);
+    `
+    const pos = getComputedStyle(btn.parentElement).position
+    if (pos === "static") btn.parentElement.style.position = "relative"
+    btn.parentElement.appendChild(span)
+
+    requestAnimationFrame(() => {
+      span.style.opacity = "0"
+      span.style.transform = "translateY(-2rem)"
+    })
+    setTimeout(() => span.remove(), 1100)
   }
 
   _showFeedback(correct) {

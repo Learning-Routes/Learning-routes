@@ -3,7 +3,7 @@
   Different from landing navbar: has user-specific nav links + avatar.
 %>
 
-<nav data-controller="app-nav" class="app-navbar" style="position:sticky; top:0; z-index:50; backdrop-filter:blur(16px) saturate(1.4); -webkit-backdrop-filter:blur(16px) saturate(1.4);">
+<nav data-controller="app-nav engagement" class="app-navbar" style="position:sticky; top:0; z-index:50; backdrop-filter:blur(16px) saturate(1.4); -webkit-backdrop-filter:blur(16px) saturate(1.4);">
   <div style="display:flex; align-items:center; justify-content:space-between; max-width:1100px; margin:0 auto; padding:0 clamp(1rem,3vw,2.25rem); height:56px;">
 
     <%# === Left: Logo === %>
@@ -34,8 +34,16 @@
       <% end %>
     </div>
 
-    <%# === Right: Locale toggle + Sign out + Avatar + mobile menu === %>
+    <%# === Right: Engagement + controls === %>
     <div style="display:flex; align-items:center; gap:0.8rem;">
+
+      <%# Engagement stats (streak, XP, level) %>
+      <% if current_user %>
+        <div id="engagement_stats" class="hidden md:flex">
+          <%= render "shared/engagement_bar", engagement: current_user.user_engagement %>
+        </div>
+        <div class="hidden md:block" style="width:1px; height:20px; background:var(--color-faint, rgba(28,24,18,0.08));"></div>
+      <% end %>
 
       <%# Theme toggle (desktop) %>
       <div class="hidden md:block">
@@ -106,6 +114,11 @@
       <% end %>
       <%= link_to t("nav.settings"), main_app.settings_path,
           style: "font-family:'DM Sans',sans-serif; font-size:0.88rem; font-weight:#{controller_name == 'settings' ? '600' : '400'}; color:#{controller_name == 'settings' ? 'var(--color-txt, #1C1812)' : 'var(--color-sub, #6D665B)'}; text-decoration:none; padding:0.45rem 0; transition:color 0.2s;" %>
+      <% if current_user&.user_engagement %>
+        <div style="padding:0.45rem 0;">
+          <%= render "shared/engagement_bar", engagement: current_user.user_engagement %>
+        </div>
+      <% end %>
       <div style="display:flex; align-items:center; gap:0.6rem; padding:0.45rem 0;">
         <%= render "shared/theme_toggle" %>
         <%= render "shared/locale_toggle" %>

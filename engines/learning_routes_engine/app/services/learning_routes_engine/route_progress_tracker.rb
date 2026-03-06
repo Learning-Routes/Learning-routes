@@ -5,8 +5,12 @@ module LearningRoutesEngine
       @spaced_repetition = SpacedRepetition.new
     end
 
+    attr_reader :xp_result
+
     # Mark a step as complete, initialize FSRS, advance route, unlock next
     def complete_step!(step)
+      route_just_completed = false
+
       ActiveRecord::Base.transaction do
         step.complete!
 
@@ -16,10 +20,14 @@ module LearningRoutesEngine
 
         # Advance current_step pointer
         advance_current_step!
+        route_just_completed = @route.completed?
 
         # Unlock next available steps
         unlock_next_steps!(step)
       end
+
+      # Award XP and record streak (outside transaction — non-critical)
+      @xp_result = award_engagement!(step, route_just_completed)
 
       broadcast_progress!
       step
@@ -77,6 +85,27 @@ module LearningRoutesEngine
       @route.route_steps.locked.find_each do |step|
         step.unlock_if_ready!
       end
+    end
+
+    def award_engagement!(step, route_completed)
+      user = @route.learning_profile&.user
+      return unless user
+
+      # Record daily streak activity
+      StreakService.new(user).record_activity!
+
+      # Award step completion XP
+      result = XpService.award(user, XpService::XP_VALUES[:step_complete], "step_complete", source_id: step.id.to_s)
+
+      # Award route completion bonus
+      if route_completed
+        result = XpService.award(user, XpService::XP_VALUES[:route_complete], "route_complete", source_id: @route.id.to_s)
+      end
+
+      result
+    rescue => e
+      Rails.logger.warn("[RouteProgressTracker] Engagement award failed: #{e.message}")
+      nil
     end
 
     def broadcast_progress!
