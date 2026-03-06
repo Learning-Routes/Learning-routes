@@ -1,0 +1,115 @@
+<% content_for(:title, "#{@route.localized_topic} #{t('learning_engine.route.title_suffix')}") %>
+
+<%
+  accent_color = helpers.route_accent_color(@route) rescue "#B0A898"
+  completed_count = @steps.count(&:completed?)
+  total_count = @steps.size
+%>
+
+<div id="journey-container"
+     data-controller="route-journey"
+     data-route-journey-stages-value="<%= ERB::Util.html_escape(@stages.to_json) %>"
+     style="height:100vh; overflow:auto; position:relative;">
+
+  <%# Ambient background glow %>
+  <div style="position:fixed; inset:0; pointer-events:none; background:radial-gradient(ellipse at 50% 35%, <%= accent_color %>05 0%, transparent 50%);"></div>
+
+  <%# Header section %>
+  <div data-route-journey-target="header"
+       style="height:280px; display:flex; flex-direction:column; align-items:center; justify-content:center; padding-top:50px; position:relative;">
+    <div style="font-family:'JetBrains Mono',monospace; font-size:0.55rem; font-weight:500; letter-spacing:2px; color:<%= accent_color %>; text-transform:uppercase; margin-bottom:12px; opacity:0.5;">
+      <%= t("learning_engine.journey.route_label") %>
+    </div>
+    <h1 style="font-family:'Instrument Serif',serif; font-size:2rem; font-weight:400; font-style:italic; color:var(--color-txt); margin:0 0 8px; text-align:center; padding:0 24px;">
+      <%= @route.localized_topic.presence || @route.topic %>
+    </h1>
+    <p style="font-family:'Manrope',sans-serif; font-size:0.72rem; color:var(--color-muted); font-weight:400; margin:0; text-align:center;">
+      <%= t("learning_engine.journey.subtitle", stages: @stages.size, topics: total_count, subject: @route.localized_subject_area.presence || @route.localized_topic) %>
+    </p>
+    <div style="margin-top:28px; font-family:'Manrope',sans-serif; font-size:0.62rem; color:var(--color-faint); display:flex; align-items:center; gap:6px;">
+      <span><%= t("learning_engine.journey.scroll_to_explore") %></span>
+      <svg width="10" height="10" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+        <path d="M8 3v10M4 9l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+  </div>
+
+  <%# Stage containers — rendered by Stimulus controller %>
+  <% @stages.each_with_index do |stage, i| %>
+    <div data-route-journey-target="stage"
+         data-stage-index="<%= i %>"
+         data-stage-level="<%= stage[:level] %>"
+         data-stage-status="<%= stage[:status] %>"
+         data-stage-color="<%= stage[:color] %>"
+         data-stage-label="<%= stage[:label] %>"
+         data-stage-tag="<%= stage[:tag] %>"
+         style="display:flex; flex-direction:column; align-items:center; padding:60px 24px 20px; position:relative; min-height:650px;">
+
+      <%# Ambient glow per stage %>
+      <div data-route-journey-target="stageGlow"
+           style="position:absolute; top:0; left:0; right:0; height:500px; pointer-events:none; background:radial-gradient(ellipse at 50% 40%, <%= stage[:color] %><%= stage[:status] == 'locked' ? '02' : '05' %> 0%, transparent 50%); opacity:0; transition:opacity 0.3s;"></div>
+
+      <%# SVG container for this stage — built by Stimulus %>
+      <div data-route-journey-target="stageSvg"
+           style="position:relative; width:480px; height:480px; max-width:calc(100vw - 48px); transition:transform 0.12s linear, opacity 0.12s linear;">
+      </div>
+
+      <%# Locked label below SVG %>
+      <% if stage[:status] == "locked" %>
+        <div data-route-journey-target="lockedLabel"
+             style="text-align:center; margin-top:8px; opacity:0; transition:opacity 0.3s;">
+          <div style="font-family:'Instrument Serif',serif; font-size:0.82rem; font-style:italic; color:var(--color-faint);">
+            <%= stage[:label] %>
+          </div>
+        </div>
+      <% end %>
+    </div>
+
+    <%# Path connector between stages %>
+    <% unless i == @stages.size - 1 %>
+      <div data-route-journey-target="connector"
+           data-connector-index="<%= i %>"
+           data-connector-color="<%= stage[:color] %>"
+           data-connector-locked="<%= stage[:status] == 'locked' %>"
+           style="display:flex; justify-content:center; height:180px;">
+      </div>
+    <% end %>
+  <% end %>
+
+  <%# End of route marker %>
+  <div style="height:250px; display:flex; align-items:center; justify-content:center;">
+    <div style="text-align:center; opacity:0.2;">
+      <div style="font-family:'Instrument Serif',serif; font-size:0.9rem; font-style:italic; color:var(--color-muted);">
+        <%= t("learning_engine.journey.end_of_route") %>
+      </div>
+      <div style="font-family:'JetBrains Mono',monospace; font-size:0.5rem; color:var(--color-faint); margin-top:6px;">
+        <%= t("learning_engine.journey.stages_topics", count: total_count, stages: @stages.size, topics: total_count) %>
+      </div>
+    </div>
+  </div>
+
+  <%# Rail dots — fixed right side %>
+  <div data-route-journey-target="rail"
+       style="position:fixed; right:20px; top:50%; transform:translateY(-50%); display:flex; flex-direction:column; align-items:center; gap:5px; z-index:20;"
+       role="navigation"
+       aria-label="<%= t('learning_engine.journey.stage_navigation') %>">
+    <% @stages.each_with_index do |stage, i| %>
+      <button data-route-journey-target="railDot"
+              data-action="click->route-journey#scrollToStage"
+              data-stage-index="<%= i %>"
+              aria-label="<%= t('learning_engine.journey.stage_of', current: i + 1, total: @stages.size) %> - <%= stage[:label] %>"
+              style="width:5px; height:5px; border-radius:50%; border:none; padding:0; cursor:pointer; background:<%= stage[:status] == 'locked' ? 'var(--color-faint)' : stage[:color] %>; opacity:<%= stage[:status] == 'locked' ? '0.06' : '0.15' %>; transition:all 0.35s;">
+      </button>
+    <% end %>
+  </div>
+
+  <%# List view link %>
+  <div style="position:fixed; bottom:16px; left:28px; z-index:20;">
+    <%= link_to route_path(@route), style: "display:inline-flex; align-items:center; gap:5px; font-family:'Manrope',sans-serif; font-size:0.65rem; color:var(--color-muted); text-decoration:none; background:var(--color-tint); border:1px solid var(--color-border-subtle); border-radius:8px; padding:6px 12px; transition:all 0.2s; backdrop-filter:blur(8px);" do %>
+      <svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+        <path d="M2 4h12M2 8h12M2 12h12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+      <%= t("learning_engine.journey.list_view") %>
+    <% end %>
+  </div>
+</div>

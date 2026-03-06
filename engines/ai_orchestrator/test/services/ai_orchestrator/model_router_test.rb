@@ -11,11 +11,11 @@ module AiOrchestrator
     end
 
     test "returns primary model for quick_grading" do
-      assert_equal "gpt-5.1-codex-mini", ModelRouter.model_for(:quick_grading)
+      assert_equal "gpt-4.1-mini", ModelRouter.model_for(:quick_grading)
     end
 
     test "returns primary model for voice_narration" do
-      assert_equal "gpt-5.1-codex-mini", ModelRouter.model_for(:voice_narration)
+      assert_equal "gpt-4.1-mini", ModelRouter.model_for(:voice_narration)
     end
 
     test "returns primary model for image_generation" do
@@ -23,7 +23,7 @@ module AiOrchestrator
     end
 
     test "returns fallback for assessment_questions" do
-      assert_equal "gpt-5.1-codex-mini", ModelRouter.fallback_for(:assessment_questions)
+      assert_equal "gpt-4.1-mini", ModelRouter.fallback_for(:assessment_questions)
     end
 
     test "returns fallback for voice_narration" do
@@ -68,7 +68,7 @@ module AiOrchestrator
         "success"
       end
 
-      assert_equal "gpt-5.1-codex-mini", yielded_model
+      assert_equal "gpt-4.1-mini", yielded_model
     end
 
     test "execute falls back when primary raises" do
@@ -83,7 +83,7 @@ module AiOrchestrator
         "fallback success"
       end
 
-      assert_equal ["gpt-5.2", "gpt-5.1-codex-mini"], models_tried
+      assert_equal ["gpt-5.2", "gpt-4.1-mini"], models_tried
     end
 
     test "execute raises AllModelsUnavailable when both fail" do

@@ -4,7 +4,8 @@ module LearningRoutesEngine
 
     has_one :step_quiz, -> { where(assessment_type: :step_quiz) },
             class_name: "Assessments::Assessment",
-            foreign_key: :route_step_id
+            foreign_key: :route_step_id,
+            dependent: :destroy
 
     has_many :ai_contents,
              class_name: "ContentEngine::AiContent",

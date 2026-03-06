@@ -61,7 +61,7 @@ module ContentEngine
     end
 
     def authorize_step_owner!(step)
-      unless step.learning_route.learning_profile.user_id == current_user.id
+      unless step.learning_route&.learning_profile&.user_id == current_user.id
         head :forbidden
         return false
       end

@@ -33,7 +33,7 @@ module CommunityEngine
 
       @stats = {
         total_users: Core::User.count,
-        total_routes: LearningRoutesEngine::LearningRoute.where(status: "active").count,
+        total_routes: LearningRoutesEngine::LearningRoute.where(status: :active).count,
         total_shared: SharedRoute.publicly_visible.count
       }
     end

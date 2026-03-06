@@ -1,5 +1,8 @@
 LearningRoutesEngine::Engine.routes.draw do
   resources :routes, only: [:show] do
+    member do
+      get :journey
+    end
     resources :steps, only: [:show] do
       member do
         post :complete

@@ -19,6 +19,9 @@ module CommunityEngine
 
     def show
       @shared_route = SharedRoute.find_by!(share_token: params[:id])
+      unless @shared_route.visibility.in?(%w[public unlisted]) || @shared_route.user_id == current_user&.id
+        raise ActiveRecord::RecordNotFound
+      end
       @route = @shared_route.learning_route
       @steps = @route.route_steps.order(:position)
       @comments = @shared_route.comments.top_level.includes(:user, replies: :user).recent

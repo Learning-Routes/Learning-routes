@@ -39,8 +39,9 @@ module ContentEngine
     def set_step_and_authorize!
       @step = LearningRoutesEngine::RouteStep.find(params[:id])
       route = @step.learning_route
-      unless route.learning_profile.user_id == current_user.id
+      unless route.learning_profile&.user_id == current_user.id
         head :forbidden
+        return
       end
     end
   end

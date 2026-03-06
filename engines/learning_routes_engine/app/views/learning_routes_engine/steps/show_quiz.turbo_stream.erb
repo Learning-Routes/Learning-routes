@@ -10,7 +10,7 @@
 
 <%# Append the quiz panel below the step content %>
 <%= turbo_stream.append "step_content_#{@step.id}" do %>
-  <div id="step_quiz_panel" class="mt-8 pt-6 border-t border-white/[0.06]">
+  <div id="step_quiz_panel" class="mt-8 pt-6 border-t" style="border-color:var(--color-border-subtle);">
     <% if @quiz_generating %>
       <%= render "learning_routes_engine/step_quizzes/generating", step: @step, route: @route %>
     <% else %>

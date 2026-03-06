@@ -100,7 +100,10 @@ module Core
     end
 
     def redirect_if_onboarded
-      redirect_to main_app.profile_path if current_user.onboarding_completed?
+      if current_user.onboarding_completed?
+        redirect_to main_app.profile_path
+        return
+      end
     end
   end
 end

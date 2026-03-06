@@ -1,6 +1,7 @@
 module LearningRoutesEngine
   class StepQuizGenerationJob < ApplicationJob
     queue_as :default
+    retry_on StandardError, wait: :polynomially_longer, attempts: 3
 
     QUESTION_COUNT = 4
 

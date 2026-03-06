@@ -1,7 +1,7 @@
 <%#
   Route card with compact SVG visualization.
   Locals: route (LearningRoute), accent_color (String hex)
-  Click opens the expanded route overlay (not a page navigation).
+  Click navigates to the V4 journey page.
 %>
 <%
   # Use the already-eager-loaded association (sorted by position via has_many default scope)
@@ -17,48 +17,13 @@
 
   # Color seed from UUID
   color_seed = route.id.to_s.delete("-").last(8).to_i(16)
-
-  # Build full route data for expanded overlay (JSON)
-  expanded_nodes = steps.map { |s|
-    # Extract satellite topics from metadata or description
-    sats = []
-    if s.metadata.is_a?(Hash)
-      sats = s.metadata["topics"] || s.metadata["satellite_topics"] || s.metadata["keywords"] || []
-    end
-    if sats.empty? && s.description.present?
-      sats = s.description.split(/[,.\n;:—–]/)
-        .map(&:strip)
-        .reject { |w| w.blank? || w.length < 4 || w.length > 35 }
-        .first(4)
-    end
-    sats << t("content_types.#{s.content_type}", default: s.content_type.humanize) if sats.empty?
-
-    {
-      label: s.localized_title,
-      status: s.status,
-      level: s.level,
-      content_type: s.content_type,
-      estimated_minutes: s.estimated_minutes,
-      satellites: sats
-    }
-  }
-
-  route_json = {
-    title: route.localized_topic,
-    subject_area: route.localized_subject_area || "",
-    color: accent_color,
-    status: route.status,
-    total_steps: route.total_steps,
-    progress: progress,
-    route_path: learning_routes_engine.route_path(route),
-    nodes: expanded_nodes
-  }
 %>
 
-<div role="button" tabindex="0" aria-label="<%= t("route_card_aria") %>" data-action="click->expanded-route#open keydown.enter->expanded-route#open keydown.space->expanded-route#open"
-     data-route="<%= route_json.to_json %>"
-     style="display:block; background:var(--color-card); border:1px solid var(--color-border-subtle); border-radius:18px; cursor:pointer; transition:all 0.25s cubic-bezier(0.22,1,0.36,1); overflow:hidden;"
-     class="card-hover">
+<%= link_to learning_routes_engine.journey_route_path(route),
+    aria: { label: t("route_card_aria") },
+    style: "display:block; background:var(--color-card); border:1px solid var(--color-border-subtle); border-radius:18px; cursor:pointer; transition:all 0.25s cubic-bezier(0.22,1,0.36,1); overflow:hidden; text-decoration:none; color:inherit;",
+    class: "card-hover",
+    data: { turbo_action: "advance" } do %>
 
   <%# === Compact Route SVG === %>
   <div style="padding:20px 20px 8px;"
@@ -127,4 +92,4 @@
       </div>
     </div>
   </div>
-</div>
+<% end %>

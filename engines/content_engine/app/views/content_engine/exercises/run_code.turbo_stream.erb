@@ -1,6 +1,6 @@
 <%= turbo_stream.replace "exercise_feedback_#{@step.id}" do %>
   <div id="exercise_feedback_<%= @step.id %>">
-    <div class="bg-gray-900 border border-white/[0.06] rounded-xl p-4 text-sm text-gray-400">
+    <div class="rounded-xl p-4 text-sm" style="background:var(--color-card); border:1px solid var(--color-border-subtle); color:var(--color-sub);">
       <%= @output %>
     </div>
   </div>

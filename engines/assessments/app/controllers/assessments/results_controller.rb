@@ -77,6 +77,7 @@ module Assessments
     def authorize_result_owner!
       unless @result.user_id == current_user.id
         redirect_to main_app.dashboard_path, alert: t("flash.not_authorized")
+        return
       end
     end
 

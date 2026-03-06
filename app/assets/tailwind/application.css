@@ -17,7 +17,7 @@
   --color-txt: #1C1812;
   --color-sub: #6D665B;
   --color-muted: #887F72;
-  --color-faint: #CCC5B8;
+  --color-faint: #B5AD9F;
   --color-accent: #2C261E;
   --color-accent-text: #F5F1EB;
 
@@ -96,7 +96,51 @@
   --color-status-paused-bg: rgba(176, 152, 72, 0.1);
   --color-status-paused-text: #8B6D28;
   --color-progress-bar: #5BA880;
-  --color-faint-text: #CCC5B8;
+  --color-faint-text: #B5AD9F;
+  /* Step type badge colors (learning pages) */
+  --color-badge-lesson-bg: rgba(59, 130, 246, 0.1);
+  --color-badge-lesson-text: #2563EB;
+  --color-badge-exercise-bg: rgba(16, 185, 129, 0.1);
+  --color-badge-exercise-text: #059669;
+  --color-badge-assessment-bg: rgba(249, 115, 22, 0.1);
+  --color-badge-assessment-text: #D97706;
+  --color-badge-review-bg: rgba(139, 92, 246, 0.1);
+  --color-badge-review-text: #7C3AED;
+  /* Progress bar track */
+  --color-progress-track: rgba(28, 24, 18, 0.06);
+  /* Journey page contrast (for SVG overlays) */
+  --journey-contrast-rgb: 28, 24, 18;
+  --journey-alpha-mult: 5;
+  --journey-opacity-mult: 2.5;
+  /* Tint hover (for interactive controls like buttons) */
+  --color-tint-hover: rgba(28, 24, 18, 0.14);
+  /* Step status icon colors */
+  --color-step-completed-bg: rgba(34, 197, 94, 0.1);
+  --color-step-completed-icon: #16a34a;
+  --color-step-progress-bg: rgba(99, 102, 241, 0.1);
+  --color-step-progress-icon: #4F46E5;
+  --color-step-available-bg: rgba(28, 24, 18, 0.06);
+  --color-step-locked-bg: rgba(28, 24, 18, 0.03);
+  --color-step-locked-icon: #B5AD9F;
+  /* Due reviews section */
+  --color-due-bg: rgba(217, 119, 6, 0.06);
+  --color-due-border: rgba(217, 119, 6, 0.15);
+  --color-due-heading: #92400E;
+  --color-due-text: #B45309;
+  --color-due-link: #D97706;
+  /* Semantic feedback colors */
+  --color-positive: #16A34A;
+  --color-positive-bg: rgba(22, 163, 74, 0.08);
+  --color-positive-border: rgba(22, 163, 74, 0.18);
+  --color-warning: #CA8A04;
+  --color-warning-bg: rgba(202, 138, 4, 0.08);
+  --color-warning-border: rgba(202, 138, 4, 0.18);
+  --color-negative: #DC2626;
+  --color-negative-bg: rgba(220, 38, 38, 0.08);
+  --color-negative-border: rgba(220, 38, 38, 0.18);
+  --color-info: #2563EB;
+  --color-info-bg: rgba(37, 99, 235, 0.08);
+  --color-info-border: rgba(37, 99, 235, 0.18);
 }
 
 html[data-theme="dark"] {
@@ -128,6 +172,43 @@ html[data-theme="dark"] {
   --color-status-paused-text: #D4B85C;
   --color-progress-bar: #5BA880;
   --color-faint-text: #6A6050;
+  --color-badge-lesson-bg: rgba(59, 130, 246, 0.15);
+  --color-badge-lesson-text: #93c5fd;
+  --color-badge-exercise-bg: rgba(16, 185, 129, 0.15);
+  --color-badge-exercise-text: #6ee7b7;
+  --color-badge-assessment-bg: rgba(249, 115, 22, 0.15);
+  --color-badge-assessment-text: #fdba74;
+  --color-badge-review-bg: rgba(139, 92, 246, 0.15);
+  --color-badge-review-text: #c4b5fd;
+  --color-progress-track: rgba(255, 255, 255, 0.06);
+  --journey-contrast-rgb: 255, 255, 255;
+  --journey-alpha-mult: 1;
+  --journey-opacity-mult: 1;
+  --color-tint-hover: rgba(255, 255, 255, 0.16);
+  --color-step-completed-bg: rgba(34, 197, 94, 0.15);
+  --color-step-completed-icon: #4ade80;
+  --color-step-progress-bg: rgba(99, 102, 241, 0.15);
+  --color-step-progress-icon: #818cf8;
+  --color-step-available-bg: rgba(255, 255, 255, 0.06);
+  --color-step-locked-bg: rgba(255, 255, 255, 0.03);
+  --color-step-locked-icon: #3D3730;
+  --color-due-bg: rgba(217, 119, 6, 0.1);
+  --color-due-border: rgba(217, 119, 6, 0.2);
+  --color-due-heading: #FCD34D;
+  --color-due-text: #FBBF24;
+  --color-due-link: #F59E0B;
+  --color-positive: #4ADE80;
+  --color-positive-bg: rgba(74, 222, 128, 0.12);
+  --color-positive-border: rgba(74, 222, 128, 0.22);
+  --color-warning: #FACC15;
+  --color-warning-bg: rgba(250, 204, 21, 0.12);
+  --color-warning-border: rgba(250, 204, 21, 0.22);
+  --color-negative: #F87171;
+  --color-negative-bg: rgba(248, 113, 113, 0.12);
+  --color-negative-border: rgba(248, 113, 113, 0.22);
+  --color-info: #60A5FA;
+  --color-info-bg: rgba(96, 165, 250, 0.12);
+  --color-info-border: rgba(96, 165, 250, 0.22);
 }
 
 html[data-theme="dark"] ::selection {
@@ -239,6 +320,17 @@ html[data-theme="dark"] .border-lr-hover {
 html[data-theme="dark"] .app-navbar {
   background: rgba(26, 23, 16, 0.92);
   border-bottom-color: rgba(255, 255, 255, 0.06);
+}
+
+/* Learning nav — theme-aware backgrounds */
+.learning-nav {
+  background: rgba(245, 241, 235, 0.88);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+html[data-theme="dark"] .learning-nav {
+  background: rgba(26, 23, 16, 0.85);
 }
 
 /* --- Reduced motion: disable all animations for users who prefer it --- */
@@ -583,44 +675,55 @@ html[data-theme="dark"] .app-navbar {
 /* === Code Block Container === */
 @layer components {
   .code-block {
-    @apply bg-[#0d1117] border border-white/[0.06] rounded-xl overflow-hidden my-4;
+    @apply bg-[#0d1117] rounded-xl overflow-hidden my-4;
+    border: 1px solid var(--color-border-subtle);
     font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace;
   }
 }
 
 /* ==========================================================================
-   LESSON CONTENT TYPOGRAPHY (learning app, dark bg)
+   LESSON CONTENT TYPOGRAPHY (theme-aware)
    ========================================================================== */
 
 @layer components {
-  .lesson-content h1 { @apply text-2xl font-extrabold text-white mt-8 mb-4; }
-  .lesson-content h2 { @apply text-xl font-bold text-white mt-8 mb-3; }
-  .lesson-content h3 { @apply text-lg font-semibold text-white mt-6 mb-2; }
-  .lesson-content h4 { @apply text-base font-semibold text-gray-200 mt-4 mb-2; }
-  .lesson-content p { @apply text-gray-300 leading-relaxed mb-4; }
-  .lesson-content strong { @apply text-white font-semibold; }
-  .lesson-content em { @apply text-gray-200 italic; }
-  .lesson-content ul { @apply list-disc list-inside space-y-1.5 text-gray-300 mb-4 ml-2; }
-  .lesson-content ol { @apply list-decimal list-inside space-y-1.5 text-gray-300 mb-4 ml-2; }
+  .lesson-content h1 { @apply text-2xl font-extrabold mt-8 mb-4; color: var(--color-txt); }
+  .lesson-content h2 { @apply text-xl font-bold mt-8 mb-3; color: var(--color-txt); }
+  .lesson-content h3 { @apply text-lg font-semibold mt-6 mb-2; color: var(--color-txt); }
+  .lesson-content h4 { @apply text-base font-semibold mt-4 mb-2; color: var(--color-sub); }
+  .lesson-content p { @apply leading-relaxed mb-4; color: var(--color-sub); }
+  .lesson-content strong { @apply font-semibold; color: var(--color-txt); }
+  .lesson-content em { @apply italic; color: var(--color-sub); }
+  .lesson-content ul { @apply list-disc list-inside space-y-1.5 mb-4 ml-2; color: var(--color-sub); }
+  .lesson-content ol { @apply list-decimal list-inside space-y-1.5 mb-4 ml-2; color: var(--color-sub); }
   .lesson-content li { @apply leading-relaxed; }
   .lesson-content blockquote {
-    @apply border-l-4 border-indigo-500/50 pl-4 py-1 my-4 text-gray-400 italic;
+    @apply border-l-4 border-indigo-500/50 pl-4 py-1 my-4 italic;
+    color: var(--color-muted);
   }
   .lesson-content a {
-    @apply text-indigo-400 hover:text-indigo-300 underline underline-offset-2 transition;
+    @apply underline underline-offset-2 transition;
+    color: var(--color-link);
   }
   .lesson-content code:not(pre code) {
-    @apply bg-white/[0.05] border border-white/[0.06] px-1.5 py-0.5 rounded text-sm text-purple-300;
+    @apply px-1.5 py-0.5 rounded text-sm;
+    background: var(--color-tint-strong);
+    border: 1px solid var(--color-border-subtle);
+    color: var(--color-badge-review-text);
     font-family: ui-monospace, SFMono-Regular, monospace;
   }
   .lesson-content table { @apply w-full border-collapse mb-4; }
   .lesson-content th {
-    @apply bg-gray-800/50 px-4 py-2 text-left text-sm font-semibold text-gray-300 border border-white/[0.06];
+    @apply px-4 py-2 text-left text-sm font-semibold;
+    background: var(--color-tint-strong);
+    color: var(--color-sub);
+    border: 1px solid var(--color-border-subtle);
   }
   .lesson-content td {
-    @apply px-4 py-2 text-sm text-gray-400 border border-white/[0.06];
+    @apply px-4 py-2 text-sm;
+    color: var(--color-muted);
+    border: 1px solid var(--color-border-subtle);
   }
-  .lesson-content hr { @apply border-white/[0.06] my-6; }
+  .lesson-content hr { @apply my-6; border-color: var(--color-border-subtle); }
   .lesson-content img { @apply rounded-xl max-w-full my-4; }
 }
 
@@ -654,4 +757,10 @@ html[data-theme="dark"] .app-navbar {
 .like-pulse { animation: likePulse 0.3s ease; }
 @keyframes likePulse { 0% { transform: scale(1); } 50% { transform: scale(1.3); } 100% { transform: scale(1); } }
 .liked { color: #ef4444; }
+
+/* Journey page */
+@keyframes journeyPulse {
+  0%, 100% { r: 54; opacity: 0.1; }
+  50% { r: 62; opacity: 0.02; }
+}
 

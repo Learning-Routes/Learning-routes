@@ -1,9 +1,12 @@
 module LearningRoutesEngine
   class ContentGenerationJob < ApplicationJob
     queue_as :default
+    retry_on StandardError, wait: :polynomially_longer, attempts: 3
 
     def perform(route_step_id)
       step = RouteStep.find(route_step_id)
+      return if ContentEngine::AiContent.where(route_step: step).by_type(:text).exists?
+
       route = step.learning_route
       profile = route.learning_profile
 

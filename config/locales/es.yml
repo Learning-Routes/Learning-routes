@@ -777,7 +777,7 @@ es:
   user_roles:
     student: "Estudiante"
     admin: "Administrador"
-    instructor: "Instructor"
+    teacher: "Instructor"
 
   # ── Etiquetas de Intereses ──
   interests:
@@ -901,6 +901,23 @@ es:
 
   # ── Learning Engine ──
   learning_engine:
+    journey:
+      route_label: "RUTA"
+      scroll_to_explore: "Desplaza para explorar"
+      back_to_profile: "Perfil"
+      end_of_route: "Fin de la ruta"
+      stages_topics:
+        one: "%{stages} etapa · %{topics} tema"
+        other: "%{stages} etapas · %{topics} temas"
+      subtitle: "Camino personalizado · %{stages} etapas · %{topics} temas · %{subject}"
+      stage_of: "Etapa %{current} de %{total}"
+      stage_navigation: "Navegacion de etapas"
+      list_view: "Vista de lista"
+      locked: "Bloqueado"
+      completed: "Completado"
+      nv1_label: "Fundamentos"
+      nv2_label: "Conceptos esenciales"
+      nv3_label: "Practica avanzada"
     route:
       title_suffix: "- Learning Routes"
       reviews_due:

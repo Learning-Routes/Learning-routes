@@ -1,6 +1,7 @@
 module LearningRoutesEngine
   class AssessmentGenerationJob < ApplicationJob
     queue_as :default
+    retry_on StandardError, wait: :polynomially_longer, attempts: 3
 
     ASSESSMENT_TYPE_MAP = {
       "quiz" => :diagnostic,
@@ -12,6 +13,8 @@ module LearningRoutesEngine
 
     def perform(route_step_id)
       step = RouteStep.find(route_step_id)
+      return if Assessments::Assessment.where(route_step: step).exists?
+
       route = step.learning_route
       profile = route.learning_profile
 

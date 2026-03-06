@@ -12,12 +12,12 @@ module CommunityEngine
 
     def increment_counter
       return unless likeable.respond_to?(:likes_count)
-      likeable.class.where(id: likeable_id).update_all("likes_count = likes_count + 1")
+      likeable.class.where(id: likeable_id).update_all(Arel.sql("likes_count = likes_count + 1"))
     end
 
     def decrement_counter
       return unless likeable.respond_to?(:likes_count)
-      likeable.class.where(id: likeable_id).update_all("likes_count = GREATEST(likes_count - 1, 0)")
+      likeable.class.where(id: likeable_id).update_all(Arel.sql("likes_count = GREATEST(likes_count - 1, 0)"))
     end
   end
 end

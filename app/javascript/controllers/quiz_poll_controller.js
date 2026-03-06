@@ -7,14 +7,17 @@ export default class extends Controller {
   }
 
   connect() {
+    this._active = true
     this.poll()
   }
 
   disconnect() {
+    this._active = false
     if (this.timeout) clearTimeout(this.timeout)
   }
 
   async poll() {
+    if (!this._active) return
     try {
       const response = await fetch(this.urlValue, {
         headers: {
@@ -24,6 +27,7 @@ export default class extends Controller {
         credentials: "same-origin"
       })
 
+      if (!this._active) return
       if (response.ok) {
         const html = await response.text()
         if (html.includes("turbo-stream")) {
@@ -32,9 +36,12 @@ export default class extends Controller {
         }
       }
     } catch (error) {
+      if (!this._active) return
       console.warn("Quiz poll failed:", error)
     }
 
-    this.timeout = setTimeout(() => this.poll(), this.intervalValue)
+    if (this._active) {
+      this.timeout = setTimeout(() => this.poll(), this.intervalValue)
+    }
   }
 }

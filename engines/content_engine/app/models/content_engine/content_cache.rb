@@ -15,8 +15,10 @@ module ContentEngine
       return record.content if record
 
       content = block.call
-      create!(cache_key: key, content: content, expires_at: Time.current + expires_in)
-      content
+      record = create!(cache_key: key, content: content, expires_at: Time.current + expires_in)
+      record.content
+    rescue ActiveRecord::RecordNotUnique
+      active.find_by!(cache_key: key).content
     end
 
     def self.purge_expired!

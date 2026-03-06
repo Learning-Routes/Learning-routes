@@ -1,9 +1,9 @@
 <% content_for(:title, "#{@step.localized_title} #{t('learning_engine.route.title_suffix')}") %>
 
-<div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
-  <div class="flex gap-8">
+<div style="max-width:80rem; margin:0 auto; padding:2rem 1rem;">
+  <div style="display:flex; gap:2rem;">
     <!-- Main content area -->
-    <div class="flex-1 max-w-3xl">
+    <div style="flex:1; max-width:48rem;">
       <turbo-frame id="step_content_<%= @step.id %>">
         <% if @step.delivery_format == "audio" %>
           <%# Audio-based lesson: player + voice response + quiz %>
@@ -23,7 +23,7 @@
       </turbo-frame>
 
       <!-- Step social actions -->
-      <div class="flex items-center gap-3 mt-6 mb-4">
+      <div style="display:flex; align-items:center; gap:0.75rem; margin-top:1.5rem; margin-bottom:1rem;">
         <%= render "community_engine/likes/button", likeable: @step, liked: @step.liked_by?(current_user), likes_count: @step.likes.count %>
       </div>
 
@@ -31,10 +31,8 @@
       <%= render "navigation" %>
 
       <!-- Comments section -->
-      <div class="mt-10 pt-8 border-t border-white/[0.06]">
-        <div class="[&_h3]:text-gray-200 [&_p]:text-gray-300 [&_span]:text-gray-400 [&_textarea]:bg-gray-900 [&_textarea]:border-gray-700 [&_textarea]:text-gray-200 [&_textarea]:placeholder-gray-500 [&_button[type=submit]]:bg-gray-700 [&_button[type=submit]]:text-gray-200">
-          <%= render "community_engine/comments/section", commentable: @step %>
-        </div>
+      <div style="margin-top:2.5rem; padding-top:2rem; border-top:1px solid var(--color-border-subtle);">
+        <%= render "community_engine/comments/section", commentable: @step %>
       </div>
     </div>
 

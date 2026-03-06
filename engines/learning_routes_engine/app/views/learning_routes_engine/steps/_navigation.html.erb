@@ -3,24 +3,24 @@
   next_step = @route.route_steps.where("position > ?", @step.position).where.not(status: :locked).order(:position).first
 %>
 
-<div class="flex items-center justify-between mt-8 pt-6 border-t border-white/[0.06]">
+<div style="display:flex; align-items:center; justify-content:space-between; margin-top:2rem; padding-top:1.5rem; border-top:1px solid var(--color-border-subtle);">
   <% if prev_step %>
-    <%= link_to route_step_path(@route, prev_step), class: "flex items-center gap-2 text-sm text-gray-400 hover:text-white transition" do %>
-      <svg aria-hidden="true" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <%= link_to route_step_path(@route, prev_step), style: "display:flex; align-items:center; gap:0.5rem; font-size:0.875rem; color:var(--color-sub); text-decoration:none; transition:color 0.2s;" do %>
+      <svg aria-hidden="true" style="width:1rem; height:1rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
       </svg>
-      <span class="truncate max-w-[200px]"><%= prev_step.localized_title %></span>
+      <span style="max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"><%= prev_step.localized_title %></span>
     <% end %>
   <% else %>
     <div></div>
   <% end %>
 
-  <%= link_to t('learning_engine.navigation.route_overview'), route_path(@route), class: "text-xs text-gray-500 hover:text-gray-300 transition" %>
+  <%= link_to t('learning_engine.navigation.route_overview'), route_path(@route), style: "font-size:0.75rem; color:var(--color-muted); text-decoration:none; transition:color 0.2s;" %>
 
   <% if next_step %>
-    <%= link_to route_step_path(@route, next_step), class: "flex items-center gap-2 text-sm text-gray-400 hover:text-white transition" do %>
-      <span class="truncate max-w-[200px]"><%= next_step.localized_title %></span>
-      <svg aria-hidden="true" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <%= link_to route_step_path(@route, next_step), style: "display:flex; align-items:center; gap:0.5rem; font-size:0.875rem; color:var(--color-sub); text-decoration:none; transition:color 0.2s;" do %>
+      <span style="max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"><%= next_step.localized_title %></span>
+      <svg aria-hidden="true" style="width:1rem; height:1rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
       </svg>
     <% end %>

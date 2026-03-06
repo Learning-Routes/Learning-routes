@@ -22,12 +22,12 @@ module Assessments
 
       @step.update!(status: :in_progress) if @step.available?
 
-      Analytics::StudySession.create!(
+      Analytics::StudySession.find_or_create_by!(
         user: current_user,
         learning_route: @route,
         route_step: @step,
-        started_at: Time.current
-      )
+        ended_at: nil
+      ) { |s| s.started_at = Time.current }
 
       respond_to do |format|
         format.html
@@ -44,8 +44,9 @@ module Assessments
     def authorize_assessment_owner!
       step = @assessment.route_step
       route = step.learning_route
-      unless route.learning_profile.user_id == current_user.id
+      unless route.learning_profile&.user_id == current_user.id
         redirect_to main_app.dashboard_path, alert: t("flash.not_authorized")
+        return
       end
     end
   end

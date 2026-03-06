@@ -21,6 +21,7 @@ module Core
       @user = Core::User.find_by_token_for(:password_reset, params[:token])
       unless @user
         redirect_to core.forgot_password_path, alert: t("flash.invalid_reset_link")
+        return
       end
     end
 
