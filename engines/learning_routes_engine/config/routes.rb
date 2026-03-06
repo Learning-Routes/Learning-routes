@@ -8,6 +8,7 @@ LearningRoutesEngine::Engine.routes.draw do
     resources :steps, only: [:show] do
       member do
         post :complete
+        get :content_status
       end
       resource :step_quiz, only: [], controller: "step_quizzes" do
         post :submit

@@ -15,6 +15,12 @@ module LearningRoutesEngine
       @progress = RouteProgressTracker.new(@route).progress_summary
     end
 
+    # Turbo Frame polling endpoint — returns just the step content frame
+    def content_status
+      load_step_content
+      render partial: "step_content_frame", layout: false
+    end
+
     def complete
       # Gate lesson/exercise steps behind a mini-quiz
       if @step.requires_quiz? && !@step.quiz_passed_by?(current_user)

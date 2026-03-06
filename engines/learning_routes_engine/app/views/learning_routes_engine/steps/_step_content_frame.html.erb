@@ -1,0 +1,23 @@
+<% generating = @content_generating || @assessment_generating %>
+<turbo-frame id="step_content_<%= @step.id %>"
+  <% if generating %>
+    data-controller="content-poll"
+    data-content-poll-url-value="<%= content_status_route_step_path(@route, @step) %>"
+    data-content-poll-interval-value="3000"
+  <% end %>
+>
+  <% if @step.delivery_format == "audio" %>
+    <%= render "content_engine/audio/audio_lesson", step: @step, content: @step.audio_content %>
+  <% else %>
+    <% case @step.content_type %>
+    <% when "lesson" %>
+      <%= render "lesson" %>
+    <% when "exercise" %>
+      <%= render "exercise" %>
+    <% when "assessment" %>
+      <%= render "assessment" %>
+    <% when "review" %>
+      <%= render "review" %>
+    <% end %>
+  <% end %>
+</turbo-frame>
