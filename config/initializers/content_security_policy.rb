@@ -12,7 +12,7 @@ Rails.application.configure do
     policy.object_src  :none
     policy.script_src  :self, "https://cdn.jsdelivr.net"
     policy.style_src   :self, :unsafe_inline, "https://fonts.googleapis.com", "https://cdn.jsdelivr.net"
-    policy.connect_src :self, "wss://learning-routes.com"
+    policy.connect_src :self, "wss://learning-routes.com", "wss://learningroutes.com"
     policy.frame_src   :none
     policy.base_uri    :self
     policy.form_action :self
