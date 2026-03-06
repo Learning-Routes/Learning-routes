@@ -2,8 +2,10 @@ module ContentEngine
   class VoiceEvaluationJob < ApplicationJob
     queue_as :default
 
+    retry_on Net::OpenTimeout, Net::ReadTimeout, Errno::ECONNRESET,
+             wait: :polynomially_longer, attempts: 3
+
     def perform(voice_response_id)
-      voice_response = nil
       voice_response = Assessments::VoiceResponse.find(voice_response_id)
       return if voice_response.score.present? # Already evaluated — idempotency guard
 
@@ -16,6 +18,8 @@ module ContentEngine
         partial: "assessments/voice_responses/evaluation_result",
         locals: { voice_response: voice_response }
       )
+    rescue Net::OpenTimeout, Net::ReadTimeout, Errno::ECONNRESET
+      raise # Let retry_on handle transient network errors
     rescue => e
       Rails.logger.error("VoiceEvaluationJob failed for voice_response #{voice_response_id}: #{e.message}")
       if voice_response&.route_step_id

@@ -1,6 +1,8 @@
 class WizardRouteGenerationJob < ApplicationJob
   queue_as :default
 
+  retry_on ActiveRecord::Deadlocked, wait: 5.seconds, attempts: 3
+
   def perform(route_request_id)
     request = RouteRequest.find(route_request_id)
     return if request.completed?
@@ -97,6 +99,8 @@ class WizardRouteGenerationJob < ApplicationJob
         Rails.logger.warn("[WizardRouteGeneration] Broadcast failed for request #{request.id}: #{broadcast_error.message}")
       end
 
+    rescue ActiveRecord::Deadlocked
+      raise # Let retry_on handle deadlocks
     rescue => e
       request.update!(status: "failed", error_message: e.message.truncate(500))
       Rails.logger.error("[WizardRouteGeneration] Failed for request #{request.id}: #{e.message}")
