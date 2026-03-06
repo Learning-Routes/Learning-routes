@@ -90,9 +90,8 @@
   <%# ── Transcript ── %>
   <% if voice_response.transcription.present? %>
     <details class="rounded-[11px] mb-4" style="background: var(--color-tint-strong);">
-      <summary class="px-4 py-2 text-xs cursor-pointer transition-colors"
-               style="color: var(--color-faint); font-family: 'DM Sans', sans-serif;"
-               onmouseover="this.style.color='var(--color-muted)'" onmouseout="this.style.color='var(--color-faint)'">
+      <summary class="px-4 py-2 text-xs cursor-pointer transition-colors hover-text-muted"
+               style="color: var(--color-faint); font-family: 'DM Sans', sans-serif;">
         <%= t("voice_evaluation.your_transcript") %>
       </summary>
       <p class="px-4 pb-3 text-sm italic" style="color: var(--color-muted); font-family: 'DM Sans', sans-serif;">

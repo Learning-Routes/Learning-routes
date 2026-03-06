@@ -667,6 +667,41 @@ html[data-theme="dark"] .learning-nav {
 @source "../../../engines/community_engine/app/views";
 
 /* ==========================================================================
+   CSP-SAFE HOVER/FOCUS UTILITIES
+   Override inline styles on :hover/:focus (requires !important)
+   ========================================================================== */
+
+/* Input border hover/focus — settings, onboarding */
+.hover-border-faint:hover { border-color: var(--color-faint) !important; }
+.focus-border-faint:focus { border-color: var(--color-faint) !important; box-shadow: 0 0 0 3px var(--color-tint) !important; }
+.blur-border-subtle:not(:focus) { border-color: var(--color-border-subtle) !important; box-shadow: none !important; }
+
+/* Button background hovers — voice recorder, audio player */
+.hover-bg-red:hover { background: #F87171 !important; }
+.hover-bg-indigo:hover { background: #818CF8 !important; }
+.hover-bg-tint:hover { background: var(--color-tint-hover) !important; }
+.hover-bg-indigo-light:hover { background: rgba(99,102,241,0.2) !important; }
+
+/* Text color hovers */
+.hover-text-txt:hover { color: var(--color-txt) !important; }
+.hover-text-muted:hover { color: var(--color-muted) !important; }
+.hover-text-indigo:hover { color: #A5B4FC !important; }
+
+/* Compound hovers (bg + color) */
+.hover-tint-txt:hover { background: var(--color-tint-hover) !important; color: var(--color-txt) !important; }
+
+/* Card shadow on hover — onboarding selectable cards */
+.hover-shadow-card:hover { box-shadow: 0 2px 8px rgba(28,24,18,0.04) !important; }
+.hover-shadow-card-sm:hover { box-shadow: 0 2px 6px rgba(28,24,18,0.04) !important; }
+
+/* Button lift effects — onboarding nav */
+.hover-lift-dark:hover { box-shadow: 0 4px 16px rgba(28,24,18,0.18) !important; transform: translateY(-1px) !important; }
+.hover-lift-green:hover { box-shadow: 0 4px 16px rgba(91,168,128,0.25) !important; transform: translateY(-1px) !important; }
+
+/* Back button hover — border + text color */
+.hover-back-btn:hover { border-color: var(--color-faint) !important; color: var(--color-txt) !important; }
+
+/* ==========================================================================
    ROUGE SYNTAX HIGHLIGHTING (dark code blocks)
    ========================================================================== */
 

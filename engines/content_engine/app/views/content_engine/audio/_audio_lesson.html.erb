@@ -51,9 +51,8 @@
   <%# ── Collapsible Transcript ── %>
   <% if content&.audio_transcript.present? %>
     <details class="mt-6 rounded-[14px]" style="background: var(--color-tint-strong); border: 1px solid var(--color-border-subtle);">
-      <summary class="px-5 py-3 text-sm font-medium cursor-pointer transition-colors"
+      <summary class="px-5 py-3 text-sm font-medium cursor-pointer transition-colors hover-text-txt"
                style="color: var(--color-muted); font-family: 'DM Sans', sans-serif;"
-               onmouseover="this.style.color='var(--color-txt)'" onmouseout="this.style.color='var(--color-muted)'"
         <span class="ml-1"><%= t("audio_lesson.view_transcript") %></span>
       </summary>
       <div class="px-5 pb-4 text-sm leading-relaxed" style="color: var(--color-sub); font-family: 'DM Sans', sans-serif;">
