@@ -28,8 +28,7 @@
           <textarea name="goal" id="goal_textarea" rows="3"
                     style="width:100%; padding:0.7rem 0.9rem; border-radius:10px; border:1.5px solid var(--color-border-subtle, rgba(28,24,18,0.1)); background:var(--color-card, #FEFDFB); font-family:'DM Sans',sans-serif; font-size:0.85rem; color:var(--color-txt, #1C1812); outline:none; transition:border-color 0.2s, box-shadow 0.2s; resize:none; box-sizing:border-box; line-height:1.6;"
                     placeholder="<%= t("onboarding.goal.placeholder") %>"
-                    onfocus="this.style.borderColor='var(--color-faint)';this.style.boxShadow='0 0 0 3px var(--color-tint)'"
-                    onblur="this.style.borderColor='var(--color-border-subtle)';this.style.boxShadow='none'"
+                    class="focus-border-faint"
                     required><%= profile.goal %></textarea>
           <span style="font-family:'DM Sans',sans-serif; font-size:0.65rem; color:var(--color-faint, #CCC5B8); margin-top:0.3rem; display:block; text-align:right;"><%= t("onboarding.goal.max_chars") %></span>
         </div>
@@ -48,8 +47,7 @@
                        data-action="change->selectable-card#toggle">
                 <div data-card-visual
                      style="padding:0.6rem; border-radius:10px; border:1.5px solid var(--color-border-subtle, rgba(28,24,18,0.08)); background:var(--color-card, #FEFDFB); text-align:center; transition:all 0.2s ease;"
-                     onmouseenter="this.style.boxShadow='0 2px 6px rgba(28,24,18,0.04)'"
-                     onmouseleave="this.style.boxShadow='none'">
+                     class="hover-shadow-card-sm">
                   <span style="font-family:'DM Sans',sans-serif; font-weight:500; font-size:0.78rem; color:var(--color-txt, #1C1812);"><%= t("profile_values.timelines.#{value}") %></span>
                 </div>
               </label>
@@ -62,13 +60,11 @@
       <div style="display:flex; justify-content:space-between; align-items:center;">
         <%= link_to t("onboarding.goal.back"), core.onboarding_path(step: "learning_style"),
             style: "font-family:'DM Sans',sans-serif; font-weight:500; font-size:0.82rem; color:var(--color-sub, #6D665B); text-decoration:none; padding:0.65rem 1.2rem; border-radius:11px; border:1px solid rgba(28,24,18,0.08); transition:all 0.2s ease; display:inline-flex; align-items:center;",
-            onmouseenter: "this.style.borderColor='var(--color-faint)';this.style.color='var(--color-txt)'",
-            onmouseleave: "this.style.borderColor='var(--color-border-subtle)';this.style.color='var(--color-sub)'",
+            class: "hover-back-btn",
             data: { turbo_frame: "onboarding_step" } %>
         <%= f.submit t("onboarding.goal.finish"),
             style: "font-family:'DM Sans',sans-serif; font-weight:600; font-size:0.82rem; color:#fff; background:var(--color-progress-bar, #5BA880); border:none; border-radius:11px; padding:0.65rem 1.6rem; cursor:pointer; transition:all 0.2s ease; box-shadow:0 1px 3px rgba(91,168,128,0.2),0 1px 2px rgba(91,168,128,0.1); letter-spacing:-0.2px;",
-            onmouseenter: "this.style.boxShadow='0 4px 16px rgba(91,168,128,0.25)';this.style.transform='translateY(-1px)'",
-            onmouseleave: "this.style.boxShadow='0 1px 3px rgba(91,168,128,0.2),0 1px 2px rgba(91,168,128,0.1)';this.style.transform='translateY(0)'" %>
+            class: "hover-lift-green" %>
       </div>
     <% end %>
 
