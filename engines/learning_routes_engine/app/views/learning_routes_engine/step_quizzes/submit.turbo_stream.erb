@@ -39,18 +39,8 @@
   <%# Update engagement stats %>
   <% engagement = current_user.user_engagement %>
   <% if engagement %>
-    <%= turbo_stream.replace "engagement_stats" do %>
-      <div id="engagement_stats"
-           data-controller="engagement"
-           data-engagement-xp-value="<%= engagement.total_xp %>"
-           data-engagement-level-value="<%= engagement.current_level %>"
-           data-engagement-streak-value="<%= engagement.current_streak %>"
-           data-engagement-progress-value="<%= engagement.level_progress_percentage %>"
-           data-engagement-xp-gained-value="<%= @result.score >= 100 ? XpService::XP_VALUES[:quiz_perfect] : XpService::XP_VALUES[:quiz_complete] %>"
-           data-engagement-leveled-up-value="false"
-           class="hidden md:flex">
-        <%= render "shared/engagement_bar", engagement: engagement %>
-      </div>
+    <%= turbo_stream.update "engagement_stats" do %>
+      <%= render "shared/engagement_bar", engagement: engagement %>
     <% end %>
   <% end %>
 

@@ -8,8 +8,10 @@ module CommunityEngine
         return head(:forbidden)
       end
 
-      existing = @shared_route.ratings.find_by(user_id: current_user.id)
       score = params[:score].to_i
+      return head(:bad_request) unless score.between?(1, 5)
+
+      existing = @shared_route.ratings.find_by(user_id: current_user.id)
 
       if existing
         existing.update!(score: score)
