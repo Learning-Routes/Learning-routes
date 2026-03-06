@@ -1172,6 +1172,7 @@ es:
       name_placeholder: "Tu nombre"
       email_label: "Correo electrónico"
       email_placeholder: "tu@correo.com"
+      confirm_password_label: "Contraseña actual (requerida para cambiar el correo)"
     preferences:
       heading: "Preferencias"
       locale_label: "Idioma"

@@ -68,7 +68,17 @@
               placeholder: t("settings.account.email_placeholder"),
               required: true,
               autocomplete: "email",
-              data: { auth_form_target: "input", action: "focus->auth-form#inputFocus blur->auth-form#inputBlur" } %>
+              data: { auth_form_target: "input", action: "focus->auth-form#inputFocus blur->auth-form#inputBlur input->auth-form#checkEmailChange" } %>
+        </div>
+
+        <%# Current password — only shown when email is being changed %>
+        <div id="email-password-confirm" style="display:none;">
+          <label for="current_password"
+            style="display:block; font-family:'DM Sans',sans-serif; font-size:0.78rem; font-weight:500; color:var(--color-sub); margin-bottom:0.45rem;">
+            <%= t("settings.account.confirm_password_label", default: "Current password (required to change email)") %>
+          </label>
+          <input type="password" name="current_password" id="current_password" autocomplete="current-password"
+            style="display:block; width:100%; box-sizing:border-box; font-family:'DM Sans',sans-serif; font-size:0.92rem; color:var(--color-txt); padding:0.78rem 0.95rem; border-radius:10px; border:1px solid var(--color-border-subtle); background:var(--color-card); outline:none; transition:border-color 0.2s, box-shadow 0.2s;">
         </div>
       </div>
     </div>
