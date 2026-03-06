@@ -1,22 +1,21 @@
 module CommunityEngine
   class LikesController < ApplicationController
-    ALLOWED_LIKEABLE_TYPES = %w[
-      LearningRoutesEngine::LearningRoute
-      LearningRoutesEngine::RouteStep
-      CommunityEngine::SharedRoute
-      CommunityEngine::Comment
-      CommunityEngine::Post
-    ].freeze
+    LIKEABLE_CLASSES = {
+      "LearningRoutesEngine::LearningRoute" => LearningRoutesEngine::LearningRoute,
+      "LearningRoutesEngine::RouteStep" => LearningRoutesEngine::RouteStep,
+      "CommunityEngine::SharedRoute" => CommunityEngine::SharedRoute,
+      "CommunityEngine::Comment" => CommunityEngine::Comment,
+      "CommunityEngine::Post" => CommunityEngine::Post
+    }.freeze
 
     def toggle
       likeable_type = params[:likeable_type]
       likeable_id = params[:likeable_id]
 
-      unless likeable_type.in?(ALLOWED_LIKEABLE_TYPES)
-        return head(:bad_request)
-      end
+      klass = LIKEABLE_CLASSES[likeable_type]
+      return head(:bad_request) unless klass
 
-      likeable = likeable_type.constantize.find(likeable_id)
+      likeable = klass.find(likeable_id)
 
       # Authorization: only allow liking accessible resources
       return head(:forbidden) unless can_like?(likeable)
