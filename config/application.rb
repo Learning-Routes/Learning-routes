@@ -23,6 +23,14 @@ module LearningRoutes
     config.i18n.default_locale = :en
     config.i18n.available_locales = %i[en es]
 
+    # Security headers
+    config.action_dispatch.default_headers = {
+      "X-Content-Type-Options" => "nosniff",
+      "X-Frame-Options" => "DENY",
+      "Referrer-Policy" => "strict-origin-when-cross-origin",
+      "Permissions-Policy" => "camera=(), microphone=(self), geolocation=()"
+    }
+
     # Generator configuration
     config.generators do |g|
       g.test_framework :test_unit
