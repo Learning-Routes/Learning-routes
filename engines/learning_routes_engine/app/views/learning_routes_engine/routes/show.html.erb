@@ -20,7 +20,7 @@
 
   <!-- Social actions -->
   <div style="display:flex; align-items:center; gap:0.75rem; margin-top:1rem; margin-bottom:1.5rem;">
-    <%= render "community_engine/likes/button", likeable: @route, liked: @route.liked_by?(current_user), likes_count: @route.likes.count %>
+    <%= render "community_engine/likes/button", likeable: @route, liked: @route.liked_by?(current_user), likes_count: @route.likes_count %>
   </div>
 
   <!-- Due reviews -->
