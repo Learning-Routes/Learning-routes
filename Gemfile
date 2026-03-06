@@ -63,6 +63,9 @@ gem "analytics", path: "engines/analytics"
 gem "community_engine", path: "engines/community_engine"
 
 group :development, :test do
+  # Load .env variables into ENV
+  gem "dotenv-rails"
+
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
   gem "debug", platforms: %i[ mri windows ], require: false
 
