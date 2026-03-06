@@ -29,7 +29,7 @@ module CommunityEngine
         )
 
         # Associate with user's learning profile
-        profile = user.learning_profile || LearningRoutesEngine::LearningProfile.find_or_create_by!(user: user) { |p| p.current_level = "nv1" }
+        profile = user.learning_profile || LearningRoutesEngine::LearningProfile.find_or_create_by!(user: user) { |p| p.current_level = "beginner" }
         new_route.learning_profile = profile
         new_route.save!
 
