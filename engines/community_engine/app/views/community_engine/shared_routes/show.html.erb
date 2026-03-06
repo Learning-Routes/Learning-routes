@@ -48,11 +48,11 @@
       <div style="width:32px; height:32px; border-radius:50%; background:var(--color-accent, #2C261E);
                   display:flex; align-items:center; justify-content:center; color:var(--color-accent-text, #F5F1EB);
                   font-family:'DM Sans',sans-serif; font-size:0.65rem; font-weight:700;">
-        <%= @shared_route.user.name.to_s.first&.upcase || "?" %>
+        <%= @shared_route.user&.name.to_s.first&.upcase || "?" %>
       </div>
       <div>
         <span style="font-family:'DM Sans',sans-serif; font-size:0.82rem; font-weight:600; color:var(--color-txt, #1C1812);">
-          <%= @shared_route.user.name %>
+          <%= @shared_route.user&.name || t("community_engine.comments.deleted_user") %>
         </span>
         <span style="font-family:'DM Mono',monospace; font-size:0.68rem; color:var(--color-muted, #887F72); margin-left:0.5rem;">
           <%= t("community_engine.shared_routes_ui.shared_on") %> <%= l(@shared_route.created_at.to_date, format: :long) %>
@@ -163,11 +163,11 @@
               <div style="flex-shrink:0; width:32px; height:32px; border-radius:50%; background:var(--color-accent, #2C261E);
                           display:flex; align-items:center; justify-content:center; color:var(--color-accent-text, #F5F1EB);
                           font-family:'DM Sans',sans-serif; font-size:0.65rem; font-weight:700;">
-                <%= comment.user.name.to_s.first&.upcase || "?" %>
+                <%= comment.user&.name.to_s.first&.upcase || "?" %>
               </div>
               <div>
                 <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.3rem;">
-                  <span style="font-family:'DM Sans',sans-serif; font-size:0.82rem; font-weight:600; color:var(--color-txt, #1C1812);"><%= comment.user.name %></span>
+                  <span style="font-family:'DM Sans',sans-serif; font-size:0.82rem; font-weight:600; color:var(--color-txt, #1C1812);"><%= comment.user&.name || t("community_engine.comments.deleted_user") %></span>
                   <span style="font-family:'DM Mono',monospace; font-size:0.65rem; color:var(--color-muted, #887F72);"><%= time_ago_in_words(comment.created_at) %></span>
                 </div>
                 <p style="font-family:'DM Sans',sans-serif; font-size:0.82rem; color:var(--color-sub, #6D665B); margin:0; line-height:1.5;"><%= simple_format(comment.body, {}, wrapper_tag: "span") %></p>
