@@ -38,6 +38,8 @@ module Core
 
     normalizes :email, with: ->(email) { email.strip.downcase }
 
+    before_update :reset_email_verification, if: :will_save_change_to_email?
+
     scope :by_role, ->(role) { where(role: role) }
     scope :recently_active, -> { order(updated_at: :desc) }
     scope :verified, -> { where.not(email_verified_at: nil) }
@@ -120,6 +122,12 @@ module Core
 
     def unread_notifications_count
       notifications.unread.count
+    end
+
+    private
+
+    def reset_email_verification
+      self.email_verified_at = nil
     end
   end
 end

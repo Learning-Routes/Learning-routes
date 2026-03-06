@@ -1157,6 +1157,7 @@ en:
     heading: "Settings"
     subheading: "Manage your account, preferences, and learning profile."
     saved: "Settings saved successfully."
+    saved_verify_email: "Settings saved. Please check your new email for a verification link."
     password_updated: "Password updated successfully."
     wrong_current_password: "Current password is incorrect."
     errors:
