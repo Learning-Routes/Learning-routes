@@ -1,5 +1,8 @@
 module CommunityEngine
   class CommentsController < ApplicationController
+    rate_limit to: 20, within: 5.minutes, only: :create, with: -> {
+      head :too_many_requests
+    }
     before_action :set_comment, only: [:update, :destroy]
 
     ALLOWED_COMMENTABLE_TYPES = %w[

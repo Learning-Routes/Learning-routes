@@ -1,5 +1,9 @@
 module CommunityEngine
   class LikesController < ApplicationController
+    rate_limit to: 30, within: 1.minute, only: :toggle, with: -> {
+      head :too_many_requests
+    }
+
     LIKEABLE_CLASSES = {
       "LearningRoutesEngine::LearningRoute" => LearningRoutesEngine::LearningRoute,
       "LearningRoutesEngine::RouteStep" => LearningRoutesEngine::RouteStep,

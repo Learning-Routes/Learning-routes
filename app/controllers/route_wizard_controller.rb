@@ -1,5 +1,8 @@
 class RouteWizardController < ApplicationController
   before_action :authenticate_user!
+  rate_limit to: 5, within: 10.minutes, only: :create, with: -> {
+    redirect_to new_route_wizard_path, alert: t("flash.rate_limited")
+  }
 
   def new
     @existing_request = current_user.route_requests.pending_or_generating.first
