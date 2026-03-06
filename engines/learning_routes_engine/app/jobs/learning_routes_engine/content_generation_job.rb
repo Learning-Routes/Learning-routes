@@ -13,12 +13,13 @@ module LearningRoutesEngine
       interaction = AiOrchestrator::Orchestrate.call(
         task_type: :lesson_content,
         variables: {
-          topic: step.title,
-          description: step.description.to_s,
+          topic: step.localized_title,
+          description: step.localized_description.to_s,
           level: profile.current_level,
           learning_style: Array(profile.learning_style).join(", "),
           bloom_level: step.bloom_level.to_s,
-          route_topic: route.topic
+          route_topic: route.localized_topic,
+          locale: route.locale || profile.user.locale || "en"
         },
         user: profile.user,
         async: false

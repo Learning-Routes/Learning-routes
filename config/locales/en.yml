@@ -961,6 +961,10 @@ en:
     lesson:
       badge: "Lesson"
       no_content: "No content available for this step yet."
+      check_title: "Quick Check"
+      block_tip: "Pro Tip"
+      block_example: "Real-World Example"
+      block_summary: "Key Takeaways"
     exercise:
       badge: "Exercise"
       reset: "Reset"

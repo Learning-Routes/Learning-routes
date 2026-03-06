@@ -961,6 +961,10 @@ es:
     lesson:
       badge: "Lección"
       no_content: "Aún no hay contenido disponible para este paso."
+      check_title: "Verificación rápida"
+      block_tip: "Consejo"
+      block_example: "Ejemplo del mundo real"
+      block_summary: "Puntos clave"
     exercise:
       badge: "Ejercicio"
       reset: "Reiniciar"
