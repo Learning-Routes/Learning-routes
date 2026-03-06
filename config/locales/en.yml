@@ -1172,6 +1172,7 @@ en:
       name_placeholder: "Your name"
       email_label: "Email"
       email_placeholder: "your@email.com"
+      confirm_password_label: "Current password (required to change email)"
     preferences:
       heading: "Preferences"
       locale_label: "Language"

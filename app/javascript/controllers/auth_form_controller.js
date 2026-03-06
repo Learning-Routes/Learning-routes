@@ -151,4 +151,13 @@ export default class extends Controller {
   // --- Inline link underline ---
   inlineLinkOver(event) { event.currentTarget.style.textDecoration = "underline" }
   inlineLinkOut(event) { event.currentTarget.style.textDecoration = "none" }
+
+  // --- Show password confirm when email changes ---
+  checkEmailChange(event) {
+    const el = event.currentTarget
+    const confirmDiv = document.getElementById("email-password-confirm")
+    if (confirmDiv) {
+      confirmDiv.style.display = el.value !== el.defaultValue ? "block" : "none"
+    }
+  }
 }
