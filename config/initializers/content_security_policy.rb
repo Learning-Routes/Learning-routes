@@ -12,14 +12,14 @@ Rails.application.configure do
     policy.object_src  :none
     policy.script_src  :self, "https://cdn.jsdelivr.net"
     policy.style_src   :self, :unsafe_inline, "https://fonts.googleapis.com", "https://cdn.jsdelivr.net"
-    policy.connect_src :self
+    policy.connect_src :self, "wss://learning-routes.com"
     policy.frame_src   :none
     policy.base_uri    :self
     policy.form_action :self
   end
 
   # Generate session nonces for permitted importmap and inline scripts.
-  config.content_security_policy_nonce_generator = ->(request) { request.session.id.to_s }
+  config.content_security_policy_nonce_generator = ->(_request) { SecureRandom.base64(16) }
   config.content_security_policy_nonce_directives = %w[script-src]
 
   # Report violations without enforcing the policy initially.
