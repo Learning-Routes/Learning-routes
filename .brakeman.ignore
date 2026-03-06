@@ -1,0 +1,10 @@
+{
+  "ignored_warnings": [
+    {
+      "fingerprint": "f3f3a8f377adbaa5c24bb2ddad34bdb26d9acf7121cfd7f68038e7f522f67f37",
+      "note": "False positive: audio_url is validated and path traversal is guarded by Rails.root.join + expand_path check in controller"
+    }
+  ],
+  "updated": "2026-03-06",
+  "brakeman_version": "8.0.2"
+}
