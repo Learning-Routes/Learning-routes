@@ -6,9 +6,17 @@ production:
     class: DailyStreakCheckJob
     queue: low
     schedule: every day at 6am UTC
+  session_cleanup:
+    class: Core::SessionCleanupJob
+    queue: low
+    schedule: every day at 3am UTC
 
 development:
   daily_streak_reset:
     class: DailyStreakCheckJob
     queue: low
     schedule: every day at 6am UTC
+  session_cleanup:
+    class: Core::SessionCleanupJob
+    queue: low
+    schedule: every day at 3am UTC

@@ -228,7 +228,7 @@ export default class extends Controller {
       <div style="font-family:'DM Sans',sans-serif; font-size:0.78rem; color:var(--color-muted, #887F72); margin-top:0.4rem;">${this._esc(i18n.new_level || "You reached a new level")}</div>
       <button onclick="this.closest('[data-dismiss]').click()" style="
         margin-top:1.5rem; font-family:'DM Sans',sans-serif; font-size:0.82rem; font-weight:600;
-        color:#fff; background:#2C261E; border:none; border-radius:11px;
+        color:var(--color-accent-text, #fff); background:var(--color-accent, #2C261E); border:none; border-radius:11px;
         padding:0.65rem 2rem; cursor:pointer; transition:opacity 0.2s;
       ">${this._esc(i18n.continue || "Continue")}</button>
     `

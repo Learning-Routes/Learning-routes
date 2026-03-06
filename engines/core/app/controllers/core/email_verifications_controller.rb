@@ -1,5 +1,6 @@
 module Core
   class EmailVerificationsController < ApplicationController
+    rate_limit to: 5, within: 5.minutes, only: :resend, with: -> { redirect_back fallback_location: main_app.dashboard_path, alert: t("flash.rate_limited") }
     before_action :authenticate_user!, only: :resend
 
     def verify
