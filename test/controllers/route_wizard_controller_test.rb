@@ -70,7 +70,7 @@ class RouteWizardControllerTest < ActionDispatch::IntegrationTest
     }
 
     assert_equal initial_count + 1, RouteRequest.count
-    rr = RouteRequest.last
+    rr = RouteRequest.order(created_at: :desc).first
     assert_equal ["programming", "web_dev"], rr.topics
     assert_equal "beginner", rr.level
     assert_equal "steady", rr.pace

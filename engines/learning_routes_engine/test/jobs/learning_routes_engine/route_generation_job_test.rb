@@ -34,7 +34,7 @@ module LearningRoutesEngine
 
       RouteGenerationJob.perform_now(@profile.id)
 
-      route = LearningRoute.last
+      route = LearningRoute.order(created_at: :desc).first
       assert route.present?
       assert route.active?
       assert route.route_steps.any?
