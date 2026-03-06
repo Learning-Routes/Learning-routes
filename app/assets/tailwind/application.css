@@ -634,6 +634,24 @@ html[data-theme="dark"] .learning-nav {
   background: rgba(91,168,128,0.12) !important;
 }
 
+/* --- Interactive button hover+focus (replaces inline onmouseover) --- */
+.btn-lift {
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.btn-lift:hover, .btn-lift:focus-visible {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(28,24,18,0.12);
+}
+.btn-lift:active {
+  transform: translateY(0);
+}
+
+/* --- Focus visible ring for all interactive elements --- */
+:focus-visible {
+  outline: 2px solid var(--color-progress-bar, #5BA880);
+  outline-offset: 2px;
+}
+
 /* ==========================================================================
    CONTENT SOURCE SCANNING
    ========================================================================== */

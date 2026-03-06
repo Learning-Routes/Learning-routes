@@ -22,8 +22,7 @@
       <%# Back/Exit button — prominent, left-aligned %>
       <button data-action="click->expanded-route#close"
               style="font-family:'DM Sans',sans-serif; font-size:0.78rem; font-weight:500; color:rgba(255,255,255,0.6); background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); border-radius:10px; padding:0.45rem 1rem; cursor:pointer; flex-shrink:0; transition:all 0.2s; white-space:nowrap; display:inline-flex; align-items:center; gap:0.4rem;"
-              onmouseover="this.style.background='rgba(255,255,255,0.1)';this.style.color='rgba(255,255,255,0.85)'"
-              onmouseout="this.style.background='rgba(255,255,255,0.06)';this.style.color='rgba(255,255,255,0.6)'">
+              class="overlay-close-btn">
         <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
           <path d="M8.75 10.5L5.25 7L8.75 3.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
@@ -54,7 +53,7 @@
       </div>
       <a data-expanded-route-target="actionBtn" href="#"
          style="font-family:'DM Sans',sans-serif; font-size:0.78rem; font-weight:600; color:#1A1710; background:#E8E4DC; text-decoration:none; padding:0.5rem 1.4rem; border-radius:11px; transition:all 0.2s; white-space:nowrap; display:inline-flex; align-items:center; gap:0.4rem;"
-         onmouseover="this.style.background='#F5F1EB'" onmouseout="this.style.background='#E8E4DC'">
+         class="btn-lift">
         <%= t("expanded_route.open_route") %>
         <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
           <path d="M5.25 3.5L8.75 7L5.25 10.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
