@@ -3,6 +3,7 @@ module ContentEngine
     queue_as :default
 
     def perform(route_step_id)
+      step = nil
       step = LearningRoutesEngine::RouteStep.find(route_step_id)
       content = AudioGenerator.generate!(step)
 

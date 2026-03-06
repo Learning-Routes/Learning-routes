@@ -3,6 +3,7 @@ module ContentEngine
     queue_as :default
 
     def perform(voice_response_id)
+      voice_response = nil
       voice_response = Assessments::VoiceResponse.find(voice_response_id)
       return if voice_response.score.present? # Already evaluated — idempotency guard
 
