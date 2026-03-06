@@ -1160,6 +1160,7 @@ es:
     saved_verify_email: "Ajustes guardados. Revisa tu nuevo correo para verificarlo."
     password_updated: "Contraseña actualizada correctamente."
     wrong_current_password: "La contraseña actual es incorrecta."
+    password_required_for_email: "Se requiere la contraseña actual para cambiar el correo electrónico."
     errors:
       one: "1 error impidió guardar:"
       other: "%{count} errores impidieron guardar:"

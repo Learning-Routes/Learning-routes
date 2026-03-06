@@ -9,6 +9,14 @@ class SettingsController < ApplicationController
     @user.assign_attributes(user_params)
     @profile.assign_attributes(profile_params)
 
+    # Require current password to change email (prevents session-hijack account takeover)
+    if @user.will_save_change_to_email?
+      unless @user.authenticate(params[:current_password].to_s)
+        @user.errors.add(:base, t("settings.password_required_for_email"))
+        return render :edit, status: :unprocessable_entity
+      end
+    end
+
     if @user.valid? && @profile.valid?
       email_changed = @user.will_save_change_to_email?
 
