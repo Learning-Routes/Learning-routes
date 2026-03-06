@@ -4,6 +4,10 @@ module LearningRoutesEngine
     before_action :set_route
     before_action :authorize_route_owner!
 
+    rate_limit to: 3, within: 5.minutes, only: :request_deletion, with: -> {
+      head :too_many_requests
+    }
+
     layout "learning"
 
     def show
@@ -20,7 +24,35 @@ module LearningRoutesEngine
       render layout: "journey"
     end
 
+    def request_deletion
+      code = SecureRandom.random_number(10**6).to_s.rjust(6, "0")
+      Rails.cache.write(deletion_cache_key, code, expires_in: 10.minutes)
+      Core::DeletionMailer.route_deletion_code(current_user, @route, code).deliver_later
+      head :ok
+    end
+
+    def confirm_deletion
+      stored_code = Rails.cache.read(deletion_cache_key)
+      submitted_code = params[:code].to_s.strip
+
+      if stored_code.present? && ActiveSupport::SecurityUtils.secure_compare(stored_code, submitted_code)
+        Rails.cache.delete(deletion_cache_key)
+        topic = @route.localized_topic
+        @route.destroy!
+        flash[:notice] = t("delete_route.success", route: topic)
+        render json: { redirect: main_app.profile_path }, status: :ok
+      else
+        render turbo_stream: turbo_stream.update("delete-route-error",
+          html: content_tag(:p, t("delete_route.wrong_code"), style: "color:#B06050; font-size:0.8125rem; margin:0;")
+        ), status: :unprocessable_entity
+      end
+    end
+
     private
+
+    def deletion_cache_key
+      "route_deletion_code:#{current_user.id}:#{@route.id}"
+    end
 
     def set_route
       @route = LearningRoute.find(params[:id])

@@ -123,4 +123,98 @@
   <div style="margin-top:2.5rem; padding-top:2rem; border-top:1px solid var(--color-border-subtle);">
     <%= render "community_engine/comments/section", commentable: @route %>
   </div>
+
+  <!-- Danger zone -->
+  <div style="margin-top:2.5rem; padding-top:2rem; border-top:1px solid rgba(176,96,80,0.2);"
+       data-controller="delete-route"
+       data-delete-route-request-url-value="<%= request_deletion_route_path(@route) %>"
+       data-delete-route-confirm-url-value="<%= confirm_deletion_route_path(@route) %>">
+    <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:1rem;">
+      <div>
+        <h3 style="font-size:0.875rem; font-weight:600; color:#B06050; margin:0 0 0.25rem;"><%= t('delete_route.danger_zone') %></h3>
+        <p style="font-size:0.75rem; color:var(--color-muted); margin:0;"><%= t('delete_route.danger_desc') %></p>
+      </div>
+      <button type="button"
+              data-action="delete-route#open"
+              style="font-size:0.8125rem; font-weight:600; color:#B06050; background:transparent; border:1px solid rgba(176,96,80,0.3); border-radius:0.5rem; padding:0.5rem 1rem; cursor:pointer; transition:all 0.2s;">
+        <%= t('delete_route.btn') %>
+      </button>
+    </div>
+
+    <!-- Delete confirmation modal -->
+    <div data-delete-route-target="modal"
+         data-action="click->delete-route#backdropClick"
+         style="display:none; position:fixed; inset:0; z-index:9999; background:rgba(0,0,0,0.5); align-items:center; justify-content:center; padding:1rem;">
+      <div data-delete-route-target="modalCard"
+           style="background:var(--color-card, #1C1912); border:1px solid var(--color-border-subtle, rgba(232,228,220,0.1)); border-radius:0.875rem; padding:1.5rem; max-width:26rem; width:100%;">
+
+        <!-- Initial warning view -->
+        <div data-delete-route-target="initialView">
+          <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:1rem;">
+            <svg aria-hidden="true" style="width:1.25rem; height:1.25rem; color:#B06050; flex-shrink:0;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4.5c-.77-.833-2.694-.833-3.464 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z"/>
+            </svg>
+            <h3 style="font-size:1rem; font-weight:700; color:var(--color-txt); margin:0;"><%= t('delete_route.modal_title') %></h3>
+          </div>
+          <p style="font-size:0.8125rem; line-height:1.5; color:var(--color-sub, #A09889); margin:0 0 0.75rem;">
+            <%= t('delete_route.modal_warning', route: @route.localized_topic) %>
+          </p>
+          <ul style="font-size:0.75rem; color:var(--color-muted, #6D665B); margin:0 0 1.25rem; padding-left:1.25rem; line-height:1.8;">
+            <li><%= t('delete_route.warning_progress') %></li>
+            <li><%= t('delete_route.warning_content') %></li>
+            <li><%= t('delete_route.warning_irreversible') %></li>
+          </ul>
+
+          <div id="delete-route-error" data-delete-route-target="error" style="display:none; margin-bottom:0.75rem;"></div>
+
+          <div style="display:flex; gap:0.75rem; justify-content:flex-end;">
+            <button type="button" data-action="delete-route#close"
+                    style="font-size:0.8125rem; font-weight:500; color:var(--color-sub); background:transparent; border:1px solid var(--color-border-subtle); border-radius:0.5rem; padding:0.5rem 1rem; cursor:pointer;">
+              <%= t('delete_route.cancel') %>
+            </button>
+            <button type="button"
+                    data-action="delete-route#requestCode"
+                    data-delete-route-target="sendBtn"
+                    data-rate-limit-msg="<%= t('delete_route.rate_limited') %>"
+                    data-error-msg="<%= t('delete_route.error') %>"
+                    style="font-size:0.8125rem; font-weight:600; color:#F5F1EB; background:#B06050; border:none; border-radius:0.5rem; padding:0.5rem 1rem; cursor:pointer; transition:opacity 0.2s;">
+              <%= t('delete_route.send_code') %>
+            </button>
+          </div>
+        </div>
+
+        <!-- Code input view -->
+        <div data-delete-route-target="codeView" style="display:none;">
+          <h3 style="font-size:1rem; font-weight:700; color:var(--color-txt); margin:0 0 0.5rem;"><%= t('delete_route.enter_code_title') %></h3>
+          <p style="font-size:0.8125rem; color:var(--color-sub, #A09889); margin:0 0 1.25rem; line-height:1.5;">
+            <%= t('delete_route.enter_code_desc', email: current_user.email) %>
+          </p>
+
+          <div id="delete-route-error" style="margin-bottom:0.75rem;"></div>
+
+          <input type="text"
+                 data-delete-route-target="codeInput"
+                 maxlength="6"
+                 inputmode="numeric"
+                 pattern="[0-9]*"
+                 autocomplete="one-time-code"
+                 placeholder="000000"
+                 style="width:100%; box-sizing:border-box; font-family:'DM Mono',monospace; font-size:1.5rem; font-weight:700; text-align:center; letter-spacing:0.3em; color:var(--color-txt); background:var(--color-tint, rgba(44,38,30,0.05)); border:1px solid var(--color-border-subtle); border-radius:0.5rem; padding:0.75rem; margin-bottom:1.25rem; outline:none;">
+
+          <div style="display:flex; gap:0.75rem; justify-content:flex-end;">
+            <button type="button" data-action="delete-route#close"
+                    style="font-size:0.8125rem; font-weight:500; color:var(--color-sub); background:transparent; border:1px solid var(--color-border-subtle); border-radius:0.5rem; padding:0.5rem 1rem; cursor:pointer;">
+              <%= t('delete_route.cancel') %>
+            </button>
+            <button type="button"
+                    data-action="delete-route#confirmDeletion"
+                    data-delete-route-target="confirmBtn"
+                    style="font-size:0.8125rem; font-weight:600; color:#F5F1EB; background:#B06050; border:none; border-radius:0.5rem; padding:0.5rem 1rem; cursor:pointer; transition:opacity 0.2s;">
+              <%= t('delete_route.confirm_delete') %>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
