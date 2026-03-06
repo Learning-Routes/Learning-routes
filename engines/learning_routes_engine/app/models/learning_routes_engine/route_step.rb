@@ -38,6 +38,7 @@ module LearningRoutesEngine
     scope :reviews_only, -> { where(content_type: :review) }
 
     def complete!
+      return if completed?
       update!(status: :completed, completed_at: Time.current)
     end
 

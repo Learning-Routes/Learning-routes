@@ -15,7 +15,11 @@ class XpService
 
   def self.award(user, amount, source_type, source_id: nil, metadata: {})
     ActiveRecord::Base.transaction do
-      engagement = user.user_engagement || user.create_user_engagement!
+      engagement = user.user_engagement || begin
+        user.create_user_engagement!
+      rescue ActiveRecord::RecordNotUnique
+        user.reload.user_engagement
+      end
       engagement.lock!
 
       XpTransaction.create!(

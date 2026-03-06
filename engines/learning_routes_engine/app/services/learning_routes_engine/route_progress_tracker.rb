@@ -9,9 +9,14 @@ module LearningRoutesEngine
 
     # Mark a step as complete, initialize FSRS, advance route, unlock next
     def complete_step!(step)
+      return step if step.completed?
+
       route_just_completed = false
 
       ActiveRecord::Base.transaction do
+        step.reload
+        return step if step.completed?
+
         step.complete!
 
         # Initialize FSRS with a Good rating for first completion

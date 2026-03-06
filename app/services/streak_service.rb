@@ -1,7 +1,11 @@
 class StreakService
   def initialize(user)
     @user = user
-    @engagement = user.user_engagement || user.create_user_engagement!
+    @engagement = user.user_engagement || begin
+      user.create_user_engagement!
+    rescue ActiveRecord::RecordNotUnique
+      user.reload.user_engagement
+    end
   end
 
   def record_activity!
