@@ -6,6 +6,10 @@ import { Controller } from "@hotwired/stimulus"
 export default class extends Controller {
   static targets = ["options", "option", "feedback"]
 
+  disconnect() {
+    if (this._timers) this._timers.forEach(t => clearTimeout(t))
+  }
+
   select(event) {
     const btn = event.currentTarget
     if (this._answered) return
@@ -37,9 +41,11 @@ export default class extends Controller {
 
   _microCelebration(btn) {
     // Green pulse + floating "+10 XP"
+    if (!this._timers) this._timers = []
+
     btn.style.transition = "box-shadow 0.3s"
     btn.style.boxShadow = "inset 0 0 0 2px rgba(91,168,128,0.4), 0 0 12px rgba(91,168,128,0.15)"
-    setTimeout(() => { btn.style.boxShadow = "" }, 600)
+    this._timers.push(setTimeout(() => { btn.style.boxShadow = "" }, 600))
 
     // Floating XP
     const span = document.createElement("span")
@@ -58,7 +64,7 @@ export default class extends Controller {
       span.style.opacity = "0"
       span.style.transform = "translateY(-2rem)"
     })
-    setTimeout(() => span.remove(), 1100)
+    this._timers.push(setTimeout(() => span.remove(), 1100))
   }
 
   _showFeedback(correct) {

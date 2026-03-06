@@ -145,15 +145,14 @@ module LearningRoutesEngine
     end
 
     def find_or_start_study_session
-      existing = Analytics::StudySession.for_user(current_user)
+      Analytics::StudySession.for_user(current_user)
         .active
-        .find_by(route_step_id: @step.id)
-      existing || Analytics::StudySession.create!(
-        user: current_user,
-        learning_route: @route,
-        route_step: @step,
-        started_at: Time.current
-      )
+        .find_or_create_by!(route_step_id: @step.id) do |session|
+          session.learning_route = @route
+          session.started_at = Time.current
+        end
+    rescue ActiveRecord::RecordNotUnique
+      retry
     end
 
     def finish_study_session!

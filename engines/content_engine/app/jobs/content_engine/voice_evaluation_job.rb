@@ -4,6 +4,8 @@ module ContentEngine
 
     def perform(voice_response_id)
       voice_response = Assessments::VoiceResponse.find(voice_response_id)
+      return if voice_response.score.present? # Already evaluated — idempotency guard
+
       step = voice_response.route_step
       VoiceEvaluator.evaluate!(voice_response)
 

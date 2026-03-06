@@ -6,6 +6,11 @@ module LearningRoutesEngine
     def perform(route_id, assessment_result_id: nil, user_feedback: nil)
       route = LearningRoute.find(route_id)
 
+      # Idempotency: skip if gaps already analyzed for this assessment
+      if assessment_result_id
+        return if KnowledgeGap.where(learning_route: route).where("metadata->>'assessment_result_id' = ?", assessment_result_id).exists?
+      end
+
       assessment_result = if assessment_result_id
                             Assessments::AssessmentResult.find(assessment_result_id)
                           end
