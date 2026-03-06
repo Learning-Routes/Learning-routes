@@ -38,8 +38,8 @@ Rails.application.routes.draw do
   get "privacy", to: "pages#privacy", as: :privacy
 
   # PWA
-  get "manifest" => "rails/pwa#manifest", as: :pwa_manifest
-  get "service-worker" => "rails/pwa#service_worker", as: :pwa_service_worker
+  get "manifest" => "rails/pwa#manifest", as: :pwa_manifest, defaults: { format: :json }
+  get "service-worker" => "rails/pwa#service_worker", as: :pwa_service_worker, defaults: { format: :js }
 
   # Health check endpoint for load balancers and uptime monitors
   get "up" => "rails/health#show", as: :rails_health_check
