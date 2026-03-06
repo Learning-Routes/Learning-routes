@@ -5,7 +5,8 @@ export default class extends Controller {
   static values = {
     requiredMsg: { type: String, default: "This field is required" },
     emailMsg: { type: String, default: "Please enter a valid email" },
-    minLengthMsg: { type: String, default: "Must be at least %{min} characters" }
+    minLengthMsg: { type: String, default: "Must be at least %{min} characters" },
+    oauthMsg: { type: String, default: "Coming soon!" }
   }
 
   connect() {
@@ -151,6 +152,12 @@ export default class extends Controller {
   // --- Inline link underline ---
   inlineLinkOver(event) { event.currentTarget.style.textDecoration = "underline" }
   inlineLinkOut(event) { event.currentTarget.style.textDecoration = "none" }
+
+  // --- OAuth placeholder click ---
+  oauthClick(event) {
+    event.preventDefault()
+    alert(this.oauthMsgValue)
+  }
 
   // --- Show password confirm when email changes ---
   checkEmailChange(event) {

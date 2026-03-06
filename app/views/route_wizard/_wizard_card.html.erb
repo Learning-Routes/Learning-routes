@@ -308,15 +308,14 @@
 
             <div style="display:grid; grid-template-columns:repeat(2, 1fr); gap:6px;">
               <% %w[v a r k].each do |opt_key| %>
-                <div data-action="click->route-wizard#selectStyleAnswer"
+                <div data-action="click->route-wizard#selectStyleAnswer keydown->route-wizard#activateOnEnter"
                      data-question="<%= qnum %>"
                      data-option="<%= qnum %><%= opt_key %>"
                      data-style="<%= style_map[opt_key] %>"
                      tabindex="0"
                      role="radio"
                      aria-label="<%= t("wizard.step4.questions.q#{qnum}.options.#{opt_key}") %>"
-                     style="display:flex; align-items:center; gap:8px; padding:10px 12px; border-radius:10px; cursor:pointer; background:var(--color-card, #FEFDFB); border:1.5px solid var(--color-faint, rgba(28,24,18,0.06)); transition:all 0.2s cubic-bezier(0.16,1,0.3,1);"
-                     onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click()}">
+                     style="display:flex; align-items:center; gap:8px; padding:10px 12px; border-radius:10px; cursor:pointer; background:var(--color-card, #FEFDFB); border:1.5px solid var(--color-faint, rgba(28,24,18,0.06)); transition:all 0.2s cubic-bezier(0.16,1,0.3,1);">
                   <span style="font-size:0.95rem; flex-shrink:0;"><%= style_icons[qnum][opt_key.to_sym] %></span>
                   <span class="style-option-text" style="font-family:'DM Sans',sans-serif; font-weight:400; font-size:0.72rem; color:var(--color-txt, #1C1812); flex:1; line-height:1.3;"><%= t("wizard.step4.questions.q#{qnum}.options.#{opt_key}") %></span>
                   <div class="style-check" style="display:none; align-items:center; justify-content:center; width:14px; height:14px; flex-shrink:0;">

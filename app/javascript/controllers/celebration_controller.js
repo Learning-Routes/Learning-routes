@@ -226,21 +226,27 @@ export default class extends Controller {
       <div style="font-family:'DM Mono',monospace; font-size:4rem; font-weight:700; color:var(--color-txt, #1C1812); line-height:1; text-shadow:0 0 40px rgba(176,152,72,0.3);">${level}</div>
       <div style="font-family:'DM Sans',sans-serif; font-size:1.1rem; font-weight:700; color:var(--color-txt, #1C1812); margin-top:0.75rem;">${this._esc(i18n.congrats || "Congratulations!")}</div>
       <div style="font-family:'DM Sans',sans-serif; font-size:0.78rem; color:var(--color-muted, #887F72); margin-top:0.4rem;">${this._esc(i18n.new_level || "You reached a new level")}</div>
-      <button onclick="this.closest('[data-dismiss]').click()" style="
-        margin-top:1.5rem; font-family:'DM Sans',sans-serif; font-size:0.82rem; font-weight:600;
-        color:var(--color-accent-text, #fff); background:var(--color-accent, #2C261E); border:none; border-radius:11px;
-        padding:0.65rem 2rem; cursor:pointer; transition:opacity 0.2s;
-      ">${this._esc(i18n.continue || "Continue")}</button>
     `
 
-    overlay.setAttribute("data-dismiss", "")
+    const continueBtn = document.createElement("button")
+    continueBtn.textContent = i18n.continue || "Continue"
+    continueBtn.style.cssText = `
+      margin-top:1.5rem; font-family:'DM Sans',sans-serif; font-size:0.82rem; font-weight:600;
+      color:var(--color-accent-text, #fff); background:var(--color-accent, #2C261E); border:none; border-radius:11px;
+      padding:0.65rem 2rem; cursor:pointer; transition:opacity 0.2s;
+    `
+    card.appendChild(continueBtn)
+
+    const dismissOverlay = () => {
+      overlay.style.opacity = "0"
+      card.style.transform = "scale(0.8)"
+      card.style.opacity = "0"
+      setTimeout(() => overlay.remove(), 400)
+    }
+
+    continueBtn.addEventListener("click", dismissOverlay)
     overlay.addEventListener("click", (e) => {
-      if (e.target === overlay || e.target.tagName === "BUTTON") {
-        overlay.style.opacity = "0"
-        card.style.transform = "scale(0.8)"
-        card.style.opacity = "0"
-        setTimeout(() => overlay.remove(), 400) // fire-and-forget, overlay is standalone DOM
-      }
+      if (e.target === overlay) dismissOverlay()
     })
 
     overlay.appendChild(card)

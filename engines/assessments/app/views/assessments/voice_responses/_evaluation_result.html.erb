@@ -103,11 +103,10 @@
 
   <%# ── Retry Button ── %>
   <div class="text-center">
-    <button onclick="window.location.reload()"
-            class="text-sm transition-colors"
-            style="color: #818CF8; font-family: 'DM Sans', sans-serif;"
-            onmouseover="this.style.color='#A5B4FC'" onmouseout="this.style.color='#818CF8'">
+    <a href="" data-turbo-action="replace"
+       class="text-sm transition-colors"
+       style="color: #818CF8; font-family: 'DM Sans', sans-serif; text-decoration: none;">
       <%= t("voice_evaluation.retry") %>
-    </button>
+    </a>
   </div>
 </div>

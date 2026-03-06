@@ -24,11 +24,10 @@
       </p>
     <% end %>
 
-    <button onclick="window.location.reload()"
-            class="mt-2 px-5 py-2.5 text-sm font-medium transition-all rounded-[11px]"
-            style="color: #818CF8; background: rgba(99,102,241,0.1); font-family: 'DM Sans', sans-serif;"
-            onmouseover="this.style.background='rgba(99,102,241,0.2)'" onmouseout="this.style.background='rgba(99,102,241,0.1)'">
+    <a href="" data-turbo-action="replace"
+       class="mt-2 px-5 py-2.5 text-sm font-medium transition-all rounded-[11px] inline-block"
+       style="color: #818CF8; background: rgba(99,102,241,0.1); font-family: 'DM Sans', sans-serif; text-decoration: none;">
       <%= t("voice_evaluation.retry") %>
-    </button>
+    </a>
   </div>
 </div>
