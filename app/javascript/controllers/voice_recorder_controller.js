@@ -26,10 +26,12 @@ export default class extends Controller {
     this.elapsedSeconds = 0
     this.pollTimer = null
     this.stream = null
+    this._disconnected = false
     this.showState("idle")
   }
 
   disconnect() {
+    this._disconnected = true
     this.cleanup()
   }
 
@@ -118,6 +120,7 @@ export default class extends Controller {
       if (!response.ok) {
         throw new Error(`Upload failed: ${response.status}`)
       }
+      if (this._disconnected) return
 
       const data = await response.json()
       this.showState("evaluating")
@@ -132,9 +135,11 @@ export default class extends Controller {
 
   pollEvaluation(voiceResponseId) {
     this.pollTimer = setInterval(async () => {
+      if (this._disconnected) { clearInterval(this.pollTimer); return }
       try {
         const url = `${this.evaluationUrlValue}/${voiceResponseId}`
         const response = await fetch(url, { headers: { "Accept": "application/json" } })
+        if (this._disconnected) return
         const data = await response.json()
 
         if (data.status === "completed") {
@@ -145,7 +150,7 @@ export default class extends Controller {
           this.showState("idle")
         }
       } catch (err) {
-        console.error("[VoiceRecorder] Poll failed:", err)
+        if (!this._disconnected) console.error("[VoiceRecorder] Poll failed:", err)
       }
     }, 3000)
   }
