@@ -10,6 +10,22 @@ module Core
     has_one :user_engagement, class_name: "::UserEngagement", dependent: :destroy
     has_many :xp_transactions, class_name: "::XpTransaction", dependent: :destroy
 
+    # Analytics (delete_all for performance — no further cascades needed)
+    has_many :study_sessions, class_name: "Analytics::StudySession", dependent: :delete_all
+    has_many :progress_snapshots, class_name: "Analytics::ProgressSnapshot", dependent: :delete_all
+    has_many :learning_metrics, class_name: "Analytics::LearningMetric", dependent: :delete_all
+
+    # Assessments
+    has_many :assessment_results, class_name: "Assessments::AssessmentResult", dependent: :destroy
+    has_many :user_answers, class_name: "Assessments::UserAnswer", dependent: :delete_all
+    has_many :voice_responses, class_name: "Assessments::VoiceResponse", dependent: :destroy
+
+    # Content
+    has_many :user_notes, class_name: "ContentEngine::UserNote", dependent: :destroy
+
+    # Knowledge gaps
+    has_many :knowledge_gaps, class_name: "LearningRoutesEngine::KnowledgeGap", dependent: :destroy
+
     # Community associations
     has_many :comments, class_name: "CommunityEngine::Comment", dependent: :destroy
     has_many :likes, class_name: "CommunityEngine::Like", dependent: :destroy
@@ -17,6 +33,7 @@ module Core
     has_many :notifications, class_name: "CommunityEngine::Notification", dependent: :destroy
     has_many :shared_routes, class_name: "CommunityEngine::SharedRoute", dependent: :destroy
     has_many :posts, class_name: "CommunityEngine::Post", dependent: :destroy
+    has_many :ratings, class_name: "CommunityEngine::Rating", dependent: :destroy
 
     # Follower relationships
     has_many :active_follows, class_name: "CommunityEngine::Follow", foreign_key: :follower_id, dependent: :destroy
