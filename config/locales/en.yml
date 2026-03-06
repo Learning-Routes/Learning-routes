@@ -1160,6 +1160,7 @@ en:
     saved_verify_email: "Settings saved. Please check your new email for a verification link."
     password_updated: "Password updated successfully."
     wrong_current_password: "Current password is incorrect."
+    password_required_for_email: "Current password is required to change your email."
     errors:
       one: "1 error prevented saving:"
       other: "%{count} errors prevented saving:"
