@@ -1,5 +1,8 @@
 module CommunityEngine
   class SharedRoutesController < ApplicationController
+    rate_limit to: 10, within: 5.minutes, only: [:create, :clone], with: -> {
+      head :too_many_requests
+    }
     skip_before_action :authenticate_user!, only: [:show]
 
     def create

@@ -1,5 +1,9 @@
 module CommunityEngine
   class PostsController < ApplicationController
+    rate_limit to: 10, within: 5.minutes, only: :create, with: -> {
+      head :too_many_requests
+    }
+
     def create
       @post = Post.new(post_params)
       @post.user = current_user
