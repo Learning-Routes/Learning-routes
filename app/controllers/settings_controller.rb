@@ -10,9 +10,16 @@ class SettingsController < ApplicationController
     @profile.assign_attributes(profile_params)
 
     if @user.valid? && @profile.valid?
+      email_changed = @user.will_save_change_to_email?
+
       ActiveRecord::Base.transaction do
         @user.save!
         @profile.save!
+      end
+
+      # Re-send verification email if email was changed
+      if email_changed
+        Core::VerificationMailer.verify_email(@user).deliver_later
       end
 
       # Sync locale cookie with DB value
@@ -22,7 +29,7 @@ class SettingsController < ApplicationController
       # Sync theme cookie with DB value
       cookies[:theme] = { value: @user.theme, expires: 1.year.from_now }
 
-      redirect_to settings_path, notice: t("settings.saved")
+      redirect_to settings_path, notice: email_changed ? t("settings.saved_verify_email") : t("settings.saved")
     else
       render :edit, status: :unprocessable_entity
     end
@@ -35,6 +42,10 @@ class SettingsController < ApplicationController
     end
 
     if @user.update(password: params[:new_password], password_confirmation: params[:new_password_confirmation])
+      # Invalidate all other sessions (keep current one)
+      current_session_id = session[:core_session_id]
+      @user.sessions.where.not(id: current_session_id).destroy_all
+
       redirect_to settings_path, notice: t("settings.password_updated")
     else
       render :edit, status: :unprocessable_entity

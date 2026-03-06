@@ -1157,6 +1157,7 @@ es:
     heading: "Ajustes"
     subheading: "Gestiona tu cuenta, preferencias y perfil de aprendizaje."
     saved: "Ajustes guardados correctamente."
+    saved_verify_email: "Ajustes guardados. Revisa tu nuevo correo para verificarlo."
     password_updated: "Contraseña actualizada correctamente."
     wrong_current_password: "La contraseña actual es incorrecta."
     errors:
