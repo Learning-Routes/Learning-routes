@@ -16,6 +16,7 @@ module Core
     has_many :activities, class_name: "CommunityEngine::Activity", dependent: :destroy
     has_many :notifications, class_name: "CommunityEngine::Notification", dependent: :destroy
     has_many :shared_routes, class_name: "CommunityEngine::SharedRoute", dependent: :destroy
+    has_many :posts, class_name: "CommunityEngine::Post", dependent: :destroy
 
     # Follower relationships
     has_many :active_follows, class_name: "CommunityEngine::Follow", foreign_key: :follower_id, dependent: :destroy

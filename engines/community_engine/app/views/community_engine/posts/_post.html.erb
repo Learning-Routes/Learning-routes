@@ -6,14 +6,14 @@
     <div style="width:36px; height:36px; border-radius:50%; background:var(--color-accent, #2C261E);
                 display:flex; align-items:center; justify-content:center; color:var(--color-accent-text, #F5F1EB);
                 font-family:'DM Sans',sans-serif; font-size:0.72rem; font-weight:700; flex-shrink:0;">
-      <%= post.user.name.to_s.first&.upcase || "?" %>
+      <%= post.user&.name.to_s.first&.upcase || "?" %>
     </div>
 
     <div style="flex:1; min-width:0;">
       <%# Author + time + delete %>
       <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.25rem;">
         <span style="font-family:'DM Sans',sans-serif; font-size:0.85rem; font-weight:600; color:var(--color-txt, #1C1812);">
-          <%= post.user.name %>
+          <%= post.user&.name || t("community_engine.posts.deleted_user", default: "Deleted user") %>
         </span>
         <span style="font-family:'DM Mono',monospace; font-size:0.68rem; color:var(--color-muted, #887F72);">
           <%= time_ago_in_words(post.created_at) %>
