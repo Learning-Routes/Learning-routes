@@ -5,6 +5,9 @@ module LearningRoutesEngine
     has_many :route_steps, -> { order(:position) }, dependent: :destroy
     has_many :knowledge_gaps, dependent: :destroy
     has_many :reinforcement_routes, dependent: :destroy
+    has_many :route_requests, class_name: "::RouteRequest", dependent: :nullify
+    has_many :progress_snapshots, class_name: "Analytics::ProgressSnapshot", dependent: :destroy
+    has_many :study_sessions, class_name: "Analytics::StudySession", dependent: :nullify
 
     # Community associations
     has_many :comments, as: :commentable, class_name: "CommunityEngine::Comment", dependent: :destroy
