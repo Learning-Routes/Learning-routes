@@ -30,7 +30,12 @@ module ContentEngine
     private
 
     def transcribe_audio
-      audio_path = Rails.root.join("storage", "voice_responses", @response.audio_blob_key)
+      blob_key = @response.audio_blob_key.to_s
+      raise "Invalid audio blob key" if blob_key.blank? || blob_key.include?("..") || blob_key.include?("/")
+
+      audio_path = Rails.root.join("storage", "voice_responses", blob_key)
+      raise "Audio file not found: #{blob_key}" unless File.exist?(audio_path)
+
       api_key = Rails.application.credentials.dig(:elevenlabs, :api_key) || ENV["ELEVENLABS_API_KEY"]
 
       uri = URI("https://api.elevenlabs.io/v1/speech-to-text")

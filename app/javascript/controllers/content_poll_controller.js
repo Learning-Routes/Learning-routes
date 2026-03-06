@@ -14,13 +14,15 @@ export default class extends Controller {
   }
 
   async _poll() {
+    if (this._stopped) return
     try {
       const response = await fetch(this.urlValue, {
         headers: { Accept: "text/html", "Turbo-Frame": this.element.id }
       })
-      if (!response.ok) return
+      if (!response.ok || this._stopped) return
 
       const html = await response.text()
+      if (this._stopped) return
       // If response no longer contains the poll controller, content is ready
       if (!html.includes('data-controller="content-poll"')) {
         this._stop()
@@ -38,6 +40,7 @@ export default class extends Controller {
   }
 
   _stop() {
+    this._stopped = true
     if (this._timer) {
       clearInterval(this._timer)
       this._timer = null

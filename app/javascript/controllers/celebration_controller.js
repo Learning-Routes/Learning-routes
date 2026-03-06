@@ -22,10 +22,12 @@ export default class extends Controller {
     xp: Number,      // XP amount to display
     message: String, // Message to show
     level: Number,   // New level (for level-up)
-    streak: Number   // Streak count (for milestones)
+    streak: Number,  // Streak count (for milestones)
+    i18n: { type: Object, default: {} }
   }
 
   connect() {
+    this._timers = []
     const tier = this.tierValue
     if (!tier) return
 
@@ -52,9 +54,9 @@ export default class extends Controller {
     // Green pulse on the element
     this.element.style.transition = "box-shadow 0.3s, background-color 0.3s"
     this.element.style.boxShadow = "inset 0 0 0 2px rgba(91,168,128,0.3)"
-    setTimeout(() => {
+    this._timers.push(setTimeout(() => {
       this.element.style.boxShadow = ""
-    }, 500)
+    }, 500))
 
     this._autoDismiss(1200)
   }
@@ -91,12 +93,12 @@ export default class extends Controller {
 
     // Multi-burst confetti
     confetti({ particleCount: 100, spread: 160, origin: { x: 0.3, y: 0.5 }, colors: COLORS, disableForReducedMotion: true })
-    setTimeout(() => {
+    this._timers.push(setTimeout(() => {
       confetti({ particleCount: 100, spread: 160, origin: { x: 0.7, y: 0.5 }, colors: COLORS, disableForReducedMotion: true })
-    }, 300)
-    setTimeout(() => {
+    }, 300))
+    this._timers.push(setTimeout(() => {
       confetti({ particleCount: 50, angle: 90, spread: 120, origin: { y: 0 }, colors: COLORS, disableForReducedMotion: true })
-    }, 600)
+    }, 600))
 
     // Gold screen flash
     this._goldFlash()
@@ -135,7 +137,7 @@ export default class extends Controller {
       span.style.transform = "translateX(-50%) translateY(-2.5rem)"
     })
 
-    setTimeout(() => span.remove(), 1200)
+    this._timers.push(setTimeout(() => span.remove(), 1200))
   }
 
   _showToast(message, xp, large = false) {
@@ -193,7 +195,7 @@ export default class extends Controller {
     this._toastTimer = setTimeout(() => {
       toast.style.opacity = "0"
       toast.style.transform = "translateX(-50%) translateY(100%)"
-      setTimeout(() => toast.remove(), 400)
+      this._timers.push(setTimeout(() => toast.remove(), 400))
     }, large ? 3500 : 2500)
   }
 
@@ -218,16 +220,17 @@ export default class extends Controller {
       transition:all 0.5s cubic-bezier(0.34,1.56,0.64,1);
     `
 
+    const i18n = this.i18nValue || {}
     card.innerHTML = `
-      <div style="font-family:'DM Mono',monospace; font-size:0.6rem; font-weight:600; color:#B09848; text-transform:uppercase; letter-spacing:2px; margin-bottom:0.5rem;">NIVEL</div>
+      <div style="font-family:'DM Mono',monospace; font-size:0.6rem; font-weight:600; color:#B09848; text-transform:uppercase; letter-spacing:2px; margin-bottom:0.5rem;">${this._esc(i18n.level_label || "LEVEL")}</div>
       <div style="font-family:'DM Mono',monospace; font-size:4rem; font-weight:700; color:var(--color-txt, #1C1812); line-height:1; text-shadow:0 0 40px rgba(176,152,72,0.3);">${level}</div>
-      <div style="font-family:'DM Sans',sans-serif; font-size:1.1rem; font-weight:700; color:var(--color-txt, #1C1812); margin-top:0.75rem;">Felicidades!</div>
-      <div style="font-family:'DM Sans',sans-serif; font-size:0.78rem; color:var(--color-muted, #887F72); margin-top:0.4rem;">Has alcanzado un nuevo nivel</div>
+      <div style="font-family:'DM Sans',sans-serif; font-size:1.1rem; font-weight:700; color:var(--color-txt, #1C1812); margin-top:0.75rem;">${this._esc(i18n.congrats || "Congratulations!")}</div>
+      <div style="font-family:'DM Sans',sans-serif; font-size:0.78rem; color:var(--color-muted, #887F72); margin-top:0.4rem;">${this._esc(i18n.new_level || "You reached a new level")}</div>
       <button onclick="this.closest('[data-dismiss]').click()" style="
         margin-top:1.5rem; font-family:'DM Sans',sans-serif; font-size:0.82rem; font-weight:600;
         color:#fff; background:#2C261E; border:none; border-radius:11px;
         padding:0.65rem 2rem; cursor:pointer; transition:opacity 0.2s;
-      ">Continuar</button>
+      ">${this._esc(i18n.continue || "Continue")}</button>
     `
 
     overlay.setAttribute("data-dismiss", "")
@@ -236,7 +239,7 @@ export default class extends Controller {
         overlay.style.opacity = "0"
         card.style.transform = "scale(0.8)"
         card.style.opacity = "0"
-        setTimeout(() => overlay.remove(), 400)
+        setTimeout(() => overlay.remove(), 400) // fire-and-forget, overlay is standalone DOM
       }
     })
 
@@ -260,7 +263,7 @@ export default class extends Controller {
       animation:celebration-gold-flash 0.6s ease-out forwards;
     `
     document.body.appendChild(flash)
-    setTimeout(() => flash.remove(), 700)
+    this._timers.push(setTimeout(() => flash.remove(), 700))
   }
 
   _animateNavbarXp() {
@@ -271,17 +274,17 @@ export default class extends Controller {
     xpCount.style.transition = "transform 0.3s cubic-bezier(0.34,1.56,0.64,1), color 0.3s"
     xpCount.style.transform = "scale(1.4)"
     xpCount.style.color = "#5BA880"
-    setTimeout(() => {
+    this._timers.push(setTimeout(() => {
       xpCount.style.transform = "scale(1)"
       xpCount.style.color = ""
-    }, 800)
+    }, 800))
 
     // Also pulse the streak flame
     const flame = document.querySelector("[data-engagement-target='flameIcon']")
     if (flame) {
       flame.style.transition = "transform 0.4s cubic-bezier(0.34,1.56,0.64,1)"
       flame.style.transform = "scale(1.5)"
-      setTimeout(() => { flame.style.transform = "scale(1)" }, 600)
+      this._timers.push(setTimeout(() => { flame.style.transform = "scale(1)" }, 600))
     }
   }
 
@@ -291,9 +294,16 @@ export default class extends Controller {
     }, ms)
   }
 
+  _esc(str) {
+    const d = document.createElement("div")
+    d.textContent = str
+    return d.innerHTML
+  }
+
   _cleanup() {
     if (this._dismissTimer) clearTimeout(this._dismissTimer)
     if (this._toastTimer) clearTimeout(this._toastTimer)
+    if (this._timers) this._timers.forEach(t => clearTimeout(t))
     if (this._toastEl) this._toastEl.remove()
     if (this._levelOverlay) this._levelOverlay.remove()
   }

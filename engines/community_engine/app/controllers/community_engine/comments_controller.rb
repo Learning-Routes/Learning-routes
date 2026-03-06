@@ -46,9 +46,10 @@ module CommunityEngine
           )
         end
 
-        if @comment.parent.present? && @comment.parent.user_id != owner&.id && @comment.parent.user_id != current_user.id
+        parent_user = @comment.parent&.user
+        if parent_user && parent_user.id != owner&.id && parent_user.id != current_user.id
           NotificationService.notify!(
-            user: @comment.parent.user,
+            user: parent_user,
             actor: current_user,
             notifiable: @comment,
             notification_type: "comment_reply"
