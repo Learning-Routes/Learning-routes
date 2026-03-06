@@ -265,6 +265,13 @@ export default class extends Controller {
 
   // ===== STEP 4: LEARNING STYLE =====
 
+  activateOnEnter(event) {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault()
+      event.currentTarget.click()
+    }
+  }
+
   selectStyleAnswer(event) {
     const card = event.currentTarget
     const question = card.dataset.question
