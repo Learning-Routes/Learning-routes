@@ -38,7 +38,7 @@
     <div style="display:flex; align-items:center; gap:0.8rem;">
 
       <%# Engagement stats (streak, XP, level) %>
-      <% if current_user %>
+      <% if current_user&.user_engagement %>
         <div id="engagement_stats" class="hidden md:flex">
           <%= render "shared/engagement_bar", engagement: current_user.user_engagement %>
         </div>
