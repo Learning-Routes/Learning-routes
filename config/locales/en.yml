@@ -206,6 +206,32 @@ en:
       cta: "Verify Email"
       expiry: "This link will expire in 24 hours."
       ignore: "If you didn't create an account, you can ignore this email."
+    route_deletion:
+      heading: "Route deletion code"
+      greeting: "Hi %{name},"
+      body: "You requested to delete your learning route \"%{route}\". Enter this code to confirm:"
+      expiry: "This code will expire in 10 minutes."
+      ignore: "If you didn't request this, you can safely ignore this email."
+
+  # ── Delete Route ──
+  delete_route:
+    danger_zone: "Danger zone"
+    danger_desc: "Permanently delete this route and all its data."
+    btn: "Delete Route"
+    modal_title: "Delete this route?"
+    modal_warning: "You are about to permanently delete \"%{route}\". This action cannot be undone."
+    warning_progress: "All progress and quiz results will be lost"
+    warning_content: "All generated content and notes will be removed"
+    warning_irreversible: "This action is irreversible"
+    send_code: "Send verification code"
+    enter_code_title: "Enter verification code"
+    enter_code_desc: "We sent a 6-digit code to %{email}. Enter it below to confirm deletion."
+    confirm_delete: "Delete permanently"
+    cancel: "Cancel"
+    wrong_code: "Invalid or expired code. Please try again."
+    rate_limited: "Too many requests. Please wait a few minutes."
+    error: "Something went wrong. Please try again."
+    success: "Route \"%{route}\" has been deleted."
 
   # ── Locale Toggle ──
   locale_toggle:
@@ -1257,6 +1283,13 @@ en:
       body: "Please verify your email address by visiting the link below:"
       expiry: "This link will expire in 24 hours."
       ignore: "If you did not create an account, you can ignore this email."
+  deletion_mailer:
+    route_deletion_code:
+      subject: "Your route deletion code"
+      greeting: "Hi %{name},"
+      body: "You requested to delete your learning route \"%{route}\". Use this code to confirm:"
+      expiry: "This code will expire in 10 minutes."
+      ignore: "If you did not request this, you can safely ignore this email."
 
   content_actions:
     hint: "Hint"

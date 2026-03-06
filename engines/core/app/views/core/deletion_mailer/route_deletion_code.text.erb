@@ -1,0 +1,9 @@
+<%= t("deletion_mailer.route_deletion_code.greeting", name: @user.name) %>
+
+<%= t("deletion_mailer.route_deletion_code.body", route: @route.localized_topic) %>
+
+<%= @code %>
+
+<%= t("deletion_mailer.route_deletion_code.expiry") %>
+
+<%= t("deletion_mailer.route_deletion_code.ignore") %>

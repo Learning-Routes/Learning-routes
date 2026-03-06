@@ -206,6 +206,32 @@ es:
       cta: "Verificar correo"
       expiry: "Este enlace expirará en 24 horas."
       ignore: "Si no creaste una cuenta, puedes ignorar este correo."
+    route_deletion:
+      heading: "Código de eliminación de ruta"
+      greeting: "Hola %{name},"
+      body: "Solicitaste eliminar tu ruta de aprendizaje \"%{route}\". Ingresa este código para confirmar:"
+      expiry: "Este código expirará en 10 minutos."
+      ignore: "Si no solicitaste esto, puedes ignorar este correo."
+
+  # ── Eliminar Ruta ──
+  delete_route:
+    danger_zone: "Zona de peligro"
+    danger_desc: "Eliminar permanentemente esta ruta y todos sus datos."
+    btn: "Eliminar Ruta"
+    modal_title: "¿Eliminar esta ruta?"
+    modal_warning: "Estás a punto de eliminar permanentemente \"%{route}\". Esta acción no se puede deshacer."
+    warning_progress: "Todo el progreso y resultados de quiz se perderán"
+    warning_content: "Todo el contenido generado y notas serán eliminados"
+    warning_irreversible: "Esta acción es irreversible"
+    send_code: "Enviar código de verificación"
+    enter_code_title: "Ingresa el código de verificación"
+    enter_code_desc: "Enviamos un código de 6 dígitos a %{email}. Ingrésalo abajo para confirmar la eliminación."
+    confirm_delete: "Eliminar permanentemente"
+    cancel: "Cancelar"
+    wrong_code: "Código inválido o expirado. Intenta de nuevo."
+    rate_limited: "Demasiadas solicitudes. Espera unos minutos."
+    error: "Algo salió mal. Intenta de nuevo."
+    success: "La ruta \"%{route}\" ha sido eliminada."
 
   # ── Cambio de idioma ──
   locale_toggle:
@@ -1202,6 +1228,13 @@ es:
       body: "Por favor verifica tu dirección de correo visitando el siguiente enlace:"
       expiry: "Este enlace expirará en 24 horas."
       ignore: "Si no creaste una cuenta, puedes ignorar este correo."
+  deletion_mailer:
+    route_deletion_code:
+      subject: "Tu código de eliminación de ruta"
+      greeting: "Hola %{name},"
+      body: "Solicitaste eliminar tu ruta de aprendizaje \"%{route}\". Usa este código para confirmar:"
+      expiry: "Este código expirará en 10 minutos."
+      ignore: "Si no solicitaste esto, puedes ignorar este correo."
 
   # ── Etiquetas de acciones turbo stream ──
   content_actions:

@@ -36,11 +36,19 @@ Rails.application.configure do
   # Production uses :solid_queue with a separate worker process.
   config.active_job.queue_adapter = :async
 
-  # Don't care if the mailer can't send.
-  config.action_mailer.raise_delivery_errors = false
+  # Show delivery errors during development.
+  config.action_mailer.raise_delivery_errors = true
 
-  # Store emails in ActionMailer::Base.deliveries instead of trying SMTP.
-  config.action_mailer.delivery_method = :test
+  # Resend SMTP (transactional email — same provider as production)
+  config.action_mailer.delivery_method = :smtp
+  config.action_mailer.smtp_settings = {
+    address: "smtp.resend.com",
+    port: 465,
+    user_name: "resend",
+    password: ENV["RESEND_API_KEY"],
+    authentication: :plain,
+    tls: true
+  }
 
   # Make template changes take effect immediately.
   config.action_mailer.perform_caching = false
