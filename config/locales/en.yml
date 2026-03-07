@@ -23,7 +23,7 @@ en:
 
   # ── Hero ──
   hero:
-    headline: "Learn anything, the&nbsp;right way."
+    headline_html: "Learn anything, the&nbsp;right way."
     headline_active_html: "Your route in<br>%{topic}."
     subtext: "Tell us what you want to master and get a unique learning route, with assessments that adapt to your real progress."
     subtext_active: "Continue your personalized route. %{progress}% completed with %{steps} steps finished."

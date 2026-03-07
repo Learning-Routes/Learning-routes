@@ -23,7 +23,7 @@ es:
 
   # ── Hero ──
   hero:
-    headline: "Aprende lo que quieras, bien."
+    headline_html: "Aprende lo que quieras, bien."
     headline_active_html: "Tu ruta en<br>%{topic}."
     subtext: "Dinos qué quieres dominar y obtén una ruta de aprendizaje única, con evaluaciones que se adaptan a tu progreso real."
     subtext_active: "Continúa tu ruta personalizada. %{progress}% completado con %{steps} pasos finalizados."

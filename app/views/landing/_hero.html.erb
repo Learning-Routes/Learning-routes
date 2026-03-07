@@ -41,7 +41,7 @@
         <% if current_user && @active_route %>
           <%= t("hero.headline_active_html", topic: @active_route.localized_topic) %>
         <% else %>
-          <%= t("hero.headline").html_safe %>
+          <%= t("hero.headline_html") %>
         <% end %>
       </h1>
 
