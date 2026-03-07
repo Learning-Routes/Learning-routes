@@ -1,6 +1,9 @@
 module Assessments
   class VoiceResponsesController < ApplicationController
     before_action :authenticate_user!
+    rate_limit to: 10, within: 5.minutes, only: :create, with: -> {
+      head :too_many_requests
+    }
 
     MAX_AUDIO_SIZE = 10.megabytes
     ALLOWED_CONTENT_TYPES = %w[audio/webm audio/ogg audio/mp4 audio/mpeg].freeze
