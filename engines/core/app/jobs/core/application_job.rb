@@ -1,4 +1,4 @@
 module Core
-  class ApplicationJob < ActiveJob::Base
+  class ApplicationJob < ::ApplicationJob
   end
 end
