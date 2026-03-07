@@ -7,9 +7,15 @@ Allow: /
 Disallow: /dashboard
 Disallow: /onboarding
 Disallow: /profile
+Disallow: /settings
 Disallow: /routes/
-Disallow: /steps/
+Disallow: /learning/
+Disallow: /content/
 Disallow: /assessments/
+Disallow: /ai/
+Disallow: /analytics/
+Disallow: /community_engine/
+Disallow: /community
 
 # Sitemap
 Sitemap: https://learning-routes.com/sitemap.xml
