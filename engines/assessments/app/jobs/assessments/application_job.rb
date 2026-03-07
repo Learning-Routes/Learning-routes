@@ -1,4 +1,4 @@
 module Assessments
-  class ApplicationJob < ActiveJob::Base
+  class ApplicationJob < ::ApplicationJob
   end
 end

@@ -1,4 +1,4 @@
 module LearningRoutesEngine
-  class ApplicationJob < ActiveJob::Base
+  class ApplicationJob < ::ApplicationJob
   end
 end
