@@ -1,5 +1,9 @@
 module CommunityEngine
   class RatingsController < ApplicationController
+    rate_limit to: 20, within: 1.minute, only: :create, with: -> {
+      head :too_many_requests
+    }
+
     def create
       @shared_route = SharedRoute.find_by!(share_token: params[:id])
 

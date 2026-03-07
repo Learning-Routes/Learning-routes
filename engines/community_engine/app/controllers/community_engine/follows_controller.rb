@@ -1,5 +1,9 @@
 module CommunityEngine
   class FollowsController < ApplicationController
+    rate_limit to: 30, within: 1.minute, only: [:create, :destroy], with: -> {
+      head :too_many_requests
+    }
+
     def create
       @followed_user = Core::User.find_by(id: params[:followed_id])
       return head(:not_found) unless @followed_user
