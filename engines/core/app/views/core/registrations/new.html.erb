@@ -1,5 +1,9 @@
 <% content_for(:title, t("auth.register.title")) %>
 
+<% content_for(:head) do %>
+  <meta name="description" content="<%= t('auth.register.meta_description') %>">
+<% end %>
+
 <% content_for(:auth_toggle) do %>
   <%= link_to core.sign_in_path,
       style: "font-family:'DM Sans',sans-serif; font-size:0.82rem; color:var(--color-muted, #A09889); text-decoration:none; transition:color 0.2s;",

@@ -156,8 +156,10 @@ es:
       switch_link: "Inicia sesión"
       legal_html: "Al crear una cuenta aceptas los <a href=\"%{terms_url}\" style=\"color:#A09889; text-decoration:underline;\">términos</a> y la <a href=\"%{privacy_url}\" style=\"color:#A09889; text-decoration:underline;\">privacidad</a>."
       errors: "%{count} error(es) impidieron guardar:"
+      meta_description: "Crea tu cuenta gratuita en Learning Routes y comienza tu camino de aprendizaje personalizado con IA."
     login:
       title: "Iniciar sesión — Learning Routes"
+      meta_description: "Inicia sesión en Learning Routes para continuar tu ruta de aprendizaje personalizada."
       toggle: "Crear cuenta"
       heading: "Bienvenido de nuevo."
       google: "Continuar con Google"
