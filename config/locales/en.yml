@@ -156,8 +156,10 @@ en:
       switch_link: "Sign in"
       legal_html: "By creating an account you accept the <a href=\"%{terms_url}\" style=\"color:#A09889; text-decoration:underline;\">terms</a> and <a href=\"%{privacy_url}\" style=\"color:#A09889; text-decoration:underline;\">privacy</a>."
       errors: "%{count} error(s) prevented saving:"
+      meta_description: "Create a free Learning Routes account and start your personalized AI-powered learning journey today."
     login:
       title: "Sign in — Learning Routes"
+      meta_description: "Sign in to Learning Routes to continue your personalized learning path."
       toggle: "Create account"
       heading: "Welcome back."
       google: "Continue with Google"
