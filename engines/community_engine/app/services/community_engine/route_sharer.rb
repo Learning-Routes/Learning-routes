@@ -43,7 +43,7 @@ module CommunityEngine
         end
 
         # Track the clone after all steps are successfully created
-        SharedRoute.where(id: shared_route.id).update_all("clones_count = clones_count + 1")
+        SharedRoute.where(id: shared_route.id).update_all(Arel.sql("clones_count = clones_count + 1"))
 
         new_route
       end

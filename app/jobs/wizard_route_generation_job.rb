@@ -20,7 +20,7 @@ class WizardRouteGenerationJob < ApplicationJob
       end
 
       # Update profile with latest preferences
-      profile.update(
+      profile.update!(
         current_level: map_level(request.level),
         interests: request.topics.presence || profile.interests,
         weekly_hours: request.weekly_hours || profile.weekly_hours,

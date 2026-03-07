@@ -8,14 +8,20 @@ module LearningRoutesEngine
       profile = LearningProfile.find_by(user: current_user)
       @due_reviews = []
 
-      profile&.learning_routes&.includes(:route_steps)&.active_routes&.each do |route|
-        sr = SpacedRepetition.new
-        sr.due_reviews(route).each do |step|
-          @due_reviews << { step: step, route: route }
+      if profile
+        route_ids = profile.learning_routes.active_routes.pluck(:id)
+        if route_ids.any?
+          due_steps = RouteStep
+            .where(learning_route_id: route_ids)
+            .due_for_review
+            .includes(:learning_route)
+            .order(:fsrs_next_review_at)
+
+          due_steps.each do |step|
+            @due_reviews << { step: step, route: step.learning_route }
+          end
         end
       end
-
-      @due_reviews.sort_by! { |r| r[:step].fsrs_next_review_at || Time.current }
     end
 
     def submit_review

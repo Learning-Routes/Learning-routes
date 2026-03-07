@@ -74,7 +74,7 @@ module LearningRoutesEngine
         # PostgreSQL checks unique constraints per-row during UPDATE,
         # so direct position + N can conflict with existing positions.
         # Step 1: Negate positions to make them all unique negatives
-        steps_to_shift.update_all("position = -position - 1000")
+        steps_to_shift.update_all(Arel.sql("position = -position - 1000"))
         # Step 2: Set final positions from the negated values
         RouteStep.where(learning_route_id: @route.id)
                  .where("position < 0")
