@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_03_07_002634) do
+ActiveRecord::Schema[8.1].define(version: 2026_03_07_010000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -119,6 +119,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_07_002634) do
     t.index ["assessment_id"], name: "index_assessments_assessment_results_on_assessment_id"
     t.index ["passed"], name: "index_assessments_assessment_results_on_passed"
     t.index ["user_id", "assessment_id"], name: "idx_results_on_user_and_assessment"
+    t.index ["user_id", "created_at"], name: "idx_assessment_results_user_timeline"
     t.index ["user_id"], name: "index_assessments_assessment_results_on_user_id"
   end
 
@@ -193,6 +194,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_07_002634) do
     t.index ["action"], name: "index_community_engine_activities_on_action"
     t.index ["created_at"], name: "index_community_engine_activities_on_created_at"
     t.index ["trackable_type", "trackable_id"], name: "idx_activities_on_trackable"
+    t.index ["user_id", "action", "created_at"], name: "idx_activities_user_action_timeline"
     t.index ["user_id", "created_at"], name: "idx_activities_user_timeline"
   end
 
@@ -207,6 +209,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_07_002634) do
     t.integer "replies_count", default: 0, null: false
     t.datetime "updated_at", null: false
     t.uuid "user_id", null: false
+    t.index ["commentable_type", "commentable_id", "created_at"], name: "idx_comments_commentable_timeline"
     t.index ["commentable_type", "commentable_id"], name: "idx_comments_on_commentable"
     t.index ["parent_id"], name: "index_community_engine_comments_on_parent_id"
     t.index ["user_id", "created_at"], name: "index_community_engine_comments_on_user_id_and_created_at"
@@ -527,6 +530,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_07_002634) do
     t.uuid "user_id", null: false
     t.jsonb "weekly_xp", default: {}, null: false
     t.integer "xp_to_next_level", default: 100, null: false
+    t.index ["streak_freeze_used_today"], name: "idx_user_engagements_streak_freeze_active", where: "(streak_freeze_used_today = true)"
     t.index ["user_id"], name: "index_user_engagements_on_user_id", unique: true
   end
 

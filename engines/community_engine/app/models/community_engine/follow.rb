@@ -16,13 +16,13 @@ module CommunityEngine
     end
 
     def increment_counters
-      Core::User.where(id: follower_id).update_all("following_count = following_count + 1")
-      Core::User.where(id: followed_id).update_all("followers_count = followers_count + 1")
+      Core::User.where(id: follower_id).update_all(Arel.sql("following_count = following_count + 1"))
+      Core::User.where(id: followed_id).update_all(Arel.sql("followers_count = followers_count + 1"))
     end
 
     def decrement_counters
-      Core::User.where(id: follower_id).update_all("following_count = GREATEST(following_count - 1, 0)")
-      Core::User.where(id: followed_id).update_all("followers_count = GREATEST(followers_count - 1, 0)")
+      Core::User.where(id: follower_id).update_all(Arel.sql("following_count = GREATEST(following_count - 1, 0)"))
+      Core::User.where(id: followed_id).update_all(Arel.sql("followers_count = GREATEST(followers_count - 1, 0)"))
     end
   end
 end
