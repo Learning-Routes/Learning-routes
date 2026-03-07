@@ -65,7 +65,8 @@
       <%# Play / Pause button %>
       <button data-action="click->audio-player#togglePlay"
               class="w-14 h-14 rounded-full flex items-center justify-center transition-colors flex-shrink-0 hover-bg-indigo"
-              style="background: #6366F1;">
+              style="background: #6366F1;"
+              aria-label="<%= t("audio_player.play_pause_aria") %>">
         <svg data-audio-player-target="playIcon" class="w-6 h-6 text-white ml-1" fill="currentColor" viewBox="0 0 24 24">
           <path d="M8 5v14l11-7z"/>
         </svg>

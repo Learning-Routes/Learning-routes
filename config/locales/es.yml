@@ -1285,6 +1285,7 @@ es:
     skip_back: "Retroceder 10s"
     skip_forward: "Avanzar 10s"
     retry_generation: "Reintentar generación"
+    play_pause_aria: "Reproducir o pausar audio"
   voice_recorder:
     label: "Respuesta de voz"
     prompt: "Graba tu respuesta explicando lo que aprendiste"
@@ -1300,6 +1301,9 @@ es:
     view_transcript: "Ver transcripción"
     try_again: "Intentar de nuevo"
     mic_error: "No se pudo acceder al micrófono. Verifica los permisos."
+    record_aria: "Iniciar grabación"
+    stop_aria: "Detener grabación"
+    play_preview_aria: "Reproducir vista previa"
   voice_evaluation:
     evaluating_response: "Evaluando tu respuesta..."
     error_evaluating: "Error al evaluar la respuesta"
