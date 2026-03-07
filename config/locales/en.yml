@@ -1238,6 +1238,7 @@ en:
     skip_back: "Skip back 10s"
     skip_forward: "Skip forward 10s"
     retry_generation: "Retry generation"
+    play_pause_aria: "Play or pause audio"
   voice_recorder:
     label: "Voice response"
     prompt: "Record your response explaining what you learned"
@@ -1253,6 +1254,9 @@ en:
     view_transcript: "View transcript"
     try_again: "Try again"
     mic_error: "Could not access microphone. Check your permissions."
+    record_aria: "Start recording"
+    stop_aria: "Stop recording"
+    play_preview_aria: "Play preview"
   voice_evaluation:
     evaluating_response: "Evaluating your response..."
     error_evaluating: "Error evaluating response"
