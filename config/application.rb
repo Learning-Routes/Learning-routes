@@ -28,7 +28,7 @@ module LearningRoutes
       "X-Content-Type-Options" => "nosniff",
       "X-Frame-Options" => "DENY",
       "Referrer-Policy" => "strict-origin-when-cross-origin",
-      "Permissions-Policy" => "camera=(), microphone=(self), geolocation=()"
+      "Permissions-Policy" => "camera=(), gyroscope=(), magnetometer=(), usb=(), fullscreen=(self), microphone=(self)"
     }
 
     # Generator configuration
