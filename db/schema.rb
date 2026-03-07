@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_03_06_240000) do
+ActiveRecord::Schema[8.1].define(version: 2026_03_07_002634) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -544,9 +544,19 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_06_240000) do
     t.index ["user_id"], name: "index_xp_transactions_on_user_id"
   end
 
+  add_foreign_key "ai_orchestrator_ai_interactions", "core_users", column: "user_id", on_delete: :nullify
+  add_foreign_key "analytics_learning_metrics", "core_users", column: "user_id", on_delete: :cascade
+  add_foreign_key "analytics_progress_snapshots", "core_users", column: "user_id", on_delete: :cascade
+  add_foreign_key "analytics_progress_snapshots", "learning_routes_engine_learning_routes", column: "learning_route_id", on_delete: :cascade
+  add_foreign_key "analytics_study_sessions", "core_users", column: "user_id", on_delete: :cascade
+  add_foreign_key "analytics_study_sessions", "learning_routes_engine_learning_routes", column: "learning_route_id", on_delete: :nullify
+  add_foreign_key "analytics_study_sessions", "learning_routes_engine_route_steps", column: "route_step_id", on_delete: :nullify
   add_foreign_key "assessments_assessment_results", "assessments_assessments", column: "assessment_id"
+  add_foreign_key "assessments_assessment_results", "core_users", column: "user_id", on_delete: :cascade
+  add_foreign_key "assessments_assessments", "learning_routes_engine_route_steps", column: "route_step_id", on_delete: :cascade
   add_foreign_key "assessments_questions", "assessments_assessments", column: "assessment_id"
   add_foreign_key "assessments_user_answers", "assessments_questions", column: "question_id"
+  add_foreign_key "assessments_user_answers", "core_users", column: "user_id", on_delete: :cascade
   add_foreign_key "assessments_voice_responses", "assessments_assessment_results", column: "assessment_result_id"
   add_foreign_key "assessments_voice_responses", "core_users", column: "user_id"
   add_foreign_key "assessments_voice_responses", "learning_routes_engine_route_steps", column: "route_step_id"
@@ -563,8 +573,13 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_06_240000) do
   add_foreign_key "community_engine_ratings", "core_users", column: "user_id"
   add_foreign_key "community_engine_shared_routes", "core_users", column: "user_id"
   add_foreign_key "community_engine_shared_routes", "learning_routes_engine_learning_routes", column: "learning_route_id"
+  add_foreign_key "content_engine_ai_contents", "learning_routes_engine_route_steps", column: "route_step_id", on_delete: :cascade
+  add_foreign_key "content_engine_user_notes", "core_users", column: "user_id", on_delete: :cascade
+  add_foreign_key "content_engine_user_notes", "learning_routes_engine_route_steps", column: "route_step_id", on_delete: :cascade
   add_foreign_key "core_sessions", "core_users", column: "user_id", on_delete: :cascade
+  add_foreign_key "learning_routes_engine_knowledge_gaps", "core_users", column: "user_id", on_delete: :cascade
   add_foreign_key "learning_routes_engine_knowledge_gaps", "learning_routes_engine_learning_routes", column: "learning_route_id"
+  add_foreign_key "learning_routes_engine_learning_profiles", "core_users", column: "user_id", on_delete: :cascade
   add_foreign_key "learning_routes_engine_learning_routes", "learning_routes_engine_learning_profiles", column: "learning_profile_id"
   add_foreign_key "learning_routes_engine_reinforcement_routes", "learning_routes_engine_knowledge_gaps", column: "knowledge_gap_id"
   add_foreign_key "learning_routes_engine_reinforcement_routes", "learning_routes_engine_learning_routes", column: "learning_route_id"
