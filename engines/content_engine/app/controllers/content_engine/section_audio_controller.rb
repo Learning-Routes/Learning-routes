@@ -30,9 +30,10 @@ module ContentEngine
       cached = SectionAudioGenerator.cached(@step.id, section_index)
 
       if cached
+        show_url = "/content/section_audio/#{@step.id}/#{section_index}/show"
         render json: {
           status: "ready",
-          audio_url: cached[:audio_url],
+          audio_url: show_url,
           duration: cached[:duration]
         }
       else
