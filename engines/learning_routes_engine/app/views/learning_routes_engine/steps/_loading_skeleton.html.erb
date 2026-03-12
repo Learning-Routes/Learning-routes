@@ -1,29 +1,37 @@
-<div class="animate-pulse space-y-4">
-  <div style="display:flex; align-items:center; gap:0.75rem; margin-bottom:1.5rem;">
-    <div style="width:2rem; height:2rem; background:var(--color-tint-strong); border-radius:50%;"></div>
+<div style="max-width:48rem; margin:0 auto; padding:2rem 1rem;">
+  <%# Header skeleton %>
+  <div style="display:flex; align-items:center; gap:0.875rem; margin-bottom:2rem;">
+    <div class="skeleton-shimmer" style="width:2.25rem; height:2.25rem; border-radius:50%;"></div>
     <div>
-      <div style="height:1rem; background:var(--color-tint-strong); border-radius:0.25rem; width:12rem; margin-bottom:0.5rem;"></div>
-      <div style="height:0.75rem; background:var(--color-tint); border-radius:0.25rem; width:8rem;"></div>
+      <div class="skeleton-shimmer" style="height:1rem; border-radius:8px; width:14rem; margin-bottom:0.5rem;"></div>
+      <div class="skeleton-shimmer" style="height:0.75rem; border-radius:8px; width:9rem;"></div>
     </div>
   </div>
 
-  <div style="height:1rem; background:var(--color-tint-strong); border-radius:0.25rem; width:100%;"></div>
-  <div style="height:1rem; background:var(--color-tint-strong); border-radius:0.25rem; width:83%;"></div>
-  <div style="height:1rem; background:var(--color-tint-strong); border-radius:0.25rem; width:66%;"></div>
+  <%# Title skeleton %>
+  <div class="skeleton-shimmer" style="height:1.75rem; border-radius:10px; width:70%; margin-bottom:1.5rem;"></div>
 
-  <div style="height:8rem; background:var(--color-tint); border-radius:0.75rem; margin-top:1.5rem;"></div>
+  <%# Content card skeleton %>
+  <div style="background:var(--color-card); border:1px solid var(--color-border-subtle); border-radius:16px; padding:1.75rem; box-shadow:0 1px 3px rgba(0,0,0,0.02), 0 4px 16px rgba(0,0,0,0.01);">
+    <div class="skeleton-shimmer" style="height:0.875rem; border-radius:8px; width:100%; margin-bottom:0.875rem;"></div>
+    <div class="skeleton-shimmer" style="height:0.875rem; border-radius:8px; width:92%; margin-bottom:0.875rem;"></div>
+    <div class="skeleton-shimmer" style="height:0.875rem; border-radius:8px; width:78%; margin-bottom:1.5rem;"></div>
 
-  <div style="height:1rem; background:var(--color-tint-strong); border-radius:0.25rem; width:100%; margin-top:1.5rem;"></div>
-  <div style="height:1rem; background:var(--color-tint-strong); border-radius:0.25rem; width:75%;"></div>
-  <div style="height:1rem; background:var(--color-tint-strong); border-radius:0.25rem; width:83%;"></div>
+    <%# Image placeholder %>
+    <div class="skeleton-shimmer" style="height:10rem; border-radius:12px; margin-bottom:1.5rem;"></div>
 
-  <div style="text-align:center; margin-top:2rem;">
-    <div style="display:inline-flex; align-items:center; gap:0.5rem; font-size:0.875rem; color:var(--color-muted);">
-      <svg aria-hidden="true" class="animate-spin" style="height:1rem; width:1rem;" fill="none" viewBox="0 0 24 24">
-        <circle style="opacity:0.25;" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-        <path style="opacity:0.75;" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
-      </svg>
-      <%= t('learning_engine.loading.generating') %>
+    <div class="skeleton-shimmer" style="height:0.875rem; border-radius:8px; width:100%; margin-bottom:0.875rem;"></div>
+    <div class="skeleton-shimmer" style="height:0.875rem; border-radius:8px; width:85%; margin-bottom:0.875rem;"></div>
+    <div class="skeleton-shimmer" style="height:0.875rem; border-radius:8px; width:65%;"></div>
+  </div>
+
+  <%# Loading indicator %>
+  <div style="text-align:center; margin-top:2.5rem;">
+    <div style="display:inline-flex; align-items:center; gap:0.75rem; padding:0.75rem 1.5rem; background:var(--color-card); border:1px solid var(--color-border-subtle); border-radius:14px; box-shadow:0 1px 3px rgba(0,0,0,0.02);">
+      <div class="skeleton-spinner"></div>
+      <span style="font-family:'DM Sans',sans-serif; font-size:0.875rem; font-weight:500; color:var(--color-muted);">
+        <%= t('learning_engine.loading.generating') %>
+      </span>
     </div>
   </div>
 </div>

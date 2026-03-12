@@ -990,6 +990,12 @@ es:
       block_tip: "Consejo"
       block_example: "Ejemplo del mundo real"
       block_summary: "Puntos clave"
+      continue: "Continuar"
+      back: "Anterior"
+      level_up_title: "¡Subiste de nivel!"
+      level_up_sub: "Sigue así, vas increíble"
+      level_label: "NIVEL"
+      ai_tools: "Herramientas IA"
     exercise:
       badge: "Ejercicio"
       reset: "Reiniciar"

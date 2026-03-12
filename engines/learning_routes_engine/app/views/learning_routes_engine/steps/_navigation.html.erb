@@ -3,10 +3,12 @@
   next_step = @route.route_steps.where("position > ?", @step.position).where.not(status: :locked).order(:position).first
 %>
 
-<div style="display:flex; align-items:center; justify-content:space-between; margin-top:2rem; padding-top:1.5rem; border-top:1px solid var(--color-border-subtle);">
+<div style="display:flex; align-items:center; justify-content:space-between; gap:1rem; margin-top:2.5rem; padding-top:1.5rem; border-top:1px solid var(--color-border-subtle);">
   <% if prev_step %>
-    <%= link_to route_step_path(@route, prev_step), style: "display:flex; align-items:center; gap:0.5rem; font-size:0.875rem; color:var(--color-sub); text-decoration:none; transition:color 0.2s;" do %>
-      <svg aria-hidden="true" style="width:1rem; height:1rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <%= link_to route_step_path(@route, prev_step), style: "display:flex; align-items:center; gap:0.625rem; font-family:'DM Sans',sans-serif; font-size:0.875rem; font-weight:500; color:var(--color-sub); text-decoration:none; padding:0.5rem 0.75rem; border-radius:12px; transition:all 0.2s; border:1px solid transparent;",
+        onmouseover: "this.style.background='var(--color-tint)'; this.style.borderColor='var(--color-border-subtle)'; this.style.color='var(--color-txt)';",
+        onmouseout: "this.style.background='transparent'; this.style.borderColor='transparent'; this.style.color='var(--color-sub)';" do %>
+      <svg aria-hidden="true" width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
       </svg>
       <span style="max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"><%= prev_step.localized_title %></span>
@@ -15,12 +17,16 @@
     <div></div>
   <% end %>
 
-  <%= link_to t('learning_engine.navigation.route_overview'), route_path(@route), style: "font-size:0.75rem; color:var(--color-muted); text-decoration:none; transition:color 0.2s;" %>
+  <%= link_to t('learning_engine.navigation.route_overview'), route_path(@route), style: "font-family:'DM Mono',monospace; font-size:0.6875rem; font-weight:600; color:var(--color-muted); text-transform:uppercase; letter-spacing:0.08em; text-decoration:none; padding:0.375rem 0.75rem; border-radius:10px; border:1px solid var(--color-border-subtle); transition:all 0.2s;",
+      onmouseover: "this.style.background='var(--color-tint)'; this.style.color='var(--color-txt)';",
+      onmouseout: "this.style.background='transparent'; this.style.color='var(--color-muted)';" %>
 
   <% if next_step %>
-    <%= link_to route_step_path(@route, next_step), style: "display:flex; align-items:center; gap:0.5rem; font-size:0.875rem; color:var(--color-sub); text-decoration:none; transition:color 0.2s;" do %>
+    <%= link_to route_step_path(@route, next_step), style: "display:flex; align-items:center; gap:0.625rem; font-family:'DM Sans',sans-serif; font-size:0.875rem; font-weight:500; color:var(--color-sub); text-decoration:none; padding:0.5rem 0.75rem; border-radius:12px; transition:all 0.2s; border:1px solid transparent;",
+        onmouseover: "this.style.background='var(--color-tint)'; this.style.borderColor='var(--color-border-subtle)'; this.style.color='var(--color-txt)';",
+        onmouseout: "this.style.background='transparent'; this.style.borderColor='transparent'; this.style.color='var(--color-sub)';" do %>
       <span style="max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"><%= next_step.localized_title %></span>
-      <svg aria-hidden="true" style="width:1rem; height:1rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <svg aria-hidden="true" width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
       </svg>
     <% end %>

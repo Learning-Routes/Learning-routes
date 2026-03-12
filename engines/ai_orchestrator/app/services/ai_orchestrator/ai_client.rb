@@ -1,3 +1,5 @@
+require "net/http"
+
 module AiOrchestrator
   class AiClient
     RUBY_LLM_MODELS = %w[
@@ -71,27 +73,34 @@ module AiOrchestrator
       merged = defaults.merge(params)
 
       start_time = monotonic_now
-      response = HTTParty.post(
-        "https://api.elevenlabs.io/v1/text-to-speech/#{voice_id}",
-        headers: {
-          "xi-api-key" => api_key,
-          "Content-Type" => "application/json",
-          "Accept" => "audio/mpeg"
-        },
-        body: {
-          text: text,
-          model_id: merged[:model_id] || "eleven_multilingual_v2",
-          voice_settings: {
-            stability: merged[:stability] || 0.5,
-            similarity_boost: merged[:similarity_boost] || 0.75
-          }
-        }.to_json,
-        timeout: 60
-      )
+
+      # Use Net::HTTP directly instead of HTTParty to avoid binary response
+      # auto-parsing. HTTParty tries to parse audio/mpeg as XML/JSON which
+      # corrupts the binary audio data.
+      uri = URI("https://api.elevenlabs.io/v1/text-to-speech/#{voice_id}")
+      http = Net::HTTP.new(uri.host, uri.port)
+      http.use_ssl = true
+      http.read_timeout = 60
+      http.open_timeout = 15
+
+      request = Net::HTTP::Post.new(uri.path)
+      request["xi-api-key"] = api_key
+      request["Content-Type"] = "application/json"
+      request["Accept"] = "audio/mpeg"
+      request.body = {
+        text: text,
+        model_id: merged[:model_id] || "eleven_multilingual_v2",
+        voice_settings: {
+          stability: merged[:stability] || 0.5,
+          similarity_boost: merged[:similarity_boost] || 0.75
+        }
+      }.to_json
+
+      response = http.request(request)
       elapsed_ms = ((monotonic_now - start_time) * 1000).round
 
-      unless response.success?
-        raise RequestError, "ElevenLabs API error: #{response.code} - #{response.body}"
+      unless response.is_a?(Net::HTTPSuccess)
+        raise RequestError, "ElevenLabs API error: #{response.code} - #{response.body&.first(500)}"
       end
 
       {
