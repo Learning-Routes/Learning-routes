@@ -174,6 +174,9 @@ module ContentEngine
     }.freeze
 
     def split_by_headings(text)
+      # Only use heading-based splitting if there are actual ## headings
+      return [] unless text.match?(/^##\s/m)
+
       # Split on lines starting with ## (but not ### which is sub-heading)
       parts = text.split(/^(?=##\s)/m)
       sections = []
