@@ -62,9 +62,14 @@ module ContentEngine
       file_path = Rails.root.join(cached[:audio_url].delete_prefix("/")).expand_path
       audio_root = Rails.root.join("storage", "audio", "sections").expand_path.to_s
 
-      if file_path.to_s.start_with?(audio_root) && File.exist?(file_path)
+      if file_path.to_s.start_with?(audio_root) && File.exist?(file_path) && File.size(file_path) > 1024
         send_file file_path, type: "audio/mpeg", disposition: :inline
       else
+        # File missing, too small (likely corrupted from previous HTTParty bug), or path traversal
+        # Clear the stale cache entry so next generate attempt creates a fresh file
+        cache_key = SectionAudioGenerator.cache_key(@step.id, section_index)
+        Rails.cache.delete(cache_key)
+        File.delete(file_path) if file_path.to_s.start_with?(audio_root) && File.exist?(file_path)
         head :not_found
       end
     end
