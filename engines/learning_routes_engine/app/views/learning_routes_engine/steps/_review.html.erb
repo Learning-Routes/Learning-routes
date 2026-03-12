@@ -1,42 +1,57 @@
-<div id="<%= dom_id(@step, :review) %>" class="space-y-6">
-  <div>
-    <span style="display:inline-flex; align-items:center; border-radius:9999px; padding:0.125rem 0.625rem; font-size:0.75rem; font-weight:500; background:var(--color-badge-review-bg); color:var(--color-badge-review-text); margin-bottom:0.5rem;">
-      <%= t('learning_engine.review.badge') %>
+<div id="<%= dom_id(@step, :review) %>" style="max-width:48rem; margin:0 auto; padding:1rem;">
+  <%# Header %>
+  <div style="margin-bottom:2rem;">
+    <span class="lesson-section-badge" style="background:linear-gradient(135deg, rgba(139,92,246,0.12), rgba(139,92,246,0.06)); color:#8b5cf6; border:1px solid rgba(139,92,246,0.15);">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20V10"/><path d="M18 20V4"/><path d="M6 20v-4"/></svg>
+      <span><%= t('learning_engine.review.badge') %></span>
     </span>
-    <h1 style="font-size:1.5rem; font-weight:700; color:var(--color-txt); margin:0;"><%= @step.localized_title %></h1>
-    <p style="font-size:0.875rem; color:var(--color-sub); margin:0.25rem 0 0;"><%= @step.localized_description %></p>
+    <h1 style="font-size:1.75rem; font-weight:800; color:var(--color-txt); margin:0.875rem 0 0; letter-spacing:-0.5px; line-height:1.25;"><%= @step.localized_title %></h1>
+    <% if @step.localized_description.present? %>
+      <p style="font-size:0.9375rem; color:var(--color-sub); margin:0.5rem 0 0; line-height:1.5;"><%= @step.localized_description %></p>
+    <% end %>
   </div>
 
-  <!-- Memory strength indicator -->
+  <%# Memory strength indicator %>
   <% if @retrievability %>
-    <div style="background:var(--color-card); border:1px solid var(--color-border-subtle); border-radius:0.75rem; padding:1.25rem;">
-      <h3 style="font-size:0.875rem; font-weight:600; color:var(--color-sub); margin:0 0 0.75rem;"><%= t('learning_engine.review.memory_strength') %></h3>
-      <div style="display:flex; align-items:center; gap:1rem;">
-        <div style="flex:1;">
-          <%
-            strength_color = @retrievability >= 0.7 ? 'var(--color-positive)' : @retrievability >= 0.4 ? 'var(--color-warning)' : 'var(--color-negative)'
-          %>
-          <div style="height:0.75rem; background:var(--color-progress-track); border-radius:9999px; overflow:hidden;">
-            <div style="height:100%; border-radius:9999px; transition:width 0.5s; background:<%= strength_color %>; width:<%= (@retrievability * 100).round %>%;"></div>
-          </div>
-        </div>
-        <span style="font-size:0.875rem; font-weight:600; color:<%= strength_color %>;">
-          <%= (@retrievability * 100).round %>%
+    <%
+      strength_pct = (@retrievability * 100).round
+      if @retrievability >= 0.7
+        strength_color = "#10b981"
+        strength_gradient = "linear-gradient(135deg, #10b981, #059669)"
+        strength_bg = "rgba(16,185,129,0.06)"
+      elsif @retrievability >= 0.4
+        strength_color = "#f59e0b"
+        strength_gradient = "linear-gradient(135deg, #f59e0b, #D97706)"
+        strength_bg = "rgba(245,158,11,0.06)"
+      else
+        strength_color = "#ef4444"
+        strength_gradient = "linear-gradient(135deg, #ef4444, #dc2626)"
+        strength_bg = "rgba(239,68,68,0.06)"
+      end
+    %>
+    <div style="background:var(--color-card); border:1px solid var(--color-border-subtle); border-radius:16px; padding:1.5rem; margin-bottom:1.25rem; box-shadow:0 1px 3px rgba(0,0,0,0.02), 0 4px 16px rgba(0,0,0,0.01);">
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:1rem;">
+        <h3 style="font-family:'DM Mono',monospace; font-size:0.625rem; font-weight:600; color:var(--color-muted); text-transform:uppercase; letter-spacing:0.1em; margin:0;"><%= t('learning_engine.review.memory_strength') %></h3>
+        <span style="font-family:'DM Sans',sans-serif; font-size:1.25rem; font-weight:800; color:<%= strength_color %>; letter-spacing:-0.5px;">
+          <%= strength_pct %>%
         </span>
+      </div>
+      <div style="height:0.625rem; background:var(--color-tint-strong); border-radius:9999px; overflow:hidden;">
+        <div style="height:100%; border-radius:9999px; transition:width 0.8s cubic-bezier(0.34,1.56,0.64,1); background:<%= strength_gradient %>; width:<%= strength_pct %>%; box-shadow:0 2px 6px <%= strength_color %>33;"></div>
       </div>
     </div>
   <% end %>
 
-  <!-- Concept map placeholder -->
-  <div style="background:var(--color-card); border:1px solid var(--color-border-subtle); border-radius:0.75rem; padding:1.25rem;" data-controller="mind-map">
-    <h3 style="font-size:0.875rem; font-weight:600; color:var(--color-sub); margin:0 0 0.75rem;"><%= t('learning_engine.review.concept_map') %></h3>
-    <div data-mind-map-target="svg" style="width:100%; min-height:16rem; display:flex; align-items:center; justify-content:center;">
+  <%# Concept map %>
+  <div style="background:var(--color-card); border:1px solid var(--color-border-subtle); border-radius:16px; padding:1.5rem; margin-bottom:1.25rem; box-shadow:0 1px 3px rgba(0,0,0,0.02), 0 4px 16px rgba(0,0,0,0.01);" data-controller="mind-map">
+    <h3 style="font-family:'DM Mono',monospace; font-size:0.625rem; font-weight:600; color:var(--color-muted); text-transform:uppercase; letter-spacing:0.1em; margin:0 0 1rem;"><%= t('learning_engine.review.concept_map') %></h3>
+    <div data-mind-map-target="svg" style="width:100%; min-height:14rem; display:flex; align-items:center; justify-content:center;">
       <% if @review_steps.any? %>
-        <div style="display:grid; grid-template-columns:repeat(2, 1fr); gap:0.75rem; width:100;">
-          <% @review_steps.each do |step| %>
-            <div style="background:var(--color-tint-strong); border:1px solid var(--color-tint); border-radius:0.5rem; padding:0.75rem; text-align:center;">
-              <div style="font-size:0.75rem; font-weight:500; color:var(--color-sub); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"><%= step.localized_title %></div>
-              <div style="font-size:0.75rem; color:var(--color-muted); margin-top:0.25rem;"><%= t("learning_engine.#{step.content_type}.badge") %></div>
+        <div style="display:grid; grid-template-columns:repeat(2, 1fr); gap:0.75rem; width:100%;">
+          <% @review_steps.each_with_index do |step, i| %>
+            <div class="animate-fade-in" style="background:var(--color-tint); border:1px solid var(--color-border-subtle); border-radius:14px; padding:1rem; text-align:center; transition:all 0.2s; animation-delay:<%= i * 0.08 %>s;">
+              <div style="font-size:0.8125rem; font-weight:600; color:var(--color-txt); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"><%= step.localized_title %></div>
+              <div style="font-family:'DM Mono',monospace; font-size:0.625rem; font-weight:500; color:var(--color-muted); margin-top:0.375rem; text-transform:uppercase; letter-spacing:0.05em;"><%= t("learning_engine.#{step.content_type}.badge") %></div>
             </div>
           <% end %>
         </div>
@@ -46,17 +61,17 @@
     </div>
   </div>
 
-  <!-- FSRS Rating buttons -->
+  <%# FSRS Rating buttons %>
   <% unless @step.completed? %>
-    <div style="background:var(--color-card); border:1px solid var(--color-border-subtle); border-radius:0.75rem; padding:1.25rem;">
-      <h3 style="font-size:0.875rem; font-weight:600; color:var(--color-sub); margin:0 0 1rem;"><%= t('learning_engine.review.prompt') %></h3>
+    <div style="background:var(--color-card); border:1px solid var(--color-border-subtle); border-radius:16px; padding:1.5rem; box-shadow:0 1px 3px rgba(0,0,0,0.02), 0 4px 16px rgba(0,0,0,0.01);">
+      <h3 style="font-family:'DM Mono',monospace; font-size:0.625rem; font-weight:600; color:var(--color-muted); text-transform:uppercase; letter-spacing:0.1em; margin:0 0 1.25rem;"><%= t('learning_engine.review.prompt') %></h3>
       <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:0.75rem;">
         <%
           ratings = [
-            [1, t('learning_engine.review.again'), 'var(--color-negative)', 'var(--color-negative-bg)', 'var(--color-negative-border)'],
-            [2, t('learning_engine.review.hard'), 'var(--color-warning)', 'var(--color-warning-bg)', 'var(--color-warning-border)'],
-            [3, t('learning_engine.review.good'), 'var(--color-positive)', 'var(--color-positive-bg)', 'var(--color-positive-border)'],
-            [4, t('learning_engine.review.easy'), 'var(--color-info)', 'var(--color-info-bg)', 'var(--color-info-border)']
+            [1, t('learning_engine.review.again'), '#ef4444', 'rgba(239,68,68,0.06)', 'rgba(239,68,68,0.15)'],
+            [2, t('learning_engine.review.hard'), '#f59e0b', 'rgba(245,158,11,0.06)', 'rgba(245,158,11,0.15)'],
+            [3, t('learning_engine.review.good'), '#10b981', 'rgba(16,185,129,0.06)', 'rgba(16,185,129,0.15)'],
+            [4, t('learning_engine.review.easy'), '#6366f1', 'rgba(99,102,241,0.06)', 'rgba(99,102,241,0.15)']
           ]
         %>
         <% ratings.each do |rating, label, text_color, bg_color, border_color| %>
@@ -64,7 +79,7 @@
               learning_routes_engine.submit_review_review_path(@step),
               params: { rating: rating },
               method: :post,
-              style: "border-radius:0.5rem; padding:0.75rem; font-size:0.875rem; font-weight:600; color:#{text_color}; background:#{bg_color}; border:1px solid #{border_color}; cursor:pointer; transition:all 0.2s;" %>
+              style: "border-radius:14px; padding:0.875rem; font-family:'DM Sans',sans-serif; font-size:0.875rem; font-weight:700; color:#{text_color}; background:#{bg_color}; border:1.5px solid #{border_color}; cursor:pointer; transition:all 0.25s; box-shadow:0 1px 3px #{border_color};" %>
         <% end %>
       </div>
     </div>

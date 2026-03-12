@@ -59,11 +59,14 @@ export default class extends Controller {
     this._pollTimer = null
     this._timers = []
     this._rafId = null
+    this._loadFailed = false
+    this._audioLoaded = false
 
     this._bindAudioEvents()
 
     if (this.urlValue) {
-      this._loadAudio(this.urlValue)
+      // Show player UI optimistically but don't auto-load audio
+      // Audio will load on first play to avoid "Error" on expired/invalid URLs
       this._showPlayer()
     } else {
       this._showGenerate()
@@ -122,6 +125,11 @@ export default class extends Controller {
       this.audio.pause()
       this.isPlaying = false
     } else {
+      // Lazy-load audio on first play to avoid errors from expired URLs
+      if (this.urlValue && !this._audioLoaded) {
+        this._audioLoaded = true
+        this._loadAudio(this.urlValue)
+      }
       this.audio.play().then(() => {
         this.isPlaying = true
         this._startWaveformAnimation()
@@ -166,7 +174,17 @@ export default class extends Controller {
       this._stopWaveformAnimation()
       this._resetWaveformBars()
     }
-    this._onError = () => this._showError()
+    this._onError = () => {
+      // If audio fails to load (expired URL, 404, etc.), fall back to generate button
+      // instead of showing a scary error — user can re-generate
+      if (!this._generating) {
+        this.urlValue = ""
+        this._audioLoaded = false
+        this._showGenerate()
+      } else {
+        this._showError()
+      }
+    }
     this._onPause = () => {
       this.isPlaying = false
       this._updatePlayIcon()
@@ -241,6 +259,7 @@ export default class extends Controller {
   // ── UI updates ───────────────────────────────────────────────
 
   _loadAudio(src) {
+    this._audioLoaded = true
     this.audio.src = src
     this.audio.load()
     this.urlValue = src

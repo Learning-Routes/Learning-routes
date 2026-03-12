@@ -1,7 +1,7 @@
-<div style="background:var(--color-card); border:1px solid var(--color-border-subtle); border-radius:0.75rem; padding:1rem;" data-controller="note-taking"
+<div style="background:var(--color-card); border:1px solid var(--color-border-subtle); border-radius:16px; padding:1.25rem; box-shadow:0 1px 3px rgba(0,0,0,0.02), 0 4px 12px rgba(0,0,0,0.01);" data-controller="note-taking"
      data-note-taking-step-id-value="<%= @step.id %>"
      data-note-taking-save-url-value="<%= @notes.any? ? content_engine.note_path(@notes.first) : content_engine.notes_path %>">
-  <h3 style="font-size:0.75rem; font-weight:600; color:var(--color-sub); text-transform:uppercase; letter-spacing:0.05em; margin:0 0 0.75rem;"><%= t('learning_engine.notes.heading') %></h3>
+  <h3 style="font-family:'DM Mono',monospace; font-size:0.625rem; font-weight:600; color:var(--color-muted); text-transform:uppercase; letter-spacing:0.1em; margin:0 0 1rem;"><%= t('learning_engine.notes.heading') %></h3>
 
   <div id="notes_list">
     <% if @notes.any? %>
@@ -9,7 +9,9 @@
         <div id="<%= dom_id(note) %>" style="margin-bottom:0.5rem;">
           <textarea data-action="input->note-taking#save"
                     data-note-id="<%= note.id %>"
-                    style="width:100%; background:var(--color-tint-strong); border:1px solid var(--color-tint); border-radius:0.5rem; padding:0.75rem; font-size:0.875rem; color:var(--color-txt); resize:none; outline:none; font-family:inherit;"
+                    style="width:100%; background:var(--color-tint); border:1px solid var(--color-border-subtle); border-radius:12px; padding:0.875rem 1rem; font-size:0.875rem; color:var(--color-txt); resize:none; outline:none; font-family:'DM Sans',sans-serif; line-height:1.6; transition:border-color 0.2s;"
+                    onfocus="this.style.borderColor='rgba(99,102,241,0.3)'"
+                    onblur="this.style.borderColor='var(--color-border-subtle)'"
                     rows="4" placeholder="<%= t('learning_engine.notes.placeholder') %>"><%= note.body %></textarea>
         </div>
       <% end %>
@@ -20,11 +22,16 @@
         <textarea name="body"
                   data-action="input->note-taking#save"
                   data-note-taking-target="textarea"
-                  style="width:100%; background:var(--color-tint-strong); border:1px solid var(--color-tint); border-radius:0.5rem; padding:0.75rem; font-size:0.875rem; color:var(--color-txt); resize:none; outline:none; font-family:inherit;"
+                  style="width:100%; background:var(--color-tint); border:1px solid var(--color-border-subtle); border-radius:12px; padding:0.875rem 1rem; font-size:0.875rem; color:var(--color-txt); resize:none; outline:none; font-family:'DM Sans',sans-serif; line-height:1.6; transition:border-color 0.2s;"
+                  onfocus="this.style.borderColor='rgba(99,102,241,0.3)'"
+                  onblur="this.style.borderColor='var(--color-border-subtle)'"
                   rows="4" placeholder="<%= t('learning_engine.notes.placeholder') %>"></textarea>
       </form>
     <% end %>
   </div>
 
-  <div data-note-taking-target="savedIndicator" class="hidden" style="font-size:0.75rem; color:var(--color-faint-text); margin-top:0.25rem;"><%= t('learning_engine.notes.saved') %></div>
+  <div data-note-taking-target="savedIndicator" class="hidden" style="display:flex; align-items:center; gap:0.375rem; font-size:0.6875rem; color:#10b981; margin-top:0.5rem;">
+    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+    <%= t('learning_engine.notes.saved') %>
+  </div>
 </div>

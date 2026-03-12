@@ -739,18 +739,23 @@ html[data-theme="dark"] .learning-nav {
    ========================================================================== */
 
 @layer components {
-  .lesson-content h1 { @apply text-2xl font-extrabold mt-8 mb-4; color: var(--color-txt); }
-  .lesson-content h2 { @apply text-xl font-bold mt-8 mb-3; color: var(--color-txt); }
+  .lesson-content { font-size: 0.9375rem; line-height: 1.7; }
+  .lesson-content h1 { @apply text-2xl font-extrabold mt-8 mb-4; color: var(--color-txt); letter-spacing: -0.3px; }
+  .lesson-content h2 { @apply text-xl font-bold mt-8 mb-3; color: var(--color-txt); letter-spacing: -0.2px; }
   .lesson-content h3 { @apply text-lg font-semibold mt-6 mb-2; color: var(--color-txt); }
   .lesson-content h4 { @apply text-base font-semibold mt-4 mb-2; color: var(--color-sub); }
-  .lesson-content p { @apply leading-relaxed mb-4; color: var(--color-sub); }
+  .lesson-content p { @apply leading-relaxed mb-4; color: var(--color-sub); font-size: inherit; }
   .lesson-content strong { @apply font-semibold; color: var(--color-txt); }
   .lesson-content em { @apply italic; color: var(--color-sub); }
-  .lesson-content ul { @apply list-disc list-inside space-y-1.5 mb-4 ml-2; color: var(--color-sub); }
-  .lesson-content ol { @apply list-decimal list-inside space-y-1.5 mb-4 ml-2; color: var(--color-sub); }
-  .lesson-content li { @apply leading-relaxed; }
+  .lesson-content ul { @apply list-disc list-inside space-y-2 mb-4 ml-2; color: var(--color-sub); }
+  .lesson-content ol { @apply list-decimal list-inside space-y-2 mb-4 ml-2; color: var(--color-sub); }
+  .lesson-content li { @apply leading-relaxed; font-size: inherit; }
   .lesson-content blockquote {
-    @apply border-l-4 border-indigo-500/50 pl-4 py-1 my-4 italic;
+    @apply pl-5 py-2 my-5 italic;
+    border-left: 3px solid #6366f1;
+    background: linear-gradient(135deg, rgba(99,102,241,0.04), transparent);
+    border-radius: 0 12px 12px 0;
+    padding-right: 1.25rem;
     color: var(--color-muted);
   }
   .lesson-content a {
@@ -764,63 +769,71 @@ html[data-theme="dark"] .learning-nav {
     color: var(--color-badge-review-text);
     font-family: ui-monospace, SFMono-Regular, monospace;
   }
-  .lesson-content table { @apply w-full border-collapse mb-4; }
+  .lesson-content table { @apply w-full border-collapse mb-5; border-radius: 12px; overflow: hidden; border: 1px solid var(--color-border-subtle); }
   .lesson-content th {
-    @apply px-4 py-2 text-left text-sm font-semibold;
+    @apply px-4 py-3 text-left text-sm font-semibold;
     background: var(--color-tint-strong);
-    color: var(--color-sub);
-    border: 1px solid var(--color-border-subtle);
+    color: var(--color-txt);
+    border-bottom: 1px solid var(--color-border-subtle);
+    font-family: 'DM Sans', sans-serif;
   }
   .lesson-content td {
-    @apply px-4 py-2 text-sm;
-    color: var(--color-muted);
-    border: 1px solid var(--color-border-subtle);
+    @apply px-4 py-3 text-sm;
+    color: var(--color-sub);
+    border-bottom: 1px solid var(--color-border-subtle);
   }
-  .lesson-content hr { @apply my-6; border-color: var(--color-border-subtle); }
-  .lesson-content img { @apply rounded-xl max-w-full my-4; }
+  .lesson-content tr:last-child td { border-bottom: none; }
+  .lesson-content tr:hover td { background: var(--color-tint); }
+  .lesson-content hr { @apply my-8; border-color: var(--color-border-subtle); border-style: solid; opacity: 0.5; }
+  .lesson-content img { @apply max-w-full my-5; border-radius: 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.02); }
 
   /* Interactive lesson blocks (:::concept, :::check, :::tip, :::example, :::summary) */
   .lesson-block {
-    @apply rounded-xl my-6 overflow-hidden;
+    @apply rounded-2xl my-6 overflow-hidden;
     border: 1px solid var(--color-border-subtle);
-    background: var(--color-tint);
+    background: var(--color-card);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.02), 0 4px 12px rgba(0,0,0,0.01);
   }
   .lesson-block__header {
-    @apply flex items-center gap-2 px-4 py-3 text-sm font-semibold;
+    @apply flex items-center gap-2.5 px-5 py-3.5 text-sm font-semibold;
     border-bottom: 1px solid var(--color-border-subtle);
     color: var(--color-txt);
   }
   .lesson-block__icon { @apply text-base; }
   .lesson-block__title { @apply text-sm font-semibold; color: var(--color-txt); }
-  .lesson-block__body { @apply px-4 py-3; }
-  .lesson-block__body p { @apply mb-2 text-sm leading-relaxed; color: var(--color-sub); }
+  .lesson-block__body { @apply px-5 py-4; }
+  .lesson-block__body p { @apply mb-3 text-sm leading-relaxed; color: var(--color-sub); }
   .lesson-block__body p:last-child { @apply mb-0; }
   .lesson-block__body ul { @apply mb-0; }
 
-  /* Concept card — accent left border */
+  /* Concept card */
   .lesson-block--concept {
     border-left: 4px solid #6366f1;
-    background: color-mix(in srgb, #6366f1 8%, var(--color-tint));
+    background: linear-gradient(135deg, color-mix(in srgb, #6366f1 6%, var(--color-card)), var(--color-card));
+    box-shadow: 0 1px 3px rgba(99,102,241,0.04), 0 4px 16px rgba(99,102,241,0.02);
   }
-  /* Tip card — amber accent */
+  /* Tip card */
   .lesson-block--tip {
     border-left: 4px solid #f59e0b;
-    background: color-mix(in srgb, #f59e0b 6%, var(--color-tint));
+    background: linear-gradient(135deg, color-mix(in srgb, #f59e0b 5%, var(--color-card)), var(--color-card));
+    box-shadow: 0 1px 3px rgba(245,158,11,0.04), 0 4px 16px rgba(245,158,11,0.02);
   }
-  /* Example card — emerald accent */
+  /* Example card */
   .lesson-block--example {
     border-left: 4px solid #10b981;
-    background: color-mix(in srgb, #10b981 6%, var(--color-tint));
+    background: linear-gradient(135deg, color-mix(in srgb, #10b981 5%, var(--color-card)), var(--color-card));
+    box-shadow: 0 1px 3px rgba(16,185,129,0.04), 0 4px 16px rgba(16,185,129,0.02);
   }
-  /* Summary card — softer background */
+  /* Summary card */
   .lesson-block--summary {
     border-left: 4px solid var(--color-txt);
-    background: color-mix(in srgb, var(--color-txt) 5%, var(--color-tint));
+    background: linear-gradient(135deg, color-mix(in srgb, var(--color-txt) 4%, var(--color-card)), var(--color-card));
   }
   /* Knowledge check */
   .lesson-block--check {
     border-left: 4px solid #8b5cf6;
-    background: color-mix(in srgb, #8b5cf6 6%, var(--color-tint));
+    background: linear-gradient(135deg, color-mix(in srgb, #8b5cf6 5%, var(--color-card)), var(--color-card));
+    box-shadow: 0 1px 3px rgba(139,92,246,0.04), 0 4px 16px rgba(139,92,246,0.02);
   }
 
   /* Check question & options */
@@ -828,21 +841,29 @@ html[data-theme="dark"] .learning-nav {
     @apply text-sm font-medium mb-3;
     color: var(--color-txt);
   }
-  .lesson-check__options { @apply flex flex-col gap-2; }
+  .lesson-check__options { @apply flex flex-col gap-2.5; }
   .lesson-check__option {
-    @apply flex items-center gap-3 rounded-lg px-4 py-3 text-sm text-left cursor-pointer transition-all;
-    border: 1px solid var(--color-border-subtle);
+    @apply flex items-center gap-3.5 rounded-xl px-5 py-3.5 text-sm text-left cursor-pointer transition-all;
+    border: 1.5px solid var(--color-border-subtle);
     background: var(--color-card);
     color: var(--color-sub);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.02);
   }
   .lesson-check__option:hover {
-    border-color: #8b5cf6;
-    background: color-mix(in srgb, #8b5cf6 8%, var(--color-card));
+    border-color: rgba(139,92,246,0.35);
+    background: color-mix(in srgb, #8b5cf6 6%, var(--color-card));
+    box-shadow: 0 2px 8px rgba(139,92,246,0.08);
+    transform: translateY(-1px);
   }
   .lesson-check__letter {
-    @apply flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold shrink-0;
+    @apply flex items-center justify-center w-7 h-7 rounded-lg text-xs font-bold shrink-0;
     background: var(--color-tint-strong);
     color: var(--color-sub);
+    transition: all 0.2s;
+  }
+  .lesson-check__option:hover .lesson-check__letter {
+    background: rgba(139,92,246,0.12);
+    color: #8b5cf6;
   }
   .lesson-check__option--correct {
     border-color: #10b981 !important;
@@ -1082,74 +1103,97 @@ html[data-theme="dark"] .learning-nav {
   display: inline-flex;
   align-items: center;
   gap: 0.375rem;
-  padding: 0.1875rem 0.625rem;
+  padding: 0.25rem 0.75rem;
   border-radius: 9999px;
   font-family: 'DM Mono', monospace;
-  font-size: 0.625rem;
+  font-size: 0.6875rem;
   font-weight: 600;
-  letter-spacing: 1px;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
 }
 
 .lesson-section-badge--concept {
-  background: rgba(99, 102, 241, 0.1);
+  background: linear-gradient(135deg, rgba(99,102,241,0.12), rgba(99,102,241,0.06));
   color: #6366f1;
+  border: 1px solid rgba(99,102,241,0.15);
 }
 
 .lesson-section-badge--example {
-  background: rgba(16, 185, 129, 0.1);
+  background: linear-gradient(135deg, rgba(16,185,129,0.12), rgba(16,185,129,0.06));
   color: #059669;
+  border: 1px solid rgba(16,185,129,0.15);
 }
 
-.lesson-section-badge--check {
-  background: rgba(139, 92, 246, 0.1);
+.lesson-section-badge--check,
+.lesson-section-badge--challenge {
+  background: linear-gradient(135deg, rgba(139,92,246,0.12), rgba(139,92,246,0.06));
   color: #8b5cf6;
+  border: 1px solid rgba(139,92,246,0.15);
 }
 
 .lesson-section-badge--visual {
-  background: rgba(245, 158, 11, 0.1);
+  background: linear-gradient(135deg, rgba(245,158,11,0.12), rgba(245,158,11,0.06));
   color: #D97706;
+  border: 1px solid rgba(245,158,11,0.15);
 }
 
 .lesson-section-badge--summary {
-  background: var(--color-tint-strong);
+  background: linear-gradient(135deg, var(--color-tint-strong), var(--color-tint));
   color: var(--color-txt);
+  border: 1px solid var(--color-border-subtle);
 }
 
 .lesson-section-badge--audio {
-  background: rgba(99, 102, 241, 0.1);
+  background: linear-gradient(135deg, rgba(99,102,241,0.12), rgba(99,102,241,0.06));
   color: #6366f1;
+  border: 1px solid rgba(99,102,241,0.15);
 }
 
 .lesson-section-badge--tip {
-  background: rgba(245, 158, 11, 0.1);
+  background: linear-gradient(135deg, rgba(245,158,11,0.12), rgba(245,158,11,0.06));
   color: #D97706;
+  border: 1px solid rgba(245,158,11,0.15);
 }
 
 /* Dark theme badge overrides */
 html[data-theme="dark"] .lesson-section-badge--concept {
-  background: rgba(99, 102, 241, 0.15);
+  background: linear-gradient(135deg, rgba(99,102,241,0.2), rgba(99,102,241,0.1));
   color: #a5b4fc;
+  border-color: rgba(99,102,241,0.25);
 }
 html[data-theme="dark"] .lesson-section-badge--example {
-  background: rgba(16, 185, 129, 0.15);
+  background: linear-gradient(135deg, rgba(16,185,129,0.2), rgba(16,185,129,0.1));
   color: #6ee7b7;
+  border-color: rgba(16,185,129,0.25);
 }
-html[data-theme="dark"] .lesson-section-badge--check {
-  background: rgba(139, 92, 246, 0.15);
+html[data-theme="dark"] .lesson-section-badge--check,
+html[data-theme="dark"] .lesson-section-badge--challenge {
+  background: linear-gradient(135deg, rgba(139,92,246,0.2), rgba(139,92,246,0.1));
   color: #c4b5fd;
+  border-color: rgba(139,92,246,0.25);
 }
 html[data-theme="dark"] .lesson-section-badge--visual {
-  background: rgba(245, 158, 11, 0.15);
+  background: linear-gradient(135deg, rgba(245,158,11,0.2), rgba(245,158,11,0.1));
   color: #fbbf24;
+  border-color: rgba(245,158,11,0.25);
 }
 html[data-theme="dark"] .lesson-section-badge--audio {
-  background: rgba(99, 102, 241, 0.15);
+  background: linear-gradient(135deg, rgba(99,102,241,0.2), rgba(99,102,241,0.1));
   color: #a5b4fc;
+  border-color: rgba(99,102,241,0.25);
+}
+html[data-theme="dark"] .lesson-section-badge--summary {
+  background: linear-gradient(135deg, rgba(255,255,255,0.08), rgba(255,255,255,0.04));
+  color: #e5e5e5;
+  border-color: rgba(255,255,255,0.12);
 }
 html[data-theme="dark"] .lesson-section-badge--tip {
-  background: rgba(245, 158, 11, 0.15);
+  background: linear-gradient(135deg, rgba(245,158,11,0.2), rgba(245,158,11,0.1));
   color: #fbbf24;
+  border-color: rgba(245,158,11,0.25);
 }
 
 /* ── Fixed bottom footer ── */
@@ -1160,12 +1204,14 @@ html[data-theme="dark"] .lesson-section-badge--tip {
   right: 0;
   z-index: 30;
   padding: 0.75rem 1rem;
-  background: var(--color-bg);
-  border-top: 1px solid var(--color-border-subtle);
+  background: linear-gradient(to top, var(--color-bg) 80%, transparent);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-top: 1px solid rgba(28,24,18,0.04);
 }
 
 html[data-theme="dark"] .lesson-nav-footer {
-  background: var(--color-bg);
+  background: linear-gradient(to top, var(--color-bg) 80%, transparent);
 }
 
 /* ── Buttons ── */
@@ -1173,25 +1219,27 @@ html[data-theme="dark"] .lesson-nav-footer {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0.875rem 1.5rem;
-  border-radius: 11px;
+  padding: 0.9375rem 1.75rem;
+  border-radius: 14px;
   border: none;
-  background: var(--color-accent, #2C261E);
-  color: var(--color-accent-text, #F5F1EB);
+  background: linear-gradient(135deg, #2C261E 0%, #3D352B 100%);
+  color: #F5F1EB;
   font-family: 'DM Sans', sans-serif;
   font-size: 0.9375rem;
   font-weight: 600;
   cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition: transform 0.2s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.3s;
+  box-shadow: 0 2px 8px rgba(28,24,18,0.1), inset 0 1px 0 rgba(255,255,255,0.04);
 }
 
 .lesson-btn--primary:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 16px rgba(28, 24, 18, 0.12);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(28,24,18,0.16), inset 0 1px 0 rgba(255,255,255,0.06);
 }
 
 .lesson-btn--primary:active {
   transform: translateY(0);
+  box-shadow: 0 1px 4px rgba(28,24,18,0.08);
 }
 
 .lesson-btn--muted {
@@ -1273,6 +1321,32 @@ html[data-theme="dark"] .lesson-nav-footer {
 
 html[data-theme="dark"] {
   --color-section-audio-active: #818cf8;
+}
+
+/* ── Loading skeleton shimmer ── */
+.skeleton-shimmer {
+  background: linear-gradient(
+    90deg,
+    var(--color-tint) 25%,
+    var(--color-tint-strong) 50%,
+    var(--color-tint) 75%
+  );
+  background-size: 200% 100%;
+  animation: skeletonShimmer 1.8s ease-in-out infinite;
+}
+
+@keyframes skeletonShimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.skeleton-spinner {
+  width: 1.125rem;
+  height: 1.125rem;
+  border: 2px solid var(--color-tint-strong);
+  border-top-color: #6366f1;
+  border-radius: 50%;
+  animation: sectionAudioSpin 0.7s linear infinite;
 }
 
 /* ── Summary points ── */
@@ -1499,10 +1573,12 @@ html[data-theme="dark"] {
   position: sticky;
   top: 0;
   z-index: 30;
-  padding: 0.5rem 1rem;
+  padding: 0.625rem 1rem 0.5rem;
   max-width: 48rem;
   margin: 0 auto;
-  background: var(--color-bg);
+  background: linear-gradient(to bottom, var(--color-bg) 90%, transparent);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
 }
 
 .lesson-hud-progress {
@@ -1516,6 +1592,7 @@ html[data-theme="dark"] {
 .lesson-hud-progress .lesson-progress-segment {
   height: 10px;
   border-radius: 5px;
+  box-shadow: inset 0 1px 2px rgba(0,0,0,0.04);
 }
 
 .lesson-hud-stats {
@@ -1913,16 +1990,20 @@ html[data-theme="dark"] .lesson-companion-body {
 /* ── Code blocks: terminal header + run button ── */
 .lesson-content pre {
   position: relative;
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06), 0 8px 24px rgba(0,0,0,0.04);
+  margin: 1.25rem 0;
 }
 
 .code-block-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0.5rem 0.875rem;
+  padding: 0.625rem 1rem;
   background: #181825;
   border-bottom: 1px solid #313244;
-  border-radius: 11px 11px 0 0;
+  border-radius: 14px 14px 0 0;
 }
 
 .code-block-dots {

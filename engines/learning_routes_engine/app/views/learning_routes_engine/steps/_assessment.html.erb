@@ -1,51 +1,83 @@
-<div class="space-y-6">
-  <div>
-    <span style="display:inline-flex; align-items:center; border-radius:9999px; padding:0.125rem 0.625rem; font-size:0.75rem; font-weight:500; background:var(--color-badge-assessment-bg); color:var(--color-badge-assessment-text); margin-bottom:0.5rem;">
-      <%= @step.metadata&.dig('assessment_type') ? t("assessment_types.#{@step.metadata.dig('assessment_type')}", default: @step.metadata.dig('assessment_type').humanize) : t('learning_engine.assessment.badge') %>
+<div style="max-width:48rem; margin:0 auto; padding:1rem;">
+  <%# Header %>
+  <div style="margin-bottom:2rem;">
+    <span class="lesson-section-badge" style="background:linear-gradient(135deg, rgba(99,102,241,0.12), rgba(99,102,241,0.06)); color:#6366f1; border:1px solid rgba(99,102,241,0.15);">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+      <span><%= @step.metadata&.dig('assessment_type') ? t("assessment_types.#{@step.metadata.dig('assessment_type')}", default: @step.metadata.dig('assessment_type').humanize) : t('learning_engine.assessment.badge') %></span>
     </span>
-    <h1 style="font-size:1.5rem; font-weight:700; color:var(--color-txt); margin:0;"><%= @step.localized_title %></h1>
-    <p style="font-size:0.875rem; color:var(--color-sub); margin:0.25rem 0 0;"><%= @step.localized_description %></p>
+    <h1 style="font-size:1.75rem; font-weight:800; color:var(--color-txt); margin:0.875rem 0 0; letter-spacing:-0.5px; line-height:1.25;"><%= @step.localized_title %></h1>
+    <% if @step.localized_description.present? %>
+      <p style="font-size:0.9375rem; color:var(--color-sub); margin:0.5rem 0 0; line-height:1.5;"><%= @step.localized_description %></p>
+    <% end %>
   </div>
 
   <% if @assessment_generating %>
     <%= render "loading_skeleton" %>
   <% elsif @assessment %>
     <% if @existing_result&.score.present? %>
-      <!-- Already completed - show results summary -->
-      <div style="background:var(--color-card); border:1px solid var(--color-border-subtle); border-radius:0.75rem; padding:1.5rem; text-align:center;">
-        <div style="font-size:2.25rem; font-weight:700; margin-bottom:0.5rem; color:<%= @existing_result.passed? ? 'var(--color-positive)' : 'var(--color-negative)' %>;">
-          <%= @existing_result.score.round(1) %>%
+      <%# Already completed - show results summary %>
+      <div style="background:var(--color-card); border:1px solid var(--color-border-subtle); border-radius:16px; padding:2rem; text-align:center; box-shadow:0 1px 3px rgba(0,0,0,0.02), 0 4px 16px rgba(0,0,0,0.01);">
+        <%# Score ring %>
+        <div style="position:relative; width:6rem; height:6rem; margin:0 auto 1.25rem;">
+          <% score = @existing_result.score.round(1) %>
+          <% score_color = @existing_result.passed? ? '#10b981' : '#ef4444' %>
+          <svg width="96" height="96" viewBox="0 0 96 96" style="transform:rotate(-90deg);">
+            <circle cx="48" cy="48" r="42" fill="none" stroke="var(--color-tint-strong)" stroke-width="6"/>
+            <circle cx="48" cy="48" r="42" fill="none" stroke="<%= score_color %>" stroke-width="6"
+                    stroke-linecap="round"
+                    stroke-dasharray="<%= (263.89 * score / 100.0).round(1) %> 263.89"
+                    style="transition:stroke-dasharray 1s cubic-bezier(0.34,1.56,0.64,1);"/>
+          </svg>
+          <div style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center;">
+            <span style="font-family:'DM Sans',sans-serif; font-size:1.5rem; font-weight:800; color:<%= score_color %>; letter-spacing:-0.5px;"><%= score %>%</span>
+          </div>
         </div>
-        <p style="font-size:0.875rem; color:var(--color-sub); margin:0 0 1rem;"><%= @existing_result.passed? ? t('learning_engine.assessment.passed') : t('learning_engine.assessment.not_passed') %> (<%= t('learning_engine.assessment.passing') %> <%= @assessment.passing_score %>%)</p>
+
+        <p style="font-size:0.9375rem; font-weight:500; color:var(--color-sub); margin:0 0 1.5rem;">
+          <%= @existing_result.passed? ? t('learning_engine.assessment.passed') : t('learning_engine.assessment.not_passed') %>
+          <span style="color:var(--color-muted);">(<%= t('learning_engine.assessment.passing') %> <%= @assessment.passing_score %>%)</span>
+        </p>
+
         <%= link_to t('learning_engine.assessment.view_results'), assessments.result_path(@existing_result),
-            style: "display:inline-block; border-radius:0.5rem; padding:0.5rem 1rem; font-size:0.875rem; font-weight:600; color:#fff; text-decoration:none; background:linear-gradient(to right, #6366f1, #a855f7); transition:opacity 0.2s;" %>
+            style: "display:inline-flex; align-items:center; gap:0.5rem; border-radius:14px; padding:0.75rem 1.75rem; font-family:'DM Sans',sans-serif; font-size:0.9375rem; font-weight:600; color:#fff; text-decoration:none; background:linear-gradient(135deg, #6366f1, #8b5cf6); transition:all 0.25s; box-shadow:0 4px 12px rgba(99,102,241,0.25);" %>
       </div>
     <% else %>
-      <!-- Start assessment -->
-      <div style="background:var(--color-card); border:1px solid var(--color-border-subtle); border-radius:0.75rem; padding:1.5rem;">
-        <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:1rem; margin-bottom:1.5rem; text-align:center;">
-          <div>
-            <div style="font-size:1.5rem; font-weight:700; color:var(--color-txt);"><%= @assessment.questions.count %></div>
-            <div style="font-size:0.75rem; color:var(--color-muted);"><%= t('learning_engine.assessment.questions') %></div>
+      <%# Start assessment %>
+      <div style="background:var(--color-card); border:1px solid var(--color-border-subtle); border-radius:16px; padding:2rem; box-shadow:0 1px 3px rgba(0,0,0,0.02), 0 4px 16px rgba(0,0,0,0.01);">
+        <%# Stats grid %>
+        <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:1rem; margin-bottom:2rem;">
+          <div style="text-align:center; padding:1rem; background:var(--color-tint); border-radius:14px;">
+            <div style="display:flex; align-items:center; justify-content:center; width:2.5rem; height:2.5rem; border-radius:12px; background:rgba(99,102,241,0.08); margin:0 auto 0.625rem;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            </div>
+            <div style="font-family:'DM Sans',sans-serif; font-size:1.5rem; font-weight:800; color:var(--color-txt); letter-spacing:-0.5px;"><%= @assessment.questions.count %></div>
+            <div style="font-family:'DM Mono',monospace; font-size:0.625rem; font-weight:500; color:var(--color-muted); text-transform:uppercase; letter-spacing:0.08em; margin-top:0.25rem;"><%= t('learning_engine.assessment.questions') %></div>
           </div>
-          <div>
-            <div style="font-size:1.5rem; font-weight:700; color:var(--color-txt);"><%= @assessment.passing_score.to_i %>%</div>
-            <div style="font-size:0.75rem; color:var(--color-muted);"><%= t('learning_engine.assessment.passing_score') %></div>
+          <div style="text-align:center; padding:1rem; background:var(--color-tint); border-radius:14px;">
+            <div style="display:flex; align-items:center; justify-content:center; width:2.5rem; height:2.5rem; border-radius:12px; background:rgba(16,185,129,0.08); margin:0 auto 0.625rem;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            </div>
+            <div style="font-family:'DM Sans',sans-serif; font-size:1.5rem; font-weight:800; color:var(--color-txt); letter-spacing:-0.5px;"><%= @assessment.passing_score.to_i %>%</div>
+            <div style="font-family:'DM Mono',monospace; font-size:0.625rem; font-weight:500; color:var(--color-muted); text-transform:uppercase; letter-spacing:0.08em; margin-top:0.25rem;"><%= t('learning_engine.assessment.passing_score') %></div>
           </div>
-          <div>
-            <div style="font-size:1.5rem; font-weight:700; color:var(--color-txt);">~<%= (@assessment.questions.count * 2).clamp(5, 60) %></div>
-            <div style="font-size:0.75rem; color:var(--color-muted);"><%= t('learning_engine.assessment.minutes') %></div>
+          <div style="text-align:center; padding:1rem; background:var(--color-tint); border-radius:14px;">
+            <div style="display:flex; align-items:center; justify-content:center; width:2.5rem; height:2.5rem; border-radius:12px; background:rgba(245,158,11,0.08); margin:0 auto 0.625rem;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            </div>
+            <div style="font-family:'DM Sans',sans-serif; font-size:1.5rem; font-weight:800; color:var(--color-txt); letter-spacing:-0.5px;">~<%= (@assessment.questions.count * 2).clamp(5, 60) %></div>
+            <div style="font-family:'DM Mono',monospace; font-size:0.625rem; font-weight:500; color:var(--color-muted); text-transform:uppercase; letter-spacing:0.08em; margin-top:0.25rem;"><%= t('learning_engine.assessment.minutes') %></div>
           </div>
         </div>
 
         <%= button_to t('learning_engine.assessment.start'), assessments.start_assessment_path(@assessment),
             method: :post,
-            style: "width:100%; border-radius:0.5rem; padding:0.75rem 1rem; font-size:0.875rem; font-weight:600; color:#fff; border:none; cursor:pointer; background:linear-gradient(to right, #6366f1, #a855f7); transition:opacity 0.2s;" %>
+            style: "width:100%; border-radius:14px; padding:0.9375rem 1rem; font-family:'DM Sans',sans-serif; font-size:0.9375rem; font-weight:600; color:#fff; border:none; cursor:pointer; background:linear-gradient(135deg, #6366f1, #8b5cf6); transition:all 0.25s; box-shadow:0 4px 12px rgba(99,102,241,0.25), inset 0 1px 0 rgba(255,255,255,0.1);" %>
       </div>
     <% end %>
   <% else %>
-    <div class="text-center py-12">
-      <p style="color:var(--color-sub);"><%= t('learning_engine.assessment.not_generated') %></p>
+    <div style="text-align:center; padding:3rem 1rem;">
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--color-muted)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin:0 auto 1rem; display:block; opacity:0.5;"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+      <p style="font-size:0.9375rem; color:var(--color-muted);"><%= t('learning_engine.assessment.not_generated') %></p>
     </div>
   <% end %>
 </div>
