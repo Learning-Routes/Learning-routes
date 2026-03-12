@@ -4,10 +4,11 @@
 <% step_id ||= nil %>
 <% section_index ||= nil %>
 <% section_text ||= "" %>
+<% show_url = audio_url.present? ? content_engine.section_audio_show_path(step_id: step_id, section_index: section_index) : nil %>
 
 <div id="section-audio-<%= step_id %>-<%= section_index %>"
      data-controller="section-audio"
-     data-section-audio-url-value="<%= audio_url %>"
+     data-section-audio-url-value="<%= show_url %>"
      data-section-audio-step-id-value="<%= step_id %>"
      data-section-audio-section-index-value="<%= section_index %>"
      data-section-audio-section-text-value="<%= section_text %>"
