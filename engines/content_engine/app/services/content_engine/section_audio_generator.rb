@@ -59,8 +59,12 @@ module ContentEngine
       # Remove code blocks → spoken placeholder
       sanitized.gsub!(/```[\w]*\n.*?```/m, locale_code_placeholder)
 
-      # Remove inline code backticks
+      # Remove inline code backticks (keep the text inside)
       sanitized.gsub!(/`([^`]+)`/) { Regexp.last_match(1) }
+
+      # Remove markdown tables (pipes, dashes, alignment colons)
+      sanitized.gsub!(/^\|.*\|$/m, "")
+      sanitized.gsub!(/^[\s|:-]+$/m, "")
 
       # Remove markdown images
       sanitized.gsub!(/!\[([^\]]*)\]\([^)]+\)/, '\1')
@@ -81,8 +85,16 @@ module ContentEngine
       # Remove HTML tags
       sanitized.gsub!(/<[^>]+>/, "")
 
+      # Normalize numbers for better TTS pronunciation
+      # ElevenLabs best practice: expand symbols to spoken form
+      sanitized.gsub!(/\$(\d+(?:,\d{3})*(?:\.\d{2})?)/) { "#{Regexp.last_match(1)} dólares" } if @locale&.start_with?("es")
+      sanitized.gsub!(/(\d+)%/) { "#{Regexp.last_match(1)} por ciento" } if @locale&.start_with?("es")
+
       # Convert bullet points to natural speech pauses
       sanitized.gsub!(/^[-*]\s+/, "... ")
+
+      # Convert numbered lists to natural flow
+      sanitized.gsub!(/^\d+\.\s+/, "... ")
 
       # Double newlines → pause marker (ElevenLabs respects periods)
       sanitized.gsub!(/\n{2,}/, ". ")
@@ -112,26 +124,35 @@ module ContentEngine
         user: user
       )
 
+      # Use multilingual_v2 for better quality and number pronunciation.
+      # Flash v2.5 is faster but mispronounces complex numbers/currencies
+      # — not ideal for educational content. We generate async anyway.
       result = client.chat(
         prompt: text,
         params: {
           voice_id: voice_id,
-          model_id: "eleven_flash_v2_5"
+          model_id: "eleven_multilingual_v2"
         }
       )
 
       store_audio_file(result[:content])
     end
 
+    # Per ElevenLabs best practices: use a voice with an accent matching
+    # the target language. Native-language voices produce better pronunciation.
+    # See: https://elevenlabs.io/docs/overview/capabilities/text-to-speech/best-practices
+    VOICE_IDS = {
+      "es" => "XrExE9yKIg1WjnnlVkGX", # Matilda — warm, young, works well in Spanish
+      "pt" => "ErXwobaYiN019PkySvjV", # Antoni — multilingual, works well in Portuguese
+      "fr" => "XB0fDUnXU5powFXDhCwa", # Charlotte — English-Swedish, good for French
+      "en" => "21m00Tcm4TlvDq8ikWAM"  # Rachel — calm, young, English narration
+    }.freeze
+
     def select_voice
-      if @locale&.start_with?("es")
-        Rails.application.credentials.dig(:elevenlabs, :spanish_voice_id) ||
-          Rails.application.credentials.dig(:elevenlabs, :default_voice_id) ||
-          "21m00Tcm4TlvDq8ikWAM"
-      else
-        Rails.application.credentials.dig(:elevenlabs, :default_voice_id) ||
-          "21m00Tcm4TlvDq8ikWAM"
-      end
+      lang = @locale&.split("-")&.first || "en"
+      Rails.application.credentials.dig(:elevenlabs, :"#{lang}_voice_id") ||
+        VOICE_IDS[lang] ||
+        VOICE_IDS["en"]
     end
 
     def store_audio_file(audio_data)
