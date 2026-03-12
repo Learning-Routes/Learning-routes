@@ -85,6 +85,8 @@ export default class extends Controller {
   // ── Actions ──────────────────────────────────────────────────
 
   generate() {
+    if (this._generating) return
+    this._generating = true
     this._showLoading()
 
     fetch(this.generateUrlValue, {
@@ -99,15 +101,20 @@ export default class extends Controller {
       .then(res => res.json())
       .then(data => {
         if (data.status === "ready" && data.audio_url) {
+          this._generating = false
           this._loadAudio(data.audio_url)
           this._showPlayer()
         } else if (data.status === "generating") {
           this._startPolling()
         } else if (data.status === "error") {
+          this._generating = false
           this._showError()
         }
       })
-      .catch(() => this._showError())
+      .catch(() => {
+        this._generating = false
+        this._showError()
+      })
   }
 
   playPause() {
@@ -193,6 +200,7 @@ export default class extends Controller {
 
   _startPolling() {
     this._stopPolling()
+    this._pollAttempts = 0
     this._pollTimer = setInterval(() => this._checkStatus(), 2000)
   }
 
@@ -204,15 +212,26 @@ export default class extends Controller {
   }
 
   _checkStatus() {
+    this._pollAttempts++
+    // Timeout after 60 seconds (30 polls × 2s)
+    if (this._pollAttempts > 30) {
+      this._stopPolling()
+      this._generating = false
+      this._showError()
+      return
+    }
+
     fetch(this.statusUrlValue, { headers: { "Accept": "application/json" } })
       .then(res => res.json())
       .then(data => {
         if (data.status === "ready") {
           this._stopPolling()
+          this._generating = false
           this._loadAudio(data.audio_url)
           this._showPlayer()
         } else if (data.status === "failed") {
           this._stopPolling()
+          this._generating = false
           this._showError()
         }
       })

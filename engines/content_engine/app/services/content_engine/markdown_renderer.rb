@@ -6,6 +6,9 @@ module ContentEngine
       end
     end
 
+    # Languages that get a visual "Run" button (decorative — signals interactivity)
+    RUNNABLE_LANGUAGES = %w[python ruby javascript js typescript ts bash shell sh].freeze
+
     class CodeRenderer < Redcarpet::Render::HTML
       def block_code(code, language)
         language = language.to_s.strip
@@ -17,15 +20,32 @@ module ContentEngine
 
         copy_label = ERB::Util.html_escape(I18n.t("code_editor.copy"))
         copied_label = ERB::Util.html_escape(I18n.t("code_editor.copied"))
+        lang_display = ERB::Util.html_escape(language)
+
+        # Run button for supported languages (visual feedback only)
+        run_btn = ""
+        if MarkdownRenderer::RUNNABLE_LANGUAGES.include?(language.downcase)
+          run_btn = <<~BTN
+            <button class="code-block-run" data-action="click->copy-code#fakeRun" data-copy-code-target="runBtn">
+              <svg viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+              Run
+            </button>
+          BTN
+        end
 
         <<~HTML
           <div class="code-block" data-controller="copy-code" data-copy-code-copied-text-value="#{copied_label}">
-            <div class="flex items-center justify-between px-4 py-2 border-b border-white/[0.06]">
-              <span class="text-xs text-gray-500 font-mono">#{ERB::Util.html_escape(language)}</span>
-              <button data-action="click->copy-code#copy" data-copy-code-target="button"
-                      class="text-xs text-gray-500 hover:text-white transition">#{copy_label}</button>
+            <div class="code-block-header">
+              <div class="code-block-dots"><span></span><span></span><span></span></div>
+              <span class="code-block-lang">#{lang_display}</span>
+              <div style="display:flex;align-items:center;gap:0.5rem;">
+                #{run_btn}
+                <button data-action="click->copy-code#copy" data-copy-code-target="button"
+                        class="text-xs text-gray-500 hover:text-white transition" style="font-family:'DM Mono',monospace;font-size:0.6875rem;">#{copy_label}</button>
+              </div>
             </div>
-            <pre class="p-5 text-sm leading-relaxed overflow-x-auto"><code data-copy-code-target="code">#{highlighted}</code></pre>
+            <pre class="p-5 text-sm leading-relaxed overflow-x-auto" style="border-radius:0 0 11px 11px;margin-top:0;"><code data-copy-code-target="code">#{highlighted}</code></pre>
+            <div class="code-block-output" data-copy-code-target="output"></div>
           </div>
         HTML
       end
@@ -63,12 +83,14 @@ module ContentEngine
         html,
         tags: %w[p br h1 h2 h3 h4 h5 h6 strong em b i u s del a ul ol li dl dt dd
                  blockquote pre code div span table thead tbody tr th td
-                 img hr sup sub kbd mark abbr details summary button input label],
+                 img hr sup sub kbd mark abbr details summary button input label
+                 svg polygon path polyline circle rect line],
         attributes: %w[href src alt title class id target rel style type name value
                        checked disabled data-controller data-action
                        data-copy-code-target data-copy-code-copied-text-value
                        data-correct data-lesson-check-target
-                       colspan rowspan]
+                       colspan rowspan viewBox fill points d stroke stroke-width
+                       stroke-linecap stroke-linejoin width height]
       )
       sanitized.html_safe
     end
