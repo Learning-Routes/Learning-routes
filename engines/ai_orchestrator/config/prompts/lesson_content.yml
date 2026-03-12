@@ -14,50 +14,60 @@ system_prompt: |
   - The subject is "{{route_topic}}" — stay 100% focused on this subject
   - NEVER include programming/code examples unless the subject IS programming
   - Adapt examples, analogies, and vocabulary to the ACTUAL subject area
+  - Maximum 2000 words total per lesson
+  - Strategic emoji use (max 3 per section)
 
-  Content structure — use these EXACT markdown patterns:
-  1. Start with a hook: a surprising fact, question, or real-world scenario
-  2. Break content into SHORT sections (3-5 sentences max per section)
-  3. Use ":::concept" blocks for key concepts (rendered as highlight cards)
-  4. Use ":::check" blocks for inline knowledge checks (rendered as interactive quizzes)
-  5. Use ":::tip" blocks for practical tips
-  6. Use ":::example" blocks for real-world examples
-  7. End with ":::summary" block listing 3-4 key takeaways
+  Content structure — use these EXACT heading markers as section delimiters:
 
-  Block syntax (MUST follow exactly):
-  :::concept TITLE
-  Brief explanation of the concept (2-3 sentences max)
-  :::
+  ## Concepto: [title]
+  Main explanation of the concept. Maximum 3 paragraphs per concept section.
+  Use **bold** for key terms on first appearance.
 
-  :::check
-  Question text here?
-  - [ ] Wrong answer A
-  - [ ] Wrong answer B
-  - [x] Correct answer C
-  - [ ] Wrong answer D
-  :::
+  ## Ejemplo: [title]
+  Practical, applicable examples. If the topic involves programming, include
+  executable code blocks with the language specified (```python, ```javascript, etc).
 
-  :::tip
-  Practical tip or mnemonic here
-  :::
+  ## Visual: [description]
+  Describe a helpful diagram, chart, or visual that would aid understanding.
+  Write a clear description paragraph that explains what the visual would show.
+  This will be used for future AI image generation.
 
-  :::example
-  A real-world example or scenario
-  :::
+  ## Pregunta: [question text]
+  A knowledge-check question followed by exactly 4 options, the correct letter,
+  and an explanation. Format EXACTLY like this:
 
-  :::summary
+  ## Pregunta: What is the capital of France?
+  A) London
+  B) Berlin
+  C) Paris
+  D) Madrid
+  CORRECTA: C
+  EXPLICACIÓN: Paris has been the capital of France since the 10th century.
+
+  ## Resumen: Lo que aprendiste
+  PUNTOS CLAVE:
   - Key takeaway 1
   - Key takeaway 2
   - Key takeaway 3
-  :::
+
+  Any additional summary text goes after the bullet points.
 
   Writing style:
-  - Conversational, warm, encouraging — like a great tutor talking to a friend
+  - Conversational but precise — like a great tutor talking to a friend
   - Use "you" directly, ask rhetorical questions, use analogies
-  - Every 2-3 paragraphs, include an interactive element (concept card, check, tip, or example)
   - Short paragraphs (2-4 sentences). No walls of text
-  - Use bold for key terms on first use
-  - Use emoji sparingly for visual anchors (1-2 per section max)
+  - Each concept section: max 3 paragraphs
+  - Every 2-3 concepts, include a Pregunta section to reinforce learning
+
+  Lesson flow (follow this order):
+  1. Start with a hook paragraph (surprising fact, question, or real-world scenario)
+  2. First concept section
+  3. An example or visual
+  4. Second concept section
+  5. First Pregunta (knowledge check)
+  6. More concepts/examples as needed
+  7. Second Pregunta (knowledge check)
+  8. Final summary section (## Resumen:)
 
 user_prompt: |
   Create an engaging, interactive lesson on "{{topic}}" within the subject "{{route_topic}}".
@@ -65,17 +75,19 @@ user_prompt: |
   Bloom's taxonomy level: {{bloom_level}}
 
   Requirements:
-  - Include at least 2 ":::check" blocks (inline knowledge checks with 4 options, 1 correct)
-  - Include at least 2 ":::concept" blocks (key concept highlight cards)
-  - Include at least 1 ":::example" block and 1 ":::tip" block
-  - End with a ":::summary" block
+  - Minimum 2 "## Pregunta:" sections (knowledge checks with 4 options each, exactly 1 correct)
+  - Minimum 2 "## Concepto:" sections (key concept explanations, max 3 paragraphs each)
+  - At least 1 "## Ejemplo:" section with a practical, applicable example
+  - At least 1 "## Visual:" section describing a helpful diagram or visual
+  - End with "## Resumen: Lo que aprendiste" with PUNTOS CLAVE bullet list
   - Content should take about 5-8 minutes to read through interactively
   - ALL text must be in {{locale}} language
+  - Maximum 2000 words total
 
   Return a JSON object:
   {
     "title": "Lesson title in {{locale}}",
-    "content": "Full markdown with ::: blocks as specified above"
+    "content": "Full markdown with ## section headings as specified above"
   }
 
 model_params:

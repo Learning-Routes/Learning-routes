@@ -111,6 +111,33 @@
         </div>
       </div>
 
+      <%# Route content language selector %>
+      <div style="margin-top:20px;">
+        <div style="font-family:'DM Sans',sans-serif; font-weight:600; font-size:0.7rem; color:var(--color-txt, #1C1812); margin-bottom:6px;"><%= t("wizard.step0.language_label") %></div>
+        <p style="font-family:'DM Sans',sans-serif; font-weight:400; font-size:0.62rem; color:var(--color-muted, #9E9587); margin:0 0 8px;"><%= t("wizard.step0.language_hint") %></p>
+        <div style="display:grid; grid-template-columns:repeat(2, 1fr); gap:8px;" data-route-wizard-target="localeGrid">
+          <% [
+            { id: "es", flag: "\u{1F1EA}\u{1F1F8}", name: t("wizard.step0.locales.es") },
+            { id: "en", flag: "\u{1F1FA}\u{1F1F8}", name: t("wizard.step0.locales.en") },
+            { id: "pt", flag: "\u{1F1E7}\u{1F1F7}", name: t("wizard.step0.locales.pt") },
+            { id: "fr", flag: "\u{1F1EB}\u{1F1F7}", name: t("wizard.step0.locales.fr") }
+          ].each do |loc| %>
+            <div data-action="click->route-wizard#selectLocale"
+                 data-locale="<%= loc[:id] %>"
+                 style="display:flex; align-items:center; gap:10px; padding:12px 14px; border-radius:12px; cursor:pointer;
+                        background:var(--color-card, #FDFCFA); border:1.5px solid <%= loc[:id] == (current_user&.locale || 'es') ? '#5BA880' : 'var(--color-faint, rgba(28,24,18,0.06))' %>;
+                        transition:all 0.25s cubic-bezier(0.16,1,0.3,1);">
+              <span style="font-size:1.2rem;"><%= loc[:flag] %></span>
+              <span style="font-family:'DM Sans',sans-serif; font-weight:500; font-size:0.78rem; color:var(--color-txt, #1C1812);"><%= loc[:name] %></span>
+              <div class="wizard-locale-check" style="margin-left:auto; display:<%= loc[:id] == (current_user&.locale || 'es') ? 'flex' : 'none' %>; align-items:center; justify-content:center;">
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="8" fill="#5BA880"/><path d="M4.5 8.5L7 11L11.5 5.5" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </div>
+            </div>
+          <% end %>
+        </div>
+        <input type="hidden" name="route_request[route_locale]" value="<%= current_user&.locale || 'es' %>" data-route-wizard-target="localeInput">
+      </div>
+
       <div data-route-wizard-target="topicInputs"></div>
     </div>
 

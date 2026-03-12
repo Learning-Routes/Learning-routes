@@ -97,7 +97,7 @@ class RouteWizardController < ApplicationController
 
   def wizard_params
     params.require(:route_request).permit(
-      :custom_topic, :level, :pace, :weekly_hours, :session_minutes,
+      :custom_topic, :level, :pace, :weekly_hours, :session_minutes, :route_locale,
       topics: [], goals: [],
       learning_style_answers: {}
     ).tap do |p|

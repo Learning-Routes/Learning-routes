@@ -15,7 +15,8 @@ export default class extends Controller {
     "styleAnswer10", "styleAnswer11", "styleAnswer12",
     "styleProgress", "styleResultCard", "styleResultIcon",
     "styleResultName", "styleResultDesc", "styleDoneMsg",
-    "savedStyleBanner", "savedStyleText", "styleHeader", "styleQuestionsWrap"
+    "savedStyleBanner", "savedStyleText", "styleHeader", "styleQuestionsWrap",
+    "localeInput", "localeGrid"
   ]
 
   static values = {
@@ -154,6 +155,29 @@ export default class extends Controller {
         : ""
     }
     this.validateStep()
+  }
+
+  // ===== ROUTE LOCALE (in step 0) =====
+
+  selectLocale(event) {
+    const card = event.currentTarget
+    const locale = card.dataset.locale
+
+    if (this.hasLocaleGridTarget) {
+      this.localeGridTarget.querySelectorAll("[data-locale]").forEach(el => {
+        el.style.borderColor = "var(--color-faint, rgba(28,24,18,0.06))"
+        const check = el.querySelector(".wizard-locale-check")
+        if (check) check.style.display = "none"
+      })
+    }
+
+    card.style.borderColor = "#5BA880"
+    const check = card.querySelector(".wizard-locale-check")
+    if (check) check.style.display = "flex"
+
+    if (this.hasLocaleInputTarget) {
+      this.localeInputTarget.value = locale
+    }
   }
 
   // ===== STEP 1: LEVEL =====

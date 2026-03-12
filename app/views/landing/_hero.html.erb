@@ -50,7 +50,7 @@
                 font-sans font-normal text-[1.1rem] text-sub
                 leading-[1.9] max-w-[440px] mt-8">
         <% if current_user && @active_route %>
-          <%= t("hero.subtext_active", progress: @active_route.progress_percentage, steps: @active_route.route_steps.count(&:completed?)) %>
+          <%= t("hero.subtext_active", progress: @active_route.progress_percentage, steps: @active_route.route_steps.completed_steps.count) %>
         <% else %>
           <%= t("hero.subtext") %>
         <% end %>
@@ -59,7 +59,7 @@
       <%# CTA Button %>
       <div class="animate-enter delay-300 mt-12">
         <% if current_user && @active_route %>
-          <%= link_to dashboard_path,
+          <%= link_to learning_routes_engine.route_path(@active_route),
               class: "inline-flex items-center justify-center
                       bg-accent text-accent-text font-sans text-[0.92rem] font-semibold
                       px-[2.2rem] py-[0.85rem] rounded-btn btn-shadow hover-lift

@@ -13,6 +13,13 @@ export default class extends Controller {
     if (this.timerInterval) clearInterval(this.timerInterval)
   }
 
+  completeLesson() {
+    // Trigger the mark-complete button if present
+    if (this.hasMarkCompleteBtnTarget) {
+      this.markCompleteBtnTarget.click()
+    }
+  }
+
   updateTimer() {
     const elapsed = Math.floor((Date.now() - this.startTime) / 1000)
     const minutes = Math.floor(elapsed / 60)

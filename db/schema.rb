@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_03_07_010000) do
+ActiveRecord::Schema[8.1].define(version: 2026_03_12_040741) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -503,6 +503,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_07_010000) do
     t.jsonb "learning_style_result", default: {}, null: false
     t.string "level", null: false
     t.string "pace", null: false
+    t.string "route_locale", default: "es", null: false
     t.integer "session_minutes"
     t.string "status", default: "pending", null: false
     t.jsonb "topics", default: [], null: false

@@ -44,12 +44,30 @@ module LearningRoutesEngine
       @xp_result = tracker.xp_result
       finish_study_session!
 
+      # Award lesson-specific XP (on top of step_complete XP from tracker)
+      lesson_xp = award_lesson_xp!
+
       next_available = @route.route_steps
         .where("position > ?", @step.position)
         .where(status: [:available])
         .order(:position).first
 
       respond_to do |format|
+        format.json do
+          engagement = current_user.user_engagement
+          render json: {
+            xp_gained: (@xp_result&.dig(:xp_gained) || 0) + (lesson_xp || 0),
+            total_xp: engagement&.total_xp || 0,
+            level: engagement&.current_level || 1,
+            leveled_up: @xp_result&.dig(:leveled_up) || false,
+            streak: engagement&.current_streak || 0,
+            route_completed: @route.completed?,
+            next_step_id: next_available&.id,
+            next_step_title: next_available&.localized_title,
+            next_step_url: next_available ? route_step_path(@route, next_available) : nil,
+            route_url: route_path(@route)
+          }
+        end
         format.html { redirect_to route_step_path(@route, next_available || @step), notice: t("flash.step_completed") }
         format.turbo_stream
       end
@@ -95,7 +113,19 @@ module LearningRoutesEngine
           begin; LearningRoutesEngine::ContentGenerationJob.perform_later(@step.id); rescue => e; Rails.logger.error("Content generation failed for step ##{@step.id}: #{e.message}"); end
           @content_generating = true
         end
-        @rendered_html = ContentEngine::MarkdownRenderer.render(@content.body) if @content
+        if @content
+          cached = @step.metadata&.dig("parsed_sections")
+          if cached.is_a?(Array) && cached.any?
+            @sections = cached.map(&:deep_symbolize_keys)
+          else
+            @sections = ContentEngine::LessonSectionParser.call(
+              @content.body,
+              metadata: @step.metadata || {},
+              audio_url: @content.audio_url
+            )
+          end
+          @rendered_html = ContentEngine::MarkdownRenderer.render(@content.body)
+        end
       when "exercise"
         @content = ContentEngine::AiContent.where(route_step: @step).by_type(:exercise).first
         unless @content
@@ -142,6 +172,24 @@ module LearningRoutesEngine
           Rails.logger.error("Audio generation failed for step ##{@step.id}: #{e.message}")
         end
       end
+    end
+
+    def award_lesson_xp!
+      return unless @step.content_type == "lesson"
+
+      quiz_results = params[:quiz_results]
+      all_correct = quiz_results.present? &&
+                    quiz_results[:correct].to_i > 0 &&
+                    quiz_results[:correct].to_i == quiz_results[:total].to_i
+
+      source = all_correct ? "lesson_perfect" : "lesson_complete"
+      amount = XpService::XP_VALUES[source.to_sym] || 10
+
+      XpService.award(current_user, amount, source, source_id: @step.id.to_s)
+      amount
+    rescue => e
+      Rails.logger.warn("[StepsController] Lesson XP award failed: #{e.message}")
+      nil
     end
 
     def find_or_start_study_session

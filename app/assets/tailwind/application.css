@@ -944,3 +944,542 @@ html[data-theme="dark"] .learning-nav {
   animation: celebration-pulse-ring 0.8s ease-out both;
 }
 
+/* ==========================================================================
+   LESSON NAV — Duolingo-style section navigation
+   ========================================================================== */
+
+/* ── Keyframes ── */
+@keyframes lessonFadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes lessonSlideUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes lessonShake {
+  0%, 100% { transform: translateX(0); }
+  20%      { transform: translateX(-6px); }
+  40%      { transform: translateX(6px); }
+  60%      { transform: translateX(-4px); }
+  80%      { transform: translateX(4px); }
+}
+
+@keyframes lessonBounce {
+  0%   { transform: scale(1); }
+  40%  { transform: scale(1.08); }
+  70%  { transform: scale(0.96); }
+  100% { transform: scale(1); }
+}
+
+@keyframes lessonPulseGlow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(91,168,128,0.4); }
+  50%      { box-shadow: 0 0 0 8px rgba(91,168,128,0); }
+}
+
+@keyframes waveformPulse {
+  0%, 100% { transform: scaleY(0.3); }
+  50%      { transform: scaleY(1); }
+}
+
+/* ── Utility animation classes ── */
+.animate-fade-in {
+  animation: lessonFadeIn 0.4s ease both;
+}
+
+.animate-bounce-once {
+  animation: lessonBounce 0.4s ease both;
+}
+
+/* ── Sticky progress bar ── */
+.lesson-nav-progress {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  max-width: 48rem;
+  margin: 0 auto;
+  background: var(--color-bg);
+}
+
+.lesson-progress-segment {
+  flex: 1;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--color-border-subtle);
+  transition: background 0.3s ease;
+}
+
+.lesson-progress--active {
+  background: var(--color-accent, #2C261E);
+}
+
+.lesson-progress--visited {
+  background: var(--color-progress-bar, #5BA880);
+}
+
+.lesson-progress-counter {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  color: var(--color-muted);
+  white-space: nowrap;
+}
+
+/* ── Sections container ── */
+.lesson-sections-container {
+  position: relative;
+  min-height: 12rem;
+  padding-bottom: 5rem; /* space for fixed footer */
+}
+
+.lesson-section {
+  will-change: transform, opacity;
+  transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+              opacity 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Exit left (going forward) */
+.lesson-section--exit-left {
+  transform: translateX(-30px);
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Exit right (going back) */
+.lesson-section--exit-right {
+  transform: translateX(30px);
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Enter from right (going forward) — initial position before entering */
+.lesson-section--enter-left {
+  transform: translateX(30px);
+  opacity: 0;
+}
+
+/* Enter from left (going back) — initial position before entering */
+.lesson-section--enter-right {
+  transform: translateX(-30px);
+  opacity: 0;
+}
+
+/* ── Section type badges ── */
+.lesson-section-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.1875rem 0.625rem;
+  border-radius: 9999px;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.625rem;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.lesson-section-badge--concept {
+  background: rgba(99, 102, 241, 0.1);
+  color: #6366f1;
+}
+
+.lesson-section-badge--example {
+  background: rgba(16, 185, 129, 0.1);
+  color: #059669;
+}
+
+.lesson-section-badge--check {
+  background: rgba(139, 92, 246, 0.1);
+  color: #8b5cf6;
+}
+
+.lesson-section-badge--visual {
+  background: rgba(245, 158, 11, 0.1);
+  color: #D97706;
+}
+
+.lesson-section-badge--summary {
+  background: var(--color-tint-strong);
+  color: var(--color-txt);
+}
+
+.lesson-section-badge--audio {
+  background: rgba(99, 102, 241, 0.1);
+  color: #6366f1;
+}
+
+.lesson-section-badge--tip {
+  background: rgba(245, 158, 11, 0.1);
+  color: #D97706;
+}
+
+/* Dark theme badge overrides */
+html[data-theme="dark"] .lesson-section-badge--concept {
+  background: rgba(99, 102, 241, 0.15);
+  color: #a5b4fc;
+}
+html[data-theme="dark"] .lesson-section-badge--example {
+  background: rgba(16, 185, 129, 0.15);
+  color: #6ee7b7;
+}
+html[data-theme="dark"] .lesson-section-badge--check {
+  background: rgba(139, 92, 246, 0.15);
+  color: #c4b5fd;
+}
+html[data-theme="dark"] .lesson-section-badge--visual {
+  background: rgba(245, 158, 11, 0.15);
+  color: #fbbf24;
+}
+html[data-theme="dark"] .lesson-section-badge--audio {
+  background: rgba(99, 102, 241, 0.15);
+  color: #a5b4fc;
+}
+html[data-theme="dark"] .lesson-section-badge--tip {
+  background: rgba(245, 158, 11, 0.15);
+  color: #fbbf24;
+}
+
+/* ── Fixed bottom footer ── */
+.lesson-nav-footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 30;
+  padding: 0.75rem 1rem;
+  background: var(--color-bg);
+  border-top: 1px solid var(--color-border-subtle);
+}
+
+html[data-theme="dark"] .lesson-nav-footer {
+  background: var(--color-bg);
+}
+
+/* ── Buttons ── */
+.lesson-btn--primary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.875rem 1.5rem;
+  border-radius: 11px;
+  border: none;
+  background: var(--color-accent, #2C261E);
+  color: var(--color-accent-text, #F5F1EB);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.lesson-btn--primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(28, 24, 18, 0.12);
+}
+
+.lesson-btn--primary:active {
+  transform: translateY(0);
+}
+
+.lesson-btn--muted {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.875rem 1.5rem;
+  border-radius: 11px;
+  border: none;
+  background: var(--color-tint-strong);
+  color: var(--color-muted);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  cursor: not-allowed;
+}
+
+.lesson-btn--back {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 3rem;
+  height: auto;
+  border-radius: 11px;
+  border: 1px solid var(--color-border-subtle);
+  background: transparent;
+  color: var(--color-sub);
+  cursor: pointer;
+  transition: border-color 0.2s, color 0.2s;
+}
+
+.lesson-btn--back:hover {
+  border-color: var(--color-faint);
+  color: var(--color-txt);
+}
+
+.lesson-btn--shake {
+  animation: lessonShake 0.5s ease;
+}
+
+/* ── Knowledge check options (larger in nav mode) ── */
+.lesson-nav-check-option {
+  padding: 1rem 1.125rem !important;
+  font-size: 0.9375rem !important;
+}
+
+/* ── Waveform bars (audio section) ── */
+.lesson-waveform-bar {
+  width: 3px;
+  height: 100%;
+  border-radius: 2px;
+  background: var(--color-accent, #2C261E);
+  opacity: 0.25;
+  transform: scaleY(0.3);
+  animation: waveformPulse 1.2s ease-in-out infinite;
+}
+
+/* ── Section audio ── */
+.section-audio-waveform-bar {
+  will-change: background, opacity;
+}
+
+@keyframes sectionAudioSpin {
+  to { transform: rotate(360deg); }
+}
+
+.section-audio-spinner {
+  width: 1.25rem;
+  height: 1.25rem;
+  border: 2px solid var(--color-border-subtle);
+  border-top-color: #6366f1;
+  border-radius: 50%;
+  animation: sectionAudioSpin 0.6s linear infinite;
+}
+
+:root {
+  --color-section-audio-active: #6366f1;
+}
+
+html[data-theme="dark"] {
+  --color-section-audio-active: #818cf8;
+}
+
+/* ── Summary points ── */
+.lesson-summary-point {
+  animation: lessonFadeIn 0.4s ease both;
+}
+
+/* ── Completion screen ── */
+@keyframes lessonCheckBounce {
+  0%   { transform: scale(0); opacity: 0; }
+  50%  { transform: scale(1.2); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes lessonXpGlow {
+  0%   { box-shadow: 0 0 0 0 rgba(176, 152, 72, 0.4); }
+  50%  { box-shadow: 0 0 20px 4px rgba(176, 152, 72, 0.2); }
+  100% { box-shadow: 0 0 0 0 rgba(176, 152, 72, 0); }
+}
+
+@keyframes lessonLevelPulse {
+  0%   { transform: scale(0); opacity: 0; }
+  60%  { transform: scale(1.15); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.lesson-completion-screen {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 20rem;
+  padding: 3rem 1rem;
+  animation: lessonFadeIn 0.5s ease both;
+}
+
+.lesson-completion-inner {
+  text-align: center;
+  max-width: 24rem;
+}
+
+.lesson-completion-check {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 5rem;
+  height: 5rem;
+  border-radius: 50%;
+  background: var(--color-progress-bar, #5BA880);
+  color: #fff;
+  margin-bottom: 1.5rem;
+  animation: lessonCheckBounce 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+.lesson-completion-heading {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-txt);
+  margin: 0 0 0.5rem;
+  animation: lessonFadeIn 0.4s ease 0.2s both;
+}
+
+.lesson-completion-sub {
+  font-size: 0.9375rem;
+  color: var(--color-sub);
+  margin: 0 0 1.25rem;
+  animation: lessonFadeIn 0.4s ease 0.35s both;
+}
+
+/* XP badge */
+.lesson-completion-xp {
+  margin-bottom: 1rem;
+  animation: lessonFadeIn 0.4s ease 0.4s both;
+}
+
+.lesson-completion-xp-badge {
+  display: inline-block;
+  font-family: 'DM Mono', monospace;
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #B09848;
+  background: rgba(176, 152, 72, 0.08);
+  border: 1px solid rgba(176, 152, 72, 0.2);
+  border-radius: 12px;
+  padding: 0.5rem 1.25rem;
+  animation: lessonXpGlow 1.5s ease 0.6s;
+}
+
+/* Level up */
+.lesson-completion-level {
+  margin-bottom: 1rem;
+  animation: lessonLevelPulse 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) 0.5s both;
+}
+
+.lesson-completion-level-label {
+  display: block;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.625rem;
+  font-weight: 600;
+  color: #B09848;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-bottom: 0.25rem;
+}
+
+.lesson-completion-level-number {
+  display: block;
+  font-family: 'DM Mono', monospace;
+  font-size: 3rem;
+  font-weight: 700;
+  color: var(--color-txt);
+  line-height: 1;
+  text-shadow: 0 0 40px rgba(176, 152, 72, 0.3);
+}
+
+/* Streak */
+.lesson-completion-streak {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  margin-bottom: 1.25rem;
+  animation: lessonFadeIn 0.4s ease 0.55s both;
+}
+
+.lesson-completion-streak-flame {
+  font-size: 1.25rem;
+}
+
+.lesson-completion-streak-count {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-sub);
+}
+
+/* Action buttons */
+.lesson-completion-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+  align-items: center;
+  margin-top: 0.5rem;
+  animation: lessonFadeIn 0.4s ease 0.6s both;
+}
+
+.lesson-completion-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  padding: 0.875rem 2rem;
+  border-radius: 11px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: transform 0.2s, box-shadow 0.2s;
+  width: 100%;
+  max-width: 20rem;
+}
+
+.lesson-completion-btn--primary {
+  background: var(--color-accent, #2C261E);
+  color: var(--color-accent-text, #F5F1EB);
+}
+
+.lesson-completion-btn--secondary {
+  background: var(--color-tint-strong, rgba(28, 24, 18, 0.04));
+  color: var(--color-sub);
+  border: 1px solid var(--color-border-subtle);
+  font-size: 0.8125rem;
+  padding: 0.625rem 1.5rem;
+}
+
+.lesson-completion-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(28, 24, 18, 0.12);
+}
+
+/* ── Reduced motion overrides for lesson nav ── */
+@media (prefers-reduced-motion: reduce) {
+  .lesson-section {
+    transition: none !important;
+    will-change: auto !important;
+  }
+  .lesson-section--exit-left,
+  .lesson-section--exit-right,
+  .lesson-section--enter-left,
+  .lesson-section--enter-right {
+    transform: none !important;
+    opacity: 1 !important;
+  }
+  .lesson-waveform-bar {
+    animation: none !important;
+    transform: scaleY(0.5) !important;
+  }
+  .lesson-btn--shake {
+    animation: none !important;
+  }
+  .animate-fade-in,
+  .animate-bounce-once,
+  .lesson-summary-point,
+  .lesson-completion-screen,
+  .lesson-completion-check,
+  .lesson-completion-heading,
+  .lesson-completion-sub,
+  .lesson-completion-btn,
+  .lesson-completion-xp,
+  .lesson-completion-xp-badge,
+  .lesson-completion-level,
+  .lesson-completion-streak,
+  .lesson-completion-actions {
+    animation: none !important;
+    opacity: 1 !important;
+  }
+}
+

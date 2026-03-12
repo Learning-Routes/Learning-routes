@@ -1,29 +1,85 @@
-<div class="space-y-6">
-  <!-- Step header -->
-  <div>
-    <span style="display:inline-flex; align-items:center; border-radius:9999px; padding:0.125rem 0.625rem; font-size:0.75rem; font-weight:500; background:var(--color-badge-lesson-bg); color:var(--color-badge-lesson-text); margin-bottom:0.5rem;">
-      <%= t('learning_engine.lesson.badge') %>
-    </span>
-    <h1 style="font-size:1.5rem; font-weight:700; color:var(--color-txt); margin:0;"><%= @step.localized_title %></h1>
-    <p style="font-size:0.875rem; color:var(--color-sub); margin:0.25rem 0 0;"><%= @step.localized_description %></p>
-  </div>
+<% if @content_generating %>
+  <%= render "loading_skeleton" %>
+<% elsif @sections.present? %>
+  <%# ── Duolingo-style section navigation ── %>
+  <div data-controller="interactive-lesson"
+       data-interactive-lesson-total-sections-value="<%= @sections.size %>"
+       data-interactive-lesson-step-id-value="<%= @step.id %>"
+       data-interactive-lesson-route-id-value="<%= @route.id %>"
+       data-interactive-lesson-complete-url-value="<%= complete_route_step_path(@route, @step) %>">
 
-  <% if @content_generating %>
-    <%= render "loading_skeleton" %>
-  <% elsif @content %>
-    <!-- Rendered lesson content -->
+    <%# ── Sticky progress bar ── %>
+    <div class="lesson-nav-progress" data-interactive-lesson-target="progressBar">
+      <div style="display:flex; align-items:center; gap:0.375rem; flex:1;">
+        <% @sections.each_with_index do |_sec, i| %>
+          <div class="lesson-progress-segment" data-interactive-lesson-target="progressSegment"></div>
+        <% end %>
+      </div>
+      <span class="lesson-progress-counter" data-interactive-lesson-target="sectionCounter">1/<%= @sections.size %></span>
+    </div>
+
+    <%# ── Step title ── %>
+    <div style="max-width:48rem; margin:0 auto; padding:0.5rem 1rem 0;">
+      <h1 style="font-size:1.5rem; font-weight:700; color:var(--color-txt); margin:0;"><%= @step.localized_title %></h1>
+      <p style="font-size:0.875rem; color:var(--color-sub); margin:0.25rem 0 0;"><%= @step.localized_description %></p>
+    </div>
+
+    <%# ── Sections container (only one visible at a time) ── %>
+    <div class="lesson-sections-container" data-interactive-lesson-target="sectionsContainer">
+      <% @sections.each_with_index do |section, i| %>
+        <div class="lesson-section"
+             data-interactive-lesson-target="section"
+             <% if section[:type] == "check" %>
+               data-lesson-check="true"
+             <% end %>
+             style="<%= i > 0 ? 'display:none;' : '' %>">
+          <%= render "learning_routes_engine/steps/lesson_sections/#{section[:type]}", section: section, step: @step, index: i %>
+        </div>
+      <% end %>
+    </div>
+
+    <%# ── Fixed continue button ── %>
+    <div class="lesson-nav-footer" data-interactive-lesson-target="continueBar">
+      <div style="max-width:48rem; margin:0 auto; display:flex; gap:0.75rem;">
+        <button data-action="click->interactive-lesson#previousSection"
+                data-interactive-lesson-target="backBtn"
+                class="lesson-btn--back"
+                style="display:none;"
+                aria-label="Anterior">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+        <button data-interactive-lesson-target="continueBtn"
+                data-action="click->interactive-lesson#nextSection"
+                class="lesson-btn--primary"
+                style="flex:1;">
+          Continuar
+        </button>
+      </div>
+    </div>
+
+    <%# ── AI interaction buttons (collapsed at bottom) ── %>
+    <div style="max-width:48rem; margin:0 auto; padding:0 1rem;">
+      <%= render "ai_buttons" %>
+      <div id="ai_supplementary_<%= @step.id %>" class="space-y-4"></div>
+    </div>
+  </div>
+<% elsif @content %>
+  <%# ── Fallback: monolithic render if parser returned no sections ── %>
+  <div class="space-y-6">
+    <div>
+      <span style="display:inline-flex; align-items:center; border-radius:9999px; padding:0.125rem 0.625rem; font-size:0.75rem; font-weight:500; background:var(--color-badge-lesson-bg); color:var(--color-badge-lesson-text); margin-bottom:0.5rem;">
+        <%= t('learning_engine.lesson.badge') %>
+      </span>
+      <h1 style="font-size:1.5rem; font-weight:700; color:var(--color-txt); margin:0;"><%= @step.localized_title %></h1>
+    </div>
     <div class="lesson-content" data-controller="math-renderer" data-math-renderer-target="content">
       <%= @rendered_html %>
     </div>
-
-    <!-- AI interaction buttons -->
     <%= render "ai_buttons" %>
-
-    <!-- Supplementary AI content area -->
     <div id="ai_supplementary_<%= @step.id %>" class="space-y-4"></div>
-  <% else %>
-    <div class="text-center py-12">
-      <p style="color:var(--color-sub);"><%= t('learning_engine.lesson.no_content') %></p>
-    </div>
-  <% end %>
-</div>
+  </div>
+<% else %>
+  <div class="text-center py-12">
+    <p style="color:var(--color-sub);"><%= t('learning_engine.lesson.no_content') %></p>
+  </div>
+<% end %>
