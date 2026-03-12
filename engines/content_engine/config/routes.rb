@@ -25,4 +25,11 @@ ContentEngine::Engine.routes.draw do
       get :status
     end
   end
+
+  # Per-section audio endpoints
+  scope "section_audio/:step_id/:section_index", controller: :section_audio, as: :section_audio do
+    post :generate, action: :generate
+    get :status, action: :status
+    get :show, action: :show
+  end
 end

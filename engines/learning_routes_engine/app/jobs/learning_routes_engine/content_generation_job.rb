@@ -29,7 +29,7 @@ module LearningRoutesEngine
         body = extract_markdown(interaction.response)
 
         ActiveRecord::Base.transaction do
-          ContentEngine::AiContent.create!(
+          content = ContentEngine::AiContent.create!(
             route_step: step,
             content_type: :text,
             body: body,
@@ -41,7 +41,17 @@ module LearningRoutesEngine
             }
           )
 
-          step.update!(metadata: step.metadata.merge(content_generated: true))
+          # Pre-parse and cache sections so we don't re-parse on every page load
+          parsed_sections = ContentEngine::LessonSectionParser.call(
+            body,
+            metadata: step.metadata || {},
+            audio_url: content.audio_url
+          )
+
+          step.update!(metadata: step.metadata.merge(
+            content_generated: true,
+            parsed_sections: parsed_sections.map(&:as_json)
+          ))
         end
 
         Rails.logger.info("[ContentGenerationJob] Content generated for step #{route_step_id}")

@@ -61,3 +61,4 @@
 # Claude Code
 CLAUDE.md
 /CLAUDE.md
+db/*.sqlite3

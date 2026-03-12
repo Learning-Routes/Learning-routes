@@ -5,6 +5,10 @@ class ThemeController < ApplicationController
       cookies[:theme] = { value: theme, expires: 1.year.from_now }
       current_user&.update(theme: theme)
     end
-    redirect_back fallback_location: root_path, allow_other_host: false
+
+    respond_to do |format|
+      format.turbo_stream { head :ok }
+      format.html { redirect_back fallback_location: root_path, allow_other_host: false }
+    end
   end
 end

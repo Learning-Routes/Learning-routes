@@ -4,7 +4,7 @@ import { Controller } from "@hotwired/stimulus"
 // Each option has data-correct="true"|"false". On selection, shows
 // immediate feedback with color coding.
 export default class extends Controller {
-  static targets = ["options", "option", "feedback"]
+  static targets = ["options", "option", "feedback", "explanation"]
 
   disconnect() {
     if (this._timers) this._timers.forEach(t => clearTimeout(t))
@@ -37,6 +37,17 @@ export default class extends Controller {
       btn.style.opacity = "1"
       this._showFeedback(false)
     }
+
+    // Show explanation if present
+    if (this.hasExplanationTarget) {
+      this.explanationTarget.style.display = ""
+    }
+
+    // Dispatch event so lesson-nav can ungate the continue button
+    this.element.dispatchEvent(new CustomEvent("lesson-check:answered", {
+      bubbles: true,
+      detail: { correct: isCorrect }
+    }))
   }
 
   _microCelebration(btn) {

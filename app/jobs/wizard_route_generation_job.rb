@@ -10,7 +10,7 @@ class WizardRouteGenerationJob < ApplicationJob
     request.update!(status: "generating")
 
     begin
-      user_locale = request.user.locale || "en"
+      user_locale = request.route_locale.presence || request.user.locale || "es"
       route_data = generate_fallback_route(request, user_locale)
 
       # Find or create the user's learning profile

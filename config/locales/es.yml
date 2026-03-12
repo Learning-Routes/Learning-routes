@@ -521,6 +521,13 @@ es:
         health_desc: "Nutrición, ejercicio, bienestar"
       custom_label: "O escribe algo específico"
       custom_placeholder: "Ej: Machine Learning, Guitarra, Cocina…"
+      language_label: "Idioma del contenido"
+      language_hint: "El contenido de tu ruta se generará en este idioma"
+      locales:
+        es: "Español"
+        en: "English"
+        pt: "Português"
+        fr: "Français"
       step_name: "— Tema"
     step1:
       heading: "¿Cuál es tu nivel actual?"

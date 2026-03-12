@@ -21,13 +21,15 @@ class LandingController < ApplicationController
 
     @active_route = LearningRoutesEngine::LearningRoute
       .where(learning_profile: profile)
-      .active_routes
+      .where.not(status: [:draft])
       .includes(:route_steps)
+      .order(updated_at: :desc)
       .first
 
-    if @active_route
+    if @active_route && @active_route.route_steps.any?
       @route_nodes = build_route_nodes(@active_route)
     else
+      @active_route = nil # reset so views show default content
       @route_nodes = default_translated_nodes
     end
   end

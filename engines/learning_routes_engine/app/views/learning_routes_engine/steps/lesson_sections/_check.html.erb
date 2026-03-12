@@ -1,0 +1,43 @@
+<% correct_index = section[:options]&.index { |o| o[:correct] } || 0 %>
+<div style="max-width:48rem; margin:0 auto; padding:2rem 1rem;"
+     data-controller="lesson-check lesson-quiz"
+     data-lesson-quiz-correct-value="<%= correct_index %>"
+     data-lesson-quiz-xp-value="15">
+  <%# Badge %>
+  <span class="lesson-section-badge lesson-section-badge--check">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+    <span>COMPRUEBA TU CONOCIMIENTO</span>
+  </span>
+
+  <%# Question %>
+  <p style="font-size:1.125rem; font-weight:600; color:var(--color-txt); margin:1rem 0 1.25rem; line-height:1.5;">
+    <%= section[:question] %>
+  </p>
+
+  <%# Options %>
+  <div class="lesson-check__options" data-lesson-check-target="options" style="position:relative;">
+    <% section[:options].each_with_index do |opt, i| %>
+      <% letter = ("A".ord + i).chr %>
+      <button class="lesson-check__option lesson-nav-check-option"
+              data-action="click->lesson-check#select click->lesson-quiz#selectOption"
+              data-correct="<%= opt[:correct] %>"
+              data-lesson-check-target="option"
+              data-lesson-quiz-target="option">
+        <span class="lesson-check__letter"><%= letter %></span>
+        <span style="flex:1;"><%= opt[:label] %></span>
+      </button>
+    <% end %>
+  </div>
+
+  <%# Feedback area (managed by lesson-check controller) %>
+  <div class="lesson-check__feedback" data-lesson-check-target="feedback" style="display:none;"></div>
+
+  <%# Explanation (shown after answering) %>
+  <% if section[:explanation].present? %>
+    <div class="lesson-check-explanation" data-lesson-check-target="explanation" style="display:none; margin-top:1rem; padding:1rem; border-radius:11px; background:var(--color-tint); border:1px solid var(--color-border-subtle);">
+      <p style="font-size:0.8125rem; font-weight:500; color:var(--color-sub); margin:0;">
+        <strong style="color:var(--color-txt);">Explicación:</strong> <%= section[:explanation] %>
+      </p>
+    </div>
+  <% end %>
+</div>
