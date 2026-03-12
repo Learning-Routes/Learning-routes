@@ -144,6 +144,10 @@ export default class extends Controller {
     this._timers.forEach(id => clearTimeout(id))
     this._timers = []
 
+    // Clear named timers
+    clearTimeout(this._companionBubbleTimer)
+    clearTimeout(this._toastTimer)
+
     if (this.hasSectionsContainerTarget) {
       this.sectionsContainerTarget.removeEventListener("touchstart", this._onTouchStart)
       this.sectionsContainerTarget.removeEventListener("touchend", this._onTouchEnd)
@@ -486,14 +490,20 @@ export default class extends Controller {
 
   _getSectionType(section) {
     if (!section) return "concept"
+    // Prefer data attribute (set in HTML template)
+    if (section.dataset.sectionType) return section.dataset.sectionType
     if (section.dataset.lessonCheck === "true") return "check"
-    // Check for data attributes or class hints
-    const inner = section.innerHTML || ""
-    if (inner.includes("section-audio") || inner.includes("audio-player")) return "audio"
-    if (inner.includes("section-visual") || inner.includes("lesson-section-badge--visual")) return "visual"
-    if (inner.includes("section-example") || inner.includes("lesson-section-badge--example")) return "example"
-    if (inner.includes("section-tip") || inner.includes("lesson-section-badge--tip")) return "tip"
-    if (inner.includes("section-summary") || inner.includes("lesson-section-badge--summary")) return "summary"
+    // Fallback: check for badge class hints via querySelector (avoids full innerHTML scan)
+    const badge = section.querySelector(".lesson-section-badge")
+    if (badge) {
+      const cls = badge.className || ""
+      if (cls.includes("--audio")) return "audio"
+      if (cls.includes("--visual")) return "visual"
+      if (cls.includes("--example")) return "example"
+      if (cls.includes("--tip")) return "tip"
+      if (cls.includes("--summary")) return "summary"
+      if (cls.includes("--challenge")) return "check"
+    }
     return "concept"
   }
 

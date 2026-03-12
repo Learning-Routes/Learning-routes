@@ -74,6 +74,7 @@
       <% @sections.each_with_index do |section, i| %>
         <div class="lesson-section"
              data-interactive-lesson-target="section"
+             data-section-type="<%= section[:type] %>"
              <% if section[:type] == "check" %>
                data-lesson-check="true"
              <% end %>
@@ -104,7 +105,7 @@
                 data-action="click->interactive-lesson#nextSection"
                 class="lesson-btn--primary"
                 style="flex:1;">
-          Continuar
+          <span data-interactive-lesson-target="continueBtnText">Continuar</span>
         </button>
       </div>
     </div>

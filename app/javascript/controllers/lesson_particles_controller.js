@@ -10,8 +10,14 @@ export default class extends Controller {
   static targets = ["container"]
 
   connect() {
+    this._particles = []
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return
     this._spawnParticles()
+  }
+
+  disconnect() {
+    this._particles.forEach(p => p.remove())
+    this._particles = []
   }
 
   _spawnParticles() {
@@ -35,6 +41,7 @@ export default class extends Controller {
         animation-delay:${Math.random() * 12}s;
       `
       container.appendChild(particle)
+      this._particles.push(particle)
     }
   }
 }
