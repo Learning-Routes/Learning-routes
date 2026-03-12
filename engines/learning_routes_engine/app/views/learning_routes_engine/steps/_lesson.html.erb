@@ -1,21 +1,66 @@
 <% if @content_generating %>
   <%= render "loading_skeleton" %>
 <% elsif @sections.present? %>
+  <% engagement = current_user&.user_engagement %>
+  <% quiz_count = @sections.count { |s| s[:type] == "check" } %>
+
+  <%# ── Floating particles background ── %>
+  <div class="lesson-particles" data-controller="lesson-particles" data-lesson-particles-target="container" aria-hidden="true"></div>
+
   <%# ── Duolingo-style section navigation ── %>
   <div data-controller="interactive-lesson"
        data-interactive-lesson-total-sections-value="<%= @sections.size %>"
        data-interactive-lesson-step-id-value="<%= @step.id %>"
        data-interactive-lesson-route-id-value="<%= @route.id %>"
-       data-interactive-lesson-complete-url-value="<%= complete_route_step_path(@route, @step) %>">
+       data-interactive-lesson-complete-url-value="<%= complete_route_step_path(@route, @step) %>"
+       data-interactive-lesson-hearts-value="<%= quiz_count.clamp(3, 5) %>"
+       data-interactive-lesson-user-level-value="<%= engagement&.current_level || 1 %>"
+       data-interactive-lesson-user-xp-pct-value="<%= engagement&.level_progress_percentage || 0 %>"
+       data-interactive-lesson-user-streak-value="<%= engagement&.current_streak || 0 %>">
 
-    <%# ── Sticky progress bar ── %>
-    <div class="lesson-nav-progress" data-interactive-lesson-target="progressBar">
-      <div style="display:flex; align-items:center; gap:0.375rem; flex:1;">
+    <%# ── Sticky HUD: progress + hearts + streak + XP bar ── %>
+    <div class="lesson-hud">
+      <%# Progress bar %>
+      <div class="lesson-hud-progress" data-interactive-lesson-target="progressBar">
         <% @sections.each_with_index do |_sec, i| %>
           <div class="lesson-progress-segment" data-interactive-lesson-target="progressSegment"></div>
         <% end %>
       </div>
-      <span class="lesson-progress-counter" data-interactive-lesson-target="sectionCounter">1/<%= @sections.size %></span>
+
+      <%# Stats row %>
+      <div class="lesson-hud-stats">
+        <%# Section counter %>
+        <span class="lesson-progress-counter" data-interactive-lesson-target="sectionCounter">1/<%= @sections.size %></span>
+
+        <div style="flex:1;"></div>
+
+        <%# Hearts %>
+        <% if quiz_count > 0 %>
+          <div class="lesson-hud-hearts" data-interactive-lesson-target="heartsWrap">
+            <svg width="16" height="16" viewBox="0 0 20 20" fill="#EF4444"><path d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z"/></svg>
+            <span data-interactive-lesson-target="heartsCount"><%= quiz_count.clamp(3, 5) %></span>
+          </div>
+        <% end %>
+
+        <%# Streak %>
+        <% if engagement&.current_streak.to_i > 0 %>
+          <div class="lesson-hud-streak">
+            <span class="lesson-hud-streak-fire">🔥</span>
+            <span><%= engagement.current_streak %></span>
+          </div>
+        <% end %>
+
+        <%# XP bar %>
+        <div class="lesson-hud-xp" data-interactive-lesson-target="xpBarWrap">
+          <div class="lesson-hud-xp-track">
+            <div class="lesson-hud-xp-fill" data-interactive-lesson-target="xpFill"
+                 style="width:<%= engagement&.level_progress_percentage || 0 %>%;"></div>
+          </div>
+          <div class="lesson-hud-xp-level" data-interactive-lesson-target="xpLevel">
+            <%= engagement&.current_level || 1 %>
+          </div>
+        </div>
+      </div>
     </div>
 
     <%# ── Step title ── %>
@@ -33,9 +78,16 @@
                data-lesson-check="true"
              <% end %>
              style="<%= i > 0 ? 'display:none;' : '' %>">
-          <%= render "learning_routes_engine/steps/lesson_sections/#{section[:type]}", section: section, step: @step, index: i %>
+          <% section_type = %w[concept example check visual summary audio audio_explainer tip].include?(section[:type].to_s) ? section[:type] : "concept" %>
+          <%= render "learning_routes_engine/steps/lesson_sections/#{section_type}", section: section, step: @step, index: i %>
         </div>
       <% end %>
+    </div>
+
+    <%# ── Companion (floating helper — not an owl!) ── %>
+    <div class="lesson-companion" data-interactive-lesson-target="companion" data-action="click->interactive-lesson#companionTap">
+      <div class="lesson-companion-body">🚀</div>
+      <div class="lesson-companion-bubble" data-interactive-lesson-target="companionBubble"></div>
     </div>
 
     <%# ── Fixed continue button ── %>
@@ -56,6 +108,21 @@
         </button>
       </div>
     </div>
+
+    <%# ── Level up overlay ── %>
+    <div class="lesson-lvlup-overlay" data-interactive-lesson-target="levelUpOverlay" style="display:none;">
+      <div class="lesson-lvlup-ring">
+        <div class="lesson-lvlup-inner">
+          <span class="lesson-lvlup-num" data-interactive-lesson-target="levelUpNum"></span>
+          <span class="lesson-lvlup-label mono">NIVEL</span>
+        </div>
+      </div>
+      <h3 class="lesson-lvlup-title">¡Subiste de nivel!</h3>
+      <p class="lesson-lvlup-sub">Sigue así, vas increíble</p>
+    </div>
+
+    <%# ── XP toast ── %>
+    <div class="lesson-toast" data-interactive-lesson-target="toast" aria-live="polite"></div>
 
     <%# ── AI interaction buttons (collapsed at bottom) ── %>
     <div style="max-width:48rem; margin:0 auto; padding:0 1rem;">

@@ -34,7 +34,18 @@ export default class extends Controller {
     "continueBtn",
     "continueBtnText",
     "backBtn",
-    "progressSegment"
+    "progressSegment",
+    // v2 targets
+    "heartsWrap",
+    "heartsCount",
+    "companion",
+    "companionBubble",
+    "levelUpOverlay",
+    "levelUpNum",
+    "toast",
+    "xpBarWrap",
+    "xpFill",
+    "xpLevel"
   ]
 
   static values = {
@@ -42,7 +53,12 @@ export default class extends Controller {
     routeId: String,
     totalSections: Number,
     currentSection: { type: Number, default: 0 },
-    completeUrl: String
+    completeUrl: String,
+    // v2 values
+    hearts: { type: Number, default: 5 },
+    userLevel: { type: Number, default: 1 },
+    userXpPct: { type: Number, default: 0 },
+    userStreak: { type: Number, default: 0 }
   }
 
   // ── Lifecycle ──────────────────────────────────────────────────
@@ -100,6 +116,28 @@ export default class extends Controller {
     this.element.addEventListener("quiz:completed", this._onQuizCompleted)
     this.element.addEventListener("quiz:correct", this._onQuizCorrect)
     this.element.addEventListener("lesson-check:answered", this._onLegacyCheckAnswered)
+
+    // v2: listen for wrong answers (hearts system)
+    this._onQuizWrong = this._handleQuizWrong.bind(this)
+    this.element.addEventListener("quiz:wrong", this._onQuizWrong)
+
+    // v2: hearts tracking
+    this._currentHearts = this.heartsValue
+
+    // v2: companion messages per section type
+    this._companionMessages = {
+      concept: ["¡A aprender! 🧠", "Esto es clave 💡", "Concéntrate aquí 📖"],
+      check: ["¡Tú puedes! 💪", "Piensa bien... 🤔", "¡Demuestra lo que sabes!"],
+      example: ["Ejemplo real 👨‍💻", "Así se aplica 🔧", "¡Practica! 🚀"],
+      audio: ["¡Hora de escuchar! 🎧", "Relájate y escucha 🎵"],
+      visual: ["Mira esto 👀", "Visual > texto 📊"],
+      summary: ["¡Casi terminas! 🏁", "Buen resumen 📝"],
+      tip: ["Pro tip 💎", "Recuerda esto ⭐"]
+    }
+    this._companionIndex = 0
+
+    // v2: show initial companion message after a beat
+    this._scheduleCompanionGreeting()
   }
 
   disconnect() {
@@ -114,6 +152,7 @@ export default class extends Controller {
     this.element.removeEventListener("quiz:completed", this._onQuizCompleted)
     this.element.removeEventListener("quiz:correct", this._onQuizCorrect)
     this.element.removeEventListener("lesson-check:answered", this._onLegacyCheckAnswered)
+    this.element.removeEventListener("quiz:wrong", this._onQuizWrong)
   }
 
   // ── Actions ────────────────────────────────────────────────────
@@ -207,6 +246,9 @@ export default class extends Controller {
           this._detectQuizLock(index)
           this.updateUI()
           this._animating = false
+
+          // v2: companion message for new section type
+          this._showCompanionForSection(incoming)
         }, 400)
 
         this._timers.push(timer)
@@ -313,8 +355,190 @@ export default class extends Controller {
 
   async _handleQuizCorrect(event) {
     const xp = event.detail?.xp || 15
+    const bonus = event.detail?.bonus || false
     this._showXpFloat(xp)
     this._fireQuizConfetti()
+
+    // v2: animate HUD XP bar
+    this._animateHudXp(xp)
+
+    // v2: companion reaction
+    if (bonus) {
+      this._showCompanionMessage("¡VELOCIDAD! ⚡")
+    } else {
+      this._showCompanionMessage("¡Correcto! 🎉")
+    }
+
+    // v2: toast for bonus
+    if (bonus) {
+      this._showToast("⚡ +5 XP de velocidad")
+    }
+  }
+
+  // ── v2: Hearts System ───────────────────────────────────────────
+
+  _handleQuizWrong(event) {
+    this._currentHearts = Math.max(0, this._currentHearts - 1)
+    this._updateHeartsDisplay()
+
+    // Companion reacts
+    this._showCompanionMessage(this._currentHearts > 0 ? "¡No te rindas! 💪" : "Sin vidas... 😢")
+
+    // Check for game over (0 hearts)
+    if (this._currentHearts <= 0) {
+      this._showToast("¡Sin vidas! Pero puedes seguir 😅")
+    }
+  }
+
+  _updateHeartsDisplay() {
+    if (!this.hasHeartsCountTarget) return
+    this.heartsCountTarget.textContent = this._currentHearts
+
+    // Shake animation
+    if (this.hasHeartsWrapTarget) {
+      this.heartsWrapTarget.classList.add("lesson-hearts--shake")
+      const timer = setTimeout(() => {
+        this.heartsWrapTarget.classList.remove("lesson-hearts--shake")
+      }, 500)
+      this._timers.push(timer)
+
+      // Red pulse when low
+      if (this._currentHearts <= 1) {
+        this.heartsWrapTarget.classList.add("lesson-hearts--critical")
+      }
+    }
+  }
+
+  // ── v2: HUD XP Bar ─────────────────────────────────────────────
+
+  _animateHudXp(xpGained) {
+    if (!this.hasXpFillTarget) return
+
+    // Calculate new percentage (approximate — server is source of truth)
+    const currentPct = this.userXpPctValue || 0
+    // Each level ~100*N^1.5 XP, rough increment per XP
+    const pctIncrement = Math.min(xpGained * 1.5, 100 - currentPct)
+    const newPct = Math.min(currentPct + pctIncrement, 100)
+    this.userXpPctValue = newPct
+
+    this.xpFillTarget.style.transition = "width 0.8s cubic-bezier(0.34,1.56,0.64,1)"
+    this.xpFillTarget.style.width = `${newPct}%`
+
+    // Pulse the XP bar
+    if (this.hasXpBarWrapTarget) {
+      this.xpBarWrapTarget.classList.add("lesson-xp--pulse")
+      const timer = setTimeout(() => this.xpBarWrapTarget.classList.remove("lesson-xp--pulse"), 800)
+      this._timers.push(timer)
+    }
+  }
+
+  // ── v2: Companion ───────────────────────────────────────────────
+
+  companionTap() {
+    const section = this.sectionTargets[this.currentSectionValue]
+    const type = this._getSectionType(section)
+    const msgs = this._companionMessages[type] || this._companionMessages.concept
+    const msg = msgs[this._companionIndex % msgs.length]
+    this._companionIndex++
+    this._showCompanionMessage(msg)
+
+    // Little bounce on tap
+    if (this.hasCompanionTarget) {
+      this.companionTarget.style.transform = "scale(1.2)"
+      const timer = setTimeout(() => {
+        this.companionTarget.style.transform = ""
+      }, 200)
+      this._timers.push(timer)
+    }
+  }
+
+  _scheduleCompanionGreeting() {
+    if (!this.hasCompanionTarget) return
+    const timer = setTimeout(() => {
+      this._showCompanionMessage("¡Vamos a aprender! 🚀")
+    }, 1500)
+    this._timers.push(timer)
+  }
+
+  _showCompanionMessage(msg) {
+    if (!this.hasCompanionBubbleTarget) return
+
+    const bubble = this.companionBubbleTarget
+    bubble.textContent = msg
+    bubble.classList.add("lesson-companion-bubble--visible")
+
+    // Auto-hide after 3 seconds
+    if (this._companionBubbleTimer) clearTimeout(this._companionBubbleTimer)
+    this._companionBubbleTimer = setTimeout(() => {
+      bubble.classList.remove("lesson-companion-bubble--visible")
+    }, 3000)
+    this._timers.push(this._companionBubbleTimer)
+  }
+
+  _showCompanionForSection(section) {
+    const type = this._getSectionType(section)
+    const msgs = this._companionMessages[type] || this._companionMessages.concept
+    const msg = msgs[Math.floor(Math.random() * msgs.length)]
+    // Small delay so it doesn't overlap with the transition
+    const timer = setTimeout(() => this._showCompanionMessage(msg), 600)
+    this._timers.push(timer)
+  }
+
+  _getSectionType(section) {
+    if (!section) return "concept"
+    if (section.dataset.lessonCheck === "true") return "check"
+    // Check for data attributes or class hints
+    const inner = section.innerHTML || ""
+    if (inner.includes("section-audio") || inner.includes("audio-player")) return "audio"
+    if (inner.includes("section-visual") || inner.includes("lesson-section-badge--visual")) return "visual"
+    if (inner.includes("section-example") || inner.includes("lesson-section-badge--example")) return "example"
+    if (inner.includes("section-tip") || inner.includes("lesson-section-badge--tip")) return "tip"
+    if (inner.includes("section-summary") || inner.includes("lesson-section-badge--summary")) return "summary"
+    return "concept"
+  }
+
+  // ── v2: Toast ───────────────────────────────────────────────────
+
+  _showToast(text) {
+    if (!this.hasToastTarget) return
+
+    const toast = this.toastTarget
+    toast.textContent = text
+    toast.classList.add("lesson-toast--visible")
+
+    if (this._toastTimer) clearTimeout(this._toastTimer)
+    this._toastTimer = setTimeout(() => {
+      toast.classList.remove("lesson-toast--visible")
+    }, 2500)
+    this._timers.push(this._toastTimer)
+  }
+
+  // ── v2: Level-Up Overlay ────────────────────────────────────────
+
+  _showLevelUpOverlay(level) {
+    if (!this.hasLevelUpOverlayTarget) return
+
+    if (this.hasLevelUpNumTarget) {
+      this.levelUpNumTarget.textContent = level
+    }
+
+    this.levelUpOverlayTarget.style.display = ""
+    this.levelUpOverlayTarget.classList.add("lesson-lvlup--active")
+
+    // Update HUD level badge
+    if (this.hasXpLevelTarget) {
+      this.xpLevelTarget.textContent = level
+    }
+
+    // Auto-dismiss after 3 seconds
+    const timer = setTimeout(() => {
+      this.levelUpOverlayTarget.classList.remove("lesson-lvlup--active")
+      const hide = setTimeout(() => {
+        this.levelUpOverlayTarget.style.display = "none"
+      }, 500)
+      this._timers.push(hide)
+    }, 3000)
+    this._timers.push(timer)
   }
 
   // Handle legacy lesson-check:answered events (fallback for sections without lesson-quiz)
@@ -462,9 +686,12 @@ export default class extends Controller {
       current.setAttribute("aria-hidden", "true")
     }
 
-    // Hide continue bar
+    // Hide continue bar & companion
     if (this.hasContinueBarTarget) {
       this.continueBarTarget.style.display = "none"
+    }
+    if (this.hasCompanionTarget) {
+      this.companionTarget.style.display = "none"
     }
 
     const routeUrl = data?.route_url || this._routeOverviewUrl()
@@ -476,43 +703,65 @@ export default class extends Controller {
     const streak = data?.streak || 0
     const routeCompleted = data?.route_completed || false
 
+    // Compute lesson stats
+    const totalTime = Math.round((Date.now() - this._lessonStartTime) / 1000)
+    const minutes = Math.floor(totalTime / 60)
+    const seconds = totalTime % 60
+    const timeStr = minutes > 0 ? `${minutes}m ${seconds}s` : `${seconds}s`
+    const quizScore = this._quizTotal > 0
+      ? `${this._quizCorrect}/${this._quizTotal}`
+      : null
+    const quizPct = this._quizTotal > 0
+      ? Math.round((this._quizCorrect / this._quizTotal) * 100)
+      : null
+    const perfect = this._quizTotal > 0 && this._quizCorrect === this._quizTotal
+
     // Build celebration screen
     const screen = document.createElement("div")
     screen.className = "lesson-completion-screen"
 
-    let xpHtml = ""
-    if (xpGained > 0) {
-      xpHtml = `
-        <div class="lesson-completion-xp">
-          <span class="lesson-completion-xp-badge">+${xpGained} XP</span>
-        </div>
-      `
-    }
-
-    let levelHtml = ""
-    if (leveledUp && newLevel > 0) {
-      levelHtml = `
-        <div class="lesson-completion-level">
-          <span class="lesson-completion-level-label">NIVEL</span>
-          <span class="lesson-completion-level-number">${newLevel}</span>
-        </div>
-      `
-    }
-
-    let streakHtml = ""
-    if (streak > 0) {
-      streakHtml = `
-        <div class="lesson-completion-streak">
-          <span class="lesson-completion-streak-flame">\uD83D\uDD25</span>
-          <span class="lesson-completion-streak-count">${streak} ${streak === 1 ? "día" : "días"}</span>
-        </div>
-      `
-    }
-
     const heading = routeCompleted ? "¡Ruta completada!" : "¡Lección completada!"
     const sub = routeCompleted
       ? "Has completado toda la ruta de aprendizaje"
-      : (xpGained > 0 ? "Has ganado XP y desbloqueado el siguiente paso" : "Has completado esta lección")
+      : (perfect ? "¡Perfecto! Sin errores 🏆" : "¡Sigue así, vas increíble!")
+
+    // Stat cards
+    let statsHtml = `<div class="lesson-completion-stats">`
+    if (xpGained > 0) {
+      statsHtml += `
+        <div class="lesson-completion-stat" style="--delay:0.1s">
+          <div class="lesson-completion-stat-icon" style="background:linear-gradient(135deg,#F5C842,#B09848);">⭐</div>
+          <div class="lesson-completion-stat-value">+${xpGained}</div>
+          <div class="lesson-completion-stat-label">XP ganados</div>
+        </div>
+      `
+    }
+    if (quizScore) {
+      statsHtml += `
+        <div class="lesson-completion-stat" style="--delay:0.2s">
+          <div class="lesson-completion-stat-icon" style="background:linear-gradient(135deg,#6E9BC8,#5B7FC8);">✓</div>
+          <div class="lesson-completion-stat-value">${quizPct}%</div>
+          <div class="lesson-completion-stat-label">${quizScore} correctas</div>
+        </div>
+      `
+    }
+    if (streak > 0) {
+      statsHtml += `
+        <div class="lesson-completion-stat" style="--delay:0.3s">
+          <div class="lesson-completion-stat-icon" style="background:linear-gradient(135deg,#F59E0B,#D97706);">🔥</div>
+          <div class="lesson-completion-stat-value">${streak}</div>
+          <div class="lesson-completion-stat-label">${streak === 1 ? "día" : "días"} de racha</div>
+        </div>
+      `
+    }
+    statsHtml += `
+      <div class="lesson-completion-stat" style="--delay:0.4s">
+        <div class="lesson-completion-stat-icon" style="background:linear-gradient(135deg,#8B80C4,#6E60B4);">⏱</div>
+        <div class="lesson-completion-stat-value">${timeStr}</div>
+        <div class="lesson-completion-stat-label">Tiempo total</div>
+      </div>
+    `
+    statsHtml += `</div>`
 
     let btnHtml
     if (nextUrl && !routeCompleted) {
@@ -543,9 +792,7 @@ export default class extends Controller {
         </div>
         <h2 class="lesson-completion-heading">${heading}</h2>
         <p class="lesson-completion-sub">${sub}</p>
-        ${xpHtml}
-        ${levelHtml}
-        ${streakHtml}
+        ${statsHtml}
         <div class="lesson-completion-actions">
           ${btnHtml}
         </div>
@@ -562,8 +809,12 @@ export default class extends Controller {
     // Animate navbar engagement bar if present
     this._animateNavbarXp(xpGained)
 
-    // Gold flash for level up or route complete
-    if (leveledUp || routeCompleted) {
+    // v2: Level-up overlay (shown AFTER confetti with delay)
+    if (leveledUp && newLevel > 0) {
+      this._goldFlash()
+      const timer = setTimeout(() => this._showLevelUpOverlay(newLevel), 1200)
+      this._timers.push(timer)
+    } else if (routeCompleted) {
       this._goldFlash()
     }
   }

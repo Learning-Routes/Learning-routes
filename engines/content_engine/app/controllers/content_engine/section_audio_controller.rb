@@ -15,6 +15,14 @@ module ContentEngine
         return
       end
 
+      # Return cached audio if already generated
+      cached = SectionAudioGenerator.cached(@step.id, section_index)
+      if cached
+        show_url = "/content/section_audio/#{@step.id}/#{section_index}/show"
+        render json: { status: "ready", audio_url: show_url, duration: cached[:duration] }
+        return
+      end
+
       locale = @step.learning_route&.locale || "en"
 
       SectionAudioGenerationJob.perform_later(

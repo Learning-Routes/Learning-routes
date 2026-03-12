@@ -2,17 +2,32 @@
 <div style="max-width:48rem; margin:0 auto; padding:2rem 1rem;"
      data-controller="lesson-check lesson-quiz"
      data-lesson-quiz-correct-value="<%= correct_index %>"
-     data-lesson-quiz-xp-value="15">
-  <%# Badge %>
-  <span class="lesson-section-badge lesson-section-badge--check">
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-    <span>COMPRUEBA TU CONOCIMIENTO</span>
+     data-lesson-quiz-xp-value="15"
+     data-lesson-quiz-timed-value="true"
+     data-lesson-quiz-timer-seconds-value="15">
+
+  <%# Challenge badge (replaces normal check badge) %>
+  <span class="lesson-section-badge lesson-section-badge--challenge">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+    <span>DESAFÍO RÁPIDO</span>
   </span>
 
-  <%# Question %>
-  <p style="font-size:1.125rem; font-weight:600; color:var(--color-txt); margin:1rem 0 1.25rem; line-height:1.5;">
-    <%= section[:question] %>
-  </p>
+  <%# Challenge header with question + timer %>
+  <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:1rem; margin:0.75rem 0 0.5rem;">
+    <p style="font-size:1.125rem; font-weight:600; color:var(--color-txt); line-height:1.5; flex:1; margin:0;">
+      <%= section[:question] %>
+    </p>
+    <%# Timer %>
+    <div class="quiz-timer" data-lesson-quiz-target="timerWrap">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      <span data-lesson-quiz-target="timerDisplay" class="mono">15s</span>
+    </div>
+  </div>
+
+  <%# Speed bonus tag %>
+  <div style="margin-bottom:1rem;">
+    <span class="quiz-bonus-tag" data-lesson-quiz-target="bonusTag">⚡ +5 XP BONUS si respondes en &lt;10s</span>
+  </div>
 
   <%# Options %>
   <div class="lesson-check__options" data-lesson-check-target="options" style="position:relative;">
@@ -21,6 +36,7 @@
       <button class="lesson-check__option lesson-nav-check-option"
               data-action="click->lesson-check#select click->lesson-quiz#selectOption"
               data-correct="<%= opt[:correct] %>"
+              data-option-index="<%= i %>"
               data-lesson-check-target="option"
               data-lesson-quiz-target="option">
         <span class="lesson-check__letter"><%= letter %></span>
