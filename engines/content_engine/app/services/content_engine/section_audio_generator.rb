@@ -34,14 +34,25 @@ module ContentEngine
 
     def self.cached(step_id, section_index)
       result = Rails.cache.read(cache_key(step_id, section_index))
-      return result if result
+      if result
+        # Validate the cached file still exists and isn't corrupted
+        file_path = Rails.root.join(result[:audio_url].to_s.delete_prefix("/"))
+        if File.exist?(file_path) && File.size(file_path) > 1024
+          return result
+        else
+          # Stale cache entry — file missing or corrupted
+          Rails.cache.delete(cache_key(step_id, section_index))
+        end
+      end
 
       # Fallback: check disk for existing audio files (cache may have been cleared on restart)
       dir = Rails.root.join("storage", "audio", "sections")
       pattern = dir.join("section_#{step_id}_#{section_index}_*.mp3")
       files = Dir.glob(pattern).sort
-      if files.any?
-        file_path = files.last
+      # Only use files > 1KB (filter out corrupted files from old HTTParty bug)
+      valid_files = files.select { |f| File.size(f) > 1024 }
+      if valid_files.any?
+        file_path = valid_files.last
         audio_url = "/storage/audio/sections/#{File.basename(file_path)}"
         word_count = 150 # rough estimate since we don't have text
         duration = (word_count / 150.0 * 60).round(1)
