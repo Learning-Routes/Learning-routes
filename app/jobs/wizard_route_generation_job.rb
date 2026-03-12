@@ -5,9 +5,15 @@ class WizardRouteGenerationJob < ApplicationJob
 
   def perform(route_request_id)
     request = RouteRequest.find(route_request_id)
-    return if request.completed?
 
-    request.update!(status: "generating")
+    # If request is already completed AND its route still exists, skip
+    if request.completed?
+      return if request.learning_route.present?
+      # Route was deleted — allow re-generation
+      request.update_column(:status, "generating")
+    else
+      request.update!(status: "generating")
+    end
 
     begin
       user_locale = request.route_locale.presence || request.user.locale || "es"
