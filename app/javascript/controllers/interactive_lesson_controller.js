@@ -916,7 +916,9 @@ export default class extends Controller {
     const diffX = this._touchStartX - endX
     const diffY = Math.abs(this._touchStartY - endY)
 
-    if (Math.abs(diffX) > 50 && Math.abs(diffX) > diffY) {
+    // Threshold 80px prevents accidental swipes while staying responsive
+    // (research recommends 150px but that's too much on small phones)
+    if (Math.abs(diffX) > 80 && Math.abs(diffX) > diffY * 1.5) {
       if (diffX > 0) {
         this.nextSection()
       } else {

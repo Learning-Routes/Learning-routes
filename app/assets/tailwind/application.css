@@ -1039,9 +1039,16 @@ html[data-theme="dark"] .learning-nav {
 }
 
 .lesson-section {
-  will-change: transform, opacity;
+  /* will-change only on transitioning sections to save GPU memory.
+     See: https://www.smashingmagazine.com/2016/12/gpu-animation-doing-it-right/ */
   transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1),
               opacity 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.lesson-section--exit-left,
+.lesson-section--exit-right,
+.lesson-section--enter-left,
+.lesson-section--enter-right {
+  will-change: transform, opacity;
 }
 
 /* Exit left (going forward) */
