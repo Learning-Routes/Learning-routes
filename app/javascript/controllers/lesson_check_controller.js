@@ -6,8 +6,39 @@ import { Controller } from "@hotwired/stimulus"
 export default class extends Controller {
   static targets = ["options", "option", "feedback", "explanation"]
 
+  connect() {
+    this._answered = false
+    this._timers = []
+  }
+
   disconnect() {
     if (this._timers) this._timers.forEach(t => clearTimeout(t))
+  }
+
+  // Called by interactive-lesson when this section becomes visible
+  activate() {
+    // Nothing to start here, but resets if needed
+  }
+
+  // Reset state for revisiting
+  reset() {
+    this._answered = false
+    if (this._timers) this._timers.forEach(t => clearTimeout(t))
+    this._timers = []
+
+    this.optionTargets.forEach(opt => {
+      opt.style.pointerEvents = ""
+      opt.style.opacity = ""
+      opt.classList.remove("lesson-check__option--correct", "lesson-check__option--wrong")
+      opt.style.boxShadow = ""
+    })
+
+    if (this.hasFeedbackTarget) {
+      this.feedbackTarget.style.display = "none"
+    }
+    if (this.hasExplanationTarget) {
+      this.explanationTarget.style.display = "none"
+    }
   }
 
   select(event) {

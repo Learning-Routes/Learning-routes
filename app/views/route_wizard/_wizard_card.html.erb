@@ -103,11 +103,25 @@
         <% end %>
       </div>
 
+      <%# Topic detail — contextual follow-up question (shown when topics are selected) %>
+      <div data-route-wizard-target="topicDetailWrap" style="display:none; margin-bottom:16px; animation:wizardScaleIn 0.3s cubic-bezier(0.16,1,0.3,1) both;">
+        <div style="display:flex; align-items:center; gap:6px; margin-bottom:6px;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#5BA880" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          <span data-route-wizard-target="topicDetailLabel" style="font-family:'DM Sans',sans-serif; font-weight:600; font-size:0.72rem; color:var(--color-txt, #1C1812);"><%= t("wizard.step0.topic_detail_label") %></span>
+        </div>
+        <p style="font-family:'DM Sans',sans-serif; font-weight:400; font-size:0.62rem; color:var(--color-muted, #9E9587); margin:0 0 8px;"><%= t("wizard.step0.topic_detail_hint") %></p>
+        <div style="display:flex; align-items:center; gap:10px; padding:12px 14px; border-radius:12px; background:var(--color-card, #FDFCFA); border:1.5px solid rgba(91,168,128,0.2); transition:border-color 0.3s;">
+          <input type="text" name="route_request[custom_topic]" data-route-wizard-target="topicDetailInput"
+                 data-action="input->route-wizard#updateTopicDetail keydown.enter->route-wizard#preventEnterSubmit"
+                 style="flex:1; border:none; outline:none; background:none; font-family:'DM Sans',sans-serif; font-size:0.8rem; color:var(--color-txt, #1C1812);" autocomplete="off">
+        </div>
+      </div>
+
       <div>
         <div style="font-family:'DM Sans',sans-serif; font-weight:600; font-size:0.7rem; color:var(--color-txt, #1C1812); margin-bottom:6px;"><%= t("wizard.step0.custom_label") %></div>
         <div style="display:flex; align-items:center; gap:10px; padding:10px 14px; border-radius:10px; background:var(--color-card, #FDFCFA); border:1.5px solid var(--color-faint, rgba(28,24,18,0.06)); transition:border-color 0.3s;" data-route-wizard-target="customInputWrap">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--color-muted, #9E9587)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="opacity:0.5; flex-shrink:0;"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-          <input type="text" name="route_request[custom_topic]" placeholder="<%= t("wizard.step0.custom_placeholder") %>" data-action="input->route-wizard#updateCustomTopic keydown.enter->route-wizard#preventEnterSubmit" data-route-wizard-target="customInput" style="flex:1; border:none; outline:none; background:none; font-family:'DM Sans',sans-serif; font-size:0.8rem; color:var(--color-txt, #1C1812);" autocomplete="off">
+          <input type="text" placeholder="<%= t("wizard.step0.custom_placeholder") %>" data-action="input->route-wizard#updateCustomTopic keydown.enter->route-wizard#preventEnterSubmit" data-route-wizard-target="customInput" style="flex:1; border:none; outline:none; background:none; font-family:'DM Sans',sans-serif; font-size:0.8rem; color:var(--color-txt, #1C1812);" autocomplete="off">
         </div>
       </div>
 

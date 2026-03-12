@@ -7,6 +7,7 @@ export default class extends Controller {
     "topicInputs", "goalInputs", "levelInput", "paceInput",
     "hoursInput", "sessionInput", "hoursGrid", "sessionGrid",
     "customInput", "customInputWrap", "topicGrid", "errorBanner",
+    "topicDetailWrap", "topicDetailLabel", "topicDetailInput",
     "node0", "node1", "node2", "node3", "node4", "node5",
     "line0", "line1", "line2", "line3", "line4",
     "styleAnswer1", "styleAnswer2", "styleAnswer3",
@@ -78,6 +79,23 @@ export default class extends Controller {
       return
     }
     this._allowSubmit = false
+
+    // Combine topic detail + custom topic into one field for submission
+    this._combineCustomTopicValues()
+  }
+
+  _combineCustomTopicValues() {
+    const detailVal = this.hasTopicDetailInputTarget ? this.topicDetailInputTarget.value.trim() : ""
+    const customVal = this.hasCustomInputTarget ? this.customInputTarget.value.trim() : ""
+
+    if (detailVal && customVal) {
+      this.topicDetailInputTarget.value = `${detailVal} — ${customVal}`
+    } else if (customVal && !detailVal) {
+      // If only custom text, inject it
+      if (this.hasTopicDetailInputTarget) {
+        this.topicDetailInputTarget.value = customVal
+      }
+    }
   }
 
   preventEnterSubmit(event) {
@@ -144,7 +162,41 @@ export default class extends Controller {
     }
 
     this.syncTopicInputs()
+    this._updateTopicDetailPrompt()
     this.validateStep()
+  }
+
+  updateTopicDetail() {
+    // Validate whenever the topic detail input changes
+    this.validateStep()
+  }
+
+  _updateTopicDetailPrompt() {
+    if (!this.hasTopicDetailWrapTarget) return
+
+    const topics = Array.from(this.selectedTopics)
+
+    if (topics.length === 0) {
+      this.topicDetailWrapTarget.style.display = "none"
+      if (this.hasTopicDetailInputTarget) this.topicDetailInputTarget.value = ""
+      return
+    }
+
+    this.topicDetailWrapTarget.style.display = ""
+
+    // Get contextual placeholder based on selected topic(s)
+    const prompts = this.i18nValue.topic_detail_prompts || {}
+    let placeholder
+
+    if (topics.length === 1) {
+      placeholder = prompts[topics[0]] || prompts.multiple || ""
+    } else {
+      placeholder = prompts.multiple || ""
+    }
+
+    if (this.hasTopicDetailInputTarget) {
+      this.topicDetailInputTarget.placeholder = placeholder
+    }
   }
 
   updateCustomTopic() {
@@ -577,7 +629,12 @@ export default class extends Controller {
       case 0: {
         const hasTopics = this.selectedTopics.size > 0
         const hasCustom = this.hasCustomInputTarget && this.customInputTarget.value.trim().length > 0
-        return hasTopics || hasCustom
+        // If topics are selected, require topic detail for specificity
+        if (hasTopics) {
+          const hasDetail = this.hasTopicDetailInputTarget && this.topicDetailInputTarget.value.trim().length > 0
+          return hasDetail
+        }
+        return hasCustom
       }
       case 1:
         return this.selectedLevel !== ""

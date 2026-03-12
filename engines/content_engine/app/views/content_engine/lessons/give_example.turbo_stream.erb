@@ -1,15 +1,22 @@
 <% if @error %>
   <%= turbo_stream.append "ai_supplementary_#{@step.id}" do %>
-    <div class="bg-red-900/20 border border-red-700/30 rounded-xl p-4 text-sm text-red-300">
+    <div style="background:rgba(239,68,68,0.06); border:1px solid rgba(239,68,68,0.15); border-radius:12px; padding:1rem; font-size:0.875rem; color:var(--color-sub);">
       <%= @error %>
     </div>
   <% end %>
 <% else %>
   <%= turbo_stream.append "ai_supplementary_#{@step.id}" do %>
-    <div class="rounded-xl p-5 lesson-content" style="background:var(--color-card); border:1px solid rgba(99,102,241,0.2);" data-controller="math-renderer" data-math-renderer-target="content">
-      <div class="flex items-center gap-2 mb-3">
-        <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium bg-indigo-900/50 text-indigo-300"><%= t("content_actions.practical_example") %></span>
+    <div style="border-radius:14px; padding:1.25rem; background:var(--color-card); border:1px solid var(--color-border-subtle, rgba(99,102,241,0.12));" data-controller="math-renderer" data-math-renderer-target="content" class="lesson-content">
+      <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.75rem;">
+        <span style="display:inline-flex; align-items:center; border-radius:9999px; padding:0.125rem 0.625rem; font-size:0.75rem; font-weight:500; background:rgba(99,102,241,0.08); color:var(--color-txt);"><%= t("content_actions.practical_example") %></span>
       </div>
+      <% if @image_url.present? %>
+        <div style="margin-bottom:1rem; border-radius:12px; overflow:hidden; border:1px solid var(--color-border-subtle, rgba(28,24,18,0.06));">
+          <img src="<%= @image_url %>" alt="<%= t("content_actions.example_illustration") %>"
+               style="width:100%; height:auto; display:block; max-height:320px; object-fit:cover;"
+               loading="lazy">
+        </div>
+      <% end %>
       <%= @rendered_html %>
     </div>
   <% end %>
