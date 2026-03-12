@@ -98,6 +98,9 @@ export default class extends Controller {
     this._detectQuizLock(this.currentSectionValue)
     this.updateUI()
 
+    // Activate quiz controller on the initial visible section
+    this._activateQuizInSection(this.sectionTargets[this.currentSectionValue])
+
     // Swipe support
     this._onTouchStart = this._handleTouchStart.bind(this)
     this._onTouchEnd = this._handleTouchEnd.bind(this)
@@ -218,6 +221,7 @@ export default class extends Controller {
       this._sectionStartTime = Date.now()
       this._detectQuizLock(index)
       this.updateUI()
+      this._activateQuizInSection(incoming)
       this._animating = false
       return
     }
@@ -250,6 +254,9 @@ export default class extends Controller {
           this._detectQuizLock(index)
           this.updateUI()
           this._animating = false
+
+          // Activate quiz controller on the new section
+          this._activateQuizInSection(incoming)
 
           // v2: companion message for new section type
           this._showCompanionForSection(incoming)
@@ -337,6 +344,23 @@ export default class extends Controller {
     this._hasQuizController = isCheck && !!section.querySelector('[data-controller*="lesson-quiz"]')
   }
 
+  // Activate quiz/check controllers when a section becomes visible
+  _activateQuizInSection(section) {
+    if (!section) return
+
+    const quizEl = section.querySelector('[data-controller*="lesson-quiz"]')
+    if (quizEl) {
+      const quizCtrl = this.application.getControllerForElementAndIdentifier(quizEl, "lesson-quiz")
+      if (quizCtrl) quizCtrl.activate()
+    }
+
+    const checkEl = section.querySelector('[data-controller*="lesson-check"]')
+    if (checkEl) {
+      const checkCtrl = this.application.getControllerForElementAndIdentifier(checkEl, "lesson-check")
+      if (checkCtrl && typeof checkCtrl.activate === "function") checkCtrl.activate()
+    }
+  }
+
   lockContinue() {
     this._locked = true
     this._updateContinueButton()
@@ -352,12 +376,25 @@ export default class extends Controller {
   // ── Quiz Event Handlers ────────────────────────────────────────
 
   _handleQuizCompleted(event) {
+    // Find which section this event came from
+    const sourceSection = event.target.closest('[data-interactive-lesson-target="section"]')
+    const currentSection = this.sectionTargets[this.currentSectionValue]
+
+    // Only unlock if the event came from the CURRENTLY VISIBLE section
+    // (prevents expired timers on hidden sections from unlocking)
+    if (sourceSection && sourceSection !== currentSection) return
+
     this._quizTotal++
     if (event.detail?.correct) this._quizCorrect++
     this.unlockContinue()
   }
 
   async _handleQuizCorrect(event) {
+    // Only react to events from the current visible section
+    const sourceSection = event.target.closest('[data-interactive-lesson-target="section"]')
+    const currentSection = this.sectionTargets[this.currentSectionValue]
+    if (sourceSection && sourceSection !== currentSection) return
+
     const xp = event.detail?.xp || 15
     const bonus = event.detail?.bonus || false
     this._showXpFloat(xp)
@@ -382,6 +419,11 @@ export default class extends Controller {
   // ── v2: Hearts System ───────────────────────────────────────────
 
   _handleQuizWrong(event) {
+    // Only react to events from the current visible section
+    const sourceSection = event.target.closest('[data-interactive-lesson-target="section"]')
+    const currentSection = this.sectionTargets[this.currentSectionValue]
+    if (sourceSection && sourceSection !== currentSection) return
+
     this._currentHearts = Math.max(0, this._currentHearts - 1)
     this._updateHeartsDisplay()
 
@@ -556,6 +598,11 @@ export default class extends Controller {
     // If lesson-quiz is present on this section, it handles unlock via quiz:completed
     // with a proper delay. Skip the legacy handler.
     if (this._hasQuizController) return
+
+    // Only react to events from the current visible section
+    const sourceSection = event.target.closest('[data-interactive-lesson-target="section"]')
+    const currentSection = this.sectionTargets[this.currentSectionValue]
+    if (sourceSection && sourceSection !== currentSection) return
 
     this._quizTotal++
 

@@ -27,15 +27,69 @@ export default class extends Controller {
 
   connect() {
     this._answered = false
+    this._activated = false
     this._timers = []
     this._timerInterval = null
     this._secondsLeft = this.timerSecondsValue
+    this._startTime = null
+
+    // DON'T auto-start timer here — parent (interactive-lesson) will call
+    // activate() when this section becomes visible. This prevents all quiz
+    // timers from starting simultaneously on page load.
+    //
+    // Only auto-start if this is the first visible section (no parent orchestrator)
+    if (this.timedValue && this._isVisible() && !this._hasParentOrchestrator()) {
+      this.activate()
+    }
+  }
+
+  // Called by interactive-lesson when this section becomes visible
+  activate() {
+    if (this._activated) return
+    this._activated = true
     this._startTime = Date.now()
 
-    // Start countdown if timed quiz
     if (this.timedValue) {
       this._startTimer()
     }
+  }
+
+  // Reset quiz state (for revisiting a section)
+  reset() {
+    this._answered = false
+    this._activated = false
+    this._stopTimer()
+    this._secondsLeft = this.timerSecondsValue
+    this._startTime = null
+
+    // Reset visual state
+    this.optionTargets.forEach(opt => {
+      opt.style.pointerEvents = ""
+      opt.style.opacity = ""
+      opt.classList.remove("lesson-check__option--correct", "lesson-check__option--wrong")
+    })
+
+    if (this.hasTimerDisplayTarget) {
+      this.timerDisplayTarget.textContent = `${this.timerSecondsValue}s`
+    }
+    if (this.hasTimerWrapTarget) {
+      this.timerWrapTarget.classList.remove("urgent")
+      this.timerWrapTarget.style.color = ""
+      this.timerWrapTarget.style.background = ""
+    }
+    if (this.hasBonusTagTarget) {
+      this.bonusTagTarget.classList.remove("earned", "missed")
+      this.bonusTagTarget.textContent = "⚡ +5 XP BONUS si respondes en <10s"
+    }
+  }
+
+  _isVisible() {
+    const section = this.element.closest('[data-interactive-lesson-target="section"]')
+    return !section || section.style.display !== "none"
+  }
+
+  _hasParentOrchestrator() {
+    return !!this.element.closest('[data-controller*="interactive-lesson"]')
   }
 
   disconnect() {
@@ -121,6 +175,12 @@ export default class extends Controller {
 
   selectOption(event) {
     if (this._answered) return
+
+    // Auto-activate if user clicks before parent called activate()
+    if (!this._activated) {
+      this.activate()
+    }
+
     this._answered = true
     this._stopTimer()
 
