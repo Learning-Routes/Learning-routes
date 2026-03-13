@@ -189,29 +189,29 @@ export default class extends Controller {
     const iblur = svg("filter", { id: `ib-${node.id}`, x: "-50%", y: "-50%", width: "200%", height: "200%" })
     iblur.appendChild(svg("feGaussianBlur", { in: "SourceGraphic", stdDeviation: "7" })); defs.appendChild(iblur)
     const ng = svg("radialGradient", { id: `nf-${node.id}`, cx: "50%", cy: "50%" })
-    ng.appendChild(svg("stop", { offset: "0%", "stop-color": node.color, "stop-opacity": "0.1" }))
-    ng.appendChild(svg("stop", { offset: "70%", "stop-color": node.color, "stop-opacity": "0.04" }))
+    ng.appendChild(svg("stop", { offset: "0%", "stop-color": node.color, "stop-opacity": "0.2" }))
+    ng.appendChild(svg("stop", { offset: "70%", "stop-color": node.color, "stop-opacity": "0.08" }))
     ng.appendChild(svg("stop", { offset: "100%", "stop-color": node.color, "stop-opacity": "0" }))
     defs.appendChild(ng)
     pts.forEach((_, j) => {
       const sg = svg("radialGradient", { id: `sf-${node.id}-${j}`, cx: "50%", cy: "50%" })
-      sg.appendChild(svg("stop", { offset: "0%", "stop-color": node.color, "stop-opacity": "0.08" }))
-      sg.appendChild(svg("stop", { offset: "70%", "stop-color": node.color, "stop-opacity": "0.03" }))
+      sg.appendChild(svg("stop", { offset: "0%", "stop-color": node.color, "stop-opacity": "0.15" }))
+      sg.appendChild(svg("stop", { offset: "70%", "stop-color": node.color, "stop-opacity": "0.06" }))
       sg.appendChild(svg("stop", { offset: "100%", "stop-color": node.color, "stop-opacity": "0" }))
       defs.appendChild(sg)
     })
     s.appendChild(defs)
 
     // ── Spine ──
-    if (i > 0)          s.appendChild(svg("line", { x1: cx, y1: 0, x2: cx, y2: cy - nr - 14, stroke: C.dkT, "stroke-width": "1", opacity: "0", "data-anim": "spine" }))
-    if (i < total - 1)  s.appendChild(svg("line", { x1: cx, y1: cy + nr + 14, x2: cx, y2: ROW, stroke: C.dkT, "stroke-width": "1", opacity: "0", "data-anim": "spine" }))
+    if (i > 0)          s.appendChild(svg("line", { x1: cx, y1: 0, x2: cx, y2: cy - nr - 14, stroke: C.dkT, "stroke-width": "1.2", opacity: "0", "data-anim": "spine" }))
+    if (i < total - 1)  s.appendChild(svg("line", { x1: cx, y1: cy + nr + 14, x2: cx, y2: ROW, stroke: C.dkT, "stroke-width": "1.2", opacity: "0", "data-anim": "spine" }))
 
     // ── Main node ──
-    s.appendChild(svg("circle", { cx, cy, r: 0, fill: node.color, opacity: "0.025", filter: `url(#b-${node.id})`, "data-anim": "main-glow", "data-r": nr + 22 }))
-    s.appendChild(svg("circle", { cx, cy, r: 0, fill: "none", stroke: node.color, "stroke-width": "0.6", "stroke-dasharray": "4 6", opacity: "0.15", "data-anim": "outer-ring", "data-r": nr + 12 }))
-    s.appendChild(svg("circle", { cx, cy, r: 0, fill: `url(#nf-${node.id})`, stroke: node.color, "stroke-width": node.goal ? "2" : "1.4", "data-anim": "main-circle", "data-r": nr }))
-    s.appendChild(svg("circle", { cx, cy, r: 0, fill: "none", stroke: node.color, "stroke-width": "0.5", opacity: "0.12", filter: `url(#ib-${node.id})`, "data-anim": "inner-glow", "data-r": nr - 8 }))
-    s.appendChild(svg("circle", { cx, cy, r: 0, fill: "none", stroke: node.color, "stroke-width": "0.4", opacity: "0.08", "data-anim": "inner-ring", "data-r": nr - 16 }))
+    s.appendChild(svg("circle", { cx, cy, r: 0, fill: node.color, opacity: "0.1", filter: `url(#b-${node.id})`, "data-anim": "main-glow", "data-r": nr + 22 }))
+    s.appendChild(svg("circle", { cx, cy, r: 0, fill: "none", stroke: node.color, "stroke-width": "0.8", "stroke-dasharray": "4 6", opacity: "0.35", "data-anim": "outer-ring", "data-r": nr + 12 }))
+    s.appendChild(svg("circle", { cx, cy, r: 0, fill: `url(#nf-${node.id})`, stroke: node.color, "stroke-width": node.goal ? "2.5" : "1.8", "data-anim": "main-circle", "data-r": nr }))
+    s.appendChild(svg("circle", { cx, cy, r: 0, fill: "none", stroke: node.color, "stroke-width": "0.6", opacity: "0.28", filter: `url(#ib-${node.id})`, "data-anim": "inner-glow", "data-r": nr - 8 }))
+    s.appendChild(svg("circle", { cx, cy, r: 0, fill: "none", stroke: node.color, "stroke-width": "0.5", opacity: "0.2", "data-anim": "inner-ring", "data-r": nr - 16 }))
     if (node.goal) s.appendChild(svg("circle", { cx, cy, r: 0, fill: node.color, opacity: "0.2", "data-anim": "center-dot", "data-r": "3.5" }))
 
     // ── Ticks ──
@@ -229,8 +229,8 @@ export default class extends Controller {
 
     // ── Connection path → focal ──
     const ex = cx + dir * (nr + 2)
-    s.appendChild(svg("path", { d: `M${ex} ${cy}C${ex+(fx-ex)*.35} ${cy+8},${ex+(fx-ex)*.65} ${fy-6},${fx} ${fy}`, fill: "none", stroke: node.color, "stroke-width": "1.2", opacity: "0.25", "data-anim": "conn-path" }))
-    s.appendChild(svg("circle", { cx: fx, cy: fy, r: 0, fill: node.color, opacity: "0.4", "data-anim": "focal", "data-r": "3.5" }))
+    s.appendChild(svg("path", { d: `M${ex} ${cy}C${ex+(fx-ex)*.35} ${cy+8},${ex+(fx-ex)*.65} ${fy-6},${fx} ${fy}`, fill: "none", stroke: node.color, "stroke-width": "1.5", opacity: "0.65", "data-anim": "conn-path" }))
+    s.appendChild(svg("circle", { cx: fx, cy: fy, r: 0, fill: node.color, opacity: "0.6", "data-anim": "focal", "data-r": "4" }))
 
     // ── Satellites ──
     pts.forEach((p, j) => {
@@ -241,11 +241,11 @@ export default class extends Controller {
       // Group all satellite elements so we can fade them as a unit
       const g = svg("g", { "data-sat-group": j })
 
-      g.appendChild(svg("path",   { d: crv(fx, fy, edgeX, edgeY), fill: "none", stroke: node.color, "stroke-width": "1", opacity: "0.2", "data-anim": "sat-path", "data-sat": j }))
-      g.appendChild(svg("circle", { cx: p.x, cy: p.y, r: 0, fill: node.color, opacity: "0.02", filter: `url(#b-${node.id})`, "data-anim": "sat-glow", "data-sat": j, "data-r": p.r + 12 }))
-      g.appendChild(svg("circle", { cx: p.x, cy: p.y, r: 0, fill: "none", stroke: node.color, "stroke-width": "0.5", "stroke-dasharray": "3 5", opacity: "0.12", "data-anim": "sat-outer-ring", "data-sat": j, "data-r": p.r + 7 }))
-      g.appendChild(svg("circle", { cx: p.x, cy: p.y, r: 0, fill: `url(#sf-${node.id}-${j})`, stroke: node.color, "stroke-width": "1", opacity: "0.65", "data-anim": "sat-circle", "data-sat": j, "data-r": p.r }))
-      g.appendChild(svg("circle", { cx: p.x, cy: p.y, r: 0, fill: "none", stroke: node.color, "stroke-width": "0.3", opacity: "0.08", "data-anim": "sat-inner-ring", "data-sat": j, "data-r": p.r - 9 }))
+      g.appendChild(svg("path",   { d: crv(fx, fy, edgeX, edgeY), fill: "none", stroke: node.color, "stroke-width": "1.2", opacity: "0.6", "data-anim": "sat-path", "data-sat": j }))
+      g.appendChild(svg("circle", { cx: p.x, cy: p.y, r: 0, fill: node.color, opacity: "0.08", filter: `url(#b-${node.id})`, "data-anim": "sat-glow", "data-sat": j, "data-r": p.r + 12 }))
+      g.appendChild(svg("circle", { cx: p.x, cy: p.y, r: 0, fill: "none", stroke: node.color, "stroke-width": "0.6", "stroke-dasharray": "3 5", opacity: "0.35", "data-anim": "sat-outer-ring", "data-sat": j, "data-r": p.r + 7 }))
+      g.appendChild(svg("circle", { cx: p.x, cy: p.y, r: 0, fill: `url(#sf-${node.id}-${j})`, stroke: node.color, "stroke-width": "1.2", opacity: "0.85", "data-anim": "sat-circle", "data-sat": j, "data-r": p.r }))
+      g.appendChild(svg("circle", { cx: p.x, cy: p.y, r: 0, fill: "none", stroke: node.color, "stroke-width": "0.4", opacity: "0.2", "data-anim": "sat-inner-ring", "data-sat": j, "data-r": p.r - 9 }))
       if (p.topic) {
         g.appendChild(svg("text", { x: p.x, y: p.y, "text-anchor": "middle", "dominant-baseline": "central", fill: C.dkS, "font-family": FM, "font-size": "7", "letter-spacing": "0.3", opacity: "0", "data-anim": "sat-label", "data-sat": j }, [p.topic]))
       }
@@ -269,11 +269,11 @@ export default class extends Controller {
     if (ring) {
       ring.style.transition = "stroke-width 0.2s ease, opacity 0.2s ease"
       ring.setAttribute("stroke-width", on ? "1.8" : "1")
-      ring.setAttribute("opacity", on ? "0.85" : "0.65")
+      ring.setAttribute("opacity", on ? "0.95" : "0.85")
     }
     if (label) {
       label.style.transition = "opacity 0.2s ease"
-      label.setAttribute("opacity", on ? "0.9" : "0.55")
+      label.setAttribute("opacity", on ? "1" : "0.75")
     }
   }
 
@@ -337,8 +337,8 @@ export default class extends Controller {
     // Reset the focused satellite's highlight
     const ring  = s.querySelector(`[data-anim='sat-circle'][data-sat='${satIndex}']`)
     const label = s.querySelector(`[data-anim='sat-label'][data-sat='${satIndex}']`)
-    if (ring) { ring.setAttribute("stroke-width", "1"); ring.setAttribute("opacity", "0.65") }
-    if (label) { label.setAttribute("opacity", "0.55") }
+    if (ring) { ring.setAttribute("stroke-width", "1.2"); ring.setAttribute("opacity", "0.85") }
+    if (label) { label.setAttribute("opacity", "0.75") }
 
     // Animate card out then remove
     if (cardEl) {
@@ -451,11 +451,11 @@ export default class extends Controller {
     this._grow(s.querySelector("[data-anim='center-dot']"), 300, 180, easeOutBack)
 
     // Spine
-    s.querySelectorAll("[data-anim='spine']").forEach(l => { l.style.transition = "opacity 0.9s ease"; l.setAttribute("opacity", "0.06") })
+    s.querySelectorAll("[data-anim='spine']").forEach(l => { l.style.transition = "opacity 0.9s ease"; l.setAttribute("opacity", "0.18") })
 
     // Ticks
     s.querySelectorAll("[data-anim='tick']").forEach((t, i) => {
-      this._timer(() => { t.style.transition = "opacity 0.4s ease"; t.setAttribute("opacity", "0.1") }, 200 + i * 15)
+      this._timer(() => { t.style.transition = "opacity 0.4s ease"; t.setAttribute("opacity", "0.28") }, 200 + i * 15)
     })
 
     // Labels
@@ -483,11 +483,11 @@ export default class extends Controller {
         if (sc[j])  this._grow(sc[j], 380, 0, easeOutBack)
         if (sir[j]) this._grow(sir[j], 340, 60)
       }, d + 400)
-      this._timer(() => { if (sl[j]) { sl[j].style.transition = "opacity 0.45s ease"; sl[j].setAttribute("opacity", "0.55") } }, d + 650)
+      this._timer(() => { if (sl[j]) { sl[j].style.transition = "opacity 0.45s ease"; sl[j].setAttribute("opacity", "0.75") } }, d + 650)
     })
 
     // Note
-    this._timer(() => { const n = s.querySelector("[data-anim='note']"); if (n) { n.style.transition = "opacity 0.5s ease"; n.setAttribute("opacity", "0.35") } }, 550)
+    this._timer(() => { const n = s.querySelector("[data-anim='note']"); if (n) { n.style.transition = "opacity 0.5s ease"; n.setAttribute("opacity", "0.65") } }, 550)
   }
 
   _grow(el, dur, delay = 0, ease = easeOut) {
@@ -504,16 +504,16 @@ export default class extends Controller {
 
   _showInstant(rowData) {
     const s = rowData.svg
-    s.querySelectorAll("[data-anim='spine']").forEach(l => l.setAttribute("opacity", "0.06"))
+    s.querySelectorAll("[data-anim='spine']").forEach(l => l.setAttribute("opacity", "0.18"))
     s.querySelectorAll("[data-anim='label']").forEach(t => t.setAttribute("opacity", "1"))
-    s.querySelectorAll("[data-anim='tick']").forEach(t => t.setAttribute("opacity", "0.1"))
+    s.querySelectorAll("[data-anim='tick']").forEach(t => t.setAttribute("opacity", "0.28"))
     const sn = s.querySelector("[data-anim='step-num']"); if (sn) sn.setAttribute("opacity", "1")
-    const note = s.querySelector("[data-anim='note']"); if (note) note.setAttribute("opacity", "0.35")
+    const note = s.querySelector("[data-anim='note']"); if (note) note.setAttribute("opacity", "0.65")
     ;["main-glow","main-circle","outer-ring","inner-glow","inner-ring","center-dot","focal"].forEach(k => {
       const c = s.querySelector(`[data-anim='${k}']`); if (c) c.setAttribute("r", c.dataset.r)
     })
     s.querySelectorAll("[data-anim='conn-path'], [data-anim='sat-path']").forEach(p => { p.style.strokeDasharray = "none"; p.style.strokeDashoffset = "0" })
     s.querySelectorAll("[data-anim='sat-glow'], [data-anim='sat-outer-ring'], [data-anim='sat-circle'], [data-anim='sat-inner-ring']").forEach(c => c.setAttribute("r", c.dataset.r))
-    s.querySelectorAll("[data-anim='sat-label']").forEach(t => t.setAttribute("opacity", "0.55"))
+    s.querySelectorAll("[data-anim='sat-label']").forEach(t => t.setAttribute("opacity", "0.75"))
   }
 }

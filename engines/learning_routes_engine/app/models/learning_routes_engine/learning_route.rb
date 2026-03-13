@@ -31,8 +31,10 @@ module LearningRoutesEngine
     scope :generation_failed, -> { where(generation_status: "failed") }
 
     def progress_percentage
-      return 0 if total_steps.zero?
-      ((current_step.to_f / total_steps) * 100).round(1)
+      total = route_steps.count
+      return 0 if total.zero?
+      completed = route_steps.completed_steps.count
+      ((completed.to_f / total) * 100).round(1)
     end
 
     def current_route_step

@@ -14,6 +14,15 @@ module ContentEngine
         language = language.to_s.strip
         language = "text" if language.empty?
 
+        # Mermaid diagrams: render as interactive div instead of code block
+        if language.downcase == "mermaid"
+          return <<~HTML
+            <div class="mermaid" data-controller="mermaid-diagram" data-mermaid-diagram-target="chart" style="text-align:center; margin:1rem 0;">
+              #{ERB::Util.html_escape(code)}
+            </div>
+          HTML
+        end
+
         lexer = Rouge::Lexer.find(language) || Rouge::Lexers::PlainText.new
         formatter = RougeHTMLFormatter.new
         highlighted = formatter.format(lexer.lex(code))
@@ -89,6 +98,7 @@ module ContentEngine
                        checked disabled data-controller data-action
                        data-copy-code-target data-copy-code-copied-text-value
                        data-correct data-lesson-check-target
+                       data-mermaid-diagram-target
                        colspan rowspan viewBox fill points d stroke stroke-width
                        stroke-linecap stroke-linejoin width height]
       )

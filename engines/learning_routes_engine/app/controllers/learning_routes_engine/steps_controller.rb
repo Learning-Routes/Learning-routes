@@ -33,6 +33,7 @@ module LearningRoutesEngine
         end
 
         respond_to do |format|
+          format.json { render json: { quiz_required: true }, status: :unprocessable_entity }
           format.turbo_stream { render :show_quiz }
           format.html { redirect_to route_step_path(@route, @step), notice: t("learning_engine.step_quiz.required") }
         end
@@ -149,6 +150,7 @@ module LearningRoutesEngine
     end
 
     # Load content for audio delivery format steps
+    # Always loads text content as fallback so the lesson is viewable even if audio fails
     def load_audio_content
       @content = ContentEngine::AiContent.where(route_step: @step).by_type(:text).first
 
@@ -161,6 +163,21 @@ module LearningRoutesEngine
         end
         @content_generating = true
         return
+      end
+
+      # Always parse sections/rendered_html so text fallback works
+      if @content
+        cached = @step.metadata&.dig("parsed_sections")
+        if cached.is_a?(Array) && cached.any?
+          @sections = cached.map(&:deep_symbolize_keys)
+        else
+          @sections = ContentEngine::LessonSectionParser.call(
+            @content.body,
+            metadata: @step.metadata || {},
+            audio_url: @content.audio_url
+          )
+        end
+        @rendered_html = ContentEngine::MarkdownRenderer.render(@content.body)
       end
 
       # If text content exists but audio hasn't been generated, trigger on-demand

@@ -996,6 +996,39 @@ en:
       level_up_sub: "Keep it up, you're doing great"
       level_label: "LEVEL"
       ai_tools: "AI Tools"
+      complete_lesson: "Complete lesson"
+      answer_to_continue: "Answer to continue"
+      celebration:
+        route_complete: "Route completed!"
+        lesson_complete: "Lesson completed!"
+        route_complete_sub: "You've completed the entire learning route"
+        perfect_sub: "Perfect! No mistakes"
+        keep_going_sub: "Keep it up, you're doing great!"
+        xp_gained: "XP earned"
+        correct: "correct"
+        day_streak: "day streak"
+        days_streak: "days streak"
+        total_time: "Total time"
+        next_prefix: "Next:"
+        next_step: "Next step"
+        view_full_route: "View full route"
+        view_route: "View route"
+        continue_route: "Continue route"
+      companion:
+        greeting: "Let's learn!"
+        speed_bonus: "SPEED!"
+        correct: "Correct!"
+        keep_trying: "Don't give up!"
+        no_lives: "No lives..."
+        no_lives_toast: "No lives left! But you can keep going"
+        xp_speed_bonus: "+5 speed XP"
+        concept: ["Let's learn!", "This is key", "Focus here"]
+        check: ["You got this!", "Think carefully...", "Show what you know!"]
+        example: ["Real example", "This is how it works", "Practice!"]
+        audio: ["Time to listen!", "Relax and listen"]
+        visual: ["Look at this", "Visual > text"]
+        summary: ["Almost done!", "Good summary"]
+        tip: ["Pro tip", "Remember this"]
     exercise:
       badge: "Exercise"
       reset: "Reset"

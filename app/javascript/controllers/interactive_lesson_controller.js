@@ -54,6 +54,7 @@ export default class extends Controller {
     totalSections: Number,
     currentSection: { type: Number, default: 0 },
     completeUrl: String,
+    i18n: { type: Object, default: {} },
     // v2 values
     hearts: { type: Number, default: 5 },
     userLevel: { type: Number, default: 1 },
@@ -127,15 +128,18 @@ export default class extends Controller {
     // v2: hearts tracking
     this._currentHearts = this.heartsValue
 
-    // v2: companion messages per section type
+    // v2: companion messages per section type (i18n)
+    const t = this.i18nValue || {}
+    const emojis = { concept: ["🧠", "💡", "📖"], check: ["💪", "🤔", "❓"], example: ["👨‍💻", "🔧", "🚀"], audio: ["🎧", "🎵"], visual: ["👀", "📊"], summary: ["🏁", "📝"], tip: ["💎", "⭐"] }
+    const addEmoji = (arr, type) => (arr || []).map((s, i) => `${s} ${(emojis[type] || [])[i] || ""}`.trim())
     this._companionMessages = {
-      concept: ["¡A aprender! 🧠", "Esto es clave 💡", "Concéntrate aquí 📖"],
-      check: ["¡Tú puedes! 💪", "Piensa bien... 🤔", "¡Demuestra lo que sabes!"],
-      example: ["Ejemplo real 👨‍💻", "Así se aplica 🔧", "¡Practica! 🚀"],
-      audio: ["¡Hora de escuchar! 🎧", "Relájate y escucha 🎵"],
-      visual: ["Mira esto 👀", "Visual > texto 📊"],
-      summary: ["¡Casi terminas! 🏁", "Buen resumen 📝"],
-      tip: ["Pro tip 💎", "Recuerda esto ⭐"]
+      concept: addEmoji(t.companion_concept, "concept"),
+      check: addEmoji(t.companion_check, "check"),
+      example: addEmoji(t.companion_example, "example"),
+      audio: addEmoji(t.companion_audio, "audio"),
+      visual: addEmoji(t.companion_visual, "visual"),
+      summary: addEmoji(t.companion_summary, "summary"),
+      tip: addEmoji(t.companion_tip, "tip"),
     }
     this._companionIndex = 0
 
@@ -160,6 +164,9 @@ export default class extends Controller {
     this.element.removeEventListener("quiz:correct", this._onQuizCorrect)
     this.element.removeEventListener("lesson-check:answered", this._onLegacyCheckAnswered)
     this.element.removeEventListener("quiz:wrong", this._onQuizWrong)
+    if (this._onStepQuizPassed) {
+      document.removeEventListener("step-quiz:passed", this._onStepQuizPassed)
+    }
   }
 
   // ── Actions ────────────────────────────────────────────────────
@@ -303,18 +310,19 @@ export default class extends Controller {
     const btn = this.continueBtnTarget
     const isLast = this.currentSectionValue === this.totalSectionsValue - 1
 
+    const t = this.i18nValue || {}
     if (this._locked) {
-      this._setBtnText("Responde para continuar")
+      this._setBtnText(t.answer_to_continue || "Answer to continue")
       btn.disabled = true
       btn.classList.add("lesson-btn--muted")
       btn.classList.remove("lesson-btn--primary")
     } else if (isLast) {
-      this._setBtnText("Completar lección")
+      this._setBtnText(t.complete_lesson || "Complete lesson")
       btn.disabled = false
       btn.classList.remove("lesson-btn--muted")
       btn.classList.add("lesson-btn--primary")
     } else {
-      this._setBtnText("Continuar")
+      this._setBtnText(t.continue || "Continue")
       btn.disabled = false
       btn.classList.remove("lesson-btn--muted")
       btn.classList.add("lesson-btn--primary")
@@ -404,15 +412,16 @@ export default class extends Controller {
     this._animateHudXp(xp)
 
     // v2: companion reaction
+    const ti = this.i18nValue || {}
     if (bonus) {
-      this._showCompanionMessage("¡VELOCIDAD! ⚡")
+      this._showCompanionMessage(`${ti.companion_speed || "SPEED!"} ⚡`)
     } else {
-      this._showCompanionMessage("¡Correcto! 🎉")
+      this._showCompanionMessage(`${ti.companion_correct || "Correct!"} 🎉`)
     }
 
     // v2: toast for bonus
     if (bonus) {
-      this._showToast("⚡ +5 XP de velocidad")
+      this._showToast(`⚡ ${ti.companion_xp_speed || "+5 speed XP"}`)
     }
   }
 
@@ -428,11 +437,14 @@ export default class extends Controller {
     this._updateHeartsDisplay()
 
     // Companion reacts
-    this._showCompanionMessage(this._currentHearts > 0 ? "¡No te rindas! 💪" : "Sin vidas... 😢")
+    const tw = this.i18nValue || {}
+    this._showCompanionMessage(this._currentHearts > 0
+      ? `${tw.companion_keep_trying || "Don't give up!"} 💪`
+      : `${tw.companion_no_lives || "No lives..."} 😢`)
 
     // Check for game over (0 hearts)
     if (this._currentHearts <= 0) {
-      this._showToast("¡Sin vidas! Pero puedes seguir 😅")
+      this._showToast(`${tw.companion_no_lives_toast || "No lives left! But you can keep going"} 😅`)
     }
   }
 
@@ -500,8 +512,9 @@ export default class extends Controller {
 
   _scheduleCompanionGreeting() {
     if (!this.hasCompanionTarget) return
+    const greeting = (this.i18nValue || {}).companion_greeting || "Let's learn!"
     const timer = setTimeout(() => {
-      this._showCompanionMessage("¡Vamos a aprender! 🚀")
+      this._showCompanionMessage(`${greeting} 🚀`)
     }, 1500)
     this._timers.push(timer)
   }
@@ -704,7 +717,7 @@ export default class extends Controller {
           method: "POST",
           headers: {
             "X-CSRF-Token": this._csrfToken(),
-            "Accept": "application/json, text/vnd.turbo-stream.html",
+            "Accept": "application/json",
             "Content-Type": "application/json"
           },
           body: JSON.stringify({
@@ -718,13 +731,17 @@ export default class extends Controller {
         })
 
         if (response.ok) {
-          const contentType = response.headers.get("Content-Type") || ""
-          if (contentType.includes("json")) {
-            serverData = await response.json()
-          } else if (contentType.includes("turbo-stream")) {
-            const html = await response.text()
-            Turbo.renderStreamMessage(html)
+          serverData = await response.json()
+        } else if (response.status === 422) {
+          // Quiz gate — step requires a quiz before completion
+          const errorData = await response.json().catch(() => ({}))
+          if (errorData.quiz_required) {
+            this._completed = false // Allow retry after quiz
+            this._showQuizGate()
+            return
           }
+        } else {
+          console.warn("[InteractiveLesson] Complete response not OK:", response.status)
         }
       } catch (err) {
         console.error("[InteractiveLesson] Complete request failed:", err)
@@ -733,6 +750,52 @@ export default class extends Controller {
 
     // Show celebration screen with server data
     this._showCelebrationScreen(serverData)
+  }
+
+  // ── Quiz Gate ──────────────────────────────────────────────────
+
+  async _showQuizGate() {
+    // Load the quiz via Turbo Stream by re-posting with turbo-stream accept
+    const completeUrl = this.completeUrlValue
+    if (!completeUrl) return
+
+    try {
+      const response = await fetch(completeUrl, {
+        method: "POST",
+        headers: {
+          "X-CSRF-Token": this._csrfToken(),
+          "Accept": "text/vnd.turbo-stream.html",
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({})
+      })
+
+      if (response.ok || response.status === 422) {
+        const html = await response.text()
+        Turbo.renderStreamMessage(html)
+        // Scroll to quiz
+        const quizPanel = document.getElementById("step_quiz_panel")
+        if (quizPanel) {
+          quizPanel.scrollIntoView({ behavior: "smooth", block: "start" })
+        }
+
+        // Hide continue bar while quiz is active
+        if (this.hasContinueBarTarget) {
+          this.continueBarTarget.style.display = "none"
+        }
+
+        // Listen for quiz completion to re-attempt lesson completion
+        this._onStepQuizPassed = this._handleStepQuizPassed.bind(this)
+        document.addEventListener("step-quiz:passed", this._onStepQuizPassed, { once: true })
+      }
+    } catch (err) {
+      console.error("[InteractiveLesson] Quiz gate request failed:", err)
+    }
+  }
+
+  _handleStepQuizPassed(event) {
+    // Quiz passed — now complete the lesson for real
+    this.completeLesson()
   }
 
   _showCelebrationScreen(data) {
@@ -777,10 +840,13 @@ export default class extends Controller {
     const screen = document.createElement("div")
     screen.className = "lesson-completion-screen"
 
-    const heading = routeCompleted ? "¡Ruta completada!" : "¡Lección completada!"
+    const t = this.i18nValue || {}
+    const heading = routeCompleted
+      ? (t.route_complete || "Route completed!")
+      : (t.lesson_complete || "Lesson completed!")
     const sub = routeCompleted
-      ? "Has completado toda la ruta de aprendizaje"
-      : (perfect ? "¡Perfecto! Sin errores 🏆" : "¡Sigue así, vas increíble!")
+      ? (t.route_complete_sub || "You've completed the entire learning route")
+      : (perfect ? `${t.perfect_sub || "Perfect! No mistakes"} 🏆` : (t.keep_going_sub || "Keep it up, you're doing great!"))
 
     // Stat cards
     let statsHtml = `<div class="lesson-completion-stats">`
@@ -789,7 +855,7 @@ export default class extends Controller {
         <div class="lesson-completion-stat" style="--delay:0.1s">
           <div class="lesson-completion-stat-icon" style="background:linear-gradient(135deg,#F5C842,#B09848);">⭐</div>
           <div class="lesson-completion-stat-value">+${xpGained}</div>
-          <div class="lesson-completion-stat-label">XP ganados</div>
+          <div class="lesson-completion-stat-label">${t.xp_gained || "XP earned"}</div>
         </div>
       `
     }
@@ -798,7 +864,7 @@ export default class extends Controller {
         <div class="lesson-completion-stat" style="--delay:0.2s">
           <div class="lesson-completion-stat-icon" style="background:linear-gradient(135deg,#6E9BC8,#5B7FC8);">✓</div>
           <div class="lesson-completion-stat-value">${quizPct}%</div>
-          <div class="lesson-completion-stat-label">${quizScore} correctas</div>
+          <div class="lesson-completion-stat-label">${quizScore} ${t.correct || "correct"}</div>
         </div>
       `
     }
@@ -807,7 +873,7 @@ export default class extends Controller {
         <div class="lesson-completion-stat" style="--delay:0.3s">
           <div class="lesson-completion-stat-icon" style="background:linear-gradient(135deg,#F59E0B,#D97706);">🔥</div>
           <div class="lesson-completion-stat-value">${streak}</div>
-          <div class="lesson-completion-stat-label">${streak === 1 ? "día" : "días"} de racha</div>
+          <div class="lesson-completion-stat-label">${streak === 1 ? (t.day_streak || "day streak") : (t.days_streak || "days streak")}</div>
         </div>
       `
     }
@@ -815,7 +881,7 @@ export default class extends Controller {
       <div class="lesson-completion-stat" style="--delay:0.4s">
         <div class="lesson-completion-stat-icon" style="background:linear-gradient(135deg,#8B80C4,#6E60B4);">⏱</div>
         <div class="lesson-completion-stat-value">${timeStr}</div>
-        <div class="lesson-completion-stat-label">Tiempo total</div>
+        <div class="lesson-completion-stat-label">${t.total_time || "Total time"}</div>
       </div>
     `
     statsHtml += `</div>`
@@ -824,17 +890,17 @@ export default class extends Controller {
     if (nextUrl && !routeCompleted) {
       btnHtml = `
         <a href="${this._escAttr(nextUrl)}" class="lesson-completion-btn lesson-completion-btn--primary">
-          ${nextTitle ? `Siguiente: ${this._esc(nextTitle)}` : "Siguiente paso"}
+          ${nextTitle ? `${t.next_prefix || "Next:"} ${this._esc(nextTitle)}` : (t.next_step || "Next step")}
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
         </a>
         <a href="${this._escAttr(routeUrl)}" class="lesson-completion-btn lesson-completion-btn--secondary">
-          Ver ruta completa
+          ${t.view_full_route || "View full route"}
         </a>
       `
     } else {
       btnHtml = `
         <a href="${this._escAttr(routeUrl)}" class="lesson-completion-btn lesson-completion-btn--primary">
-          ${routeCompleted ? "Ver ruta" : "Continuar ruta"}
+          ${routeCompleted ? (t.view_route || "View route") : (t.continue_route || "Continue route")}
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
         </a>
       `

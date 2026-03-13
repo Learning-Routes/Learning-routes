@@ -52,6 +52,13 @@
         level: 0, streak: 0 %>
   <% end %>
 
+  <%# Dispatch event so interactive-lesson controller knows the quiz passed %>
+  <%= turbo_stream.append "step_quiz_panel" do %>
+    <script nonce="<%= content_security_policy_nonce %>">
+      document.dispatchEvent(new CustomEvent("step-quiz:passed", { detail: { score: <%= @result.score %> } }))
+    </script>
+  <% end %>
+
 <% else %>
   <%# FAILED: Show feedback per question + retry %>
   <%= turbo_stream.replace "step_quiz_form" do %>
