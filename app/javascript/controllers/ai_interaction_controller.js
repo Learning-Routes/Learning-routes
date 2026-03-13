@@ -85,9 +85,13 @@ export default class extends Controller {
         signal: this._abortController.signal
       })
 
-      if (!response.ok && response.status === 429) {
+      if (!response.ok) {
         const data = await response.json().catch(() => ({}))
-        this._renderError(data.error || "Too many requests. Please wait a moment.")
+        if (response.status === 429) {
+          this._renderError(data.error || "Too many requests. Please wait a moment.")
+        } else {
+          this._renderError(data.error || "Something went wrong. Please try again.")
+        }
         return
       }
 
