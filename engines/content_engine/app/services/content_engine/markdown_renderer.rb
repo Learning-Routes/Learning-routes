@@ -14,11 +14,13 @@ module ContentEngine
         language = language.to_s.strip
         language = "text" if language.empty?
 
-        # Mermaid diagrams: render as interactive div instead of code block
+        # Mermaid diagrams: render as interactive div inside a styled container
         if language.downcase == "mermaid"
+          diagram_label = ERB::Util.html_escape(I18n.t("learning_engine.lesson.diagram_label", default: "DIAGRAM"))
           return <<~HTML
-            <div class="mermaid" data-controller="mermaid-diagram" data-mermaid-diagram-target="chart" style="text-align:center; margin:1rem 0;">
-              #{ERB::Util.html_escape(code)}
+            <div class="mermaid-container" data-controller="mermaid-diagram">
+              <span class="mermaid-label">#{diagram_label}</span>
+              <div class="mermaid" data-mermaid-diagram-target="chart">#{ERB::Util.html_escape(code)}</div>
             </div>
           HTML
         end
