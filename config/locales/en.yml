@@ -114,7 +114,7 @@ en:
         desc: "Analysis and reasoning"
       - name: "ElevenLabs"
         desc: "Voice synthesis"
-      - name: "Nano Banana"
+      - name: "GPT Image"
         desc: "Image generation"
 
   # ── CTA ──
@@ -1523,3 +1523,19 @@ en:
     congrats: "Congratulations!"
     new_level: "You reached a new level"
     continue: "Continue"
+
+  # ── ActiveRecord validation errors ──
+  activerecord:
+    errors:
+      models:
+        learning_routes_engine/learning_route:
+          attributes:
+            target_locale:
+              same_as_locale: "cannot be the same as the content language"
+
+  # ── Language routes ──
+  language_routes:
+    detected: "Language detected: %{language}"
+    bilingual_label: "Bilingual"
+    target_label: "Learning"
+    content_label: "Explanations in"

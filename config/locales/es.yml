@@ -114,7 +114,7 @@ es:
         desc: "Análisis y razonamiento"
       - name: "ElevenLabs"
         desc: "Síntesis de voz"
-      - name: "Nano Banana"
+      - name: "GPT Image"
         desc: "Generación de imágenes"
 
   # ── CTA ──
@@ -1523,3 +1523,19 @@ es:
     congrats: "Felicidades!"
     new_level: "Has alcanzado un nuevo nivel"
     continue: "Continuar"
+
+  # ── Errores de validación ActiveRecord ──
+  activerecord:
+    errors:
+      models:
+        learning_routes_engine/learning_route:
+          attributes:
+            target_locale:
+              same_as_locale: "no puede ser el mismo que el idioma del contenido"
+
+  # ── Rutas de idiomas ──
+  language_routes:
+    detected: "Idioma detectado: %{language}"
+    bilingual_label: "Bilingüe"
+    target_label: "Aprendiendo"
+    content_label: "Explicaciones en"
