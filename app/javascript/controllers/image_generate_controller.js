@@ -23,7 +23,7 @@ export default class extends Controller {
 
     try {
       const token = document.querySelector('meta[name="csrf-token"]')?.content
-      const url = `/content_engine/section_images/${stepId}/${sectionIndex}/generate`
+      const url = `/content/section_images/${stepId}/${sectionIndex}/generate`
 
       const response = await fetch(url, {
         method: "POST",
