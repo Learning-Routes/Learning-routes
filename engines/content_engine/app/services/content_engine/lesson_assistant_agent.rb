@@ -34,10 +34,17 @@ module ContentEngine
       chat = build_chat
       user_prompt = build_user_prompt(action, message)
 
+      start_time = Process.clock_gettime(Process::CLOCK_MONOTONIC)
       response = chat.ask(user_prompt)
+      elapsed_ms = ((Process.clock_gettime(Process::CLOCK_MONOTONIC) - start_time) * 1000).round
+
       result = parse_response(response)
 
-      track_interaction!(action, message, result)
+      track_interaction!(action, message, result,
+        input_tokens: response.input_tokens || 0,
+        output_tokens: response.output_tokens || 0,
+        latency_ms: elapsed_ms
+      )
       result
     ensure
       Thread.current[:lesson_agent_user] = nil
@@ -144,14 +151,14 @@ module ContentEngine
     end
 
     def build_conversation_history
+      # Subquery to get last 5 in chronological order
       recent = AiOrchestrator::AiInteraction
         .where(user: @user)
         .where("metadata->>'step_id' = ?", @step.id.to_s)
         .where("metadata->>'agent_interaction' = ?", "true")
         .where("created_at > ?", 1.hour.ago)
-        .order(created_at: :desc)
-        .limit(5)
-        .reverse
+        .order(created_at: :asc)
+        .last(5)
 
       return "" if recent.empty?
 
@@ -178,7 +185,7 @@ module ContentEngine
       end
     end
 
-    def track_interaction!(action, message, result)
+    def track_interaction!(action, message, result, input_tokens: 0, output_tokens: 0, latency_ms: 0)
       AiOrchestrator::AiInteraction.create!(
         user: @user,
         model: "gpt-4.1-mini",
@@ -186,10 +193,14 @@ module ContentEngine
         prompt: "#{action}: #{message}".truncate(500),
         status: :completed,
         response: result[:content].to_s.truncate(2000),
-        input_tokens: 0,
-        output_tokens: 0,
-        latency_ms: 0,
-        cost_cents: AiOrchestrator::CostTracker.estimate_cost(model: "gpt-4.1-mini"),
+        input_tokens: input_tokens,
+        output_tokens: output_tokens,
+        latency_ms: latency_ms,
+        cost_cents: AiOrchestrator::CostTracker.estimate_cost(
+          model: "gpt-4.1-mini",
+          input_tokens: input_tokens,
+          output_tokens: output_tokens
+        ),
         metadata: {
           step_id: @step.id,
           route_id: @route.id,
