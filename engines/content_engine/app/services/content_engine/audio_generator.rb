@@ -75,6 +75,9 @@ module ContentEngine
 
     def synthesize_audio(script_text)
       voice_id = select_voice
+      # Always use multilingual model — it handles single-language fine too,
+      # and is required for bilingual language-learning routes
+      model_id = "eleven_multilingual_v2"
 
       client = AiOrchestrator::AiClient.new(
         model: "elevenlabs",
@@ -84,7 +87,7 @@ module ContentEngine
 
       result = client.chat(
         prompt: script_text,
-        params: { voice_id: voice_id, model_id: "eleven_multilingual_v2" }
+        params: { voice_id: voice_id, model_id: model_id }
       )
 
       store_audio_file(result[:content])
@@ -92,13 +95,25 @@ module ContentEngine
 
     def select_voice
       locale = @route.locale || "en"
+      voice_for_locale(locale)
+    end
 
-      if locale.start_with?("es")
+    def voice_for_locale(locale)
+      # Check for locale-specific voice in credentials: elevenlabs.voices.{locale}
+      locale_voice = Rails.application.credentials.dig(:elevenlabs, :voices, locale.to_sym)
+      return locale_voice if locale_voice.present?
+
+      # Legacy keys for backward compatibility
+      if locale.to_s.start_with?("es")
         Rails.application.credentials.dig(:elevenlabs, :spanish_voice_id) ||
           Rails.application.credentials.dig(:elevenlabs, :default_voice_id)
       else
         Rails.application.credentials.dig(:elevenlabs, :default_voice_id)
       end
+    end
+
+    def bilingual_route?
+      @route.respond_to?(:language_route?) && @route.language_route?
     end
 
     def store_audio_file(audio_data)

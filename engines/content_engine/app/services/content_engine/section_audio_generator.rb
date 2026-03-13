@@ -161,7 +161,9 @@ module ContentEngine
 
     def select_voice
       lang = @locale&.split("-")&.first || "en"
-      Rails.application.credentials.dig(:elevenlabs, :"#{lang}_voice_id") ||
+      # Check credentials first (elevenlabs.voices.{locale}), then legacy key, then hardcoded
+      Rails.application.credentials.dig(:elevenlabs, :voices, lang.to_sym) ||
+        Rails.application.credentials.dig(:elevenlabs, :"#{lang}_voice_id") ||
         VOICE_IDS[lang] ||
         VOICE_IDS["en"]
     end
