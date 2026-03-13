@@ -23,6 +23,8 @@ module LearningRoutesEngine
     validates :generation_status, inclusion: { in: GENERATION_STATUSES }, allow_nil: true
     validates :current_step, numericality: { greater_than_or_equal_to: 0 }
     validates :total_steps, numericality: { greater_than_or_equal_to: 0 }
+    validates :target_locale, inclusion: { in: ->(_) { I18n.available_locales.map(&:to_s) } }, allow_nil: true
+    validate :target_locale_differs_from_locale
 
     scope :active_routes, -> { where(status: :active) }
     scope :by_topic, ->(topic) { where("topic ILIKE ?", "%#{topic}%") }
@@ -69,12 +71,29 @@ module LearningRoutesEngine
       translations.dig(locale.to_s, "subject_area") || subject_area
     end
 
+    def language_route?
+      target_locale.present?
+    end
+
+    def bilingual_content?
+      target_locale.present?
+    end
+
     def liked_by?(user)
       likes.exists?(user_id: user.id)
     end
 
     def shared?
       shared_route.present?
+    end
+
+    private
+
+    def target_locale_differs_from_locale
+      return if target_locale.blank?
+      if target_locale == locale
+        errors.add(:target_locale, :same_as_locale)
+      end
     end
   end
 end

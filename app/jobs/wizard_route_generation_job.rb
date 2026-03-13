@@ -17,6 +17,18 @@ class WizardRouteGenerationJob < ApplicationJob
 
     begin
       user_locale = request.route_locale.presence || request.user.locale || "es"
+
+      # Detect if the topic is a language-learning route
+      raw_topic = (request.topics.presence || []).first
+      topic_text = request.custom_topic.presence || raw_topic
+      detected_target = LearningRoutesEngine::LanguageDetector.detect(topic_text)
+
+      # For language routes: content in user's native language, target = language being learned
+      target_locale = nil
+      if detected_target && detected_target != user_locale
+        target_locale = detected_target
+      end
+
       route_data = generate_fallback_route(request, user_locale)
 
       # Find or create the user's learning profile
@@ -45,6 +57,7 @@ class WizardRouteGenerationJob < ApplicationJob
           topic: route_data[:title],
           subject_area: route_data[:subtitle],
           locale: user_locale,
+          target_locale: target_locale,
           translations: route_data[:translations],
           status: :active,
           total_steps: route_data[:steps].length,
@@ -86,13 +99,10 @@ class WizardRouteGenerationJob < ApplicationJob
         end
 
         request.update!(status: "completed", learning_route: route)
-
-        # Pre-generate audio for the first audio step (hybrid approach)
-        first_audio_step = route.route_steps.where(delivery_format: "audio").order(:position).first
-        if first_audio_step
-          ContentEngine::AudioGenerationJob.perform_later(first_audio_step.id)
-        end
       end
+
+      # Pre-generate content for the first 3 non-assessment steps
+      pregenerate_content!(request.learning_route)
 
       begin
         Turbo::StreamsChannel.broadcast_replace_to(
@@ -125,6 +135,33 @@ class WizardRouteGenerationJob < ApplicationJob
   end
 
   private
+
+  def pregenerate_content!(route)
+    priority_steps = route.route_steps
+      .where.not(content_type: :assessment)
+      .order(:position)
+      .limit(3)
+
+    priority_steps.each_with_index do |step, index|
+      # Mark as content_generating so the UI can show skeleton
+      step.update!(metadata: (step.metadata || {}).merge("content_generating" => true))
+
+      # All steps async — first step with no delay (highest priority),
+      # steps 2-3 with stagger. We don't block the wizard job with perform_now
+      # because the user should see the route dashboard immediately.
+      delay = index * 5.seconds
+      if delay.zero?
+        LearningRoutesEngine::ContentPipelineJob.perform_later(step.id, { pregenerate_audio: true })
+      else
+        LearningRoutesEngine::ContentPipelineJob.set(wait: delay).perform_later(step.id, { pregenerate_audio: true })
+      end
+    end
+
+    # Background generation for remaining steps (4+)
+    LearningRoutesEngine::BackgroundContentGenerationJob.set(wait: 30.seconds).perform_later(route.id)
+  rescue => e
+    Rails.logger.error("[WizardRouteGeneration] Content pre-generation failed: #{e.message}")
+  end
 
   def map_level(wizard_level)
     case wizard_level

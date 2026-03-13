@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_03_12_040741) do
+ActiveRecord::Schema[8.1].define(version: 2026_03_13_152725) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -427,6 +427,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_12_040741) do
     t.string "locale", default: "en", null: false
     t.integer "status", default: 0, null: false
     t.string "subject_area"
+    t.string "target_locale"
     t.string "topic", null: false
     t.integer "total_steps", default: 0
     t.jsonb "translations", default: {}, null: false
