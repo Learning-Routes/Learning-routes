@@ -1075,7 +1075,11 @@ es:
       example: "Dar ejemplo"
       simplify: "Simplificar"
       deeper: "Profundizar"
+      diagram: "Diagrama"
+      image: "Imagen"
+      code: "Código"
       generating: "Generando..."
+      rate_limited: "Has alcanzado el límite de interacciones IA para esta lección. Intenta más tarde."
     notes:
       heading: "Notas"
       placeholder: "Agrega tus notas..."
