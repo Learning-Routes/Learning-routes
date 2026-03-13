@@ -5,6 +5,7 @@ ContentEngine::Engine.routes.draw do
       post :give_example
       post :simplify
       post :deepen
+      post :interact
     end
   end
 
