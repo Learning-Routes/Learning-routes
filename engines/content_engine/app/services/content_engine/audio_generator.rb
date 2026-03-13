@@ -94,22 +94,17 @@ module ContentEngine
     end
 
     def select_voice
-      locale = @route.locale || "en"
-      voice_for_locale(locale)
-    end
+      # For bilingual routes, pick voice matching target language
+      lang = if bilingual_route?
+               @route.target_locale.to_s.split("-").first
+             else
+               (@route.locale || "en").split("-").first
+             end
 
-    def voice_for_locale(locale)
-      # Check for locale-specific voice in credentials: elevenlabs.voices.{locale}
-      locale_voice = Rails.application.credentials.dig(:elevenlabs, :voices, locale.to_sym)
-      return locale_voice if locale_voice.present?
-
-      # Legacy keys for backward compatibility
-      if locale.to_s.start_with?("es")
-        Rails.application.credentials.dig(:elevenlabs, :spanish_voice_id) ||
-          Rails.application.credentials.dig(:elevenlabs, :default_voice_id)
-      else
-        Rails.application.credentials.dig(:elevenlabs, :default_voice_id)
-      end
+      Rails.application.credentials.dig(:elevenlabs, :voices, lang.to_sym) ||
+        SectionAudioGenerator::VOICE_MAP[lang] ||
+        Rails.application.credentials.dig(:elevenlabs, :default_voice_id) ||
+        SectionAudioGenerator::DEFAULT_VOICE
     end
 
     def bilingual_route?

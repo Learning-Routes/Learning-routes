@@ -4,7 +4,8 @@ module LearningRoutesEngine
 
     retry_on StandardError, wait: 10.seconds, attempts: 2
 
-    MAX_AUDIO_SECTIONS = 2
+    # Pre-generate: first 2 concept sections + summary = 3 total
+    MAX_AUDIO_PREGENERATE = 3
 
     def perform(route_step_id, options = {})
       @step = RouteStep.find(route_step_id)
@@ -188,32 +189,94 @@ module LearningRoutesEngine
       @step.update!(metadata: metadata.merge("parsed_sections" => parsed))
     end
 
-    # ── Stage 4: Audio Pre-generation ────────────────────────────────
+    # ── Stage 4: Smart Audio Pre-generation ──────────────────────────
+    #
+    # Pre-generate audio for:
+    # - First 2 concept sections (most important for learning)
+    # - The summary section (users often replay summaries)
+    # Total: up to 3 sections. Rest available on-demand.
 
     def stage_audio_pregeneration!(sections)
-      return unless @options[:pregenerate_audio]
-
       locale = @route.locale || @user&.locale || "en"
+      target_locale = @route.target_locale
       audio_count = 0
 
-      sections.each_with_index do |section, index|
-        break if audio_count >= MAX_AUDIO_SECTIONS
+      # Select sections to pre-generate: first 2 concepts + first summary
+      targets = select_audio_targets(sections)
 
-        next unless %w[concept summary].include?(section[:type].to_s)
+      # Initialize audio_sections status tracking in metadata
+      audio_sections = {}
+
+      targets.each do |section, index|
+        break if audio_count >= MAX_AUDIO_PREGENERATE
+
         next if section[:body].blank?
-
-        # Check if already cached
         next if ContentEngine::SectionAudioGenerator.cached(@step.id, index)
 
+        audio_sections[index.to_s] = { "status" => "generating" }
+        update_audio_sections_metadata!(audio_sections)
+
         begin
-          ContentEngine::SectionAudioGenerator.generate!(
-            @step.id, index, section[:body], locale: locale
+          result = ContentEngine::SectionAudioGenerator.generate!(
+            @step.id, index, section[:body],
+            locale: locale,
+            target_locale: target_locale
           )
           audio_count += 1
+
+          audio_sections[index.to_s] = {
+            "status" => "ready",
+            "url" => result[:audio_url],
+            "duration" => result[:duration]
+          }
         rescue => e
           Rails.logger.warn("[ContentPipelineJob] Audio generation failed for step #{@step.id}, section #{index}: #{e.message}")
+          audio_sections[index.to_s] = { "status" => "failed" }
         end
       end
+
+      # Mark remaining audio-eligible sections as pending
+      sections.each_with_index do |section, index|
+        next unless %w[concept summary visual example tip].include?(section[:type].to_s)
+        next if audio_sections.key?(index.to_s)
+        next if section[:body].blank?
+
+        cached = ContentEngine::SectionAudioGenerator.cached(@step.id, index)
+        if cached
+          audio_sections[index.to_s] = {
+            "status" => "ready",
+            "url" => cached[:audio_url],
+            "duration" => cached[:duration]
+          }
+        else
+          audio_sections[index.to_s] = { "status" => "pending" }
+        end
+      end
+
+      update_audio_sections_metadata!(audio_sections)
+    end
+
+    def select_audio_targets(sections)
+      concepts = []
+      summary = nil
+
+      sections.each_with_index do |section, index|
+        type = section[:type].to_s
+        if type == "concept" && concepts.size < 2
+          concepts << [section, index]
+        elsif type == "summary" && summary.nil?
+          summary = [section, index]
+        end
+      end
+
+      targets = concepts
+      targets << summary if summary
+      targets
+    end
+
+    def update_audio_sections_metadata!(audio_sections)
+      metadata = @step.metadata || {}
+      @step.update!(metadata: metadata.merge("audio_sections" => audio_sections))
     end
 
     # ── Stage 5: Quiz Generation ─────────────────────────────────────

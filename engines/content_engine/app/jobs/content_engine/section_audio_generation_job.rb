@@ -7,9 +7,12 @@ module ContentEngine
     retry_on Net::OpenTimeout, Net::ReadTimeout, Errno::ECONNRESET,
              wait: :polynomially_longer, attempts: 3
 
-    def perform(step_id, section_index, section_text, locale)
+    def perform(step_id, section_index, section_text, locale, target_locale = nil)
+      tl = target_locale.present? ? target_locale : nil
+
       result = SectionAudioGenerator.generate!(
-        step_id, section_index, section_text, locale: locale
+        step_id, section_index, section_text,
+        locale: locale, target_locale: tl
       )
 
       if result
@@ -30,7 +33,18 @@ module ContentEngine
       raise # Let retry_on handle transient network errors
     rescue => e
       Rails.logger.error("[SectionAudioGenerationJob] Failed for step #{step_id}, section #{section_index}: #{e.message}")
-      # Broadcast error state so the UI doesn't poll forever
+
+      # Update metadata status to failed
+      begin
+        step = LearningRoutesEngine::RouteStep.find(step_id)
+        metadata = step.metadata || {}
+        audio_sections = metadata["audio_sections"] || {}
+        audio_sections[section_index.to_s] = { "status" => "failed" }
+        step.update!(metadata: metadata.merge("audio_sections" => audio_sections))
+      rescue
+        nil
+      end
+
       Turbo::StreamsChannel.broadcast_replace_to(
         "step_content_#{step_id}",
         target: "section-audio-#{step_id}-#{section_index}",
