@@ -50,7 +50,7 @@ gem "image_processing", "~> 1.2"
 # Unified multi-provider AI API (OpenAI, Anthropic, Gemini) [https://rubyllm.com]
 gem "ruby_llm", "~> 1.1"
 
-# HTTP client for ElevenLabs and Nano Banana REST APIs
+# HTTP client for ElevenLabs TTS API
 gem "httparty", "~> 0.22"
 
 # === Engines (modular monolith) ===

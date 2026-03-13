@@ -121,20 +121,24 @@ module ContentEngine
     def parse_response(response)
       content = response.content.to_s.strip
 
-      # If the response is empty (tool did all the work), check tool calls
-      if content.blank? && response.respond_to?(:tool_calls) && response.tool_calls.present?
-        # Tool results are in the conversation — the last response should have content
-        return { type: "text", content: "I used a tool to help, but got an unexpected result." }
+      if content.blank?
+        return { type: "text", content: "I couldn't generate a response. Please try again." }
       end
 
-      # Detect if response contains Mermaid diagram
-      if content.include?("```mermaid")
-        { type: "mixed", content: content }
-      elsif content.match?(/```\w+/)
-        { type: "mixed", content: content }
-      else
-        { type: "text", content: content }
-      end
+      # Detect response type from content patterns
+      type = if content.include?("```mermaid")
+               "diagram"
+             elsif content.match?(/!\[.*?\]\(data:image\//)
+               "image"
+             elsif content.match?(/!\[.*?\]\(https?:\/\//)
+               "image"
+             elsif content.match?(/```\w+/)
+               "code"
+             else
+               "text"
+             end
+
+      { type: type, content: content }
     end
 
     def check_rate_limit!

@@ -31,8 +31,7 @@ module AiOrchestrator
       claude-sonnet-4-5
       gpt-4.1-mini
       elevenlabs
-      nanobanana-pro
-      nanobanana-flash
+      gpt-image-1
     ].freeze
 
     validates :model, inclusion: { in: SUPPORTED_MODELS }

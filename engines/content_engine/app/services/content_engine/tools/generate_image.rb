@@ -21,7 +21,9 @@ module ContentEngine
         )
 
         result = client.chat(prompt: prompt)
-        return { type: "error", content: "Image generation returned empty" } unless result[:content].present?
+        unless result[:content].present?
+          return "Image generation returned empty result."
+        end
 
         image_data = result[:content]
         mime = result[:content_type] || "image/png"
@@ -29,9 +31,10 @@ module ContentEngine
           image_data = "data:#{mime};base64,#{image_data}"
         end
 
-        { type: "image", content: image_data, alt: description }
+        alt = description.gsub('"', "&quot;")
+        halt "![#{alt}](#{image_data})"
       rescue => e
-        { type: "error", content: "Could not generate image: #{e.message}" }
+        "Could not generate image: #{e.message}"
       end
     end
   end

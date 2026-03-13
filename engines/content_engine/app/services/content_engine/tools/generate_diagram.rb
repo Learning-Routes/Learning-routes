@@ -11,7 +11,6 @@ module ContentEngine
       param :diagram_type, desc: "Type of Mermaid diagram: flowchart, sequence, mindmap, classDiagram, stateDiagram, erDiagram", required: false
 
       def execute(description:, diagram_type: "flowchart")
-        # Use the LLM to generate valid Mermaid syntax
         chat = RubyLLM.chat(model: "gpt-4.1-mini")
         prompt = <<~PROMPT
           Generate a Mermaid #{diagram_type} diagram for: #{description}
@@ -30,9 +29,10 @@ module ContentEngine
           .gsub(/\n?```\z/, "")
           .strip
 
-        { type: "diagram", content: mermaid_code, diagram_type: diagram_type }
+        # halt returns the result directly, skipping the outer LLM commentary
+        halt "```mermaid\n#{mermaid_code}\n```"
       rescue => e
-        { type: "error", content: "Could not generate diagram: #{e.message}" }
+        "Could not generate diagram: #{e.message}"
       end
     end
   end

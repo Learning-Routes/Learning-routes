@@ -2,13 +2,12 @@
 # API keys are loaded from ENV (set in .env) or Rails credentials as fallback.
 #
 # Required ENV variables:
-#   OPENAI_API_KEY=sk-...        (primary AI provider)
+#   OPENAI_API_KEY=sk-...        (primary AI provider — also used for GPT Image generation)
 #   ELEVENLABS_API_KEY=...       (text-to-speech)
 #
 # Optional ENV variables:
 #   ANTHROPIC_API_KEY=sk-ant-... (not used as primary, available as fallback)
 #   GEMINI_API_KEY=...
-#   NANOBANANA_API_KEY=...       (image generation)
 
 Rails.application.config.after_initialize do
   # Configure RubyLLM (unified provider for OpenAI, Anthropic, Gemini)
@@ -31,8 +30,8 @@ Rails.application.config.ai_model_defaults = {
   exam_questions:       { temperature: 0.6, max_tokens: 4096 },
   quick_grading:        { temperature: 0.2, max_tokens: 1024 },
   voice_narration:      { temperature: 0.6, max_tokens: 4096 },
-  image_generation:     { width: 1024, height: 1024 },
-  quick_images:         { width: 512, height: 512 },
+  image_generation:     { quality: "medium", size: "1024x1024" },
+  quick_images:         { quality: "low", size: "1024x1024" },
   gap_analysis:         { temperature: 0.4, max_tokens: 4096 },
   reinforcement_generation: { temperature: 0.6, max_tokens: 4096 },
   explain_differently:       { temperature: 0.7, max_tokens: 4096 },

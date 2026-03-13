@@ -94,8 +94,8 @@ model_configs = [
   { model_name: "gpt-5.2", task_type: "exam_questions", priority: 0, fallback_model: "gpt-4.1-mini" },
   { model_name: "gpt-4.1-mini", task_type: "quick_grading", priority: 0, fallback_model: "gpt-5.2" },
   { model_name: "gpt-4.1-mini", task_type: "voice_narration", priority: 0, fallback_model: "gpt-5.2" },
-  { model_name: "nanobanana-pro", task_type: "image_generation", priority: 0, fallback_model: "nanobanana-flash" },
-  { model_name: "nanobanana-flash", task_type: "quick_images", priority: 0, fallback_model: "nanobanana-pro" }
+  { model_name: "gpt-image-1", task_type: "image_generation", priority: 0, fallback_model: "gpt-image-1" },
+  { model_name: "gpt-image-1", task_type: "quick_images", priority: 0, fallback_model: "gpt-image-1" }
 ]
 
 model_configs.each do |config_data|

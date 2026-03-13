@@ -7,6 +7,8 @@ module AiOrchestrator
       claude-opus-4-5 claude-haiku-4-5 claude-sonnet-4-5
     ].freeze
 
+    GPT_IMAGE_MODELS = %w[gpt-image-1].freeze
+
     class RequestError < StandardError; end
     class TimeoutError < RequestError; end
 
@@ -21,8 +23,8 @@ module AiOrchestrator
         chat_via_ruby_llm(prompt: prompt, system_prompt: system_prompt, params: params)
       elsif @model == "elevenlabs"
         request_elevenlabs(text: prompt, params: params)
-      elsif @model.start_with?("nanobanana")
-        request_nanobanana(prompt: prompt, params: params)
+      elsif GPT_IMAGE_MODELS.include?(@model)
+        request_gpt_image(prompt: prompt, params: params)
       else
         raise RequestError, "Unsupported model: #{@model}"
       end
@@ -115,47 +117,39 @@ module AiOrchestrator
       raise TimeoutError, "ElevenLabs request timed out: #{e.message}"
     end
 
-    def request_nanobanana(prompt:, params: {})
-      api_key = Rails.application.credentials.dig(:nanobanana, :api_key) || ENV["NANOBANANA_API_KEY"]
-      api_url = Rails.application.credentials.dig(:nanobanana, :api_url) || "https://api.nanobanana.com/v1"
-
-      defaults = Rails.application.config.ai_model_defaults[
-        @model == "nanobanana-pro" ? :image_generation : :quick_images
-      ] || {}
+    def request_gpt_image(prompt:, params: {})
+      defaults = Rails.application.config.ai_model_defaults[@task_type&.to_sym] || {}
       merged = defaults.merge(params)
 
+      size = merged[:size] || "1024x1024"
+      quality = merged[:quality] || "medium"
+
       start_time = monotonic_now
-      response = HTTParty.post(
-        "#{api_url}/generate",
-        headers: {
-          "Authorization" => "Bearer #{api_key}",
-          "Content-Type" => "application/json"
-        },
-        body: {
-          model: @model,
-          prompt: prompt,
-          width: merged[:width] || 1024,
-          height: merged[:height] || 1024
-        }.to_json,
-        timeout: 120
+      image = RubyLLM.paint(
+        prompt,
+        model: @model,
+        size: size,
+        quality: quality
       )
       elapsed_ms = ((monotonic_now - start_time) * 1000).round
 
-      unless response.success?
-        raise RequestError, "NanoBanana API error: #{response.code} - #{response.body}"
-      end
+      # RubyLLM returns an Image object with .url or .data (base64)
+      content = image.url.presence || image.data
+      raise RequestError, "GPT Image returned no image data" unless content.present?
 
-      parsed = JSON.parse(response.body)
       {
-        content: parsed["image_url"] || parsed["data"],
+        content: content,
         model: @model,
         input_tokens: prompt.length,
         output_tokens: 0,
         latency_ms: elapsed_ms,
-        content_type: "image/png"
+        content_type: image.mime_type || "image/png"
       }
-    rescue Net::ReadTimeout, Net::OpenTimeout => e
-      raise TimeoutError, "NanoBanana request timed out: #{e.message}"
+    rescue => e
+      if e.message.include?("timeout") || e.message.include?("Timeout")
+        raise TimeoutError, "GPT Image request timed out: #{e.message}"
+      end
+      raise RequestError, "GPT Image generation failed: #{e.message}"
     end
 
     def monotonic_now
