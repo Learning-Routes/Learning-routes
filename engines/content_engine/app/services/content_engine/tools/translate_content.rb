@@ -23,9 +23,9 @@ module ContentEngine
         PROMPT
 
         response = chat.ask(prompt)
-        { type: "text", content: response.content.strip, from: from_locale, to: to_locale }
+        halt response.content.strip
       rescue => e
-        { type: "error", content: "Could not translate: #{e.message}" }
+        "Could not translate: #{e.message}"
       end
     end
   end

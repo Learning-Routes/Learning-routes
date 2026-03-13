@@ -33,9 +33,9 @@ module ContentEngine
         PROMPT
 
         response = chat.ask(prompt)
-        { type: "text", content: response.content.strip }
+        halt response.content.strip
       rescue => e
-        { type: "error", content: "Could not simplify: #{e.message}" }
+        "Could not simplify: #{e.message}"
       end
     end
   end

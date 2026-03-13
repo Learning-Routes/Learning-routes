@@ -15,9 +15,12 @@
 
   <% if section[:image_url].present? %>
     <div style="margin-bottom:1.25rem; border-radius:16px; overflow:hidden; border:1px solid var(--color-border-subtle); box-shadow:0 2px 8px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.02);">
-      <img src="<%= section[:image_url] %>" alt="<%= section[:title] %>"
+      <img src="<%= section[:image_url] %>" alt="<%= section[:alt_text] || section[:title] %>"
            style="width:100%; height:auto; display:block;"
            loading="lazy">
+      <% if section[:caption].present? %>
+        <p style="text-align:center; font-size:0.8125rem; color:var(--color-muted); padding:0.625rem 1rem; margin:0; font-style:italic;"><%= section[:caption] %></p>
+      <% end %>
     </div>
   <% end %>
 

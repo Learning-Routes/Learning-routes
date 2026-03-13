@@ -19,7 +19,7 @@ module AiOrchestrator
     end
 
     test "returns primary model for image_generation" do
-      assert_equal "nanobanana-pro", ModelRouter.model_for(:image_generation)
+      assert_equal "gpt-image-1", ModelRouter.model_for(:image_generation)
     end
 
     test "returns fallback for assessment_questions" do
@@ -31,7 +31,7 @@ module AiOrchestrator
     end
 
     test "returns fallback for image_generation" do
-      assert_equal "nanobanana-flash", ModelRouter.fallback_for(:image_generation)
+      assert_equal "gpt-image-1", ModelRouter.fallback_for(:image_generation)
     end
 
     test "raises error for unknown task type" do

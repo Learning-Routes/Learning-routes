@@ -164,13 +164,17 @@ module ContentEngine
       split_by_paragraphs(stripped)
     end
 
-    # Heading prefix → section type mapping
+    # Heading prefix → section type mapping (supports both Spanish and English markers)
     HEADING_TYPE_MAP = {
       "Concepto" => :concept,
+      "Concept"  => :concept,
       "Ejemplo"  => :example,
+      "Example"  => :example,
       "Visual"   => :visual,
       "Pregunta" => :check,
-      "Resumen"  => :summary
+      "Question" => :check,
+      "Resumen"  => :summary,
+      "Summary"  => :summary
     }.freeze
 
     def split_by_headings(text)
@@ -243,10 +247,10 @@ module ContentEngine
         if stripped.match?(/\A[A-D]\)\s/)
           label = stripped.sub(/\A[A-D]\)\s*/, "")
           options << { label: label, correct: false }
-        elsif stripped.match?(/\ACORRECTA:\s*/i)
-          correct_letter = stripped.sub(/\ACORRECTA:\s*/i, "").strip.upcase
-        elsif stripped.match?(/\AEXPLICACI[OÓ]N:\s*/i)
-          explanation = stripped.sub(/\AEXPLICACI[OÓ]N:\s*/i, "").strip
+        elsif stripped.match?(/\A(?:CORRECTA|CORRECT|ANSWER):\s*/i)
+          correct_letter = stripped.sub(/\A(?:CORRECTA|CORRECT|ANSWER):\s*/i, "").strip.upcase
+        elsif stripped.match?(/\A(?:EXPLICACI[OÓ]N|EXPLANATION):\s*/i)
+          explanation = stripped.sub(/\A(?:EXPLICACI[OÓ]N|EXPLANATION):\s*/i, "").strip
         elsif question.blank? && stripped.present? && options.empty?
           # If no question from heading, first non-empty line is the question
           question = stripped
@@ -269,30 +273,38 @@ module ContentEngine
       }
     end
 
-    # Parse ## Visual: heading format
+    # Parse ## Visual: heading format — extract image description for AI generation
     def parse_heading_visual(title_from_heading, body)
+      # The body IS the image description (used as prompt for AI image generation)
+      image_description = body.to_s.strip
+
+      # Check if body contains a mermaid diagram
+      has_diagram = body.to_s.include?("```mermaid")
+
       {
         type: "visual",
         title: title_from_heading.presence || "Visual",
         alt_text: title_from_heading.to_s.strip,
         body: body,
+        image_description: image_description.presence,
         image_url: nil,
-        caption: nil
+        caption: nil,
+        contains_diagram: has_diagram
       }
     end
 
     # Parse ## Resumen: heading format with PUNTOS CLAVE: bullet list
     def parse_heading_summary(title_from_heading, body)
       full_text = body.to_s.strip
-      # Remove "PUNTOS CLAVE:" label if present
-      full_text = full_text.sub(/\APUNTOS CLAVE:\s*/i, "")
+      # Remove "PUNTOS CLAVE:" or "KEY POINTS:" label if present
+      full_text = full_text.sub(/\A(?:PUNTOS CLAVE|KEY POINTS):\s*/i, "")
 
       key_points = full_text.lines
                             .select { |l| l.strip.match?(/^[-*]\s/) }
                             .map { |l| l.strip.sub(/^[-*]\s+/, "") }
 
       remaining = full_text.lines
-                           .reject { |l| l.strip.match?(/^[-*]\s/) || l.strip.match?(/\APUNTOS CLAVE:/i) }
+                           .reject { |l| l.strip.match?(/^[-*]\s/) || l.strip.match?(/\A(?:PUNTOS CLAVE|KEY POINTS):/i) }
                            .join.strip
 
       {
@@ -322,16 +334,20 @@ module ContentEngine
     def build_concept_or_visual(title, body)
       body = body.to_s.strip
       image_match = body.match(IMAGE_REGEX)
+      has_diagram = body.include?("```mermaid")
 
       if image_match
         {
           type: "visual",
           title: title,
           body: body,
-          image_url: image_match[2]
+          image_url: image_match[2],
+          contains_diagram: has_diagram
         }
       else
-        { type: "concept", title: title, body: body }
+        section = { type: "concept", title: title, body: body }
+        section[:contains_diagram] = true if has_diagram
+        section
       end
     end
 

@@ -26,9 +26,9 @@ module ContentEngine
         PROMPT
 
         response = chat.ask(prompt)
-        { type: "code", content: response.content.strip, language: language }
+        halt response.content.strip
       rescue => e
-        { type: "error", content: "Could not generate code example: #{e.message}" }
+        "Could not generate code example: #{e.message}"
       end
     end
   end

@@ -9,8 +9,8 @@ module AiOrchestrator
       quick_grading:        { primary: "gpt-4.1-mini", fallback: "gpt-5.2" },
       voice_narration:      { primary: "gpt-4.1-mini", fallback: "gpt-5.2" },
       voice_evaluation:     { primary: "gpt-4.1-mini", fallback: "gpt-5.2" },
-      image_generation:     { primary: "nanobanana-pro", fallback: "nanobanana-flash" },
-      quick_images:         { primary: "nanobanana-flash", fallback: "nanobanana-pro" },
+      image_generation:     { primary: "gpt-image-1", fallback: "gpt-image-1" },
+      quick_images:         { primary: "gpt-image-1", fallback: "gpt-image-1" },
       gap_analysis:         { primary: "gpt-5.2", fallback: "gpt-4.1-mini" },
       reinforcement_generation: { primary: "gpt-5.2", fallback: "gpt-4.1-mini" },
       explain_differently:       { primary: "gpt-5.2", fallback: "gpt-4.1-mini" },
@@ -28,8 +28,7 @@ module AiOrchestrator
       "claude-haiku-4-5"   => 200,
       "claude-sonnet-4-5"  => 80,
       "elevenlabs"         => 20,
-      "nanobanana-pro"     => 30,
-      "nanobanana-flash"   => 60
+      "gpt-image-1"        => 30
     }.freeze
 
     class RateLimitExceeded < StandardError; end

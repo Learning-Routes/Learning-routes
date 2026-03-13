@@ -28,14 +28,9 @@ module AiOrchestrator
       assert_equal 100, cost
     end
 
-    test "estimates cost for image model" do
-      cost = CostTracker.estimate_cost(model: "nanobanana-pro")
-      assert_equal 10, cost
-    end
-
-    test "estimates cost for flash image model" do
-      cost = CostTracker.estimate_cost(model: "nanobanana-flash")
-      assert_equal 2, cost
+    test "estimates cost for gpt-image-1" do
+      cost = CostTracker.estimate_cost(model: "gpt-image-1")
+      assert_equal 7, cost
     end
 
     test "estimates flat cost for elevenlabs" do

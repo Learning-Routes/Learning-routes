@@ -73,6 +73,14 @@ module LearningRoutesEngine
       step_quiz&.passed_by?(user) || false
     end
 
+    def content_ready?
+      metadata&.dig("content_ready") == true
+    end
+
+    def content_generating?
+      metadata&.dig("content_generating") == true
+    end
+
     def audio_delivery?
       delivery_format == "audio"
     end

@@ -111,8 +111,17 @@ module LearningRoutesEngine
       when "lesson"
         @content = ContentEngine::AiContent.where(route_step: @step).by_type(:text).first
         unless @content
-          begin; LearningRoutesEngine::ContentGenerationJob.perform_later(@step.id); rescue => e; Rails.logger.error("Content generation failed for step ##{@step.id}: #{e.message}"); end
-          @content_generating = true
+          # Use the pipeline job instead of the simple content generation job
+          if @step.metadata&.dig("content_generating")
+            @content_generating = true
+          else
+            begin
+              LearningRoutesEngine::ContentPipelineJob.perform_later(@step.id)
+            rescue => e
+              Rails.logger.error("Content pipeline failed for step ##{@step.id}: #{e.message}")
+            end
+            @content_generating = true
+          end
         end
         if @content
           cached = @step.metadata&.dig("parsed_sections")
@@ -130,8 +139,16 @@ module LearningRoutesEngine
       when "exercise"
         @content = ContentEngine::AiContent.where(route_step: @step).by_type(:exercise).first
         unless @content
-          begin; LearningRoutesEngine::ContentGenerationJob.perform_later(@step.id); rescue => e; Rails.logger.error("Content generation failed for step ##{@step.id}: #{e.message}"); end
-          @content_generating = true
+          if @step.metadata&.dig("content_generating")
+            @content_generating = true
+          else
+            begin
+              LearningRoutesEngine::ContentPipelineJob.perform_later(@step.id)
+            rescue => e
+              Rails.logger.error("Content pipeline failed for step ##{@step.id}: #{e.message}")
+            end
+            @content_generating = true
+          end
         end
         @rendered_html = ContentEngine::MarkdownRenderer.render(@content.body) if @content
       when "assessment"
@@ -154,12 +171,14 @@ module LearningRoutesEngine
     def load_audio_content
       @content = ContentEngine::AiContent.where(route_step: @step).by_type(:text).first
 
-      # If no text content yet, generate it first
+      # If no text content yet, generate it first via pipeline
       unless @content
-        begin
-          LearningRoutesEngine::ContentGenerationJob.perform_later(@step.id)
-        rescue => e
-          Rails.logger.error("Content generation failed for audio step ##{@step.id}: #{e.message}")
+        unless @step.metadata&.dig("content_generating")
+          begin
+            LearningRoutesEngine::ContentPipelineJob.perform_later(@step.id, { pregenerate_audio: true })
+          rescue => e
+            Rails.logger.error("Content pipeline failed for audio step ##{@step.id}: #{e.message}")
+          end
         end
         @content_generating = true
         return
