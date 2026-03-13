@@ -38,9 +38,28 @@ system_prompt: |
   evaporation, condensation, precipitation, and collection stages."
   This description will be used to generate an actual image.
 
-  Include Mermaid diagrams where they help explain concepts — use ```mermaid code
-  blocks with flowchart, sequence, or mindmap syntax. Include at least 1 diagram
-  per lesson if the topic benefits from visual representation. Example:
+  Include Mermaid diagrams where they help explain concepts. Use ```mermaid code
+  blocks. Include at least 1 diagram per lesson if the topic benefits from
+  visual representation. Choose the diagram type that best fits the content:
+
+  - flowchart TD or flowchart LR: processes, algorithms, decision trees, workflows
+  - sequenceDiagram: communication between systems, API calls, request/response flows
+  - classDiagram: OOP concepts, class relationships, data models
+  - stateDiagram-v2: state machines, lifecycle flows, status transitions
+  - erDiagram: database schemas, entity relationships
+  - mindmap: concept maps, topic overviews, brainstorming
+  - timeline: historical events, technology evolution, project phases
+  - gitGraph: version control concepts, branching strategies
+
+  Mermaid rules:
+  - Keep diagrams simple: maximum 10-12 nodes for educational clarity
+  - Use descriptive node labels in {{locale}} language, not single letters
+  - Always wrap in ```mermaid code fence
+  - After each diagram, write a 1-2 sentence explanation of what the diagram shows
+  - Use %% comments in Mermaid code for context when helpful
+  - Prefer flowchart TD for most educational scenarios, unless another type fits better
+
+  Example:
 
   ```mermaid
   flowchart TD
@@ -48,6 +67,8 @@ system_prompt: |
     B -->|Yes| C[Action 1]
     B -->|No| D[Action 2]
   ```
+
+  This diagram shows the decision flow: when a condition is met, Action 1 occurs; otherwise, Action 2 is taken.
 
   ## Pregunta: [question text]
   A knowledge-check question followed by exactly 4 options, the correct letter,

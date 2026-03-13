@@ -787,6 +787,83 @@ html[data-theme="dark"] .learning-nav {
   .lesson-content hr { @apply my-8; border-color: var(--color-border-subtle); border-style: solid; opacity: 0.5; }
   .lesson-content img { @apply max-w-full my-5; border-radius: 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.02); }
 
+  /* ── Mermaid diagram containers ── */
+  .mermaid-container {
+    @apply my-6 overflow-hidden;
+    border-radius: 14px;
+    border: 1px solid var(--color-border-subtle);
+    background: var(--color-card);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.02), 0 4px 12px rgba(0,0,0,0.01);
+  }
+  .mermaid-label {
+    display: block;
+    padding: 0.625rem 1.25rem 0;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.5625rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-muted);
+  }
+  .mermaid-container .mermaid {
+    padding: 1.25rem;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    text-align: center;
+  }
+  .mermaid-container .mermaid svg {
+    max-width: 100%;
+    height: auto;
+  }
+  .mermaid-caption {
+    padding: 0 1.25rem 0.75rem;
+    font-size: 0.8125rem;
+    font-style: italic;
+    color: var(--color-muted);
+    text-align: center;
+  }
+  /* Rendered state */
+  .mermaid--rendered { min-height: 60px; }
+  /* Error fallback */
+  .mermaid-fallback {
+    padding: 1rem 1.25rem;
+  }
+  .mermaid-fallback__header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--color-muted);
+    margin-bottom: 0.75rem;
+  }
+  .mermaid-fallback__code {
+    background: var(--color-tint);
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    font-size: 0.75rem;
+    line-height: 1.5;
+    overflow-x: auto;
+    white-space: pre-wrap;
+    color: var(--color-sub);
+    margin: 0;
+  }
+  /* Responsive: scroll on mobile */
+  @media (max-width: 640px) {
+    .mermaid-container .mermaid {
+      padding: 0.75rem;
+    }
+  }
+  /* Print: ensure diagrams are visible */
+  @media print {
+    .mermaid-container {
+      break-inside: avoid;
+      border: 1px solid #ccc;
+    }
+    .mermaid--rendered svg { max-width: 100% !important; }
+  }
+
   /* Interactive lesson blocks (:::concept, :::check, :::tip, :::example, :::summary) */
   .lesson-block {
     @apply rounded-2xl my-6 overflow-hidden;

@@ -126,7 +126,7 @@ export default class extends Controller {
         <span style="font-size:0.625rem; color:var(--color-muted); background:var(--color-card); border-radius:4px; padding:0.125rem 0.375rem;">${type || "text"}</span>
         <button style="margin-left:auto; background:none; border:none; cursor:pointer; color:var(--color-muted); font-size:0.75rem; padding:0.125rem 0.375rem; border-radius:4px; transition:color 0.2s;" class="ai-dismiss-btn" aria-label="Dismiss">&times;</button>
       </div>
-      <div class="lesson-content" data-controller="math-renderer mermaid-diagram">${html}</div>
+      <div class="lesson-content" data-controller="math-renderer">${html}</div>
     `
 
     // Wire up dismiss button
@@ -147,11 +147,6 @@ export default class extends Controller {
       wrapper.style.opacity = "1"
       wrapper.style.transform = "translateY(0)"
     })
-
-    // Re-initialize Mermaid diagrams if present
-    if (html.includes("mermaid-diagram")) {
-      this._initMermaid(wrapper)
-    }
 
     // Scroll into view
     wrapper.scrollIntoView({ behavior: "smooth", block: "nearest" })
@@ -192,12 +187,5 @@ export default class extends Controller {
     // Re-enable all AI buttons
     this.element.querySelectorAll(".ai-btn").forEach(b => b.disabled = false)
     this._activeBtn = null
-  }
-
-  _initMermaid(container) {
-    // Dispatch event so mermaid-diagram controllers can pick up new diagrams
-    container.querySelectorAll("[data-controller~='mermaid-diagram']").forEach(el => {
-      el.dispatchEvent(new Event("mermaid:render"))
-    })
   }
 }

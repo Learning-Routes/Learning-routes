@@ -990,6 +990,7 @@ en:
       block_tip: "Pro Tip"
       block_example: "Real-World Example"
       block_summary: "Key Takeaways"
+      diagram_label: "DIAGRAM"
       continue: "Continue"
       back: "Back"
       level_up_title: "Level Up!"

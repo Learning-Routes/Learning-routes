@@ -990,6 +990,7 @@ es:
       block_tip: "Consejo"
       block_example: "Ejemplo del mundo real"
       block_summary: "Puntos clave"
+      diagram_label: "DIAGRAMA"
       continue: "Continuar"
       back: "Anterior"
       level_up_title: "¡Subiste de nivel!"
