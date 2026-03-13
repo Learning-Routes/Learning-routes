@@ -83,7 +83,7 @@ export default class extends Controller {
     const shadowPath = document.createElementNS(ns, "path")
     shadowPath.setAttribute("d", pathD)
     shadowPath.setAttribute("fill", "none")
-    shadowPath.setAttribute("stroke", "rgba(28,24,18,0.03)")
+    shadowPath.setAttribute("stroke", "rgba(28,24,18,0.08)")
     shadowPath.setAttribute("stroke-width", "8")
     shadowPath.setAttribute("stroke-linecap", "round")
     shadowPath.setAttribute("transform", "translate(1,1.5)")
@@ -96,7 +96,7 @@ export default class extends Controller {
     mainPath.setAttribute("stroke", color)
     mainPath.setAttribute("stroke-width", "3.5")
     mainPath.setAttribute("stroke-linecap", "round")
-    mainPath.setAttribute("opacity", "0.35")
+    mainPath.setAttribute("opacity", "0.6")
     svg.appendChild(mainPath)
 
     // Completed portion of path (overlay)
@@ -134,7 +134,7 @@ export default class extends Controller {
         glow.setAttribute("cy", pos.y)
         glow.setAttribute("r", nodeR + 5)
         glow.setAttribute("fill", color)
-        glow.setAttribute("opacity", "0.08")
+        glow.setAttribute("opacity", "0.15")
         g.appendChild(glow)
 
         // Solid fill
@@ -206,7 +206,7 @@ export default class extends Controller {
         circle.setAttribute("stroke", color)
         circle.setAttribute("stroke-width", "1.2")
         circle.setAttribute("stroke-dasharray", "3 3")
-        circle.setAttribute("opacity", "0.25")
+        circle.setAttribute("opacity", "0.5")
         g.appendChild(circle)
       }
 

@@ -118,7 +118,13 @@ module LearningRoutesEngine
     end
 
     def normalize_answer(value)
-      value.to_s.strip.downcase.gsub(/\A([a-d])\)?\s*/, '\1')
+      cleaned = value.to_s.strip.downcase
+      # Extract just the letter if the answer starts with A), B), etc.
+      if cleaned.match?(/\A[a-d]\)/)
+        cleaned[0]
+      else
+        cleaned.gsub(/\A"(.+)"\z/, '\1') # strip surrounding quotes
+      end
     end
   end
 end

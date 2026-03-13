@@ -18,4 +18,10 @@
           quiz: @step_quiz, questions: @questions, step: @step, route: @route %>
     <% end %>
   </div>
+  <script nonce="<%= content_security_policy_nonce %>">
+    requestAnimationFrame(function() {
+      var q = document.getElementById("step_quiz_panel");
+      if (q) q.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  </script>
 <% end %>

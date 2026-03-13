@@ -996,6 +996,39 @@ es:
       level_up_sub: "Sigue así, vas increíble"
       level_label: "NIVEL"
       ai_tools: "Herramientas IA"
+      complete_lesson: "Completar lección"
+      answer_to_continue: "Responde para continuar"
+      celebration:
+        route_complete: "¡Ruta completada!"
+        lesson_complete: "¡Lección completada!"
+        route_complete_sub: "Has completado toda la ruta de aprendizaje"
+        perfect_sub: "¡Perfecto! Sin errores"
+        keep_going_sub: "¡Sigue así, vas increíble!"
+        xp_gained: "XP ganados"
+        correct: "correctas"
+        day_streak: "día de racha"
+        days_streak: "días de racha"
+        total_time: "Tiempo total"
+        next_prefix: "Siguiente:"
+        next_step: "Siguiente paso"
+        view_full_route: "Ver ruta completa"
+        view_route: "Ver ruta"
+        continue_route: "Continuar ruta"
+      companion:
+        greeting: "¡Vamos a aprender!"
+        speed_bonus: "¡VELOCIDAD!"
+        correct: "¡Correcto!"
+        keep_trying: "¡No te rindas!"
+        no_lives: "Sin vidas..."
+        no_lives_toast: "¡Sin vidas! Pero puedes seguir"
+        xp_speed_bonus: "+5 XP de velocidad"
+        concept: ["¡A aprender!", "Esto es clave", "Concéntrate aquí"]
+        check: ["¡Tú puedes!", "Piensa bien...", "¡Demuestra lo que sabes!"]
+        example: ["Ejemplo real", "Así se aplica", "¡Practica!"]
+        audio: ["¡Hora de escuchar!", "Relájate y escucha"]
+        visual: ["Mira esto", "Visual > texto"]
+        summary: ["¡Casi terminas!", "Buen resumen"]
+        tip: ["Pro tip", "Recuerda esto"]
     exercise:
       badge: "Ejercicio"
       reset: "Reiniciar"

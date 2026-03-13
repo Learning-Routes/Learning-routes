@@ -1,0 +1,72 @@
+<% accessible = step.completed? || step.in_progress? || step.available? %>
+<div id="route_step_<%= step.id %>" style="position:relative; background:var(--color-card); border-radius:16px; border:1px solid var(--color-border-subtle); padding:1.125rem 1.25rem; transition:all 0.25s; box-shadow:0 1px 3px rgba(0,0,0,0.02); <%= 'cursor:pointer;' if accessible %> <%= 'opacity:0.45;' if step.locked? %>"
+     <% if accessible %>
+       onmouseover="this.style.transform='translateY(-1px)'; this.style.boxShadow='0 4px 16px rgba(0,0,0,0.04)';"
+       onmouseout="this.style.transform=''; this.style.boxShadow='0 1px 3px rgba(0,0,0,0.02)';"
+     <% end %>>
+  <% if accessible %>
+    <%= link_to route_step_path(route, step), style: "position:absolute; inset:0; z-index:10; border-radius:16px;", aria: { label: step.localized_title }, tabindex: "-1" do %><% end %>
+  <% end %>
+
+  <div style="display:flex; align-items:center; gap:1rem;">
+    <%# Status icon %>
+    <%
+      if step.completed?
+        icon_bg = "linear-gradient(135deg, #10b981, #059669)"
+        icon_color = "#fff"
+        icon_shadow = "0 2px 8px rgba(16,185,129,0.25)"
+      elsif step.in_progress?
+        icon_bg = "linear-gradient(135deg, #6366f1, #8b5cf6)"
+        icon_color = "#fff"
+        icon_shadow = "0 2px 8px rgba(99,102,241,0.25)"
+      elsif step.available?
+        icon_bg = "var(--color-tint-strong)"
+        icon_color = "var(--color-txt)"
+        icon_shadow = "none"
+      else
+        icon_bg = "var(--color-tint)"
+        icon_color = "var(--color-muted)"
+        icon_shadow = "none"
+      end
+    %>
+    <div style="flex-shrink:0; width:2.75rem; height:2.75rem; border-radius:14px; display:flex; align-items:center; justify-content:center; background:<%= icon_bg %>; color:<%= icon_color %>; box-shadow:<%= icon_shadow %>;">
+      <% if step.completed? %>
+        <svg aria-hidden="true" width="18" height="18" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+      <% elsif step.locked? %>
+        <svg aria-hidden="true" width="16" height="16" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"/></svg>
+      <% else %>
+        <span style="font-family:'DM Sans',sans-serif; font-size:0.875rem; font-weight:800;"><%= index + 1 %></span>
+      <% end %>
+    </div>
+
+    <%# Step info %>
+    <div style="flex:1; min-width:0;">
+      <div style="display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap;">
+        <h3 style="font-family:'DM Sans',sans-serif; font-size:0.9375rem; font-weight:700; color:var(--color-txt); margin:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; letter-spacing:-0.2px;"><%= step.localized_title %></h3>
+        <%
+          badge_colors = {
+            'lesson' => { bg: 'rgba(99,102,241,0.08)', text: '#6366f1' },
+            'exercise' => { bg: 'rgba(16,185,129,0.08)', text: '#059669' },
+            'assessment' => { bg: 'rgba(245,158,11,0.08)', text: '#D97706' },
+            'review' => { bg: 'rgba(139,92,246,0.08)', text: '#8b5cf6' }
+          }
+          bc = badge_colors[step.content_type] || { bg: 'var(--color-tint-strong)', text: 'var(--color-sub)' }
+        %>
+        <span style="display:inline-flex; align-items:center; border-radius:8px; padding:0.125rem 0.5rem; font-family:'DM Mono',monospace; font-size:0.625rem; font-weight:600; letter-spacing:0.05em; text-transform:uppercase; background:<%= bc[:bg] %>; color:<%= bc[:text] %>;">
+          <%= t("learning_engine.#{step.content_type}.badge") %>
+        </span>
+      </div>
+      <% if step.localized_description.present? %>
+        <p style="font-size:0.8125rem; color:var(--color-muted); margin:0.25rem 0 0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; line-height:1.4;"><%= step.localized_description %></p>
+      <% end %>
+    </div>
+
+    <%# Duration %>
+    <% if step.estimated_minutes.to_i > 0 %>
+      <div style="flex-shrink:0; display:flex; align-items:center; gap:0.25rem; font-family:'DM Mono',monospace; font-size:0.6875rem; font-weight:500; color:var(--color-muted); background:var(--color-tint); padding:0.25rem 0.625rem; border-radius:8px;">
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        <%= t('learning_engine.route.duration', minutes: step.estimated_minutes) %>
+      </div>
+    <% end %>
+  </div>
+</div>

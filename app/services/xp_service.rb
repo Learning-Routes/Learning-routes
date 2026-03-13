@@ -34,6 +34,7 @@ class XpService
 
       # Track weekly XP
       week_key = Date.current.beginning_of_week.to_s
+      engagement.weekly_xp = {} unless engagement.weekly_xp.is_a?(Hash)
       engagement.weekly_xp[week_key] = (engagement.weekly_xp[week_key] || 0) + amount
 
       # Check level ups

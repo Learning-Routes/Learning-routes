@@ -1,14 +1,15 @@
 <% generating = @content_generating || @assessment_generating %>
-<turbo-frame id="step_content_<%= @step.id %>"
+<turbo-frame id="step_content_<%= @step.id %>" target="_top"
   <% if generating %>
     data-controller="content-poll"
     data-content-poll-url-value="<%= content_status_route_step_path(@route, @step) %>"
     data-content-poll-interval-value="3000"
   <% end %>
 >
-  <% if @step.delivery_format == "audio" %>
-    <%= render "content_engine/audio/audio_lesson", step: @step, content: @step.audio_content %>
+  <% if @step.delivery_format == "audio" && @content&.audio_ready? %>
+    <%= render "content_engine/audio/audio_lesson", step: @step, content: @content %>
   <% else %>
+    <%# Text lesson fallback (also used when audio is generating/failed) %>
     <% case @step.content_type %>
     <% when "lesson" %>
       <%= render "lesson" %>

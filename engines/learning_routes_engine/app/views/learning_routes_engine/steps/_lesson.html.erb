@@ -8,6 +8,42 @@
   <div class="lesson-particles" data-controller="lesson-particles" data-lesson-particles-target="container" aria-hidden="true"></div>
 
   <%# ── Duolingo-style section navigation ── %>
+  <%
+    lesson_i18n = {
+      continue: t('learning_engine.lesson.continue'),
+      complete_lesson: t('learning_engine.lesson.complete_lesson'),
+      answer_to_continue: t('learning_engine.lesson.answer_to_continue'),
+      route_complete: t('learning_engine.lesson.celebration.route_complete'),
+      lesson_complete: t('learning_engine.lesson.celebration.lesson_complete'),
+      route_complete_sub: t('learning_engine.lesson.celebration.route_complete_sub'),
+      perfect_sub: t('learning_engine.lesson.celebration.perfect_sub'),
+      keep_going_sub: t('learning_engine.lesson.celebration.keep_going_sub'),
+      xp_gained: t('learning_engine.lesson.celebration.xp_gained'),
+      correct: t('learning_engine.lesson.celebration.correct'),
+      day_streak: t('learning_engine.lesson.celebration.day_streak'),
+      days_streak: t('learning_engine.lesson.celebration.days_streak'),
+      total_time: t('learning_engine.lesson.celebration.total_time'),
+      next_prefix: t('learning_engine.lesson.celebration.next_prefix'),
+      next_step: t('learning_engine.lesson.celebration.next_step'),
+      view_full_route: t('learning_engine.lesson.celebration.view_full_route'),
+      view_route: t('learning_engine.lesson.celebration.view_route'),
+      continue_route: t('learning_engine.lesson.celebration.continue_route'),
+      companion_greeting: t('learning_engine.lesson.companion.greeting'),
+      companion_speed: t('learning_engine.lesson.companion.speed_bonus'),
+      companion_correct: t('learning_engine.lesson.companion.correct'),
+      companion_keep_trying: t('learning_engine.lesson.companion.keep_trying'),
+      companion_no_lives: t('learning_engine.lesson.companion.no_lives'),
+      companion_no_lives_toast: t('learning_engine.lesson.companion.no_lives_toast'),
+      companion_xp_speed: t('learning_engine.lesson.companion.xp_speed_bonus'),
+      companion_concept: t('learning_engine.lesson.companion.concept'),
+      companion_check: t('learning_engine.lesson.companion.check'),
+      companion_example: t('learning_engine.lesson.companion.example'),
+      companion_audio: t('learning_engine.lesson.companion.audio'),
+      companion_visual: t('learning_engine.lesson.companion.visual'),
+      companion_summary: t('learning_engine.lesson.companion.summary'),
+      companion_tip: t('learning_engine.lesson.companion.tip'),
+    }
+  %>
   <div data-controller="interactive-lesson"
        data-interactive-lesson-total-sections-value="<%= @sections.size %>"
        data-interactive-lesson-step-id-value="<%= @step.id %>"
@@ -16,7 +52,8 @@
        data-interactive-lesson-hearts-value="<%= quiz_count.clamp(3, 5) %>"
        data-interactive-lesson-user-level-value="<%= engagement&.current_level || 1 %>"
        data-interactive-lesson-user-xp-pct-value="<%= engagement&.level_progress_percentage || 0 %>"
-       data-interactive-lesson-user-streak-value="<%= engagement&.current_streak || 0 %>">
+       data-interactive-lesson-user-streak-value="<%= engagement&.current_streak || 0 %>"
+       data-interactive-lesson-i18n-value="<%= lesson_i18n.to_json %>">
 
     <%# ── Sticky HUD: progress + hearts + streak + XP bar ── %>
     <div class="lesson-hud">
