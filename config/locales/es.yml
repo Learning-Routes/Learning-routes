@@ -1163,6 +1163,12 @@ es:
   content_engine:
     notes:
       placeholder: "Agrega tus notas..."
+    image_generation:
+      generate_button: "Ilustrar con AI"
+      generating: "Generando imagen..."
+      cost_limit_reached: "Límite de costo diario alcanzado. Generación de imagen omitida."
+      max_reached: "Máximo de imágenes para esta lección alcanzado."
+      failed: "Falló la generación de imagen. Inténtalo de nuevo."
 
   # ── Niveles de contenido ──
   content_levels:

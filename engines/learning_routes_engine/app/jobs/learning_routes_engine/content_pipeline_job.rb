@@ -147,7 +147,7 @@ module LearningRoutesEngine
         next if description.blank?
 
         begin
-          result = generate_image(description)
+          result = generate_image(description, is_first_image: images_generated == 0)
           next unless result
 
           # Update the section in metadata
@@ -159,55 +159,21 @@ module LearningRoutesEngine
       end
     end
 
-    def generate_image(description)
-      # Strip markdown formatting from the description for a cleaner image prompt
-      clean_desc = description.to_s
-        .gsub(/```[\w]*\n.*?```/m, "") # remove code blocks
-        .gsub(/\*{1,3}([^*]+)\*{1,3}/, '\1') # remove bold/italic
-        .gsub(/\[([^\]]+)\]\([^)]+\)/, '\1') # links → text only
-        .gsub(/^#+\s+/, "") # remove headings
-        .gsub(/\n{2,}/, ". ") # paragraphs → periods
-        .strip
-        .truncate(500)
-
-      return nil if clean_desc.blank?
-
-      prompt = "Educational illustration: #{clean_desc}. Clean, modern style suitable for a learning platform. No text overlays."
-
-      # Use AiClient directly since image generation uses RubyLLM.paint()
-      # which doesn't need system/user prompt templates
-      client = AiOrchestrator::AiClient.new(
-        model: "gpt-image-1",
-        task_type: :quick_images,
-        user: @user
-      )
-
-      result = client.chat(prompt: prompt)
-      return nil unless result[:content].present?
-
-      # Log the interaction for cost tracking
-      AiOrchestrator::AiInteraction.create!(
+    def generate_image(description, is_first_image: false)
+      locale = @route.locale || @user&.locale || "en"
+      service = ContentEngine::ImageGenerationService.new(
         user: @user,
-        model: "gpt-image-1",
-        task_type: "quick_images",
-        prompt: prompt.truncate(500),
-        status: :completed,
-        response: result[:content].truncate(500),
-        input_tokens: result[:input_tokens] || 0,
-        output_tokens: result[:output_tokens] || 0,
-        latency_ms: result[:latency_ms] || 0,
-        cost_cents: AiOrchestrator::CostTracker.estimate_cost(model: "gpt-image-1")
+        step: @step,
+        locale: locale
       )
 
-      image_data = result[:content]
-      mime = result[:content_type] || "image/png"
+      importance = is_first_image ? :high : :low
+      result = service.generate(
+        image_description: description,
+        metadata: { topic: @route.localized_topic, importance: importance }
+      )
 
-      # If the response is base64 data (not a URL), convert to data URI
-      unless image_data.start_with?("http")
-        image_data = "data:#{mime};base64,#{image_data}"
-      end
-
-      { url: image_data, content_type: mime }
+      { url: result[:image_url], content_type: "image/png" }
     rescue => e
       Rails.logger.warn("[ContentPipelineJob] Image generation failed: #{e.message}")
       nil
