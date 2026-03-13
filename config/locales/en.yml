@@ -1169,6 +1169,11 @@ en:
       cost_limit_reached: "Daily cost limit reached. Image generation skipped."
       max_reached: "Maximum images for this lesson reached."
       failed: "Image generation failed. Please try again."
+    audio:
+      listen_button: "Listen to explanation"
+      generating: "Generating audio..."
+      error: "Generation failed"
+      retry: "Retry"
 
   # ── Content Levels ──
   content_levels:

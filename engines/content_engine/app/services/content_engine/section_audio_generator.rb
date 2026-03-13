@@ -4,15 +4,26 @@ module ContentEngine
   class SectionAudioGenerator
     CACHE_TTL = 30.days
 
-    def self.generate!(step_id, section_index, section_text, locale: "en")
-      new(step_id, section_index, section_text, locale: locale).generate!
+    # Voice IDs for ElevenLabs — overridable via credentials (elevenlabs.voices.{locale})
+    VOICE_MAP = {
+      "es" => "XrExE9yKIg1WjnnlVkGX", # Matilda — warm, young, Spanish
+      "pt" => "ErXwobaYiN019PkySvjV", # Antoni — multilingual, Portuguese
+      "fr" => "XB0fDUnXU5powFXDhCwa", # Charlotte — multilingual, French
+      "en" => "21m00Tcm4TlvDq8ikWAM"  # Rachel — calm, young, English
+    }.freeze
+
+    DEFAULT_VOICE = "21m00Tcm4TlvDq8ikWAM"
+
+    def self.generate!(step_id, section_index, section_text, locale: "en", target_locale: nil)
+      new(step_id, section_index, section_text, locale: locale, target_locale: target_locale).generate!
     end
 
-    def initialize(step_id, section_index, section_text, locale: "en")
+    def initialize(step_id, section_index, section_text, locale: "en", target_locale: nil)
       @step_id = step_id
       @section_index = section_index
       @section_text = section_text
       @locale = locale
+      @target_locale = target_locale
     end
 
     def generate!
@@ -25,6 +36,9 @@ module ContentEngine
       cache_key = self.class.cache_key(@step_id, @section_index)
       Rails.cache.write(cache_key, { audio_url: audio_path, duration: duration }, expires_in: CACHE_TTL)
 
+      # Update step metadata audio_sections status
+      update_step_audio_status!("ready", audio_path, duration)
+
       { audio_url: audio_path, duration: duration }
     end
 
@@ -35,27 +49,23 @@ module ContentEngine
     def self.cached(step_id, section_index)
       result = Rails.cache.read(cache_key(step_id, section_index))
       if result
-        # Validate the cached file still exists and isn't corrupted
         file_path = Rails.root.join(result[:audio_url].to_s.delete_prefix("/"))
         if File.exist?(file_path) && File.size(file_path) > 1024
           return result
         else
-          # Stale cache entry — file missing or corrupted
           Rails.cache.delete(cache_key(step_id, section_index))
         end
       end
 
-      # Fallback: check disk for existing audio files (cache may have been cleared on restart)
+      # Fallback: check disk for existing audio files
       dir = Rails.root.join("storage", "audio", "sections")
       pattern = dir.join("section_#{step_id}_#{section_index}_*.mp3")
       files = Dir.glob(pattern).sort
-      # Only use files > 1KB (filter out corrupted files from old HTTParty bug)
       valid_files = files.select { |f| File.size(f) > 1024 }
       if valid_files.any?
         file_path = valid_files.last
         audio_url = "/storage/audio/sections/#{File.basename(file_path)}"
-        word_count = 150 # rough estimate since we don't have text
-        duration = (word_count / 150.0 * 60).round(1)
+        duration = 60.0 # rough estimate
         data = { audio_url: audio_url, duration: duration }
         Rails.cache.write(cache_key(step_id, section_index), data, expires_in: CACHE_TTL)
         data
@@ -67,13 +77,16 @@ module ContentEngine
     def sanitize_for_tts(text)
       sanitized = text.dup
 
-      # Remove code blocks → spoken placeholder
+      # Remove Mermaid diagram blocks → spoken placeholder
+      sanitized.gsub!(/```mermaid\n.*?```/m, locale_diagram_placeholder)
+
+      # Remove other code blocks → spoken placeholder
       sanitized.gsub!(/```[\w]*\n.*?```/m, locale_code_placeholder)
 
       # Remove inline code backticks (keep the text inside)
       sanitized.gsub!(/`([^`]+)`/) { Regexp.last_match(1) }
 
-      # Remove markdown tables (pipes, dashes, alignment colons)
+      # Remove markdown tables
       sanitized.gsub!(/^\|.*\|$/m, "")
       sanitized.gsub!(/^[\s|:-]+$/m, "")
 
@@ -96,10 +109,14 @@ module ContentEngine
       # Remove HTML tags
       sanitized.gsub!(/<[^>]+>/, "")
 
-      # Normalize numbers for better TTS pronunciation
-      # ElevenLabs best practice: expand symbols to spoken form
-      sanitized.gsub!(/\$(\d+(?:,\d{3})*(?:\.\d{2})?)/) { "#{Regexp.last_match(1)} dólares" } if @locale&.start_with?("es")
-      sanitized.gsub!(/(\d+)%/) { "#{Regexp.last_match(1)} por ciento" } if @locale&.start_with?("es")
+      # Strip emoji (Unicode emoji ranges)
+      sanitized.gsub!(/[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F1E0}-\u{1F1FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{FE00}-\u{FE0F}\u{1F900}-\u{1F9FF}\u{200D}\u{20E3}\u{E0020}-\u{E007F}]/, "")
+
+      # Locale-specific number/currency pronunciation
+      if spanish_locale?
+        sanitized.gsub!(/\$(\d+(?:,\d{3})*(?:\.\d{2})?)/) { "#{Regexp.last_match(1)} dólares" }
+        sanitized.gsub!(/(\d+)%/) { "#{Regexp.last_match(1)} por ciento" }
+      end
 
       # Convert bullet points to natural speech pauses
       sanitized.gsub!(/^[-*]\s+/, "... ")
@@ -107,7 +124,7 @@ module ContentEngine
       # Convert numbered lists to natural flow
       sanitized.gsub!(/^\d+\.\s+/, "... ")
 
-      # Double newlines → pause marker (ElevenLabs respects periods)
+      # Double newlines → pause marker
       sanitized.gsub!(/\n{2,}/, ". ")
 
       # Single newlines → space
@@ -121,7 +138,19 @@ module ContentEngine
     end
 
     def locale_code_placeholder
-      @locale&.start_with?("es") ? "código omitido" : "code omitted"
+      spanish_locale? ? "... código omitido ..." : "... code omitted ..."
+    end
+
+    def locale_diagram_placeholder
+      spanish_locale? ? "... ver diagrama en pantalla ..." : "... see diagram on screen ..."
+    end
+
+    def spanish_locale?
+      @locale&.start_with?("es")
+    end
+
+    def bilingual_route?
+      @target_locale.present?
     end
 
     def synthesize_audio(text)
@@ -135,9 +164,9 @@ module ContentEngine
         user: user
       )
 
-      # Use multilingual_v2 for better quality and number pronunciation.
-      # Flash v2.5 is faster but mispronounces complex numbers/currencies
-      # — not ideal for educational content. We generate async anyway.
+      # Always use multilingual_v2 — handles single-language fine and
+      # is required for bilingual language-learning routes (Strategy A).
+      # The narration text already mixes both languages from the bilingual prompt.
       result = client.chat(
         prompt: text,
         params: {
@@ -146,26 +175,30 @@ module ContentEngine
         }
       )
 
+      # Track cost
+      track_audio_cost!(user, text.length, result[:latency_ms])
+
       store_audio_file(result[:content])
     end
 
-    # Per ElevenLabs best practices: use a voice with an accent matching
-    # the target language. Native-language voices produce better pronunciation.
-    # See: https://elevenlabs.io/docs/overview/capabilities/text-to-speech/best-practices
-    VOICE_IDS = {
-      "es" => "XrExE9yKIg1WjnnlVkGX", # Matilda — warm, young, works well in Spanish
-      "pt" => "ErXwobaYiN019PkySvjV", # Antoni — multilingual, works well in Portuguese
-      "fr" => "XB0fDUnXU5powFXDhCwa", # Charlotte — English-Swedish, good for French
-      "en" => "21m00Tcm4TlvDq8ikWAM"  # Rachel — calm, young, English narration
-    }.freeze
-
     def select_voice
-      lang = @locale&.split("-")&.first || "en"
-      # Check credentials first (elevenlabs.voices.{locale}), then legacy key, then hardcoded
+      lang = effective_voice_locale
+      # Priority: credentials → VOICE_MAP → default
       Rails.application.credentials.dig(:elevenlabs, :voices, lang.to_sym) ||
-        Rails.application.credentials.dig(:elevenlabs, :"#{lang}_voice_id") ||
-        VOICE_IDS[lang] ||
-        VOICE_IDS["en"]
+        VOICE_MAP[lang] ||
+        Rails.application.credentials.dig(:elevenlabs, :default_voice_id) ||
+        DEFAULT_VOICE
+    end
+
+    # For bilingual routes, pick a voice matching the target language
+    # since the educational content emphasizes the target language.
+    # For regular routes, use the content locale.
+    def effective_voice_locale
+      if bilingual_route?
+        @target_locale.to_s.split("-").first
+      else
+        @locale&.split("-")&.first || "en"
+      end
     end
 
     def store_audio_file(audio_data)
@@ -179,10 +212,41 @@ module ContentEngine
       "/storage/audio/sections/#{filename}"
     end
 
-    # Rough estimate: ~150 words per minute for TTS
     def estimate_duration(text)
       word_count = text.split(/\s+/).size
       (word_count / 150.0 * 60).round(1)
+    end
+
+    def track_audio_cost!(user, text_length, latency_ms)
+      AiOrchestrator::AiInteraction.create!(
+        user: user,
+        model: "elevenlabs",
+        task_type: "voice_narration",
+        prompt: "section_audio:#{@step_id}:#{@section_index}",
+        status: :completed,
+        response: "audio_generated",
+        input_tokens: text_length,
+        output_tokens: 0,
+        latency_ms: latency_ms || 0,
+        cost_cents: AiOrchestrator::CostTracker.estimate_cost(model: "elevenlabs")
+      )
+    rescue => e
+      Rails.logger.warn("[SectionAudioGenerator] Cost tracking failed: #{e.message}")
+    end
+
+    def update_step_audio_status!(status, url = nil, duration = nil)
+      step = LearningRoutesEngine::RouteStep.find(@step_id)
+      metadata = step.metadata || {}
+      audio_sections = metadata["audio_sections"] || {}
+
+      entry = { "status" => status }
+      entry["url"] = url if url
+      entry["duration"] = duration if duration
+      audio_sections[@section_index.to_s] = entry
+
+      step.update!(metadata: metadata.merge("audio_sections" => audio_sections))
+    rescue => e
+      Rails.logger.warn("[SectionAudioGenerator] Status update failed: #{e.message}")
     end
   end
 end

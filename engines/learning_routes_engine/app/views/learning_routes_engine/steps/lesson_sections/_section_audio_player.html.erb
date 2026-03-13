@@ -23,7 +23,7 @@
             onmouseover="this.style.borderColor='rgba(99,102,241,0.3)'; this.style.color='#6366f1';"
             onmouseout="this.style.borderColor='var(--color-border-subtle)'; this.style.color='var(--color-sub)';">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 010 7.07"/></svg>
-      Escuchar explicaci&oacute;n
+      <%= t('content_engine.audio.listen_button', default: 'Listen to explanation') %>
     </button>
   </div>
 
@@ -32,7 +32,7 @@
     <div style="display:flex; align-items:center; gap:0.75rem; padding:0.625rem 1rem; background:var(--color-card); border:1px solid var(--color-border-subtle); border-radius:14px; box-shadow:0 1px 3px rgba(0,0,0,0.02);">
       <button data-action="click->section-audio#playPause"
               data-section-audio-target="playBtn"
-              aria-label="Reproducir/Pausar"
+              aria-label="Play/Pause"
               style="display:flex; align-items:center; justify-content:center; width:2.25rem; height:2.25rem; border-radius:50%; background:linear-gradient(135deg, #6366f1, #8b5cf6); color:#fff; border:none; cursor:pointer; flex-shrink:0; transition:transform 0.15s; box-shadow:0 2px 6px rgba(99,102,241,0.25);">
         <svg data-section-audio-target="playIcon" width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 3 20 12 6 21 6 3"/></svg>
         <svg data-section-audio-target="pauseIcon" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="display:none;"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
@@ -58,7 +58,7 @@
   <div data-section-audio-target="loadingState" style="display:none;">
     <div style="display:flex; align-items:center; gap:0.625rem; padding:0.625rem 1rem; background:var(--color-card); border:1px solid var(--color-border-subtle); border-radius:14px;">
       <div class="section-audio-spinner"></div>
-      <span style="font-size:0.8125rem; font-weight:500; color:var(--color-sub);">Generando audio...</span>
+      <span style="font-size:0.8125rem; font-weight:500; color:var(--color-sub);"><%= t('content_engine.audio.generating', default: 'Generating audio...') %></span>
     </div>
   </div>
 
@@ -66,9 +66,9 @@
   <div data-section-audio-target="errorState" style="display:none;">
     <div style="display:flex; align-items:center; gap:0.5rem; padding:0.625rem 1rem; background:var(--color-card); border:1px solid rgba(239,68,68,0.15); border-radius:14px;">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15" stroke-linecap="round"/><line x1="9" y1="9" x2="15" y2="15" stroke-linecap="round"/></svg>
-      <span style="font-size:0.8125rem; font-weight:500; color:#ef4444;">Error al generar</span>
+      <span style="font-size:0.8125rem; font-weight:500; color:#ef4444;"><%= t('content_engine.audio.error', default: 'Generation failed') %></span>
       <button data-action="click->section-audio#generate"
-              style="font-size:0.75rem; font-weight:600; color:#6366f1; background:none; border:none; cursor:pointer; text-decoration:underline; margin-left:auto;">Reintentar</button>
+              style="font-size:0.75rem; font-weight:600; color:#6366f1; background:none; border:none; cursor:pointer; text-decoration:underline; margin-left:auto;"><%= t('content_engine.audio.retry', default: 'Retry') %></button>
     </div>
   </div>
 </div>
