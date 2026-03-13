@@ -29,7 +29,14 @@ module ContentEngine
           .gsub(/\n?```\z/, "")
           .strip
 
-        # halt returns the result directly, skipping the outer LLM commentary
+        # Basic Mermaid syntax validation
+        valid_starts = %w[flowchart graph sequenceDiagram classDiagram stateDiagram erDiagram mindmap pie gitGraph timeline journey gantt]
+        first_word = mermaid_code.lines.first.to_s.strip.split(/\s+/).first.to_s
+        unless valid_starts.any? { |s| first_word.start_with?(s) }
+          # Try to fix by prepending the diagram type
+          mermaid_code = "#{diagram_type} TD\n#{mermaid_code}"
+        end
+
         halt "```mermaid\n#{mermaid_code}\n```"
       rescue => e
         "Could not generate diagram: #{e.message}"

@@ -85,6 +85,12 @@ export default class extends Controller {
         signal: this._abortController.signal
       })
 
+      if (!response.ok && response.status === 429) {
+        const data = await response.json().catch(() => ({}))
+        this._renderError(data.error || "Too many requests. Please wait a moment.")
+        return
+      }
+
       const data = await response.json()
 
       if (data.success && data.html) {
@@ -114,9 +120,20 @@ export default class extends Controller {
       <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.5rem;">
         <span style="font-family:'DM Mono',monospace; font-size:0.625rem; font-weight:600; color:var(--color-muted); text-transform:uppercase; letter-spacing:0.1em;">AI Assistant</span>
         <span style="font-size:0.625rem; color:var(--color-muted); background:var(--color-card); border-radius:4px; padding:0.125rem 0.375rem;">${type || "text"}</span>
+        <button style="margin-left:auto; background:none; border:none; cursor:pointer; color:var(--color-muted); font-size:0.75rem; padding:0.125rem 0.375rem; border-radius:4px; transition:color 0.2s;" class="ai-dismiss-btn" aria-label="Dismiss">&times;</button>
       </div>
       <div class="lesson-content" data-controller="math-renderer mermaid-diagram">${html}</div>
     `
+
+    // Wire up dismiss button
+    const dismissBtn = wrapper.querySelector(".ai-dismiss-btn")
+    if (dismissBtn) {
+      dismissBtn.addEventListener("click", () => {
+        wrapper.style.opacity = "0"
+        wrapper.style.transform = "translateY(-8px)"
+        setTimeout(() => wrapper.remove(), 300)
+      })
+    }
 
     // Insert at top of container
     container.prepend(wrapper)
@@ -159,14 +176,18 @@ export default class extends Controller {
     if (this.hasLoadingIndicatorTarget) {
       this.loadingIndicatorTarget.classList.remove("hidden")
     }
-    if (btn) btn.disabled = true
+    // Disable all AI buttons to prevent concurrent requests
+    this.element.querySelectorAll(".ai-btn").forEach(b => b.disabled = true)
+    this._activeBtn = btn
   }
 
   _hideLoading(btn) {
     if (this.hasLoadingIndicatorTarget) {
       this.loadingIndicatorTarget.classList.add("hidden")
     }
-    if (btn) btn.disabled = false
+    // Re-enable all AI buttons
+    this.element.querySelectorAll(".ai-btn").forEach(b => b.disabled = false)
+    this._activeBtn = null
   }
 
   _initMermaid(container) {

@@ -62,6 +62,8 @@ module ContentEngine
         ""
       end
 
+      history_context = build_conversation_history
+
       <<~PROMPT
         You are a helpful learning assistant embedded in an interactive lesson.
         You help the student understand the current section better.
@@ -77,7 +79,7 @@ module ContentEngine
         - Type: #{@section[:type]}
         - Title: #{@section[:title]}
         - Content: #{@section[:body].to_s.truncate(1500)}
-
+        #{history_context}
         You have tools available. Use them when appropriate:
         - generate_diagram: When the student needs a visual/flowchart/diagram explanation
         - generate_image: When an artistic illustration would help (not a diagram)
@@ -139,6 +141,28 @@ module ContentEngine
              end
 
       { type: type, content: content }
+    end
+
+    def build_conversation_history
+      recent = AiOrchestrator::AiInteraction
+        .where(user: @user)
+        .where("metadata->>'step_id' = ?", @step.id.to_s)
+        .where("metadata->>'agent_interaction' = ?", "true")
+        .where("created_at > ?", 1.hour.ago)
+        .order(created_at: :desc)
+        .limit(5)
+        .reverse
+
+      return "" if recent.empty?
+
+      lines = recent.map do |interaction|
+        action = interaction.metadata&.dig("action") || "unknown"
+        prompt_text = interaction.prompt.to_s.truncate(100)
+        response_text = interaction.response.to_s.truncate(200)
+        "- Student asked (#{action}): #{prompt_text}\n  You replied: #{response_text}"
+      end
+
+      "\nRecent conversation in this lesson:\n#{lines.join("\n")}\n"
     end
 
     def check_rate_limit!

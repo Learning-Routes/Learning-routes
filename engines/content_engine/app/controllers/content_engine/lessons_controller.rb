@@ -24,7 +24,7 @@ module ContentEngine
     def interact
       action = params[:action_type] || "explain_differently"
       message = params[:message]
-      section_index = params[:section_index].to_i
+      section_index = params[:section_index].present? ? params[:section_index].to_i : nil
 
       agent_interact(action, message: message, section_index: section_index)
     end
