@@ -1075,7 +1075,11 @@ en:
       example: "Give Example"
       simplify: "Simplify"
       deeper: "Go Deeper"
+      diagram: "Diagram"
+      image: "Image"
+      code: "Code"
       generating: "Generating..."
+      rate_limited: "You've reached the AI interaction limit for this lesson. Try again later."
     notes:
       heading: "Notes"
       placeholder: "Add your notes..."

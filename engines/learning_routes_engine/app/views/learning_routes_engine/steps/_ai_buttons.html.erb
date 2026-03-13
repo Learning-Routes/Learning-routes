@@ -1,42 +1,69 @@
 <div style="display:flex; flex-wrap:wrap; gap:0.5rem;" data-controller="ai-interaction"
-     data-ai-interaction-step-id-value="<%= @step.id %>">
+     data-ai-interaction-step-id-value="<%= @step.id %>"
+     data-ai-interaction-interact-url-value="<%= content_engine.interact_lesson_path(@step) %>">
+
+  <%# ── Row 1: Original AI helper buttons (turbo-stream) ── %>
   <button data-action="click->ai-interaction#request"
           data-url="<%= content_engine.explain_differently_lesson_path(@step) %>"
-          style="display:inline-flex; align-items:center; gap:0.5rem; border-radius:12px; padding:0.5rem 1rem; font-family:'DM Sans',sans-serif; font-size:0.8125rem; font-weight:600; color:var(--color-sub); background:var(--color-card); border:1px solid var(--color-border-subtle); cursor:pointer; transition:all 0.25s; box-shadow:0 1px 3px rgba(0,0,0,0.02);"
-          onmouseover="this.style.borderColor='rgba(99,102,241,0.3)'; this.style.color='#6366f1'; this.style.transform='translateY(-1px)'; this.style.boxShadow='0 3px 10px rgba(99,102,241,0.08)';"
-          onmouseout="this.style.borderColor='var(--color-border-subtle)'; this.style.color='var(--color-sub)'; this.style.transform=''; this.style.boxShadow='0 1px 3px rgba(0,0,0,0.02)';">
+          class="ai-btn hover-ai-btn-indigo"
+          aria-label="<%= t('learning_engine.ai_buttons.explain') %>">
     <svg aria-hidden="true" width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
     <%= t('learning_engine.ai_buttons.explain') %>
   </button>
 
   <button data-action="click->ai-interaction#request"
           data-url="<%= content_engine.give_example_lesson_path(@step) %>"
-          style="display:inline-flex; align-items:center; gap:0.5rem; border-radius:12px; padding:0.5rem 1rem; font-family:'DM Sans',sans-serif; font-size:0.8125rem; font-weight:600; color:var(--color-sub); background:var(--color-card); border:1px solid var(--color-border-subtle); cursor:pointer; transition:all 0.25s; box-shadow:0 1px 3px rgba(0,0,0,0.02);"
-          onmouseover="this.style.borderColor='rgba(16,185,129,0.3)'; this.style.color='#059669'; this.style.transform='translateY(-1px)'; this.style.boxShadow='0 3px 10px rgba(16,185,129,0.08)';"
-          onmouseout="this.style.borderColor='var(--color-border-subtle)'; this.style.color='var(--color-sub)'; this.style.transform=''; this.style.boxShadow='0 1px 3px rgba(0,0,0,0.02)';">
+          class="ai-btn hover-ai-btn-emerald"
+          aria-label="<%= t('learning_engine.ai_buttons.example') %>">
     <svg aria-hidden="true" width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
     <%= t('learning_engine.ai_buttons.example') %>
   </button>
 
   <button data-action="click->ai-interaction#request"
           data-url="<%= content_engine.simplify_lesson_path(@step) %>"
-          style="display:inline-flex; align-items:center; gap:0.5rem; border-radius:12px; padding:0.5rem 1rem; font-family:'DM Sans',sans-serif; font-size:0.8125rem; font-weight:600; color:var(--color-sub); background:var(--color-card); border:1px solid var(--color-border-subtle); cursor:pointer; transition:all 0.25s; box-shadow:0 1px 3px rgba(0,0,0,0.02);"
-          onmouseover="this.style.borderColor='rgba(245,158,11,0.3)'; this.style.color='#D97706'; this.style.transform='translateY(-1px)'; this.style.boxShadow='0 3px 10px rgba(245,158,11,0.08)';"
-          onmouseout="this.style.borderColor='var(--color-border-subtle)'; this.style.color='var(--color-sub)'; this.style.transform=''; this.style.boxShadow='0 1px 3px rgba(0,0,0,0.02)';">
+          class="ai-btn hover-ai-btn-amber"
+          aria-label="<%= t('learning_engine.ai_buttons.simplify') %>">
     <svg aria-hidden="true" width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"/></svg>
     <%= t('learning_engine.ai_buttons.simplify') %>
   </button>
 
   <button data-action="click->ai-interaction#request"
           data-url="<%= content_engine.deepen_lesson_path(@step) %>"
-          style="display:inline-flex; align-items:center; gap:0.5rem; border-radius:12px; padding:0.5rem 1rem; font-family:'DM Sans',sans-serif; font-size:0.8125rem; font-weight:600; color:var(--color-sub); background:var(--color-card); border:1px solid var(--color-border-subtle); cursor:pointer; transition:all 0.25s; box-shadow:0 1px 3px rgba(0,0,0,0.02);"
-          onmouseover="this.style.borderColor='rgba(139,92,246,0.3)'; this.style.color='#8b5cf6'; this.style.transform='translateY(-1px)'; this.style.boxShadow='0 3px 10px rgba(139,92,246,0.08)';"
-          onmouseout="this.style.borderColor='var(--color-border-subtle)'; this.style.color='var(--color-sub)'; this.style.transform=''; this.style.boxShadow='0 1px 3px rgba(0,0,0,0.02)';">
+          class="ai-btn hover-ai-btn-purple"
+          aria-label="<%= t('learning_engine.ai_buttons.deeper') %>">
     <svg aria-hidden="true" width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
     <%= t('learning_engine.ai_buttons.deeper') %>
   </button>
 
-  <!-- Loading indicator -->
+  <%# ── Row 2: Agent-powered multimedia buttons (JSON) ── %>
+  <button data-action="click->ai-interaction#interact"
+          data-action-type="show_diagram"
+          data-url="<%= content_engine.interact_lesson_path(@step) %>"
+          class="ai-btn hover-ai-btn-cyan"
+          aria-label="<%= t('learning_engine.ai_buttons.diagram', default: 'Diagram') %>">
+    <svg aria-hidden="true" width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1V5zm10 0a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1V5zM4 15a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1v-4z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 10v4m10-4v4m-3-7h-4"/></svg>
+    <%= t('learning_engine.ai_buttons.diagram', default: 'Diagram') %>
+  </button>
+
+  <button data-action="click->ai-interaction#interact"
+          data-action-type="show_image"
+          data-url="<%= content_engine.interact_lesson_path(@step) %>"
+          class="ai-btn hover-ai-btn-rose"
+          aria-label="<%= t('learning_engine.ai_buttons.image', default: 'Image') %>">
+    <svg aria-hidden="true" width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+    <%= t('learning_engine.ai_buttons.image', default: 'Image') %>
+  </button>
+
+  <button data-action="click->ai-interaction#interact"
+          data-action-type="show_code"
+          data-url="<%= content_engine.interact_lesson_path(@step) %>"
+          class="ai-btn hover-ai-btn-green"
+          aria-label="<%= t('learning_engine.ai_buttons.code', default: 'Code') %>">
+    <svg aria-hidden="true" width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+    <%= t('learning_engine.ai_buttons.code', default: 'Code') %>
+  </button>
+
+  <%# ── Loading indicator ── %>
   <div data-ai-interaction-target="loadingIndicator" class="hidden">
     <div style="display:inline-flex; align-items:center; gap:0.5rem; padding:0.5rem 1rem; font-size:0.8125rem; font-weight:500; color:var(--color-muted); background:var(--color-tint); border-radius:12px;">
       <svg aria-hidden="true" class="animate-spin" style="height:0.875rem; width:0.875rem;" fill="none" viewBox="0 0 24 24">
@@ -47,3 +74,31 @@
     </div>
   </div>
 </div>
+
+<style>
+  .ai-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    border-radius: 12px;
+    padding: 0.5rem 1rem;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--color-sub);
+    background: var(--color-card);
+    border: 1px solid var(--color-border-subtle);
+    cursor: pointer;
+    transition: all 0.25s;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+  }
+  .ai-btn:hover { transform: translateY(-1px); }
+  .ai-btn:disabled { opacity: 0.5; cursor: wait; transform: none; }
+  .hover-ai-btn-indigo:hover { border-color: rgba(99,102,241,0.3); color: #6366f1; box-shadow: 0 3px 10px rgba(99,102,241,0.08); }
+  .hover-ai-btn-emerald:hover { border-color: rgba(16,185,129,0.3); color: #059669; box-shadow: 0 3px 10px rgba(16,185,129,0.08); }
+  .hover-ai-btn-amber:hover { border-color: rgba(245,158,11,0.3); color: #D97706; box-shadow: 0 3px 10px rgba(245,158,11,0.08); }
+  .hover-ai-btn-purple:hover { border-color: rgba(139,92,246,0.3); color: #8b5cf6; box-shadow: 0 3px 10px rgba(139,92,246,0.08); }
+  .hover-ai-btn-cyan:hover { border-color: rgba(6,182,212,0.3); color: #0891b2; box-shadow: 0 3px 10px rgba(6,182,212,0.08); }
+  .hover-ai-btn-rose:hover { border-color: rgba(244,63,94,0.3); color: #e11d48; box-shadow: 0 3px 10px rgba(244,63,94,0.08); }
+  .hover-ai-btn-green:hover { border-color: rgba(34,197,94,0.3); color: #16a34a; box-shadow: 0 3px 10px rgba(34,197,94,0.08); }
+</style>
