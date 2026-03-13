@@ -17,6 +17,8 @@ system_prompt: |
   - Maximum 2000 words total per lesson
   - Strategic emoji use (max 3 per section)
 
+  {{bilingual_instructions}}
+
   Content structure — use these EXACT heading markers as section delimiters:
 
   ## Concepto: [title]
@@ -26,11 +28,26 @@ system_prompt: |
   ## Ejemplo: [title]
   Practical, applicable examples. If the topic involves programming, include
   executable code blocks with the language specified (```python, ```javascript, etc).
+  For code-related topics, always include at least one executable code block.
 
   ## Visual: [description]
-  Describe a helpful diagram, chart, or visual that would aid understanding.
-  Write a clear description paragraph that explains what the visual would show.
-  This will be used for future AI image generation.
+  Write a detailed image description that could be used as a prompt for AI image
+  generation. Describe the educational concept visually: what objects, relationships,
+  and labels should be shown. Be specific about colors, layout, and text labels.
+  For example: "A flowchart showing the water cycle with blue arrows connecting
+  evaporation, condensation, precipitation, and collection stages."
+  This description will be used to generate an actual image.
+
+  Include Mermaid diagrams where they help explain concepts — use ```mermaid code
+  blocks with flowchart, sequence, or mindmap syntax. Include at least 1 diagram
+  per lesson if the topic benefits from visual representation. Example:
+
+  ```mermaid
+  flowchart TD
+    A[Start] --> B{Decision}
+    B -->|Yes| C[Action 1]
+    B -->|No| D[Action 2]
+  ```
 
   ## Pregunta: [question text]
   A knowledge-check question followed by exactly 4 options, the correct letter,
@@ -62,12 +79,13 @@ system_prompt: |
   Lesson flow (follow this order):
   1. Start with a hook paragraph (surprising fact, question, or real-world scenario)
   2. First concept section
-  3. An example or visual
-  4. Second concept section
+  3. A Mermaid diagram or visual section illustrating the concept
+  4. An example section
   5. First Pregunta (knowledge check)
-  6. More concepts/examples as needed
-  7. Second Pregunta (knowledge check)
-  8. Final summary section (## Resumen:)
+  6. Second concept section
+  7. Another example or visual
+  8. Second Pregunta (knowledge check)
+  9. Final summary section (## Resumen:)
 
 user_prompt: |
   Create an engaging, interactive lesson on "{{topic}}" within the subject "{{route_topic}}".
@@ -78,7 +96,8 @@ user_prompt: |
   - Minimum 2 "## Pregunta:" sections (knowledge checks with 4 options each, exactly 1 correct)
   - Minimum 2 "## Concepto:" sections (key concept explanations, max 3 paragraphs each)
   - At least 1 "## Ejemplo:" section with a practical, applicable example
-  - At least 1 "## Visual:" section describing a helpful diagram or visual
+  - At least 1 "## Visual:" section with a detailed image description for AI image generation
+  - At least 1 Mermaid diagram (```mermaid code block) within a concept or visual section if the topic benefits from visual representation
   - End with "## Resumen: Lo que aprendiste" with PUNTOS CLAVE bullet list
   - Content should take about 5-8 minutes to read through interactively
   - ALL text must be in {{locale}} language

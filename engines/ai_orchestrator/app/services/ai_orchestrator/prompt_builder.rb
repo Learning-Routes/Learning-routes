@@ -60,6 +60,10 @@ module AiOrchestrator
         result.gsub!("{{#{key}}}", value.to_s)
       end
 
+      # Ensure content_locale and target_locale are available as aliases
+      result.gsub!("{{content_locale}}", @variables["locale"].to_s) unless @variables.key?("content_locale")
+      result.gsub!("{{is_language_route}}", @variables["target_locale"].present?.to_s) unless @variables.key?("is_language_route")
+
       # Interpolate user context if available
       if @user
         result.gsub!("{{user_name}}", @user.name.to_s)
