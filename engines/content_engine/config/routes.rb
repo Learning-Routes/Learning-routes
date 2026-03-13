@@ -17,6 +17,11 @@ ContentEngine::Engine.routes.draw do
     end
   end
 
+  # On-demand image generation for visual sections
+  scope "section_images/:step_id/:section_index", controller: :section_images, as: :section_image do
+    post :generate, action: :generate
+  end
+
   resources :notes, only: [:create, :update, :destroy]
 
   # Audio content endpoints
