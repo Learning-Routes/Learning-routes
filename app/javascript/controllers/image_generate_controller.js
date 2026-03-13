@@ -1,6 +1,8 @@
 import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
+  static values = { generatingText: { type: String, default: "Generating..." } }
+
   async generate(event) {
     const btn = event.currentTarget
     const stepId = btn.dataset.imageGenerateStepIdParam
@@ -11,11 +13,12 @@ export default class extends Controller {
     // Disable button and show spinner
     btn.disabled = true
     const originalHTML = btn.innerHTML
+    const spinnerText = btn.dataset.generatingText || this.generatingTextValue
     btn.innerHTML = `
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="animation:spin 1s linear infinite;">
         <circle cx="12" cy="12" r="10" stroke-dasharray="31.4" stroke-dashoffset="10"/>
       </svg>
-      <span>Generando...</span>
+      <span>${spinnerText}</span>
     `
 
     try {
