@@ -4,7 +4,6 @@ module LearningRoutesEngine
 
     retry_on StandardError, wait: 10.seconds, attempts: 2
 
-    MAX_IMAGES_PER_LESSON = 2
     MAX_AUDIO_SECTIONS = 2
 
     def perform(route_step_id, options = {})
@@ -138,7 +137,7 @@ module LearningRoutesEngine
       images_generated = 0
 
       visual_sections.each do |section, index|
-        break if images_generated >= MAX_IMAGES_PER_LESSON
+        break if images_generated >= ContentEngine::ImageGenerationService.max_images_per_lesson
 
         # Skip if already has image
         next if section[:image_url].present?

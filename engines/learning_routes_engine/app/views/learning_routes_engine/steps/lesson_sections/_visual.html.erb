@@ -5,7 +5,7 @@
 <% image_description = section[:image_description].presence || section["image_description"].presence %>
 <% alt_text = section[:alt_text].presence || section["alt_text"].presence || section[:title] %>
 
-<div style="max-width:48rem; margin:0 auto; padding:2rem 1rem;" data-controller="image-generate">
+<div style="max-width:48rem; margin:0 auto; padding:2rem 1rem;" data-controller="image-generate" data-image-generate-generating-text-value="<%= t('content_engine.image_generation.generating', default: 'Generating...') %>">
   <%# Badge %>
   <span class="lesson-section-badge lesson-section-badge--visual">
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>

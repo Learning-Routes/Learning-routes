@@ -40,6 +40,9 @@ Rails.application.config.ai_model_defaults = {
   exercise_hint:             { temperature: 0.5, max_tokens: 1024 }
 }.freeze
 
+# Maximum AI-generated images per lesson (configurable)
+Rails.application.config.max_images_per_lesson = 2
+
 # Cost alert thresholds (in cents)
 Rails.application.config.ai_cost_alerts = {
   daily_limit: 5000,       # $50/day
