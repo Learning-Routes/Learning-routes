@@ -17,16 +17,16 @@
   <%# Header section %>
   <div data-route-journey-target="header"
        style="height:280px; display:flex; flex-direction:column; align-items:center; justify-content:center; padding-top:50px; position:relative;">
-    <div style="font-family:'JetBrains Mono',monospace; font-size:0.55rem; font-weight:500; letter-spacing:2px; color:<%= accent_color %>; text-transform:uppercase; margin-bottom:12px; opacity:0.5;">
+    <div style="font-family:'DM Mono',monospace; font-size:0.55rem; font-weight:500; letter-spacing:2px; color:<%= accent_color %>; text-transform:uppercase; margin-bottom:12px; opacity:0.5;">
       <%= t("learning_engine.journey.route_label") %>
     </div>
-    <h1 style="font-family:'Instrument Serif',serif; font-size:2rem; font-weight:400; font-style:italic; color:var(--color-txt); margin:0 0 8px; text-align:center; padding:0 24px;">
+    <h1 style="font-family:'DM Sans',sans-serif; font-size:2rem; font-weight:400; font-style:italic; color:var(--color-txt); margin:0 0 8px; text-align:center; padding:0 24px;">
       <%= @route.localized_topic.presence || @route.topic %>
     </h1>
-    <p style="font-family:'Manrope',sans-serif; font-size:0.72rem; color:var(--color-muted); font-weight:400; margin:0; text-align:center;">
+    <p style="font-family:'DM Sans',sans-serif; font-size:0.72rem; color:var(--color-muted); font-weight:400; margin:0; text-align:center;">
       <%= t("learning_engine.journey.subtitle", stages: @stages.size, topics: total_count, subject: @route.localized_subject_area.presence || @route.localized_topic) %>
     </p>
-    <div style="margin-top:28px; font-family:'Manrope',sans-serif; font-size:0.62rem; color:var(--color-faint); display:flex; align-items:center; gap:6px;">
+    <div style="margin-top:28px; font-family:'DM Sans',sans-serif; font-size:0.62rem; color:var(--color-faint); display:flex; align-items:center; gap:6px;">
       <span><%= t("learning_engine.journey.scroll_to_explore") %></span>
       <svg width="10" height="10" viewBox="0 0 16 16" fill="none" aria-hidden="true">
         <path d="M8 3v10M4 9l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
@@ -58,7 +58,7 @@
       <% if stage[:status] == "locked" %>
         <div data-route-journey-target="lockedLabel"
              style="text-align:center; margin-top:8px; opacity:0; transition:opacity 0.3s;">
-          <div style="font-family:'Instrument Serif',serif; font-size:0.82rem; font-style:italic; color:var(--color-faint);">
+          <div style="font-family:'DM Sans',sans-serif; font-size:0.82rem; font-style:italic; color:var(--color-faint);">
             <%= stage[:label] %>
           </div>
         </div>
@@ -79,10 +79,10 @@
   <%# End of route marker %>
   <div style="height:250px; display:flex; align-items:center; justify-content:center;">
     <div style="text-align:center; opacity:0.2;">
-      <div style="font-family:'Instrument Serif',serif; font-size:0.9rem; font-style:italic; color:var(--color-muted);">
+      <div style="font-family:'DM Sans',sans-serif; font-size:0.9rem; font-style:italic; color:var(--color-muted);">
         <%= t("learning_engine.journey.end_of_route") %>
       </div>
-      <div style="font-family:'JetBrains Mono',monospace; font-size:0.5rem; color:var(--color-faint); margin-top:6px;">
+      <div style="font-family:'DM Mono',monospace; font-size:0.5rem; color:var(--color-faint); margin-top:6px;">
         <%= t("learning_engine.journey.stages_topics", count: total_count, stages: @stages.size, topics: total_count) %>
       </div>
     </div>
@@ -105,7 +105,7 @@
 
   <%# List view link %>
   <div style="position:fixed; bottom:16px; left:28px; z-index:20;">
-    <%= link_to route_path(@route), style: "display:inline-flex; align-items:center; gap:5px; font-family:'Manrope',sans-serif; font-size:0.65rem; color:var(--color-muted); text-decoration:none; background:var(--color-tint); border:1px solid var(--color-border-subtle); border-radius:8px; padding:6px 12px; transition:all 0.2s; backdrop-filter:blur(8px);" do %>
+    <%= link_to route_path(@route), style: "display:inline-flex; align-items:center; gap:5px; font-family:'DM Sans',sans-serif; font-size:0.65rem; color:var(--color-muted); text-decoration:none; background:var(--color-tint); border:1px solid var(--color-border-subtle); border-radius:8px; padding:6px 12px; transition:all 0.2s; backdrop-filter:blur(8px);" do %>
       <svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden="true">
         <path d="M2 4h12M2 8h12M2 12h12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
       </svg>

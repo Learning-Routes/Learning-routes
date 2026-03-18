@@ -27,7 +27,11 @@ class SettingsController < ApplicationController
 
       # Re-send verification email if email was changed
       if email_changed
-        Core::VerificationMailer.verify_email(@user).deliver_later
+        begin
+          Core::VerificationMailer.verify_email(@user).deliver_now
+        rescue => e
+          Rails.logger.error("[EMAIL FAILURE] Settings email change verification for #{@user.email}: #{e.class}: #{e.message}")
+        end
       end
 
       # Sync locale cookie with DB value

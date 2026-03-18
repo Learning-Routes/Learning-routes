@@ -59,8 +59,15 @@
     <div class="lesson-hud">
       <%# Progress bar %>
       <div class="lesson-hud-progress" data-interactive-lesson-target="progressBar">
-        <% @sections.each_with_index do |_sec, i| %>
-          <div class="lesson-progress-segment" data-interactive-lesson-target="progressSegment"></div>
+        <% @sections.each_with_index do |sec, i| %>
+          <% seg_class = case sec[:type].to_s
+               when 'check' then ' lesson-progress-segment--quiz'
+               when 'visual' then ' lesson-progress-segment--visual'
+               when 'tip' then ' lesson-progress-segment--tip'
+               when 'summary' then ' lesson-progress-segment--summary'
+               else ''
+             end %>
+          <div class="lesson-progress-segment<%= seg_class %>" data-interactive-lesson-target="progressSegment"></div>
         <% end %>
       </div>
 

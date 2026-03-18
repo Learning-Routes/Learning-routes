@@ -41,7 +41,7 @@ Rails.application.config.ai_model_defaults = {
 }.freeze
 
 # Maximum AI-generated images per lesson (configurable)
-Rails.application.config.max_images_per_lesson = 2
+Rails.application.config.max_images_per_lesson = 4
 
 # Cost alert thresholds (in cents)
 Rails.application.config.ai_cost_alerts = {

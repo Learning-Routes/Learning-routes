@@ -1,0 +1,47 @@
+<div style="min-height: 100vh; display: flex; align-items: center; justify-content: center; background-color: #F5F1EB; font-family: 'DM Sans', sans-serif; padding: 24px;">
+  <div style="max-width: 460px; width: 100%; background-color: #FFFFFF; border-radius: 14px; padding: 48px 36px; text-align: center; box-shadow: 0 2px 12px rgba(28, 24, 18, 0.06);">
+    <!-- Mail icon -->
+    <div style="width: 64px; height: 64px; margin: 0 auto 24px; background-color: #F5F1EB; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#2C261E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="2" y="4" width="20" height="16" rx="2"/>
+        <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
+      </svg>
+    </div>
+
+    <h1 style="font-size: 24px; font-weight: 700; color: #1C1812; margin: 0 0 12px;">
+      <%= t("email_verification.pending.title") %>
+    </h1>
+
+    <p style="font-size: 15px; line-height: 1.6; color: #6D665B; margin: 0 0 8px;">
+      <%= t("email_verification.pending.description") %>
+    </p>
+
+    <p style="font-size: 15px; font-weight: 600; color: #1C1812; margin: 0 0 28px;">
+      <%= current_user.email %>
+    </p>
+
+    <div style="display: flex; flex-direction: column; gap: 12px; align-items: center;">
+      <%= button_to t("email_verification.pending.resend"),
+            core.resend_verification_path,
+            method: :post,
+            style: "width: 100%; padding: 12px 24px; font-size: 15px; font-weight: 600; color: #F5F1EB; background-color: #2C261E; border: none; border-radius: 11px; cursor: pointer; font-family: 'DM Sans', sans-serif;" %>
+
+      <%= link_to t("email_verification.pending.sign_out"),
+            core.sign_out_path,
+            data: { turbo_method: :delete },
+            style: "font-size: 14px; color: #6D665B; text-decoration: underline; text-underline-offset: 3px;" %>
+    </div>
+
+    <% if flash[:notice] %>
+      <p style="margin-top: 20px; font-size: 14px; color: #2C261E; background-color: #E8F5E8; padding: 10px 16px; border-radius: 8px;">
+        <%= flash[:notice] %>
+      </p>
+    <% end %>
+
+    <% if flash[:alert] %>
+      <p style="margin-top: 20px; font-size: 14px; color: #8B2500; background-color: #FDE8E8; padding: 10px 16px; border-radius: 8px;">
+        <%= flash[:alert] %>
+      </p>
+    <% end %>
+  </div>
+</div>

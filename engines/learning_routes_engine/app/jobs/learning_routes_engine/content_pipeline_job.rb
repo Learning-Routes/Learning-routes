@@ -20,19 +20,43 @@ module LearningRoutesEngine
       mark_generating!
 
       # Stage 1: Text generation (REQUIRED)
+      Rails.logger.info("[ContentPipeline] Stage 1: Text generation for step #{route_step_id}")
       content = stage_text_generation!
+      Rails.logger.info("[ContentPipeline] Stage 1 complete: #{content.body.length} chars")
 
       # Stage 2: Section parsing
+      Rails.logger.info("[ContentPipeline] Stage 2: Section parsing")
       sections = stage_section_parsing!(content)
+      section_types = sections.map { |s| s[:type] }.tally
+      Rails.logger.info("[ContentPipeline] Stage 2 complete: #{sections.size} sections (#{section_types})")
 
       # Stage 3: Image generation (optional, non-blocking)
-      stage_image_generation!(content, sections)
+      begin
+        visual_count = sections.count { |s| s[:type].to_s == "visual" }
+        Rails.logger.info("[ContentPipeline] Stage 3: Image generation (#{visual_count} visual sections)")
+        stage_image_generation!(content, sections)
+        Rails.logger.info("[ContentPipeline] Stage 3 complete")
+      rescue => e
+        Rails.logger.error("[ContentPipeline] Stage 3 FAILED: #{e.class}: #{e.message}\n#{e.backtrace.first(5).join("\n")}")
+      end
 
       # Stage 4: Audio pre-generation (optional, non-blocking)
-      stage_audio_pregeneration!(sections)
+      begin
+        Rails.logger.info("[ContentPipeline] Stage 4: Audio pre-generation")
+        stage_audio_pregeneration!(sections)
+        Rails.logger.info("[ContentPipeline] Stage 4 complete")
+      rescue => e
+        Rails.logger.error("[ContentPipeline] Stage 4 FAILED: #{e.class}: #{e.message}\n#{e.backtrace.first(5).join("\n")}")
+      end
 
       # Stage 5: Step quiz generation
-      stage_quiz_generation!
+      begin
+        Rails.logger.info("[ContentPipeline] Stage 5: Quiz generation")
+        stage_quiz_generation!
+        Rails.logger.info("[ContentPipeline] Stage 5 complete")
+      rescue => e
+        Rails.logger.error("[ContentPipeline] Stage 5 FAILED: #{e.class}: #{e.message}\n#{e.backtrace.first(5).join("\n")}")
+      end
 
       # Stage 6: Mark as ready + broadcast
       mark_ready!

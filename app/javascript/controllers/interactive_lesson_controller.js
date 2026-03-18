@@ -35,6 +35,7 @@ export default class extends Controller {
     "continueBtnText",
     "backBtn",
     "progressSegment",
+    "quizModal",
     // v2 targets
     "heartsWrap",
     "heartsCount",
@@ -111,15 +112,26 @@ export default class extends Controller {
       this.sectionsContainerTarget.addEventListener("touchend", this._onTouchEnd, { passive: true })
     }
 
+    // Build map of quiz section indices
+    this._quizSectionIndices = new Set()
+    this.sectionTargets.forEach((el, i) => {
+      if (el.dataset.lessonCheck === "true") {
+        this._quizSectionIndices.add(i)
+      }
+    })
+
     // Listen for quiz events bubbling from child controllers
     this._onQuizCompleted = this._handleQuizCompleted.bind(this)
     this._onQuizCorrect = this._handleQuizCorrect.bind(this)
     // Also listen for legacy lesson-check:answered from lesson_check_controller
     this._onLegacyCheckAnswered = this._handleLegacyCheckAnswered.bind(this)
+    // Listen for quiz modal close
+    this._onQuizModalClose = this._handleQuizModalClose.bind(this)
 
     this.element.addEventListener("quiz:completed", this._onQuizCompleted)
     this.element.addEventListener("quiz:correct", this._onQuizCorrect)
     this.element.addEventListener("lesson-check:answered", this._onLegacyCheckAnswered)
+    this.element.addEventListener("quiz:modal-close", this._onQuizModalClose)
 
     // v2: listen for wrong answers (hearts system)
     this._onQuizWrong = this._handleQuizWrong.bind(this)
@@ -164,6 +176,7 @@ export default class extends Controller {
     this.element.removeEventListener("quiz:correct", this._onQuizCorrect)
     this.element.removeEventListener("lesson-check:answered", this._onLegacyCheckAnswered)
     this.element.removeEventListener("quiz:wrong", this._onQuizWrong)
+    this.element.removeEventListener("quiz:modal-close", this._onQuizModalClose)
     if (this._onStepQuizPassed) {
       document.removeEventListener("step-quiz:passed", this._onStepQuizPassed)
     }
@@ -184,6 +197,12 @@ export default class extends Controller {
 
     if (to >= this.totalSectionsValue) {
       this.completeLesson()
+      return
+    }
+
+    // If the next section is a quiz, show it as a modal overlay instead
+    if (this._quizSectionIndices.has(to)) {
+      this._showQuizModal(to)
       return
     }
 
@@ -381,11 +400,128 @@ export default class extends Controller {
     this._updateContinueButton()
   }
 
+  // ── Quiz Modal ────────────────────────────────────────────────
+
+  _showQuizModal(sectionIndex) {
+    const section = this.sectionTargets[sectionIndex]
+    if (!section) return
+
+    // Find the quiz modal backdrop within this section
+    const modal = section.querySelector('.quiz-modal-backdrop')
+    if (!modal) {
+      // Fallback: no modal wrapper, show inline
+      this._transitionToSection(sectionIndex, "forward")
+      return
+    }
+
+    this._activeQuizModal = modal
+    this._activeQuizSectionIndex = sectionIndex
+
+    // Record time for current section
+    this._recordSectionTime(this.currentSectionValue)
+
+    // Mark the check section as current (for progress tracking)
+    // but don't visually transition — modal overlays the current content section
+    section.dataset.lessonCheckAnswered = "false"
+
+    // Show the modal with animation
+    modal.style.display = "flex"
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        modal.classList.add("quiz-modal--visible")
+      })
+    })
+
+    // Lock the continue button
+    this._locked = true
+    this._hasQuizController = true
+    this._updateContinueButton()
+
+    // Activate the quiz controller inside the modal
+    this._activateQuizInSection(section)
+
+    // Update progress bar to show we're on this section
+    this._updateProgressForQuizModal(sectionIndex)
+  }
+
+  _closeQuizModal() {
+    const modal = this._activeQuizModal
+    if (!modal) return
+
+    // Animate out
+    modal.classList.remove("quiz-modal--visible")
+    modal.classList.add("quiz-modal--exit")
+
+    const timer = setTimeout(() => {
+      modal.classList.remove("quiz-modal--exit")
+      modal.style.display = "none"
+      this._activeQuizModal = null
+    }, 300)
+    this._timers.push(timer)
+  }
+
+  _handleQuizModalClose(event) {
+    const sectionIndex = this._activeQuizSectionIndex
+    this._closeQuizModal()
+
+    if (sectionIndex == null) return
+
+    // Mark quiz section as answered
+    const section = this.sectionTargets[sectionIndex]
+    if (section) section.dataset.lessonCheckAnswered = "true"
+
+    // Update the current section value to the quiz section
+    this.currentSectionValue = sectionIndex
+    this._sectionStartTime = Date.now()
+
+    // Advance past the quiz to the next content section
+    const nextIndex = sectionIndex + 1
+    if (nextIndex >= this.totalSectionsValue) {
+      this._locked = false
+      this.completeLesson()
+    } else if (this._quizSectionIndices.has(nextIndex)) {
+      // Consecutive quizzes: show next quiz modal after a beat
+      const timer = setTimeout(() => this._showQuizModal(nextIndex), 400)
+      this._timers.push(timer)
+    } else {
+      this._locked = false
+      this._transitionToSection(nextIndex, "forward")
+    }
+  }
+
+  _updateProgressForQuizModal(quizIndex) {
+    // Show all segments up to and including the quiz as active/visited
+    this.progressSegmentTargets.forEach((seg, i) => {
+      seg.classList.remove("lesson-progress--active", "lesson-progress--visited")
+      if (i < quizIndex) {
+        seg.classList.add("lesson-progress--visited")
+      } else if (i === quizIndex) {
+        seg.classList.add("lesson-progress--active")
+      }
+    })
+
+    if (this.hasSectionCounterTarget) {
+      this.sectionCounterTarget.textContent = `${quizIndex + 1}/${this.totalSectionsValue}`
+    }
+  }
+
   // ── Quiz Event Handlers ────────────────────────────────────────
 
   _handleQuizCompleted(event) {
     // Find which section this event came from
     const sourceSection = event.target.closest('[data-interactive-lesson-target="section"]')
+
+    // If quiz is in a modal, show the continue button inside the modal
+    if (this._activeQuizModal) {
+      const continueBtn = this._activeQuizModal.querySelector('.quiz-modal-continue')
+      if (continueBtn) {
+        continueBtn.style.display = "flex"
+      }
+      this._quizTotal++
+      if (event.detail?.correct) this._quizCorrect++
+      return
+    }
+
     const currentSection = this.sectionTargets[this.currentSectionValue]
 
     // Only unlock if the event came from the CURRENTLY VISIBLE section
@@ -398,10 +534,11 @@ export default class extends Controller {
   }
 
   async _handleQuizCorrect(event) {
-    // Only react to events from the current visible section
+    // Accept events from quiz modals or the current visible section
     const sourceSection = event.target.closest('[data-interactive-lesson-target="section"]')
     const currentSection = this.sectionTargets[this.currentSectionValue]
-    if (sourceSection && sourceSection !== currentSection) return
+    const isFromModal = !!this._activeQuizModal && this._activeQuizModal.contains(event.target)
+    if (!isFromModal && sourceSection && sourceSection !== currentSection) return
 
     const xp = event.detail?.xp || 15
     const bonus = event.detail?.bonus || false
@@ -428,10 +565,11 @@ export default class extends Controller {
   // ── v2: Hearts System ───────────────────────────────────────────
 
   _handleQuizWrong(event) {
-    // Only react to events from the current visible section
+    // Accept events from quiz modals or the current visible section
     const sourceSection = event.target.closest('[data-interactive-lesson-target="section"]')
     const currentSection = this.sectionTargets[this.currentSectionValue]
-    if (sourceSection && sourceSection !== currentSection) return
+    const isFromModal = !!this._activeQuizModal && this._activeQuizModal.contains(event.target)
+    if (!isFromModal && sourceSection && sourceSection !== currentSection) return
 
     this._currentHearts = Math.max(0, this._currentHearts - 1)
     this._updateHeartsDisplay()

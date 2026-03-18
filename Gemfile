@@ -101,3 +101,8 @@ gem "redcarpet", "~> 3.6"
 gem "rouge", "~> 4.4"
 
 gem "rails-i18n", "~> 8.1"
+
+# === OAuth ===
+gem "omniauth", "~> 2.1"
+gem "omniauth-google-oauth2", "~> 1.2"
+gem "omniauth-rails_csrf_protection", "~> 1.0"

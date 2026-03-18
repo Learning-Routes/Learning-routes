@@ -57,7 +57,7 @@
   </div>
 
   <%# Steps list %>
-  <div style="display:flex; flex-direction:column; gap:0.625rem;">
+  <div style="display:flex; flex-direction:column; gap:0.75rem;">
     <% @steps.each_with_index do |step, index| %>
       <%= render "learning_routes_engine/routes/step_item", step: step, index: index, route: @route %>
     <% end %>

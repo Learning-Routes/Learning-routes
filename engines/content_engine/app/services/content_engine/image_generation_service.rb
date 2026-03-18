@@ -68,7 +68,7 @@ module ContentEngine
       if Rails.application.config.respond_to?(:max_images_per_lesson)
         Rails.application.config.max_images_per_lesson
       else
-        2
+        4
       end
     end
 

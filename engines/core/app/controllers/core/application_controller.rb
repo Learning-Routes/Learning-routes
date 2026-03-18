@@ -3,10 +3,36 @@ module Core
     before_action :set_current_session
     before_action :set_locale
     before_action :set_theme
+    before_action :require_email_verification!
 
     rescue_from ActiveRecord::RecordNotFound, with: :record_not_found
 
     private
+
+    def require_email_verification!
+      return unless current_user
+      return if current_user.email_verified?
+      return if verification_exempt_controller?
+
+      redirect_to core.verify_pending_path
+    end
+
+    def verification_exempt_controller?
+      exempt = %w[
+        core/email_verifications
+        core/sessions
+        core/registrations
+        core/passwords
+        core/omniauth_callbacks
+        landing
+        locale
+        theme
+        pages
+        rails/health
+        rails/pwa
+      ]
+      exempt.include?(controller_path)
+    end
 
     def set_locale
       locale = if current_user
@@ -138,5 +164,10 @@ module Core
       @current_user = nil
       @current_session = nil
     end
+
+    def google_oauth_enabled?
+      Rails.application.credentials.dig(:google, :client_id).present?
+    end
+    helper_method :google_oauth_enabled?
   end
 end
