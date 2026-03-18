@@ -174,7 +174,9 @@ module ContentEngine
       "Pregunta" => :check,
       "Question" => :check,
       "Resumen"  => :summary,
-      "Summary"  => :summary
+      "Summary"  => :summary,
+      "Tip"      => :tip,
+      "Consejo"  => :tip
     }.freeze
 
     def split_by_headings(text)
@@ -206,6 +208,8 @@ module ContentEngine
             sections << parse_heading_visual(title, body)
           when :example
             sections << { type: "example", title: title.presence || "Ejemplo", body: body }
+          when :tip
+            sections << { type: "tip", title: title.presence || "Consejo", body: body }
           when :summary
             sections << parse_heading_summary(title, body)
           when :concept

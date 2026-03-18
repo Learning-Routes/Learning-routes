@@ -256,6 +256,7 @@ es:
   flash:
     welcome: "¡Bienvenido a Learning Routes! Revisa tu correo para verificar tu cuenta."
     signed_in: "Sesión iniciada correctamente."
+    oauth_failed: "No se pudo iniciar sesión con Google. Intenta de nuevo o usa tu correo."
     signed_out: "Sesión cerrada correctamente."
     invalid_credentials: "Correo o contraseña inválidos."
     too_many_login: "Demasiados intentos. Inténtalo de nuevo más tarde."
@@ -266,6 +267,7 @@ es:
     email_verified: "¡Correo verificado correctamente!"
     invalid_verification: "Enlace de verificación inválido o expirado."
     verification_sent: "Correo de verificación enviado."
+    email_delivery_failed: "No se pudo enviar el correo. Inténtalo más tarde."
     onboarding_complete: "¡Bienvenido! Estamos creando tu ruta de aprendizaje personalizada."
     must_sign_in: "Debes iniciar sesión."
     not_authorized: "No tienes autorización para realizar esta acción."
@@ -1322,6 +1324,13 @@ es:
       body: "Solicitaste eliminar tu ruta de aprendizaje \"%{route}\". Usa este código para confirmar:"
       expiry: "Este código expirará en 10 minutos."
       ignore: "Si no solicitaste esto, puedes ignorar este correo."
+
+  email_verification:
+    pending:
+      title: "Verifica tu correo"
+      description: "Enviamos un enlace de verificación a"
+      resend: "Reenviar correo de verificación"
+      sign_out: "Cerrar sesión"
 
   # ── Etiquetas de acciones turbo stream ──
   content_actions:

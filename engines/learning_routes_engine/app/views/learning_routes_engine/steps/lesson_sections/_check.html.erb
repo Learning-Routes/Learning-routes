@@ -1,62 +1,74 @@
 <% correct_index = section[:options]&.index { |o| o[:correct] } || 0 %>
-<div style="max-width:48rem; margin:0 auto; padding:2rem 1rem;"
-     data-controller="lesson-check lesson-quiz"
-     data-lesson-quiz-correct-value="<%= correct_index %>"
-     data-lesson-quiz-xp-value="15"
-     data-lesson-quiz-timed-value="true"
-     data-lesson-quiz-timer-seconds-value="15">
 
-  <%# Challenge badge %>
-  <span class="lesson-section-badge lesson-section-badge--challenge">
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
-    <span>DESAF&Iacute;O R&Aacute;PIDO</span>
-  </span>
+<%# Modal overlay — starts hidden, shown by interactive-lesson controller %>
+<div class="quiz-modal-backdrop" data-interactive-lesson-target="quizModal" style="display:none;">
+  <div class="quiz-modal-card">
+    <div data-controller="lesson-check lesson-quiz"
+         data-lesson-quiz-correct-value="<%= correct_index %>"
+         data-lesson-quiz-xp-value="15"
+         data-lesson-quiz-timed-value="true"
+         data-lesson-quiz-timer-seconds-value="15">
 
-  <%# Challenge card %>
-  <div style="background:var(--color-card); border:1px solid var(--color-border-subtle); border-left:4px solid #8b5cf6; border-radius:16px; padding:1.5rem 1.75rem; margin-top:0.875rem; box-shadow:0 1px 3px rgba(139,92,246,0.04), 0 4px 16px rgba(139,92,246,0.02);">
-    <%# Question + timer header %>
-    <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:1rem; margin-bottom:0.75rem;">
-      <p style="font-size:1.125rem; font-weight:700; color:var(--color-txt); line-height:1.5; flex:1; margin:0; letter-spacing:-0.2px;">
-        <%= section[:question] %>
-      </p>
-      <%# Timer %>
-      <div class="quiz-timer" data-lesson-quiz-target="timerWrap">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-        <span data-lesson-quiz-target="timerDisplay" class="mono">15s</span>
-      </div>
-    </div>
+      <%# Challenge badge %>
+      <span class="lesson-section-badge lesson-section-badge--challenge">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+        <span>DESAF&Iacute;O R&Aacute;PIDO</span>
+      </span>
 
-    <%# Speed bonus tag %>
-    <div style="margin-bottom:1.25rem;">
-      <span class="quiz-bonus-tag" data-lesson-quiz-target="bonusTag">&#9889; +5 XP BONUS si respondes en &lt;10s</span>
-    </div>
+      <%# Challenge card %>
+      <div style="background:var(--color-card); border:1px solid var(--color-border-subtle); border-left:4px solid #8b5cf6; border-radius:16px; padding:1.5rem 1.75rem; margin-top:0.875rem; box-shadow:0 1px 3px rgba(139,92,246,0.04), 0 4px 16px rgba(139,92,246,0.02);">
+        <%# Question + timer header %>
+        <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:1rem; margin-bottom:0.75rem;">
+          <p style="font-size:1.125rem; font-weight:700; color:var(--color-txt); line-height:1.5; flex:1; margin:0; letter-spacing:-0.2px;">
+            <%= section[:question] %>
+          </p>
+          <%# Timer %>
+          <div class="quiz-timer" data-lesson-quiz-target="timerWrap">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            <span data-lesson-quiz-target="timerDisplay" class="mono">15s</span>
+          </div>
+        </div>
 
-    <%# Options %>
-    <div class="lesson-check__options" data-lesson-check-target="options" style="position:relative;">
-      <% section[:options].each_with_index do |opt, i| %>
-        <% letter = ("A".ord + i).chr %>
-        <button class="lesson-check__option lesson-nav-check-option"
-                data-action="click->lesson-check#select click->lesson-quiz#selectOption"
-                data-correct="<%= opt[:correct] %>"
-                data-option-index="<%= i %>"
-                data-lesson-check-target="option"
-                data-lesson-quiz-target="option">
-          <span class="lesson-check__letter"><%= letter %></span>
-          <span style="flex:1;"><%= opt[:label] %></span>
+        <%# Speed bonus tag %>
+        <div style="margin-bottom:1.25rem;">
+          <span class="quiz-bonus-tag" data-lesson-quiz-target="bonusTag">&#9889; +5 XP BONUS si respondes en &lt;10s</span>
+        </div>
+
+        <%# Options %>
+        <div class="lesson-check__options" data-lesson-check-target="options" style="position:relative;">
+          <% section[:options].each_with_index do |opt, i| %>
+            <% letter = ("A".ord + i).chr %>
+            <button class="lesson-check__option lesson-nav-check-option"
+                    data-action="click->lesson-check#select click->lesson-quiz#selectOption"
+                    data-correct="<%= opt[:correct] %>"
+                    data-option-index="<%= i %>"
+                    data-lesson-check-target="option"
+                    data-lesson-quiz-target="option">
+              <span class="lesson-check__letter"><%= letter %></span>
+              <span style="flex:1;"><%= opt[:label] %></span>
+            </button>
+          <% end %>
+        </div>
+
+        <%# Feedback area %>
+        <div class="lesson-check__feedback" data-lesson-check-target="feedback" style="display:none;"></div>
+
+        <%# Explanation (shown after answering) %>
+        <% if section[:explanation].present? %>
+          <div class="lesson-check-explanation" data-lesson-check-target="explanation" style="display:none; margin-top:1.25rem; padding:1.125rem 1.25rem; border-radius:14px; background:linear-gradient(135deg, var(--color-tint-strong), var(--color-tint)); border:1px solid var(--color-border-subtle);">
+            <p style="font-size:0.8125rem; font-weight:500; color:var(--color-sub); margin:0; line-height:1.6;">
+              <strong style="color:var(--color-txt);">Explicaci&oacute;n:</strong> <%= section[:explanation] %>
+            </p>
+          </div>
+        <% end %>
+
+        <%# Continue button (inside modal, shown after answering) %>
+        <button class="quiz-modal-continue" data-lesson-check-target="continueBtn" style="display:none; margin-top:1.25rem;"
+                data-action="click->lesson-quiz#modalContinue">
+          <span>Continuar</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
         </button>
-      <% end %>
-    </div>
-
-    <%# Feedback area %>
-    <div class="lesson-check__feedback" data-lesson-check-target="feedback" style="display:none;"></div>
-
-    <%# Explanation (shown after answering) %>
-    <% if section[:explanation].present? %>
-      <div class="lesson-check-explanation" data-lesson-check-target="explanation" style="display:none; margin-top:1.25rem; padding:1.125rem 1.25rem; border-radius:14px; background:linear-gradient(135deg, var(--color-tint-strong), var(--color-tint)); border:1px solid var(--color-border-subtle);">
-        <p style="font-size:0.8125rem; font-weight:500; color:var(--color-sub); margin:0; line-height:1.6;">
-          <strong style="color:var(--color-txt);">Explicaci&oacute;n:</strong> <%= section[:explanation] %>
-        </p>
       </div>
-    <% end %>
+    </div>
   </div>
 </div>

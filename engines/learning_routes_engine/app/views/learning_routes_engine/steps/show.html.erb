@@ -1,7 +1,7 @@
 <% content_for(:title, "#{@step.localized_title} #{t('learning_engine.route.title_suffix')}") %>
 
 <div style="max-width:82rem; margin:0 auto; padding:1.5rem 1.25rem 3rem;">
-  <div style="display:flex; gap:2.5rem;">
+  <div class="step-page-layout" style="display:flex; gap:2.5rem;">
     <%# ── Main content area ── %>
     <div style="flex:1; min-width:0; max-width:50rem;">
       <%= render "step_content_frame" %>

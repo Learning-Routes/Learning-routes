@@ -8,6 +8,10 @@ Rails.application.routes.draw do
   mount Analytics::Engine => "/analytics", as: "analytics"
   mount CommunityEngine::Engine => "/community_engine", as: "community_engine"
 
+  # OAuth callbacks (OmniAuth middleware delivers here)
+  get "auth/google_oauth2/callback", to: "core/omniauth_callbacks#google_oauth2"
+  get "auth/failure",                to: "core/omniauth_callbacks#failure"
+
   # Locale switcher
   patch "locale", to: "locale#update", as: :locale
 

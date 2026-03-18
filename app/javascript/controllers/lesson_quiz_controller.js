@@ -173,6 +173,14 @@ export default class extends Controller {
 
   // ── Answer ─────────────────────────────────────────────────
 
+  // Called by the "Continuar" button inside the quiz modal
+  modalContinue(event) {
+    event.preventDefault()
+    this.element.dispatchEvent(new CustomEvent("quiz:modal-close", {
+      bubbles: true
+    }))
+  }
+
   selectOption(event) {
     if (this._answered) return
 

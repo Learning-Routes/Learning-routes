@@ -49,7 +49,7 @@ module Core
                       uniqueness: { case_sensitive: false },
                       format: { with: URI::MailTo::EMAIL_REGEXP }
     validates :name, presence: true, length: { minimum: 2, maximum: 100 }
-    validates :password, length: { minimum: 8 }, if: -> { password.present? }
+    validates :password, length: { minimum: 8 }, if: -> { password.present? && !oauth_user? }
     validates :locale, inclusion: { in: %w[en es] }
     validates :theme, inclusion: { in: VALID_THEMES }
     validates :role, presence: true
@@ -131,6 +131,16 @@ module Core
 
     generates_token_for :email_verification, expires_in: 24.hours
     generates_token_for :password_reset, expires_in: 1.hour
+
+    # --- OAuth helpers ---
+
+    def oauth_user?
+      provider.present?
+    end
+
+    def link_oauth!(auth_provider, auth_uid, auth_avatar = nil)
+      update!(provider: auth_provider, uid: auth_uid, avatar_url: auth_avatar)
+    end
 
     # --- Community helpers ---
 

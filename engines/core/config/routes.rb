@@ -17,6 +17,11 @@ Core::Engine.routes.draw do
   # Email verification
   get  "verify_email/:token", to: "email_verifications#verify", as: :verify_email
   post "resend_verification", to: "email_verifications#resend", as: :resend_verification
+  get  "verify_pending",      to: "email_verifications#pending", as: :verify_pending
+
+  # OAuth callbacks
+  get  "auth/google_oauth2/callback", to: "omniauth_callbacks#google_oauth2", as: :google_oauth2_callback
+  get  "auth/failure",                to: "omniauth_callbacks#failure",        as: :oauth_failure
 
   # Onboarding
   get   "onboarding", to: "onboarding#show", as: :onboarding

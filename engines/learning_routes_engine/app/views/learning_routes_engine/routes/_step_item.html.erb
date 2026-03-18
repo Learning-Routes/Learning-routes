@@ -1,11 +1,11 @@
 <% accessible = step.completed? || step.in_progress? || step.available? %>
-<div id="route_step_<%= step.id %>" style="position:relative; background:var(--color-card); border-radius:16px; border:1px solid var(--color-border-subtle); padding:1.125rem 1.25rem; transition:all 0.25s; box-shadow:0 1px 3px rgba(0,0,0,0.02); <%= 'cursor:pointer;' if accessible %> <%= 'opacity:0.45;' if step.locked? %>"
+<div id="route_step_<%= step.id %>" style="position:relative; background:var(--color-card); border-radius:14px; border:1px solid <%= step.in_progress? ? 'rgba(99,102,241,0.3)' : 'var(--color-border-subtle)' %>; padding:1.125rem 1.25rem; transition:all 0.25s; box-shadow:0 1px 3px rgba(0,0,0,0.02); <%= 'cursor:pointer;' if accessible %><%= 'cursor:not-allowed;' if step.locked? %> <%= 'opacity:0.45;' if step.locked? %>"
      <% if accessible %>
-       onmouseover="this.style.transform='translateY(-1px)'; this.style.boxShadow='0 4px 16px rgba(0,0,0,0.04)';"
+       onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(0,0,0,0.06), 0 2px 6px rgba(0,0,0,0.03)';"
        onmouseout="this.style.transform=''; this.style.boxShadow='0 1px 3px rgba(0,0,0,0.02)';"
      <% end %>>
   <% if accessible %>
-    <%= link_to route_step_path(route, step), style: "position:absolute; inset:0; z-index:10; border-radius:16px;", aria: { label: step.localized_title }, tabindex: "-1" do %><% end %>
+    <%= link_to route_step_path(route, step), style: "position:absolute; inset:0; z-index:10; border-radius:14px;", aria: { label: step.localized_title }, tabindex: "-1" do %><% end %>
   <% end %>
 
   <div style="display:flex; align-items:center; gap:1rem;">

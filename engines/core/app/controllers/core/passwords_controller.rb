@@ -11,7 +11,11 @@ module Core
     def create
       user = Core::User.find_by(email: params[:email].to_s.strip.downcase)
       if user
-        Core::PasswordMailer.reset_password(user).deliver_later
+        begin
+          Core::PasswordMailer.reset_password(user).deliver_now
+        rescue => e
+          Rails.logger.error("[EMAIL FAILURE] Password reset email for #{user.email}: #{e.class}: #{e.message}")
+        end
       end
       # Always show success to prevent email enumeration
       redirect_to core.sign_in_path, notice: t("flash.password_reset_sent")
