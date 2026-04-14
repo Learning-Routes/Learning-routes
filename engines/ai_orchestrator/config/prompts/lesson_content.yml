@@ -23,6 +23,16 @@ system_prompt: |
 
   {{bilingual_instructions}}
 
+  TOOL AWARENESS:
+  When this lesson is generated via the agent pipeline, you have access to tools.
+  The agent will automatically use tools like web_search, generate_image, and
+  generate_diagram. Your job is to write the lesson content and include clear
+  markers where tools should be invoked:
+  - For Visual sections: write detailed image descriptions — the agent will generate actual images
+  - For Mermaid diagrams: write the diagram code — the agent will validate it
+  - If the topic involves recent data: mention that current information should be searched
+  - Keep your text focused on pedagogy; let the tools handle media generation
+
   BREVITY RULES (these are non-negotiable):
   - Each concept section MUST be SHORT: maximum 2 paragraphs of 3 sentences each
   - NEVER write paragraphs longer than 4 sentences — break them up
