@@ -24,6 +24,12 @@ module AiOrchestrator
       new(task_type: task_type, variables: variables, user: user, params: params).call(async: async)
     end
 
+    # Agent-based execution: uses ContentAgent with tools for rich content generation.
+    # Returns the AiInteraction record.
+    def self.run_agent(task_type:, variables: {}, user: nil, params: {})
+      new(task_type: task_type, variables: variables, user: user, params: params).run_agent
+    end
+
     def initialize(task_type:, variables: {}, user: nil, params: {})
       @task_type = task_type.to_s
       @variables = variables
@@ -63,6 +69,57 @@ module AiOrchestrator
       end
 
       interaction
+    end
+
+    def run_agent
+      builder = PromptBuilder.new(task_type: @task_type, variables: @variables, user: @user)
+      prompts = builder.build
+
+      interaction = AiInteraction.create!(
+        user: @user,
+        model: "gpt-5.2",
+        task_type: @task_type,
+        prompt: prompts[:user],
+        status: :processing,
+        metadata: {
+          variables: @variables,
+          system_prompt_length: prompts[:system].length,
+          agent_mode: true
+        }
+      )
+
+      # Set thread-local context for tools that need user/locale
+      Thread.current[:lesson_agent_user] = @user
+      Thread.current[:lesson_agent_locale] = @variables[:locale] || "en"
+
+      start_time = Process.clock_gettime(Process::CLOCK_MONOTONIC)
+
+      agent = ContentAgent.new
+      response = agent.ask(prompts[:user])
+
+      elapsed_ms = ((Process.clock_gettime(Process::CLOCK_MONOTONIC) - start_time) * 1000).round
+
+      interaction.mark_completed!(
+        response_text: response.content,
+        input_tokens: response.input_tokens || 0,
+        output_tokens: response.output_tokens || 0,
+        latency_ms: elapsed_ms
+      )
+
+      Rails.logger.info(
+        "[AiOrchestrator] Agent completed in #{elapsed_ms}ms " \
+        "| tokens: #{response.input_tokens}+#{response.output_tokens} " \
+        "| cost: #{interaction.cost_cents}c"
+      )
+
+      interaction
+    rescue => e
+      interaction&.mark_failed!(error: e)
+      Rails.logger.error("[AiOrchestrator] Agent failed: #{e.message}")
+      interaction
+    ensure
+      Thread.current[:lesson_agent_user] = nil
+      Thread.current[:lesson_agent_locale] = nil
     end
 
     private
