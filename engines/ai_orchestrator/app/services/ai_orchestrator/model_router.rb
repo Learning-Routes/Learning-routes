@@ -17,7 +17,8 @@ module AiOrchestrator
       give_example:              { primary: "gpt-5.2", fallback: "gpt-4.1-mini" },
       simplify_content:          { primary: "gpt-4.1-mini", fallback: "gpt-5.2" },
       exercise_hint:             { primary: "gpt-4.1-mini", fallback: "gpt-5.2" },
-      step_quiz:                 { primary: "gpt-4.1-mini", fallback: "gpt-5.2" }
+      step_quiz:                 { primary: "gpt-4.1-mini", fallback: "gpt-5.2" },
+      content_agent:             { primary: "gpt-5.2", fallback: "gpt-4.1-mini" }
     }.freeze
 
     # Per-model rate limits (requests per minute)

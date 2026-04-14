@@ -8,7 +8,8 @@ module AiOrchestrator
       "claude-haiku-4-5"   => { input: 100, output: 500 },
       "claude-sonnet-4-5"  => { input: 300, output: 1500 },
       "elevenlabs"         => { flat: 0 },
-      "gpt-image-1"        => { per_image: 7 }
+      "gpt-image-1"        => { per_image: 7 },
+      "tavily"             => { per_request: 0 }
     }.freeze
 
     def self.estimate_cost(model:, input_tokens: 0, output_tokens: 0)
@@ -19,6 +20,8 @@ module AiOrchestrator
         pricing[:flat]
       elsif pricing[:per_image]
         pricing[:per_image]
+      elsif pricing[:per_request]
+        pricing[:per_request]
       else
         input_cost = (input_tokens / 1_000_000.0) * pricing[:input]
         output_cost = (output_tokens / 1_000_000.0) * pricing[:output]
