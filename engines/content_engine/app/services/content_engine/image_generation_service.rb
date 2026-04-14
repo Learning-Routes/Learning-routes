@@ -18,6 +18,14 @@ module ContentEngine
     # @param metadata [Hash] optional context: topic, style, importance
     # @return [Hash] { image_url:, cost_cents:, generation_time_ms: }
     def generate(image_description:, metadata: {})
+      # Content-hash cache: skip regeneration if same description was already generated
+      cache_key = image_content_hash(image_description)
+      cached = Rails.cache.read(cache_key)
+      if cached
+        Rails.logger.info("[ImageGenerationService] Cache hit for image (hash: #{cache_key.last(12)})")
+        return cached
+      end
+
       validate_cost_budget!
 
       task_type = determine_task_type(metadata)
@@ -45,11 +53,16 @@ module ContentEngine
 
       track_interaction!(prompt, image_url, result, cost_cents, elapsed_ms, task_type)
 
-      {
+      result_hash = {
         image_url: image_url,
         cost_cents: cost_cents,
         generation_time_ms: elapsed_ms
       }
+
+      # Cache result keyed by content hash (7 day TTL, invalidates when description changes)
+      Rails.cache.write(cache_key, result_hash, expires_in: 7.days)
+
+      result_hash
     end
 
     # How many more images can be generated for this step's lesson.
@@ -73,6 +86,11 @@ module ContentEngine
     end
 
     private
+
+    def image_content_hash(description)
+      digest = Digest::SHA256.hexdigest("image:#{description}")
+      "image_gen:#{@step&.id}:#{digest}"
+    end
 
     def validate_cost_budget!
       if AiOrchestrator::CostTracker.alert_exceeded?(user: @user)
