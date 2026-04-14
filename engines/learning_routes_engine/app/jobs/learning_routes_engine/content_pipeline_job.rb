@@ -4,9 +4,6 @@ module LearningRoutesEngine
 
     retry_on StandardError, wait: 10.seconds, attempts: 2
 
-    # Pre-generate: first 2 concept sections + summary = 3 total
-    MAX_AUDIO_PREGENERATE = 3
-
     def perform(route_step_id, options = {})
       @step = RouteStep.find(route_step_id)
       @route = @step.learning_route
@@ -30,23 +27,13 @@ module LearningRoutesEngine
       section_types = sections.map { |s| s[:type] }.tally
       Rails.logger.info("[ContentPipeline] Stage 2 complete: #{sections.size} sections (#{section_types})")
 
-      # Stage 3: Image generation (optional, non-blocking)
+      # Stages 3-4: Parallel media generation (images, audio, mermaid validation)
       begin
-        visual_count = sections.count { |s| s[:type].to_s == "visual" }
-        Rails.logger.info("[ContentPipeline] Stage 3: Image generation (#{visual_count} visual sections)")
-        stage_image_generation!(content, sections)
-        Rails.logger.info("[ContentPipeline] Stage 3 complete")
+        Rails.logger.info("[ContentPipeline] Stages 3-4: Parallel media prefetch")
+        ContentEngine::MediaPrefetchJob.perform_now(@step.id, @options)
+        Rails.logger.info("[ContentPipeline] Stages 3-4 complete")
       rescue => e
-        Rails.logger.error("[ContentPipeline] Stage 3 FAILED: #{e.class}: #{e.message}\n#{e.backtrace.first(5).join("\n")}")
-      end
-
-      # Stage 4: Audio pre-generation (optional, non-blocking)
-      begin
-        Rails.logger.info("[ContentPipeline] Stage 4: Audio pre-generation")
-        stage_audio_pregeneration!(sections)
-        Rails.logger.info("[ContentPipeline] Stage 4 complete")
-      rescue => e
-        Rails.logger.error("[ContentPipeline] Stage 4 FAILED: #{e.class}: #{e.message}\n#{e.backtrace.first(5).join("\n")}")
+        Rails.logger.error("[ContentPipeline] Stages 3-4 FAILED: #{e.class}: #{e.message}\n#{e.backtrace.first(5).join("\n")}")
       end
 
       # Stage 5: Step quiz generation
@@ -151,156 +138,6 @@ module LearningRoutesEngine
       ))
 
       sections
-    end
-
-    # ── Stage 3: Image Generation ────────────────────────────────────
-
-    def stage_image_generation!(content, sections)
-      visual_sections = sections.each_with_index.select { |s, _| s[:type].to_s == "visual" }
-      return if visual_sections.empty?
-
-      images_generated = 0
-
-      visual_sections.each do |section, index|
-        break if images_generated >= ContentEngine::ImageGenerationService.max_images_per_lesson
-
-        # Skip if already has image
-        next if section[:image_url].present?
-
-        description = section[:image_description].presence || section[:body].presence || section[:alt_text]
-        next if description.blank?
-
-        begin
-          result = generate_image(description, is_first_image: images_generated == 0)
-          next unless result
-
-          # Update the section in metadata
-          update_section_image!(index, result[:url], result[:content_type])
-          images_generated += 1
-        rescue => e
-          Rails.logger.warn("[ContentPipelineJob] Image generation failed for step #{@step.id}, section #{index}: #{e.message}")
-        end
-      end
-    end
-
-    def generate_image(description, is_first_image: false)
-      locale = @route.locale || @user&.locale || "en"
-      service = ContentEngine::ImageGenerationService.new(
-        user: @user,
-        step: @step,
-        locale: locale
-      )
-
-      importance = is_first_image ? :high : :low
-      result = service.generate(
-        image_description: description,
-        metadata: { topic: @route.localized_topic, importance: importance }
-      )
-
-      { url: result[:image_url], content_type: "image/png" }
-    rescue => e
-      Rails.logger.warn("[ContentPipelineJob] Image generation failed: #{e.message}")
-      nil
-    end
-
-    def update_section_image!(section_index, image_url, content_type)
-      metadata = @step.metadata || {}
-      parsed = metadata["parsed_sections"]
-      return unless parsed.is_a?(Array) && parsed[section_index]
-
-      parsed[section_index]["image_url"] = image_url
-      parsed[section_index]["image_content_type"] = content_type
-      @step.update!(metadata: metadata.merge("parsed_sections" => parsed))
-    end
-
-    # ── Stage 4: Smart Audio Pre-generation ──────────────────────────
-    #
-    # Pre-generate audio for:
-    # - First 2 concept sections (most important for learning)
-    # - The summary section (users often replay summaries)
-    # Total: up to 3 sections. Rest available on-demand.
-
-    def stage_audio_pregeneration!(sections)
-      locale = @route.locale || @user&.locale || "en"
-      target_locale = @route.target_locale
-      audio_count = 0
-
-      # Select sections to pre-generate: first 2 concepts + first summary
-      targets = select_audio_targets(sections)
-
-      # Initialize audio_sections status tracking in metadata
-      audio_sections = {}
-
-      targets.each do |section, index|
-        break if audio_count >= MAX_AUDIO_PREGENERATE
-
-        next if section[:body].blank?
-        next if ContentEngine::SectionAudioGenerator.cached(@step.id, index)
-
-        audio_sections[index.to_s] = { "status" => "generating" }
-        update_audio_sections_metadata!(audio_sections)
-
-        begin
-          result = ContentEngine::SectionAudioGenerator.generate!(
-            @step.id, index, section[:body],
-            locale: locale,
-            target_locale: target_locale
-          )
-          audio_count += 1
-
-          audio_sections[index.to_s] = {
-            "status" => "ready",
-            "url" => result[:audio_url],
-            "duration" => result[:duration]
-          }
-        rescue => e
-          Rails.logger.warn("[ContentPipelineJob] Audio generation failed for step #{@step.id}, section #{index}: #{e.message}")
-          audio_sections[index.to_s] = { "status" => "failed" }
-        end
-      end
-
-      # Mark remaining audio-eligible sections as pending
-      sections.each_with_index do |section, index|
-        next unless %w[concept summary visual example tip].include?(section[:type].to_s)
-        next if audio_sections.key?(index.to_s)
-        next if section[:body].blank?
-
-        cached = ContentEngine::SectionAudioGenerator.cached(@step.id, index)
-        if cached
-          audio_sections[index.to_s] = {
-            "status" => "ready",
-            "url" => cached[:audio_url],
-            "duration" => cached[:duration]
-          }
-        else
-          audio_sections[index.to_s] = { "status" => "pending" }
-        end
-      end
-
-      update_audio_sections_metadata!(audio_sections)
-    end
-
-    def select_audio_targets(sections)
-      concepts = []
-      summary = nil
-
-      sections.each_with_index do |section, index|
-        type = section[:type].to_s
-        if type == "concept" && concepts.size < 2
-          concepts << [section, index]
-        elsif type == "summary" && summary.nil?
-          summary = [section, index]
-        end
-      end
-
-      targets = concepts
-      targets << summary if summary
-      targets
-    end
-
-    def update_audio_sections_metadata!(audio_sections)
-      metadata = @step.metadata || {}
-      @step.update!(metadata: metadata.merge("audio_sections" => audio_sections))
     end
 
     # ── Stage 5: Quiz Generation ─────────────────────────────────────
