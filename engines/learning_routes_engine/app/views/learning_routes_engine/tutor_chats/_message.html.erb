@@ -1,0 +1,10 @@
+<% is_user = message.role == "user" %>
+<div class="flex gap-2 <%= is_user ? 'flex-row-reverse' : '' %>" id="tutor-msg-<%= message.id %>">
+  <% unless is_user %>
+    <div class="w-7 h-7 rounded-full flex items-center justify-center text-xs shrink-0" style="background: rgba(44, 38, 30, 0.08);">🤖</div>
+  <% end %>
+  <div class="px-3 py-2 rounded-2xl text-sm <%= is_user ? 'rounded-tr-sm' : 'rounded-tl-sm' %>"
+       style="<%= is_user ? 'background: #2C261E; color: #E8E4DC;' : 'background: rgba(44, 38, 30, 0.05); color: #1C1812;' %> max-width: 85%;">
+    <%= message.content.html_safe %>
+  </div>
+</div>
