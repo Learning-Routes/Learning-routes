@@ -2456,3 +2456,47 @@ html[data-theme="dark"] .lesson-content img,
   }
 }
 
+/* ── Interactive lesson blocks ── */
+
+/* Shake animation for wrong answers */
+@keyframes shake-horizontal {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-8px); }
+  40% { transform: translateX(8px); }
+  60% { transform: translateX(-4px); }
+  80% { transform: translateX(4px); }
+}
+.shake-horizontal { animation: shake-horizontal 0.4s ease; }
+
+/* Drag & Drop hover states */
+.drag-item:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(139, 92, 246, 0.15); }
+.drag-item:active { transform: scale(0.97); }
+.drag-item:focus-visible { outline: 3px solid #8b5cf6; outline-offset: 2px; }
+
+/* Fill blank inputs */
+.fill-blank-input:focus { border-color: #2C261E; box-shadow: 0 0 0 3px rgba(44, 38, 30, 0.1); outline: none; }
+
+/* Flashcard 3D flip */
+.flashcard-container { position: relative; }
+.flashcard-wrapper { position: absolute; inset: 0; }
+.flashcard-inner { position: relative; transform-style: preserve-3d; transition: transform 0.5s ease; }
+.flashcard-face { backface-visibility: hidden; position: absolute; inset: 0; }
+.flashcard-back { transform: rotateY(180deg); }
+
+/* Code playground editor */
+.code-playground-editor textarea:focus { outline: none; }
+
+/* Simulation canvas responsive */
+.simulation-canvas { width: 100%; height: auto; }
+
+/* Scenario option hover */
+.scenario-option:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(168, 85, 247, 0.12); border-color: rgba(168, 85, 247, 0.3); }
+.scenario-option:focus-visible { outline: 3px solid #a855f7; outline-offset: 2px; }
+
+/* Dark mode compatibility for interactive blocks */
+[data-layout="learning"] .drag-item { background: rgba(139, 92, 246, 0.1); border-color: rgba(139, 92, 246, 0.25); color: var(--color-dark-text, #E8E4DC); }
+[data-layout="learning"] .drop-zone { background: rgba(255, 255, 255, 0.05); border-color: rgba(255, 255, 255, 0.15); color: var(--color-dark-muted, #887F72); }
+[data-layout="learning"] .fill-blank-input { background: rgba(255, 255, 255, 0.05); border-color: rgba(255, 255, 255, 0.15); color: var(--color-dark-text, #E8E4DC); }
+[data-layout="learning"] .flashcard-front { background: rgba(255, 255, 255, 0.05); border-color: rgba(245, 158, 11, 0.3); color: var(--color-dark-text, #E8E4DC); }
+[data-layout="learning"] .scenario-option { background: rgba(168, 85, 247, 0.08); border-color: rgba(168, 85, 247, 0.2); color: var(--color-dark-text, #E8E4DC); }
+
