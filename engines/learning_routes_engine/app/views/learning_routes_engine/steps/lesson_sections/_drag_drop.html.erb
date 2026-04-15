@@ -1,0 +1,56 @@
+<%# engines/learning_routes_engine/app/views/learning_routes_engine/steps/lesson_sections/_drag_drop.html.erb %>
+<div data-controller="drag-drop" class="space-y-4">
+  <!-- Badge -->
+  <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium tracking-wide uppercase" style="background: rgba(139, 92, 246, 0.1); color: #8b5cf6; font-family: 'DM Mono', monospace;">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+    MATCH
+  </div>
+
+  <h2 class="text-2xl font-bold" style="color: #1C1812;"><%= section[:title] %></h2>
+
+  <div class="rounded-2xl p-6" style="background: #FEFDFB; border: 1px solid rgba(28, 24, 18, 0.06);">
+    <!-- Terms column -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div>
+        <p class="text-sm font-medium mb-3" style="color: #6D665B; font-family: 'DM Mono', monospace;">Terms</p>
+        <div class="space-y-2" data-drag-drop-target="termsContainer">
+          <% section[:pairs]&.shuffle&.each_with_index do |pair, i| %>
+            <div class="drag-item px-4 py-3 rounded-xl cursor-grab active:cursor-grabbing select-none transition-all duration-200"
+                 style="background: rgba(139, 92, 246, 0.06); border: 2px solid rgba(139, 92, 246, 0.15); color: #1C1812;"
+                 draggable="true"
+                 data-drag-drop-target="term"
+                 data-action="dragstart->drag-drop#dragStart dragend->drag-drop#dragEnd"
+                 data-term-index="<%= i %>"
+                 data-correct-def="<%= i %>"
+                 tabindex="0"
+                 role="option"
+                 data-action="keydown.enter->drag-drop#keySelect keydown.space->drag-drop#keySelect">
+              <%= pair[:term] %>
+            </div>
+          <% end %>
+        </div>
+      </div>
+
+      <!-- Definitions column / drop zones -->
+      <div>
+        <p class="text-sm font-medium mb-3" style="color: #6D665B; font-family: 'DM Mono', monospace;">Definitions</p>
+        <div class="space-y-2" data-drag-drop-target="defsContainer">
+          <% section[:pairs]&.each_with_index do |pair, i| %>
+            <div class="drop-zone px-4 py-3 rounded-xl transition-all duration-200 min-h-[48px] flex items-center"
+                 style="background: rgba(28, 24, 18, 0.03); border: 2px dashed rgba(28, 24, 18, 0.12); color: #6D665B;"
+                 data-drag-drop-target="dropZone"
+                 data-def-index="<%= i %>"
+                 data-action="dragover->drag-drop#dragOver dragleave->drag-drop#dragLeave drop->drag-drop#drop"
+                 tabindex="0"
+                 role="listbox"
+                 aria-label="Drop zone for: <%= pair[:definition] %>">
+              <span class="text-sm"><%= pair[:definition] %></span>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    </div>
+
+    <div data-drag-drop-target="feedback" class="mt-4 text-center text-sm font-medium hidden"></div>
+  </div>
+</div>
