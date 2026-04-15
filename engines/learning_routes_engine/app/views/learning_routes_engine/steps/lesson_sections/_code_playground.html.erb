@@ -1,0 +1,55 @@
+<%# engines/learning_routes_engine/app/views/learning_routes_engine/steps/lesson_sections/_code_playground.html.erb %>
+<div data-controller="code-playground"
+     data-code-playground-language-value="<%= section[:language] || 'python' %>"
+     data-code-playground-initial-code-value="<%= section[:code]&.gsub('"', '&quot;') %>"
+     class="space-y-4">
+  <!-- Badge -->
+  <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium tracking-wide uppercase" style="background: rgba(59, 130, 246, 0.1); color: #3b82f6; font-family: 'DM Mono', monospace;">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+    PLAYGROUND
+  </div>
+
+  <h2 class="text-2xl font-bold" style="color: #1C1812;"><%= section[:title] %></h2>
+
+  <div class="rounded-2xl overflow-hidden" style="border: 1px solid rgba(28, 24, 18, 0.1);">
+    <!-- Editor toolbar -->
+    <div class="flex items-center justify-between px-4 py-2" style="background: #2C261E;">
+      <span class="text-xs font-medium" style="color: #E8E4DC; font-family: 'DM Mono', monospace;"><%= section[:language] || 'python' %></span>
+      <div class="flex gap-2">
+        <button class="px-3 py-1 rounded-lg text-xs font-medium transition-all duration-200"
+                style="background: rgba(255,255,255,0.1); color: #E8E4DC;"
+                data-action="click->code-playground#reset"
+                aria-label="Reset code">Reset</button>
+        <button class="px-4 py-1 rounded-lg text-xs font-bold transition-all duration-200"
+                style="background: #10b981; color: white;"
+                data-action="click->code-playground#run"
+                data-code-playground-target="runBtn"
+                aria-label="Run code">Run ▶</button>
+      </div>
+    </div>
+
+    <!-- Code editor area -->
+    <div data-code-playground-target="editor" style="height: 200px; background: #1e1e1e;">
+      <textarea data-code-playground-target="textarea"
+                class="w-full h-full p-4 resize-none font-mono text-sm"
+                style="background: #1e1e1e; color: #d4d4d4; border: none; outline: none; font-family: 'DM Mono', monospace;"
+                spellcheck="false"><%= section[:code] %></textarea>
+    </div>
+
+    <!-- Output panel -->
+    <div class="px-4 py-3" style="background: #1C1812; border-top: 1px solid rgba(255,255,255,0.1);">
+      <p class="text-xs mb-1" style="color: #887F72; font-family: 'DM Mono', monospace;">Output</p>
+      <pre data-code-playground-target="output"
+           class="text-sm whitespace-pre-wrap"
+           style="color: #10b981; font-family: 'DM Mono', monospace; min-height: 24px;">Click Run to execute...</pre>
+    </div>
+
+    <% if section[:expected_output].present? %>
+      <div class="px-4 py-2" style="background: rgba(28, 24, 18, 0.03); border-top: 1px solid rgba(28, 24, 18, 0.06);">
+        <p class="text-xs" style="color: #887F72; font-family: 'DM Mono', monospace;">
+          Expected: <span style="color: #6D665B;"><%= section[:expected_output].to_s.truncate(200) %></span>
+        </p>
+      </div>
+    <% end %>
+  </div>
+</div>
