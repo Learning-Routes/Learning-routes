@@ -2500,3 +2500,10 @@ html[data-theme="dark"] .lesson-content img,
 [data-layout="learning"] .flashcard-front { background: rgba(255, 255, 255, 0.05); border-color: rgba(245, 158, 11, 0.3); color: var(--color-dark-text, #E8E4DC); }
 [data-layout="learning"] .scenario-option { background: rgba(168, 85, 247, 0.08); border-color: rgba(168, 85, 247, 0.2); color: var(--color-dark-text, #E8E4DC); }
 
+/* ── Tutor chat FAB ── */
+@keyframes tutor-fab-pulse {
+  0%, 100% { box-shadow: 0 4px 12px rgba(44, 38, 30, 0.3); }
+  50% { box-shadow: 0 4px 24px rgba(44, 38, 30, 0.5), 0 0 0 8px rgba(44, 38, 30, 0.1); }
+}
+.tutor-fab-pulse { animation: tutor-fab-pulse 2s ease infinite; }
+

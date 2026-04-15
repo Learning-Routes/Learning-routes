@@ -953,6 +953,15 @@ en:
       draft: "Draft"
 
   # ── Learning Engine ──
+  tutor:
+    title: "AI Tutor"
+    subtitle: "Ask me anything about this lesson"
+    greeting: "Hi! I'm your AI tutor. Ask me anything about this lesson and I'll help you understand it better."
+    placeholder: "Ask a question..."
+    send: "Send"
+    close: "Close"
+    open: "Open tutor chat"
+    proactive_hint: "Need help?"
   learning_engine:
     journey:
       route_label: "ROUTE"

@@ -15,6 +15,7 @@ LearningRoutesEngine::Engine.routes.draw do
         post :retry_quiz
         get :check_status
       end
+      resources :tutor_chats, only: [:index, :create]
     end
   end
 

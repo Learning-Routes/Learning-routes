@@ -952,6 +952,15 @@ es:
       paused: "Pausada"
       draft: "Borrador"
 
+  tutor:
+    title: "Tutor IA"
+    subtitle: "Pregunta lo que quieras sobre esta lección"
+    greeting: "¡Hola! Soy tu tutor de IA. Pregúntame lo que quieras sobre esta lección y te ayudaré a entenderla mejor."
+    placeholder: "Haz una pregunta..."
+    send: "Enviar"
+    close: "Cerrar"
+    open: "Abrir chat del tutor"
+    proactive_hint: "¿Necesitas ayuda?"
   # ── Learning Engine ──
   learning_engine:
     journey:

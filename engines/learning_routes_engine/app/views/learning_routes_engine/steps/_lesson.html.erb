@@ -179,6 +179,9 @@
       </div>
       <div id="ai_supplementary_<%= @step.id %>" style="margin-top:1rem;"></div>
     </div>
+
+    <%# ── AI Tutor Chat (floating) ── %>
+    <%= render "learning_routes_engine/tutor_chats/chat_panel", step: @step %>
   </div>
 <% elsif @content %>
   <%# ── Fallback: monolithic render if parser returned no sections ── %>
