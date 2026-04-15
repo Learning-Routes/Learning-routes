@@ -24,4 +24,46 @@ class UserEngagement < ApplicationRecord
     return false if last_activity_date.nil?
     last_activity_date >= Date.current - 1
   end
+
+  # Weekly streak freeze: auto-offered if user played 5 of 7 days
+  def eligible_for_streak_freeze?
+    return false if streak_freeze_used_this_week?
+    return false unless streak_lost_recently?
+
+    active_days_this_week >= 5
+  end
+
+  def apply_streak_freeze!
+    return false unless eligible_for_streak_freeze?
+
+    update!(
+      current_streak: current_streak + 1, # Restore the streak
+      metadata: (metadata || {}).merge(
+        "streak_freeze_used_at" => Time.current.iso8601,
+        "streak_freeze_week" => Date.current.cweek
+      )
+    )
+    true
+  end
+
+  private
+
+  def streak_freeze_used_this_week?
+    (metadata || {}).dig("streak_freeze_week") == Date.current.cweek
+  end
+
+  def streak_lost_recently?
+    last_activity_date.present? && last_activity_date < Date.current && last_activity_date >= Date.current - 2
+  end
+
+  def active_days_this_week
+    start_of_week = Date.current.beginning_of_week
+    XpTransaction.where(user: user)
+                 .where("created_at >= ?", start_of_week)
+                 .select("DATE(created_at)")
+                 .distinct
+                 .count
+  rescue
+    0
+  end
 end

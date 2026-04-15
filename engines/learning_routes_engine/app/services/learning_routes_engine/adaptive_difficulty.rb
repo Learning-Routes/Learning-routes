@@ -4,6 +4,82 @@ module LearningRoutesEngine
     REINFORCE_THRESHOLD = 60 # Score < 60% → insert reinforcement
     MAX_SKIP_RATIO = 0.3    # Skip at most 30% of remaining same-level steps
 
+    # Real-time section-level difficulty for interactive lessons.
+    # Returns :easy, :normal, or :hard based on recent performance.
+    def self.current_difficulty(user:, step:)
+      new_for_section(user: user, step: step).calculate_difficulty
+    end
+
+    # Whether difficulty should be adjusted based on recent pattern.
+    def self.should_adjust?(user:, step:)
+      new_for_section(user: user, step: step).needs_adjustment?
+    end
+
+    def self.new_for_section(user:, step:)
+      SectionDifficulty.new(user: user, step: step)
+    end
+
+    # Inner class for section-level difficulty
+    class SectionDifficulty
+      # Consecutive failures that trigger easy mode
+      FRUSTRATION_THRESHOLD = 2
+      # Fast correct answers (seconds) that trigger hard mode
+      SPEED_THRESHOLD = 5
+      # History window
+      HISTORY_SIZE = 5
+
+      def initialize(user:, step:)
+        @user = user
+        @step = step
+        @metadata = step.metadata || {}
+      end
+
+      def calculate_difficulty
+        history = recent_answers
+        return :normal if history.empty?
+
+        consecutive_failures = count_consecutive_failures(history)
+        fast_corrects = count_fast_corrects(history)
+
+        if consecutive_failures >= FRUSTRATION_THRESHOLD
+          :easy
+        elsif fast_corrects >= 3 && all_recent_correct?(history)
+          :hard
+        else
+          :normal
+        end
+      end
+
+      def needs_adjustment?
+        calculate_difficulty != :normal
+      end
+
+      private
+
+      def recent_answers
+        answers = @metadata.dig("check_history") || []
+        answers.last(HISTORY_SIZE)
+      end
+
+      def count_consecutive_failures(history)
+        count = 0
+        history.reverse_each do |entry|
+          break unless entry["correct"] == false
+          count += 1
+        end
+        count
+      end
+
+      def count_fast_corrects(history)
+        history.count { |e| e["correct"] == true && e["time_seconds"].to_f < SPEED_THRESHOLD }
+      end
+
+      def all_recent_correct?(history)
+        last_three = history.last(3)
+        last_three.length >= 3 && last_three.all? { |e| e["correct"] == true }
+      end
+    end
+
     def initialize(route, assessment_result)
       @route = route
       @result = assessment_result
