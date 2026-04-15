@@ -1,0 +1,34 @@
+<%# engines/learning_routes_engine/app/views/learning_routes_engine/steps/lesson_sections/_fill_blank.html.erb %>
+<div data-controller="fill-blank" data-fill-blank-answers-value="<%= section[:blanks]&.to_json %>" class="space-y-4">
+  <!-- Badge -->
+  <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium tracking-wide uppercase" style="background: rgba(16, 185, 129, 0.1); color: #10b981; font-family: 'DM Mono', monospace;">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+    COMPLETE
+  </div>
+
+  <h2 class="text-2xl font-bold" style="color: #1C1812;"><%= section[:title] %></h2>
+
+  <div class="rounded-2xl p-6" style="background: #FEFDFB; border: 1px solid rgba(28, 24, 18, 0.06); border-left: 4px solid #10b981;">
+    <p class="text-lg leading-relaxed" style="color: #1C1812;">
+      <% blank_index = 0 %>
+      <% section[:sentence].to_s.split("___").each_with_index do |part, i| %>
+        <%= part %>
+        <% if i < (section[:blanks]&.length || 0) %>
+          <input type="text"
+                 class="fill-blank-input inline-block mx-1 px-2 py-1 rounded-lg text-center font-medium transition-all duration-300"
+                 style="border: 2px solid rgba(28, 24, 18, 0.15); background: rgba(28, 24, 18, 0.02); color: #1C1812; min-width: 80px; width: <%= [section[:blanks][i].to_s.length * 12 + 32, 80].max %>px; font-family: 'DM Mono', monospace;"
+                 data-fill-blank-target="input"
+                 data-blank-index="<%= blank_index %>"
+                 data-action="input->fill-blank#checkAnswer"
+                 autocomplete="off"
+                 spellcheck="false"
+                 aria-label="Fill in blank <%= blank_index + 1 %>"
+                 placeholder="...">
+          <% blank_index += 1 %>
+        <% end %>
+      <% end %>
+    </p>
+
+    <div data-fill-blank-target="feedback" class="mt-4 text-center text-sm font-medium hidden"></div>
+  </div>
+</div>

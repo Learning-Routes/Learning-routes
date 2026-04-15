@@ -1,0 +1,60 @@
+<%# engines/learning_routes_engine/app/views/learning_routes_engine/steps/lesson_sections/_flashcards.html.erb %>
+<div data-controller="flashcards" data-flashcards-total-value="<%= section[:cards]&.length || 0 %>" class="space-y-4">
+  <!-- Badge -->
+  <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium tracking-wide uppercase" style="background: rgba(245, 158, 11, 0.1); color: #f59e0b; font-family: 'DM Mono', monospace;">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+    FLASHCARDS
+  </div>
+
+  <h2 class="text-2xl font-bold" style="color: #1C1812;"><%= section[:title] %></h2>
+
+  <!-- Card counter -->
+  <div class="text-center">
+    <span class="text-sm" style="color: #6D665B; font-family: 'DM Mono', monospace;">
+      <span data-flashcards-target="currentNum">1</span> / <%= section[:cards]&.length || 0 %>
+    </span>
+  </div>
+
+  <!-- Flashcard stack -->
+  <div class="flex justify-center">
+    <div class="flashcard-container" style="perspective: 1000px; width: 100%; max-width: 400px; height: 250px;">
+      <% section[:cards]&.each_with_index do |card, i| %>
+        <div class="flashcard-wrapper absolute inset-0 transition-opacity duration-300"
+             data-flashcards-target="card"
+             data-card-index="<%= i %>"
+             style="<%= i > 0 ? 'opacity: 0; pointer-events: none;' : '' %>">
+          <div class="flashcard-inner w-full h-full cursor-pointer" style="position: relative; transform-style: preserve-3d; transition: transform 0.5s ease;"
+               data-flashcards-target="inner"
+               tabindex="0"
+               role="button"
+               aria-label="Flashcard. Click to flip."
+               data-action="keydown.enter->flashcards#flip keydown.space->flashcards#flip click->flashcards#flip">
+            <!-- Front -->
+            <div class="flashcard-face flashcard-front absolute inset-0 rounded-2xl p-6 flex items-center justify-center text-center"
+                 style="backface-visibility: hidden; background: #FEFDFB; border: 2px solid rgba(245, 158, 11, 0.2); color: #1C1812;">
+              <p class="text-xl font-bold"><%= card[:front] %></p>
+            </div>
+            <!-- Back -->
+            <div class="flashcard-face flashcard-back absolute inset-0 rounded-2xl p-6 flex items-center justify-center text-center"
+                 style="backface-visibility: hidden; transform: rotateY(180deg); background: #2C261E; color: #E8E4DC;">
+              <p class="text-lg"><%= card[:back] %></p>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  </div>
+
+  <!-- Difficulty buttons -->
+  <div class="flex justify-center gap-3 mt-4" data-flashcards-target="buttons">
+    <button class="px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200"
+            style="background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2);"
+            data-action="click->flashcards#rate" data-difficulty="hard">Hard</button>
+    <button class="px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200"
+            style="background: rgba(245, 158, 11, 0.1); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.2);"
+            data-action="click->flashcards#rate" data-difficulty="normal">Normal</button>
+    <button class="px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200"
+            style="background: rgba(16, 185, 129, 0.1); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.2);"
+            data-action="click->flashcards#rate" data-difficulty="easy">Easy</button>
+  </div>
+</div>
