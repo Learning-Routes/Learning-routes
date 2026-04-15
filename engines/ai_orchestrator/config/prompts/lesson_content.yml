@@ -33,13 +33,57 @@ system_prompt: |
   - If the topic involves recent data: mention that current information should be searched
   - Keep your text focused on pedagogy; let the tools handle media generation
 
+  INTERACTIVE BLOCKS (REQUIRED — include at least 2 per lesson):
+  Choose from these 6 interactive block types to make the lesson feel alive:
+
+  ## Match: [title]
+  Term 1 ==> Definition 1
+  Term 2 ==> Definition 2
+  (Drag-and-drop matching exercise. Use 3-6 pairs.)
+
+  ## Complete: [title]
+  Sentence with BLANK--correctword--BLANK tokens to fill in.
+  (Fill-in-the-blank exercise. Use 2-4 blanks per sentence.)
+
+  ## Playground: [title]
+  ```language
+  initial code here
+  ```
+  Expected output here
+  (Only for programming topics. Runnable code editor.)
+
+  ## Simulation: [title]
+  variable_name: min_value to max_value
+  formula: expression
+  Description of what the simulation shows.
+  (Interactive canvas with sliders. Good for math, physics, economics.)
+
+  ## Scenario: [title]
+  Describe the situation.
+  OPTION A: First choice description
+  Consequence of choosing A.
+  OPTION B: Second choice description
+  Consequence of choosing B.
+  (Choose-your-own-adventure decision exercise.)
+
+  ## Flashcards: [title]
+  FRONT: Term or question
+  BACK: Definition or answer
+  ---
+  FRONT: Another term
+  BACK: Another definition
+  (Flip cards for vocabulary or concept review. Use 3-6 cards.)
+
+  Pick at least 2 different interactive blocks per lesson. Choose types that fit the
+  subject: Match for vocabulary, Complete for grammar or formulas, Playground for code,
+  Simulation for math/physics, Scenario for ethics/history, Flashcards for review.
+
   BREVITY RULES (these are non-negotiable):
-  - Each concept section MUST be SHORT: maximum 2 paragraphs of 3 sentences each
+  - Each concept section MUST be SHORT: maximum 100 words
   - NEVER write paragraphs longer than 4 sentences — break them up
   - If you need more explanation, split into MULTIPLE concept sections with visuals between them
-  - After EVERY concept section, include EITHER a Visual section OR a Mermaid diagram
-  - NEVER place two concept sections in a row without a visual break between them
-  - Maximum 150 words per concept section — enforce brevity
+  - After EVERY concept section, include EITHER a Visual section, Mermaid diagram, OR interactive block
+  - NEVER place two concept sections in a row without a visual or interactive break between them
   - Use bullet points for lists, **bold** for key terms, emoji sparingly but strategically
 
   Content structure — use these EXACT heading markers as section delimiters:
@@ -123,19 +167,20 @@ system_prompt: |
 
   REQUIRED lesson flow (follow this EXACT alternating pattern):
   1. Hook paragraph (2-3 sentences — a surprising fact, question, or scenario)
-  2. ## Concepto: First concept (2 short paragraphs max)
+  2. ## Concepto: First concept (max 100 words)
   3. A ```mermaid diagram illustrating concept 1
   4. ## Pregunta: First knowledge check
-  5. ## Concepto: Second concept (2 short paragraphs max)
+  5. ## Concepto: Second concept (max 100 words)
   6. ## Visual: Detailed image description for AI generation
-  7. ## Ejemplo: Practical example with real-world application
+  7. INTERACTIVE BLOCK: Choose one from Match, Complete, Flashcards, Simulation, Scenario, or Playground
   8. ## Pregunta: Second knowledge check
-  9. ## Concepto: Third concept (2 short paragraphs max)
+  9. ## Concepto: Third concept (max 100 words)
   10. Another ```mermaid diagram (DIFFERENT type from the first)
-  11. ## Pregunta: Third knowledge check
-  12. ## Tip: A practical insight
-  13. ## Visual: Second detailed image description
-  14. ## Resumen: Key takeaways as bullet list
+  11. INTERACTIVE BLOCK: Choose a DIFFERENT interactive type from step 7
+  12. ## Pregunta: Third knowledge check
+  13. ## Tip: A practical insight
+  14. ## Visual: Second detailed image description
+  15. ## Resumen: Key takeaways as bullet list
 
 user_prompt: |
   Create an engaging, interactive lesson on "{{topic}}" within the subject "{{route_topic}}".
@@ -144,14 +189,15 @@ user_prompt: |
 
   STRICT requirements — the lesson MUST include ALL of these:
   - Minimum 3 "## Pregunta:" sections (knowledge checks with 4 options each, exactly 1 correct)
-  - Minimum 3 "## Concepto:" sections (key concept explanations, max 150 words each)
+  - Minimum 3 "## Concepto:" sections (key concept explanations, max 100 words each)
   - At least 1 "## Ejemplo:" section with a practical, real-world example
   - At least 2 "## Visual:" sections with DETAILED image descriptions for AI generation
   - At least 2 Mermaid diagrams (```mermaid code blocks) using DIFFERENT diagram types
   - At least 1 "## Tip:" section with a practical insight
+  - At least 2 interactive blocks chosen from: Match, Complete, Playground, Simulation, Scenario, Flashcards
   - End with "## Resumen: Lo que aprendiste" with PUNTOS CLAVE bullet list (4+ points)
-  - Total section count: 10-14 sections (more sections, each shorter)
-  - NEVER place two ## Concepto sections in a row — always alternate with visual/question/example
+  - Total section count: 12-16 sections (more sections, each shorter, more interactive)
+  - NEVER place two ## Concepto sections in a row — always alternate with visual/question/example/interactive
   - Content should take 5-8 minutes navigating section by section
   - ALL text must be in {{locale}} language
   - Maximum 2000 words total

@@ -125,7 +125,7 @@
                data-lesson-check="true"
              <% end %>
              style="<%= i > 0 ? 'display:none;' : '' %>">
-          <% section_type = %w[concept example check visual summary audio audio_explainer tip].include?(section[:type].to_s) ? section[:type] : "concept" %>
+          <% section_type = %w[concept example check visual summary audio audio_explainer tip drag_drop fill_blank code_playground simulation scenario flashcards].include?(section[:type].to_s) ? section[:type] : "concept" %>
           <%= render "learning_routes_engine/steps/lesson_sections/#{section_type}", section: section, step: @step, index: i %>
         </div>
       <% end %>
