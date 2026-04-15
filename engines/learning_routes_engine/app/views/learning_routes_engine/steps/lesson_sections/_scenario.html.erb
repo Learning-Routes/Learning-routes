@@ -1,0 +1,50 @@
+<%# engines/learning_routes_engine/app/views/learning_routes_engine/steps/lesson_sections/_scenario.html.erb %>
+<div data-controller="scenario" class="space-y-4">
+  <!-- Badge -->
+  <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium tracking-wide uppercase" style="background: rgba(168, 85, 247, 0.1); color: #a855f7; font-family: 'DM Mono', monospace;">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+    SCENARIO
+  </div>
+
+  <h2 class="text-2xl font-bold" style="color: #1C1812;"><%= section[:title] %></h2>
+
+  <div class="rounded-2xl p-6" style="background: #FEFDFB; border: 1px solid rgba(28, 24, 18, 0.06);">
+    <!-- Situation -->
+    <p class="text-base mb-6" style="color: #1C1812; line-height: 1.7;"><%= section[:situation] %></p>
+
+    <!-- Options -->
+    <div class="space-y-3" data-scenario-target="optionsContainer">
+      <% section[:options]&.each_with_index do |option, i| %>
+        <button class="scenario-option w-full text-left px-5 py-4 rounded-xl transition-all duration-200"
+                style="background: rgba(168, 85, 247, 0.04); border: 2px solid rgba(168, 85, 247, 0.12); color: #1C1812;"
+                data-scenario-target="option"
+                data-option-index="<%= i %>"
+                data-consequence="<%= option[:consequence]&.gsub('"', '&quot;') %>"
+                data-action="click->scenario#choose"
+                tabindex="0"
+                role="button"
+                aria-label="Option <%= ('A'.ord + i).chr %>: <%= option[:label] %>">
+          <span class="inline-flex items-center justify-center w-7 h-7 rounded-full text-xs font-bold mr-3" style="background: rgba(168, 85, 247, 0.12); color: #a855f7;">
+            <%= ('A'.ord + i).chr %>
+          </span>
+          <span class="font-medium"><%= option[:label] %></span>
+        </button>
+      <% end %>
+    </div>
+
+    <!-- Consequence reveal -->
+    <div data-scenario-target="consequence" class="mt-4 px-5 py-4 rounded-xl hidden" style="background: rgba(168, 85, 247, 0.06); border: 1px solid rgba(168, 85, 247, 0.15);">
+      <p class="text-sm font-medium mb-1" style="color: #a855f7;">Result:</p>
+      <p data-scenario-target="consequenceText" style="color: #1C1812;"></p>
+    </div>
+
+    <!-- Retry button -->
+    <div data-scenario-target="retryContainer" class="mt-4 text-center hidden">
+      <button class="px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200"
+              style="background: rgba(168, 85, 247, 0.1); color: #a855f7; border: 1px solid rgba(168, 85, 247, 0.2);"
+              data-action="click->scenario#retry">
+        Try Again
+      </button>
+    </div>
+  </div>
+</div>

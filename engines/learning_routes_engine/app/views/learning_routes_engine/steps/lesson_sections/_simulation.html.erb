@@ -1,0 +1,55 @@
+<%# engines/learning_routes_engine/app/views/learning_routes_engine/steps/lesson_sections/_simulation.html.erb %>
+<div data-controller="simulation"
+     data-simulation-variables-value="<%= (section[:variables] || []).to_json %>"
+     data-simulation-formula-value="<%= section[:formula] %>"
+     class="space-y-4">
+  <!-- Badge -->
+  <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium tracking-wide uppercase" style="background: rgba(236, 72, 153, 0.1); color: #ec4899; font-family: 'DM Mono', monospace;">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20V10"/><path d="M18 20V4"/><path d="M6 20v-4"/></svg>
+    SIMULATION
+  </div>
+
+  <h2 class="text-2xl font-bold" style="color: #1C1812;"><%= section[:title] %></h2>
+
+  <div class="rounded-2xl p-6" style="background: #FEFDFB; border: 1px solid rgba(28, 24, 18, 0.06);">
+    <% if section[:body].present? %>
+      <p class="text-sm mb-4" style="color: #6D665B;"><%= section[:body].to_s.truncate(300) %></p>
+    <% end %>
+
+    <!-- Canvas visualization -->
+    <div class="rounded-xl overflow-hidden mb-4" style="border: 1px solid rgba(28, 24, 18, 0.08);">
+      <canvas data-simulation-target="canvas" width="600" height="300" style="width: 100%; height: auto; background: #FEFDFB;"></canvas>
+    </div>
+
+    <!-- Sliders -->
+    <div class="space-y-4" data-simulation-target="controls">
+      <% (section[:variables] || []).each_with_index do |var, i| %>
+        <div class="flex items-center gap-4">
+          <label class="text-sm font-medium w-24 shrink-0" style="color: #1C1812; font-family: 'DM Mono', monospace;">
+            <%= var[:name] || var["name"] %>
+          </label>
+          <input type="range"
+                 class="flex-1 accent-current"
+                 style="accent-color: #2C261E;"
+                 min="<%= var[:min] || var["min"] || 0 %>"
+                 max="<%= var[:max] || var["max"] || 100 %>"
+                 value="<%= var[:default] || var["default"] || 50 %>"
+                 step="0.1"
+                 data-simulation-target="slider"
+                 data-var-name="<%= var[:name] || var["name"] %>"
+                 data-var-index="<%= i %>"
+                 data-action="input->simulation#update"
+                 aria-label="<%= var[:name] || var["name"] %> slider">
+          <span class="text-sm font-medium w-16 text-right" style="color: #2C261E; font-family: 'DM Mono', monospace;"
+                data-simulation-target="sliderValue"><%= var[:default] || var["default"] || 50 %></span>
+        </div>
+      <% end %>
+    </div>
+
+    <% if section[:formula].present? %>
+      <div class="mt-4 px-3 py-2 rounded-lg text-sm" style="background: rgba(28, 24, 18, 0.04); color: #6D665B; font-family: 'DM Mono', monospace;">
+        Formula: <span data-simulation-target="result"><%= section[:formula] %></span>
+      </div>
+    <% end %>
+  </div>
+</div>
