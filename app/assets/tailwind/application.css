@@ -2507,3 +2507,56 @@ html[data-theme="dark"] .lesson-content img,
 }
 .tutor-fab-pulse { animation: tutor-fab-pulse 2s ease infinite; }
 
+/* ── Micro rewards ── */
+
+/* XP toast float animation */
+@keyframes xp-toast-rise {
+  0% { opacity: 1; transform: translateX(-50%) translateY(0); }
+  70% { opacity: 1; transform: translateX(-50%) translateY(-60px); }
+  100% { opacity: 0; transform: translateX(-50%) translateY(-80px) scale(1.1); }
+}
+
+/* Correct answer feedback */
+@keyframes answer-correct {
+  0% { transform: translateY(0); }
+  30% { transform: translateY(-4px); }
+  60% { transform: translateY(0); }
+  100% { transform: translateY(0); }
+}
+.answer-correct {
+  border-color: #4CAF50 !important;
+  background: rgba(76, 175, 80, 0.08) !important;
+  animation: answer-correct 0.4s ease;
+}
+
+/* Wrong answer feedback */
+@keyframes answer-wrong {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(8px); }
+  40% { transform: translateX(-8px); }
+  60% { transform: translateX(4px); }
+  80% { transform: translateX(-4px); }
+}
+.answer-wrong {
+  border-color: #E53935 !important;
+  background: rgba(229, 57, 53, 0.06) !important;
+  animation: answer-wrong 0.4s ease;
+}
+
+/* Combo counter badge */
+.combo-badge {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.75rem;
+  font-weight: 700;
+  background: rgba(44, 38, 30, 0.06);
+  z-index: 10;
+  display: none;
+  align-items: center;
+  gap: 0.25rem;
+}
+

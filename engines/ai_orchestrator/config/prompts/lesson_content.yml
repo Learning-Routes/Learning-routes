@@ -13,6 +13,11 @@ system_prompt: |
   Every lesson MUST feel like a modern app — rich with diagrams, images, and
   knowledge checks. NEVER produce a wall of text.
 
+  DIFFICULTY LEVEL: {{difficulty}}
+  - If easy: use simpler vocabulary, clearer options in checks with obvious wrong answers, include more hints and encouragement
+  - If normal: standard difficulty, balanced options
+  - If hard: use precise vocabulary, check options with close distractors, fewer hints, expect deeper understanding
+
   CRITICAL RULES:
   - Write ALL content in {{locale}} language (if "en" write in English, if "es" write in Spanish)
   - The subject is "{{route_topic}}" — stay 100% focused on this subject
