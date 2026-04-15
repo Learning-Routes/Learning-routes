@@ -1,0 +1,87 @@
+<%# Tutor Chat Slide-Over Panel %>
+<div data-controller="tutor-chat"
+     data-tutor-chat-step-id-value="<%= step.id %>"
+     data-tutor-chat-url-value="<%= learning_routes_engine.route_step_tutor_chats_path(step.learning_route, step) %>"
+     id="tutor-chat-container">
+
+  <!-- FAB Button -->
+  <button data-tutor-chat-target="fab"
+          data-action="click->tutor-chat#toggle"
+          class="fixed bottom-4 right-4 z-50 w-14 h-14 rounded-full shadow-lg flex items-center justify-center transition-all duration-200 hover:scale-105 active:scale-95"
+          style="background: #2C261E; color: white;"
+          aria-label="<%= t('tutor.open', default: 'Open tutor chat') %>">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+    </svg>
+    <!-- Proactive badge -->
+    <span data-tutor-chat-target="badge"
+          class="absolute -top-1 -right-1 hidden px-2 py-0.5 rounded-full text-xs font-bold"
+          style="background: #ef4444; color: white; font-size: 10px;">
+    </span>
+  </button>
+
+  <!-- Slide-over panel -->
+  <div data-tutor-chat-target="panel"
+       class="fixed top-0 right-0 bottom-0 z-50 flex flex-col shadow-2xl"
+       style="width: 380px; max-width: 100vw; background: #FEFDFB; transform: translateX(100%); transition: transform 0.2s ease;"
+       role="dialog"
+       aria-label="<%= t('tutor.title', default: 'AI Tutor') %>">
+
+    <!-- Header -->
+    <div class="flex items-center justify-between px-4 py-3 shrink-0" style="background: #2C261E; color: #E8E4DC;">
+      <div class="flex items-center gap-2">
+        <div class="w-8 h-8 rounded-full flex items-center justify-center text-sm" style="background: rgba(255,255,255,0.15);">🤖</div>
+        <div>
+          <p class="text-sm font-bold"><%= t('tutor.title', default: 'AI Tutor') %></p>
+          <p class="text-xs" style="color: #887F72;"><%= t('tutor.subtitle', default: 'Ask me anything about this lesson') %></p>
+        </div>
+      </div>
+      <button data-action="click->tutor-chat#toggle"
+              class="w-8 h-8 rounded-lg flex items-center justify-center transition-colors"
+              style="background: rgba(255,255,255,0.1);"
+              aria-label="<%= t('tutor.close', default: 'Close') %>">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+
+    <!-- Messages area -->
+    <div data-tutor-chat-target="messages"
+         id="tutor-messages-<%= step.id %>"
+         class="flex-1 overflow-y-auto px-4 py-3 space-y-3"
+         style="scroll-behavior: smooth;">
+      <!-- Greeting message -->
+      <div class="flex gap-2">
+        <div class="w-7 h-7 rounded-full flex items-center justify-center text-xs shrink-0" style="background: rgba(44, 38, 30, 0.08);">🤖</div>
+        <div class="px-3 py-2 rounded-2xl rounded-tl-sm text-sm" style="background: rgba(44, 38, 30, 0.05); color: #1C1812; max-width: 85%;">
+          <%= t('tutor.greeting', default: "Hi! I'm your AI tutor. Ask me anything about this lesson and I'll help you understand it better.") %>
+        </div>
+      </div>
+    </div>
+
+    <!-- Input area -->
+    <div class="px-4 py-3 shrink-0" style="border-top: 1px solid rgba(28, 24, 18, 0.08);">
+      <div class="flex gap-2">
+        <input type="text"
+               data-tutor-chat-target="input"
+               data-action="keydown.enter->tutor-chat#send"
+               class="flex-1 px-4 py-2 rounded-xl text-sm"
+               style="background: rgba(28, 24, 18, 0.04); border: 1px solid rgba(28, 24, 18, 0.1); color: #1C1812; outline: none;"
+               placeholder="<%= t('tutor.placeholder', default: 'Ask a question...') %>"
+               autocomplete="off">
+        <button data-action="click->tutor-chat#send"
+                data-tutor-chat-target="sendBtn"
+                class="px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200"
+                style="background: #2C261E; color: white;"
+                aria-label="<%= t('tutor.send', default: 'Send') %>">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Backdrop -->
+  <div data-tutor-chat-target="backdrop"
+       data-action="click->tutor-chat#toggle"
+       class="fixed inset-0 z-40 hidden"
+       style="background: rgba(0,0,0,0.3);"></div>
+</div>
