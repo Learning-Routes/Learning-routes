@@ -1,446 +1,285 @@
 <%= form_with model: route_request, url: create_route_wizard_path, data: { turbo: true, route_wizard_target: "form", action: "submit->route-wizard#handleSubmit" } do |f| %>
 
-  <%# === Error banner (hidden by default, targetable by turbo stream) === %>
-  <div id="wizard-error-banner" data-route-wizard-target="errorBanner" style="max-width:640px; width:100%;"></div>
+  <%# Error banner %>
+  <div id="wizard-error-banner" data-route-wizard-target="errorBanner"
+       style="display:none; position:fixed; top:0; left:0; right:0; z-index:100; padding:0.75rem 1rem; background:#B06050; color:white; text-align:center; font-family:'DM Sans',sans-serif; font-size:0.82rem; font-weight:500;">
+  </div>
 
-  <%# === Route-Node Progress Indicator — 6 steps === %>
-  <div style="max-width:640px; width:100%; margin-bottom:20px;" data-route-wizard-target="stepBar">
-    <%# Step info text %>
-    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:14px;">
-      <div style="display:flex; gap:6px; align-items:center;">
-        <span data-route-wizard-target="stepLabel" style="font-family:'DM Mono',monospace; font-weight:600; font-size:0.6rem; color:var(--color-txt, #1C1812); letter-spacing:0.03em;"><%= t("wizard.step_label", n: 1) %></span>
-        <span style="font-family:'DM Mono',monospace; font-size:0.6rem; color:var(--color-faint-text, #D4CFC5);"><%= t("wizard.step_of") %></span>
-        <span data-route-wizard-target="stepName" style="font-family:'DM Sans',sans-serif; font-weight:400; font-size:0.62rem; color:var(--color-muted, #9E9587); margin-left:6px;"><%= t("wizard.step0.step_name") %></span>
+  <%# ARIA live region for step announcements %>
+  <div aria-live="polite" aria-atomic="true" class="sr-only" data-route-wizard-target="stepLabel"></div>
+
+  <%# ═══ STEP 0: TOPICS ═══ %>
+  <div class="wizard-step wizard-enter" data-route-wizard-target="step" data-step="0" role="group" aria-label="Choose topics">
+    <h2 class="wizard-heading"><span class="wizard-wave">&#x1F44B;</span> What do you want to learn?</h2>
+    <p class="wizard-subtitle">Choose one or more topics</p>
+
+    <div class="wizard-topic-grid" data-route-wizard-target="topicGrid">
+      <% [
+        ["programming", "&#x1F916;", "Programación"],
+        ["web_dev", "&#x1F310;", "Desarrollo Web"],
+        ["data_science", "&#x1F4CA;", "Ciencia de Datos"],
+        ["mobile_dev", "&#x1F4F1;", "Desarrollo Móvil"],
+        ["languages", "&#x1F4AC;", "Idiomas"],
+        ["math", "&#x1F9EE;", "Matemáticas"],
+        ["science", "&#x1F52C;", "Ciencias"],
+        ["business", "&#x1F4BC;", "Negocios"],
+        ["design", "&#x1F3A8;", "Diseño"],
+        ["music", "&#x1F3B5;", "Música"],
+        ["writing", "&#x1F58B;&#xFE0F;", "Escritura"],
+        ["health", "&#x2764;&#xFE0F;", "Salud y Bienestar"]
+      ].each do |id, icon, label| %>
+        <button type="button" class="wizard-topic-tile"
+                data-action="click->route-wizard#toggleTopic"
+                data-topic="<%= id %>"
+                tabindex="0"
+                role="checkbox"
+                aria-checked="false"
+                aria-label="<%= label %>">
+          <span class="tile-icon"><%= icon.html_safe %></span>
+          <span class="tile-label"><%= label %></span>
+          <span class="tile-check">&#x2713;</span>
+        </button>
+      <% end %>
+    </div>
+
+    <%# Topic detail (shown when a predefined topic is selected) %>
+    <div data-route-wizard-target="topicDetailWrap" style="display:none; margin-bottom:1rem; width:100%;">
+      <label style="font-family:'DM Mono',monospace; font-size:0.68rem; font-weight:600; color:var(--color-muted); text-transform:uppercase; letter-spacing:0.08em; display:block; margin-bottom:0.4rem;"
+             data-route-wizard-target="topicDetailLabel">Specify your topic</label>
+      <input type="text" name="route_request[custom_topic]"
+             class="wizard-custom-input"
+             data-route-wizard-target="topicDetailInput"
+             data-action="input->route-wizard#updateTopicDetail keydown.enter->route-wizard#preventEnterSubmit"
+             autocomplete="off" maxlength="200">
+    </div>
+
+    <%# Custom topic %>
+    <div style="position:relative; width:100%; margin-bottom:1.25rem;" data-route-wizard-target="customInputWrap">
+      <span style="position:absolute; left:0.85rem; top:50%; transform:translateY(-50%); font-size:1rem;">&#x2728;</span>
+      <input type="text"
+             class="wizard-custom-input"
+             placeholder="Or type something specific..."
+             data-route-wizard-target="customInput"
+             data-action="input->route-wizard#updateCustomTopic keydown.enter->route-wizard#preventEnterSubmit"
+             autocomplete="off" maxlength="200">
+    </div>
+
+    <%# Dynamic topic hidden inputs %>
+    <div data-route-wizard-target="topicInputs"></div>
+
+    <%# Language selector %>
+    <p style="font-family:'DM Mono',monospace; font-size:0.68rem; font-weight:600; color:var(--color-muted); text-transform:uppercase; letter-spacing:0.08em; text-align:center; margin:0.5rem 0 0.5rem;">Language</p>
+    <div class="wizard-locale-row" data-route-wizard-target="localeGrid">
+      <% [["es", "&#x1F1EA;&#x1F1F8;", "Español"], ["en", "&#x1F1FA;&#x1F1F8;", "English"], ["pt", "&#x1F1E7;&#x1F1F7;", "Português"], ["fr", "&#x1F1EB;&#x1F1F7;", "Français"]].each do |id, flag, name| %>
+        <button type="button" class="wizard-locale-tile<%= ' selected' if id == 'es' %>"
+                data-action="click->route-wizard#selectLocale"
+                data-locale="<%= id %>"
+                tabindex="0" role="radio" aria-checked="<%= id == 'es' %>">
+          <span class="locale-flag"><%= flag.html_safe %></span>
+          <span><%= name %></span>
+        </button>
+      <% end %>
+    </div>
+    <input type="hidden" name="route_request[route_locale]" value="es" data-route-wizard-target="localeInput">
+  </div>
+
+  <%# ═══ STEP 1: LEVEL ═══ %>
+  <div class="wizard-step" data-route-wizard-target="step" data-step="1" aria-hidden="true" role="radiogroup" aria-label="Select your level">
+    <h2 class="wizard-heading">What is your level?</h2>
+    <p class="wizard-subtitle">Be honest — we will adapt to you</p>
+
+    <% [
+      ["beginner", "&#x1F331;", "Beginner", "I am just getting started"],
+      ["basic", "&#x1F33F;", "Basic", "I know the fundamentals"],
+      ["intermediate", "&#x1F333;", "Intermediate", "I have solid experience"],
+      ["advanced", "&#x1F332;", "Advanced", "I want to master this"]
+    ].each do |id, icon, name, desc| %>
+      <button type="button" class="wizard-level-card"
+              data-action="click->route-wizard#selectLevel"
+              data-level="<%= id %>"
+              tabindex="0" role="radio" aria-checked="false">
+        <span class="level-icon"><%= icon.html_safe %></span>
+        <div class="level-info">
+          <div class="level-name"><%= name %></div>
+          <div class="level-desc"><%= desc %></div>
+        </div>
+        <span class="level-radio"></span>
+      </button>
+    <% end %>
+    <input type="hidden" name="route_request[level]" data-route-wizard-target="levelInput">
+  </div>
+
+  <%# ═══ STEP 2: GOALS ═══ %>
+  <div class="wizard-step" data-route-wizard-target="step" data-step="2" aria-hidden="true" role="group" aria-label="Select your goals">
+    <h2 class="wizard-heading">What are your goals?</h2>
+    <p class="wizard-subtitle">Select all that apply</p>
+
+    <div class="wizard-goal-grid">
+      <% [
+        ["career", "&#x1F680;", "Career growth"],
+        ["personal", "&#x2B50;", "Personal interest"],
+        ["exam", "&#x1F4DC;", "Pass an exam"],
+        ["project", "&#x1F527;", "Build a project"],
+        ["switch", "&#x1F500;", "Switch fields"],
+        ["teaching", "&#x1F9D1;&#x200D;&#x1F3EB;", "Teach others"]
+      ].each do |id, icon, label| %>
+        <button type="button" class="wizard-goal-chip"
+                data-action="click->route-wizard#toggleGoal"
+                data-goal="<%= id %>"
+                tabindex="0" role="checkbox" aria-checked="false">
+          <span class="goal-icon"><%= icon.html_safe %></span>
+          <span class="goal-label"><%= label %></span>
+        </button>
+      <% end %>
+    </div>
+    <div data-route-wizard-target="goalInputs"></div>
+  </div>
+
+  <%# ═══ STEP 3: TIME ═══ %>
+  <div class="wizard-step" data-route-wizard-target="step" data-step="3" aria-hidden="true" role="group" aria-label="Time commitment">
+    <h2 class="wizard-heading">How much time can you dedicate?</h2>
+    <p class="wizard-subtitle">We will pace your route accordingly</p>
+
+    <p style="font-family:'DM Mono',monospace; font-size:0.68rem; font-weight:600; color:var(--color-muted); text-transform:uppercase; letter-spacing:0.08em; margin:0 0 0.6rem; text-align:center;">Weekly hours</p>
+    <div class="wizard-time-row" data-route-wizard-target="hoursGrid">
+      <% [[2, "2h"], [5, "5h"], [10, "10h"], [20, "20h"]].each do |val, label| %>
+        <button type="button" class="wizard-time-btn" data-action="click->route-wizard#selectHours" data-hours="<%= val %>" tabindex="0"><%= label %></button>
+      <% end %>
+    </div>
+
+    <p style="font-family:'DM Mono',monospace; font-size:0.68rem; font-weight:600; color:var(--color-muted); text-transform:uppercase; letter-spacing:0.08em; margin:1.5rem 0 0.6rem; text-align:center;">Session length</p>
+    <div class="wizard-time-row" data-route-wizard-target="sessionGrid">
+      <% [[15, "15 min", "&#x2615;"], [30, "30 min", "&#x23F3;"], [60, "60 min", "&#x1F680;"]].each do |val, label, icon| %>
+        <button type="button" class="wizard-time-btn" data-action="click->route-wizard#selectSession" data-minutes="<%= val %>" tabindex="0">
+          <div><%= icon.html_safe %></div>
+          <div><%= label %></div>
+        </button>
+      <% end %>
+    </div>
+
+    <div class="wizard-time-summary" data-route-wizard-target="timeSummary"></div>
+
+    <input type="hidden" name="route_request[weekly_hours]" data-route-wizard-target="hoursInput">
+    <input type="hidden" name="route_request[session_minutes]" data-route-wizard-target="sessionInput">
+  </div>
+
+  <%# ═══ STEP 4: LEARNING STYLE ═══ %>
+  <div class="wizard-step" data-route-wizard-target="step" data-step="4" aria-hidden="true" role="group" aria-label="Learning style">
+    <%# Saved style banner %>
+    <div data-route-wizard-target="savedStyleBanner" style="display:none;">
+      <div class="wizard-style-result">
+        <div data-route-wizard-target="savedStyleText"></div>
+        <button type="button" data-action="click->route-wizard#retakeStyle"
+                style="margin-top:0.75rem; font-family:'DM Sans',sans-serif; font-size:0.78rem; color:var(--color-accent); background:none; border:none; cursor:pointer; text-decoration:underline;">
+          Retake quiz
+        </button>
       </div>
     </div>
 
-    <%# Route node visualization %>
-    <div style="display:flex; align-items:center; gap:0; width:100%;">
-      <% 6.times do |i| %>
-        <%# Node %>
-        <div data-route-wizard-target="node<%= i %>"
-             style="width:28px; height:28px; border-radius:50%; flex-shrink:0; display:flex; align-items:center; justify-content:center;
-                    font-family:'DM Mono',monospace; font-size:0.58rem; font-weight:600;
-                    border:2px solid <%= i == 0 ? '#5BA880' : 'var(--color-border-subtle, rgba(28,24,18,0.1))' %>;
-                    background:<%= i == 0 ? '#5BA880' : 'transparent' %>;
-                    color:<%= i == 0 ? '#fff' : 'var(--color-faint, rgba(28,24,18,0.25))' %>;
-                    transition:all 0.4s cubic-bezier(0.16,1,0.3,1);
-                    <% if i == 0 %>animation:nodePulse 2s ease-in-out infinite;<% end %>">
-          <%= i + 1 %>
+    <div data-route-wizard-target="styleHeader">
+      <h2 class="wizard-heading">How do you learn best?</h2>
+      <p class="wizard-subtitle">Answer 12 quick questions</p>
+    </div>
+
+    <%# Mini progress bar %>
+    <div data-route-wizard-target="styleProgress" style="margin-bottom:0.5rem;">
+      <div class="wizard-style-progress">
+        <div class="wizard-style-progress-fill" style="width:0%;" data-route-wizard-target="styleProgressFill"></div>
+      </div>
+      <p style="font-family:'DM Mono',monospace; font-size:0.68rem; color:var(--color-muted); text-align:center; margin:0.4rem 0 0;">
+        Question <span data-route-wizard-target="styleQuestionNum">1</span> of 12
+      </p>
+    </div>
+
+    <p data-route-wizard-target="styleDoneMsg" style="display:none; text-align:center; font-family:'DM Sans',sans-serif; font-size:0.85rem; color:var(--color-accent); font-weight:600; margin:0.5rem 0;">All done!</p>
+
+    <%# Questions — one visible at a time %>
+    <div data-route-wizard-target="styleQuestionsWrap">
+      <%
+        vark_questions = [
+          ["When learning something new, I prefer to...", "Watch a video or diagram", "Listen to a podcast or lecture", "Read a textbook or article", "Try it hands-on immediately"],
+          ["I remember best when I...", "See pictures or charts", "Hear someone explain it", "Write notes by hand", "Practice with real examples"],
+          ["In a meeting, I focus on...", "Slides and visuals", "What people say", "Written agenda and notes", "Interactive activities"],
+          ["To solve a problem, I...", "Draw a diagram", "Talk it through with someone", "Research and read about it", "Experiment until it works"],
+          ["I get distracted by...", "Messy or ugly visuals", "Background noise", "Spelling or grammar errors", "Sitting still too long"],
+          ["When giving directions, I...", "Draw a map", "Explain verbally step by step", "Write detailed instructions", "Walk the person there"],
+          ["My ideal study tool is...", "Infographics and mind maps", "Audiobooks or discussions", "Detailed written guides", "Simulations and labs"],
+          ["When I read, I...", "Visualize the scenes", "Hear the words in my head", "Focus on the text structure", "Want to act out the scenes"],
+          ["I learn a new language by...", "Flashcards with images", "Listening to native speakers", "Grammar rules and reading", "Immersion and conversations"],
+          ["In a new city, I navigate by...", "Using a visual map", "Asking locals for directions", "Reading street signs", "Walking and exploring"],
+          ["When studying, I prefer...", "Color-coded highlights", "Study groups or audio", "Organized written outlines", "Building projects"],
+          ["I express ideas best by...", "Creating a presentation", "Talking about them", "Writing them down", "Demonstrating with examples"]
+        ]
+        style_letters = ["v", "a", "r", "k"]
+      %>
+      <% vark_questions.each_with_index do |q, qi| %>
+        <div class="wizard-style-question" data-style-question="<%= qi + 1 %>" <%= 'aria-hidden="true"' if qi > 0 %>>
+          <p style="font-family:'DM Sans',sans-serif; font-size:0.92rem; font-weight:600; color:var(--color-txt); margin:0 0 1rem; text-align:center;"><%= q[0] %></p>
+          <% q[1..4].each_with_index do |option, oi| %>
+            <button type="button" class="wizard-style-option"
+                    data-action="click->route-wizard#selectStyleAnswer keydown->route-wizard#activateOnEnter"
+                    data-question="<%= qi + 1 %>"
+                    data-option="<%= qi + 1 %><%= style_letters[oi] %>"
+                    tabindex="0" role="radio" aria-checked="false">
+              <%= option %>
+            </button>
+          <% end %>
         </div>
-        <%# Connector line (except after last node) %>
-        <% if i < 5 %>
-          <div style="flex:1; height:2px; position:relative; overflow:hidden;">
-            <div style="width:100%; height:100%; background:var(--color-border-subtle, rgba(28,24,18,0.06));"></div>
-            <div data-route-wizard-target="line<%= i %>"
-                 style="position:absolute; top:0; left:0; height:100%; width:0%; background:linear-gradient(90deg, #5BA880, #6E9BC8); transition:width 0.6s cubic-bezier(0.16,1,0.3,1);"></div>
-          </div>
-        <% end %>
       <% end %>
+    </div>
+
+    <%# Hidden style answer fields %>
+    <% (1..12).each do |i| %>
+      <input type="hidden" name="route_request[learning_style_answers][<%= i %>]" data-route-wizard-target="styleAnswer<%= i %>">
+    <% end %>
+
+    <%# Result card (shown after all 12 answered) %>
+    <div data-route-wizard-target="styleResultCard" style="display:none;">
+      <div class="wizard-style-result">
+        <div class="result-icon" data-route-wizard-target="styleResultIcon"></div>
+        <div class="result-name" data-route-wizard-target="styleResultName"></div>
+        <div class="result-desc" data-route-wizard-target="styleResultDesc"></div>
+      </div>
     </div>
   </div>
 
-  <%# === Card Container === %>
-  <div style="max-width:640px; width:100%; background:var(--color-card, rgba(253,252,250,0.95)); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px);
-              border-radius:20px; border:1px solid var(--color-faint, rgba(28,24,18,0.06));
-              padding:28px 24px 24px; box-shadow:0 4px 24px rgba(28,24,18,0.04); overflow:hidden;
-              opacity:0; transform:translateY(12px); animation:wizardCardEnter 0.5s cubic-bezier(0.16,1,0.3,1) 0.15s both;">
+  <%# ═══ STEP 5: PACE ═══ %>
+  <div class="wizard-step" data-route-wizard-target="step" data-step="5" aria-hidden="true" role="radiogroup" aria-label="Choose your pace">
+    <h2 class="wizard-heading">Choose your pace</h2>
+    <p class="wizard-subtitle">You can always change this later</p>
 
-    <%# ============================================================ %>
-    <%# STEP 0 — TOPIC (12 categories) %>
-    <%# ============================================================ %>
-    <div data-route-wizard-target="step" data-step="0">
-      <h2 style="font-family:'DM Sans',sans-serif; font-weight:700; font-size:1.6rem; letter-spacing:-0.4px; color:var(--color-txt, #1C1812); margin:0 0 4px; line-height:1.2;"><%= t("wizard.step0.heading") %></h2>
-      <p style="font-family:'DM Sans',sans-serif; font-weight:400; font-size:0.8rem; color:var(--color-muted, #9E9587); margin:0 0 24px;"><%= t("wizard.step0.subtext") %></p>
-
-      <div style="display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:8px; margin-bottom:20px;" class="wizard-topic-grid" data-route-wizard-target="topicGrid">
-        <% [
-          { id: "programming", icon: "terminal", color: "#8B80C4" },
-          { id: "web_dev", icon: "globe", color: "#6E9BC8" },
-          { id: "data_science", icon: "cpu", color: "#5A9E9E" },
-          { id: "mobile_dev", icon: "smartphone", color: "#B5718E" },
-          { id: "languages", icon: "message-circle", color: "#6E9BC8" },
-          { id: "math", icon: "hash", color: "#B09848" },
-          { id: "science", icon: "flask", color: "#5BA880" },
-          { id: "business", icon: "trending-up", color: "#B5718E" },
-          { id: "design", icon: "pen-tool", color: "#8B80C4" },
-          { id: "music", icon: "music", color: "#B09848" },
-          { id: "writing", icon: "edit-3", color: "#5A9E9E" },
-          { id: "health", icon: "heart", color: "#5BA880" }
-        ].each do |topic| %>
-          <div data-action="click->route-wizard#toggleTopic"
-               data-topic="<%= topic[:id] %>"
-               data-color="<%= topic[:color] %>"
-               style="display:flex; align-items:center; gap:10px; padding:12px 14px; border-radius:12px; cursor:pointer; position:relative;
-                      background:var(--color-card, #FDFCFA); border:1.5px solid var(--color-faint, rgba(28,24,18,0.06));
-                      transition:all 0.25s cubic-bezier(0.16,1,0.3,1);">
-            <div class="wizard-topic-icon" style="width:32px; height:32px; border-radius:8px; background:var(--color-tint, rgba(28,24,18,0.02));
-                        display:flex; align-items:center; justify-content:center; flex-shrink:0; transition:background 0.25s;">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="<%= topic[:color] %>" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                <% case topic[:icon]; when "terminal" %><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/>
-                <% when "globe" %><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
-                <% when "cpu" %><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><line x1="9" y1="1" x2="9" y2="4"/><line x1="15" y1="1" x2="15" y2="4"/><line x1="9" y1="20" x2="9" y2="23"/><line x1="15" y1="20" x2="15" y2="23"/><line x1="20" y1="9" x2="23" y2="9"/><line x1="20" y1="14" x2="23" y2="14"/><line x1="1" y1="9" x2="4" y2="9"/><line x1="1" y1="14" x2="4" y2="14"/>
-                <% when "smartphone" %><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/>
-                <% when "message-circle" %><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>
-                <% when "hash" %><line x1="4" y1="9" x2="20" y2="9"/><line x1="4" y1="15" x2="20" y2="15"/><line x1="10" y1="3" x2="8" y2="21"/><line x1="16" y1="3" x2="14" y2="21"/>
-                <% when "flask" %><path d="M9 3h6v6l5 8a2 2 0 0 1-1.7 3H5.7A2 2 0 0 1 4 17l5-8V3"/><line x1="8" y1="3" x2="16" y2="3"/>
-                <% when "trending-up" %><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/>
-                <% when "pen-tool" %><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/><path d="M2 2l7.586 7.586"/><circle cx="11" cy="11" r="2"/>
-                <% when "music" %><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>
-                <% when "edit-3" %><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
-                <% when "heart" %><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
-                <% end %>
-              </svg>
-            </div>
-            <div style="flex:1; min-width:0;">
-              <div style="font-family:'DM Sans',sans-serif; font-weight:600; font-size:0.78rem; color:var(--color-txt, #1C1812); line-height:1.2;"><%= t("wizard.step0.topics.#{topic[:id]}") %></div>
-              <div style="font-family:'DM Sans',sans-serif; font-weight:400; font-size:0.62rem; color:var(--color-muted, #9E9587); margin-top:1px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;"><%= t("wizard.step0.topics.#{topic[:id]}_desc") %></div>
-            </div>
-            <div class="wizard-check" style="position:absolute; top:8px; right:8px; width:18px; height:18px; border-radius:5px; display:none; align-items:center; justify-content:center;">
-              <svg width="11" height="11" viewBox="0 0 16 16" fill="none"><path d="M3 8.5L6.5 12L13 4" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            </div>
-          </div>
-        <% end %>
-      </div>
-
-      <%# Topic detail — contextual follow-up question (shown when topics are selected) %>
-      <div data-route-wizard-target="topicDetailWrap" style="display:none; margin-bottom:16px; animation:wizardScaleIn 0.3s cubic-bezier(0.16,1,0.3,1) both;">
-        <div style="display:flex; align-items:center; gap:6px; margin-bottom:6px;">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#5BA880" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-          <span data-route-wizard-target="topicDetailLabel" style="font-family:'DM Sans',sans-serif; font-weight:600; font-size:0.72rem; color:var(--color-txt, #1C1812);"><%= t("wizard.step0.topic_detail_label") %></span>
+    <% [
+      ["relaxed", "&#x1F422;", "Relaxed", "Take it easy, no pressure"],
+      ["steady", "&#x1F97E;", "Steady", "Balanced and consistent"],
+      ["intensive", "&#x1F525;", "Intensive", "Full speed ahead"]
+    ].each do |id, icon, name, desc| %>
+      <button type="button" class="wizard-pace-card"
+              data-action="click->route-wizard#selectPace"
+              data-pace="<%= id %>"
+              tabindex="0" role="radio" aria-checked="false">
+        <span class="pace-icon"><%= icon.html_safe %></span>
+        <div class="pace-info">
+          <div class="pace-name"><%= name %></div>
+          <div class="pace-desc"><%= desc %></div>
         </div>
-        <p style="font-family:'DM Sans',sans-serif; font-weight:400; font-size:0.62rem; color:var(--color-muted, #9E9587); margin:0 0 8px;"><%= t("wizard.step0.topic_detail_hint") %></p>
-        <div style="display:flex; align-items:center; gap:10px; padding:12px 14px; border-radius:12px; background:var(--color-card, #FDFCFA); border:1.5px solid rgba(91,168,128,0.2); transition:border-color 0.3s;">
-          <input type="text" name="route_request[custom_topic]" data-route-wizard-target="topicDetailInput"
-                 data-action="input->route-wizard#updateTopicDetail keydown.enter->route-wizard#preventEnterSubmit"
-                 style="flex:1; border:none; outline:none; background:none; font-family:'DM Sans',sans-serif; font-size:0.8rem; color:var(--color-txt, #1C1812);" autocomplete="off">
-        </div>
-      </div>
-
-      <div>
-        <div style="font-family:'DM Sans',sans-serif; font-weight:600; font-size:0.7rem; color:var(--color-txt, #1C1812); margin-bottom:6px;"><%= t("wizard.step0.custom_label") %></div>
-        <div style="display:flex; align-items:center; gap:10px; padding:10px 14px; border-radius:10px; background:var(--color-card, #FDFCFA); border:1.5px solid var(--color-faint, rgba(28,24,18,0.06)); transition:border-color 0.3s;" data-route-wizard-target="customInputWrap">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--color-muted, #9E9587)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="opacity:0.5; flex-shrink:0;"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-          <input type="text" placeholder="<%= t("wizard.step0.custom_placeholder") %>" data-action="input->route-wizard#updateCustomTopic keydown.enter->route-wizard#preventEnterSubmit" data-route-wizard-target="customInput" style="flex:1; border:none; outline:none; background:none; font-family:'DM Sans',sans-serif; font-size:0.8rem; color:var(--color-txt, #1C1812);" autocomplete="off">
-        </div>
-      </div>
-
-      <%# Route content language selector %>
-      <div style="margin-top:20px;">
-        <div style="font-family:'DM Sans',sans-serif; font-weight:600; font-size:0.7rem; color:var(--color-txt, #1C1812); margin-bottom:6px;"><%= t("wizard.step0.language_label") %></div>
-        <p style="font-family:'DM Sans',sans-serif; font-weight:400; font-size:0.62rem; color:var(--color-muted, #9E9587); margin:0 0 8px;"><%= t("wizard.step0.language_hint") %></p>
-        <div style="display:grid; grid-template-columns:repeat(2, 1fr); gap:8px;" data-route-wizard-target="localeGrid">
-          <% [
-            { id: "es", flag: "\u{1F1EA}\u{1F1F8}", name: t("wizard.step0.locales.es") },
-            { id: "en", flag: "\u{1F1FA}\u{1F1F8}", name: t("wizard.step0.locales.en") },
-            { id: "pt", flag: "\u{1F1E7}\u{1F1F7}", name: t("wizard.step0.locales.pt") },
-            { id: "fr", flag: "\u{1F1EB}\u{1F1F7}", name: t("wizard.step0.locales.fr") }
-          ].each do |loc| %>
-            <div data-action="click->route-wizard#selectLocale"
-                 data-locale="<%= loc[:id] %>"
-                 style="display:flex; align-items:center; gap:10px; padding:12px 14px; border-radius:12px; cursor:pointer;
-                        background:var(--color-card, #FDFCFA); border:1.5px solid <%= loc[:id] == (current_user&.locale || 'es') ? '#5BA880' : 'var(--color-faint, rgba(28,24,18,0.06))' %>;
-                        transition:all 0.25s cubic-bezier(0.16,1,0.3,1);">
-              <span style="font-size:1.2rem;"><%= loc[:flag] %></span>
-              <span style="font-family:'DM Sans',sans-serif; font-weight:500; font-size:0.78rem; color:var(--color-txt, #1C1812);"><%= loc[:name] %></span>
-              <div class="wizard-locale-check" style="margin-left:auto; display:<%= loc[:id] == (current_user&.locale || 'es') ? 'flex' : 'none' %>; align-items:center; justify-content:center;">
-                <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="8" fill="#5BA880"/><path d="M4.5 8.5L7 11L11.5 5.5" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-              </div>
-            </div>
-          <% end %>
-        </div>
-        <input type="hidden" name="route_request[route_locale]" value="<%= current_user&.locale || 'es' %>" data-route-wizard-target="localeInput">
-      </div>
-
-      <div data-route-wizard-target="topicInputs"></div>
-    </div>
-
-    <%# ============================================================ %>
-    <%# STEP 1 — LEVEL %>
-    <%# ============================================================ %>
-    <div data-route-wizard-target="step" data-step="1" style="display:none;">
-      <h2 style="font-family:'DM Sans',sans-serif; font-weight:700; font-size:1.6rem; letter-spacing:-0.4px; color:var(--color-txt, #1C1812); margin:0 0 4px;"><%= t("wizard.step1.heading") %></h2>
-      <p style="font-family:'DM Sans',sans-serif; font-weight:400; font-size:0.8rem; color:var(--color-muted, #9E9587); margin:0 0 24px;"><%= t("wizard.step1.subtext") %></p>
-
-      <div style="display:flex; flex-direction:column; gap:8px;">
-        <% [
-          { id: "beginner", color: "#5BA880", icon: "sunrise" },
-          { id: "basic", color: "#6E9BC8", icon: "sun" },
-          { id: "intermediate", color: "#8B80C4", icon: "zap" },
-          { id: "advanced", color: "#B09848", icon: "award" }
-        ].each do |level| %>
-          <div data-action="click->route-wizard#selectLevel" data-level="<%= level[:id] %>" data-color="<%= level[:color] %>" style="display:flex; align-items:center; gap:14px; padding:16px 18px; border-radius:14px; cursor:pointer; background:var(--color-card, #FDFCFA); border:1.5px solid var(--color-faint, rgba(28,24,18,0.06)); transition:all 0.25s cubic-bezier(0.16,1,0.3,1);">
-            <div style="width:40px; height:40px; border-radius:10px; background:var(--color-tint, rgba(28,24,18,0.02)); display:flex; align-items:center; justify-content:center; transition:background 0.3s;">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="<%= level[:color] %>" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                <% case level[:icon]; when "sunrise" %><path d="M17 18a5 5 0 0 0-10 0"/><line x1="12" y1="9" x2="12" y2="2"/><line x1="4.22" y1="10.22" x2="5.64" y2="11.64"/><line x1="1" y1="18" x2="3" y2="18"/><line x1="21" y1="18" x2="23" y2="18"/><line x1="18.36" y1="11.64" x2="19.78" y2="10.22"/><line x1="23" y1="22" x2="1" y2="22"/><polyline points="8 6 12 2 16 6"/>
-                <% when "sun" %><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
-                <% when "zap" %><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
-                <% when "award" %><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/>
-                <% end %>
-              </svg>
-            </div>
-            <div style="flex:1;">
-              <div style="font-family:'DM Sans',sans-serif; font-weight:600; font-size:0.85rem; color:var(--color-txt, #1C1812);"><%= t("wizard.step1.levels.#{level[:id]}") %></div>
-              <div style="font-family:'DM Sans',sans-serif; font-weight:400; font-size:0.68rem; color:var(--color-muted, #9E9587); margin-top:2px;"><%= t("wizard.step1.levels.#{level[:id]}_desc") %></div>
-            </div>
-            <div style="width:20px; height:20px; border-radius:50%; border:2px solid var(--color-border-subtle, rgba(28,24,18,0.1)); display:flex; align-items:center; justify-content:center; transition:border-color 0.3s;">
-              <div class="wizard-radio-dot" style="width:10px; height:10px; border-radius:50%; background:transparent; transform:scale(0); transition:all 0.25s cubic-bezier(0.16,1,0.3,1);"></div>
-            </div>
-          </div>
-        <% end %>
-      </div>
-      <input type="hidden" name="route_request[level]" value="" data-route-wizard-target="levelInput">
-    </div>
-
-    <%# ============================================================ %>
-    <%# STEP 2 — GOAL %>
-    <%# ============================================================ %>
-    <div data-route-wizard-target="step" data-step="2" style="display:none;">
-      <h2 style="font-family:'DM Sans',sans-serif; font-weight:700; font-size:1.6rem; letter-spacing:-0.4px; color:var(--color-txt, #1C1812); margin:0 0 4px;"><%= t("wizard.step2.heading") %></h2>
-      <p style="font-family:'DM Sans',sans-serif; font-weight:400; font-size:0.8rem; color:var(--color-muted, #9E9587); margin:0 0 24px;"><%= t("wizard.step2.subtext") %></p>
-
-      <div style="display:grid; grid-template-columns:repeat(2, 1fr); gap:8px;">
-        <% [
-          { id: "career", icon: "rocket" },
-          { id: "personal", icon: "star" },
-          { id: "exam", icon: "clipboard" },
-          { id: "project", icon: "tool" },
-          { id: "switch", icon: "refresh" },
-          { id: "teaching", icon: "users" }
-        ].each do |goal| %>
-          <div data-action="click->route-wizard#toggleGoal" data-goal="<%= goal[:id] %>" style="display:flex; align-items:center; gap:10px; padding:14px 16px; border-radius:12px; cursor:pointer; background:var(--color-card, #FDFCFA); border:1.5px solid var(--color-faint, rgba(28,24,18,0.06)); transition:all 0.25s cubic-bezier(0.16,1,0.3,1);">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--color-muted, #9E9587)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0; opacity:0.7;">
-              <% case goal[:icon]; when "rocket" %><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/><path d="M12 15l-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"/><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"/>
-              <% when "star" %><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
-              <% when "clipboard" %><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/>
-              <% when "tool" %><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
-              <% when "refresh" %><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
-              <% when "users" %><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-              <% end %>
-            </svg>
-            <span style="font-family:'DM Sans',sans-serif; font-weight:500; font-size:0.78rem; color:var(--color-txt, #1C1812); flex:1;"><%= t("wizard.step2.goals.#{goal[:id]}") %></span>
-            <div class="wizard-goal-check" style="display:none; margin-left:auto;">
-              <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M3 8.5L6.5 12L13 4" stroke="#8B80C4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            </div>
-          </div>
-        <% end %>
-      </div>
-      <div data-route-wizard-target="goalInputs"></div>
-    </div>
-
-    <%# ============================================================ %>
-    <%# STEP 3 — TIME COMMITMENT (NEW) %>
-    <%# ============================================================ %>
-    <div data-route-wizard-target="step" data-step="3" style="display:none;">
-      <h2 style="font-family:'DM Sans',sans-serif; font-weight:700; font-size:1.6rem; letter-spacing:-0.4px; color:var(--color-txt, #1C1812); margin:0 0 4px;"><%= t("wizard.step3.heading") %></h2>
-      <p style="font-family:'DM Sans',sans-serif; font-weight:400; font-size:0.8rem; color:var(--color-muted, #9E9587); margin:0 0 24px;"><%= t("wizard.step3.subtext") %></p>
-
-      <%# Weekly hours %>
-      <div style="margin-bottom:24px;">
-        <div style="font-family:'DM Sans',sans-serif; font-weight:600; font-size:0.72rem; color:var(--color-txt, #1C1812); margin-bottom:10px;"><%= t("wizard.step3.weekly_label") %></div>
-        <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:8px;" data-route-wizard-target="hoursGrid">
-          <% [
-            { hours: 2, label: "1–3h" },
-            { hours: 5, label: "3–7h" },
-            { hours: 10, label: "7–14h" },
-            { hours: 20, label: "14h+" }
-          ].each do |opt| %>
-            <div data-action="click->route-wizard#selectHours" data-hours="<%= opt[:hours] %>"
-                 style="text-align:center; padding:16px 10px; border-radius:12px; cursor:pointer;
-                        background:var(--color-card, #FDFCFA); border:1.5px solid var(--color-faint, rgba(28,24,18,0.06));
-                        transition:all 0.25s cubic-bezier(0.16,1,0.3,1);">
-              <div style="font-family:'DM Sans',sans-serif; font-weight:700; font-size:1.1rem; color:var(--color-txt, #1C1812); margin-bottom:2px;"><%= opt[:label] %></div>
-              <div style="font-family:'DM Sans',sans-serif; font-weight:400; font-size:0.6rem; color:var(--color-muted, #9E9587);"><%= t("wizard.step3.per_week") %></div>
-            </div>
-          <% end %>
-        </div>
-      </div>
-
-      <%# Session length %>
-      <div>
-        <div style="font-family:'DM Sans',sans-serif; font-weight:600; font-size:0.72rem; color:var(--color-txt, #1C1812); margin-bottom:10px;"><%= t("wizard.step3.session_label") %></div>
-        <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:8px;" data-route-wizard-target="sessionGrid">
-          <% [
-            { mins: 15, label: "15 min" },
-            { mins: 30, label: "30 min" },
-            { mins: 60, label: "60 min" }
-          ].each do |opt| %>
-            <div data-action="click->route-wizard#selectSession" data-minutes="<%= opt[:mins] %>"
-                 style="text-align:center; padding:16px 10px; border-radius:12px; cursor:pointer;
-                        background:var(--color-card, #FDFCFA); border:1.5px solid var(--color-faint, rgba(28,24,18,0.06));
-                        transition:all 0.25s cubic-bezier(0.16,1,0.3,1);">
-              <div style="font-family:'DM Sans',sans-serif; font-weight:700; font-size:1.1rem; color:var(--color-txt, #1C1812); margin-bottom:2px;"><%= opt[:label] %></div>
-              <div style="font-family:'DM Sans',sans-serif; font-weight:400; font-size:0.6rem; color:var(--color-muted, #9E9587);"><%= t("wizard.step3.per_session") %></div>
-            </div>
-          <% end %>
-        </div>
-      </div>
-
-      <input type="hidden" name="route_request[weekly_hours]" value="" data-route-wizard-target="hoursInput">
-      <input type="hidden" name="route_request[session_minutes]" value="" data-route-wizard-target="sessionInput">
-    </div>
-
-    <%# ============================================================ %>
-    <%# STEP 4 — LEARNING STYLE (VARK MINI-TEST) %>
-    <%# ============================================================ %>
-    <div data-route-wizard-target="step" data-step="4" style="display:none;">
-
-      <%# Saved style banner (shown when preferences exist) %>
-      <div data-route-wizard-target="savedStyleBanner" style="display:none; margin-bottom:20px; padding:14px 18px; border-radius:12px;
-                  background:rgba(91,168,128,0.06); border:1px solid rgba(91,168,128,0.12);">
-        <div style="display:flex; align-items:center; justify-content:space-between;">
-          <div style="display:flex; align-items:center; gap:8px;">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-              <circle cx="8" cy="8" r="8" fill="#5BA880"/>
-              <path d="M4.5 8.5L7 11L11.5 5.5" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-            <span data-route-wizard-target="savedStyleText" style="font-family:'DM Sans',sans-serif; font-weight:500; font-size:0.78rem; color:var(--color-txt, #1C1812);"></span>
-          </div>
-          <button type="button" data-action="click->route-wizard#retakeStyle"
-                  style="background:none; border:none; cursor:pointer; font-family:'DM Sans',sans-serif; font-size:0.68rem; color:#8B80C4; text-decoration:underline;">
-            <%= t("wizard.step4.retake") %>
-          </button>
-        </div>
-      </div>
-
-      <%# Header %>
-      <div data-route-wizard-target="styleHeader" style="margin-bottom:24px;">
-        <div style="display:flex; align-items:center; gap:10px; margin-bottom:8px;">
-          <span style="font-family:'DM Mono',monospace; font-size:0.55rem; font-weight:600; color:#8B80C4; text-transform:uppercase; letter-spacing:0.12em; background:rgba(139,128,196,0.08); padding:3px 10px; border-radius:6px;"><%= t("wizard.step4.mini_test") %></span>
-          <span data-route-wizard-target="styleDoneMsg" style="font-family:'DM Sans',sans-serif; font-size:0.72rem; font-weight:500; color:#5BA880; opacity:0; transform:translateY(4px); transition:opacity 0.4s ease 0.2s, transform 0.4s ease 0.2s;"><%= t("wizard.step4.all_answered") %></span>
-        </div>
-        <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:12px;">
-          <div>
-            <h2 style="font-family:'DM Sans',sans-serif; font-weight:700; font-size:1.4rem; letter-spacing:-0.5px; color:var(--color-txt, #1C1812); margin:0 0 4px;"><%= t("wizard.step4.heading") %></h2>
-            <p style="font-family:'DM Sans',sans-serif; font-weight:400; font-size:0.8rem; color:var(--color-muted, #A09889); margin:0;"><%= t("wizard.step4.subtext") %></p>
-          </div>
-          <span data-route-wizard-target="styleProgress" style="font-family:'DM Mono',monospace; font-size:0.68rem; color:#5BA880; white-space:nowrap; padding-top:4px;"><%= t("wizard.step4.progress", done: 0) %></span>
-        </div>
-      </div>
-
-      <%# Questions Container %>
-      <div data-route-wizard-target="styleQuestionsWrap" style="display:flex; flex-direction:column; gap:20px;">
-        <%
-          style_icons = {
-            1 => { v: "🎬", a: "🗣️", r: "📖", k: "🖱️" },
-            2 => { v: "🗺️", a: "🎧", r: "📝", k: "🚶" },
-            3 => { v: "🎨", a: "🔊", r: "✍️", k: "🧪" },
-            4 => { v: "📊", a: "💬", r: "📄", k: "🔧" },
-            5 => { v: "📹", a: "👨‍🍳", r: "📋", k: "🍳" },
-            6 => { v: "📐", a: "📞", r: "📑", k: "🔨" },
-            7 => { v: "🎥", a: "🗣️", r: "📚", k: "💬" },
-            8 => { v: "📋", a: "👂", r: "📄", k: "🔩" },
-            9 => { v: "📊", a: "🎤", r: "📝", k: "🧑‍🏫" },
-            10 => { v: "🎹", a: "🎵", r: "🎼", k: "🎸" },
-            11 => { v: "🗺️", a: "🤝", r: "📓", k: "⚙️" },
-            12 => { v: "🎞️", a: "🎙️", r: "📖", k: "🏛️" }
-          }
-          style_map = { "v" => "visual", "a" => "auditory", "r" => "reading", "k" => "kinesthetic" }
-        %>
-
-        <% (1..12).each_with_index do |qnum, qi| %>
-          <% if qi > 0 %>
-            <div style="height:1px; background:var(--color-faint, rgba(28,24,18,0.04)); margin:2px 0;"></div>
-          <% end %>
-
-          <div data-style-question="<%= qnum %>">
-            <div style="font-family:'DM Mono',monospace; font-size:0.58rem; font-weight:500; color:var(--color-faint-text, #CCC5B8); margin-bottom:4px;"><%= qnum.to_s.rjust(2, '0') %></div>
-            <div style="font-family:'DM Sans',sans-serif; font-weight:500; font-size:0.85rem; color:var(--color-txt, #1C1812); line-height:1.45; margin-bottom:10px;"><%= t("wizard.step4.questions.q#{qnum}.scenario") %></div>
-
-            <div style="display:grid; grid-template-columns:repeat(2, 1fr); gap:6px;">
-              <% %w[v a r k].each do |opt_key| %>
-                <div data-action="click->route-wizard#selectStyleAnswer keydown->route-wizard#activateOnEnter"
-                     data-question="<%= qnum %>"
-                     data-option="<%= qnum %><%= opt_key %>"
-                     data-style="<%= style_map[opt_key] %>"
-                     tabindex="0"
-                     role="radio"
-                     aria-label="<%= t("wizard.step4.questions.q#{qnum}.options.#{opt_key}") %>"
-                     style="display:flex; align-items:center; gap:8px; padding:10px 12px; border-radius:10px; cursor:pointer; background:var(--color-card, #FEFDFB); border:1.5px solid var(--color-faint, rgba(28,24,18,0.06)); transition:all 0.2s cubic-bezier(0.16,1,0.3,1);">
-                  <span style="font-size:0.95rem; flex-shrink:0;"><%= style_icons[qnum][opt_key.to_sym] %></span>
-                  <span class="style-option-text" style="font-family:'DM Sans',sans-serif; font-weight:400; font-size:0.72rem; color:var(--color-txt, #1C1812); flex:1; line-height:1.3;"><%= t("wizard.step4.questions.q#{qnum}.options.#{opt_key}") %></span>
-                  <div class="style-check" style="display:none; align-items:center; justify-content:center; width:14px; height:14px; flex-shrink:0;">
-                    <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-                      <circle cx="8" cy="8" r="8" fill="#8B80C4"/>
-                      <path d="M4.5 8.5L7 11L11.5 5.5" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
-                  </div>
-                </div>
-              <% end %>
-            </div>
-          </div>
-        <% end %>
-      </div>
-
-      <%# Hidden fields for style answers %>
-      <% (1..12).each do |i| %>
-        <input type="hidden" name="route_request[learning_style_answers][<%= i %>]" value="" data-route-wizard-target="styleAnswer<%= i %>">
-      <% end %>
-
-      <%# Result Preview Card (hidden until all 12 answered) %>
-      <div data-route-wizard-target="styleResultCard" style="display:none; opacity:0; transform:translateY(8px); transition:opacity 0.4s ease 0.2s, transform 0.4s ease 0.2s; margin-top:16px; border-radius:12px; background:rgba(139,128,196,0.04); border:1px solid rgba(139,128,196,0.08); padding:12px 16px;">
-        <div style="font-family:'DM Sans',sans-serif; font-weight:400; font-size:0.65rem; color:var(--color-muted, #A09889); margin-bottom:4px;"><%= t("wizard.step4.result_label") %></div>
-        <div style="display:flex; align-items:center; gap:8px; margin-bottom:3px;">
-          <span data-route-wizard-target="styleResultIcon" style="font-size:1rem;"></span>
-          <span data-route-wizard-target="styleResultName" style="font-family:'DM Sans',sans-serif; font-weight:600; font-size:0.85rem; color:var(--color-txt, #1C1812);"></span>
-        </div>
-        <div data-route-wizard-target="styleResultDesc" style="font-family:'DM Sans',sans-serif; font-weight:400; font-size:0.68rem; color:var(--color-muted, #A09889); line-height:1.4;"></div>
-        <div style="font-family:'DM Mono',monospace; font-size:0.55rem; color:var(--color-faint-text, #CCC5B8); margin-top:4px;"><%= t("wizard.step4.result_note") %></div>
-      </div>
-    </div>
-
-    <%# ============================================================ %>
-    <%# STEP 5 — PACE %>
-    <%# ============================================================ %>
-    <div data-route-wizard-target="step" data-step="5" style="display:none;">
-      <h2 style="font-family:'DM Sans',sans-serif; font-weight:700; font-size:1.6rem; letter-spacing:-0.4px; color:var(--color-txt, #1C1812); margin:0 0 4px;"><%= t("wizard.step5.heading") %></h2>
-      <p style="font-family:'DM Sans',sans-serif; font-weight:400; font-size:0.8rem; color:var(--color-muted, #9E9587); margin:0 0 24px;"><%= t("wizard.step5.subtext") %></p>
-
-      <div style="display:flex; flex-direction:column; gap:8px;">
-        <% [
-          { id: "relaxed", color: "#5BA880", icon: "coffee" },
-          { id: "steady", color: "#6E9BC8", icon: "activity" },
-          { id: "intensive", color: "#B09848", icon: "flame" }
-        ].each do |pace| %>
-          <div data-action="click->route-wizard#selectPace" data-pace="<%= pace[:id] %>" data-color="<%= pace[:color] %>" style="display:flex; align-items:center; gap:14px; padding:18px 20px; border-radius:14px; cursor:pointer; background:var(--color-card, #FDFCFA); border:1.5px solid var(--color-faint, rgba(28,24,18,0.06)); transition:all 0.25s cubic-bezier(0.16,1,0.3,1);">
-            <div style="width:44px; height:44px; border-radius:12px; background:var(--color-tint, rgba(28,24,18,0.02)); display:flex; align-items:center; justify-content:center; transition:background 0.3s;">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="<%= pace[:color] %>" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                <% case pace[:icon]; when "coffee" %><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/>
-                <% when "activity" %><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
-                <% when "flame" %><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/>
-                <% end %>
-              </svg>
-            </div>
-            <div style="flex:1;">
-              <div style="font-family:'DM Sans',sans-serif; font-weight:600; font-size:0.85rem; color:var(--color-txt, #1C1812);"><%= t("wizard.step5.paces.#{pace[:id]}") %></div>
-              <div style="font-family:'DM Sans',sans-serif; font-weight:400; font-size:0.68rem; color:var(--color-muted, #9E9587); margin-top:2px;"><%= t("wizard.step5.paces.#{pace[:id]}_desc") %></div>
-            </div>
-            <div class="wizard-time-badge" style="font-family:'DM Mono',monospace; font-size:0.62rem; font-weight:500; padding:4px 10px; border-radius:8px; color:var(--color-muted, #9E9587); opacity:0.5; background:var(--color-tint, rgba(28,24,18,0.02)); transition:all 0.3s;"><%= t("wizard.step5.paces.#{pace[:id]}_time") %></div>
-          </div>
-        <% end %>
-      </div>
-      <input type="hidden" name="route_request[pace]" value="" data-route-wizard-target="paceInput">
-    </div>
-
-    <%# ============================================================ %>
-    <%# Card Footer %>
-    <%# ============================================================ %>
-    <div data-route-wizard-target="footer" style="display:flex; justify-content:flex-end; align-items:center; margin-top:28px; padding-top:16px; border-top:1px solid var(--color-faint, rgba(28,24,18,0.04)); gap:12px;">
-      <div style="flex:1; display:flex; gap:5px; flex-wrap:wrap;" data-route-wizard-target="chips"></div>
-      <button type="button"
-              data-action="click->route-wizard#next"
-              data-route-wizard-target="continueBtn"
-              disabled
-              style="padding:11px 24px; border-radius:11px; border:none; font-family:'DM Sans',sans-serif; font-weight:600; font-size:0.8rem; cursor:default; background:var(--color-tint-strong, rgba(28,24,18,0.08)); color:var(--color-faint, #D4CFC5); display:flex; align-items:center; gap:8px; transition:all 0.3s cubic-bezier(0.16,1,0.3,1);">
-        <span data-route-wizard-target="btnText"><%= t("wizard.continue") %></span>
-        <span style="font-size:0.85rem; opacity:0.7;">→</span>
       </button>
-    </div>
+    <% end %>
+    <input type="hidden" name="route_request[pace]" data-route-wizard-target="paceInput">
   </div>
 
 <% end %>
 
-<%# === Bottom hint === %>
-<div data-route-wizard-target="bottomHint" style="text-align:center; margin-top:16px;">
-  <span style="font-family:'DM Sans',sans-serif; font-size:0.66rem; color:var(--color-faint-text, #D4CFC5);"><%= t("wizard.bottom_hint") %></span>
+<%# ═══ STICKY FOOTER ═══ %>
+<div class="wizard-footer" data-route-wizard-target="footer">
+  <div style="display:flex; align-items:center; gap:0.75rem; width:100%; max-width:400px;">
+    <div data-route-wizard-target="navLeft"></div>
+    <button type="button" class="wizard-btn-continue disabled"
+            data-route-wizard-target="continueBtn"
+            data-action="click->route-wizard#next">
+      <span data-route-wizard-target="btnText">Continue</span>
+    </button>
+  </div>
 </div>
+
+<%# Summary chips (hidden, used by JS) %>
+<div data-route-wizard-target="chips" style="display:none;"></div>
