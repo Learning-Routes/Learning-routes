@@ -32,10 +32,12 @@
 <% end %>
 
 <%= render "landing/hero" %>
-<%= render "landing/how_it_works" %>
-<%= render "landing/path_section" %>
-<%= render "landing/outcomes" %>
-<%= render "landing/features" %>
-<%= render "landing/integrations" %>
+<% cache "landing_static_v1_#{I18n.locale}", expires_in: 1.hour do %>
+  <%= render "landing/how_it_works" %>
+  <%= render "landing/path_section" %>
+  <%= render "landing/outcomes" %>
+  <%= render "landing/features" %>
+  <%= render "landing/integrations" %>
+<% end %>
 <%= render "landing/cta" %>
 <%= render "shared/footer" %>
