@@ -102,31 +102,32 @@
   }
 %>
 
-<div id="wizard-container"
+<div class="wizard-fullscreen" id="wizard-container"
      data-controller="route-wizard"
      data-route-wizard-generating-value="<%= @generating %>"
      data-route-wizard-i18n-value="<%= wizard_i18n.to_json %>"
      data-route-wizard-saved-prefs-value="<%= saved_prefs.to_json %>"
-     data-route-wizard-home-url-value="<%= profile_path %>"
-     style="min-height:100vh; display:flex; flex-direction:column; background:var(--color-bg, #F5F1EB);">
+     data-route-wizard-home-url-value="<%= profile_path %>">
 
-  <%# === Mini wizard nav === %>
-  <nav style="padding:14px 32px; display:flex; justify-content:space-between; align-items:center; position:relative; z-index:10;">
-    <div data-route-wizard-target="navLeft" style="display:flex; align-items:center; gap:10px; cursor:pointer;">
-      <a href="<%= profile_path %>" style="display:flex; align-items:center; gap:10px; text-decoration:none; color:var(--color-txt, #1C1812);">
-        <%= render "shared/logo", size: 26 %>
-        <span style="font-family:'DM Sans',sans-serif; font-weight:700; font-size:0.9rem; letter-spacing:-0.5px; color:var(--color-txt, #1C1812);">Learning Routes</span>
-      </a>
-    </div>
-    <a href="<%= profile_path %>" style="font-family:'DM Sans',sans-serif; font-size:0.72rem; color:var(--color-muted, #9E9587); text-decoration:none; cursor:pointer;"><%= t("wizard.save_and_exit") %></a>
-  </nav>
+  <%# === Progress bar === %>
+  <div class="wizard-progress-bar">
+    <div class="wizard-progress-fill" data-route-wizard-target="progressBar" style="width: 0%"></div>
+  </div>
+
+  <%# === Step counter === %>
+  <div class="wizard-step-counter" data-route-wizard-target="stepCounter">
+    Step <span data-route-wizard-target="stepNum">1</span> of 6
+  </div>
 
   <%# === Content area === %>
-  <div style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:flex-start; padding:12px 24px 60px; position:relative; z-index:1;">
+  <div class="wizard-content">
     <% if @generating %>
-      <%= render "route_wizard/generating", route_request: @route_request %>
+      <%= render "route_wizard/generating", route_request: @existing_request || @route_request %>
     <% else %>
       <%= render "route_wizard/wizard_card", route_request: @route_request %>
     <% end %>
   </div>
+
+  <%# === Nav left kept for back button injection === %>
+  <div data-route-wizard-target="navLeft" style="display:none;"></div>
 </div>
