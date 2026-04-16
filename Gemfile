@@ -31,6 +31,9 @@ gem "solid_cable"
 # Reduces boot times through caching; required in config/boot.rb
 gem "bootsnap", require: false
 
+# Spring pre-loader for faster development [https://github.com/rails/spring]
+gem "spring", require: false
+
 # Deploy this application anywhere as a Docker container [https://kamal-deploy.org]
 gem "kamal", require: false
 
@@ -85,6 +88,15 @@ group :development do
 
   # Opens emails in browser tab instead of sending
   gem "letter_opener"
+
+  # File system event watcher for EventedFileUpdateChecker
+  gem "listen"
+
+  # N+1 query detection [https://github.com/chrisgo/prosopite]
+  gem "prosopite"
+
+  # PostgreSQL query analysis [https://github.com/ankane/pg_query]
+  gem "pg_query"
 end
 
 group :test do

@@ -39,5 +39,17 @@ module LearningRoutes
       g.helper false
       g.assets false
     end
+
+    # === PERFORMANCE OPTIMIZATIONS ===
+    # Add Rack::Deflater for gzip compression of responses
+    config.middleware.use Rack::Deflater
+
+    # Enable strict loading by default to catch N+1 queries
+    config.active_record.strict_loading_by_default = true
+
+    # === CACHING STRATEGY ===
+    # Configure for Russian doll caching: combine fragment cache with action cache
+    # Automatic cache key generation (Rails 6.1+) includes dependencies
+    config.action_view.cache_template_loading = true
   end
 end
