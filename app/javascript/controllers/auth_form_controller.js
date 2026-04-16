@@ -10,14 +10,16 @@ export default class extends Controller {
   }
 
   connect() {
-    // Disable native browser validation tooltips
-    const form = this.element.querySelector("form")
-    if (form) {
+    // Disable native browser validation tooltips on the main auth form only
+    // Skip the Google OAuth form (it has data-turbo="false" and action="/auth/google_oauth2")
+    const forms = this.element.querySelectorAll("form")
+    forms.forEach(form => {
+      if (form.action && form.action.includes("/auth/")) return // Skip OAuth forms
       form.setAttribute("novalidate", "")
       this._boundSubmit = this._handleSubmit.bind(this)
       form.addEventListener("submit", this._boundSubmit)
       this._form = form
-    }
+    })
   }
 
   disconnect() {
