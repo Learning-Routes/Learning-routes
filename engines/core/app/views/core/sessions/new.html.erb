@@ -14,11 +14,6 @@
 
 <%# === Glassmorphic auth card === %>
 <div class="auth-enter auth-card"
-     data-controller="auth-form"
-     data-auth-form-required-msg-value="<%= t('auth_alerts.validation_required') %>"
-     data-auth-form-email-msg-value="<%= t('auth_alerts.validation_email') %>"
-     data-auth-form-min-length-msg-value="<%= t('auth_alerts.validation_min_length') %>"
-     data-auth-form-oauth-msg-value="<%= t('auth_alerts.google_coming_soon') %>"
      style="width:100%; max-width:440px; padding:2.2rem 2rem;
             border-radius:20px;
             box-shadow:0 8px 32px rgba(28,24,18,0.06), 0 1px 3px rgba(28,24,18,0.03);">
@@ -28,18 +23,17 @@
     <%= t("auth.login.heading") %>
   </h1>
 
-  <%# === Google OAuth === %>
+  <%# === Google OAuth — plain HTML form, no Stimulus === %>
   <% if google_oauth_enabled? %>
-    <%= form_tag("/auth/google_oauth2", method: :post, data: { turbo: false }) do %>
+    <form action="/auth/google_oauth2" method="post" data-turbo="false">
+      <input type="hidden" name="authenticity_token" value="<%= form_authenticity_token %>">
       <button type="submit"
               aria-label="<%= t('auth.login.google') %>"
               class="auth-google-btn"
               style="display:flex; align-items:center; justify-content:center; gap:0.65rem; width:100%;
                      font-family:'DM Sans',sans-serif; font-size:0.88rem; font-weight:500;
                      padding:0.78rem 1rem; border-radius:11px;
-                     cursor:pointer; transition:all 0.2s;"
-              data-auth-form-target="oauth"
-              data-action="mouseenter->auth-form#oauthOver mouseleave->auth-form#oauthOut">
+                     cursor:pointer; transition:all 0.2s;">
         <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true">
           <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
           <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
@@ -48,25 +42,7 @@
         </svg>
         <%= t("auth.login.google") %>
       </button>
-    <% end %>
-  <% else %>
-    <button type="button"
-            aria-label="<%= t('auth.login.google') %>"
-            class="auth-google-btn"
-            style="display:flex; align-items:center; justify-content:center; gap:0.65rem; width:100%;
-                   font-family:'DM Sans',sans-serif; font-size:0.88rem; font-weight:500;
-                   padding:0.78rem 1rem; border-radius:11px;
-                   cursor:pointer; transition:all 0.2s;"
-            data-auth-form-target="oauth"
-            data-action="click->auth-form#oauthClick mouseenter->auth-form#oauthOver mouseleave->auth-form#oauthOut">
-      <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true">
-        <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
-        <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
-        <path fill="#FBBC05" d="M10.53 28.59a14.5 14.5 0 0 1 0-9.18l-7.98-6.19a24.0 24.0 0 0 0 0 21.56l7.98-6.19z"/>
-        <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
-      </svg>
-      <%= t("auth.login.google") %>
-    </button>
+    </form>
   <% end %>
 
   <%# === Divider === %>
@@ -76,59 +52,62 @@
     <div style="flex:1; height:1px; background:var(--color-faint, rgba(28,24,18,0.08));"></div>
   </div>
 
-  <%# === Login form === %>
-  <%= form_with(url: core.sign_in_path) do |f| %>
+  <%# === Login form — with Stimulus validation === %>
+  <div data-controller="auth-form"
+       data-auth-form-required-msg-value="<%= t('auth_alerts.validation_required') %>"
+       data-auth-form-email-msg-value="<%= t('auth_alerts.validation_email') %>"
+       data-auth-form-min-length-msg-value="<%= t('auth_alerts.validation_min_length') %>">
+    <%= form_with(url: core.sign_in_path) do |f| %>
 
-    <div style="display:flex; flex-direction:column; gap:1rem;">
+      <div style="display:flex; flex-direction:column; gap:1rem;">
 
-      <%# Email %>
-      <div>
-        <%= f.label :email, t("auth.login.email_label"),
-            style: "display:block; font-family:'DM Sans',sans-serif; font-size:0.78rem; font-weight:500; color:var(--color-sub, #6D665B); margin-bottom:0.45rem;" %>
-        <%= f.email_field :email,
-            class: "auth-input",
-            style: "display:block; width:100%; box-sizing:border-box; font-family:'DM Sans',sans-serif; font-size:0.92rem; padding:0.78rem 0.95rem; border-radius:10px; outline:none; transition:border-color 0.2s, box-shadow 0.2s;",
-            placeholder: t("auth.login.email_placeholder"),
-            required: true,
-            autofocus: true,
-            autocomplete: "email",
-            data: { auth_form_target: "input", action: "focus->auth-form#inputFocus blur->auth-form#inputBlur" } %>
-      </div>
-
-      <%# Password %>
-      <div>
-        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:0.45rem;">
-          <%= f.label :password, t("auth.login.password_label"),
-              style: "display:block; font-family:'DM Sans',sans-serif; font-size:0.78rem; font-weight:500; color:var(--color-sub, #6D665B); margin:0;" %>
-          <%= link_to t("auth.login.forgot"), core.forgot_password_path,
-              style: "font-family:'DM Sans',sans-serif; font-size:0.72rem; color:var(--color-muted, #A09889); text-decoration:none; transition:color 0.2s;",
-              data: { action: "mouseenter->auth-form#linkOver mouseleave->auth-form#linkOut" } %>
+        <%# Email %>
+        <div>
+          <%= f.label :email, t("auth.login.email_label"),
+              style: "display:block; font-family:'DM Sans',sans-serif; font-size:0.78rem; font-weight:500; color:var(--color-sub, #6D665B); margin-bottom:0.45rem;" %>
+          <%= f.email_field :email,
+              class: "auth-input",
+              style: "display:block; width:100%; box-sizing:border-box; font-family:'DM Sans',sans-serif; font-size:0.92rem; padding:0.78rem 0.95rem; border-radius:10px; outline:none; transition:border-color 0.2s, box-shadow 0.2s;",
+              placeholder: t("auth.login.email_placeholder"),
+              required: true,
+              autofocus: true,
+              autocomplete: "email",
+              data: { auth_form_target: "input", action: "focus->auth-form#inputFocus blur->auth-form#inputBlur" } %>
         </div>
-        <%= f.password_field :password,
-            class: "auth-input",
-            style: "display:block; width:100%; box-sizing:border-box; font-family:'DM Sans',sans-serif; font-size:0.92rem; padding:0.78rem 0.95rem; border-radius:10px; outline:none; transition:border-color 0.2s, box-shadow 0.2s;",
-            placeholder: t("auth.login.password_placeholder"),
-            required: true,
-            autocomplete: "current-password",
-            data: { auth_form_target: "input", action: "focus->auth-form#inputFocus blur->auth-form#inputBlur" } %>
-      </div>
 
-      <%# Submit %>
-      <div style="margin-top:0.3rem;">
-        <%= f.submit t("auth.login.submit"),
-            class: "auth-btn",
-            style: "display:block; width:100%; font-family:'DM Sans',sans-serif; font-size:0.9rem; font-weight:600; padding:0.85rem 1rem; border-radius:11px; border:none; cursor:pointer; transition:all 0.2s; box-shadow:0 1px 3px rgba(28,24,18,0.12), 0 1px 2px rgba(28,24,18,0.06);",
-            data: { auth_form_target: "submit", action: "mouseenter->auth-form#submitOver mouseleave->auth-form#submitOut" } %>
+        <%# Password %>
+        <div>
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:0.45rem;">
+            <%= f.label :password, t("auth.login.password_label"),
+                style: "display:block; font-family:'DM Sans',sans-serif; font-size:0.78rem; font-weight:500; color:var(--color-sub, #6D665B); margin:0;" %>
+            <%= link_to t("auth.login.forgot"), core.forgot_password_path,
+                style: "font-family:'DM Sans',sans-serif; font-size:0.72rem; color:var(--color-muted, #A09889); text-decoration:none; transition:color 0.2s;" %>
+          </div>
+          <%= f.password_field :password,
+              class: "auth-input",
+              style: "display:block; width:100%; box-sizing:border-box; font-family:'DM Sans',sans-serif; font-size:0.92rem; padding:0.78rem 0.95rem; border-radius:10px; outline:none; transition:border-color 0.2s, box-shadow 0.2s;",
+              placeholder: t("auth.login.password_placeholder"),
+              required: true,
+              autocomplete: "current-password",
+              data: { auth_form_target: "input", action: "focus->auth-form#inputFocus blur->auth-form#inputBlur" } %>
+        </div>
+
+        <%# Submit %>
+        <div style="margin-top:0.3rem;">
+          <%= f.submit t("auth.login.submit"),
+              class: "auth-btn",
+              style: "display:block; width:100%; font-family:'DM Sans',sans-serif; font-size:0.9rem; font-weight:600; padding:0.85rem 1rem; border-radius:11px; border:none; cursor:pointer; transition:all 0.2s; box-shadow:0 1px 3px rgba(28,24,18,0.12), 0 1px 2px rgba(28,24,18,0.06);",
+              data: { auth_form_target: "submit" } %>
+        </div>
       </div>
-    </div>
-  <% end %>
+    <% end %>
+  </div>
 
   <%# === Switch to register === %>
   <p style="text-align:center; margin:1.3rem 0 0; font-family:'DM Sans',sans-serif; font-size:0.78rem; color:var(--color-muted, #A09889);">
     <%= t("auth.login.switch_text") %>
     <%= link_to t("auth.login.switch_link"), core.sign_up_path,
-        style: "color:var(--color-link, #8B6D28); text-decoration:none; font-weight:600;",
-        data: { action: "mouseenter->auth-form#inlineLinkOver mouseleave->auth-form#inlineLinkOut" } %>
+        style: "color:var(--color-link, #8B6D28); text-decoration:none; font-weight:600;" %>
   </p>
 
 </div>
