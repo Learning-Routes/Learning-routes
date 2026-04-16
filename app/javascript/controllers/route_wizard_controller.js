@@ -8,8 +8,8 @@ export default class extends Controller {
     "hoursInput", "sessionInput", "hoursGrid", "sessionGrid",
     "customInput", "customInputWrap", "topicGrid", "errorBanner",
     "topicDetailWrap", "topicDetailLabel", "topicDetailInput",
-    "node0", "node1", "node2", "node3", "node4", "node5",
-    "line0", "line1", "line2", "line3", "line4",
+    "progressBar", "stepCounter", "stepNum", "timeSummary",
+    "styleProgressFill", "styleQuestionNum",
     "styleAnswer1", "styleAnswer2", "styleAnswer3",
     "styleAnswer4", "styleAnswer5", "styleAnswer6",
     "styleAnswer7", "styleAnswer8", "styleAnswer9",
@@ -118,19 +118,13 @@ export default class extends Controller {
       return
     }
 
-    this.animateStepTransition(this.stepValue, this.stepValue + 1, 1)
-    this.stepValue++
-    this.updateUI()
-    this.validateStep()
+    this.animateStepTransition(this.stepValue, this.stepValue + 1, "forward")
   }
 
   back() {
     if (this.isAnimating || this.stepValue === 0) return
 
-    this.animateStepTransition(this.stepValue, this.stepValue - 1, -1)
-    this.stepValue--
-    this.updateUI()
-    this.validateStep()
+    this.animateStepTransition(this.stepValue, this.stepValue - 1, "backward")
   }
 
   // ===== STEP 0: TOPICS =====
@@ -138,27 +132,15 @@ export default class extends Controller {
   toggleTopic(event) {
     const card = event.currentTarget
     const topic = card.dataset.topic
-    const color = card.dataset.color
-    const check = card.querySelector(".wizard-check")
-    const iconWrap = card.querySelector(".wizard-topic-icon")
 
     if (this.selectedTopics.has(topic)) {
       this.selectedTopics.delete(topic)
-      card.style.background = ""
-      card.style.borderColor = ""
-      card.style.transform = "scale(1)"
-      if (check) check.style.display = "none"
-      if (iconWrap) iconWrap.style.background = "var(--color-tint, rgba(28,24,18,0.02))"
+      card.classList.remove("selected")
+      card.setAttribute("aria-checked", "false")
     } else {
       this.selectedTopics.add(topic)
-      card.style.background = color + "08"
-      card.style.borderColor = color + "40"
-      card.style.transform = "scale(1.01)"
-      if (check) {
-        check.style.display = "flex"
-        check.style.background = color
-      }
-      if (iconWrap) iconWrap.style.background = color + "12"
+      card.classList.add("selected")
+      card.setAttribute("aria-checked", "true")
     }
 
     this.syncTopicInputs()
@@ -217,15 +199,13 @@ export default class extends Controller {
 
     if (this.hasLocaleGridTarget) {
       this.localeGridTarget.querySelectorAll("[data-locale]").forEach(el => {
-        el.style.borderColor = "var(--color-faint, rgba(28,24,18,0.06))"
-        const check = el.querySelector(".wizard-locale-check")
-        if (check) check.style.display = "none"
+        el.classList.remove("selected")
+        el.setAttribute("aria-checked", "false")
       })
     }
 
-    card.style.borderColor = "#5BA880"
-    const check = card.querySelector(".wizard-locale-check")
-    if (check) check.style.display = "flex"
+    card.classList.add("selected")
+    card.setAttribute("aria-checked", "true")
 
     if (this.hasLocaleInputTarget) {
       this.localeInputTarget.value = locale
@@ -237,36 +217,17 @@ export default class extends Controller {
   selectLevel(event) {
     const card = event.currentTarget
     const level = card.dataset.level
-    const color = card.dataset.color
 
     const stepEl = this.stepTargets.find(el => parseInt(el.dataset.step) === 1)
     if (!stepEl) return
 
     stepEl.querySelectorAll("[data-level]").forEach(el => {
-      el.style.background = ""
-      el.style.borderColor = ""
-      const icon = el.querySelector("div:first-child")
-      if (icon) icon.style.background = "var(--color-tint, rgba(28,24,18,0.02))"
-      const dot = el.querySelector(".wizard-radio-dot")
-      if (dot) {
-        dot.style.transform = "scale(0)"
-        dot.style.background = "transparent"
-      }
-      const ring = dot?.parentElement
-      if (ring) ring.style.borderColor = "var(--color-border-subtle, rgba(28,24,18,0.1))"
+      el.classList.remove("selected")
+      el.setAttribute("aria-checked", "false")
     })
 
-    card.style.background = color + "08"
-    card.style.borderColor = color + "40"
-    const icon = card.querySelector("div:first-child")
-    if (icon) icon.style.background = color + "14"
-    const dot = card.querySelector(".wizard-radio-dot")
-    if (dot) {
-      dot.style.background = color
-      dot.style.transform = "scale(1)"
-    }
-    const ring = dot?.parentElement
-    if (ring) ring.style.borderColor = color
+    card.classList.add("selected")
+    card.setAttribute("aria-checked", "true")
 
     this.selectedLevel = level
     if (this.hasLevelInputTarget) this.levelInputTarget.value = level
@@ -278,21 +239,15 @@ export default class extends Controller {
   toggleGoal(event) {
     const card = event.currentTarget
     const goal = card.dataset.goal
-    const check = card.querySelector(".wizard-goal-check")
-    const label = card.querySelector("span:nth-child(2)")
 
     if (this.selectedGoals.has(goal)) {
       this.selectedGoals.delete(goal)
-      card.style.background = ""
-      card.style.borderColor = ""
-      if (label) label.style.fontWeight = "500"
-      if (check) check.style.display = "none"
+      card.classList.remove("selected")
+      card.setAttribute("aria-checked", "false")
     } else {
       this.selectedGoals.add(goal)
-      card.style.background = "#8B80C408"
-      card.style.borderColor = "#8B80C435"
-      if (label) label.style.fontWeight = "600"
-      if (check) check.style.display = "block"
+      card.classList.add("selected")
+      card.setAttribute("aria-checked", "true")
     }
 
     this.syncGoalInputs()
@@ -307,16 +262,15 @@ export default class extends Controller {
 
     if (this.hasHoursGridTarget) {
       this.hoursGridTarget.querySelectorAll("[data-hours]").forEach(el => {
-        el.style.background = ""
-        el.style.borderColor = ""
+        el.classList.remove("selected")
       })
     }
 
-    card.style.background = "#6E9BC810"
-    card.style.borderColor = "#6E9BC840"
+    card.classList.add("selected")
 
     this.selectedHours = hours
     if (this.hasHoursInputTarget) this.hoursInputTarget.value = hours
+    this._updateTimeSummary()
     this.validateStep()
   }
 
@@ -326,17 +280,25 @@ export default class extends Controller {
 
     if (this.hasSessionGridTarget) {
       this.sessionGridTarget.querySelectorAll("[data-minutes]").forEach(el => {
-        el.style.background = ""
-        el.style.borderColor = ""
+        el.classList.remove("selected")
       })
     }
 
-    card.style.background = "#6E9BC810"
-    card.style.borderColor = "#6E9BC840"
+    card.classList.add("selected")
 
     this.selectedSession = mins
     if (this.hasSessionInputTarget) this.sessionInputTarget.value = mins
+    this._updateTimeSummary()
     this.validateStep()
+  }
+
+  _updateTimeSummary() {
+    if (!this.hasTimeSummaryTarget) return
+    if (this.selectedHours && this.selectedSession) {
+      this.timeSummaryTarget.textContent = this.selectedHours + "h/week in " + this.selectedSession + "-minute sessions"
+    } else {
+      this.timeSummaryTarget.textContent = ""
+    }
   }
 
   // ===== STEP 4: LEARNING STYLE =====
@@ -356,21 +318,13 @@ export default class extends Controller {
     const questionContainer = card.closest("[data-style-question]")
     if (questionContainer) {
       questionContainer.querySelectorAll("[data-option]").forEach(el => {
-        el.style.background = ""
-        el.style.borderColor = ""
-        const text = el.querySelector(".style-option-text")
-        if (text) text.style.fontWeight = "400"
-        const check = el.querySelector(".style-check")
-        if (check) check.style.display = "none"
+        el.classList.remove("selected")
+        el.setAttribute("aria-checked", "false")
       })
     }
 
-    card.style.background = "rgba(139,128,196,0.05)"
-    card.style.borderColor = "rgba(139,128,196,0.3)"
-    const text = card.querySelector(".style-option-text")
-    if (text) text.style.fontWeight = "500"
-    const check = card.querySelector(".style-check")
-    if (check) check.style.display = "flex"
+    card.classList.add("selected")
+    card.setAttribute("aria-checked", "true")
 
     this.styleAnswers[question] = option
 
@@ -381,15 +335,29 @@ export default class extends Controller {
 
     this.updateStyleProgress()
 
-    // Auto-scroll to next unanswered question
+    // Update mini progress
+    const answered = Object.keys(this.styleAnswers).length
+    if (this.hasStyleProgressFillTarget) {
+      this.styleProgressFillTarget.style.width = ((answered / 12) * 100) + "%"
+    }
+    if (this.hasStyleQuestionNumTarget) {
+      this.styleQuestionNumTarget.textContent = Math.min(answered + 1, 12)
+    }
+
+    // Auto-advance: hide current question, show next unanswered one after 400ms
     const nextQ = parseInt(question) + 1
     if (nextQ <= 12 && !this.styleAnswers[String(nextQ)]) {
-      setTimeout(() => {
+      const timer = setTimeout(() => {
+        if (questionContainer) {
+          questionContainer.style.display = "none"
+        }
         const nextEl = this.element.querySelector(`[data-style-question="${nextQ}"]`)
         if (nextEl) {
+          nextEl.style.display = ""
           nextEl.scrollIntoView({ behavior: "smooth", block: "center" })
         }
-      }, 150)
+      }, 400)
+      this._timers.push(timer)
     }
 
     if (Object.keys(this.styleAnswers).length === 12) {
@@ -416,12 +384,13 @@ export default class extends Controller {
 
     // Reset question UI
     this.element.querySelectorAll("[data-style-question] [data-option]").forEach(el => {
-      el.style.background = ""
-      el.style.borderColor = ""
-      const text = el.querySelector(".style-option-text")
-      if (text) text.style.fontWeight = "400"
-      const check = el.querySelector(".style-check")
-      if (check) check.style.display = "none"
+      el.classList.remove("selected")
+      el.setAttribute("aria-checked", "false")
+    })
+
+    // Show all questions again
+    this.element.querySelectorAll("[data-style-question]").forEach(el => {
+      el.style.display = ""
     })
 
     if (this.hasStyleResultCardTarget) {
@@ -430,6 +399,14 @@ export default class extends Controller {
     }
     if (this.hasStyleDoneMsgTarget) {
       this.styleDoneMsgTarget.style.opacity = "0"
+    }
+
+    // Reset mini progress
+    if (this.hasStyleProgressFillTarget) {
+      this.styleProgressFillTarget.style.width = "0%"
+    }
+    if (this.hasStyleQuestionNumTarget) {
+      this.styleQuestionNumTarget.textContent = "1"
     }
 
     this.updateStyleProgress()
@@ -485,34 +462,17 @@ export default class extends Controller {
   selectPace(event) {
     const card = event.currentTarget
     const pace = card.dataset.pace
-    const color = card.dataset.color
 
     const stepEl = this.stepTargets.find(el => parseInt(el.dataset.step) === 5)
     if (!stepEl) return
 
     stepEl.querySelectorAll("[data-pace]").forEach(el => {
-      el.style.background = ""
-      el.style.borderColor = ""
-      const icon = el.querySelector("div:first-child")
-      if (icon) icon.style.background = "rgba(28,24,18,0.02)"
-      const badge = el.querySelector(".wizard-time-badge")
-      if (badge) {
-        badge.style.color = ""
-        badge.style.opacity = "0.5"
-        badge.style.background = "rgba(28,24,18,0.02)"
-      }
+      el.classList.remove("selected")
+      el.setAttribute("aria-checked", "false")
     })
 
-    card.style.background = color + "08"
-    card.style.borderColor = color + "40"
-    const icon = card.querySelector("div:first-child")
-    if (icon) icon.style.background = color + "14"
-    const badge = card.querySelector(".wizard-time-badge")
-    if (badge) {
-      badge.style.color = color
-      badge.style.opacity = "0.8"
-      badge.style.background = color + "0D"
-    }
+    card.classList.add("selected")
+    card.setAttribute("aria-checked", "true")
 
     this.selectedPace = pace
     if (this.hasPaceInputTarget) this.paceInputTarget.value = pace
@@ -594,8 +554,7 @@ export default class extends Controller {
     const grid = this[`${gridTarget}Target`]
     grid.querySelectorAll(`[data-${dataAttr}]`).forEach(el => {
       if (parseInt(el.dataset[dataAttr === "hours" ? "hours" : "minutes"], 10) === value) {
-        el.style.background = "#6E9BC810"
-        el.style.borderColor = "#6E9BC840"
+        el.classList.add("selected")
       }
     })
   }
@@ -653,206 +612,74 @@ export default class extends Controller {
 
   validateStep() {
     const valid = this.isCurrentStepValid()
-    if (!this.hasContinueBtnTarget) return
-
-    const btn = this.continueBtnTarget
-
-    if (valid) {
-      btn.disabled = false
-      btn.style.background = "var(--color-accent, #2C261E)"
-      btn.style.color = "var(--color-accent-text, #FEFDFB)"
-      btn.style.boxShadow = "0 2px 12px rgba(28,24,18,0.15)"
-      btn.style.cursor = "pointer"
-    } else {
-      btn.disabled = true
-      btn.style.background = "var(--color-tint-strong, rgba(28,24,18,0.08))"
-      btn.style.color = "var(--color-faint-text, #D4CFC5)"
-      btn.style.boxShadow = "none"
-      btn.style.cursor = "default"
+    if (this.hasContinueBtnTarget) {
+      if (valid) {
+        this.continueBtnTarget.classList.remove("disabled")
+        this.continueBtnTarget.removeAttribute("disabled")
+      } else {
+        this.continueBtnTarget.classList.add("disabled")
+        this.continueBtnTarget.setAttribute("disabled", "")
+      }
     }
-
+    // Update button text on last step
     if (this.hasBtnTextTarget) {
-      const lastStep = this.totalSteps - 1
-      this.btnTextTarget.textContent = this.stepValue === lastStep
-        ? this.t("generate_text", "Generate route")
-        : this.t("continue_text", "Continue")
+      if (this.stepValue === this.totalSteps - 1 && valid) {
+        this.btnTextTarget.textContent = "Create my route \u2728"
+      } else {
+        this.btnTextTarget.textContent = this.t("continue_text", "Continue")
+      }
     }
   }
 
   updateUI() {
-    const step = this.stepValue
-    const stepNames = this.i18nValue.step_names || []
+    // Progress bar
+    const pct = (this.stepValue / (this.totalSteps - 1)) * 100
+    if (this.hasProgressBarTarget) this.progressBarTarget.style.width = pct + "%"
+    if (this.hasStepNumTarget) this.stepNumTarget.textContent = this.stepValue + 1
 
-    if (this.hasStepLabelTarget) {
-      const template = this.t("step_label", "Step :n")
-      this.stepLabelTarget.textContent = template.replace(":n", step + 1)
-    }
-    if (this.hasStepNameTarget) {
-      this.stepNameTarget.textContent = stepNames[step] || ""
-    }
-
-    // Route-node progress
-    this._updateNodes(step)
-
+    // Back button
     if (this.hasNavLeftTarget) {
-      if (step === 0) {
-        this.navLeftTarget.innerHTML = `
-          <a href="${this.homeUrlValue}" style="display:flex; align-items:center; gap:10px; text-decoration:none; color:var(--color-txt, #1C1812);">
-            <span style="font-family:'DM Sans',sans-serif; font-weight:700; font-size:0.9rem; letter-spacing:-0.5px; color:var(--color-txt, #1C1812);">Learning Routes</span>
-          </a>`
+      if (this.stepValue > 0) {
+        this.navLeftTarget.innerHTML = '<button type="button" class="wizard-btn-back" data-action="click->route-wizard#back">Back</button>'
       } else {
-        const backText = this.t("back_text", "Back")
-        this.navLeftTarget.innerHTML = `
-          <button type="button" data-action="click->route-wizard#back"
-                  style="background:none; border:none; cursor:pointer; font-family:'DM Sans',sans-serif; font-weight:400; font-size:0.78rem; color:var(--color-muted, #9E9587); padding:0;">
-            \u2190 ${backText}
-          </button>`
+        this.navLeftTarget.innerHTML = ""
       }
     }
-
-    if (this.hasChipsTarget) {
-      this.updateChips()
-    }
-  }
-
-  _updateNodes(currentStep) {
-    for (let i = 0; i < this.totalSteps; i++) {
-      const nodeTarget = `node${i}`
-      const hasNode = `has${nodeTarget.charAt(0).toUpperCase() + nodeTarget.slice(1)}Target`
-      if (!this[hasNode]) continue
-      const node = this[`${nodeTarget}Target`]
-
-      if (i < currentStep) {
-        // Completed
-        node.style.background = "#5BA880"
-        node.style.borderColor = "#5BA880"
-        node.style.color = "#fff"
-        node.style.animation = "none"
-        node.innerHTML = `<svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M3 8.5L6.5 12L13 4" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`
-      } else if (i === currentStep) {
-        // Current
-        node.style.background = "var(--color-accent, #2C261E)"
-        node.style.borderColor = "var(--color-accent, #2C261E)"
-        node.style.color = "var(--color-accent-text, #fff)"
-        node.style.animation = "nodePulse 2s ease-in-out infinite"
-        node.textContent = i + 1
-      } else {
-        // Upcoming
-        node.style.background = "transparent"
-        node.style.borderColor = "var(--color-border-subtle, rgba(28,24,18,0.1))"
-        node.style.color = "var(--color-faint, rgba(28,24,18,0.25))"
-        node.style.animation = "none"
-        node.textContent = i + 1
-      }
-    }
-
-    // Lines
-    for (let i = 0; i < this.totalSteps - 1; i++) {
-      const lineTarget = `line${i}`
-      const hasLine = `has${lineTarget.charAt(0).toUpperCase() + lineTarget.slice(1)}Target`
-      if (!this[hasLine]) continue
-      const line = this[`${lineTarget}Target`]
-
-      if (i < currentStep) {
-        line.style.width = "100%"
-      } else {
-        line.style.width = "0%"
-      }
-    }
-  }
-
-  updateChips() {
-    if (!this.hasChipsTarget) return
-    const chips = this.chipsTarget
-    chips.innerHTML = ""
-
-    if (this.stepValue === 0) return
-
-    const topicLabels = this.i18nValue.topics || {}
-    const levelLabels = this.i18nValue.levels || {}
-
-    let count = 0
-    this.selectedTopics.forEach(t => {
-      if (count < 2) {
-        this.addChip(chips, topicLabels[t] || t)
-        count++
-      }
-    })
-    if (this.selectedTopics.size > 2) {
-      this.addChip(chips, `+${this.selectedTopics.size - 2}`)
-    }
-
-    if (this.hasCustomInputTarget) {
-      const custom = this.customInputTarget.value.trim()
-      if (custom) {
-        this.addChip(chips, `${custom.substring(0, 12)}${custom.length > 12 ? "\u2026" : ""}`)
-      }
-    }
-
-    if (this.stepValue >= 2 && this.selectedLevel) {
-      this.addChip(chips, levelLabels[this.selectedLevel] || this.selectedLevel)
-    }
-
-    if (this.stepValue >= 5 && this.dominantStyleData) {
-      this.addChip(chips, `${this.dominantStyleData.emoji} ${this.dominantStyleData.name}`)
-    }
-  }
-
-  addChip(container, text) {
-    const chip = document.createElement("span")
-    chip.textContent = text
-    chip.style.cssText = "font-family:'DM Sans',sans-serif; font-size:0.58rem; font-weight:500; color:var(--color-muted, #9E9587); padding:2px 7px; border-radius:5px; background:rgba(28,24,18,0.03);"
-    container.appendChild(chip)
   }
 
   animateStepTransition(fromIdx, toIdx, direction) {
+    if (this.isAnimating) return
     this.isAnimating = true
-    const fromEl = this.stepTargets.find(el => parseInt(el.dataset.step) === fromIdx)
-    const toEl = this.stepTargets.find(el => parseInt(el.dataset.step) === toIdx)
 
-    if (!fromEl || !toEl) {
-      this.isAnimating = false
-      return
-    }
+    const fromStep = this.stepTargets[fromIdx]
+    const toStep = this.stepTargets[toIdx]
+    if (!fromStep || !toStep) { this.isAnimating = false; return }
 
-    if (this._animSafetyTimer) clearTimeout(this._animSafetyTimer)
-    this._animSafetyTimer = setTimeout(() => { this.isAnimating = false }, 1000)
+    const exitClass = direction === "forward" ? "wizard-step-exit-left" : "wizard-step-exit-right"
+    const enterClass = direction === "forward" ? "wizard-step-enter-right" : "wizard-step-enter-left"
 
-    try {
-      fromEl.style.transition = "opacity 0.2s ease, transform 0.2s ease"
-      fromEl.style.opacity = "0"
-      fromEl.style.transform = `translateX(${-20 * direction}px)`
+    // Exit current step
+    fromStep.classList.add(exitClass)
 
-      const t1 = setTimeout(() => {
-        try {
-          fromEl.style.display = "none"
-          fromEl.style.transition = ""
-          fromEl.style.opacity = ""
-          fromEl.style.transform = ""
+    const timer = setTimeout(() => {
+      fromStep.setAttribute("aria-hidden", "true")
+      fromStep.classList.remove(exitClass)
 
-          toEl.style.display = "block"
-          toEl.style.opacity = "0"
-          toEl.style.transform = `translateX(${20 * direction}px)`
+      // Enter new step
+      toStep.setAttribute("aria-hidden", "false")
+      toStep.style.display = ""
+      toStep.classList.add(enterClass)
 
-          requestAnimationFrame(() => {
-            toEl.style.transition = "opacity 0.3s cubic-bezier(0.16,1,0.3,1), transform 0.3s cubic-bezier(0.16,1,0.3,1)"
-            toEl.style.opacity = "1"
-            toEl.style.transform = "translateX(0)"
-
-            const t2 = setTimeout(() => {
-              toEl.style.transition = ""
-              this.isAnimating = false
-              if (this._animSafetyTimer) clearTimeout(this._animSafetyTimer)
-            }, 300)
-            this._timers.push(t2)
-          })
-        } catch (e) {
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          toStep.classList.remove(enterClass)
+          this.stepValue = toIdx
+          this.updateUI()
+          this.validateStep()
           this.isAnimating = false
-        }
-      }, 200)
-      this._timers.push(t1)
-    } catch (e) {
-      this.isAnimating = false
-    }
+        })
+      })
+    }, 250)
+    this._timers.push(timer)
   }
 }
