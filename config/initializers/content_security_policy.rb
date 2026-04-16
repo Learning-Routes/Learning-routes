@@ -15,7 +15,7 @@ Rails.application.configure do
     policy.connect_src :self, "wss://learning-routes.com"
     policy.frame_src   :none
     policy.base_uri    :self
-    policy.form_action :self
+    policy.form_action :self, "https://accounts.google.com"
   end
 
   # Generate session nonces for permitted importmap and inline scripts.
