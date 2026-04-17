@@ -19,9 +19,6 @@ module CommunityEngine
       # Preload learning_route for SharedRoute trackables to avoid N+1
       preload_shared_route_associations(@activities)
 
-      # Batch-preload likes/ratings/best-comment state for all visible records
-      preload_community_state
-
       # Leaderboard: cache the IDs (1 hour). Resolve User records outside the cache
       # so Rails doesn't serialize/deserialize full AR objects.
       top_learner_ids = Rails.cache.fetch("community_feed_top_learners_v1", expires_in: 1.hour) do
@@ -39,6 +36,10 @@ module CommunityEngine
 
       # Community posts
       @posts = Post.recent.includes(:user).limit(20)
+
+      # Batch-preload likes/ratings/best-comment state AFTER @posts/@trending_routes exist.
+      # Previously ran before @posts was populated — Post liked_by? lookups stayed N+1.
+      preload_community_state
 
       # Floating thoughts: best comments from shared routes
       @floating_thoughts = build_floating_thoughts

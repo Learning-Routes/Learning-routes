@@ -48,8 +48,15 @@ env:
   clear:
     RAILS_LOG_LEVEL: info
     RAILS_SERVE_STATIC_FILES: "true"
-    WEB_CONCURRENCY: 2
+    # WEB_CONCURRENCY: set to "auto" to use all available CPUs (or specify explicit count)
+    WEB_CONCURRENCY: auto
+    # Pool size for both Puma and Solid Queue workers. Must be ≥ the largest
+    # worker thread count + a small buffer. The ai_requests pool uses 8 threads,
+    # so 12 leaves headroom for Solid Queue's dispatcher/control threads.
+    RAILS_MAX_THREADS: "12"
     CORS_ORIGINS: "learningroutes.com,www.learningroutes.com,learning-routes.com,www.learning-routes.com"
+    # Enable Puma plugins for better GC and memory efficiency
+    SOLID_QUEUE_IN_PUMA: "false"
 
 aliases:
   console: app exec --interactive --reuse "bin/rails console"
