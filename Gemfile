@@ -86,9 +86,6 @@ group :development do
   # Use console on exceptions pages [https://github.com/rails/web-console]
   gem "web-console"
 
-  # Opens emails in browser tab instead of sending
-  gem "letter_opener"
-
   # File system event watcher for EventedFileUpdateChecker
   gem "listen"
 
