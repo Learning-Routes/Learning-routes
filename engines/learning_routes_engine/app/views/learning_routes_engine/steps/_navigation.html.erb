@@ -6,6 +6,7 @@
 <div style="display:flex; align-items:center; justify-content:space-between; gap:1rem; margin-top:2.5rem; padding-top:1.5rem; border-top:1px solid var(--color-border-subtle);">
   <% if prev_step %>
     <%= link_to route_step_path(@route, prev_step), style: "display:flex; align-items:center; gap:0.625rem; font-family:'DM Sans',sans-serif; font-size:0.875rem; font-weight:500; color:var(--color-sub); text-decoration:none; padding:0.5rem 0.75rem; border-radius:12px; transition:all 0.2s; border:1px solid transparent;",
+        data: { turbo_prefetch: false },
         onmouseover: "this.style.background='var(--color-tint)'; this.style.borderColor='var(--color-border-subtle)'; this.style.color='var(--color-txt)';",
         onmouseout: "this.style.background='transparent'; this.style.borderColor='transparent'; this.style.color='var(--color-sub)';" do %>
       <svg aria-hidden="true" width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -23,6 +24,7 @@
 
   <% if next_step %>
     <%= link_to route_step_path(@route, next_step), style: "display:flex; align-items:center; gap:0.625rem; font-family:'DM Sans',sans-serif; font-size:0.875rem; font-weight:500; color:var(--color-sub); text-decoration:none; padding:0.5rem 0.75rem; border-radius:12px; transition:all 0.2s; border:1px solid transparent;",
+        data: { turbo_prefetch: false },
         onmouseover: "this.style.background='var(--color-tint)'; this.style.borderColor='var(--color-border-subtle)'; this.style.color='var(--color-txt)';",
         onmouseout: "this.style.background='transparent'; this.style.borderColor='transparent'; this.style.color='var(--color-sub)';" do %>
       <span style="max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"><%= next_step.localized_title %></span>

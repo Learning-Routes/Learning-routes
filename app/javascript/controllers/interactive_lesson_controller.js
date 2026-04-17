@@ -100,8 +100,11 @@ export default class extends Controller {
     this._detectQuizLock(this.currentSectionValue)
     this.updateUI()
 
-    // Activate quiz controller on the initial visible section
-    this._activateQuizInSection(this.sectionTargets[this.currentSectionValue])
+    // Activate quiz controller on the initial visible section.
+    // Lazy-loaded child controllers (lesson-quiz, lesson-check) may not have
+    // registered yet when this controller's connect() fires. Retry briefly
+    // so the initial section's quiz activates reliably on first render.
+    this._activateInitialQuizWithRetry(this.currentSectionValue)
 
     // Swipe support
     this._onTouchStart = this._handleTouchStart.bind(this)
@@ -369,6 +372,30 @@ export default class extends Controller {
     // Track whether this check section has a lesson-quiz controller
     // (which dispatches quiz:completed with proper delay)
     this._hasQuizController = isCheck && !!section.querySelector('[data-controller*="lesson-quiz"]')
+  }
+
+  // Retry activation for the initial section until lazy-loaded child controllers
+  // are registered, or give up after a few attempts. Each retry doubles the
+  // delay (16, 32, 64, 128ms) so typical cached imports resolve on the first
+  // or second tick and uncached imports resolve by the fourth.
+  _activateInitialQuizWithRetry(sectionIndex, attempt = 0) {
+    const section = this.sectionTargets[sectionIndex]
+    if (!section) return
+
+    const quizEl = section.querySelector('[data-controller*="lesson-quiz"]')
+    const checkEl = section.querySelector('[data-controller*="lesson-check"]')
+    if (!quizEl && !checkEl) return // nothing to activate
+
+    const quizReady = !quizEl || this.application.getControllerForElementAndIdentifier(quizEl, "lesson-quiz")
+    const checkReady = !checkEl || this.application.getControllerForElementAndIdentifier(checkEl, "lesson-check")
+
+    if (quizReady && checkReady) {
+      this._activateQuizInSection(section)
+      return
+    }
+
+    if (attempt >= 4) return // ~240ms total; give up silently
+    setTimeout(() => this._activateInitialQuizWithRetry(sectionIndex, attempt + 1), 16 << attempt)
   }
 
   // Activate quiz/check controllers when a section becomes visible
