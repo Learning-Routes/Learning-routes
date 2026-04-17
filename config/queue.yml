@@ -3,10 +3,18 @@ default: &default
     - polling_interval: 1
       batch_size: 500
   workers:
-    - queues: "*"
-      threads: 3
+    # AI worker pool — IO-bound calls that can take 5-30s each.
+    # More threads so a burst of AI generations does not block other work.
+    - queues: [ ai_requests ]
+      threads: 8
       processes: <%= ENV.fetch("JOB_CONCURRENCY", 1) %>
       polling_interval: 0.1
+    # General pool for everything else (mailers, streaks, route orchestration).
+    # These are fast; 3 threads is plenty.
+    - queues: [ default, low, low_priority ]
+      threads: 3
+      processes: <%= ENV.fetch("JOB_CONCURRENCY", 1) %>
+      polling_interval: 0.2
 
 development:
   <<: *default
