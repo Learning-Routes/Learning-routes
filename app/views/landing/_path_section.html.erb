@@ -48,7 +48,7 @@
       <span class="font-mono text-[0.6rem] tracking-[1px] text-dark-muted
                    py-[0.4rem] px-[1rem] rounded-lg border border-lr-dark inline-block">
         <% if @active_route %>
-          <%= t("path_section.footer_active", completed: @active_route.route_steps.completed_steps.count, total: @active_route.total_steps) %>
+          <%= t("path_section.footer_active", completed: @active_route.completed_steps_count, total: @active_route.total_steps) %>
         <% else %>
           <%= t("path_section.footer_default") %>
         <% end %>

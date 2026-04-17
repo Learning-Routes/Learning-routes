@@ -226,6 +226,35 @@ Wired into `FeedController#index`. Feed render with N shared routes + M posts dr
 
 `engines/learning_routes_engine/test/models/learning_routes_engine/learning_route_test.rb:20` "progress percentage calculation" expects `current_step / total_steps` but the method reads from the `route_steps` association — fails on an unsaved record with no associated steps. Behavior predates this audit; preserved intentionally.
 
+## Phase B — Frontend (2026-04-17)
+
+Biggest-impact change: lazy-loaded Stimulus. Several smaller housekeeping wins.
+
+### B.1 — Stimulus switched to lazy loading
+
+`app/javascript/controllers/index.js` now uses `lazyLoadControllersFrom` instead of `eagerLoadControllersFrom`. The 62 controllers totaling ~424 KB of source JS no longer all ship on every page; each controller loads via dynamic import on first appearance of its `data-controller` attribute.
+
+Caveat: `interactive_lesson_controller#connect` calls `application.getControllerForElementAndIdentifier("lesson-quiz")` on line 104; there's a brief window where the lazy import hasn't resolved. The existing `if (quizCtrl)` guard means the worst case is the quiz not auto-activating on the first section (it activates on scroll/next section transition). Acceptable tradeoff.
+
+### B.2 — Font loading cleanup
+
+- Removed redundant `dns-prefetch` tags for origins already covered by `preconnect` in `application.html.erb` (preconnect supersedes dns-prefetch for the same host).
+- Removed duplicate `preconnect` tag block in `application.html.erb` (was declared twice).
+- Replaced invalid bare `<dns-prefetch href="...">` tags with `<link rel="dns-prefetch" href="...">` in `landing.html.erb`. The bare form is not valid HTML and was silently ignored by browsers.
+- Narrowed DM Sans weight range from `300..700` to `400..700` across all layouts — weight 300 was not used anywhere in the project. Slightly smaller variable-font payload.
+
+### B.3 — Turbo prefetch coverage
+
+Added `<meta name="turbo-prefetch" content="true">` to `learning.html.erb` and `journey.html.erb` so hover on internal route/step links prewarms the navigation. Auth and onboarding layouts left out deliberately (linear flows, prefetching next step would be wasteful).
+
+### B.4 — LCP element painted immediately
+
+Hero `<h1>` on the landing page no longer uses `animate-enter delay-100`. Opacity 0→1 with a 100ms delay was delaying the Largest Contentful Paint element's visible paint by ~650ms. Other below-the-fold elements keep their staggered enter animations.
+
+### B.5 — Fix missed N+1 in landing views (crosses with Phase A)
+
+Added `LearningRoute#completed_steps_count` that uses the loaded `route_steps` association when available. Replaced `@active_route.route_steps.completed_steps.count` in `_hero.html.erb` and `_path_section.html.erb` — those scope chains bypassed the `includes(:route_steps)` already present in `LandingController`.
+
 ## Optimization Opportunities for Future
 
 1. **HTTP/2 Server Push**: Uncomment in production for critical assets

@@ -56,6 +56,14 @@ module LearningRoutesEngine
       end
     end
 
+    def completed_steps_count
+      if association(:route_steps).loaded?
+        route_steps.count(&:completed?)
+      else
+        route_steps.completed_steps.count
+      end
+    end
+
     def nv1_steps
       filter_loaded_or_scope(:nv1)
     end
