@@ -284,6 +284,33 @@ Throughput increase under concurrent AI load: up to ~2.6× (was capped at 3 conc
 - **Prompt prefix caching.** OpenAI auto-caches matching prompt prefixes ≥1024 tokens. The current `lesson_content.yml` interpolates variables (`{{user_name}}`, `{{user_level}}`, `{{difficulty}}`, `{{locale}}`) near the top of the system prompt, which breaks prefix matching across calls. Restructuring to put variables at the end would raise cache-hit rate. Not done now because it's a prompt-quality-risky change — needs a separate eval.
 - **`DailyStreakCheckJob`** is documented to run via Solid Queue recurring at 6 am UTC, but `config/recurring.yml` only defines `clear_solid_queue_finished_jobs`. Either the job isn't scheduled, or it's scheduled elsewhere and the doc is stale. Worth verifying.
 
+## Phase D — Holistic / Deployment (2026-04-17)
+
+Smaller cleanup pass after the three targeted phases.
+
+### D.1 — Production config: clean
+
+Reviewed `config/environments/production.rb`. Already in good shape — eager_load on, perform_caching on, far-future immutable asset headers, solid_cache_store, solid_queue with dedicated queue database, jemalloc preloaded in Dockerfile, force_ssl + HSTS, DNS rebinding protection. No changes needed.
+
+### D.2 — Thruster / Kamal: clean
+
+Dockerfile starts via `./bin/thrust ./bin/rails server` — Thruster handles HTTP/2, gzip, and X-Sendfile acceleration in front of Puma. Two-stage build with bootsnap precompile. Kamal deploy config has `WEB_CONCURRENCY: auto` and `SOLID_QUEUE_IN_PUMA: "false"` (separate job container). No changes needed.
+
+### D.3 — `DailyStreakCheckJob` wired into recurring.yml
+
+`CLAUDE.md` documented this job running at 6 am UTC to reset `streak_freeze_used_today` for all users, but `config/recurring.yml` only scheduled the Solid Queue cleanup. Without the recurring entry, user streak freezes were never being reset — a functional gap, not just a perf one. Now scheduled via:
+
+```yaml
+daily_streak_check:
+  class: DailyStreakCheckJob
+  queue: low
+  schedule: at 6am every day
+```
+
+### D.4 — Dropped unused `letter_opener` gem
+
+Both dev and prod now send through Resend SMTP. `letter_opener` hadn't been required or configured anywhere (no `config.action_mailer.delivery_method = :letter_opener` in development.rb). Removed from Gemfile; `bundle install` pruned from lockfile. Shrinks the dev-group bundle by one gem.
+
 ## Optimization Opportunities for Future
 
 1. **HTTP/2 Server Push**: Uncomment in production for critical assets
