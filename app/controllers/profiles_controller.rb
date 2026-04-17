@@ -31,7 +31,8 @@ class ProfilesController < ApplicationController
     @total_steps = @routes.sum(&:total_steps)
     @study_minutes = Analytics::StudySession.for_user(@user).sum(:duration_minutes)
     @assessment_results = Assessments::AssessmentResult.for_user(@user)
-    @avg_accuracy = @assessment_results.any? ? @assessment_results.average(:score).to_f.round(1) : 0
+    count, avg = @assessment_results.pick(Arel.sql("COUNT(*)"), Arel.sql("AVG(score)"))
+    @avg_accuracy = count.to_i.positive? ? avg.to_f.round(1) : 0
 
     # Per-route stats for route cards (no N+1)
     study_minutes_by_route = Analytics::StudySession.for_user(@user)
@@ -88,7 +89,8 @@ class ProfilesController < ApplicationController
 
     @study_minutes = Analytics::StudySession.for_user(@user).sum(:duration_minutes)
     @assessment_results = Assessments::AssessmentResult.for_user(@user)
-    @avg_accuracy = @assessment_results.any? ? @assessment_results.average(:score).to_f.round(1) : 0
+    count, avg = @assessment_results.pick(Arel.sql("COUNT(*)"), Arel.sql("AVG(score)"))
+    @avg_accuracy = count.to_i.positive? ? avg.to_f.round(1) : 0
     @streak = @user.user_engagement&.current_streak || 0
   end
 
