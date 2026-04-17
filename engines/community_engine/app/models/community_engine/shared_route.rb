@@ -35,6 +35,10 @@ module CommunityEngine
 
     def liked_by?(user)
       return false unless user
+      if instance_variable_defined?(:@_liked_by_cached_user_id) &&
+         @_liked_by_cached_user_id == user.id
+        return @_liked_by_cached
+      end
       likes.exists?(user_id: user.id)
     end
 
@@ -44,16 +48,20 @@ module CommunityEngine
     end
 
     def rated_by?(user)
-      return false unless user
-      ratings.exists?(user_id: user.id)
+      !user_rating(user).nil?
     end
 
     def user_rating(user)
       return nil unless user
+      if instance_variable_defined?(:@_user_rating_cached_user_id) &&
+         @_user_rating_cached_user_id == user.id
+        return @_user_rating_cached
+      end
       ratings.find_by(user_id: user.id)&.score
     end
 
     def best_comment
+      return @_best_comment_cached if instance_variable_defined?(:@_best_comment_preloaded)
       comments.top_level.popular.includes(:user).first
     end
 

@@ -55,7 +55,7 @@ module LearningRoutesEngine
     end
 
     def set_route
-      @route = LearningRoute.find(params[:id])
+      @route = LearningRoute.includes(:learning_profile).find(params[:id])
     end
 
     def authorize_route_owner!

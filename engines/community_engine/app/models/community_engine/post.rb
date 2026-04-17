@@ -11,6 +11,10 @@ module CommunityEngine
 
     def liked_by?(user)
       return false unless user
+      if instance_variable_defined?(:@_liked_by_cached_user_id) &&
+         @_liked_by_cached_user_id == user.id
+        return @_liked_by_cached
+      end
       likes.exists?(user_id: user.id)
     end
 

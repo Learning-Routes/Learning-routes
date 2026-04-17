@@ -77,7 +77,7 @@ module LearningRoutesEngine
     private
 
     def set_route_and_step
-      @route = LearningRoute.find(params[:route_id])
+      @route = LearningRoute.includes(:learning_profile).find(params[:route_id])
       @step = @route.route_steps.find(params[:id])
     end
 

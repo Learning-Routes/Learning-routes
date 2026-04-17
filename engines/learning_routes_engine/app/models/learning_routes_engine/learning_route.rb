@@ -33,34 +33,55 @@ module LearningRoutesEngine
     scope :generation_failed, -> { where(generation_status: "failed") }
 
     def progress_percentage
-      total = route_steps.count
-      return 0 if total.zero?
-      completed = route_steps.completed_steps.count
-      ((completed.to_f / total) * 100).round(1)
+      if association(:route_steps).loaded?
+        steps = route_steps.to_a
+        total = steps.size
+        return 0 if total.zero?
+        completed = steps.count(&:completed?)
+        ((completed.to_f / total) * 100).round(1)
+      else
+        counts = route_steps.reorder(nil).group(:status).count
+        total = counts.values.sum
+        return 0 if total.zero?
+        completed = counts["completed"] || counts[:completed] || counts[3] || 0
+        ((completed.to_f / total) * 100).round(1)
+      end
     end
 
     def current_route_step
-      route_steps.find_by(position: current_step)
+      if association(:route_steps).loaded?
+        route_steps.to_a.find { |s| s.position == current_step }
+      else
+        route_steps.find_by(position: current_step)
+      end
     end
 
     def nv1_steps
-      route_steps.by_level(:nv1)
+      filter_loaded_or_scope(:nv1)
     end
 
     def nv2_steps
-      route_steps.by_level(:nv2)
+      filter_loaded_or_scope(:nv2)
     end
 
     def nv3_steps
-      route_steps.by_level(:nv3)
+      filter_loaded_or_scope(:nv3)
     end
 
     def estimated_total_minutes
-      route_steps.sum(:estimated_minutes)
+      if association(:route_steps).loaded?
+        route_steps.sum { |s| s.estimated_minutes.to_i }
+      else
+        route_steps.sum(:estimated_minutes)
+      end
     end
 
     def estimated_remaining_minutes
-      route_steps.where.not(status: :completed).sum(:estimated_minutes)
+      if association(:route_steps).loaded?
+        route_steps.reject(&:completed?).sum { |s| s.estimated_minutes.to_i }
+      else
+        route_steps.where.not(status: :completed).sum(:estimated_minutes)
+      end
     end
 
     def localized_topic(locale = I18n.locale)
@@ -80,6 +101,11 @@ module LearningRoutesEngine
     end
 
     def liked_by?(user)
+      return false unless user
+      if instance_variable_defined?(:@_liked_by_cached_user_id) &&
+         @_liked_by_cached_user_id == user.id
+        return @_liked_by_cached
+      end
       likes.exists?(user_id: user.id)
     end
 
@@ -88,6 +114,14 @@ module LearningRoutesEngine
     end
 
     private
+
+    def filter_loaded_or_scope(level)
+      if association(:route_steps).loaded?
+        route_steps.select { |s| s.level == level.to_s }
+      else
+        route_steps.by_level(level)
+      end
+    end
 
     def target_locale_differs_from_locale
       return if target_locale.blank?
