@@ -255,6 +255,35 @@ Hero `<h1>` on the landing page no longer uses `animate-enter delay-100`. Opacit
 
 Added `LearningRoute#completed_steps_count` that uses the loaded `route_steps` association when available. Replaced `@active_route.route_steps.completed_steps.count` in `_hero.html.erb` and `_path_section.html.erb` — those scope chains bypassed the `includes(:route_steps)` already present in `LandingController`.
 
+## Phase C — AI Latency (2026-04-17)
+
+Audit found most of the infrastructure is already sound. One concrete config issue was blocking AI throughput under load.
+
+### C.1 — Split Solid Queue worker pools
+
+Previous config had a single worker pool with 3 threads handling all queues. A burst of AI generation jobs (5-30 s each) would starve the `default` queue, delaying mailers, streak updates, and the route-wizard orchestration jobs.
+
+Split into two pools in `config/queue.yml`:
+- `ai_requests` queue → 8 threads (IO-bound, benefits from parallelism)
+- `default`, `low`, `low_priority` → 3 threads (fast jobs)
+
+Throughput increase under concurrent AI load: up to ~2.6× (was capped at 3 concurrent regardless of queue; now up to 8 AI + 3 fast in parallel).
+
+### C.2 — Audit findings that did NOT need fixing
+
+- `ModelRouter::ROUTING_TABLE` already routes cheap tasks (grading, hints, step_quiz, simplify) to `gpt-4.1-mini` and heavy tasks to `gpt-5.2`. No mis-routed tasks.
+- `CacheService` (Rails.cache via Solid Cache) is wired into both `Orchestrate.call` (sync path) and `AiRequestJob` (async path). Both fetch before model call and store after.
+- Per-task TTLs in `CacheService::CACHE_TTLS` are sensible — never-cache set (`quick_grading`, `gap_analysis`, `exercise_hint`, `voice_evaluation`) correctly reflects tasks whose output must be fresh per student.
+- `AiRequestJob` has exponential-backoff retry on `RequestError` (5 attempts) and fixed 30 s retry on `TimeoutError` (3 attempts), plus a 5-minute overall timeout via `Timeout.timeout`. Good.
+- `rate_limit_for` uses Rails.cache atomic increment, with decrement on over-limit — correct atomic pattern.
+
+### Deferred
+
+- **`ContentEngine::ContentCache` model is unused.** The table exists in `db/schema.rb` and has model tests, but nothing references it outside its own test file — the actual AI response caching is done via `AiOrchestrator::CacheService` (Solid Cache / Rails.cache). Candidate for removal in a future cleanup (needs a migration).
+- **`Orchestrate.run_agent` bypasses cache.** The agent path doesn't call `CacheService.fetch`. But grep shows no caller ever invokes `run_agent` — it's defined but not wired up. If enabled later, it needs cache integration.
+- **Prompt prefix caching.** OpenAI auto-caches matching prompt prefixes ≥1024 tokens. The current `lesson_content.yml` interpolates variables (`{{user_name}}`, `{{user_level}}`, `{{difficulty}}`, `{{locale}}`) near the top of the system prompt, which breaks prefix matching across calls. Restructuring to put variables at the end would raise cache-hit rate. Not done now because it's a prompt-quality-risky change — needs a separate eval.
+- **`DailyStreakCheckJob`** is documented to run via Solid Queue recurring at 6 am UTC, but `config/recurring.yml` only defines `clear_solid_queue_finished_jobs`. Either the job isn't scheduled, or it's scheduled elsewhere and the doc is stale. Worth verifying.
+
 ## Optimization Opportunities for Future
 
 1. **HTTP/2 Server Push**: Uncomment in production for critical assets
