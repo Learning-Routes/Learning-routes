@@ -38,15 +38,15 @@ module ContentEngine
     end
 
     def mark_audio_generating!
-      update!(audio_status: "generating")
+      update!(audio_status: "generating", audio_error_message: nil)
     end
 
     def mark_audio_ready!(url, duration = nil)
-      update!(audio_status: "ready", audio_url: url, audio_duration: duration)
+      update!(audio_status: "ready", audio_url: url, audio_duration: duration, audio_error_message: nil)
     end
 
-    def mark_audio_failed!
-      update!(audio_status: "failed")
+    def mark_audio_failed!(reason = nil)
+      update!(audio_status: "failed", audio_error_message: reason&.to_s&.truncate(500))
     end
   end
 end

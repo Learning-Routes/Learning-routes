@@ -10,6 +10,7 @@ module LearningRoutesEngine
     def show
       mark_in_progress_if_available!
       load_step_content
+      prefetch_upcoming_steps!
       @study_session = find_or_start_study_session
       @notes = ContentEngine::UserNote.for_user(current_user).for_step(@step).ordered
       @progress = RouteProgressTracker.new(@route).progress_summary
@@ -98,6 +99,42 @@ module LearningRoutesEngine
 
     def mark_in_progress_if_available!
       @step.update!(status: :in_progress) if @step.available?
+    end
+
+    # Keep a 2-step-ahead buffer warm so the student never waits on the next
+    # lesson. The naive read-check-write version had two problems:
+    #  1. RACE — two concurrent show requests both see content_generating=false,
+    #     both update, both enqueue → duplicate ContentPipelineJobs and AI cost.
+    #  2. WASTE — `update!(metadata: merge(...))` rewrites the whole jsonb blob
+    #     (which can hold parsed_sections of 100-300KB) just to flip a flag.
+    # The fix: a single atomic SQL UPDATE with a WHERE clause that excludes
+    # already-flagged rows, mutating only the one key via jsonb_set, and using
+    # RETURNING to learn which rows we actually flipped. We enqueue jobs only
+    # for those, so a concurrent request that lost the race enqueues nothing.
+    def prefetch_upcoming_steps!
+      candidate_ids = @route.route_steps
+        .where("position > ?", @step.position)
+        .order(:position)
+        .limit(2)
+        .pluck(:id)
+      return if candidate_ids.empty?
+
+      sql = ActiveRecord::Base.send(:sanitize_sql_array, [
+        <<~SQL.squish, candidate_ids
+          UPDATE learning_routes_engine_route_steps
+          SET metadata = jsonb_set(COALESCE(metadata, '{}'::jsonb), '{content_generating}', 'true'::jsonb),
+              updated_at = NOW()
+          WHERE id IN (?)
+            AND (metadata->>'content_ready')      IS DISTINCT FROM 'true'
+            AND (metadata->>'content_generating') IS DISTINCT FROM 'true'
+          RETURNING id
+        SQL
+      ])
+      flipped_ids = ActiveRecord::Base.connection.execute(sql).map { |row| row["id"] }
+
+      flipped_ids.each do |step_id|
+        ContentPipelineJob.perform_later(step_id, { pregenerate_audio: true })
+      end
     end
 
     def load_step_content

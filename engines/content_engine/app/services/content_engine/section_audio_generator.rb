@@ -4,15 +4,10 @@ module ContentEngine
   class SectionAudioGenerator
     CACHE_TTL = 30.days
 
-    # Voice IDs for ElevenLabs — overridable via credentials (elevenlabs.voices.{locale})
-    VOICE_MAP = {
-      "es" => "XrExE9yKIg1WjnnlVkGX", # Matilda — warm, young, Spanish
-      "pt" => "ErXwobaYiN019PkySvjV", # Antoni — multilingual, Portuguese
-      "fr" => "XB0fDUnXU5powFXDhCwa", # Charlotte — multilingual, French
-      "en" => "21m00Tcm4TlvDq8ikWAM"  # Rachel — calm, young, English
-    }.freeze
-
-    DEFAULT_VOICE = "21m00Tcm4TlvDq8ikWAM"
+    # Voice IDs live in ContentEngine::VoiceCatalog now — kept as thin aliases for
+    # any external callers that referenced the old constants (AudioGenerator used to).
+    VOICE_MAP = VoiceCatalog::VOICE_MAP
+    DEFAULT_VOICE = VoiceCatalog::DEFAULT_VOICE
 
     def self.generate!(step_id, section_index, section_text, locale: "en", target_locale: nil)
       new(step_id, section_index, section_text, locale: locale, target_locale: target_locale).generate!
@@ -154,7 +149,19 @@ module ContentEngine
     end
 
     def synthesize_audio(text)
-      voice_id = select_voice
+      primary_voice = select_voice
+      synthesize_with_voice(text, primary_voice)
+    rescue AiOrchestrator::AiClient::RequestError => e
+      default = VoiceCatalog.default_voice
+      if VoiceCatalog.fallback_needed?(primary_voice)
+        Rails.logger.warn("[SectionAudioGenerator] Primary voice #{primary_voice} failed (#{e.message.truncate(120)}) — retrying with default voice #{default}")
+        synthesize_with_voice(text, default)
+      else
+        raise
+      end
+    end
+
+    def synthesize_with_voice(text, voice_id)
       step = LearningRoutesEngine::RouteStep.find(@step_id)
       user = step.learning_route.learning_profile&.user
 
@@ -164,9 +171,8 @@ module ContentEngine
         user: user
       )
 
-      # Always use multilingual_v2 — handles single-language fine and
-      # is required for bilingual language-learning routes (Strategy A).
-      # The narration text already mixes both languages from the bilingual prompt.
+      # multilingual_v2 handles single-language fine and is required for bilingual
+      # language-learning routes. The narration text may already mix both languages.
       result = client.chat(
         prompt: text,
         params: {
@@ -175,19 +181,12 @@ module ContentEngine
         }
       )
 
-      # Track cost
       track_audio_cost!(user, text.length, result[:latency_ms])
-
       store_audio_file(result[:content])
     end
 
     def select_voice
-      lang = effective_voice_locale
-      # Priority: credentials → VOICE_MAP → default
-      Rails.application.credentials.dig(:elevenlabs, :voices, lang.to_sym) ||
-        VOICE_MAP[lang] ||
-        Rails.application.credentials.dig(:elevenlabs, :default_voice_id) ||
-        DEFAULT_VOICE
+      VoiceCatalog.voice_for(effective_voice_locale)
     end
 
     # For bilingual routes, pick a voice matching the target language
@@ -236,15 +235,23 @@ module ContentEngine
 
     def update_step_audio_status!(status, url = nil, duration = nil)
       step = LearningRoutesEngine::RouteStep.find(@step_id)
-      metadata = step.metadata || {}
-      audio_sections = metadata["audio_sections"] || {}
 
-      entry = { "status" => status }
-      entry["url"] = url if url
-      entry["duration"] = duration if duration
-      audio_sections[@section_index.to_s] = entry
+      # Multiple section audio jobs run concurrently for the same step. Without
+      # a lock, the read-modify-write to metadata.audio_sections drops entries
+      # whenever two finish simultaneously (last-write-wins). with_lock takes
+      # `SELECT ... FOR UPDATE`, serialising the merge per step. Contention is
+      # tiny — only 1-2 section jobs touch a given step at once.
+      step.with_lock do
+        metadata = step.metadata || {}
+        audio_sections = metadata["audio_sections"] || {}
 
-      step.update!(metadata: metadata.merge("audio_sections" => audio_sections))
+        entry = { "status" => status }
+        entry["url"] = url if url
+        entry["duration"] = duration if duration
+        audio_sections[@section_index.to_s] = entry
+
+        step.update!(metadata: metadata.merge("audio_sections" => audio_sections))
+      end
     rescue => e
       Rails.logger.warn("[SectionAudioGenerator] Status update failed: #{e.message}")
     end

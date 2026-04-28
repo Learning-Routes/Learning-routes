@@ -140,6 +140,40 @@
   <% end %>
 </div>
 
+<%# === Due for Review (FSRS spaced repetition) — only shown when there's something to review === %>
+<% if @due_reviews_count.to_i > 0 %>
+  <%= link_to learning_routes_engine.reviews_path, style: "display:block; text-decoration:none; margin-bottom:1rem;" do %>
+    <div style="background:linear-gradient(135deg, rgba(176,152,72,0.10) 0%, rgba(176,152,72,0.04) 100%); border:1px solid rgba(176,152,72,0.24); border-radius:14px; padding:1.1rem 1.2rem; display:flex; align-items:center; gap:1rem; transition:transform 0.15s, border-color 0.15s;"
+         data-controller="hover"
+         data-hover-translate-value="-2"
+         data-hover-border-color-value="rgba(176,152,72,0.45)">
+      <div style="width:42px; height:42px; border-radius:12px; background:rgba(176,152,72,0.15); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#B09848" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M3 12a9 9 0 1 0 9-9"/>
+          <path d="M3 5v4h4"/>
+          <path d="M12 7v5l3 2"/>
+        </svg>
+      </div>
+      <div style="flex:1; min-width:0;">
+        <p style="font-family:'DM Sans',sans-serif; font-size:0.92rem; font-weight:600; color:var(--color-txt); margin:0 0 0.15rem;">
+          <%= t("profile.reviews.title", count: @due_reviews_count) %>
+        </p>
+        <p style="font-family:'DM Sans',sans-serif; font-size:0.78rem; color:var(--color-muted); margin:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+          <% preview_titles = Array(@due_reviews_preview).map { |s| s.localized_title(I18n.locale.to_s) }.compact %>
+          <% if preview_titles.any? %>
+            <%= preview_titles.join(" · ") %>
+          <% else %>
+            <%= t("profile.reviews.subtitle") %>
+          <% end %>
+        </p>
+      </div>
+      <span style="font-family:'DM Mono',monospace; font-size:0.68rem; letter-spacing:1.2px; text-transform:uppercase; color:#B09848; font-weight:500; flex-shrink:0;">
+        <%= t("profile.reviews.cta") %> →
+      </span>
+    </div>
+  <% end %>
+<% end %>
+
 <%# === Tabs === %>
 <div data-controller="profile-tabs">
 

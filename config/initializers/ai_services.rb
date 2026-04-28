@@ -25,6 +25,7 @@ end
 Rails.application.config.ai_model_defaults = {
   assessment_questions: { temperature: 0.7, max_tokens: 4096 },
   route_generation:     { temperature: 0.8, max_tokens: 8192 },
+  curriculum_design:    { temperature: 0.5, max_tokens: 6144 },
   lesson_content:       { temperature: 0.7, max_tokens: 8192 },
   code_generation:      { temperature: 0.3, max_tokens: 4096 },
   exam_questions:       { temperature: 0.6, max_tokens: 4096 },
@@ -40,8 +41,11 @@ Rails.application.config.ai_model_defaults = {
   exercise_hint:             { temperature: 0.5, max_tokens: 1024 }
 }.freeze
 
-# Maximum AI-generated images per lesson (configurable)
-Rails.application.config.max_images_per_lesson = 4
+# Maximum AI-generated images per lesson (configurable).
+# ImageGenerationService uses medium quality for the first image of a lesson
+# and low quality for the rest, so cost stays reasonable at higher caps
+# (8 images ≈ 1×$0.07 + 7×$0.02 = ~$0.21 per lesson).
+Rails.application.config.max_images_per_lesson = 8
 
 # Cost alert thresholds (in cents)
 Rails.application.config.ai_cost_alerts = {

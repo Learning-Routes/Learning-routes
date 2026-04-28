@@ -63,8 +63,30 @@ aliases:
   shell: app exec --interactive --reuse "bash"
   logs: app logs -f
   dbc: app exec --interactive --reuse "bin/rails dbconsole --include-password"
+  pg-shell: accessory exec postgres --interactive --reuse "psql -U learning_routes learning_routes_production"
 
 asset_path: /rails/public/assets
 
 builder:
   arch: amd64
+
+# Self-hosted Postgres on the same Hetzner box as the app.
+# Replaces Neon. App reaches it over Kamal's internal Docker network at
+# hostname `learning_routes-postgres` (set automatically: service-accessory).
+# Port is bound to 127.0.0.1 only — not reachable from the public internet.
+# Data persists in a Docker volume named `learning_routes-postgres-data`.
+accessories:
+  postgres:
+    image: postgres:16
+    host: 178.156.240.166
+    port: "127.0.0.1:5432:5432"
+    env:
+      clear:
+        POSTGRES_USER: learning_routes
+        POSTGRES_DB: learning_routes_production
+      secret:
+        - POSTGRES_PASSWORD
+    files:
+      - config/postgres-init.sql:/docker-entrypoint-initdb.d/01-init.sql
+    directories:
+      - data:/var/lib/postgresql/data

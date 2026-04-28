@@ -4,7 +4,10 @@ class WizardRouteGenerationJob < ApplicationJob
   retry_on ActiveRecord::Deadlocked, wait: 5.seconds, attempts: 3
 
   def perform(route_request_id)
-    request = RouteRequest.find(route_request_id)
+    # Eager-load :user (strict_loading_by_default is on in production and test;
+    # the job calls request.user multiple times — locale, profile creation,
+    # CurriculumBrain — without this every access raises StrictLoadingViolationError).
+    request = RouteRequest.includes(:user).find(route_request_id)
 
     # If request is already completed AND its route still exists, skip
     if request.completed?
@@ -29,7 +32,20 @@ class WizardRouteGenerationJob < ApplicationJob
         target_locale = detected_target
       end
 
-      route_data = generate_fallback_route(request, user_locale)
+      # Try the AI-powered curriculum architect first; fall back to the
+      # deterministic template path if anything goes wrong (parse error,
+      # validation failure, API outage, rate limit). The template path is
+      # always safe and keeps the route-create flow up even when the LLM
+      # is misbehaving.
+      brain_data = AiOrchestrator::CurriculumBrain.design(
+        route_request: request,
+        user: request.user,
+        content_locale: user_locale,
+        target_locale: target_locale
+      )
+      route_data = brain_data || generate_fallback_route(request, user_locale)
+      curriculum_source = brain_data ? "brain" : "template"
+      Rails.logger.info("[WizardRouteGeneration] Curriculum source=#{curriculum_source} for request #{request.id} (#{route_data[:steps].size} steps)")
 
       # Find or create the user's learning profile
       profile = LearningRoutesEngine::LearningProfile.find_or_create_by!(user: request.user) do |p|
@@ -80,22 +96,38 @@ class WizardRouteGenerationJob < ApplicationJob
           }
         )
 
-        # Assign delivery formats based on learning style scores
-        delivery_formats = assign_delivery_formats(route_data[:steps].length, content_mix)
+        # Delivery format per step comes from the Brain when available;
+        # we compute a VARK-based fallback distribution for template routes.
+        template_delivery_formats = assign_delivery_formats(route_data[:steps].length, content_mix)
 
-        route_data[:steps].each_with_index do |step_data, index|
+        created_steps = route_data[:steps].each_with_index.map do |step_data, index|
           route.route_steps.create!(
             position: index,
             title: step_data[:label],
-            description: step_data[:topics].join(", "),
-            translations: step_data[:translations],
+            description: step_data[:description].presence || Array(step_data[:topics]).join(", "),
+            translations: step_data[:translations] || {},
             level: step_data[:level_enum] || :nv1,
-            content_type: :lesson,
+            bloom_level: step_data[:bloom_level],
+            content_type: (step_data[:content_type].presence || "lesson").to_sym,
             status: index == 0 ? :available : :locked,
             estimated_minutes: step_data[:estimated_minutes] || 30,
-            delivery_format: delivery_formats[index] || "mixed",
-            metadata: { satellite_topics: step_data[:topics] }
+            delivery_format: step_data[:delivery_format].presence || template_delivery_formats[index] || "mixed",
+            metadata: {
+              "satellite_topics" => Array(step_data[:topics]),
+              "exercise_types" => Array(step_data[:exercise_types]),
+              "curriculum_source" => curriculum_source
+            }
           )
+        end
+
+        # Second pass: translate position-based prereq indices from the Brain
+        # into the actual RouteStep IDs now that all rows exist.
+        created_steps.each_with_index do |step, index|
+          prereq_indices = Array(route_data[:steps][index][:prerequisites])
+          next if prereq_indices.empty?
+
+          prereq_ids = prereq_indices.filter_map { |i| created_steps[i]&.id }
+          step.update!(prerequisites: prereq_ids) if prereq_ids.any?
         end
 
         request.update!(status: "completed", learning_route: route)
@@ -142,19 +174,17 @@ class WizardRouteGenerationJob < ApplicationJob
       .order(:position)
       .limit(3)
 
-    priority_steps.each_with_index do |step, index|
+    priority_steps.each do |step|
       # Mark as content_generating so the UI can show skeleton
       step.update!(metadata: (step.metadata || {}).merge("content_generating" => true))
 
-      # All steps async — first step with no delay (highest priority),
-      # steps 2-3 with stagger. We don't block the wizard job with perform_now
-      # because the user should see the route dashboard immediately.
-      delay = index * 5.seconds
-      if delay.zero?
-        LearningRoutesEngine::ContentPipelineJob.perform_later(step.id, { pregenerate_audio: true })
-      else
-        LearningRoutesEngine::ContentPipelineJob.set(wait: delay).perform_later(step.id, { pregenerate_audio: true })
-      end
+      # Fire all three jobs in parallel — the previous 5s stagger was a
+      # conservative throttle. With gpt-5.2's 60rpm limit and SolidQueue's
+      # worker pool, 3 concurrent calls is well under any ceiling and cuts
+      # cold-start time for the user from ~10s to whatever the slowest call
+      # takes (~3-5s). We don't block the wizard job with perform_now because
+      # the user should see the route dashboard immediately.
+      LearningRoutesEngine::ContentPipelineJob.perform_later(step.id, { pregenerate_audio: true })
     end
 
     # Background generation for remaining steps (4+)

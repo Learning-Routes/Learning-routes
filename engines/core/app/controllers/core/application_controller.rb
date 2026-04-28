@@ -87,6 +87,20 @@ module Core
           sess.touch_last_active! if sess.last_active_at.nil? || sess.last_active_at < 1.hour.ago
           return sess
         end
+
+        # Session cookie pointed at a record that's missing or stale. Log a category
+        # so "logged out unexpectedly" reports can be triaged, but DO NOT log user/
+        # session IDs — those are PII when correlated with the IPs already captured
+        # on Core::Session rows. Use debug-level for any per-request identifiers.
+        reason = if sess.nil?
+          "session_not_found"
+        elsif sess.expired?
+          "session_expired"
+        else
+          "unknown"
+        end
+        Rails.logger.info("[Auth] Dropping session cookie (#{reason}) — will try remember_token fallback if present")
+        Rails.logger.debug { "[Auth] Dropped session_id=#{session[:core_session_id]}" }
         session.delete(:core_session_id)
       end
 
@@ -94,11 +108,22 @@ module Core
     end
 
     def recover_session_from_remember_token
-      token = cookies.signed[:remember_token]
-      return unless token
+      payload = cookies.signed[:remember_token]
+      return unless payload
 
-      user = Core::User.find_by(remember_token: token)
+      # Cookie payload is `[user_id, raw_token]`. Older deploys stored just the raw
+      # token (a string); treat that as invalid and clear it — the user will simply
+      # re-authenticate on next visit.
+      unless payload.is_a?(Array) && payload.size == 2
+        Rails.logger.info("[Auth] remember_token cookie has legacy format — clearing")
+        cookies.delete(:remember_token)
+        return
+      end
+
+      user_id, raw_token = payload
+      user = Core::User.find_by_remember_credential(user_id: user_id, raw_token: raw_token)
       unless user
+        Rails.logger.info("[Auth] remember_token did not match any user — deleting cookie")
         cookies.delete(:remember_token)
         return
       end
@@ -109,6 +134,8 @@ module Core
         last_active_at: Time.current
       )
       session[:core_session_id] = sess.id
+      Rails.logger.info("[Auth] Recovered session via remember_token")
+      Rails.logger.debug { "[Auth] Recovered session for user=#{user.id} (new session=#{sess.id})" }
       sess
     end
 
@@ -135,6 +162,12 @@ module Core
     end
 
     def start_session_for(user, remember: false)
+      # Rotate the underlying Rails session ID on privilege change to defend
+      # against session fixation (an attacker who set the pre-login session
+      # cookie can no longer use it). reset_session wipes everything in the
+      # session hash, so we must re-create our own keys after.
+      reset_session
+
       sess = user.sessions.create!(
         ip_address: request.remote_ip,
         user_agent: request.user_agent,
@@ -146,23 +179,36 @@ module Core
       remove_instance_variable(:@current_session) if defined?(@current_session)
 
       if remember
-        token = user.remember!
+        raw_token = user.remember!
         cookies.signed.permanent[:remember_token] = {
-          value: token,
+          # Pair the raw token with the user_id so DB lookup is by id, not
+          # by token-as-key — no replay across users, even if (somehow) a
+          # collision occurred. The cookie is signed so the user_id is
+          # authenticated; the digest comparison validates the token.
+          value: [user.id, raw_token],
           httponly: true,
-          secure: Rails.env.production?,
+          # Cover production AND any environment where the request is HTTPS
+          # (staging, preview deploys) — Rails.env.production? alone misses
+          # those. http://localhost dev still gets a non-secure cookie.
+          secure: request.ssl? || Rails.env.production?,
           same_site: :lax
         }
       end
     end
 
     def end_session
-      current_user&.forget! if cookies.signed[:remember_token].present?
+      had_remember = cookies.signed[:remember_token].present?
+
+      current_user&.forget! if had_remember
       current_session&.destroy
       session.delete(:core_session_id)
       cookies.delete(:remember_token)
       @current_user = nil
       @current_session = nil
+
+      # Don't log user/session IDs at info — combined with IPs on Core::Session
+      # rows that's PII. Categorical info is enough for triage.
+      Rails.logger.info("[Auth] Sign-out — had_remember=#{had_remember}")
     end
 
     def google_oauth_enabled?

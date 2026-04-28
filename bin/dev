@@ -13,4 +13,7 @@ export PORT="${PORT:-3000}"
 export RUBY_DEBUG_OPEN="true"
 export RUBY_DEBUG_LAZY="true"
 
-exec foreman start -f Procfile.dev "$@"
+ENV_FILES=".env"
+[ -f .env.development.local ] && ENV_FILES="$ENV_FILES,.env.development.local"
+
+exec foreman start -f Procfile.dev -e "$ENV_FILES" "$@"

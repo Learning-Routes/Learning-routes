@@ -3,6 +3,10 @@ class LandingController < ApplicationController
   skip_before_action :authenticate_user!, raise: false
 
   def index
+    # Set HTTP cache headers for the landing page
+    # Use fresh_when to leverage ETags and avoid rendering if client has cache
+    fresh_when(etag: landing_cache_key, public: true) if stale_check_enabled?
+
     if current_user
       load_personalized_route_data
     else
@@ -126,5 +130,18 @@ class LandingController < ApplicationController
       [{ a: -48, d: 1.1, r: 42, topic: "", desc: "" }, { a: 0, d: 1.28, r: 40, topic: "", desc: "" }, { a: 48, d: 1.1, r: 42, topic: "", desc: "" }],
     ]
     patterns[index % patterns.size]
+  end
+
+  # === PERFORMANCE HELPERS ===
+  # Generate a cache key for the landing page
+  def landing_cache_key
+    # Cache key varies by user presence and locale
+    [I18n.locale, current_user&.id, @route_nodes&.first&.fetch(:id)].compact.join("-")
+  end
+
+  # Determine if HTTP caching checks should be performed
+  def stale_check_enabled?
+    # Only enable for non-authenticated or when there's no personalized data
+    !current_user || @route_nodes == default_translated_nodes
   end
 end
