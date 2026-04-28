@@ -69,6 +69,23 @@ class ProfilesController < ApplicationController
     @followers_count = @user.followers_count
     @following_count = @user.following_count
 
+    # Spaced-repetition: count steps whose FSRS next_review_at has passed.
+    # Limit to 3 previews for the widget; the full list lives at /learning/reviews.
+    # Always assign @due_reviews_preview so views never have to guard `defined?`.
+    @due_reviews_count = 0
+    @due_reviews_preview = []
+
+    route_ids_for_review = @routes.map(&:id)
+    if route_ids_for_review.any?
+      due_scope = LearningRoutesEngine::RouteStep
+        .where(learning_route_id: route_ids_for_review)
+        .due_for_review
+      @due_reviews_count = due_scope.count
+      if @due_reviews_count.positive?
+        @due_reviews_preview = due_scope.order(:fsrs_next_review_at).limit(3).includes(:learning_route).to_a
+      end
+    end
+
     # Shared routes for the "Share My Routes" feature
     @shared_routes = current_user.shared_routes.includes(:learning_route).order(created_at: :desc)
     @shareable_routes = @routes.reject { |r| @shared_routes.any? { |sr| sr.learning_route_id == r.id } }

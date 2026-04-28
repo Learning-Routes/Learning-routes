@@ -15,12 +15,20 @@ module ContentEngine
       content = find_or_create_content!
       return content if content.audio_ready?
 
+      # Job-level retry_on RequestError + service-level voice fallback can stack
+      # in pathological cases. If a previous attempt already wrote an audio file
+      # and stored the URL, short-circuit before paying ElevenLabs again.
+      return content if content.audio_url.present? && audio_file_exists?(content.audio_url)
+
       content.mark_audio_generating!
 
       narration = generate_narration_script
-      audio_path = synthesize_audio(narration["narration_script"])
-      content.mark_audio_ready!(audio_path, narration["estimated_duration_seconds"])
+      audio_path = synthesize_audio_with_fallback(narration["narration_script"])
 
+      # Persist transcript + metadata BEFORE flipping status to ready. Otherwise
+      # a transient error after mark_audio_ready! would flip status to failed
+      # while the audio file is already on disk — next retry re-pays for audio
+      # we already have.
       content.update!(
         audio_transcript: narration["narration_script"],
         metadata: (content.metadata || {}).merge(
@@ -32,22 +40,34 @@ module ContentEngine
           }
         )
       )
+      content.mark_audio_ready!(audio_path, narration["estimated_duration_seconds"])
 
       content
     rescue => e
-      content&.mark_audio_failed!
+      # Persist the reason so operators can diagnose failures without digging through logs.
+      content&.mark_audio_failed!(e.message)
       raise e
     end
 
     private
 
     def find_or_create_content!
-      @step.ai_contents.first || ContentEngine::AiContent.create!(
+      # Scope to the text content type — a step can have multiple AiContent rows
+      # (text + exercise variants) and `.first` was returning whichever the DB
+      # ordered first, which isn't deterministic.
+      @step.ai_contents.by_type(:text).first || ContentEngine::AiContent.create!(
         route_step_id: @step.id,
         content_type: "text",
         body: @step.description.presence || @step.title,
         audio_status: "pending"
       )
+    end
+
+    def audio_file_exists?(audio_url)
+      # audio_url is a public-relative path like "/storage/audio/foo.mp3" — map
+      # it back to disk to confirm it actually exists before short-circuiting.
+      return false if audio_url.blank?
+      Rails.root.join(audio_url.to_s.delete_prefix("/")).file?
     end
 
     def generate_narration_script
@@ -73,10 +93,26 @@ module ContentEngine
       parse_json_response(interaction.response)
     end
 
-    def synthesize_audio(script_text)
-      voice_id = select_voice
+    # Try the locale-matched voice first; if ElevenLabs rejects it (misconfigured,
+    # deprecated, or temporarily unavailable), retry once with the default voice
+    # before giving up. ActiveJob's retry_on handles transient network issues at
+    # a different layer — this is specifically for voice-specific failures.
+    def synthesize_audio_with_fallback(script_text)
+      primary_voice = select_voice
+      synthesize_audio(script_text, primary_voice)
+    rescue AiOrchestrator::AiClient::RequestError => e
+      default = VoiceCatalog.default_voice
+      if VoiceCatalog.fallback_needed?(primary_voice)
+        Rails.logger.warn("[AudioGenerator] Primary voice #{primary_voice} failed (#{e.message.truncate(120)}) — retrying with default voice #{default}")
+        synthesize_audio(script_text, default)
+      else
+        raise
+      end
+    end
+
+    def synthesize_audio(script_text, voice_id)
       # Always use multilingual model — it handles single-language fine too,
-      # and is required for bilingual language-learning routes
+      # and is required for bilingual language-learning routes.
       model_id = "eleven_multilingual_v2"
 
       client = AiOrchestrator::AiClient.new(
@@ -94,17 +130,13 @@ module ContentEngine
     end
 
     def select_voice
-      # For bilingual routes, pick voice matching target language
+      # Bilingual routes narrate in the target language (Portuguese class → Portuguese voice)
       lang = if bilingual_route?
-               @route.target_locale.to_s.split("-").first
+               @route.target_locale
              else
-               (@route.locale || "en").split("-").first
+               @route.locale || "en"
              end
-
-      Rails.application.credentials.dig(:elevenlabs, :voices, lang.to_sym) ||
-        SectionAudioGenerator::VOICE_MAP[lang] ||
-        Rails.application.credentials.dig(:elevenlabs, :default_voice_id) ||
-        SectionAudioGenerator::DEFAULT_VOICE
+      VoiceCatalog.voice_for(lang)
     end
 
     def bilingual_route?

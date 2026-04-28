@@ -81,6 +81,13 @@ module LearningRoutesEngine
       content_locale = @route.locale || @user&.locale || "en"
       target_locale = @route.target_locale
 
+      # CurriculumBrain stores per-step hints in step.metadata.exercise_types.
+      # Pass them through so the content prompt can honor them (falls back to
+      # the subject-family pool when empty).
+      recommended_types = Array(@step.metadata&.dig("exercise_types")).join(", ").presence || "(none — use subject family pool)"
+
+      # PromptBuilder auto-computes {{language_directive}} and {{bilingual_instructions}}
+      # from locale + target_locale — no need to hand-roll a bilingual block here.
       interaction = AiOrchestrator::Orchestrate.call(
         task_type: :lesson_content,
         variables: {
@@ -91,10 +98,8 @@ module LearningRoutesEngine
           bloom_level: @step.bloom_level.to_s,
           route_topic: @route.localized_topic,
           locale: content_locale,
-          content_locale: content_locale,
           target_locale: target_locale.to_s,
-          is_language_route: target_locale.present?.to_s,
-          bilingual_instructions: bilingual_prompt_section(content_locale, target_locale)
+          recommended_exercise_types: recommended_types
         },
         user: @user,
         async: false
@@ -167,25 +172,6 @@ module LearningRoutesEngine
       # the polling mechanism is reliable and avoids the complexity of
       # rendering partials with instance variables from a job context.
       Rails.logger.info("[ContentPipelineJob] Content ready for step #{@step.id} — poll will pick it up")
-    end
-
-    def bilingual_prompt_section(content_locale, target_locale)
-      return "" if target_locale.blank?
-
-      <<~INSTRUCTIONS
-        LANGUAGE LEARNING MODE: The student speaks #{content_locale} and is learning #{target_locale}.
-
-        Rules for bilingual content:
-        - Write explanations, instructions, and grammar rules in #{content_locale}
-        - Write vocabulary, example sentences, dialogues, and exercises in #{target_locale}
-        - Include pronunciation guides in parentheses for #{target_locale} words
-        - Include translations in #{content_locale} after #{target_locale} examples
-        - Knowledge checks should test #{target_locale} comprehension (translate this, choose the correct #{target_locale} word, etc.)
-        - Audio sections should specify which language each part should be narrated in
-        - Visual sections should show objects/scenes with labels in #{target_locale}
-        - Use ## Ejemplo: sections for vocabulary lists, dialogues, and sentence practice in #{target_locale}
-        - The lesson should feel like a language class, not a textbook
-      INSTRUCTIONS
     end
 
     def extract_markdown(raw)

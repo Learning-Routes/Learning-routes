@@ -92,6 +92,15 @@
               data: { auth_form_target: "input", action: "focus->auth-form#inputFocus blur->auth-form#inputBlur" } %>
         </div>
 
+        <%# Remember me %>
+        <label style="display:flex; align-items:center; gap:0.55rem; cursor:pointer; font-family:'DM Sans',sans-serif; font-size:0.82rem; color:var(--color-sub, #6D665B); user-select:none;">
+          <%= f.check_box :remember_me,
+              { checked: false,
+                style: "width:1rem; height:1rem; cursor:pointer; accent-color:var(--color-accent, #2C261E);" },
+              "1", "0" %>
+          <%= t("auth.login.remember_me") %>
+        </label>
+
         <%# Submit %>
         <div style="margin-top:0.3rem;">
           <%= f.submit t("auth.login.submit"),

@@ -169,6 +169,7 @@ es:
       password_label: "Contraseña"
       password_placeholder: "Tu contraseña"
       forgot: "¿Olvidaste tu contraseña?"
+      remember_me: "Mantenerme conectado"
       submit: "Iniciar sesión"
       switch_text: "¿No tienes cuenta?"
       switch_link: "Crea una"
@@ -382,6 +383,12 @@ es:
       lessons: "Lecciones"
       time: "Tiempo"
       accuracy: "Precisión"
+    reviews:
+      title:
+        one: "1 repaso pendiente hoy"
+        other: "%{count} repasos pendientes hoy"
+      subtitle: "Refuerza lo que ya aprendiste"
+      cta: "Empezar"
     tabs:
       my_routes: "Mis Rutas"
       achievements: "Logros"

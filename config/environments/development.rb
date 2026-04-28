@@ -56,6 +56,13 @@ Rails.application.configure do
   # Set localhost to be used by links generated in mailer templates.
   config.action_mailer.default_url_options = { host: "localhost", port: 3000 }
 
+  # Engine URL helpers (e.g. `core.verify_email_url`) ignore action_mailer defaults,
+  # so set a host on the app's routes too.
+  Rails.application.routes.default_url_options = { host: "localhost", port: 3000 }
+  config.after_initialize do
+    Core::Engine.routes.default_url_options = { host: "localhost", port: 3000 } if defined?(Core::Engine)
+  end
+
   # Print deprecation notices to the Rails logger.
   config.active_support.deprecation = :log
 
@@ -96,8 +103,10 @@ Rails.application.configure do
   # Use native EventedFileUpdateChecker for fast file watching (requires listen gem)
   config.file_watcher = ActiveSupport::EventedFileUpdateChecker if Gem.loaded_specs.key?("listen")
 
-  # Enable strict loading in development to catch N+1 queries early
-  config.active_record.strict_loading_by_default = true
+  # strict_loading_by_default stays on in production (via application.rb) as an N+1 guard,
+  # but is off in dev — too many call sites rely on lazy loading of current_user associations.
+  # Prosopite (below) already logs N+1s in dev without crashing requests.
+  config.active_record.strict_loading_by_default = false
 
   # Enable fragment cache logging to diagnose cache hits/misses
   config.action_controller.enable_fragment_cache_logging = true

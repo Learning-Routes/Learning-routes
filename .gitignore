@@ -10,6 +10,9 @@
 # Ignore all environment files.
 /.env*
 
+# Local AI/agent scratch artifacts (Claude superpowers plan files, etc.)
+/docs/superpowers/
+
 # Ignore all logfiles and tempfiles.
 /log/*
 /tmp/*

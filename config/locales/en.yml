@@ -169,6 +169,7 @@ en:
       password_label: "Password"
       password_placeholder: "Your password"
       forgot: "Forgot your password?"
+      remember_me: "Keep me signed in"
       submit: "Sign in"
       switch_text: "Don't have an account?"
       switch_link: "Create one"
@@ -382,6 +383,12 @@ en:
       lessons: "Lessons"
       time: "Time"
       accuracy: "Accuracy"
+    reviews:
+      title:
+        one: "1 review due today"
+        other: "%{count} reviews due today"
+      subtitle: "Strengthen what you've learned"
+      cta: "Start"
     tabs:
       my_routes: "My Routes"
       achievements: "Achievements"

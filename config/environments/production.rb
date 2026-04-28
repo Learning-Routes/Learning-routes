@@ -15,8 +15,18 @@ Rails.application.configure do
   # Turn on fragment caching in view templates.
   config.action_controller.perform_caching = true
 
+  # Log fragment cache hits/misses for performance analysis
+  config.action_controller.enable_fragment_cache_logging = true
+
   # Cache assets for far-future expiry since they are all digest stamped.
-  config.public_file_server.headers = { "cache-control" => "public, max-age=#{1.year.to_i}" }
+  # Include ETag and additional cache headers for optimal HTTP caching
+  config.public_file_server.headers = {
+    "cache-control" => "public, max-age=#{1.year.to_i}, immutable",
+    "etag" => false  # Propshaft handles ETags; disable duplicate headers
+  }
+
+  # Disable asset compilation in production (use Propshaft pre-compiled assets)
+  config.assets.compile = false
 
   # Enable serving of images, stylesheets, and JavaScripts from an asset server.
   # config.asset_host = "http://assets.example.com"

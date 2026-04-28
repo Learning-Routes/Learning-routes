@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_03_13_162257) do
+ActiveRecord::Schema[8.1].define(version: 2026_04_28_000001) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -327,6 +327,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_13_162257) do
   create_table "content_engine_ai_contents", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.string "ai_model"
     t.float "audio_duration"
+    t.text "audio_error_message"
     t.string "audio_status", default: "pending", null: false
     t.text "audio_transcript"
     t.string "audio_url"
@@ -392,13 +393,16 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_13_162257) do
     t.string "name", null: false
     t.boolean "onboarding_completed", default: false, null: false
     t.string "password_digest", null: false
+    t.string "provider"
     t.string "remember_token"
     t.integer "role", default: 0, null: false
     t.string "theme", default: "system", null: false
     t.string "timezone", default: "UTC", null: false
+    t.string "uid"
     t.datetime "updated_at", null: false
     t.index ["email"], name: "index_core_users_on_email", unique: true
     t.index ["onboarding_completed"], name: "index_core_users_on_onboarding_completed"
+    t.index ["provider", "uid"], name: "index_core_users_on_provider_and_uid", unique: true, where: "(provider IS NOT NULL)"
     t.index ["remember_token"], name: "index_core_users_on_remember_token", unique: true
     t.index ["role"], name: "index_core_users_on_role"
   end
@@ -515,6 +519,18 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_13_162257) do
     t.index ["learning_route_id"], name: "index_learning_routes_engine_route_steps_on_learning_route_id"
     t.index ["level"], name: "index_learning_routes_engine_route_steps_on_level"
     t.index ["status"], name: "index_learning_routes_engine_route_steps_on_status"
+  end
+
+  create_table "learning_routes_engine_tutor_messages", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.text "content", null: false
+    t.datetime "created_at", null: false
+    t.jsonb "metadata", default: {}
+    t.string "role", default: "user", null: false
+    t.uuid "step_id", null: false
+    t.datetime "updated_at", null: false
+    t.uuid "user_id", null: false
+    t.index ["created_at"], name: "index_learning_routes_engine_tutor_messages_on_created_at"
+    t.index ["user_id", "step_id"], name: "idx_on_user_id_step_id_4321622576"
   end
 
   create_table "playing_with_neon", id: :serial, force: :cascade do |t|

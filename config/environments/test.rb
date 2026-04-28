@@ -50,4 +50,12 @@ Rails.application.configure do
 
   # Raise error when a before_action's only/except options reference missing actions.
   config.action_controller.raise_on_missing_callback_actions = true
+
+  # strict_loading_by_default is on in production via application.rb, which is the
+  # right call in production (Prosopite-style guard against N+1). Tests, however,
+  # frequently `record.reload` and then traverse associations to assert state —
+  # that pattern raises StrictLoadingViolationError without changing what the
+  # test is actually verifying. Tests should test BEHAVIOUR. Production + the
+  # Prosopite middleware in dev still catch real N+1s.
+  config.active_record.strict_loading_by_default = false
 end

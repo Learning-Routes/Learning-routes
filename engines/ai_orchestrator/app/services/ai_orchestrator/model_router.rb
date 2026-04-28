@@ -3,6 +3,9 @@ module AiOrchestrator
     ROUTING_TABLE = {
       assessment_questions: { primary: "gpt-5.2", fallback: "gpt-4.1-mini" },
       route_generation:     { primary: "gpt-5.2", fallback: "gpt-4.1-mini" },
+      # Curriculum design is structural JSON (not prose) — mini is faster/cheaper
+      # and reliably produces JSON. Falls back to the primary model if mini fails.
+      curriculum_design:    { primary: "gpt-4.1-mini", fallback: "gpt-5.2" },
       lesson_content:       { primary: "gpt-5.2", fallback: "gpt-4.1-mini" },
       code_generation:      { primary: "gpt-5.2", fallback: "gpt-4.1-mini" },
       exam_questions:       { primary: "gpt-5.2", fallback: "gpt-4.1-mini" },
@@ -105,9 +108,12 @@ module AiOrchestrator
 
       # Atomic increment-then-check: increment first, check after
       if Rails.cache.respond_to?(:increment)
-        # Initialize key if missing, then atomically increment
+        # Initialize key if missing, then atomically increment.
+        # Rails.cache.increment can return nil if the key write race-loses or the
+        # backend doesn't support increment with unless_exist semantics — coerce
+        # to_i so we never compare nil > Integer.
         Rails.cache.write(key, 0, expires_in: 1.minute, unless_exist: true)
-        count = Rails.cache.increment(key)
+        count = Rails.cache.increment(key).to_i
         if count > limit
           Rails.cache.decrement(key)
           raise RateLimitExceeded, "Rate limit exceeded for #{model_name}: #{count}/#{limit} rpm"

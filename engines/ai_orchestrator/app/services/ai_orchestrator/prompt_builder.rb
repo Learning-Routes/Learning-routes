@@ -64,6 +64,30 @@ module AiOrchestrator
       result.gsub!("{{content_locale}}", @variables["locale"].to_s) unless @variables.key?("content_locale")
       result.gsub!("{{is_language_route}}", @variables["target_locale"].present?.to_s) unless @variables.key?("is_language_route")
 
+      # Auto-compute the language directive (monolingual vs bilingual) unless the
+      # caller explicitly provided a NON-EMPTY one. Empty/blank values fall back
+      # to the computed directive — otherwise a caller passing `language_directive: ""`
+      # would silently strip the most important instruction in the prompt.
+      unless @variables["language_directive"].to_s.present?
+        directive = LanguageInstructions.directive(
+          content_locale: @variables["locale"],
+          target_locale: @variables["target_locale"]
+        )
+        result.gsub!("{{language_directive}}", directive)
+      end
+
+      # Back-compat for older callers that still reference {{bilingual_instructions}}.
+      # Same rule: empty/blank caller-provided value falls back to the auto-computed
+      # bilingual block (or empty string for monolingual routes).
+      unless @variables["bilingual_instructions"].to_s.present?
+        fallback = if LanguageInstructions.bilingual?(content_locale: @variables["locale"], target_locale: @variables["target_locale"])
+          LanguageInstructions.directive(content_locale: @variables["locale"], target_locale: @variables["target_locale"])
+        else
+          ""
+        end
+        result.gsub!("{{bilingual_instructions}}", fallback)
+      end
+
       # Interpolate user context if available
       if @user
         result.gsub!("{{user_name}}", @user.name.to_s)

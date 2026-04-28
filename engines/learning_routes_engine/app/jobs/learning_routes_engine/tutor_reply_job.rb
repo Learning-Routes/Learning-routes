@@ -40,12 +40,12 @@ module LearningRoutesEngine
           topic: step.localized_title,
           route_topic: route.localized_topic,
           locale: locale,
+          target_locale: route.target_locale.to_s,
           user_name: user.name.to_s,
           user_level: profile&.current_level || "beginner",
           learning_style: Array(profile&.learning_style).join(", "),
           bloom_level: "understand",
-          description: "Tutor reply",
-          bilingual_instructions: ""
+          description: "Tutor reply"
         },
         user: user,
         async: false

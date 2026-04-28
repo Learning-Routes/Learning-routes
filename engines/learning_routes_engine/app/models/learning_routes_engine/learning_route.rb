@@ -23,7 +23,9 @@ module LearningRoutesEngine
     validates :generation_status, inclusion: { in: GENERATION_STATUSES }, allow_nil: true
     validates :current_step, numericality: { greater_than_or_equal_to: 0 }
     validates :total_steps, numericality: { greater_than_or_equal_to: 0 }
-    validates :target_locale, inclusion: { in: ->(_) { I18n.available_locales.map(&:to_s) } }, allow_nil: true
+    # target_locale is the language being *taught* (course content language),
+    # not a UI locale — so use the LanguageDetector's vocabulary, not I18n.available_locales.
+    validates :target_locale, inclusion: { in: ->(_) { LearningRoutesEngine::LanguageDetector::LANGUAGE_MAP.keys } }, allow_nil: true
     validate :target_locale_differs_from_locale
 
     scope :active_routes, -> { where(status: :active) }

@@ -8,6 +8,10 @@ class RouteWizardControllerTest < ActionDispatch::IntegrationTest
       password: "password123",
       password_confirmation: "password123"
     )
+    # Wizard controller requires a verified email; existing fixture/first
+    # users may have a nil email_verified_at, which causes the before_action
+    # chain to redirect to /verify_pending and tests to assert against that 302.
+    @user.update!(email_verified_at: Time.current) if @user.email_verified_at.nil?
   end
 
   def sign_in(user)

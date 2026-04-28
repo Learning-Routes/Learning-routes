@@ -7,7 +7,9 @@ module Core
     has_one :learning_profile, class_name: "LearningRoutesEngine::LearningProfile", dependent: :destroy
 
     # Engagement
-    has_one :user_engagement, class_name: "::UserEngagement", dependent: :destroy
+    # Accessed from navbar/profile on every authenticated page — allow lazy loading
+    # even under strict_loading_by_default to keep call sites ergonomic.
+    has_one :user_engagement, class_name: "::UserEngagement", dependent: :destroy, strict_loading: false
     has_many :xp_transactions, class_name: "::XpTransaction", dependent: :destroy
 
     # Analytics (delete_all for performance — no further cascades needed)
@@ -106,15 +108,38 @@ module Core
     end
 
     # --- Remember me ---
+    # The `remember_token` column stores a SHA-256 digest of the raw token,
+    # never the raw value. The raw token only lives in the user's signed
+    # cookie. A DB leak alone cannot replay logins — the attacker would
+    # need the cookie too. See find_by_remember_credential for the lookup.
 
     def remember!
-      token = SecureRandom.urlsafe_base64(32)
-      update!(remember_token: token)
-      token
+      raw = SecureRandom.urlsafe_base64(32)
+      update!(remember_token: self.class.digest_remember_token(raw))
+      raw
     end
 
     def forget!
       update!(remember_token: nil)
+    end
+
+    def self.digest_remember_token(raw)
+      Digest::SHA256.hexdigest(raw.to_s)
+    end
+
+    # Look up a user from a remember-me cookie payload `[user_id, raw_token]`.
+    # Returns the user only if the digest matches; uses constant-time compare
+    # to prevent timing-based token enumeration.
+    def self.find_by_remember_credential(user_id:, raw_token:)
+      return nil if user_id.blank? || raw_token.blank?
+
+      user = find_by(id: user_id)
+      return nil unless user&.remember_token.present?
+
+      candidate = digest_remember_token(raw_token)
+      return user if ActiveSupport::SecurityUtils.secure_compare(user.remember_token, candidate)
+
+      nil
     end
 
     # --- Onboarding ---
