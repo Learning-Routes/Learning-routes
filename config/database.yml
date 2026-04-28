@@ -45,21 +45,29 @@ test:
     migrations_paths: db/cable_migrate
 
 production:
+  # Self-hosted Postgres (Kamal accessory `learning_routes-postgres` on the same
+  # Hetzner box, internal Docker network only). Explicit host/port/credentials
+  # rather than url: — Ruby's URI parser stricter-validates hostnames in some
+  # code paths (db:prepare's resolver) and rejects the underscore that Kamal
+  # bakes into the accessory hostname.
   primary: &primary_production
     adapter: postgresql
     encoding: unicode
-    url: <%= ENV["DATABASE_URL"] %>
+    host: <%= ENV.fetch("POSTGRES_HOST", "learning_routes-postgres") %>
+    port: <%= ENV.fetch("POSTGRES_PORT", 5432) %>
+    username: <%= ENV.fetch("POSTGRES_USER", "learning_routes") %>
+    password: <%= ENV["POSTGRES_PASSWORD"] %>
+    database: learning_routes_production
     pool: <%= ENV.fetch("RAILS_MAX_THREADS", 5) %>
-    sslmode: require
   cache:
     <<: *primary_production
-    url: <%= ENV["DATABASE_CACHE_URL"] %>
+    database: learning_routes_production_cache
     migrations_paths: db/cache_migrate
   queue:
     <<: *primary_production
-    url: <%= ENV["DATABASE_QUEUE_URL"] %>
+    database: learning_routes_production_queue
     migrations_paths: db/queue_migrate
   cable:
     <<: *primary_production
-    url: <%= ENV["DATABASE_CABLE_URL"] %>
+    database: learning_routes_production_cable
     migrations_paths: db/cable_migrate
