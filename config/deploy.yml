@@ -36,10 +36,9 @@ registry:
 env:
   secret:
     - RAILS_MASTER_KEY
-    - DATABASE_URL
-    - DATABASE_CACHE_URL
-    - DATABASE_QUEUE_URL
-    - DATABASE_CABLE_URL
+    # Production DB uses explicit host/port/user/db in database.yml; only the
+    # password is ship-as-secret. The rest is non-sensitive and hardcoded.
+    - POSTGRES_PASSWORD
     - RESEND_API_KEY
     - OPENAI_API_KEY
     - ELEVENLABS_API_KEY
