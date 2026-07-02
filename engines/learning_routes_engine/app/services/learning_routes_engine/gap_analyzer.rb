@@ -105,6 +105,7 @@ module LearningRoutesEngine
         KnowledgeGap.create!(
           user: @user,
           learning_route: @route,
+          assessment_result_id: @result&.id,
           topic: gap_data["topic"],
           description: gap_data["description"],
           severity: map_severity(gap_data["severity"]),

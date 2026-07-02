@@ -8,7 +8,7 @@ module LearningRoutesEngine
 
       # Idempotency: skip if gaps already analyzed for this assessment
       if assessment_result_id
-        return if KnowledgeGap.where(learning_route: route).where("metadata->>'assessment_result_id' = ?", assessment_result_id).exists?
+        return if KnowledgeGap.where(learning_route: route, assessment_result_id: assessment_result_id).exists?
       end
 
       assessment_result = if assessment_result_id
