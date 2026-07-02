@@ -20,6 +20,15 @@ module Assessments
     end
 
     def submit
+      # Idempotency: a result that has already been scored must not be
+      # re-processed. Replaying submit would double-count analytics/metrics,
+      # re-fire the gap-analysis + difficulty jobs, and (combined with the old
+      # answer oracle) let a student re-answer then re-submit.
+      if @result.score.present?
+        redirect_to result_path(@result), notice: t("flash.assessment_submitted", score: @result.score.round(1))
+        return
+      end
+
       assessment = @result.assessment
       step = assessment.route_step
       route = step.learning_route
