@@ -18,11 +18,12 @@ module AiOrchestrator
       "give_example"              => 12.hours,
       "simplify_content"          => 12.hours,
       "exercise_hint"             => 0,
-      "step_quiz"                 => 2.hours
+      "step_quiz"                 => 2.hours,
+      "tutor_reply"               => 0          # Personal, conversational — never cache
     }.freeze
 
     # Tasks that should never be cached
-    NON_CACHEABLE = %w[quick_grading gap_analysis exercise_hint voice_evaluation].freeze
+    NON_CACHEABLE = %w[quick_grading gap_analysis exercise_hint voice_evaluation tutor_reply].freeze
 
     def self.fetch(task_type:, prompt:, model:)
       return nil if NON_CACHEABLE.include?(task_type.to_s)

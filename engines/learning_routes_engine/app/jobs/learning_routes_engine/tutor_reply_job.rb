@@ -18,34 +18,27 @@ module LearningRoutesEngine
       locale = route.locale || user.locale || "en"
       history = recent.map { |m| "#{m.role}: #{m.content.truncate(200)}" }.join("\n")
 
-      prompt = <<~PROMPT
-        The student asks: #{message.content}
-
-        Lesson context (truncated):
-        #{lesson_content.truncate(1500)}
-
-        Recent conversation:
-        #{history}
-
-        Respond helpfully in #{locale}. Be brief and clear, max 150 words.
-      PROMPT
-
       # Set thread context for tools
       Thread.current[:lesson_agent_user] = user
       Thread.current[:lesson_agent_locale] = locale
 
+      # Route through the dedicated tutor_reply task type so the prompt template
+      # actually consumes the student's question, the lesson context, and the
+      # conversation history. Previously this used :lesson_content and dropped
+      # all of that, so every reply was a generic lesson regeneration.
       interaction = AiOrchestrator::Orchestrate.call(
-        task_type: :lesson_content,
+        task_type: :tutor_reply,
         variables: {
+          student_message: message.content.to_s,
+          lesson_content: lesson_content,
+          history: history,
           topic: step.localized_title,
           route_topic: route.localized_topic,
           locale: locale,
           target_locale: route.target_locale.to_s,
           user_name: user.name.to_s,
           user_level: profile&.current_level || "beginner",
-          learning_style: Array(profile&.learning_style).join(", "),
-          bloom_level: "understand",
-          description: "Tutor reply"
+          learning_style: Array(profile&.learning_style).join(", ")
         },
         user: user,
         async: false
