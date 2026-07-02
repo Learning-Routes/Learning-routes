@@ -16,8 +16,12 @@ module LearningRoutesEngine
       1.49,   # w8  - stability reward for Hard
       0.14,   # w9  - stability reward for Good
       0.94,   # w10 - stability reward for Easy
-      2.18,   # w11 - hard penalty factor
-      0.05    # w12 - easy bonus factor
+      # FSRS requires the hard penalty to shrink the stability gain (0 < w11 < 1)
+      # and the easy bonus to grow it (1 < w12 < 6). These were previously
+      # inverted (2.18 / 0.05), which scheduled Hard cards far into the future
+      # and Easy cards almost immediately. See https://expertium.github.io/Algorithm.html
+      0.50,   # w11 - hard penalty factor (< 1: Hard grows stability less)
+      2.18    # w12 - easy bonus factor   (> 1: Easy grows stability more)
     ].freeze
 
     # Rating constants
