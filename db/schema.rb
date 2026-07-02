@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_04_28_000001) do
+ActiveRecord::Schema[8.1].define(version: 2026_07_02_000001) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -408,6 +408,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_28_000001) do
   end
 
   create_table "learning_routes_engine_knowledge_gaps", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "assessment_result_id"
     t.datetime "created_at", null: false
     t.text "description"
     t.string "identified_from"
@@ -417,6 +418,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_28_000001) do
     t.string "topic", null: false
     t.datetime "updated_at", null: false
     t.uuid "user_id", null: false
+    t.index ["learning_route_id", "assessment_result_id"], name: "idx_knowledge_gaps_on_route_and_result"
     t.index ["learning_route_id"], name: "idx_on_learning_route_id_995e696068"
     t.index ["resolved"], name: "index_learning_routes_engine_knowledge_gaps_on_resolved"
     t.index ["severity"], name: "index_learning_routes_engine_knowledge_gaps_on_severity"
