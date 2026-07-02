@@ -65,6 +65,18 @@ module LearningRoutesEngine
              "Easy should give higher stability than Good"
     end
 
+    test "existing card rated Easy schedules further out than rated Hard" do
+      # Regression: the FSRS hard-penalty / easy-bonus factors were inverted,
+      # which pushed Hard cards far into the future and Easy cards to ~1 day.
+      hard_result = @sr.review(reviewed_card, SpacedRepetition::HARD)
+      easy_result = @sr.review(reviewed_card, SpacedRepetition::EASY)
+
+      assert easy_result[:fsrs_stability] > hard_result[:fsrs_stability],
+             "Easy should grow stability more than Hard on repeat reviews"
+      assert easy_result[:fsrs_scheduled_days] >= hard_result[:fsrs_scheduled_days],
+             "Easy should be scheduled at least as far out as Hard"
+    end
+
     test "existing card stability increases on Good rating" do
       card = reviewed_card
       result = @sr.review(card, SpacedRepetition::GOOD)
