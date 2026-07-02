@@ -7,9 +7,15 @@ module Assessments
     def create
       question = @assessment.questions.find(params[:question_id])
 
+      # Once the assessment has been submitted/scored, answering is closed.
+      return head(:unprocessable_entity) if submitted?
+
       existing = UserAnswer.find_by(user: current_user, question: question)
       if existing
-        existing.update!(answer: params[:answer])
+        # Answers are FINAL once given. Previously an answer could be updated
+        # in place and re-graded unlimited times, so a student could click each
+        # option until it showed "correct" and guarantee a 100% score. Re-render
+        # the locked feedback without changing or re-grading it.
         @answer = existing
       else
         @answer = UserAnswer.create!(
@@ -17,16 +23,7 @@ module Assessments
           question: question,
           answer: params[:answer]
         )
-      end
-
-      if question.multiple_choice?
-        is_correct = params[:answer].to_s.strip.downcase == question.correct_answer.to_s.strip.downcase
-        @answer.update!(
-          correct: is_correct,
-          feedback: is_correct ? t("flash.correct") : t("flash.incorrect", explanation: question.explanation)
-        )
-      elsif question.short_answer? || question.code?
-        grade_with_ai!(question, @answer)
+        grade_answer!(question, @answer)
       end
 
       respond_to do |format|
@@ -36,6 +33,26 @@ module Assessments
     end
 
     private
+
+    # True once an AssessmentResult for this user+assessment has been scored.
+    def submitted?
+      AssessmentResult
+        .where(user: current_user, assessment: @assessment)
+        .where.not(score: nil)
+        .exists?
+    end
+
+    def grade_answer!(question, answer)
+      if question.multiple_choice?
+        is_correct = params[:answer].to_s.strip.downcase == question.correct_answer.to_s.strip.downcase
+        answer.update!(
+          correct: is_correct,
+          feedback: is_correct ? t("flash.correct") : t("flash.incorrect", explanation: question.explanation)
+        )
+      elsif question.short_answer? || question.code?
+        grade_with_ai!(question, answer)
+      end
+    end
 
     def set_assessment
       @assessment = Assessment.find(params[:assessment_id])
