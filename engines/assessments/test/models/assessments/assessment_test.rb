@@ -4,7 +4,7 @@ module Assessments
   class AssessmentTest < ActiveSupport::TestCase
     test "assessment_type enum values" do
       assert_equal(
-        { "diagnostic" => 0, "level_up" => 1, "final" => 2, "reinforcement" => 3 },
+        { "diagnostic" => 0, "level_up" => 1, "final" => 2, "reinforcement" => 3, "step_quiz" => 4 },
         Assessment.assessment_types
       )
     end
