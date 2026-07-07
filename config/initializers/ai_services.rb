@@ -12,9 +12,9 @@
 Rails.application.config.after_initialize do
   # Configure RubyLLM (unified provider for OpenAI, Anthropic, Gemini)
   RubyLLM.configure do |config|
-    config.openai_api_key = Rails.application.credentials.dig(:openai, :api_key).presence || ENV["OPENAI_API_KEY"]
-    config.anthropic_api_key = Rails.application.credentials.dig(:anthropic, :api_key).presence || ENV["ANTHROPIC_API_KEY"]
-    config.gemini_api_key = Rails.application.credentials.dig(:gemini, :api_key).presence || ENV["GEMINI_API_KEY"]
+    config.openai_api_key = Rails.application.credentials.dig(:openai, :api_key)
+    config.anthropic_api_key = Rails.application.credentials.dig(:anthropic, :api_key)
+    config.gemini_api_key = Rails.application.credentials.dig(:gemini, :api_key)
 
     # Request defaults
     config.request_timeout = 30

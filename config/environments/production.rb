@@ -69,15 +69,18 @@ Rails.application.configure do
   # Set host to be used by links generated in mailer templates.
   config.action_mailer.default_url_options = { host: "learning-routes.com" }
 
-  # Resend SMTP (transactional email)
+  # Brevo SMTP (transactional email — 300/day free tier)
   config.action_mailer.delivery_method = :smtp
   config.action_mailer.smtp_settings = {
-    address: "smtp.resend.com",
+    address: "smtp-relay.brevo.com",
     port: 587,
-    user_name: "resend",
-    password: Rails.application.credentials.dig(:resend, :api_key).presence || ENV["RESEND_API_KEY"],
-    authentication: :plain,
-    enable_starttls_auto: true
+    domain: "learning-routes.com",
+    user_name: Rails.application.credentials.dig(:brevo, :smtp_login),
+    password: Rails.application.credentials.dig(:brevo, :smtp_password),
+    authentication: :login,
+    enable_starttls_auto: true,
+    open_timeout: 5,
+    read_timeout: 5
   }
 
   # Enable locale fallbacks for I18n (makes lookups for any locale fall back to

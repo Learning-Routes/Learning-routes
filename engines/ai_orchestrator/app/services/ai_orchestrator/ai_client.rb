@@ -68,7 +68,7 @@ module AiOrchestrator
     end
 
     def request_elevenlabs(text:, params: {})
-      api_key = Rails.application.credentials.dig(:elevenlabs, :api_key) || ENV["ELEVENLABS_API_KEY"]
+      api_key = Rails.application.credentials.dig(:elevenlabs, :api_key)
       voice_id = params[:voice_id] || Rails.application.credentials.dig(:elevenlabs, :default_voice_id) || "21m00Tcm4TlvDq8ikWAM"
 
       defaults = Rails.application.config.ai_model_defaults[:voice_narration] || {}
