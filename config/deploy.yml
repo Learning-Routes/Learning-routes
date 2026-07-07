@@ -35,15 +35,13 @@ registry:
 
 env:
   secret:
+    # RAILS_MASTER_KEY decrypts credentials, which now hold ALL app third-party
+    # secrets (OpenAI, ElevenLabs, Tavily, Brevo SMTP, Google OAuth) — so none of
+    # those are shipped as ENV anymore.
     - RAILS_MASTER_KEY
     # Production DB uses explicit host/port/user/db in database.yml; only the
     # password is ship-as-secret. The rest is non-sensitive and hardcoded.
     - POSTGRES_PASSWORD
-    - RESEND_API_KEY
-    - OPENAI_API_KEY
-    - ELEVENLABS_API_KEY
-    - GOOGLE_CLIENT_ID
-    - GOOGLE_CLIENT_SECRET
   clear:
     RAILS_LOG_LEVEL: info
     RAILS_SERVE_STATIC_FILES: "true"
