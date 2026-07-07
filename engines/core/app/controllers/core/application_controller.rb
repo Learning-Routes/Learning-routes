@@ -212,7 +212,7 @@ module Core
     end
 
     def google_oauth_enabled?
-      Rails.application.credentials.dig(:google, :client_id).present? || ENV["GOOGLE_CLIENT_ID"].present?
+      Rails.application.credentials.dig(:google, :client_id).present?
     end
     helper_method :google_oauth_enabled?
   end

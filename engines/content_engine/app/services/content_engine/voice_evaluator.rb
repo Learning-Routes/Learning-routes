@@ -36,7 +36,7 @@ module ContentEngine
       audio_path = Rails.root.join("storage", "voice_responses", blob_key)
       raise "Audio file not found: #{blob_key}" unless File.exist?(audio_path)
 
-      api_key = Rails.application.credentials.dig(:elevenlabs, :api_key) || ENV["ELEVENLABS_API_KEY"]
+      api_key = Rails.application.credentials.dig(:elevenlabs, :api_key)
 
       uri = URI("https://api.elevenlabs.io/v1/speech-to-text")
 

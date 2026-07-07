@@ -39,15 +39,18 @@ Rails.application.configure do
   # Show delivery errors during development.
   config.action_mailer.raise_delivery_errors = true
 
-  # Resend SMTP (transactional email — same provider as production)
+  # Brevo SMTP (transactional email — same provider as production)
   config.action_mailer.delivery_method = :smtp
   config.action_mailer.smtp_settings = {
-    address: "smtp.resend.com",
+    address: "smtp-relay.brevo.com",
     port: 587,
-    user_name: "resend",
-    password: Rails.application.credentials.dig(:resend, :api_key).presence || ENV["RESEND_API_KEY"],
-    authentication: :plain,
-    enable_starttls_auto: true
+    domain: "learning-routes.com",
+    user_name: Rails.application.credentials.dig(:brevo, :smtp_login),
+    password: Rails.application.credentials.dig(:brevo, :smtp_password),
+    authentication: :login,
+    enable_starttls_auto: true,
+    open_timeout: 5,
+    read_timeout: 5
   }
 
   # Make template changes take effect immediately.
