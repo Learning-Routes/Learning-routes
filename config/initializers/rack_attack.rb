@@ -23,6 +23,15 @@ class Rack::Attack
     req.ip if req.post? && req.path == "/sign_in"
   end
 
+  # Login attempts — 5 per minute per email, so a single account can't be
+  # brute-forced from a rotating pool of IPs. SessionsController reads the
+  # email from params[:email] (top level), NOT params[:user][:email].
+  throttle("logins/email", limit: 5, period: 60) do |req|
+    if req.post? && req.path == "/sign_in"
+      req.params["email"].to_s.strip.downcase.presence
+    end
+  end
+
   # Password-reset requests — 3 per hour per IP.
   throttle("password_resets/ip", limit: 3, period: 1.hour) do |req|
     req.ip if req.post? && req.path == "/forgot_password"
@@ -33,13 +42,28 @@ class Rack::Attack
     req.ip if req.post? && req.path == "/sign_up"
   end
 
+  # Expensive AI generation endpoints — 10 per minute per IP. Covers the route
+  # wizard, tutor chat, and image/audio generation (all POST). Paths verified
+  # against `rails routes`: /routes/create, .../tutor_chats, .../generate.
+  throttle("ai_generation/ip", limit: 10, period: 60) do |req|
+    next unless req.post?
+    path = req.path
+    req.ip if path == "/routes/create" || path.end_with?("/tutor_chats", "/generate")
+  end
+
   ### Safelist: never interfere with the health check ###
   safelist("allow-health-check") do |req|
     req.path == "/up"
   end
 
   ### Responses ###
-  # Throttled requests get 429 with a Retry-After hint; blocked ones get 403.
+  # Blocked scanners get a bare 404 — don't confirm to a scanner that the path
+  # is special or that a filter exists.
+  self.blocklisted_responder = lambda do |_req|
+    [404, { "Content-Type" => "text/plain" }, ["Not found\n"]]
+  end
+
+  # Throttled requests get 429 with a Retry-After hint.
   self.throttled_responder = lambda do |req|
     match_data = req.env["rack.attack.match_data"] || {}
     retry_after = match_data[:period] || 60

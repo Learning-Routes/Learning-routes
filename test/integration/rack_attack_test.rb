@@ -17,21 +17,33 @@ class RackAttackTest < ActionDispatch::IntegrationTest
     Rack::Attack.cache.store = @original_store
   end
 
-  test "secret-probe scanner paths are blocked with 403" do
+  test "secret-probe scanner paths are blocked with 404" do
     %w[/.env /.git/config /.aws/credentials /wp-login.php /phpmyadmin].each do |path|
       get path
-      assert_response :forbidden, "expected #{path} to be blocked"
+      assert_response :not_found, "expected #{path} to be blocked"
     end
   end
 
-  test "login endpoint is throttled after 5 attempts per minute" do
-    5.times do
-      post "/sign_in", params: { email: "a@b.com", password: "wrong" }
+  test "login endpoint is throttled after 5 attempts per minute per IP" do
+    5.times do |i|
+      post "/sign_in", params: { email: "ip-#{i}@b.com", password: "wrong" }
       assert_not_equal 429, response.status
     end
-    post "/sign_in", params: { email: "a@b.com", password: "wrong" }
+    # 6th distinct email from the same IP trips the per-IP throttle.
+    post "/sign_in", params: { email: "ip-6@b.com", password: "wrong" }
     assert_response :too_many_requests
     assert response.headers["Retry-After"].present?
+  end
+
+  test "login is throttled per email across rotating IPs" do
+    5.times do |i|
+      post "/sign_in", params: { email: "victim@b.com", password: "wrong" },
+                       headers: { "REMOTE_ADDR" => "10.0.0.#{i}" }
+      assert_not_equal 429, response.status
+    end
+    post "/sign_in", params: { email: "victim@b.com", password: "wrong" },
+                     headers: { "REMOTE_ADDR" => "10.0.0.99" }
+    assert_response :too_many_requests
   end
 
   test "health check is never blocked or throttled" do
