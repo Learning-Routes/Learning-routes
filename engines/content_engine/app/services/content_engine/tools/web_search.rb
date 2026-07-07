@@ -14,7 +14,7 @@ module ContentEngine
       param :max_results, desc: "Number of results to return (1-10)", required: false
 
       def execute(query:, max_results: 5)
-        api_key = ENV["TAVILY_API_KEY"] || Rails.application.credentials.dig(:tavily, :api_key)
+        api_key = Rails.application.credentials.dig(:tavily, :api_key).presence || ENV["TAVILY_API_KEY"]
         unless api_key.present?
           Rails.logger.warn("[WebSearch] No Tavily API key configured — returning empty results")
           return "[]"
