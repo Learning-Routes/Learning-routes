@@ -45,7 +45,7 @@ Rails.application.configure do
     address: "smtp.resend.com",
     port: 587,
     user_name: "resend",
-    password: ENV["RESEND_API_KEY"],
+    password: Rails.application.credentials.dig(:resend, :api_key).presence || ENV["RESEND_API_KEY"],
     authentication: :plain,
     enable_starttls_auto: true
   }
