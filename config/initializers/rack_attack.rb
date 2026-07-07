@@ -6,15 +6,22 @@
 # Route paths are verified against config/routes.rb: the Core engine is mounted
 # at "/", so the auth endpoints live at the application root.
 class Rack::Attack
-  ### Blocklist: obvious scanner / secret-probe paths ###
-  # Bots continuously probe for leaked secrets and admin panels (.env, .git,
-  # wp-admin, …). Any request whose path starts with one of these is dropped
-  # with 403 before it touches the app. Anchored to the start of the path so we
-  # never match a legitimate route that merely contains the substring.
-  SCANNER_PATH = %r{\A/(?:\.env|\.aws|\.git|\.ssh|\.DS_Store|wp-admin|wp-login|xmlrpc\.php|phpmyadmin|phpMyAdmin|administrator|vendor/phpunit)}i
+  # Shared counter store across Puma workers / servers (Solid Cache in prod).
+  # MemoryStore would give each worker its own counters, multiplying limits.
+  Rack::Attack.cache.store = Rails.cache
 
-  blocklist("block-scanners") do |req|
-    SCANNER_PATH.match?(req.path)
+  ### Blocklist: security scanners (Fail2Ban) ###
+  # Bots continuously probe for leaked secrets and admin panels (.env, .git,
+  # wp-admin, *.php, …). Each probe is blocked immediately, and after 3 within
+  # 10 minutes the IP is banned outright for 30 minutes (so it can't keep
+  # probing other paths). Anchored to the path start so a legit route that
+  # merely contains the substring is never matched.
+  SCANNER_PATH = %r{\A/(?:\.env|\.aws|\.git|\.svn|\.ssh|\.DS_Store|wp-admin|wp-login|wp-content|wp-includes|xmlrpc|phpmyadmin|phpMyAdmin|administrator|cgi-bin|vendor/phpunit)}i
+
+  blocklist("fail2ban-scanners") do |req|
+    Rack::Attack::Fail2Ban.filter("scanners-#{req.ip}", maxretry: 3, findtime: 10.minutes, bantime: 30.minutes) do
+      SCANNER_PATH.match?(req.path) || req.path.end_with?(".php")
+    end
   end
 
   ### Throttles: auth endpoints, per IP ###
@@ -49,6 +56,15 @@ class Rack::Attack
     next unless req.post?
     path = req.path
     req.ip if path == "/routes/create" || path.end_with?("/tutor_chats", "/generate")
+  end
+
+  # General DDoS backstop — 300 requests / 5 min per IP. Excludes static
+  # assets and the frequent status-poll endpoints (audio/image generation polls
+  # every couple seconds), so normal heavy use never trips it.
+  throttle("requests/ip", limit: 300, period: 5.minutes) do |req|
+    unless req.path.start_with?("/assets", "/packs") || req.path.end_with?("/status", "/up")
+      req.ip
+    end
   end
 
   ### Safelist: never interfere with the health check ###
