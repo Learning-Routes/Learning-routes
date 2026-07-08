@@ -1,4 +1,5 @@
 import { Controller } from "@hotwired/stimulus"
+import DOMPurify from "dompurify"
 
 export default class extends Controller {
   static values = { generatingText: { type: String, default: "Generating..." } }
@@ -41,7 +42,14 @@ export default class extends Controller {
       if (data.success && (data.html || data.image_url)) {
         const container = document.getElementById(`visual_image_${stepId}_${sectionIndex}`)
         if (container) {
-          container.innerHTML = data.html || this._buildImageHTML(data.image_url)
+          // Defense-in-depth: server already escapes values via ERB html_escape.
+          // Re-sanitize before innerHTML; keep `style` so the framed-image design
+          // survives, and DOMPurify strips the inline onload handler (the JS
+          // below re-wires the fade-in).
+          container.innerHTML = DOMPurify.sanitize(
+            data.html || this._buildImageHTML(data.image_url),
+            { ADD_ATTR: ["loading"] }
+          )
           // Animate in
           const img = container.querySelector("img")
           if (img) {
@@ -64,6 +72,15 @@ export default class extends Controller {
   }
 
   _buildImageHTML(url) {
+    // Only allow http(s) image URLs — reject javascript:/data:/blob: etc.
+    try {
+      const parsed = new URL(url, window.location.origin)
+      if (!["https:", "http:"].includes(parsed.protocol)) return ""
+      url = parsed.toString()
+    } catch {
+      return ""
+    }
+
     return `
       <div style="border-radius:14px; overflow:hidden; border:1px solid var(--color-border-subtle); box-shadow:0 2px 8px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.02);">
         <img src="${url}" alt="AI-generated illustration"

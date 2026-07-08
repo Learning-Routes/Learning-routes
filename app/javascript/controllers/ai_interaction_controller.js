@@ -1,4 +1,5 @@
 import { Controller } from "@hotwired/stimulus"
+import DOMPurify from "dompurify"
 
 export default class extends Controller {
   static targets = ["loadingIndicator", "output", "messageInput"]
@@ -117,16 +118,26 @@ export default class extends Controller {
     const container = document.getElementById(outputId)
     if (!container) return
 
+    // Defense-in-depth: the server already sanitizes this HTML with
+    // Rails::HTML5::SafeListSanitizer, but re-sanitize on the client before
+    // innerHTML. Default DOMPurify config is used deliberately — it strips
+    // scripts, event handlers and javascript: URIs while preserving the lesson
+    // markup the server allows (style, tables, SVG icons, data-* Stimulus/copy
+    // targets). A restrictive ALLOWED_ATTR list would break code blocks and
+    // interactive blocks. `type` is escaped to a plain string.
+    const cleanHtml = DOMPurify.sanitize(html)
+    const safeType = DOMPurify.sanitize(String(type || "text"), { ALLOWED_TAGS: [], ALLOWED_ATTR: [] })
+
     const wrapper = document.createElement("div")
     wrapper.className = "ai-agent-result"
     wrapper.style.cssText = "opacity:0; transform:translateY(8px); transition:all 0.3s ease;"
     wrapper.innerHTML = `
       <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.5rem;">
         <span style="font-family:'DM Mono',monospace; font-size:0.625rem; font-weight:600; color:var(--color-muted); text-transform:uppercase; letter-spacing:0.1em;">AI Assistant</span>
-        <span style="font-size:0.625rem; color:var(--color-muted); background:var(--color-card); border-radius:4px; padding:0.125rem 0.375rem;">${type || "text"}</span>
+        <span style="font-size:0.625rem; color:var(--color-muted); background:var(--color-card); border-radius:4px; padding:0.125rem 0.375rem;">${safeType}</span>
         <button style="margin-left:auto; background:none; border:none; cursor:pointer; color:var(--color-muted); font-size:0.75rem; padding:0.125rem 0.375rem; border-radius:4px; transition:color 0.2s;" class="ai-dismiss-btn" aria-label="Dismiss">&times;</button>
       </div>
-      <div class="lesson-content" data-controller="math-renderer">${html}</div>
+      <div class="lesson-content" data-controller="math-renderer">${cleanHtml}</div>
     `
 
     // Wire up dismiss button
