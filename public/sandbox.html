@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    body { margin: 0; padding: 12px; font-family: 'DM Mono', ui-monospace, monospace; font-size: 14px; background: #1e1e2e; color: #cdd6f4; }
+    .output { white-space: pre-wrap; word-break: break-word; }
+    .error { color: #f38ba8; }
+    .log { color: #a6e3a1; }
+    .warn { color: #f9e2af; }
+    .info { color: #89b4fa; }
+  </style>
+</head>
+<body>
+  <div id="output" class="output"></div>
+  <script>
+    // This document is loaded into a sandboxed iframe with `allow-scripts` but
+    // WITHOUT `allow-same-origin`, so it runs with an opaque origin: it cannot
+    // read the parent's cookies, DOM, or storage. User JavaScript is eval'd
+    // here, fully isolated from the app. Communication is via postMessage only.
+    const output = document.getElementById('output');
+
+    ['log', 'warn', 'error', 'info'].forEach(function (method) {
+      console[method] = function () {
+        const args = Array.prototype.slice.call(arguments);
+        const line = document.createElement('div');
+        line.className = method === 'error' ? 'error' : method === 'warn' ? 'warn' : method === 'info' ? 'info' : 'log';
+        line.textContent = args.map(function (a) {
+          try { return typeof a === 'object' ? JSON.stringify(a, null, 2) : String(a); }
+          catch (e) { return String(a); }
+        }).join(' ');
+        output.appendChild(line);
+        parent.postMessage({ type: 'console', method: method, text: line.textContent }, '*');
+      };
+    });
+
+    window.addEventListener('message', function (event) {
+      if (!event.data || event.data.type !== 'execute') return;
+      output.innerHTML = '';
+      try {
+        // Indirect eval runs the code in this sandbox's global scope.
+        const result = (0, eval)(event.data.code);
+        if (result !== undefined) console.log(result);
+        parent.postMessage({ type: 'result', success: true }, '*');
+      } catch (error) {
+        console.error((error && error.name ? error.name + ': ' : '') + (error && error.message ? error.message : String(error)));
+        parent.postMessage({ type: 'result', success: false, error: String(error && error.message ? error.message : error) }, '*');
+      }
+    });
+
+    parent.postMessage({ type: 'ready' }, '*');
+  </script>
+</body>
+</html>
