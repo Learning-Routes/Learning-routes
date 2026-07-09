@@ -10,20 +10,28 @@ module Assessments
       # Once the assessment has been submitted/scored, answering is closed.
       return head(:unprocessable_entity) if submitted?
 
+      # Answers are FINAL once given. Previously an answer could be updated in
+      # place and re-graded unlimited times, so a student could click each option
+      # until it showed "correct" and guarantee 100%. The DB unique index on
+      # (user_id, question_id) is the real guard: it also stops the CONCURRENT
+      # variant where parallel POSTs (one per option) each slip past find_by and
+      # create a separately-graded row. We create-or-find and never re-grade.
       existing = UserAnswer.find_by(user: current_user, question: question)
       if existing
-        # Answers are FINAL once given. Previously an answer could be updated
-        # in place and re-graded unlimited times, so a student could click each
-        # option until it showed "correct" and guarantee a 100% score. Re-render
-        # the locked feedback without changing or re-grading it.
         @answer = existing
       else
-        @answer = UserAnswer.create!(
-          user: current_user,
-          question: question,
-          answer: params[:answer]
-        )
-        grade_answer!(question, @answer)
+        begin
+          @answer = UserAnswer.create!(
+            user: current_user,
+            question: question,
+            answer: params[:answer]
+          )
+          grade_answer!(question, @answer)
+        rescue ActiveRecord::RecordNotUnique
+          # A concurrent request already created (and graded) the answer.
+          # Serve that locked row without re-grading.
+          @answer = UserAnswer.find_by!(user: current_user, question: question)
+        end
       end
 
       respond_to do |format|

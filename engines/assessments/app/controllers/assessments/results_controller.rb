@@ -20,28 +20,35 @@ module Assessments
     end
 
     def submit
-      # Idempotency: a result that has already been scored must not be
-      # re-processed. Replaying submit would double-count analytics/metrics,
-      # re-fire the gap-analysis + difficulty jobs, and (combined with the old
-      # answer oracle) let a student re-answer then re-submit.
-      if @result.score.present?
-        redirect_to result_path(@result), notice: t("flash.assessment_submitted", score: @result.score.round(1))
-        return
-      end
-
       assessment = @result.assessment
       step = assessment.route_step
       route = step.learning_route
 
-      answers = UserAnswer.where(user: current_user, question: assessment.questions)
-      total = assessment.questions.count
-      correct = answers.where(correct: true).count
-      score = total > 0 ? (correct.to_f / total * 100).round(2) : 0
+      # Idempotency: a result that has already been scored must not be
+      # re-processed. Replaying submit would double-count analytics/metrics and
+      # re-fire the gap-analysis + difficulty jobs. The score-claim runs inside
+      # a row lock so two concurrent submits can't both pass the check — only
+      # the one that sets the score proceeds to the side effects below.
+      score = nil
+      @result.with_lock do
+        if @result.score.present?
+          score = :already_scored
+        else
+          answers = UserAnswer.where(user: current_user, question: assessment.questions)
+          total = assessment.questions.count
+          correct = answers.where(correct: true).count
+          score = total > 0 ? (correct.to_f / total * 100).round(2) : 0
+          @result.update!(
+            score: score,
+            knowledge_gaps_identified: identify_gaps(assessment, answers)
+          )
+        end
+      end
 
-      @result.update!(
-        score: score,
-        knowledge_gaps_identified: identify_gaps(assessment, answers)
-      )
+      if score == :already_scored
+        redirect_to result_path(@result), notice: t("flash.assessment_submitted", score: @result.score.round(1))
+        return
+      end
 
       # End study session
       Analytics::StudySession.for_user(current_user)
