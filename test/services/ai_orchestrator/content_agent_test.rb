@@ -3,6 +3,19 @@
 require "test_helper"
 
 class AiOrchestrator::ContentAgentTest < ActiveSupport::TestCase
+  # These tests only exercise ContentAgent's static config + tool wiring (no
+  # network). RubyLLM.chat still raises ConfigurationError unless an OpenAI key
+  # is configured, and the test env has no credentials master key — so set a
+  # dummy key. Saved/restored to avoid leaking into other tests.
+  setup do
+    @original_openai_key = RubyLLM.config.openai_api_key
+    RubyLLM.config.openai_api_key = "test-key"
+  end
+
+  teardown do
+    RubyLLM.config.openai_api_key = @original_openai_key
+  end
+
   test "TOOL_CLASSES contains all 8 tool classes" do
     expected = [
       ContentEngine::Tools::WebSearch,
