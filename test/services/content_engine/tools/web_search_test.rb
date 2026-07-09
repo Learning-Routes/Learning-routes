@@ -5,11 +5,12 @@ require "test_helper"
 class ContentEngine::Tools::WebSearchTest < ActiveSupport::TestCase
   setup do
     @tool = ContentEngine::Tools::WebSearch.new
-    @original_tavily_key = ENV["TAVILY_API_KEY"]
+    # The tool reads the Tavily key from Rails credentials (no ENV fallback);
+    # tests inject it via @tavily_key, stubbed in execute_tool.
+    @tavily_key = nil
   end
 
   teardown do
-    ENV["TAVILY_API_KEY"] = @original_tavily_key
     restore_http_new!
   end
 
@@ -22,7 +23,7 @@ class ContentEngine::Tools::WebSearchTest < ActiveSupport::TestCase
     }.to_json
 
     stub_http_with(MockHTTP.new(build_success_response(mock_response_body)))
-    ENV["TAVILY_API_KEY"] = "tvly-test-key"
+    @tavily_key = "tvly-test-key"
 
     result = execute_tool(query: "photosynthesis process")
     parsed = JSON.parse(result)
@@ -35,7 +36,7 @@ class ContentEngine::Tools::WebSearchTest < ActiveSupport::TestCase
   end
 
   test "returns empty array when API key is missing" do
-    ENV["TAVILY_API_KEY"] = nil
+    @tavily_key = nil
 
     result = execute_tool(query: "anything")
     assert_equal "[]", result
@@ -43,7 +44,7 @@ class ContentEngine::Tools::WebSearchTest < ActiveSupport::TestCase
 
   test "returns empty array on network error" do
     stub_http_with(MockHTTP.new(nil, error: Net::ReadTimeout))
-    ENV["TAVILY_API_KEY"] = "tvly-test-key"
+    @tavily_key = "tvly-test-key"
 
     result = execute_tool(query: "anything")
     assert_equal "[]", result
@@ -52,7 +53,7 @@ class ContentEngine::Tools::WebSearchTest < ActiveSupport::TestCase
   test "clamps max_results between 1 and 10" do
     capturing_http = MockHTTP.new(build_success_response({ "results" => [] }.to_json), capture_body: true)
     stub_http_with(capturing_http)
-    ENV["TAVILY_API_KEY"] = "tvly-test-key"
+    @tavily_key = "tvly-test-key"
 
     execute_tool(query: "test", max_results: 0)
     body = JSON.parse(capturing_http.last_request_body)
@@ -72,7 +73,7 @@ class ContentEngine::Tools::WebSearchTest < ActiveSupport::TestCase
     }.to_json
 
     stub_http_with(MockHTTP.new(build_success_response(mock_response_body)))
-    ENV["TAVILY_API_KEY"] = "tvly-test-key"
+    @tavily_key = "tvly-test-key"
 
     result = execute_tool(query: "test")
     parsed = JSON.parse(result)
@@ -82,10 +83,19 @@ class ContentEngine::Tools::WebSearchTest < ActiveSupport::TestCase
 
   private
 
-  # Execute the tool, unwrapping Halt objects (halt returns a Halt wrapper, not raises)
+  # Execute the tool, unwrapping Halt objects (halt returns a Halt wrapper, not
+  # raises). Stubs the Tavily credential lookup to the test's @tavily_key.
   def execute_tool(**kwargs)
-    result = @tool.execute(**kwargs)
-    result.is_a?(RubyLLM::Tool::Halt) ? result.content : result
+    creds = Rails.application.credentials
+    key = @tavily_key
+    original = creds.method(:dig)
+    creds.define_singleton_method(:dig) { |*keys| keys == [:tavily, :api_key] ? key : original.call(*keys) }
+    begin
+      result = @tool.execute(**kwargs)
+      result.is_a?(RubyLLM::Tool::Halt) ? result.content : result
+    ensure
+      creds.singleton_class.send(:remove_method, :dig)
+    end
   end
 
   def build_success_response(body)
