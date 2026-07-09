@@ -2,6 +2,12 @@
 <html>
 <head>
   <meta charset="utf-8">
+  <!-- This document runs its own inline script and eval's user code in an
+       isolated opaque origin. Declare an explicit CSP here so behavior does not
+       depend on whether the static file happens to be served without the app's
+       CSP header. Scoped to THIS document only (it is framed sandboxed). -->
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'none'; script-src 'unsafe-inline' 'unsafe-eval'; style-src 'unsafe-inline'">
   <style>
     body { margin: 0; padding: 12px; font-family: 'DM Mono', ui-monospace, monospace; font-size: 14px; background: #1e1e2e; color: #cdd6f4; }
     .output { white-space: pre-wrap; word-break: break-word; }

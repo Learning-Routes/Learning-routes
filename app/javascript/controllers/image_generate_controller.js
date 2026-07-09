@@ -72,10 +72,14 @@ export default class extends Controller {
   }
 
   _buildImageHTML(url) {
-    // Only allow http(s) image URLs — reject javascript:/data:/blob: etc.
+    // Allow http(s) and data: image URLs only — reject javascript:/blob:/etc.
+    // data: is required because the image service falls back to inline
+    // `data:image/svg+xml;base64,…` placeholders (safe as an <img> source; SVG
+    // loaded via <img> cannot execute script), and the already_exists response
+    // returns only image_url (no server html), which routes through here.
     try {
       const parsed = new URL(url, window.location.origin)
-      if (!["https:", "http:"].includes(parsed.protocol)) return ""
+      if (!["https:", "http:", "data:"].includes(parsed.protocol)) return ""
       url = parsed.toString()
     } catch {
       return ""
