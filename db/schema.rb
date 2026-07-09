@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_07_02_000001) do
+ActiveRecord::Schema[8.1].define(version: 2026_07_08_000001) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -189,7 +189,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_02_000001) do
     t.datetime "updated_at", null: false
     t.uuid "user_id", null: false
     t.index ["question_id"], name: "index_assessments_user_answers_on_question_id"
-    t.index ["user_id", "question_id"], name: "idx_user_answers_on_user_and_question"
+    t.index ["user_id", "question_id"], name: "idx_user_answers_on_user_and_question", unique: true
     t.index ["user_id"], name: "index_assessments_user_answers_on_user_id"
   end
 

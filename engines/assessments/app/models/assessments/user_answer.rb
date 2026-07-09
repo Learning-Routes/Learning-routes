@@ -4,6 +4,9 @@ module Assessments
     belongs_to :question
 
     validates :answer, presence: true, length: { maximum: 10_000 }
+    # One answer per (user, question). Backed by a unique DB index so the guard
+    # holds under concurrent submissions, not just at the app layer.
+    validates :question_id, uniqueness: { scope: :user_id }
 
     scope :correct_answers, -> { where(correct: true) }
     scope :incorrect_answers, -> { where(correct: false) }
