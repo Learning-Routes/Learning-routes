@@ -28,6 +28,11 @@ module ContentEngine
     def status
       content = @step.ai_contents.order(created_at: :desc).first
 
+      # If a worker died mid-generation, the record is stranded in "generating".
+      # Recover it on poll so the client sees "failed" and can offer a retry
+      # instead of spinning forever.
+      content&.reset_if_stale_audio!
+
       render json: {
         status: content&.audio_status || "pending",
         audio_url: content&.audio_url
