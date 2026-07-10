@@ -7,6 +7,11 @@ module ContentEngine
     # Audio generation states
     AUDIO_STATUSES = %w[pending generating ready failed skipped].freeze
 
+    # A record left in "generating" longer than this had its worker die mid-run
+    # (deploy/OOM/SIGKILL) before AudioGenerator's rescue could mark it failed.
+    # Such records are treated as stale and reset so the UI can offer a retry.
+    AUDIO_STALE_AFTER = 10.minutes
+
     validates :content_type, presence: true
     validates :body, presence: true
     validates :audio_status, inclusion: { in: AUDIO_STATUSES }, allow_nil: true
@@ -16,6 +21,9 @@ module ContentEngine
     scope :by_model, ->(model) { where(ai_model: model) }
     scope :with_audio_ready, -> { where(audio_status: "ready") }
     scope :audio_pending, -> { where(audio_status: "pending") }
+    scope :audio_stale_generating, -> {
+      where(audio_status: "generating").where(updated_at: ..AUDIO_STALE_AFTER.ago)
+    }
 
     def total_cost
       generation_cost || 0
@@ -27,6 +35,19 @@ module ContentEngine
 
     def audio_generating?
       audio_status == "generating"
+    end
+
+    # "generating" with no progress past the stale window — its worker died.
+    def audio_stale_generating?
+      audio_generating? && updated_at <= AUDIO_STALE_AFTER.ago
+    end
+
+    # Recover a stranded record to "failed" so the UI shows a retry affordance.
+    # Returns true if it actually reset one (i.e. it was stale).
+    def reset_if_stale_audio!
+      return false unless audio_stale_generating?
+      mark_audio_failed!("Audio generation timed out and was reset")
+      true
     end
 
     def audio_failed?
