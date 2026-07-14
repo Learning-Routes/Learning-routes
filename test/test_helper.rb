@@ -29,6 +29,12 @@ require "webmock/minitest"
 # are stubbed. Localhost stays open for the DB / Solid Queue / Capybara.
 WebMock.disable_net_connect!(allow_localhost: true)
 
+# With a real (memory) cache store, Rack::Attack's throttle counters persist,
+# so repeated sign-ins across integration tests would trip the login rate limit
+# and break auth-dependent tests. Disable it globally in tests; the dedicated
+# rack_attack_test re-enables it per-test.
+Rack::Attack.enabled = false if defined?(Rack::Attack)
+
 module ActiveSupport
   class TestCase
     # Run tests serially on arm64-darwin — the pg gem (1.6.x) segfaults when

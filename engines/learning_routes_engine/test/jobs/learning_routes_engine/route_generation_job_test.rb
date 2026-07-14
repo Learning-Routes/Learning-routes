@@ -42,7 +42,11 @@ module LearningRoutesEngine
       AiOrchestrator::Orchestrate.define_singleton_method(:call, original)
     end
 
-    test "raises on generation failure for retry" do
+    test "generation raises GenerationError on a failed AI interaction" do
+      # RouteGenerator raises GenerationError so the job's `retry_on StandardError`
+      # can schedule a retry. (The job itself does NOT re-raise under perform_now —
+      # retry_on catches it and re-enqueues — so assert on the generator directly,
+      # which is where the error originates.)
       interaction = OpenStruct.new(
         id: SecureRandom.uuid,
         status: "failed",
@@ -55,7 +59,7 @@ module LearningRoutesEngine
       AiOrchestrator::Orchestrate.define_singleton_method(:call) { |**_args| interaction }
 
       assert_raises(RouteGenerator::GenerationError) do
-        RouteGenerationJob.perform_now(@profile.id)
+        RouteGenerator.new(@profile).generate!
       end
     ensure
       AiOrchestrator::Orchestrate.define_singleton_method(:call, original)

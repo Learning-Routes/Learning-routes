@@ -1,5 +1,15 @@
 module ContentEngine
   class ContentCache < ApplicationRecord
+    # The "cache_key" column collides with ActiveRecord::Base#cache_key, which
+    # makes AR raise DangerousAttributeError when it generates attribute methods
+    # (i.e. the model can't be instantiated at all). Allow it — the column is a
+    # deliberate lookup key; instance access shadows the base method safely.
+    # Same pattern as AiOrchestrator::AiInteraction.
+    def self.dangerous_attribute_method?(method_name)
+      return false if method_name == "cache_key"
+      super
+    end
+
     validates :cache_key, presence: true, uniqueness: true
     validates :content, presence: true
 
