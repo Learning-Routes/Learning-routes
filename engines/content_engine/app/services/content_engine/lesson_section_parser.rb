@@ -18,7 +18,7 @@ module ContentEngine
     end
 
     def parse
-      return [blank_concept_section, auto_summary([])] if @body.blank?
+      return [blank_concept_section, empty_summary_section] if @body.blank?
 
       sections = extract_all_sections
       sections = inject_metadata_checks(sections)
@@ -502,6 +502,10 @@ module ContentEngine
 
     def blank_concept_section
       { type: "concept", title: "Lección", body: "" }
+    end
+
+    def empty_summary_section
+      { type: "summary", title: "Resumen", key_points: [], body: nil }
     end
 
     # ── Injection helpers ─────────────────────────────────────────────
