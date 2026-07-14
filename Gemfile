@@ -103,6 +103,13 @@ group :test do
   # Use system testing [https://guides.rubyonrails.org/testing.html#system-testing]
   gem "capybara"
   gem "selenium-webdriver"
+
+  # Stub external HTTP (OpenAI, ElevenLabs, Tavily) so tests never hit the network
+  gem "webmock"
+  # Code coverage reporting
+  gem "simplecov", require: false
+  # Realistic test data (unique emails, names)
+  gem "faker"
 end
 
 # === Content Rendering ===
