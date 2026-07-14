@@ -2,8 +2,16 @@ require "test_helper"
 
 module AiOrchestrator
   class CacheServiceTest < ActiveSupport::TestCase
+    # The test env uses :null_store globally (so caching never leaks between
+    # tests); swap in a real MemoryStore so CacheService's read/write is
+    # actually exercised, then restore.
     setup do
-      Rails.cache.clear
+      @original_cache = Rails.cache
+      Rails.cache = ActiveSupport::Cache::MemoryStore.new
+    end
+
+    teardown do
+      Rails.cache = @original_cache
     end
 
     test "returns nil on cache miss" do

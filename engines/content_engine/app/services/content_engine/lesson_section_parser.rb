@@ -276,8 +276,8 @@ module ContentEngine
 
       lines.each do |line|
         stripped = line.strip
-        if stripped.match?(/\A[A-D]\)\s/)
-          label = stripped.sub(/\A[A-D]\)\s*/, "")
+        if stripped.match?(/\A[A-Da-d]\)\s/)
+          label = stripped.sub(/\A[A-Da-d]\)\s*/, "")
           options << { label: label, correct: false }
         elsif stripped.match?(/\A(?:CORRECTA|CORRECT|ANSWER):\s*/i)
           correct_letter = stripped.sub(/\A(?:CORRECTA|CORRECT|ANSWER):\s*/i, "").strip.upcase

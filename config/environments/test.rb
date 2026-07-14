@@ -20,7 +20,14 @@ Rails.application.configure do
 
   # Show full error reports.
   config.consider_all_requests_local = true
+  # Keep :null_store globally so caching never leaks between tests or activates
+  # rate limiting. Tests that need a real cache (e.g. CacheServiceTest) swap in
+  # a MemoryStore for their own scope.
   config.cache_store = :null_store
+
+  # Jobs only enqueue in tests — never run inline — so perform_later calls don't
+  # cascade into real AI work. Test each job explicitly with perform_now.
+  config.active_job.queue_adapter = :test
 
   # Render exception templates for rescuable exceptions and raise for other exceptions.
   config.action_dispatch.show_exceptions = :rescuable

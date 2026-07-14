@@ -155,6 +155,14 @@ module ContentEngine
       assert_equal 15, s[:xp]
     end
 
+    test "## Pregunta: heading accepts lowercase a-d options (not just A-D)" do
+      md = "## Pregunta: Pick one\na) wrong\nb) right\nCORRECTA: B"
+      s = find_section(parse(md), "check")
+      assert_equal 2, s[:options].size, "lowercase options must not be dropped"
+      assert_equal "right", s[:options][1][:label]
+      assert s[:options][1][:correct]
+    end
+
     test "## Resumen: heading strips PUNTOS CLAVE label and lists key_points" do
       md = "## Resumen: Lo aprendido\nPUNTOS CLAVE:\n- Point one\n- Point two\n- Point three"
       s = find_section(parse(md), "summary")
