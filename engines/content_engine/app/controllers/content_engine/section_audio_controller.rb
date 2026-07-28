@@ -77,15 +77,18 @@ module ContentEngine
         return
       end
 
-      file_path = Rails.root.join(cached[:audio_url].delete_prefix("/")).expand_path
-      audio_root = Rails.root.join("storage", "audio", "sections").expand_path.to_s
+      file_path = AudioStorage.resolve(
+        cached[:audio_url],
+        scope: :sections,
+        minimum_size: 1_024
+      )
 
-      if file_path.to_s.start_with?(audio_root) && File.exist?(file_path) && File.size(file_path) > 1024
+      if file_path
         send_file file_path, type: "audio/mpeg", disposition: :inline
       else
         cache_key = SectionAudioGenerator.cache_key(@step.id, section_index)
         Rails.cache.delete(cache_key)
-        File.delete(file_path) if file_path.to_s.start_with?(audio_root) && File.exist?(file_path)
+        AudioStorage.delete(cached[:audio_url], scope: :sections, minimum_size: 1)
         head :not_found
       end
     end

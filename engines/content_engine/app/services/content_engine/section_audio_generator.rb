@@ -44,10 +44,15 @@ module ContentEngine
     def self.cached(step_id, section_index)
       result = Rails.cache.read(cache_key(step_id, section_index))
       if result
-        file_path = Rails.root.join(result[:audio_url].to_s.delete_prefix("/"))
-        if File.exist?(file_path) && File.size(file_path) > 1024
+        file_path = AudioStorage.resolve(
+          result[:audio_url],
+          scope: :sections,
+          minimum_size: 1_024
+        )
+        if file_path
           return result
         else
+          AudioStorage.delete(result[:audio_url], scope: :sections, minimum_size: 1)
           Rails.cache.delete(cache_key(step_id, section_index))
         end
       end
@@ -60,6 +65,8 @@ module ContentEngine
       if valid_files.any?
         file_path = valid_files.last
         audio_url = "/storage/audio/sections/#{File.basename(file_path)}"
+        return unless AudioStorage.resolve(audio_url, scope: :sections, minimum_size: 1_024)
+
         duration = 60.0 # rough estimate
         data = { audio_url: audio_url, duration: duration }
         Rails.cache.write(cache_key(step_id, section_index), data, expires_in: CACHE_TTL)
