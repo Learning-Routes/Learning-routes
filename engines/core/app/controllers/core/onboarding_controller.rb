@@ -13,7 +13,7 @@ module Core
       @step_number = STEPS.index(@step) + 1
       @total_steps = STEPS.size
       @step_label = I18n.t("onboarding.step_labels.#{@step}", default: @step.humanize)
-      return render partial: "core/onboarding/step_#{@step}", locals: { profile: @profile } if turbo_frame_request?
+      render partial: "core/onboarding/step_#{@step}", locals: { profile: @profile } if turbo_frame_request?
     end
 
     def update_step
@@ -102,7 +102,7 @@ module Core
     def redirect_if_onboarded
       if current_user.onboarding_completed?
         redirect_to main_app.profile_path
-        return
+        nil
       end
     end
   end

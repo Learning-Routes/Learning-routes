@@ -49,12 +49,12 @@ module AiOrchestrator
 
     def parse
       result = case @expected_format
-               when :json then parse_json
-               when :text then parse_text
-               when :markdown then parse_markdown
-               when :binary then parse_binary
-               else parse_text
-               end
+      when :json then parse_json
+      when :text then parse_text
+      when :markdown then parse_markdown
+      when :binary then parse_binary
+      else parse_text
+      end
 
       validate_schema!(result) if @task_type && @expected_format == :json && result.is_a?(Hash)
       result

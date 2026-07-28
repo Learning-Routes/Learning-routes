@@ -43,7 +43,7 @@ steps_data = [
   { position: 4, title: "Ruby Basics Review", description: "Review and reinforce your Ruby fundamentals.", content_type: :review, level: :nv1, status: :locked, estimated_minutes: 10 },
   { position: 5, title: "Object-Oriented Programming", description: "Classes, objects, inheritance, and modules in Ruby.", content_type: :lesson, level: :nv2, status: :locked, estimated_minutes: 25 },
   { position: 6, title: "Ruby Collections Deep Dive", description: "Arrays, hashes, enumerables, and functional patterns.", content_type: :lesson, level: :nv2, status: :locked, estimated_minutes: 25 },
-  { position: 7, title: "OOP Practice: Bank Account", description: "Build a bank account class with deposits and withdrawals.", content_type: :exercise, level: :nv2, status: :locked, estimated_minutes: 20 },
+  { position: 7, title: "OOP Practice: Bank Account", description: "Build a bank account class with deposits and withdrawals.", content_type: :exercise, level: :nv2, status: :locked, estimated_minutes: 20 }
 ]
 
 created_steps = steps_data.map do |attrs|

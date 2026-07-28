@@ -45,7 +45,7 @@ module ContentEngine
       route = @step.learning_route
       unless route.learning_profile&.user_id == current_user.id
         head :forbidden
-        return
+        nil
       end
     end
   end

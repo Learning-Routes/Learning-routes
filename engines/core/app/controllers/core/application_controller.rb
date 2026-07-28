@@ -146,14 +146,14 @@ module Core
     def authenticate_user!
       unless current_user
         redirect_to core.sign_in_path, alert: t("flash.must_sign_in")
-        return
+        nil
       end
     end
 
     def require_role(*roles)
       unless current_user&.role&.to_sym.in?(roles)
         redirect_to main_app.root_path, alert: t("flash.not_authorized")
-        return
+        nil
       end
     end
 

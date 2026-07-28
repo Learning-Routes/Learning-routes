@@ -92,10 +92,10 @@ module LearningRoutesEngine
     def create_steps!
       10.times do |i|
         ct = case i % 3
-             when 0 then :lesson
-             when 1 then :exercise
-             when 2 then :assessment
-             end
+        when 0 then :lesson
+        when 1 then :exercise
+        when 2 then :assessment
+        end
         status = i < 3 ? :completed : (i == 3 ? :available : :locked)
 
         @route.route_steps.create!(

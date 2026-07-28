@@ -103,7 +103,7 @@ module ApplicationHelper
     /sociology|social.?science/i => "\u{1F465}",
     /law|legal|juris/i => "\u2696\uFE0F",
     /education|teach|pedagog/i => "\u{1F393}",
-    /art.?history/i => "\u{1F5BC}\uFE0F",
+    /art.?history/i => "\u{1F5BC}\uFE0F"
   }.freeze
 
   def topic_emoji_for(topic)

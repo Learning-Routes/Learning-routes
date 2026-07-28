@@ -28,16 +28,16 @@ module LearningRoutesEngine
       if @result
         identified = if @result.respond_to?(:knowledge_gaps_identified)
                        @result.knowledge_gaps_identified
-                     elsif @result.respond_to?(:[])
+        elsif @result.respond_to?(:[])
                        @result[:knowledge_gaps_identified] || @result["knowledge_gaps_identified"]
-                     end
+        end
         sources[:assessment_gaps] = Array(identified) if identified.present?
 
         sources[:score] = if @result.respond_to?(:score)
                             @result.score
-                          elsif @result.respond_to?(:[])
+        elsif @result.respond_to?(:[])
                             @result[:score] || @result["score"]
-                          end
+        end
       end
 
       # From user-reported difficulties

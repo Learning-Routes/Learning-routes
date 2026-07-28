@@ -133,9 +133,9 @@ module ContentEngine
       # Bilingual routes narrate in the target language (Portuguese class → Portuguese voice)
       lang = if bilingual_route?
                @route.target_locale
-             else
+      else
                @route.locale || "en"
-             end
+      end
       VoiceCatalog.voice_for(lang)
     end
 

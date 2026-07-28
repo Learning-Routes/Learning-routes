@@ -137,15 +137,15 @@ module ContentEngine
       # Detect response type from content patterns
       type = if content.include?("```mermaid")
                "diagram"
-             elsif content.match?(/!\[.*?\]\(data:image\//)
+      elsif content.match?(/!\[.*?\]\(data:image\//)
                "image"
-             elsif content.match?(/!\[.*?\]\(https?:\/\//)
+      elsif content.match?(/!\[.*?\]\(https?:\/\//)
                "image"
-             elsif content.match?(/```\w+/)
+      elsif content.match?(/```\w+/)
                "code"
-             else
+      else
                "text"
-             end
+      end
 
       { type: type, content: content }
     end

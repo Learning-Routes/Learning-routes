@@ -46,7 +46,7 @@ module Assessments
       route = step.learning_route
       unless route.learning_profile&.user_id == current_user.id
         redirect_to main_app.dashboard_path, alert: t("flash.not_authorized")
-        return
+        nil
       end
     end
   end

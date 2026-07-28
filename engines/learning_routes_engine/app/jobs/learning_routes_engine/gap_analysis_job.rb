@@ -13,7 +13,7 @@ module LearningRoutesEngine
 
       assessment_result = if assessment_result_id
                             Assessments::AssessmentResult.find(assessment_result_id)
-                          end
+      end
 
       analyzer = GapAnalyzer.new(
         route: route,

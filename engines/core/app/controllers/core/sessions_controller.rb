@@ -32,7 +32,7 @@ module Core
     def redirect_if_signed_in
       if current_user
         redirect_to main_app.dashboard_path
-        return
+        nil
       end
     end
   end

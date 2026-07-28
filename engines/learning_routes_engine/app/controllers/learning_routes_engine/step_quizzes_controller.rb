@@ -3,7 +3,7 @@ module LearningRoutesEngine
     before_action :authenticate_user!
     before_action :set_route_and_step
     before_action :authorize_route_owner!
-    before_action :set_quiz, only: [ :submit, :retry_quiz ]
+    before_action :set_quiz, only: [:submit, :retry_quiz]
 
     layout "learning"
 
@@ -57,7 +57,7 @@ module LearningRoutesEngine
 
         @next_step = @route.route_steps
           .where("position > ?", @step.position)
-          .where(status: [ :available ])
+          .where(status: [:available])
           .order(:position).first
       end
 
@@ -104,7 +104,7 @@ module LearningRoutesEngine
     def authorize_route_owner!
       unless @route.learning_profile&.user_id == current_user.id
         redirect_to main_app.dashboard_path, alert: t("learning_engine.not_authorized")
-        return
+        nil
       end
     end
 
@@ -113,7 +113,7 @@ module LearningRoutesEngine
       unless @quiz
         redirect_to learning_routes_engine.route_step_path(@route, @step),
                     alert: t("learning_engine.step_quiz.not_ready")
-        return
+        nil
       end
     end
 

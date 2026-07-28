@@ -61,7 +61,7 @@ module LearningRoutesEngine
     def authorize_route_owner!
       unless @route.learning_profile&.user_id == current_user.id
         redirect_to main_app.dashboard_path, alert: t("flash.not_authorized")
-        return
+        nil
       end
     end
 
@@ -76,11 +76,11 @@ module LearningRoutesEngine
         statuses = level_steps.map(&:status)
         stage_status = if statuses.all? { |s| s == "completed" }
                          "completed"
-                       elsif statuses.any? { |s| %w[in_progress available].include?(s) }
+        elsif statuses.any? { |s| %w[in_progress available].include?(s) }
                          "current"
-                       else
+        else
                          "locked"
-                       end
+        end
 
         {
           level: level,
@@ -90,10 +90,10 @@ module LearningRoutesEngine
           status: stage_status,
           topics: level_steps.map { |step|
             prog = case step.status
-                   when "completed" then 100
-                   when "in_progress" then 50
-                   else 0
-                   end
+            when "completed" then 100
+            when "in_progress" then 50
+            else 0
+            end
             {
               id: step.id,
               name: step.localized_title,

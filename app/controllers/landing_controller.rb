@@ -87,7 +87,7 @@ class LandingController < ApplicationController
       { sats: [{ a: -52, d: 1.1, r: 40 }, { a: 0, d: 1.28, r: 42 }, { a: 52, d: 1.06, r: 38 }] },
       { sats: [{ a: -48, d: 1.14, r: 40 }, { a: 48, d: 1.14, r: 40 }] },
       { sats: [{ a: -52, d: 1.06, r: 40 }, { a: 0, d: 1.24, r: 42 }, { a: 52, d: 1.1, r: 38 }] },
-      { sats: [{ a: -48, d: 1.1, r: 42 }, { a: 0, d: 1.28, r: 40 }, { a: 48, d: 1.1, r: 42 }] },
+      { sats: [{ a: -48, d: 1.1, r: 42 }, { a: 0, d: 1.28, r: 40 }, { a: 48, d: 1.1, r: 42 }] }
     ]
   end
 
@@ -127,7 +127,7 @@ class LandingController < ApplicationController
       [{ a: -52, d: 1.1, r: 40, topic: "", desc: "" }, { a: 0, d: 1.28, r: 42, topic: "", desc: "" }, { a: 52, d: 1.06, r: 38, topic: "", desc: "" }],
       [{ a: -48, d: 1.14, r: 40, topic: "", desc: "" }, { a: 48, d: 1.14, r: 40, topic: "", desc: "" }],
       [{ a: -52, d: 1.06, r: 40, topic: "", desc: "" }, { a: 0, d: 1.24, r: 42, topic: "", desc: "" }, { a: 52, d: 1.1, r: 38, topic: "", desc: "" }],
-      [{ a: -48, d: 1.1, r: 42, topic: "", desc: "" }, { a: 0, d: 1.28, r: 40, topic: "", desc: "" }, { a: 48, d: 1.1, r: 42, topic: "", desc: "" }],
+      [{ a: -48, d: 1.1, r: 42, topic: "", desc: "" }, { a: 0, d: 1.28, r: 40, topic: "", desc: "" }, { a: 48, d: 1.1, r: 42, topic: "", desc: "" }]
     ]
     patterns[index % patterns.size]
   end

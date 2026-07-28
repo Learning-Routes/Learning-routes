@@ -114,11 +114,11 @@ module LearningRoutesEngine
 
       new_state = if rating == AGAIN
                     RELEARNING
-                  elsif step.fsrs_state == LEARNING || step.fsrs_state == RELEARNING
+      elsif step.fsrs_state == LEARNING || step.fsrs_state == RELEARNING
                     rating >= GOOD ? REVIEW : step.fsrs_state
-                  else
+      else
                     REVIEW
-                  end
+      end
 
       lapses = step.fsrs_lapses.to_i
       lapses += 1 if rating == AGAIN
