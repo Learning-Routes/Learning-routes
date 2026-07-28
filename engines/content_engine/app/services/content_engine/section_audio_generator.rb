@@ -44,7 +44,7 @@ module ContentEngine
     def self.cached(step_id, section_index)
       result = Rails.cache.read(cache_key(step_id, section_index))
       if result
-        file_path = AudioStorage.resolve(
+        file_path = AudioStorage.validated_audio_path(
           result[:audio_url],
           scope: :sections,
           minimum_size: 1_024
@@ -65,7 +65,7 @@ module ContentEngine
       if valid_files.any?
         file_path = valid_files.last
         audio_url = "/storage/audio/sections/#{File.basename(file_path)}"
-        return unless AudioStorage.resolve(audio_url, scope: :sections, minimum_size: 1_024)
+        return unless AudioStorage.validated_audio_path(audio_url, scope: :sections, minimum_size: 1_024)
 
         duration = 60.0 # rough estimate
         data = { audio_url: audio_url, duration: duration }

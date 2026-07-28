@@ -27,14 +27,14 @@ module ContentEngine
       path = write_file(@audio_root.join("audio_storage_valid.mp3"), "valid audio")
 
       assert_equal path.realpath,
-                   AudioStorage.resolve("/storage/audio/audio_storage_valid.mp3", scope: :audio)
+                   AudioStorage.validated_audio_path("/storage/audio/audio_storage_valid.mp3", scope: :audio)
     end
 
     test "resolves an existing MP3 inside the sections root" do
       path = write_file(@sections_root.join("audio_storage_section.mp3"), "section audio")
 
       assert_equal path.realpath,
-                   AudioStorage.resolve(
+                   AudioStorage.validated_audio_path(
                      "/storage/audio/sections/audio_storage_section.mp3",
                      scope: :sections
                    )
@@ -43,30 +43,30 @@ module ContentEngine
     test "rejects traversal outside the selected root" do
       write_file(Rails.root.join("storage", "secret.mp3"), "secret")
 
-      assert_nil AudioStorage.resolve("/storage/audio/../secret.mp3", scope: :audio)
+      assert_nil AudioStorage.validated_audio_path("/storage/audio/../secret.mp3", scope: :audio)
     end
 
     test "rejects a sibling directory with the same prefix" do
       write_file(@sibling_root.join("secret.mp3"), "secret")
 
-      assert_nil AudioStorage.resolve("/storage/audio-escape/secret.mp3", scope: :audio)
+      assert_nil AudioStorage.validated_audio_path("/storage/audio-escape/secret.mp3", scope: :audio)
     end
 
     test "rejects non-MP3 files" do
       write_file(@audio_root.join("audio_storage_invalid.txt"), "not audio")
 
-      assert_nil AudioStorage.resolve("/storage/audio/audio_storage_invalid.txt", scope: :audio)
+      assert_nil AudioStorage.validated_audio_path("/storage/audio/audio_storage_invalid.txt", scope: :audio)
     end
 
     test "rejects missing files and directories" do
-      assert_nil AudioStorage.resolve("/storage/audio/audio_storage_missing.mp3", scope: :audio)
-      assert_nil AudioStorage.resolve("/storage/audio", scope: :audio)
+      assert_nil AudioStorage.validated_audio_path("/storage/audio/audio_storage_missing.mp3", scope: :audio)
+      assert_nil AudioStorage.validated_audio_path("/storage/audio", scope: :audio)
     end
 
     test "rejects files below the requested minimum size" do
       write_file(@audio_root.join("audio_storage_tiny.mp3"), "tiny")
 
-      assert_nil AudioStorage.resolve(
+      assert_nil AudioStorage.validated_audio_path(
         "/storage/audio/audio_storage_tiny.mp3",
         scope: :audio,
         minimum_size: 1_024
@@ -79,7 +79,7 @@ module ContentEngine
       File.symlink(outside, symlink)
       @created_paths << symlink
 
-      assert_nil AudioStorage.resolve("/storage/audio/audio_storage_symlink.mp3", scope: :audio)
+      assert_nil AudioStorage.validated_audio_path("/storage/audio/audio_storage_symlink.mp3", scope: :audio)
     rescue NotImplementedError, Errno::EACCES
       skip "symlink creation is unavailable on this platform"
     end
@@ -96,7 +96,7 @@ module ContentEngine
     end
 
     test "rejects unknown storage scopes" do
-      assert_nil AudioStorage.resolve("/storage/audio/file.mp3", scope: :unknown)
+      assert_nil AudioStorage.validated_audio_path("/storage/audio/file.mp3", scope: :unknown)
     end
 
     private

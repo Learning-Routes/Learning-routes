@@ -77,7 +77,7 @@ module ContentEngine
         return
       end
 
-      file_path = AudioStorage.resolve(
+      file_path = AudioStorage.validated_audio_path(
         cached[:audio_url],
         scope: :sections,
         minimum_size: 1_024

@@ -7,7 +7,7 @@ module ContentEngine
       content = @step.ai_contents.with_audio_ready.first
 
       if content&.audio_url
-        file_path = AudioStorage.resolve(content.audio_url, scope: :audio)
+        file_path = AudioStorage.validated_audio_path(content.audio_url, scope: :audio)
 
         if file_path
           send_file file_path, type: "audio/mpeg", disposition: :inline

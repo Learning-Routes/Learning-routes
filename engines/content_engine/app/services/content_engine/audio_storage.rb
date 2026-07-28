@@ -8,7 +8,7 @@ module ContentEngine
     }.freeze
 
     class << self
-      def resolve(stored_url, scope:, minimum_size: 1)
+      def validated_audio_path(stored_url, scope:, minimum_size: 1)
         root = ROOTS.fetch(scope).call.expand_path
         raw = stored_url.to_s
         return if raw.blank? || raw.include?("\0")
@@ -28,7 +28,7 @@ module ContentEngine
       end
 
       def delete(stored_url, scope:, minimum_size: 1)
-        path = resolve(stored_url, scope: scope, minimum_size: minimum_size)
+        path = validated_audio_path(stored_url, scope: scope, minimum_size: minimum_size)
         return false unless path
 
         path.delete

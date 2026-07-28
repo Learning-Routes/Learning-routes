@@ -1,10 +1,14 @@
 {
   "ignored_warnings": [
     {
-      "fingerprint": "f3f3a8f377adbaa5c24bb2ddad34bdb26d9acf7121cfd7f68038e7f522f67f37",
-      "note": "False positive: audio_url is validated and path traversal is guarded by Rails.root.join + expand_path check in controller"
+      "fingerprint": "7f71e0e31b864b73c4cf053942c6b8b06dc13c86e1ea0b20c4cd5861fe0df966",
+      "note": "False positive: ContentEngine::AudioStorage.validated_audio_path restricts section MP3s to the canonical storage/audio/sections real path, rejects traversal and symlink escapes, and enforces a 1 KiB minimum. Covered by audio_storage_test.rb and section_audio_controller_test.rb."
+    },
+    {
+      "fingerprint": "7f7272b9e96e964858f1fcd19b083131d4fb96a5c5e04b428dd5de6f12975898",
+      "note": "False positive: ContentEngine::AudioStorage.validated_audio_path restricts lesson MP3s to the canonical storage/audio real path and rejects traversal, sibling-prefix, and symlink escapes. Covered by audio_storage_test.rb and audio_controller_test.rb."
     }
   ],
-  "updated": "2026-03-06",
-  "brakeman_version": "8.0.2"
+  "updated": "2026-07-27",
+  "brakeman_version": "8.0.4"
 }
