@@ -55,6 +55,26 @@ env:
     # Enable Puma plugins for better GC and memory efficiency
     SOLID_QUEUE_IN_PUMA: "false"
 
+# Shared application storage.
+#
+# `web` and `job` are separate containers on the same host, and they exchange
+# files through Rails.root/storage: TTS output is written by `job`
+# (audio_generator.rb, section_audio_generator.rb) and served by `web`
+# (audio_storage.rb), while voice uploads are written by `web` and read by `job`
+# (voice_evaluator.rb). Without a shared volume each container sees only its own
+# empty storage/ — audio 404s and voice assessment reports "file not found" —
+# and every deploy discards the previous container's files.
+#
+# `volumes:` is a TOP-LEVEL key in Kamal 2: Configuration#volume_args
+# (kamal-2.11.0/lib/kamal/configuration.rb:219) is consumed by Commands::App
+# (commands/app.rb:29), which builds the `docker run` for EVERY app role. There
+# is no role-level `volumes:` for app roles.
+#
+# A named volume (not a bind mount) so Docker owns the lifecycle and the data
+# survives container replacement on deploy.
+volumes:
+  - "learning_routes_storage:/rails/storage"
+
 aliases:
   console: app exec --interactive --reuse "bin/rails console"
   shell: app exec --interactive --reuse "bash"

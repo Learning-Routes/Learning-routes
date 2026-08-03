@@ -7,6 +7,15 @@
 .env*
 .DS_Store
 
+# Never bake decryption keys into the image. `Dockerfile` does `COPY . .` and the
+# resulting image is pushed to a PUBLIC registry (gilberga/learning_routes), so a
+# key copied in here is a key published to the world. Assets are precompiled with
+# SECRET_KEY_BASE_DUMMY=1, so no key is needed at build time; at runtime Kamal
+# supplies RAILS_MASTER_KEY as an env secret. The encrypted *.yml.enc payloads are
+# safe to ship — they are useless without the key.
+config/master.key
+config/credentials/*.key
+
 # Ignore log and temp files
 log/*
 tmp/*

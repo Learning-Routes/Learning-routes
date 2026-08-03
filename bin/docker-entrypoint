@@ -8,7 +8,12 @@ fi
 # If running the rails server then create or migrate existing database
 if [ "${@: -2:1}" == "./bin/rails" ] && [ "${@: -1:1}" == "server" ]; then
   echo "Preparing all databases..."
-  ./bin/rails db:prepare || echo "WARNING: db:prepare failed — check database configuration"
+  # No `|| echo ...` fallback. `|| ` suppresses `set -e`, so a failed migration
+  # used to leave the container serving traffic on a half-migrated schema while
+  # still passing /up. Failing here is deliberate: the container exits non-zero,
+  # the Kamal healthcheck never goes green, and the rollout is refused instead of
+  # silently corrupting a release.
+  ./bin/rails db:prepare
   echo "Database preparation complete."
 fi
 

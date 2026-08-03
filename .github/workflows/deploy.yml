@@ -20,8 +20,15 @@ jobs:
       DOCKER_BUILDKIT: 1
       KAMAL_REGISTRY_USERNAME: ${{ secrets.KAMAL_REGISTRY_USERNAME }}
       KAMAL_REGISTRY_PASSWORD: ${{ secrets.KAMAL_REGISTRY_PASSWORD }}
+      # Must hold the contents of config/credentials/production.key — this app uses
+      # per-environment credentials, so production.yml.enc is what gets decrypted.
       RAILS_MASTER_KEY: ${{ secrets.RAILS_MASTER_KEY }}
-      LEARNING_ROUTES_DATABASE_PASSWORD: ${{ secrets.LEARNING_ROUTES_DATABASE_PASSWORD }}
+      # The env var MUST be named POSTGRES_PASSWORD: that is what database.yml:59
+      # and .kamal/secrets read. It was previously exported as
+      # LEARNING_ROUTES_DATABASE_PASSWORD, a name nothing in the repo reads, so the
+      # Postgres password was always empty on an Actions deploy. The GitHub secret
+      # keeps its existing name; only the exported variable is corrected.
+      POSTGRES_PASSWORD: ${{ secrets.LEARNING_ROUTES_DATABASE_PASSWORD }}
 
     steps:
       - name: Checkout code
