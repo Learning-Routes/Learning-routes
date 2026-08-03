@@ -17,6 +17,12 @@ production:
     class: AiOrchestrator::CostAlertJob
     queue: default
     schedule: every hour
+  # Without this, a request abandoned by a dead worker locks that user out of the
+  # wizard permanently — both #new and #create refuse to start a second one.
+  reap_stale_route_requests:
+    class: ReapStaleRouteRequestsJob
+    queue: low
+    schedule: every 10 minutes
 
 development:
   daily_streak_reset:
@@ -31,3 +37,7 @@ development:
     class: AiOrchestrator::CostAlertJob
     queue: default
     schedule: every hour
+  reap_stale_route_requests:
+    class: ReapStaleRouteRequestsJob
+    queue: low
+    schedule: every 10 minutes

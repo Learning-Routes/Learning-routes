@@ -1,5 +1,10 @@
 <% content_for(:title) { t("wizard.title") } %>
-<% content_for(:hide_navbar) { true } %>
+<%# The block must return a String: capture() runs the value through a case that
+    only handles OutputBuffer/SafeBuffer/String and falls through to nil for
+    anything else (actionview capture_helper.rb:58-66), so a bare `true` stored
+    nothing and content_for?(:hide_navbar) in the layout was always false —
+    leaving the fixed navbar rendered over the full-screen wizard. %>
+<% content_for(:hide_navbar) { "1" } %>
 <% content_for(:head) do %>
   <style>
     @media (min-width: 480px) {

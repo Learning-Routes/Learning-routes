@@ -106,10 +106,22 @@ Rails.application.configure do
   # Use native EventedFileUpdateChecker for fast file watching (requires listen gem)
   config.file_watcher = ActiveSupport::EventedFileUpdateChecker if Gem.loaded_specs.key?("listen")
 
-  # strict_loading_by_default stays on in production (via application.rb) as an N+1 guard,
-  # but is off in dev — too many call sites rely on lazy loading of current_user associations.
-  # Prosopite (below) already logs N+1s in dev without crashing requests.
-  config.active_record.strict_loading_by_default = false
+  # Keep the production N+1 guard switched ON in development.
+  #
+  # It used to be `false` here, which meant the guard was active *only* where it
+  # could hurt (production) and disabled everywhere it could warn — the reason the
+  # /routes/create strict-loading 500 reached users. Production now runs :log, so
+  # dev/test are what has to catch these before they ship.
+  #
+  # :n_plus_one_only keeps day-to-day development quiet: it raises for the genuine
+  # N+1 shape (traversing an association across a collection) but not for a single
+  # lazy load on a single record. Note the trade-off — the exact /routes/create bug
+  # (`current_user.learning_profile`, a has_one on one record) does NOT raise under
+  # this mode. test.rb deliberately uses :all so the suite still gates that class of
+  # bug; Prosopite below remains the dev-time backstop.
+  config.active_record.strict_loading_by_default = true
+  config.active_record.strict_loading_mode = :n_plus_one_only
+  config.active_record.action_on_strict_loading_violation = :raise
 
   # Enable fragment cache logging to diagnose cache hits/misses
   config.action_controller.enable_fragment_cache_logging = true

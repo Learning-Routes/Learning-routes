@@ -24,8 +24,23 @@ class RouteRequest < ApplicationRecord
 
   before_save :calculate_style_result, if: :should_calculate_style?
 
+  # A request older than this with a non-terminal status is considered abandoned:
+  # the worker that owned it died, or the job was never picked up. Generation
+  # normally completes in single-digit minutes.
+  STALE_AFTER = (ENV["ROUTE_REQUEST_STALE_AFTER_MINUTES"] || 30).to_i.minutes
+
   scope :recent, -> { order(created_at: :desc) }
   scope :pending_or_generating, -> { where(status: %w[pending generating]) }
+
+  # The single source of truth for "this user already has a request in flight".
+  #
+  # #new and #create MUST agree on this: they used to disagree (#new treated only
+  # `generating` as in-progress while #create blocked on pending-or-generating),
+  # so a stuck `pending` row showed the user a fresh form that always bounced back
+  # to a spinner — locking them out of the wizard permanently. The time bound stops
+  # one dead row from doing that forever; ReapStaleRouteRequestsJob fails them out.
+  scope :active, -> { pending_or_generating.where(created_at: STALE_AFTER.ago..) }
+  scope :stale, -> { pending_or_generating.where(created_at: ...STALE_AFTER.ago) }
 
   TOPIC_LABELS = {
     "programming" => "Programación",

@@ -10,9 +10,15 @@ module ContentEngine
     MAX_RETRIES = 3
 
     def perform(route_step_id, options = {})
-      @step = LearningRoutesEngine::RouteStep.find(route_step_id)
+      # Eager-load the route/profile/user chain in one query. strict_loading_by_default
+      # is on, so traversing these lazily is a violation — it raised here as soon as the
+      # test environment started enforcing the guard, and logs on every run in
+      # production. Same fix pattern as RouteWizardController#new.
+      @step = LearningRoutesEngine::RouteStep
+                .includes(learning_route: { learning_profile: :user })
+                .find(route_step_id)
       @route = @step.learning_route
-      @profile = @route.learning_profile
+      @profile = @route&.learning_profile
       @user = @profile&.user
       @options = options.symbolize_keys
 

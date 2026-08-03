@@ -58,11 +58,22 @@ Rails.application.configure do
   # Raise error when a before_action's only/except options reference missing actions.
   config.action_controller.raise_on_missing_callback_actions = true
 
-  # strict_loading_by_default is on in production via application.rb, which is the
-  # right call in production (Prosopite-style guard against N+1). Tests, however,
-  # frequently `record.reload` and then traverse associations to assert state —
-  # that pattern raises StrictLoadingViolationError without changing what the
-  # test is actually verifying. Tests should test BEHAVIOUR. Production + the
-  # Prosopite middleware in dev still catch real N+1s.
-  config.active_record.strict_loading_by_default = false
+  # The test suite is the gate for strict-loading regressions.
+  #
+  # This was previously `false`, on the reasoning that tests reload records and
+  # traverse associations to assert state. The cost of that convenience was that
+  # nothing anywhere caught a lazy traversal before production did — which is how
+  # `current_user.learning_profile` shipped a 500 on /routes/create.
+  #
+  # :all (not :n_plus_one_only) is deliberate: only :all raises for a has_one/
+  # belongs_to lazily loaded off a single record, which is precisely the shape of
+  # that bug. Verified — under :n_plus_one_only the /routes/create call site does
+  # not raise at all.
+  #
+  # Where a test genuinely needs to traverse after a reload, scope the opt-out to
+  # that assertion (`record.strict_loading!(false)` or `.includes(...)`) rather
+  # than disabling the guard suite-wide.
+  config.active_record.strict_loading_by_default = true
+  config.active_record.strict_loading_mode = :all
+  config.active_record.action_on_strict_loading_violation = :raise
 end

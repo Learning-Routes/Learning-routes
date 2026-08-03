@@ -22,12 +22,24 @@ class WizardRouteGenerationJobTest < ActiveSupport::TestCase
     }.merge(overrides))
   end
 
+  # Reload a request and opt that one record out of strict loading.
+  #
+  # These tests assert on the job's OUTPUT by traversing the association the job
+  # assigned (`request.update!(learning_route: route)`), which is behaviour
+  # verification, not an N+1 — the job itself never lazily loads it. test.rb runs
+  # strict_loading_by_default with mode :all so the suite gates the /routes/create
+  # class of bug; scope the exemption to the assertion rather than switching the
+  # guard off suite-wide.
+  def reload_for_assertions(record)
+    record.reload.tap { |r| r.strict_loading!(false) }
+  end
+
   test "generates a learning route from a route request" do
     rr = create_request
 
     WizardRouteGenerationJob.perform_now(rr.id)
 
-    rr.reload
+    reload_for_assertions(rr)
     assert_equal "completed", rr.status
     assert_not_nil rr.learning_route
     assert rr.learning_route.route_steps.count > 0
@@ -36,7 +48,7 @@ class WizardRouteGenerationJobTest < ActiveSupport::TestCase
   test "sets status to generating then completed" do
     rr = create_request
     WizardRouteGenerationJob.perform_now(rr.id)
-    rr.reload
+    reload_for_assertions(rr)
     assert_equal "completed", rr.status
   end
 
@@ -73,7 +85,7 @@ class WizardRouteGenerationJobTest < ActiveSupport::TestCase
   test "route steps have correct delivery formats" do
     rr = create_request
     WizardRouteGenerationJob.perform_now(rr.id)
-    rr.reload
+    reload_for_assertions(rr)
 
     formats = rr.learning_route.route_steps.pluck(:delivery_format)
     assert formats.all? { |f| %w[audio text interactive mixed].include?(f) }
@@ -83,7 +95,7 @@ class WizardRouteGenerationJobTest < ActiveSupport::TestCase
     @user.update(locale: "es")
     rr = create_request
     WizardRouteGenerationJob.perform_now(rr.id)
-    rr.reload
+    reload_for_assertions(rr)
 
     assert_equal "es", rr.learning_route.locale
     @user.update(locale: "en")
@@ -92,7 +104,7 @@ class WizardRouteGenerationJobTest < ActiveSupport::TestCase
   test "route has bilingual translations" do
     rr = create_request
     WizardRouteGenerationJob.perform_now(rr.id)
-    rr.reload
+    reload_for_assertions(rr)
 
     translations = rr.learning_route.translations
     assert translations.key?("en"), "Missing EN translations"
@@ -102,7 +114,7 @@ class WizardRouteGenerationJobTest < ActiveSupport::TestCase
   test "first step is available, rest are locked" do
     rr = create_request
     WizardRouteGenerationJob.perform_now(rr.id)
-    rr.reload
+    reload_for_assertions(rr)
 
     steps = rr.learning_route.route_steps.order(:position)
     assert_equal "available", steps.first.status
@@ -114,7 +126,7 @@ class WizardRouteGenerationJobTest < ActiveSupport::TestCase
   test "uses session_minutes for step duration" do
     rr = create_request(session_minutes: 15)
     WizardRouteGenerationJob.perform_now(rr.id)
-    rr.reload
+    reload_for_assertions(rr)
 
     max_minutes = rr.learning_route.route_steps.maximum(:estimated_minutes)
     assert max_minutes <= 15, "Steps should not exceed session_minutes (15), got #{max_minutes}"
@@ -133,7 +145,7 @@ class WizardRouteGenerationJobTest < ActiveSupport::TestCase
       job.perform(rr.id)
     end
 
-    rr.reload
+    reload_for_assertions(rr)
     assert_equal "failed", rr.status
     assert_match(/Simulated failure/, rr.error_message)
   end

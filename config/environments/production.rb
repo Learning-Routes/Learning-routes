@@ -87,6 +87,20 @@ Rails.application.configure do
   # the I18n.default_locale when a translation cannot be found).
   config.i18n.fallbacks = true
 
+  # Log, don't raise, on strict loading violations.
+  #
+  # application.rb enables strict_loading_by_default for every environment, and
+  # ActiveRecord defaults action_on_strict_loading_violation to :raise
+  # (activerecord-8.1.3/lib/active_record.rb:371). 101 of the app's 102
+  # associations carry no `strict_loading: false` opt-out, so any lazy traversal
+  # that slipped through review became a 500 in production — which is exactly how
+  # /routes/create broke. :log keeps the N+1 signal without taking the page down.
+  #
+  # See config/initializers/strict_loading_notification.rb: the built-in log
+  # subscriber for this event logs at DEBUG, and production runs at INFO, so the
+  # violations would otherwise be invisible. That initializer re-emits them at WARN.
+  config.active_record.action_on_strict_loading_violation = :log
+
   # Do not dump schema after migrations.
   config.active_record.dump_schema_after_migration = false
 

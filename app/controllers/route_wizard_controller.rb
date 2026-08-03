@@ -1,12 +1,20 @@
 class RouteWizardController < ApplicationController
   before_action :authenticate_user!
+  # `flash.too_many_requests`, not `flash.rate_limited` — the latter does not exist
+  # in the flash: scope of either locale, so this rendered "Translation missing" on
+  # the 6th submit. The `rate_limited` keys elsewhere in en/es.yml belong to the
+  # route-deletion and AI-interaction scopes.
   rate_limit to: 5, within: 10.minutes, only: :create, with: -> {
-    redirect_to new_route_wizard_path, alert: t("flash.rate_limited")
+    redirect_to new_route_wizard_path, alert: t("flash.too_many_requests")
   }
 
   def new
-    @existing_request = current_user.route_requests.pending_or_generating.first
-    if @existing_request&.generating?
+    # Must use the same predicate as #create (RouteRequest.active). Previously this
+    # checked only `generating?` while #create blocked on pending-or-generating, so a
+    # stuck `pending` row rendered a fresh form whose every submission bounced back
+    # to the generating partial.
+    @existing_request = current_user.route_requests.active.first
+    if @existing_request
       @route_request = @existing_request
       @generating = true
     else
@@ -14,13 +22,19 @@ class RouteWizardController < ApplicationController
       @generating = false
     end
 
-    # Load saved learning preferences for pre-fill
-    @saved_profile = current_user.learning_profile
+    # Load saved learning preferences for pre-fill.
+    #
+    # Query the profile directly rather than traversing current_user.learning_profile:
+    # strict_loading_by_default is on, so the lazy has_one traversal raised
+    # StrictLoadingViolationError and 500'd this page in production. Same pattern and
+    # same reason as AiOrchestrator::CurriculumBrain#initialize.
+    @saved_profile = LearningRoutesEngine::LearningProfile.find_by(user_id: current_user.id)
   end
 
   def create
-    # Prevent duplicate requests while one is already generating
-    existing = current_user.route_requests.pending_or_generating.first
+    # Prevent duplicate requests while one is already generating.
+    # Same scope as #new — see RouteRequest.active.
+    existing = current_user.route_requests.active.first
     if existing
       respond_to do |format|
         format.turbo_stream {
@@ -57,12 +71,14 @@ class RouteWizardController < ApplicationController
       error_msg = @route_request.errors.full_messages.join(". ")
       respond_to do |format|
         format.turbo_stream {
-          render turbo_stream: turbo_stream.replace("wizard-error-banner") {
-            tag.div(id: "wizard-error-banner", "data-route-wizard-target": "errorBanner",
-              style: "max-width:640px; width:100%; margin-bottom:10px; padding:10px 16px; border-radius:10px; background:var(--color-flash-alert-bg, rgba(176,96,80,0.08)); border:1px solid var(--color-flash-alert-border, rgba(176,96,80,0.15)); font-family:'DM Sans',sans-serif; font-size:0.78rem; color:var(--color-flash-alert-text, #B06050);") {
-              error_msg
-            }
-          }
+          # `helpers.content_tag`, not a bare `tag.div`: inside this block `self` is
+          # the controller, which has no TagHelper, so `tag` raised NoMethodError on
+          # every validation failure. Matches ContentEngine::NotesController#create.
+          render turbo_stream: turbo_stream.replace("wizard-error-banner",
+            html: helpers.content_tag(:div, error_msg,
+              id: "wizard-error-banner", "data-route-wizard-target": "errorBanner",
+              style: "max-width:640px; width:100%; margin-bottom:10px; padding:10px 16px; border-radius:10px; background:var(--color-flash-alert-bg, rgba(176,96,80,0.08)); border:1px solid var(--color-flash-alert-border, rgba(176,96,80,0.15)); font-family:'DM Sans',sans-serif; font-size:0.78rem; color:var(--color-flash-alert-text, #B06050);")),
+            status: :unprocessable_entity
         }
         format.html {
           flash.now[:alert] = error_msg
