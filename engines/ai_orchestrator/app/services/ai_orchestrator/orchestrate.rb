@@ -1,5 +1,16 @@
 module AiOrchestrator
   class Orchestrate
+    # Raised when a request cannot even be recorded — an unregistered task_type or
+    # model, i.e. the app is misconfigured. Distinct from "the model answered badly",
+    # which is an expected runtime condition callers are right to absorb.
+    #
+    # This distinction exists because collapsing the two is what hid a total product
+    # failure for months: `curriculum_design` was missing from
+    # AiModelConfig::TASK_TYPES, AiInteraction.create! raised RecordInvalid, and
+    # CurriculumBrain's catch-all rescue turned it into a quiet template fallback.
+    # Every route in production was generic and nothing surfaced.
+    class ConfigurationError < StandardError; end
+
     # Main entry point for AI requests.
     # Can be called synchronously or asynchronously (via background job).
     #
@@ -45,15 +56,28 @@ module AiOrchestrator
       # Resolve model
       model = ModelRouter.model_for(@task_type)
 
-      # Create interaction record
-      interaction = AiInteraction.create!(
-        user: @user,
-        model: model,
-        task_type: @task_type,
-        prompt: prompts[:user],
-        status: :pending,
-        metadata: { variables: @variables, system_prompt_length: prompts[:system].length }
-      )
+      # Create interaction record.
+      #
+      # A validation failure here is never the model's fault — task_type is not in
+      # AiModelConfig::TASK_TYPES, or model is not in AiInteraction::SUPPORTED_MODELS.
+      # Translate it into ConfigurationError so callers can tell it apart from a bad
+      # response instead of absorbing both into the same fallback.
+      interaction = begin
+        AiInteraction.create!(
+          user: @user,
+          model: model,
+          task_type: @task_type,
+          prompt: prompts[:user],
+          status: :pending,
+          metadata: { variables: @variables, system_prompt_length: prompts[:system].length }
+        )
+      rescue ActiveRecord::RecordInvalid => e
+        raise ConfigurationError,
+              "Cannot record an AI interaction for task_type=#{@task_type.inspect} " \
+              "model=#{model.inspect}: #{e.record.errors.full_messages.join('; ')}. " \
+              "Register the task type in AiOrchestrator::AiModelConfig::TASK_TYPES and " \
+              "the model in AiOrchestrator::AiInteraction::SUPPORTED_MODELS."
+      end
 
       if async
         AiRequestJob.perform_later(

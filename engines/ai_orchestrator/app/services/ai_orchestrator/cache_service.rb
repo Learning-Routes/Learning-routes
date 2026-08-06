@@ -19,7 +19,15 @@ module AiOrchestrator
       "simplify_content"          => 12.hours,
       "exercise_hint"             => 0,
       "step_quiz"                 => 2.hours,
-      "tutor_reply"               => 0          # Personal, conversational — never cache
+      "tutor_reply"               => 0,         # Personal, conversational — never cache
+      # Structural JSON keyed on the full wizard input, so a hit means genuinely
+      # identical answers — same inputs, same plan. Half of route_generation's 24h
+      # deliberately: this path is newly enabled, and a shorter window limits how
+      # long a bad curriculum could be reserved before we have seen it work in the wild.
+      "curriculum_design"         => 12.hours,
+      # Agent runs are conversational and tool-using; replaying one is meaningless.
+      # (run_agent does not go through CacheService anyway — this keeps the map total.)
+      "content_agent"             => 0
     }.freeze
 
     # Tasks that should never be cached

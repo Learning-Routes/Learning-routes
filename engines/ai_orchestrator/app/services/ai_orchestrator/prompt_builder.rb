@@ -93,8 +93,12 @@ module AiOrchestrator
         result.gsub!("{{user_name}}", @user.name.to_s)
         result.gsub!("{{user_role}}", @user.role.to_s)
 
-        if @user.respond_to?(:learning_profile) && @user.learning_profile
-          profile = @user.learning_profile
+        # Query the profile rather than traversing @user.learning_profile.
+        # strict_loading_by_default is on, so the lazy has_one raised here on EVERY
+        # Orchestrate call that carried a user — including curriculum_design. Same
+        # fix and same reason as RouteWizardController#new and CurriculumBrain#initialize.
+        profile = LearningRoutesEngine::LearningProfile.find_by(user_id: @user.id)
+        if profile
           result.gsub!("{{user_level}}", profile.current_level.to_s)
           result.gsub!("{{learning_style}}", Array(profile.learning_style).join(", "))
           result.gsub!("{{interests}}", Array(profile.interests).join(", "))

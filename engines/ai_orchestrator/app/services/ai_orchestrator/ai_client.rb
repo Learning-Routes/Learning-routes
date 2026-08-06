@@ -36,7 +36,14 @@ module AiOrchestrator
       chat = RubyLLM.chat(model: @model)
 
       model_defaults = Rails.application.config.ai_model_defaults[@task_type&.to_sym] || {}
+      # :response_format is still dropped here, but it is no longer the only signal.
+      # It was a bare `json` marker in the prompt YAML that nothing ever acted on;
+      # real structured output now comes from SchemaRegistry below, which sends the
+      # provider an actual JSON Schema rather than a hint.
       merged_params = model_defaults.merge(params).except(:response_format)
+
+      schema = SchemaRegistry.for(@task_type)
+      chat.with_schema(schema) if schema
 
       chat.with_temperature(merged_params[:temperature]) if merged_params[:temperature]
       if merged_params[:max_tokens]
@@ -54,7 +61,12 @@ module AiOrchestrator
       elapsed_ms = ((monotonic_now - start_time) * 1000).round
 
       {
-        content: response.content,
+        # When a schema is set, RubyLLM JSON.parses the body and hands back a Hash
+        # (ruby_llm-1.11.0/lib/ruby_llm/chat.rb:147-154). AiInteraction#response is a
+        # text column and every consumer parses a JSON string, so re-serialize —
+        # storing a Hash would persist Ruby's `{"a"=>1}` inspect form, which is not
+        # valid JSON and would fail on the way back out.
+        content: serialize_content(response.content),
         model: @model,
         input_tokens: response.input_tokens || 0,
         output_tokens: response.output_tokens || 0,
@@ -150,6 +162,13 @@ module AiOrchestrator
         raise TimeoutError, "GPT Image request timed out: #{e.message}"
       end
       raise RequestError, "GPT Image generation failed: #{e.message}"
+    end
+
+    # Schema-constrained responses arrive as a parsed Hash/Array; everything else is
+    # already a String. Normalise to a String so AiInteraction#response and every
+    # downstream parser see the same thing regardless of how the call was made.
+    def serialize_content(content)
+      content.is_a?(Hash) || content.is_a?(Array) ? content.to_json : content
     end
 
     def monotonic_now

@@ -78,20 +78,67 @@ module AiOrchestrator
       { error: "Failed to parse JSON response", raw: @response.to_s.truncate(500), message: e.message }
     end
 
+    # Pull the JSON payload out of a model response that may be wrapped in prose or
+    # markdown fences.
+    #
+    # Two bugs used to live here, both reproducible:
+    #
+    #   1. The fence regex matched a fence ANYWHERE in the response and captured
+    #      lazily, so a JSON body whose *string values* contained a ```code fence```
+    #      — which describes most lesson content — had its inner fence treated as the
+    #      wrapper. The extractor returned the code sample instead of the JSON.
+    #      Fixed by only unwrapping when the ENTIRE response is one fenced block.
+    #
+    #   2. The object regex was greedy from the first brace to the LAST one in the
+    #      whole string, so trailing prose containing `}` (e.g. "use {curly} braces
+    #      carefully") was swallowed into the captured payload and broke the parse.
+    #      Fixed by scanning for the matching close bracket instead of regex-matching.
     def extract_json_string
       text = @response.to_s.strip
 
-      # Try extracting from markdown code blocks
-      if (match = text.match(/```(?:json)?\s*\n?(.+?)\n?\s*```/m))
-        return match.captures.first.strip
+      # Unwrap only a response that is ENTIRELY one fenced block (\A...\z).
+      if (match = text.match(/\A```(?:json)?[ \t]*\n?(.*?)\n?[ \t]*```\z/m))
+        text = match.captures.first.strip
       end
 
-      # Try extracting JSON object or array directly
-      if (match = text.match(/(\{[\s\S]*\}|\[[\s\S]*\])/))
-        return match.captures.first.strip
+      balanced_json(text) || text
+    end
+
+    # Return the substring from the first `{`/`[` to its matching close bracket, or
+    # nil when there is no balanced payload. String contents and backslash escapes
+    # are skipped so braces inside JSON string values do not affect the depth count.
+    def balanced_json(text)
+      start = text.index(/[{\[]/)
+      return nil unless start
+
+      opening = text[start]
+      closing = opening == "{" ? "}" : "]"
+      depth = 0
+      in_string = false
+      escaped = false
+
+      text[start..].each_char.with_index do |char, offset|
+        if in_string
+          if escaped
+            escaped = false
+          elsif char == "\\"
+            escaped = true
+          elsif char == '"'
+            in_string = false
+          end
+          next
+        end
+
+        case char
+        when '"' then in_string = true
+        when opening then depth += 1
+        when closing
+          depth -= 1
+          return text[start, offset + 1] if depth.zero?
+        end
       end
 
-      text
+      nil
     end
 
     def parse_text

@@ -116,5 +116,63 @@ module AiOrchestrator
       result = parser.parse
       assert_equal({ "key" => "value" }, result)
     end
+
+    # --- Extraction regressions (AUDIT.md §P1-4) ---
+    #
+    # Each of these was reproduced as a real failure before the fix. The third is
+    # the damaging one: a lesson body containing a fenced code block, which is most
+    # of them.
+
+    NESTED_QUIZ = {
+      "questions" => [
+        { "question" => "Q1", "options" => %w[a b], "correct_answer" => 0,
+          "explanation" => "because {x}" }
+      ]
+    }.freeze
+
+    test "greedy matching does not swallow prose that follows the JSON" do
+      raw = "#{NESTED_QUIZ.to_json}\nNote: use {curly} braces carefully."
+
+      result = ResponseParser.new(raw, expected_format: :json, task_type: :step_quiz).parse
+
+      assert_not result.key?(:error), "trailing prose containing a brace broke the parse"
+      assert_equal 1, result["questions"].size
+    end
+
+    test "a fence inside a JSON string value is not mistaken for the wrapper" do
+      raw = { "title" => "T", "content" => "```ruby\nputs 1\n```" }.to_json
+
+      result = ResponseParser.new(raw, expected_format: :json, task_type: :lesson_content).parse
+
+      assert_not result.key?(:error), "an inner code fence was treated as the response wrapper"
+      assert_equal "```ruby\nputs 1\n```", result["content"]
+    end
+
+    test "a fenced response whose body contains its own fence still parses" do
+      inner = { "title" => "T", "content" => "see:\n```ruby\nputs 1\n```\ndone" }.to_json
+      raw = "```json\n#{inner}\n```"
+
+      result = ResponseParser.new(raw, expected_format: :json, task_type: :lesson_content).parse
+
+      assert_not result.key?(:error)
+      assert_includes result["content"], "puts 1"
+    end
+
+    test "braces inside string values do not unbalance the scan" do
+      raw = '{"a":[{"b":"}"},{"c":"{"}],"d":1}'
+
+      result = ResponseParser.new(raw, expected_format: :json).parse
+
+      assert_equal 1, result["d"]
+      assert_equal 2, result["a"].size
+    end
+
+    test "prose before the JSON is still stripped" do
+      raw = "Here is your quiz:\n#{NESTED_QUIZ.to_json}"
+
+      result = ResponseParser.new(raw, expected_format: :json, task_type: :step_quiz).parse
+
+      assert_equal 1, result["questions"].size
+    end
   end
 end

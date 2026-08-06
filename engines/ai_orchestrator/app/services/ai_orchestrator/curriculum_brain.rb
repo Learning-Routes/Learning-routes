@@ -55,10 +55,25 @@ module AiOrchestrator
       validate!(payload)
       normalize(payload)
     rescue InvalidStructureError => e
+      # Expected: the model answered, but not usefully. Quiet fallback is correct.
       Rails.logger.warn("[CurriculumBrain] Invalid structure from LLM — falling back to template. Reason: #{e.message}")
+      nil
+    rescue Orchestrate::ConfigurationError => e
+      # NOT expected: we could not call the model at all because the app is
+      # misconfigured. Absorbing this is what let every route silently fall back to
+      # the generic template for months, with no error rate and no failed jobs to
+      # notice. Fail loudly where a human is watching, fail open where a user is.
+      Rails.logger.error(
+        "[CurriculumBrain][MISCONFIGURATION] Cannot reach the model — every route " \
+        "will fall back to the generic template until this is fixed. #{e.message}"
+      )
+      Rails.error.report(e, handled: true, severity: :error, source: "ai_orchestrator.curriculum_brain")
+      raise if Rails.env.local?
+
       nil
     rescue => e
       Rails.logger.error("[CurriculumBrain] Unexpected failure — falling back to template. #{e.class}: #{e.message}")
+      Rails.error.report(e, handled: true, severity: :error, source: "ai_orchestrator.curriculum_brain")
       nil
     end
 

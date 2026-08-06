@@ -14,6 +14,14 @@ module AiOrchestrator
     scope :enabled, -> { where(enabled: true) }
     scope :for_task, ->(task) { where(task_type: task).order(:priority) }
 
+    # NOTE: %w[] has no comment syntax — a `#` inside the literal is just another
+    # word. Keep all commentary outside the brackets.
+    #
+    # curriculum_design and content_agent were routed by ModelRouter but missing
+    # from this list. AiInteraction validates task_type against it, so
+    # Orchestrate.call raised RecordInvalid, CurriculumBrain rescued it and returned
+    # nil, and EVERY route silently fell back to the hardcoded 8-step template.
+    # test/models/ai_orchestrator/ai_model_config_test.rb keeps the two in step.
     TASK_TYPES = %w[
       assessment_questions
       route_generation
@@ -33,6 +41,8 @@ module AiOrchestrator
       exercise_hint
       step_quiz
       tutor_reply
+      curriculum_design
+      content_agent
     ].freeze
 
     validates :task_type, inclusion: { in: TASK_TYPES }
