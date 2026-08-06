@@ -109,9 +109,75 @@ class AiOrchestrator::CurriculumBrainWiringTest < ActiveSupport::TestCase
     end
   end
 
+  # --- Prerequisite repair ---
+  #
+  # Measured against the live API, a step listing itself or a later step as a
+  # prerequisite was THE dominant failure: it discarded an otherwise excellent
+  # curriculum and served the generic template instead. A JSON Schema cannot express
+  # "integers strictly less than this element's own index", so it has to be repaired.
+
+  test "a self-referential prerequisite is repaired rather than discarding the curriculum" do
+    payload = valid_payload
+    payload["steps"][3]["prerequisites"] = [2, 3] # 3 refers to itself
+
+    stub_orchestrate(response: payload.to_json) do
+      result = AiOrchestrator::CurriculumBrain.design(
+        route_request: @request, user: @user, content_locale: "en"
+      )
+
+      assert_not_nil result, "one bad index should not cost the whole curriculum"
+      assert_equal [2], result[:steps][3][:prerequisites]
+    end
+  end
+
+  test "a forward-referencing prerequisite is dropped" do
+    payload = valid_payload
+    payload["steps"][1]["prerequisites"] = [0, 4] # 4 is a later step
+
+    stub_orchestrate(response: payload.to_json) do
+      result = AiOrchestrator::CurriculumBrain.design(
+        route_request: @request, user: @user, content_locale: "en"
+      )
+
+      assert_equal [0], result[:steps][1][:prerequisites]
+    end
+  end
+
+  test "repair only ever removes edges, never invents them" do
+    payload = valid_payload
+    payload["steps"][2]["prerequisites"] = [0, 1]
+
+    stub_orchestrate(response: payload.to_json) do
+      result = AiOrchestrator::CurriculumBrain.design(
+        route_request: @request, user: @user, content_locale: "en"
+      )
+
+      assert_equal [0, 1], result[:steps][2][:prerequisites], "valid prerequisites must survive untouched"
+      # Every surviving edge points strictly backwards, so the graph stays acyclic.
+      result[:steps].each_with_index do |step, idx|
+        step[:prerequisites].each { |p| assert p < idx, "step #{idx} kept a non-backward edge #{p}" }
+      end
+    end
+  end
+
+  test "repair does not rescue a genuinely wrong curriculum" do
+    # Deliberate: only the prerequisite-ordering error is patched. Structural errors
+    # the model has no business making still fall back to the template.
+    payload = valid_payload
+    payload["steps"].first["content_type"] = "assessment" # testing before teaching
+
+    stub_orchestrate(response: payload.to_json) do
+      assert_nil AiOrchestrator::CurriculumBrain.design(
+        route_request: @request, user: @user, content_locale: "en"
+      )
+    end
+  end
+
   test "falls back quietly when the model returns an unusable structure" do
+    # NOTE: this used to use a forward-referencing prerequisite, which repair! now
+    # legitimately fixes. Use a value that cannot be inferred or patched instead.
     bad = valid_payload
-    bad["steps"].first["prerequisites"] = [3] # forward reference — invalid
+    bad["steps"][2]["bloom_level"] = 99
 
     stub_orchestrate(response: bad.to_json) do
       assert_nil AiOrchestrator::CurriculumBrain.design(

@@ -52,6 +52,7 @@ module AiOrchestrator
       end
 
       payload = parse_response(interaction.response)
+      repair!(payload)
       validate!(payload)
       normalize(payload)
     rescue InvalidStructureError => e
@@ -134,6 +135,44 @@ module AiOrchestrator
       JSON.parse(stripped)
     rescue JSON::ParserError => e
       raise InvalidStructureError, "response is not valid JSON: #{e.message.truncate(120)}"
+    end
+
+    # Repair the one model error that is both common and trivially fixable, so a
+    # single bad index does not cost the student an entire curriculum.
+    #
+    # Measured against the live API, the dominant failure was a step listing itself
+    # or a later step as a prerequisite ("step 9 has bad prerequisite 9"). A JSON
+    # Schema cannot express "integers strictly less than this element's own index",
+    # so the provider cannot be constrained into getting it right — it has to be
+    # handled here.
+    #
+    # Dropping an out-of-range prerequisite is provably safe: the remaining edges
+    # still point only backwards, so the graph stays acyclic and topologically
+    # ordered. It can only ever loosen the prerequisite graph, never invent an edge.
+    #
+    # This is deliberately narrow. Everything else stays strict and still falls back
+    # to the template — a curriculum with a bad bloom level or a first-step
+    # assessment is wrong in ways that cannot be silently patched.
+    def repair!(payload)
+      steps = payload["steps"]
+      return unless steps.is_a?(Array)
+
+      dropped = 0
+      steps.each_with_index do |step, idx|
+        next unless step.is_a?(Hash)
+
+        original = Array(step["prerequisites"])
+        kept = original.select { |p| p.is_a?(Integer) && p >= 0 && p < idx }
+        dropped += original.size - kept.size
+        step["prerequisites"] = kept
+      end
+
+      return if dropped.zero?
+
+      Rails.logger.info(
+        "[CurriculumBrain] Repaired #{dropped} out-of-range prerequisite(s) — " \
+        "the model referenced a step at or after the one declaring them."
+      )
     end
 
     def validate!(payload)

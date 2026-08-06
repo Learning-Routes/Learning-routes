@@ -33,9 +33,9 @@ module AiOrchestrator
     private
 
     def chat_via_ruby_llm(prompt:, system_prompt: nil, params: {})
-      chat = RubyLLM.chat(model: @model)
-
       model_defaults = Rails.application.config.ai_model_defaults[@task_type&.to_sym] || {}
+      chat = build_chat(model_defaults.merge(params)[:request_timeout])
+
       # :response_format is still dropped here, but it is no longer the only signal.
       # It was a bare `json` marker in the prompt YAML that nothing ever acted on;
       # real structured output now comes from SchemaRegistry below, which sends the
@@ -162,6 +162,24 @@ module AiOrchestrator
         raise TimeoutError, "GPT Image request timed out: #{e.message}"
       end
       raise RequestError, "GPT Image generation failed: #{e.message}"
+    end
+
+    # Build the chat, optionally with a per-task request timeout.
+    #
+    # ai_services.rb sets a global RubyLLM request_timeout of 30s, which suits short
+    # interactive calls but sits INSIDE the latency distribution of the long
+    # structural ones: measured curriculum_design latencies were 21.6s-29.7s
+    # (median 26.7s) against that 30s limit, so calls timed out at roughly the rate
+    # you would expect, then burned another 30s timing out the fallback model before
+    # falling back to the generic template.
+    #
+    # RubyLLM.context clones the config for this call only, so a task that genuinely
+    # needs longer does not widen the timeout for everything else. Configure it via
+    # `request_timeout:` in Rails.application.config.ai_model_defaults.
+    def build_chat(timeout)
+      return RubyLLM.chat(model: @model) if timeout.blank?
+
+      RubyLLM.context { |c| c.request_timeout = timeout }.chat(model: @model)
     end
 
     # Schema-constrained responses arrive as a parsed Hash/Array; everything else is

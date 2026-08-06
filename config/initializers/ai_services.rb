@@ -25,7 +25,13 @@ end
 Rails.application.config.ai_model_defaults = {
   assessment_questions: { temperature: 0.7, max_tokens: 4096 },
   route_generation:     { temperature: 0.8, max_tokens: 8192 },
-  curriculum_design:    { temperature: 0.5, max_tokens: 6144 },
+  # request_timeout overrides the 30s global above. Curriculum design is a single
+  # large structured-output call: measured latencies are 21.6s-29.7s (median 26.7s),
+  # i.e. the global timeout sits inside the normal distribution and roughly one call
+  # in seven timed out on both primary and fallback before falling back to the
+  # generic template. It runs inside WizardRouteGenerationJob, never a request
+  # thread, so a generous ceiling costs nothing but patience.
+  curriculum_design:    { temperature: 0.5, max_tokens: 6144, request_timeout: 120 },
   lesson_content:       { temperature: 0.7, max_tokens: 8192 },
   code_generation:      { temperature: 0.3, max_tokens: 4096 },
   exam_questions:       { temperature: 0.6, max_tokens: 4096 },
