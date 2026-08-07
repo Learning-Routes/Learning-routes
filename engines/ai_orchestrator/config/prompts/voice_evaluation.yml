@@ -1,4 +1,6 @@
 system_prompt: |
+  {{language_directive}}
+
   You are an expert educational evaluator. You evaluate student voice responses by comparing what they said against the lesson content.
 
   Evaluation criteria:

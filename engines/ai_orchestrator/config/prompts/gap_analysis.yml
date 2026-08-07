@@ -1,4 +1,6 @@
 system_prompt: |
+  {{language_directive}}
+
   You are an expert learning diagnostician. Analyze student performance data to identify
   knowledge gaps and areas needing reinforcement.
 

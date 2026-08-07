@@ -137,6 +137,59 @@ module LearningRoutesEngine
       end
     end
 
+    # Enqueue content generation, unless it is already running or has failed too
+    # recently / too often.
+    #
+    # This used to be two copies of "if content_generating then wait, else enqueue".
+    # ContentPipelineJob clears `content_generating` when it fails, so a failed step
+    # looked exactly like a step that had never started: every refresh re-enqueued
+    # the same failing pipeline and re-paid for the same failing AI calls, while the
+    # student saw a skeleton and then a timeout. `content_error` was written but read
+    # by nothing.
+    #
+    # Sets @content_generating / @content_failed / @content_error for the view.
+    def request_content_generation!
+      metadata = @step.metadata || {}
+
+      if metadata["content_generating"]
+        @content_generating = true
+        return
+      end
+
+      @content_error = metadata["content_error"]
+      if @content_error.present? && !content_retry_due?(metadata)
+        @content_failed = true
+        @content_attempts = metadata["content_attempts"].to_i
+        return
+      end
+
+      begin
+        LearningRoutesEngine::ContentPipelineJob.perform_later(@step.id)
+        @content_generating = true
+      rescue => e
+        Rails.logger.error("Content pipeline failed for step ##{@step.id}: #{e.message}")
+        @content_failed = true
+        @content_error = e.message
+      end
+    end
+
+    # Exponential backoff, capped by a maximum attempt count. Both are configured in
+    # config/initializers/content_generation.rb rather than inlined here.
+    def content_retry_due?(metadata)
+      attempts = metadata["content_attempts"].to_i
+      return false if attempts >= Rails.application.config.content_generation_max_attempts
+
+      failed_at = begin
+        Time.zone.parse(metadata["content_failed_at"].to_s)
+      rescue ArgumentError, TypeError
+        nil
+      end
+      return true if failed_at.nil?
+
+      backoff = Rails.application.config.content_generation_retry_backoff * (2**[attempts - 1, 0].max)
+      Time.current >= failed_at + backoff
+    end
+
     def load_step_content
       # For audio delivery format, handle audio-specific content loading
       if @step.delivery_format == "audio"
@@ -149,16 +202,7 @@ module LearningRoutesEngine
         @content = ContentEngine::AiContent.where(route_step: @step).by_type(:text).first
         unless @content
           # Use the pipeline job instead of the simple content generation job
-          if @step.metadata&.dig("content_generating")
-            @content_generating = true
-          else
-            begin
-              LearningRoutesEngine::ContentPipelineJob.perform_later(@step.id)
-            rescue => e
-              Rails.logger.error("Content pipeline failed for step ##{@step.id}: #{e.message}")
-            end
-            @content_generating = true
-          end
+          request_content_generation!
         end
         if @content
           cached = @step.metadata&.dig("parsed_sections")
@@ -176,16 +220,7 @@ module LearningRoutesEngine
       when "exercise"
         @content = ContentEngine::AiContent.where(route_step: @step).by_type(:exercise).first
         unless @content
-          if @step.metadata&.dig("content_generating")
-            @content_generating = true
-          else
-            begin
-              LearningRoutesEngine::ContentPipelineJob.perform_later(@step.id)
-            rescue => e
-              Rails.logger.error("Content pipeline failed for step ##{@step.id}: #{e.message}")
-            end
-            @content_generating = true
-          end
+          request_content_generation!
         end
         @rendered_html = ContentEngine::MarkdownRenderer.render(@content.body) if @content
       when "assessment"

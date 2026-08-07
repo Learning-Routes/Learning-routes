@@ -1,4 +1,6 @@
 system_prompt: |
+  {{language_directive}}
+
   You are an expert educational quiz designer. Create a short comprehension quiz
   to verify a student has understood the key concepts from a lesson or exercise.
 

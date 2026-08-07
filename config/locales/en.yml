@@ -970,6 +970,12 @@ en:
     open: "Open tutor chat"
     proactive_hint: "Need help?"
   learning_engine:
+    content_failed:
+      title: "We couldn't build this lesson"
+      body: "Something went wrong while generating the content for this step. It hasn't been lost — you can try again in a few minutes, or move on and come back to it."
+      retry: "Try again"
+      exhausted: "We've tried a few times without success. Our team can see the error and will look into it."
+      back: "Back to the route"
     journey:
       route_label: "ROUTE"
       scroll_to_explore: "Scroll to explore"

@@ -31,35 +31,47 @@ system_prompt: |
   LANGUAGE family regardless of other hints.
 
   LANGUAGE family (topic is a language: "Portuguese", "Japanese", "Inglés"):
-    Preferred blocks: :::tap_pairs  :::listen_and_type  :::translate_sentence
-                      :::word_bank  :::speak_sentence   :::flashcards
-                      ## Complete (fill-blank sentences)
+    Preferred blocks: ## Match (target word ↔ native meaning)
+                      ## Complete (cloze — the blank IS the item being taught)
+                      ## Flashcards (vocabulary)  ## Scenario (conversation choice)
+                      ## Pregunta (listening/reading comprehension)
     The lesson should FEEL like a Duolingo unit. Heavy repetition of target
-    vocabulary across multiple block types. Include at least ONE listen_and_type
-    OR speak_sentence so the student practices audio.
+    vocabulary across multiple block types — the same 6-10 words should recur in
+    Match, then Complete, then Flashcards, then Scenario.
+    LISTENING: ## Concepto and ## Resumen sections are narrated automatically by
+    text-to-speech, so write at least one Concepto section containing the target
+    phrases as full sentences the student will hear spoken. That is how this
+    family gets audio — do not ask the student to record themselves; nothing
+    captures speech yet.
 
   PROGRAMMING family (topic is a language, framework, or tool):
-    Preferred blocks: :::terminal_exercise  :::code_challenge  :::bug_fix
-                      :::output_prediction  ## Playground
+    Preferred blocks: ## Playground (write / complete / fix code — it RUNS)
+                      ## Pregunta ("what does this print?")
+                      ## Match (function ↔ purpose, error ↔ cause)
     The lesson should FEEL like a Codecademy unit. Progression: read → predict
-    output → complete → fix bugs → write from scratch. Include at least ONE
-    code_challenge with tests.
+    output (## Pregunta) → complete a stub (## Playground) → fix broken code
+    (## Playground seeded with a bug) → write from scratch (## Playground).
+    Include at least TWO Playground sections: one to complete or repair, one to
+    write. Playground is a real sandboxed editor that executes the code and
+    compares it to the Expected output line — always supply that line.
 
   STEM / MATH / SCIENCE family (topic is "calculus", "physics", "biology"):
-    Preferred blocks: ## Simulation  :::output_prediction  ## Complete (formulas)
-                      :::drag_order  ## Match (concept↔formula)
-    Include at least ONE simulation OR drag_order (process ordering) so the
-    student manipulates the system, not just reads about it.
+    Preferred blocks: ## Simulation  ## Complete (formulas)
+                      ## Match (concept↔formula)  ## Pregunta (predict the result)
+    Include at least ONE Simulation so the student manipulates the system rather
+    than reading about it — give it a real variable range and a real formula.
 
   DESIGN / CREATIVE family (topic is "UI design", "typography", "photography"):
-    Preferred blocks: :::image_label  ## Scenario (critique)  :::drag_order
-                      ## Flashcards (vocabulary)  ## Match (principle↔example)
-    Visual-heavy. Include at least 3 Visual sections (high-quality reference
-    images) and one image_label to identify parts of a real design.
+    Preferred blocks: ## Visual (reference images)  ## Pregunta (identify/critique)
+                      ## Scenario (critique)  ## Match (principle↔example)
+                      ## Flashcards (vocabulary)
+    Visual-heavy. Include at least 3 Visual sections with high-quality reference
+    image descriptions, and pair at least one with a ## Pregunta that asks the
+    student to identify what makes it work.
 
   BUSINESS / SOFT SKILLS family (topic is "negotiation", "marketing", "leadership"):
-    Preferred blocks: ## Scenario (decision-making)  :::drag_order (process)
-                      ## Flashcards (frameworks)  ## Complete (framework slots)
+    Preferred blocks: ## Scenario (decision-making)  ## Match (step ↔ purpose)
+                      ## Complete (framework slots)  ## Flashcards (frameworks)
     Heavy on scenario-based practice. Each concept should be paired with a
     scenario where the student applies it.
 
@@ -108,18 +120,20 @@ system_prompt: |
     CYCLE 1       ## Concepto: First concept
                   ## Visual:   Image for concept 1
                   ## Ejemplo:  Concrete applied example (may contain code blocks if programming)
-                  INTERACTIVE  One block — recognition-level (tap_pairs, flashcards, match)
+                  INTERACTIVE  One block — recognition-level (## Match, ## Flashcards)
 
     CYCLE 2       ## Concepto: Second concept
                   ## Visual:   Image for concept 2 (DIFFERENT angle from visual 1)
-                  INTERACTIVE  One block — understanding-level (fill_blank, word_bank, complete)
+                  INTERACTIVE  One block — understanding-level (## Complete, ## Pregunta)
                   ```mermaid  Diagram tying concepts 1 and 2 together
 
     CYCLE 3 (optional — use for intermediate/advanced)
                   ## Concepto: Third concept
-                  INTERACTIVE  One block — application-level (translate_sentence, code_challenge, scenario)
+                  INTERACTIVE  One block — application-level (## Scenario, ## Simulation,
+                               ## Playground completing a stub)
                   ```mermaid  Second mermaid (DIFFERENT diagram type from the first)
-                  INTERACTIVE  One block — production-level (speak_sentence, bug_fix, terminal_exercise)
+                  INTERACTIVE  One block — production-level (## Playground written from
+                               scratch, or ## Scenario with a consequential choice)
 
     CLOSING       ## Visual:   Third image (summary / capstone visual)
                   ## Pregunta: One or two multiple-choice knowledge checks
@@ -203,117 +217,26 @@ system_prompt: |
       (3-6 cards)
 
   ==================================================
-  NEW INTERACTIVE BLOCKS (::: syntax)
+  BLOCK SYNTAX — ## HEADINGS ONLY
   ==================================================
-  These are the newer rich exercise blocks — prefer them when the step fits.
-  All use the ::: delimiter syntax:
+  Every block type this course can render is listed in the section above, and
+  every one of them uses the "## Prefix:" heading form.
 
-    :::tap_pairs
-    pairs:
-      - ["Hello", "Olá"]
-      - ["Thank you", "Obrigado"]
-      - ["Please", "Por favor"]
-      - ["Goodbye", "Tchau"]
-    :::
-    (3-6 pairs — tap to match across two columns)
+  Do NOT use ":::" fenced blocks. Do NOT invent block types. A block the course
+  cannot render is DROPPED before the student sees it, so an invented exercise is
+  not a bonus — it is a hole in the lesson where an exercise should have been.
 
-    :::listen_and_type
-    audio_text: "Bom dia, como você está?"
-    language: pt
-    hint: "Greeting plus 'how are you'"
-    :::
-    (Audio dictation. Student hears and types what they heard.)
+  Both the English and Spanish prefixes are accepted and are equivalent
+  (## Concepto == ## Concept, ## Pregunta == ## Question, ## Match == ## Emparejar,
+  ## Complete == ## Completa, ## Simulation == ## Simulacion,
+  ## Scenario == ## Escenario). Use the prefix matching the lesson's language.
 
-    :::translate_sentence
-    source: "I really enjoy learning Portuguese"
-    source_lang: en
-    target_lang: pt
-    accepted:
-      - "Eu gosto muito de aprender português"
-      - "Gosto muito de aprender português"
-    :::
-    (Free-text translation. Include 2-3 accepted variants.)
-
-    :::word_bank
-    sentence: "Eu preciso ir ao supermercado"
-    extra_words: ["para", "com", "ele"]
-    :::
-    (Build the sentence from scrambled word chips. 2-4 decoy words.)
-
-    :::speak_sentence
-    text: "Obrigado pela sua ajuda"
-    language: pt
-    :::
-    (Student records themselves speaking the phrase.)
-
-    :::terminal_exercise
-    instruction: "Open the Ruby console and create a variable called 'name' with your name"
-    language: ruby
-    expected_commands:
-      - "irb"
-      - "name = "
-    success_message: "Perfect! You've created your first variable in Ruby"
-    :::
-    (Simulated terminal — regex pattern match.)
-
-    :::code_challenge
-    language: ruby
-    instruction: "Write a function that returns only the even numbers from an array"
-    starter_code: |
-      def filter_evens(numbers)
-        # Your code here
-      end
-    tests: |
-      assert_equal [2, 4], filter_evens([1, 2, 3, 4, 5])
-      assert_equal [], filter_evens([1, 3, 5])
-    hints:
-      - "Use the .select method"
-      - "A number is even if number % 2 == 0"
-    :::
-    (Code editor + test runner. Provide 2-3 progressive hints.)
-
-    :::bug_fix
-    language: python
-    buggy_code: |
-      def fibonacci(n):
-        if n <= 1:
-          return n
-        return fibonacci(n-1) + fibonacci(n-3)
-    error_description: "This function should return the nth Fibonacci number"
-    fixed_line: "return fibonacci(n-1) + fibonacci(n-2)"
-    :::
-    (Show broken code; student identifies + fixes the bug.)
-
-    :::output_prediction
-    language: javascript
-    code: |
-      const arr = [1, 2, 3];
-      arr.push(4);
-      console.log(arr.length);
-    options: ["3", "4", "5", "error"]
-    correct: "4"
-    :::
-    (Read code, predict console output — 4 options.)
-
-    :::drag_order
-    instruction: "Order the steps to set up a Rails project"
-    items:
-      - "rails new my_project"
-      - "cd my_project"
-      - "rails generate scaffold Post title:string body:text"
-      - "rails db:migrate"
-      - "rails server"
-    :::
-    (Drag to reorder a process — 4-6 items.)
-
-    :::image_label
-    image: "diagram_mvc.png"
-    labels:
-      - {text: "Model", x: 20, y: 30}
-      - {text: "View", x: 60, y: 30}
-      - {text: "Controller", x: 40, y: 70}
-    :::
-    (Click/drag labels onto image hotspots. Coordinates in 0-100% space.)
+  If a step's recommended exercise types name something not in the list above,
+  express the same idea with the closest block that IS listed — for example a
+  coding challenge, a stub to complete, a terminal drill and a bug to fix are all
+  ## Playground; predicting output is ## Pregunta; matching a word to its meaning
+  or a term to its definition is ## Match; filling a gap in a sentence, a formula
+  or a framework is ## Complete.
 
   ==================================================
   MERMAID DIAGRAMS

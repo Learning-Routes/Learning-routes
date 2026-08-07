@@ -1,4 +1,6 @@
 system_prompt: |
+  {{language_directive}}
+
   You are an expert tutor. Generate a practical, concrete example that illustrates
   the concept being studied. The example should be relatable and help the student
   understand the concept through application.

@@ -2,7 +2,10 @@
 
 module ContentEngine
   class LessonSectionParser
-    BLOCK_TYPES = %w[concept check tip example summary drag_drop fill_blank code_playground simulation scenario flashcards].freeze
+    # Derived from ContentEngine::LessonBlocks — the single source of truth. Do not
+    # add a type here without adding it there, or the parser will accept a block it
+    # has no partial to render.
+    BLOCK_TYPES = LessonBlocks.fence_types.freeze
     IMAGE_REGEX = /!\[([^\]]*)\]\(([^)]+)\)/
     PARAGRAPHS_PER_SECTION = 3
     CONCEPTS_PER_CHECK = 3
@@ -66,8 +69,17 @@ module ContentEngine
         if BLOCK_TYPES.include?(block_type)
           segments << { block: true, section: parse_block(block_type, title_or_content, body) }
         else
-          # Unknown block type — treat as freeform text
-          segments << { block: false, text: match[0] }
+          # Unknown block type — DROP it.
+          #
+          # This used to push match[0] back as freeform text, which meant a block the
+          # app cannot render reached the student as a literal ":::tap_pairs" marker
+          # mid-lesson. Dropping keeps the lesson coherent; the warn line makes the
+          # drift visible to us instead. See WP6_CONTRACT.md §3 for the alternatives
+          # considered, and the contract test that is supposed to stop this arising.
+          Rails.logger.warn(
+            "[LessonSectionParser] Dropped unrenderable block :::#{block_type} — " \
+            "not in ContentEngine::LessonBlocks. Body: #{body.to_s.truncate(160).inspect}"
+          )
         end
 
         remaining = match.post_match
@@ -171,29 +183,8 @@ module ContentEngine
     end
 
     # Heading prefix → section type mapping (supports both Spanish and English markers)
-    HEADING_TYPE_MAP = {
-      "Concepto"    => :concept,
-      "Concept"     => :concept,
-      "Ejemplo"     => :example,
-      "Example"     => :example,
-      "Visual"      => :visual,
-      "Pregunta"    => :check,
-      "Question"    => :check,
-      "Resumen"     => :summary,
-      "Summary"     => :summary,
-      "Tip"         => :tip,
-      "Consejo"     => :tip,
-      "Match"       => :drag_drop,
-      "Emparejar"   => :drag_drop,
-      "Complete"    => :fill_blank,
-      "Completa"    => :fill_blank,
-      "Playground"  => :code_playground,
-      "Simulation"  => :simulation,
-      "Simulacion"  => :simulation,
-      "Scenario"    => :scenario,
-      "Escenario"   => :scenario,
-      "Flashcards"  => :flashcards
-    }.freeze
+    # Derived from ContentEngine::LessonBlocks — see BLOCK_TYPES above.
+    HEADING_TYPE_MAP = LessonBlocks.heading_map
 
     def split_by_headings(text)
       # Only use heading-based splitting if there are actual ## headings

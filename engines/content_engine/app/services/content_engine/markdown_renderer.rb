@@ -62,13 +62,13 @@ module ContentEngine
       end
     end
 
-    INTERACTIVE_BLOCKS = {
-      "concept" => { icon: "\u{1F4A1}", css: "lesson-block--concept" },
-      "check"   => { icon: "\u{2753}", css: "lesson-block--check" },
-      "tip"     => { icon: "\u{1F4DD}", css: "lesson-block--tip" },
-      "example" => { icon: "\u{1F30D}", css: "lesson-block--example" },
-      "summary" => { icon: "\u{2705}", css: "lesson-block--summary" }
-    }.freeze
+    # Derived from ContentEngine::LessonBlocks — the single source of truth.
+    #
+    # Only the prose blocks appear here. The structured ones (drag_drop, fill_blank,
+    # code_playground, simulation, scenario, flashcards) are rendered by their ERB
+    # partial from parsed section data, not by this markdown pass, so they carry no
+    # chrome. They are still recognised — see preprocess_blocks.
+    INTERACTIVE_BLOCKS = LessonBlocks.renderer_chrome
 
     def self.render(markdown_text)
       return "" if markdown_text.blank?
@@ -116,7 +116,27 @@ module ContentEngine
         body = $3.strip
 
         config = INTERACTIVE_BLOCKS[block_type]
-        next _match unless config
+
+        unless config
+          # No chrome for this fence. Two very different cases:
+          #
+          #   * A structured block (drag_drop, code_playground, ...) — legitimate, but
+          #     this markdown pass cannot render it; its partial does, from parsed
+          #     section data. Drop it silently here rather than emitting raw text.
+          #   * A genuinely unknown block — the vocabulary has drifted. Drop it too,
+          #     but say so.
+          #
+          # Either way it must NOT return _match: that returned the raw ":::type ..."
+          # source, which is how literal markers reached students. See
+          # WP6_CONTRACT.md §3.
+          unless LessonBlocks.known?(block_type)
+            Rails.logger.warn(
+              "[MarkdownRenderer] Dropped unrenderable block :::#{block_type} — " \
+              "not in ContentEngine::LessonBlocks. Body: #{body.truncate(160).inspect}"
+            )
+          end
+          next ""
+        end
 
         if block_type == "check"
           # The regex captures the question as "title" since it's on the line after :::check

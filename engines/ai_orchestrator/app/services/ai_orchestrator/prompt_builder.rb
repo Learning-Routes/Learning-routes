@@ -11,7 +11,9 @@ module AiOrchestrator
     def build
       template_config = load_template
 
-      system_prompt = interpolate(template_config["system_prompt"] || default_system_prompt)
+      system_prompt = ensure_language_directive(
+        interpolate(template_config["system_prompt"] || default_system_prompt)
+      )
       user_prompt = interpolate(template_config["user_prompt"] || @variables["prompt"] || "")
 
       {
@@ -48,6 +50,40 @@ module AiOrchestrator
 
     def engine_templates_path
       File.expand_path("../../../config/prompts", __dir__)
+    end
+
+    # Guarantee the locale instruction reaches the model, token or no token.
+    #
+    # interpolate() applies the directive with gsub!, which is a no-op when the
+    # template never mentions {{language_directive}}. Fourteen of the seventeen
+    # templates did not — step_quiz, exam_questions, assessment_questions,
+    # gap_analysis, quick_grading, exercise_hint and the rest — so they received no
+    # locale instruction at all and answered in whatever language they felt like.
+    # That is why a Spanish learner got Spanish lessons and English quizzes.
+    #
+    # The token has since been added to all seventeen, so this is the belt to that
+    # pair of braces: a template added later without the token still gets the
+    # directive rather than silently regressing.
+    def ensure_language_directive(prompt)
+      return prompt if prompt.blank?
+
+      directive = computed_language_directive
+      return prompt if directive.blank?
+      return prompt if prompt.include?(directive)
+
+      "#{prompt}\n\n#{directive}"
+    end
+
+    def computed_language_directive
+      @computed_language_directive ||=
+        if @variables["language_directive"].to_s.present?
+          @variables["language_directive"].to_s
+        else
+          LanguageInstructions.directive(
+            content_locale: @variables["locale"],
+            target_locale: @variables["target_locale"]
+          ).to_s
+        end
     end
 
     def interpolate(template)

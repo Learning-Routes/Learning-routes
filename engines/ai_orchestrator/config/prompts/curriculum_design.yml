@@ -50,7 +50,7 @@ system_prompt: |
   - Next steps: recognition → translation → production → conversation (Bloom: remember → understand → apply)
   - Every 3-4 lessons: a review step (content_type: review) that recycles earlier vocabulary via spaced repetition
   - Every 5-6 lessons: a practical assessment (content_type: assessment)
-  - Exercise types per lesson: start with tap_pairs + listen_and_type (recognition), then word_bank + fill_blank (comprehension), then translate_sentence + speak_sentence (production)
+  - Exercise types per lesson: start with match + flashcards (recognition), then complete (comprehension), then scenario (production in context)
   - Aim: student produces a full sentence by step 5, holds a basic conversation by step 10
   - Use target language for titles where pedagogically appropriate (see LANGUAGE MODE)
 
@@ -62,7 +62,7 @@ system_prompt: |
   - Every 2-3 steps: practical exercise (content_type: exercise) over pure lesson
   - Every 5 steps: a small build (mini-project, content_type: assessment)
   - End the route with a capstone build that uses all prior concepts
-  - Exercise types: output_prediction (reading) → code_completion + bug_fix (intermediate) → code_challenge + terminal_exercise (production) → multi-file project
+  - Exercise types: multiple_choice predicting output (reading) → playground completing a stub, then repairing a bug (intermediate) → playground written from scratch (production) → multi-file project
   - Prefer interactive delivery — programming is learned by doing, not reading
 
   --- DESIGN / CREATIVE FAMILY ---
@@ -72,7 +72,7 @@ system_prompt: |
   - Each subsequent lesson: one principle deeply illustrated via examples + critique
   - Every 2-3 steps: a short produce exercise ("create X using Y constraint")
   - Midpoint and end: portfolio-style assessment (produce a finished artifact)
-  - Exercise types: identify_error (critique), compare_ab (taste), drag_order (process), image_label (structure), and produce-your-own prompts
+  - Exercise types: scenario (critique), match (principle ↔ example), multiple_choice on a rendered visual (structure), flashcards (vocabulary)
   - Heavy on visuals — delivery_format should lean interactive + mixed
 
   --- STEM / SCIENCE / MATH FAMILY ---
@@ -82,7 +82,7 @@ system_prompt: |
   - Progression: phenomenon → formalism → derivation → problem-solving → application
   - Every 2-3 steps: worked-problem session + interactive simulation (if applicable)
   - Every 5 steps: a problem-set assessment
-  - Exercise types: scenario + simulation + output_prediction + drag_order + fill_blank (for formulas)
+  - Exercise types: simulation + complete (for formulas) + match (concept ↔ formula) + multiple_choice (predict the result)
   - Interleave conceptual and computational; don't front-load all formulas
 
   --- BUSINESS / SOFT SKILLS FAMILY ---
@@ -92,7 +92,7 @@ system_prompt: |
   - Each subsequent lesson: one framework applied to a concrete case
   - Every 2-3 steps: a case-study / scenario exercise (content_type: exercise, type: scenario)
   - Midpoint and end: applied assessment (content_type: assessment)
-  - Exercise types: scenario (decision-making), drag_order (process), flashcards (vocabulary)
+  - Exercise types: scenario (decision-making), match (step ↔ purpose), complete (framework slots), flashcards (vocabulary)
   - Delivery: mixed — text for frameworks, scenario for practice
 
   If topic doesn't cleanly fit, choose the closest family and adapt. Never
@@ -105,12 +105,12 @@ system_prompt: |
   Every step has a bloom_level (integer 1-6). Progression across the route
   must generally ascend, with strategic reinforcement dips:
 
-  1. REMEMBER — recognize, recall, identify. (tap_pairs, flashcards, multiple_choice_recognition)
-  2. UNDERSTAND — explain, interpret, summarize. (fill_blank, output_prediction, short_answer)
-  3. APPLY — use knowledge in a new situation. (code_completion, translate_sentence, word_bank)
-  4. ANALYZE — compare, contrast, decompose. (bug_fix, identify_error, compare_ab)
+  1. REMEMBER — recognize, recall, identify. (match, flashcards)
+  2. UNDERSTAND — explain, interpret, summarize. (complete, multiple_choice)
+  3. APPLY — use knowledge in a new situation. (playground completing a stub, simulation)
+  4. ANALYZE — compare, contrast, decompose. (playground fixing a bug, match error↔cause)
   5. EVALUATE — judge, critique, defend. (scenario decision-making, design critique)
-  6. CREATE — produce an original artifact. (code_challenge, speak_sentence, mini-project)
+  6. CREATE — produce an original artifact. (playground written from scratch, mini-project)
 
   Typical level→bloom mapping (NOT rigid):
   - beginner: steps ramp 1→2→3 (rare 4)
@@ -171,12 +171,32 @@ system_prompt: |
   Per step, suggest 2-4 exercise_types from this controlled vocabulary.
   The content writer will draw from these when building the step body.
 
-  Language:     tap_pairs, listen_and_type, translate_sentence, word_bank, speak_sentence, fill_blank, flashcards
-  Programming:  terminal_exercise, code_challenge, bug_fix, output_prediction, code_completion
-  Universal:    match, complete, flashcards, scenario, drag_order, image_label, simulation, multiple_choice
+  Every entry below corresponds to a block the course can actually render. There
+  is no larger set — an exercise type outside this list is silently dropped
+  before the student sees it, leaving a hole where the exercise should be.
 
-  Do NOT invent exercise types outside this list. Downstream services only
-  understand these.
+  match         — pair two columns: word ↔ meaning, term ↔ definition, error ↔ cause,
+                  concept ↔ formula, principle ↔ example. The workhorse for
+                  vocabulary and for any "which goes with which" recall.
+  complete      — fill the gaps in a sentence, a formula or a framework. The blank
+                  should BE the thing being taught, not an incidental word.
+  flashcards    — front/back recall, for vocabulary and definitions.
+  scenario      — a situation plus 2-3 choices, each with a consequence. Decision
+                  practice: conversation turns, design critique, business calls.
+  playground    — a real sandboxed code editor that RUNS the student's code and
+                  compares it to an expected output. Covers writing code from
+                  scratch, completing a stub, fixing a bug, and terminal drills.
+  simulation    — the student moves a variable and watches a formula respond.
+  multiple_choice — a checked question. Also the right choice for "what does this
+                  code print?" and for identifying a feature of a reference image.
+  visual        — an AI-generated reference image with a described subject.
+
+  Do NOT invent exercise types outside this list.
+
+  Two capabilities deliberately absent, so you do not plan around them: there is
+  no speech capture (never plan a pronunciation or speaking exercise) and no
+  free-form ordering of a sequence. For listening, note that lesson prose is
+  narrated by text-to-speech automatically.
 
   ==================================================
   OUTPUT FORMAT
@@ -203,7 +223,7 @@ system_prompt: |
         "delivery_format": "mixed",
         "estimated_minutes": 20,
         "prerequisites": [],
-        "exercise_types": ["tap_pairs", "flashcards"],
+        "exercise_types": ["match", "flashcards"],
         "topics": ["keyword1", "keyword2"],
         "translations": {
           "en": { "title": "...", "description": "..." },

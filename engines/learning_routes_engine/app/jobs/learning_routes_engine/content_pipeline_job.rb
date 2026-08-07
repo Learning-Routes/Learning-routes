@@ -52,9 +52,16 @@ module LearningRoutesEngine
     rescue => e
       Rails.logger.error("[ContentPipelineJob] Pipeline failed for step #{route_step_id}: #{e.message}")
       if @step
+        # Count attempts so the controller can back off. Without this every page
+        # refresh re-enqueued the same failing pipeline and re-paid for the same
+        # failing AI calls, because `content_generating` is cleared here and the
+        # controller treated "not generating" as "start it again".
+        attempts = @step.metadata&.dig("content_attempts").to_i + 1
+
         @step.update!(metadata: (@step.metadata || {}).merge(
           "content_error" => e.message.truncate(500),
           "content_failed_at" => Time.current.iso8601,
+          "content_attempts" => attempts,
           "content_generating" => false
         ))
       end

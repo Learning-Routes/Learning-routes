@@ -1,0 +1,48 @@
+<%# Shown when ContentPipelineJob has failed and the backoff has not elapsed.
+
+    Before this existed, `content_error` was written to step metadata by the pipeline
+    and read by nothing: the student saw a loading skeleton, then a hardcoded English
+    timeout message, and every refresh silently re-enqueued the same failing pipeline
+    and re-paid for the same failing AI calls.
+
+    The retry button posts to the same page; the controller decides whether the
+    backoff has elapsed, so mashing it cannot re-trigger generation early. %>
+
+<div style="max-width:560px; margin:48px auto; padding:28px 32px; border-radius:14px;
+            background:var(--color-flash-alert-bg, rgba(176,96,80,0.06));
+            border:1px solid var(--color-flash-alert-border, rgba(176,96,80,0.16));
+            font-family:'DM Sans',sans-serif; text-align:center;">
+
+  <div style="font-size:1.6rem; margin-bottom:10px;">⚠️</div>
+
+  <h2 style="font-size:1.05rem; font-weight:600; margin:0 0 10px;
+             color:var(--color-text-primary, #2C2C2C);">
+    <%= t("learning_engine.content_failed.title") %>
+  </h2>
+
+  <p style="font-size:0.85rem; line-height:1.55; margin:0 0 20px;
+            color:var(--color-text-secondary, #6B6B6B);">
+    <%= t("learning_engine.content_failed.body") %>
+  </p>
+
+  <% if @content_attempts.to_i >= Rails.application.config.content_generation_max_attempts %>
+    <p style="font-size:0.78rem; margin:0 0 18px; color:var(--color-text-secondary, #6B6B6B);">
+      <%= t("learning_engine.content_failed.exhausted") %>
+    </p>
+  <% else %>
+    <%= link_to t("learning_engine.content_failed.retry"),
+                route_step_path(@route, @step),
+                style: "display:inline-block; padding:9px 20px; border-radius:9px;
+                        background:var(--color-accent, #5BA880); color:#fff;
+                        font-size:0.82rem; font-weight:500; text-decoration:none;" %>
+  <% end %>
+
+  <div style="margin-top:18px;">
+    <%= link_to t("learning_engine.content_failed.back"),
+                route_path(@route),
+                style: "font-size:0.78rem; color:var(--color-text-secondary, #6B6B6B);" %>
+  </div>
+
+  <%# The raw pipeline error is deliberately NOT shown to the student — it is an
+      internal exception message. It stays in step metadata and the logs. %>
+</div>

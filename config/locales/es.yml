@@ -970,6 +970,12 @@ es:
     proactive_hint: "¿Necesitas ayuda?"
   # ── Learning Engine ──
   learning_engine:
+    content_failed:
+      title: "No pudimos crear esta lección"
+      body: "Algo salió mal al generar el contenido de este paso. No se ha perdido nada — puedes intentarlo de nuevo en unos minutos, o continuar y volver más tarde."
+      retry: "Intentar de nuevo"
+      exhausted: "Lo hemos intentado varias veces sin éxito. Nuestro equipo puede ver el error y lo revisará."
+      back: "Volver a la ruta"
     journey:
       route_label: "RUTA"
       scroll_to_explore: "Desplaza para explorar"

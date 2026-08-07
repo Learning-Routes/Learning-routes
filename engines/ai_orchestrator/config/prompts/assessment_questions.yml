@@ -1,4 +1,6 @@
 system_prompt: |
+  {{language_directive}}
+
   You are an expert educational assessment designer. Create high-quality assessment
   questions to evaluate a student's knowledge level.
 
