@@ -31,7 +31,6 @@ proxy:
     timeout: 60
 
 registry:
-  server: registry.hub.docker.com
   username:
     - KAMAL_REGISTRY_USERNAME
   password:
