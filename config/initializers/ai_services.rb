@@ -2,8 +2,8 @@
 # API keys are loaded from ENV (set in .env) or Rails credentials as fallback.
 #
 # Required ENV variables:
-#   OPENAI_API_KEY=sk-...        (primary AI provider — also used for GPT Image generation)
-#   ELEVENLABS_API_KEY=...       (text-to-speech)
+#   OPENAI_API_KEY=OPENAI_API_KEY_REDACTED
+#   ELEVENLABS_API_KEY=ELEVENLABS_API_KEY_REDACTED
 #
 # Optional ENV variables:
 #   ANTHROPIC_API_KEY=sk-ant-... (not used as primary, available as fallback)
