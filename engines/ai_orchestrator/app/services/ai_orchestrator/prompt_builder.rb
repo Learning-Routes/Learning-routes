@@ -80,10 +80,42 @@ module AiOrchestrator
           @variables["language_directive"].to_s
         else
           LanguageInstructions.directive(
-            content_locale: @variables["locale"],
+            content_locale: resolved_locale,
             target_locale: @variables["target_locale"]
           ).to_s
         end
+    end
+
+    # A caller that omits `locale` is a bug, not a defaultable condition.
+    #
+    # LanguageInstructions.language_name(nil) falls through its chain to "English", so
+    # an omitted locale did not produce a vague prompt — it produced a confident,
+    # well-formed instruction to "Write the ENTIRE lesson in English". On a
+    # Spanish-first product that is both wrong and silent, and eight of thirteen call
+    # sites had it.
+    #
+    # So: fail loudly where a developer is watching, degrade where a student is. Same
+    # shape as the strict-loading policy (WP-2) and Orchestrate::ConfigurationError
+    # (WP-5) — the codebase already treats "misconfiguration" and "bad runtime input"
+    # as different kinds of problem, and this is the former.
+    #
+    # The production fallback is I18n.default_locale rather than a hardcoded language
+    # name, so at least it tracks the application's own setting.
+    def resolved_locale
+      locale = @variables["locale"].to_s
+      return locale if locale.present?
+
+      message = "[PromptBuilder] task_type=#{@task_type} was called without a `locale` " \
+                "variable. The language directive would silently instruct the model to " \
+                "write in #{LanguageInstructions.language_name(nil)}. Pass " \
+                "AiOrchestrator::LocaleResolver.for_route(route, user: user)."
+
+      raise ArgumentError, message if Rails.env.local?
+
+      Rails.logger.error(message)
+      Rails.error.report(ArgumentError.new(message), handled: true, severity: :error,
+                                                     source: "ai_orchestrator.prompt_builder")
+      I18n.default_locale.to_s
     end
 
     def interpolate(template)
@@ -96,28 +128,31 @@ module AiOrchestrator
         result.gsub!("{{#{key}}}", value.to_s)
       end
 
-      # Ensure content_locale and target_locale are available as aliases
-      result.gsub!("{{content_locale}}", @variables["locale"].to_s) unless @variables.key?("content_locale")
+      # Ensure content_locale and target_locale are available as aliases.
+      # resolved_locale, not the raw variable: these aliases feed the prompt's own
+      # LANGUAGE MODE prose, so they must agree with the directive.
+      result.gsub!("{{content_locale}}", resolved_locale) unless @variables.key?("content_locale")
       result.gsub!("{{is_language_route}}", @variables["target_locale"].present?.to_s) unless @variables.key?("is_language_route")
 
       # Auto-compute the language directive (monolingual vs bilingual) unless the
       # caller explicitly provided a NON-EMPTY one. Empty/blank values fall back
       # to the computed directive — otherwise a caller passing `language_directive: ""`
       # would silently strip the most important instruction in the prompt.
+      # Reuse computed_language_directive rather than recomputing from the raw
+      # variable. These were two separate computations from the same inputs, and when
+      # the guard was added to only one of them a prompt could end up carrying BOTH an
+      # English directive (substituted into the token) and a Spanish one (appended) —
+      # the token path had silently kept the nil-means-English behaviour.
       unless @variables["language_directive"].to_s.present?
-        directive = LanguageInstructions.directive(
-          content_locale: @variables["locale"],
-          target_locale: @variables["target_locale"]
-        )
-        result.gsub!("{{language_directive}}", directive)
+        result.gsub!("{{language_directive}}", computed_language_directive)
       end
 
       # Back-compat for older callers that still reference {{bilingual_instructions}}.
       # Same rule: empty/blank caller-provided value falls back to the auto-computed
       # bilingual block (or empty string for monolingual routes).
       unless @variables["bilingual_instructions"].to_s.present?
-        fallback = if LanguageInstructions.bilingual?(content_locale: @variables["locale"], target_locale: @variables["target_locale"])
-          LanguageInstructions.directive(content_locale: @variables["locale"], target_locale: @variables["target_locale"])
+        fallback = if LanguageInstructions.bilingual?(content_locale: resolved_locale, target_locale: @variables["target_locale"])
+          LanguageInstructions.directive(content_locale: resolved_locale, target_locale: @variables["target_locale"])
         else
           ""
         end

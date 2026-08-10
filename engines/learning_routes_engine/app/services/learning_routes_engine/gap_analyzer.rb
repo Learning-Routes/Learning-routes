@@ -51,13 +51,20 @@ module LearningRoutesEngine
         g.is_a?(Hash) ? g.to_json : g.to_s
       }.join("\n")
 
+      # @route is always in scope here (set in the constructor), so this resolves the
+      # same way as the content pipeline. Gap analysis feeds ReinforcementGenerator,
+      # which builds student-facing steps — so an English gap description propagates
+      # into a Spanish learner's reinforcement route.
+      locales = AiOrchestrator::LocaleResolver.for_route(@route, user: @user)
+
       interaction = AiOrchestrator::Orchestrate.call(
         task_type: :gap_analysis,
         variables: {
-          topic: @route.topic,
+          topic: @route.localized_topic(locales[:locale]),
           score: gaps_data[:score].to_s,
           missed_questions: missed_questions,
-          user_feedback: gaps_data[:user_feedback].to_s
+          user_feedback: gaps_data[:user_feedback].to_s,
+          **locales
         },
         user: @user,
         async: false

@@ -2,8 +2,13 @@ require "test_helper"
 
 module AiOrchestrator
   class PromptBuilderTest < ActiveSupport::TestCase
+    # NOTE: every case here passes `locale:`. Since WP-9, PromptBuilder raises when a
+    # caller omits it — an omitted locale used to make the prompt instruct the model to
+    # write in English, which is how a Spanish learner ended up with English quizzes.
+    # These tests are about interpolation and template loading, so the locale is just
+    # scaffolding.
     test "builds prompt with default template for unknown task" do
-      builder = PromptBuilder.new(task_type: :nonexistent_task, variables: { prompt: "Hello" })
+      builder = PromptBuilder.new(task_type: :nonexistent_task, variables: { prompt: "Hello", locale: "en" })
       result = builder.build
 
       assert result[:system].present?
@@ -14,7 +19,7 @@ module AiOrchestrator
     test "interpolates variables in prompt" do
       builder = PromptBuilder.new(
         task_type: :assessment_questions,
-        variables: { topic: "Ruby", question_count: "5" }
+        variables: { topic: "Ruby", question_count: "5", locale: "en" }
       )
       result = builder.build
 
@@ -25,7 +30,7 @@ module AiOrchestrator
     test "removes unresolved placeholders" do
       builder = PromptBuilder.new(
         task_type: :assessment_questions,
-        variables: { topic: "Ruby" }
+        variables: { topic: "Ruby", locale: "en" }
       )
       result = builder.build
 
@@ -36,7 +41,7 @@ module AiOrchestrator
     test "builds messages array" do
       builder = PromptBuilder.new(
         task_type: :quick_grading,
-        variables: { question: "What is 2+2?", student_answer: "4", expected_answer: "4" }
+        variables: { question: "What is 2+2?", student_answer: "4", expected_answer: "4", locale: "en" }
       )
       messages = builder.build_messages
 
@@ -48,7 +53,7 @@ module AiOrchestrator
     test "loads YAML template for assessment_questions" do
       builder = PromptBuilder.new(
         task_type: :assessment_questions,
-        variables: { topic: "Python", question_count: "10" }
+        variables: { topic: "Python", question_count: "10", locale: "en" }
       )
       result = builder.build
 
@@ -60,7 +65,7 @@ module AiOrchestrator
     test "loads YAML template for route_generation" do
       builder = PromptBuilder.new(
         task_type: :route_generation,
-        variables: { topic: "Machine Learning", goal: "become proficient", timeline: "3 months" }
+        variables: { topic: "Machine Learning", goal: "become proficient", timeline: "3 months", locale: "en" }
       )
       result = builder.build
 
@@ -71,7 +76,7 @@ module AiOrchestrator
     test "loads YAML template for code_generation" do
       builder = PromptBuilder.new(
         task_type: :code_generation,
-        variables: { language: "Ruby", description: "fibonacci function" }
+        variables: { language: "Ruby", description: "fibonacci function", locale: "en" }
       )
       result = builder.build
 
@@ -82,7 +87,7 @@ module AiOrchestrator
     test "handles string keys in variables" do
       builder = PromptBuilder.new(
         task_type: :quick_grading,
-        variables: { "question" => "test?", "student_answer" => "yes" }
+        variables: { "question" => "test?", "student_answer" => "yes", locale: "en" }
       )
       result = builder.build
 

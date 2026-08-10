@@ -7,13 +7,20 @@ module ContentEngine
       route = @step.learning_route
       profile = route.learning_profile
 
+      # Resolve from the ROUTE, not I18n.locale. I18n.locale is the browser's UI
+      # preference; a student can read the interface in English while taking a course
+      # taught in Spanish, and the feedback belongs to the course.
+      locales = AiOrchestrator::LocaleResolver.for_route(route, user: current_user)
+      content_locale = locales[:locale]
+
       interaction = AiOrchestrator::Orchestrate.call(
         task_type: :quick_grading,
         variables: {
-          question: @step.description.to_s,
+          question: @step.localized_description(content_locale).to_s,
           expected_answer: exercise_content&.body.to_s.truncate(2000),
           student_answer: params[:answer],
-          topic: @step.title
+          topic: @step.localized_title(content_locale),
+          **locales
         },
         user: current_user,
         async: false
@@ -41,14 +48,18 @@ module ContentEngine
       route = @step.learning_route
       profile = route.learning_profile
 
+      locales = AiOrchestrator::LocaleResolver.for_route(route, user: current_user)
+      content_locale = locales[:locale]
+
       interaction = AiOrchestrator::Orchestrate.call(
         task_type: :exercise_hint,
         variables: {
-          topic: @step.title,
-          exercise_description: @step.description.to_s,
+          topic: @step.localized_title(content_locale),
+          exercise_description: @step.localized_description(content_locale).to_s,
           exercise_content: exercise_content&.body.to_s.truncate(3000),
           level: profile.current_level,
-          hint_number: (hint_count + 1).to_s
+          hint_number: (hint_count + 1).to_s,
+          **locales
         },
         user: current_user,
         async: false

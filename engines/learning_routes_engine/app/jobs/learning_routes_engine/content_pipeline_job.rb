@@ -98,12 +98,15 @@ module LearningRoutesEngine
       interaction = AiOrchestrator::Orchestrate.call(
         task_type: :lesson_content,
         variables: {
-          topic: @step.localized_title,
-          description: @step.localized_description.to_s,
+          # Pass content_locale explicitly. These helpers default to I18n.locale, which
+          # inside a job is the process default (:en) rather than this route's language
+          # — so a Spanish route was sending English titles into its own lesson prompt.
+          topic: @step.localized_title(content_locale),
+          description: @step.localized_description(content_locale).to_s,
           level: @profile.current_level,
           learning_style: Array(@profile.learning_style).join(", "),
           bloom_level: @step.bloom_level.to_s,
-          route_topic: @route.localized_topic,
+          route_topic: @route.localized_topic(content_locale),
           locale: content_locale,
           target_locale: target_locale.to_s,
           recommended_exercise_types: recommended_types

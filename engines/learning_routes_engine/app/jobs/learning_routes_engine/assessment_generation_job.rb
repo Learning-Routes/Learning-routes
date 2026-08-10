@@ -12,21 +12,25 @@ module LearningRoutesEngine
     }.freeze
 
     def perform(route_step_id)
-      step = RouteStep.find(route_step_id)
+      step = RouteStep.includes(learning_route: { learning_profile: :user }).find(route_step_id)
       return if Assessments::Assessment.where(route_step: step).exists?
 
       route = step.learning_route
       profile = route.learning_profile
 
+      locales = AiOrchestrator::LocaleResolver.for_route(route, user: profile.user)
+      content_locale = locales[:locale]
+
       interaction = AiOrchestrator::Orchestrate.call(
         task_type: :exam_questions,
         variables: {
-          topic: step.title,
-          description: step.description.to_s,
+          topic: step.localized_title(content_locale),
+          description: step.localized_description(content_locale).to_s,
           level: profile.current_level,
           bloom_level: step.bloom_level.to_s,
-          route_topic: route.topic,
-          assessment_type: step.metadata["assessment_type"] || "quiz"
+          route_topic: route.localized_topic(content_locale),
+          assessment_type: step.metadata["assessment_type"] || "quiz",
+          **locales
         },
         user: profile.user,
         async: false

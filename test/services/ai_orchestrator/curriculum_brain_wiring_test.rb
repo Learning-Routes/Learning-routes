@@ -223,8 +223,11 @@ class AiOrchestrator::CurriculumBrainWiringTest < ActiveSupport::TestCase
 
     with_stubbed(AiOrchestrator::AiInteraction, :create!, raise_invalid) do
       error = assert_raises(AiOrchestrator::Orchestrate::ConfigurationError) do
+        # `locale` is required since WP-9 — PromptBuilder raises without it in
+        # dev/test rather than silently defaulting the prompt to English. This test is
+        # about the RecordInvalid translation, so supply one and stay on topic.
         AiOrchestrator::Orchestrate.call(
-          task_type: :curriculum_design, variables: {}, user: @user, async: false
+          task_type: :curriculum_design, variables: { locale: "es" }, user: @user, async: false
         )
       end
 

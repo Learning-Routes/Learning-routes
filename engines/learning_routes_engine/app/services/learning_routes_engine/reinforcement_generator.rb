@@ -32,6 +32,10 @@ module LearningRoutesEngine
     end
 
     def call_ai(gap, step_count)
+      # @route is set in the constructor. These steps are student-facing — they become
+      # a reinforcement route the student works through.
+      locales = AiOrchestrator::LocaleResolver.for_route(@route, user: @user)
+
       interaction = AiOrchestrator::Orchestrate.call(
         task_type: :reinforcement_generation,
         variables: {
@@ -40,8 +44,9 @@ module LearningRoutesEngine
           gap_description: gap.description.to_s,
           user_level: @profile.current_level,
           learning_style: Array(@profile.learning_style).join(", "),
-          route_topic: @route.topic,
-          step_count: step_count.to_s
+          route_topic: @route.localized_topic(locales[:locale]),
+          step_count: step_count.to_s,
+          **locales
         },
         user: @user,
         async: false

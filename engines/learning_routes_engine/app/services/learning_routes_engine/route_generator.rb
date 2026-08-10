@@ -54,6 +54,9 @@ module LearningRoutesEngine
     end
 
     def call_ai
+      # for_user, not for_route: this runs BEFORE the route exists — create_route_record!
+      # has made a draft row but its locale is never set here, so the student's own
+      # locale is the only signal available.
       AiOrchestrator::Orchestrate.call(
         task_type: :route_generation,
         variables: {
@@ -61,7 +64,8 @@ module LearningRoutesEngine
           goal: @profile.goal || "Master the subject",
           timeline: "12 weeks",
           user_level: @profile.current_level,
-          learning_style: Array(@profile.learning_style).join(", ")
+          learning_style: Array(@profile.learning_style).join(", "),
+          **AiOrchestrator::LocaleResolver.for_user(@user)
         },
         user: @user,
         async: false

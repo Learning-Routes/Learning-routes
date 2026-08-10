@@ -4,22 +4,25 @@ module LearningRoutesEngine
     retry_on StandardError, wait: :polynomially_longer, attempts: 3
 
     def perform(route_step_id)
-      step = RouteStep.find(route_step_id)
+      step = RouteStep.includes(learning_route: { learning_profile: :user }).find(route_step_id)
       return if ContentEngine::AiContent.where(route_step: step).by_type(:text).exists?
 
       route = step.learning_route
       profile = route.learning_profile
 
+      locales = AiOrchestrator::LocaleResolver.for_route(route, user: profile.user)
+      content_locale = locales[:locale]
+
       interaction = AiOrchestrator::Orchestrate.call(
         task_type: :lesson_content,
         variables: {
-          topic: step.localized_title,
-          description: step.localized_description.to_s,
+          topic: step.localized_title(content_locale),
+          description: step.localized_description(content_locale).to_s,
           level: profile.current_level,
           learning_style: Array(profile.learning_style).join(", "),
           bloom_level: step.bloom_level.to_s,
-          route_topic: route.localized_topic,
-          locale: route.locale || profile.user.locale || "en"
+          route_topic: route.localized_topic(content_locale),
+          **locales
         },
         user: profile.user,
         async: false

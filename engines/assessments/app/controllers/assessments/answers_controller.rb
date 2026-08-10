@@ -73,12 +73,18 @@ module Assessments
     end
 
     def grade_with_ai!(question, answer)
+      # From the route behind the assessment, not I18n.locale — the grading feedback is
+      # part of the course, so it follows the course's language rather than the
+      # browser's UI preference.
+      route = @assessment.route_step&.learning_route
+
       interaction = AiOrchestrator::Orchestrate.call(
         task_type: :quick_grading,
         variables: {
           question: question.body,
           expected_answer: question.correct_answer.to_s,
-          student_answer: answer.answer
+          student_answer: answer.answer,
+          **AiOrchestrator::LocaleResolver.for_route(route, user: current_user)
         },
         user: current_user,
         async: false
