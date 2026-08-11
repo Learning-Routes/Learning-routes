@@ -37,8 +37,10 @@ Rails.application.config.ai_model_defaults = {
   exam_questions:       { temperature: 0.6, max_tokens: 4096 },
   quick_grading:        { temperature: 0.2, max_tokens: 1024 },
   voice_narration:      { temperature: 0.6, max_tokens: 4096 },
-  image_generation:     { quality: "medium", size: "1024x1024" },
-  quick_images:         { quality: "low", size: "1024x1024" },
+  # `quality` is not a ruby_llm 1.11 parameter and is ignored — see ai_client.rb.
+  # request_timeout matters: gpt-image-1 runs well past the 30s global.
+  image_generation:     { size: "1024x1024", request_timeout: 180 },
+  quick_images:         { size: "1024x1024", request_timeout: 180 },
   gap_analysis:         { temperature: 0.4, max_tokens: 4096 },
   reinforcement_generation: { temperature: 0.6, max_tokens: 4096 },
   explain_differently:       { temperature: 0.7, max_tokens: 4096 },

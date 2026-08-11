@@ -149,8 +149,15 @@ module AiOrchestrator
       # so the medium/low split cost_tracker assumes is fiction. Upgrading the gem
       # (1.14 accepts params:, and dependabot has that PR open) is what restores the
       # control — do not re-add the keyword to this version.
+      # The global request_timeout is 30s, and gpt-image-1 takes 30-90s, so paint timed
+      # out on the client before OpenAI ever answered. Image.paint accepts context: and
+      # resolves its config from it (config = context&.config || RubyLLM.config), so a
+      # cloned context widens the timeout for this call only — same idiom as build_chat.
+      timeout = merged[:request_timeout] || 180
+      context = RubyLLM.context { |c| c.request_timeout = timeout }
+
       start_time = monotonic_now
-      image = RubyLLM.paint(prompt, model: @model, size: size)
+      image = RubyLLM.paint(prompt, model: @model, size: size, context: context)
       elapsed_ms = ((monotonic_now - start_time) * 1000).round
 
       # RubyLLM returns an Image object with .url or .data (base64)
