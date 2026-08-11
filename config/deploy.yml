@@ -25,6 +25,16 @@ proxy:
   ssl: true
   host: learningroutes.com,learning-routes.com
   app_port: 80
+  # kamal-proxy gives up after 30s by default and returns 504. On-demand image
+  # generation calls gpt-image-1 inside the request, which takes 30-90s, so the
+  # proxy always cut it off first.
+  #
+  # This is a MITIGATION, not the fix: a 60-second job does not belong in a web
+  # request, and raising this lets any slow endpoint hold a connection for three
+  # minutes. The real fix is to enqueue the generation like MediaPrefetchJob already
+  # does and let the Turbo broadcast swap the image in. Lower this back to 30 once
+  # that lands.
+  response_timeout: 180
   healthcheck:
     interval: 3
     path: /up
