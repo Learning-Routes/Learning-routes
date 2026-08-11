@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_07_08_000001) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_11_000001) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -407,6 +407,25 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_08_000001) do
     t.index ["role"], name: "index_core_users_on_role"
   end
 
+  create_table "learning_routes_engine_block_attempts", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.integer "attempts", default: 0, null: false
+    t.string "block_type", null: false
+    t.datetime "completed_at"
+    t.boolean "correct"
+    t.datetime "created_at", null: false
+    t.jsonb "payload", default: {}, null: false
+    t.datetime "released_at"
+    t.uuid "route_step_id", null: false
+    t.decimal "score", precision: 5, scale: 2
+    t.integer "section_index", null: false
+    t.datetime "updated_at", null: false
+    t.uuid "user_id", null: false
+    t.index ["released_at"], name: "idx_block_attempts_released", where: "(released_at IS NOT NULL)"
+    t.index ["route_step_id"], name: "idx_block_attempts_on_route_step"
+    t.index ["user_id", "completed_at"], name: "idx_block_attempts_user_timeline"
+    t.index ["user_id", "route_step_id", "section_index"], name: "idx_block_attempts_unique_per_section", unique: true
+  end
+
   create_table "learning_routes_engine_knowledge_gaps", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.uuid "assessment_result_id"
     t.datetime "created_at", null: false
@@ -631,6 +650,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_08_000001) do
   add_foreign_key "content_engine_user_notes", "core_users", column: "user_id", on_delete: :cascade
   add_foreign_key "content_engine_user_notes", "learning_routes_engine_route_steps", column: "route_step_id", on_delete: :cascade
   add_foreign_key "core_sessions", "core_users", column: "user_id", on_delete: :cascade
+  add_foreign_key "learning_routes_engine_block_attempts", "core_users", column: "user_id", on_delete: :cascade
+  add_foreign_key "learning_routes_engine_block_attempts", "learning_routes_engine_route_steps", column: "route_step_id", on_delete: :cascade
   add_foreign_key "learning_routes_engine_knowledge_gaps", "core_users", column: "user_id", on_delete: :cascade
   add_foreign_key "learning_routes_engine_knowledge_gaps", "learning_routes_engine_learning_routes", column: "learning_route_id"
   add_foreign_key "learning_routes_engine_learning_profiles", "core_users", column: "user_id", on_delete: :cascade

@@ -106,8 +106,18 @@ module LearningRoutesEngine
         released: attempt.released?,
         satisfied: attempt.satisfied?,
         gradable: result.gradable?,
-        attempts_remaining: attempt.correct || attempt.released? ? 0 : [BlockAttempt::RELEASE_AFTER - attempt.attempts.to_i, 0].max
+        # Only meaningful for a correctness-gated block that is still gating. An
+        # engagement-only block has nothing to run out of, so it reports nil rather
+        # than an invented countdown.
+        attempts_remaining: attempts_remaining_for(attempt, result)
       }
+    end
+
+    def attempts_remaining_for(attempt, result)
+      return nil unless result.gradable?
+      return 0 if attempt.correct || attempt.released?
+
+      [BlockAttempt::RELEASE_AFTER - attempt.attempts.to_i, 0].max
     end
 
     def section_index = params[:section_index].to_i
