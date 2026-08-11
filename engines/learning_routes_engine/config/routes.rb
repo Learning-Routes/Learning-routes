@@ -15,6 +15,9 @@ LearningRoutesEngine::Engine.routes.draw do
         post :retry_quiz
         get :check_status
       end
+      # Interactive block submissions, graded server-side. section_index addresses the
+      # entry in step.metadata["parsed_sections"].
+      post "blocks/:section_index", to: "block_attempts#create", as: :block_attempt
       resources :tutor_chats, only: [:index, :create]
     end
   end

@@ -1,5 +1,6 @@
 // app/javascript/controllers/drag_drop_controller.js
 import { Controller } from "@hotwired/stimulus"
+import { submitBlock, announceResult } from "./block_submission"
 
 export default class extends Controller {
   static targets = ["term", "dropZone", "feedback", "termsContainer", "defsContainer"]
@@ -74,6 +75,7 @@ export default class extends Controller {
 
       if (this.matched.size === this.termTargets.length) {
         this.feedbackTarget.textContent = "All matched correctly!"
+        this._submitMatches()
         this.feedbackTarget.style.color = "#10b981"
         this.feedbackTarget.classList.remove("hidden")
       }
@@ -89,5 +91,18 @@ export default class extends Controller {
         dropZone.style.background = "rgba(28, 24, 18, 0.03)"
       }, 500)
     }
+  }
+
+  // Collect term index -> definition index for every placed term and send it. The
+  // server re-derives correctness from the stored `pairs`.
+  _submitMatches() {
+    const matches = {}
+    this.termTargets?.forEach((term) => {
+      const placed = term.dataset.placedDef
+      if (placed !== undefined && placed !== null && placed !== "") {
+        matches[term.dataset.termIndex] = placed
+      }
+    })
+    submitBlock(this.element, { matches }).then((r) => announceResult(this.element, r))
   }
 }

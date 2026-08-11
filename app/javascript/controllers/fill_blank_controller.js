@@ -1,5 +1,6 @@
 // app/javascript/controllers/fill_blank_controller.js
 import { Controller } from "@hotwired/stimulus"
+import { submitBlock, announceResult } from "./block_submission"
 
 export default class extends Controller {
   static targets = ["input", "feedback"]
@@ -26,6 +27,9 @@ export default class extends Controller {
 
       if (this.correct.size === this.answersValue.length) {
         this.feedbackTarget.textContent = "All blanks filled correctly!"
+        submitBlock(this.element, {
+          answers: Array.from(this.inputTargets || []).map((i) => i.value)
+        }).then((r) => announceResult(this.element, r))
         this.feedbackTarget.style.color = "#10b981"
         this.feedbackTarget.classList.remove("hidden")
       }

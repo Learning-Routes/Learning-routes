@@ -1,4 +1,5 @@
 import { Controller } from "@hotwired/stimulus"
+import { submitBlock, announceResult } from "./block_submission"
 
 export default class extends Controller {
   static targets = ["editor", "textarea", "output", "runBtn"]

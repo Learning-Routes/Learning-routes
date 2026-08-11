@@ -69,6 +69,32 @@ module LearningRoutesEngine
       content_type_lesson? || content_type_exercise?
     end
 
+    # Blocks in this step's parsed content that gate completion and which this user has
+    # not yet satisfied. Empty array means the step is free to complete.
+    #
+    # "Satisfied" is deliberately broader than "passed": it includes a block released
+    # after BlockAttempt::RELEASE_AFTER failures, because a wrong AI answer key must not
+    # trap the student. It does not include a block they simply never touched.
+    def outstanding_blocks_for(user)
+      sections = metadata&.dig("parsed_sections")
+      return [] unless sections.is_a?(Array)
+
+      gating = sections.each_with_index.filter_map do |section, index|
+        type = section.is_a?(Hash) ? (section["type"] || section[:type]).to_s : nil
+        next unless type && BlockGrader.gating?(type)
+
+        { section_index: index, block_type: type }
+      end
+      return [] if gating.empty?
+
+      satisfied = BlockAttempt.where(user: user, route_step: self)
+                              .satisfied
+                              .pluck(:section_index)
+                              .to_set
+
+      gating.reject { |b| satisfied.include?(b[:section_index]) }
+    end
+
     def quiz_passed_by?(user)
       step_quiz&.passed_by?(user) || false
     end

@@ -7,8 +7,13 @@ module LearningRoutesEngine
 
     attr_reader :xp_result
 
-    # Mark a step as complete, initialize FSRS, advance route, unlock next
-    def complete_step!(step)
+    # Mark a step as complete, initialize FSRS, advance route, unlock next.
+    #
+    # `rating:` defaults to GOOD so every existing caller is unchanged. WP-10 passes a
+    # rating derived from the step's block attempts — worst-of, because FSRS schedules
+    # the STEP, and one card still hard means the step should come back sooner than four
+    # easy ones would suggest.
+    def complete_step!(step, rating: SpacedRepetition::GOOD)
       return step if step.completed?
 
       route_just_completed = false
@@ -21,8 +26,9 @@ module LearningRoutesEngine
         step.complete!
         changed_step_ids << step.id
 
-        # Initialize FSRS with a Good rating for first completion
-        fsrs_params = @spaced_repetition.review(step, SpacedRepetition::GOOD)
+        # Initialize FSRS. The rating is GOOD unless the caller derived a better-informed
+        # one from how the student actually did on the step's blocks.
+        fsrs_params = @spaced_repetition.review(step, rating)
         step.update!(fsrs_params)
 
         # Advance current_step pointer

@@ -1,0 +1,14 @@
+<%# Rendered when the student tries to complete a step with gating blocks still
+    outstanding. Scrolls them back to the first one rather than just refusing. %>
+<%= turbo_stream.replace "step-complete-feedback" do %>
+  <div id="step-complete-feedback"
+       data-controller="interactive-lesson"
+       data-outstanding-sections="<%= @outstanding_sections.to_json %>"
+       style="max-width:640px; margin:16px auto; padding:12px 18px; border-radius:10px;
+              background:var(--color-flash-alert-bg, rgba(176,96,80,0.08));
+              border:1px solid var(--color-flash-alert-border, rgba(176,96,80,0.15));
+              font-family:'DM Sans',sans-serif; font-size:0.82rem;
+              color:var(--color-flash-alert-text, #B06050); text-align:center;">
+    <%= t("learning_engine.blocks.required", count: @outstanding_sections.size) %>
+  </div>
+<% end %>

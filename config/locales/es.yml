@@ -970,6 +970,19 @@ es:
     proactive_hint: "¿Necesitas ayuda?"
   # ── Learning Engine ──
   learning_engine:
+    blocks:
+      required:
+        one: "Completa el ejercicio de arriba para terminar esta lección."
+        other: "Completa los %{count} ejercicios de arriba para terminar esta lección."
+      correct: "Correcto"
+      incorrect: "Casi — inténtalo de nuevo"
+      released: "Sigamos. Este ejercicio puede tener un error, así que no te va a bloquear."
+      recorded: "Registrado"
+      attempts_left:
+        one: "1 intento antes de que deje de bloquearte"
+        other: "%{count} intentos antes de que deje de bloquearte"
+      session_complete: "Sesión completa"
+      cards_rated: "Calificaste %{count} tarjetas"
     content_failed:
       title: "No pudimos crear esta lección"
       body: "Algo salió mal al generar el contenido de este paso. No se ha perdido nada — puedes intentarlo de nuevo en unos minutos, o continuar y volver más tarde."

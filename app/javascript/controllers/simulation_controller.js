@@ -1,4 +1,5 @@
 import { Controller } from "@hotwired/stimulus"
+import { submitBlock, announceResult } from "./block_submission"
 
 export default class extends Controller {
   static targets = ["canvas", "slider", "sliderValue", "controls", "result"]
@@ -14,6 +15,8 @@ export default class extends Controller {
   }
 
   update(event) {
+    this._recordEngagement()
+
     const name = event.currentTarget.dataset.varName
     const val = parseFloat(event.currentTarget.value)
     const index = parseInt(event.currentTarget.dataset.varIndex)
@@ -83,5 +86,16 @@ export default class extends Controller {
     varNames.forEach((name, i) => {
       ctx.fillText(name + " = " + (vars[name] || 0).toFixed(1), w - 180, 30 + i * 20)
     })
+  }
+
+  // Engagement only: there is no correct answer to a simulation. Debounced so dragging
+  // a slider does not post on every pixel.
+  _recordEngagement() {
+    if (this._recorded) return
+    clearTimeout(this._recordTimer)
+    this._recordTimer = setTimeout(() => {
+      this._recorded = true
+      submitBlock(this.element, { interacted: true }).then((r) => announceResult(this.element, r))
+    }, 800)
   }
 }

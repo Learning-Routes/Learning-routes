@@ -23,6 +23,28 @@ module LearningRoutesEngine
     end
 
     def complete
+      # Gate on the interactive blocks BEFORE the quiz. The blocks are the lesson; the
+      # quiz is the check on it, so being sent to the quiz with half the lesson skipped
+      # is the wrong order. See WP10_DESIGN.md §3.
+      outstanding = @step.outstanding_blocks_for(current_user)
+      if outstanding.any?
+        respond_to do |format|
+          format.json do
+            render json: { blocks_required: true, sections: outstanding.map { |b| b[:section_index] } },
+                   status: :unprocessable_entity
+          end
+          format.turbo_stream do
+            @outstanding_sections = outstanding.map { |b| b[:section_index] }
+            render :show_outstanding_blocks
+          end
+          format.html do
+            redirect_to route_step_path(@route, @step),
+                        notice: t("learning_engine.blocks.required", count: outstanding.size)
+          end
+        end
+        return
+      end
+
       # Gate lesson/exercise steps behind a mini-quiz
       if @step.requires_quiz? && !@step.quiz_passed_by?(current_user)
         @step_quiz = @step.step_quiz
@@ -42,7 +64,9 @@ module LearningRoutesEngine
       end
 
       tracker = RouteProgressTracker.new(@route)
-      tracker.complete_step!(@step)
+      # Worst rating across this step's graded blocks (WP10_DESIGN.md §4). Released
+      # attempts contribute nothing — see BlockAttempt#fsrs_rating.
+      tracker.complete_step!(@step, rating: derived_fsrs_rating)
       @xp_result = tracker.xp_result
       finish_study_session!
 
@@ -135,6 +159,17 @@ module LearningRoutesEngine
       flipped_ids.each do |step_id|
         ContentPipelineJob.perform_later(step_id, { pregenerate_audio: true })
       end
+    end
+
+    # Worst FSRS rating across the step's graded block attempts, or GOOD when the step
+    # produced no mastery signal at all. Worst-of rather than average: FSRS schedules the
+    # step, and one block still hard means the step should come back sooner.
+    def derived_fsrs_rating
+      ratings = BlockAttempt.where(user: current_user, route_step: @step)
+                            .filter_map(&:fsrs_rating)
+      return SpacedRepetition::GOOD if ratings.empty?
+
+      ratings.min
     end
 
     # Enqueue content generation, unless it is already running or has failed too

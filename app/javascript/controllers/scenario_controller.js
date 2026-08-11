@@ -1,4 +1,5 @@
 import { Controller } from "@hotwired/stimulus"
+import { submitBlock, announceResult } from "./block_submission"
 
 export default class extends Controller {
   static targets = ["option", "optionsContainer", "consequence", "consequenceText", "retryContainer"]
@@ -8,6 +9,10 @@ export default class extends Controller {
   }
 
   choose(event) {
+    const idx = event.currentTarget?.dataset?.optionIndex
+    submitBlock(this.element, { option_index: idx === undefined ? null : Number(idx) })
+      .then((r) => announceResult(this.element, r))
+
     if (this.chosen) return
     this.chosen = true
 

@@ -121,6 +121,10 @@
         <div class="lesson-section"
              data-interactive-lesson-target="section"
              data-section-type="<%= section[:type] %>"
+             data-section-index="<%= i %>"
+             <%# Submission endpoint for this section. Rendered here rather than in each
+                 of the seven partials, which keeps the plumbing in one place. %>
+             data-block-url-value="<%= learning_routes_engine.route_step_block_attempt_path(@route, @step, i) %>"
              <% if section[:type] == "check" %>
                data-lesson-check="true"
              <% end %>

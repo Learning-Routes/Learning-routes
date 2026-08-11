@@ -970,6 +970,19 @@ en:
     open: "Open tutor chat"
     proactive_hint: "Need help?"
   learning_engine:
+    blocks:
+      required:
+        one: "Complete the exercise above to finish this lesson."
+        other: "Complete the %{count} exercises above to finish this lesson."
+      correct: "Correct"
+      incorrect: "Not quite — try again"
+      released: "Let's move on. This exercise may have a mistake in it, so it won't hold you back."
+      recorded: "Recorded"
+      attempts_left:
+        one: "1 attempt before this stops blocking you"
+        other: "%{count} attempts before this stops blocking you"
+      session_complete: "Session complete"
+      cards_rated: "You rated %{count} cards"
     content_failed:
       title: "We couldn't build this lesson"
       body: "Something went wrong while generating the content for this step. It hasn't been lost — you can try again in a few minutes, or move on and come back to it."
