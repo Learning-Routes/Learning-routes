@@ -1,6 +1,6 @@
 // app/javascript/controllers/flashcards_controller.js
 import { Controller } from "@hotwired/stimulus"
-import { submitBlock, announceResult } from "./block_submission"
+import { submitBlock, announceResult } from "controllers/block_submission"
 
 // Flashcard ratings are the one self-reported signal FSRS actually wants, and until now
 // they landed in `this.ratings` — a plain object that died on reload. Nothing was ever

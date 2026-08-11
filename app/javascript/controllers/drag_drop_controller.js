@@ -1,6 +1,6 @@
 // app/javascript/controllers/drag_drop_controller.js
 import { Controller } from "@hotwired/stimulus"
-import { submitBlock, announceResult } from "./block_submission"
+import { submitBlock, announceResult } from "controllers/block_submission"
 
 export default class extends Controller {
   static targets = ["term", "dropZone", "feedback", "termsContainer", "defsContainer"]

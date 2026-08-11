@@ -1,5 +1,5 @@
 import { Controller } from "@hotwired/stimulus"
-import { submitBlock, announceResult } from "./block_submission"
+import { submitBlock, announceResult } from "controllers/block_submission"
 
 // Handles inline knowledge check questions within lessons.
 // Each option has data-correct="true"|"false". On selection, shows
