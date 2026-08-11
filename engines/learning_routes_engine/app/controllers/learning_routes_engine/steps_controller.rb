@@ -240,16 +240,10 @@ module LearningRoutesEngine
           request_content_generation!
         end
         if @content
-          cached = @step.metadata&.dig("parsed_sections")
-          if cached.is_a?(Array) && cached.any?
-            @sections = cached.map(&:deep_symbolize_keys)
-          else
-            @sections = ContentEngine::LessonSectionParser.call(
-              @content.body,
-              metadata: @step.metadata || {},
-              audio_url: @content.audio_url
-            )
-          end
+          # This branch used to parse on the fly and throw the result away, so the page
+          # rendered from sections no other consumer could see. SectionResolver persists
+          # what it parses — see that class for the three bugs it closes.
+          @sections = ContentEngine::SectionResolver.call(@step).map(&:deep_symbolize_keys)
           @rendered_html = ContentEngine::MarkdownRenderer.render(@content.body)
         end
       when "exercise"

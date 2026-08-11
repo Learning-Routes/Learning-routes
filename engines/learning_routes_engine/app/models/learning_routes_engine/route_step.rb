@@ -76,7 +76,10 @@ module LearningRoutesEngine
     # after BlockAttempt::RELEASE_AFTER failures, because a wrong AI answer key must not
     # trap the student. It does not include a block they simply never touched.
     def outstanding_blocks_for(user)
-      sections = metadata&.dig("parsed_sections")
+      # Read through SectionResolver, not the raw metadata. 14 of 21 production steps
+      # had no parsed_sections, so this returned "nothing pending" for a step whose
+      # page was showing an unanswered exercise, and the gate let the student past.
+      sections = ContentEngine::SectionResolver.call(self)
       return [] unless sections.is_a?(Array)
 
       gating = sections.each_with_index.filter_map do |section, index|

@@ -97,11 +97,10 @@ module ContentEngine
     def load_section(section_index)
       return {} unless section_index
 
-      parsed = @step.metadata&.dig("parsed_sections")
+      parsed = SectionResolver.call(@step)
       return {} unless parsed.is_a?(Array) && parsed[section_index]
 
-      section = parsed[section_index]
-      section.symbolize_keys
+      parsed[section_index].symbolize_keys
     rescue
       {}
     end

@@ -84,39 +84,14 @@ module ContentEngine
       end
     end
 
-    # Resolve the section the student is looking at.
-    #
-    # StepsController#load_step_content has two branches: it uses
-    # metadata["parsed_sections"] when present, and otherwise parses the AiContent
-    # body on the fly. In that second branch the lesson renders correctly — image
-    # description and all — while this controller read an empty metadata key and
-    # answered "no image description" about a description visible on screen.
-    #
-    # Parse the same source the view did and persist it, so the indices the page was
-    # rendered against are the indices we resolve, and so update_section_image! has
-    # somewhere to write the result.
+    # Resolve through SectionResolver so the index we look up is the index the page was
+    # rendered from. This was patched locally here first; the same defect then turned up
+    # in the AI tools and in the block gate, so it moved to one place.
     def load_section(section_index)
-      parsed = @step.metadata&.dig("parsed_sections")
-      parsed = persist_parsed_sections! unless parsed.is_a?(Array) && parsed.any?
+      sections = ContentEngine::SectionResolver.call(@step)
+      return nil unless sections.is_a?(Array) && sections[section_index]
 
-      return nil unless parsed.is_a?(Array) && parsed[section_index]
-      parsed[section_index]
-    end
-
-    def persist_parsed_sections!
-      target_type = @step.content_type_exercise? ? :exercise : :text
-      scope = ContentEngine::AiContent.where(route_step: @step)
-      content = scope.by_type(target_type).first || scope.first
-      return nil unless content
-
-      sections = ContentEngine::LessonSectionParser.call(
-        content.body,
-        metadata: @step.metadata || {},
-        audio_url: content.audio_url
-      ).map(&:as_json)
-
-      @step.update!(metadata: (@step.metadata || {}).merge("parsed_sections" => sections))
-      sections
+      sections[section_index]
     end
 
     def update_section_image!(section_index, image_url)
