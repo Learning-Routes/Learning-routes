@@ -10,7 +10,10 @@ module ContentEngine
       section = load_section(section_index)
 
       if section.blank? || section["image_description"].blank?
-        return render json: { error: "No image description available", success: false }, status: :unprocessable_entity
+        return render json: {
+          error: I18n.t("content_engine.image_generation.no_description"),
+          success: false
+        }, status: :unprocessable_entity
       end
 
       # Check if already has image
@@ -67,18 +70,53 @@ module ContentEngine
 
     private
 
+    # Eager-load the route/profile/user chain. strict_loading_by_default is on, so
+    # the lazy traversal below raised in dev/test and logged a violation on every
+    # click of the generate button in production. The action then reads
+    # route.locale and route.localized_topic off the same chain.
     def set_step_and_authorize!
-      @step = LearningRoutesEngine::RouteStep.find(params[:step_id])
+      @step = LearningRoutesEngine::RouteStep
+                .includes(learning_route: { learning_profile: :user })
+                .find(params[:step_id])
       route = @step.learning_route
       unless route.learning_profile&.user_id == current_user.id
         head :forbidden
       end
     end
 
+    # Resolve the section the student is looking at.
+    #
+    # StepsController#load_step_content has two branches: it uses
+    # metadata["parsed_sections"] when present, and otherwise parses the AiContent
+    # body on the fly. In that second branch the lesson renders correctly — image
+    # description and all — while this controller read an empty metadata key and
+    # answered "no image description" about a description visible on screen.
+    #
+    # Parse the same source the view did and persist it, so the indices the page was
+    # rendered against are the indices we resolve, and so update_section_image! has
+    # somewhere to write the result.
     def load_section(section_index)
       parsed = @step.metadata&.dig("parsed_sections")
+      parsed = persist_parsed_sections! unless parsed.is_a?(Array) && parsed.any?
+
       return nil unless parsed.is_a?(Array) && parsed[section_index]
       parsed[section_index]
+    end
+
+    def persist_parsed_sections!
+      target_type = @step.content_type_exercise? ? :exercise : :text
+      scope = ContentEngine::AiContent.where(route_step: @step)
+      content = scope.by_type(target_type).first || scope.first
+      return nil unless content
+
+      sections = ContentEngine::LessonSectionParser.call(
+        content.body,
+        metadata: @step.metadata || {},
+        audio_url: content.audio_url
+      ).map(&:as_json)
+
+      @step.update!(metadata: (@step.metadata || {}).merge("parsed_sections" => sections))
+      sections
     end
 
     def update_section_image!(section_index, image_url)
