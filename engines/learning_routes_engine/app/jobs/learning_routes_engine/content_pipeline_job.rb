@@ -5,9 +5,13 @@ module LearningRoutesEngine
     retry_on StandardError, wait: 10.seconds, attempts: 2
 
     def perform(route_step_id, options = {})
-      @step = RouteStep.find(route_step_id)
+      # Eager-load the route/profile/user chain in one query. strict_loading_by_default
+      # is on, so traversing these lazily raises in dev/test and logs a violation on
+      # every run in production. StepQuizGenerationJob and MediaPrefetchJob already
+      # carry this fix; this job was missed, and it dies here before reaching stage 1.
+      @step = RouteStep.includes(learning_route: { learning_profile: :user }).find(route_step_id)
       @route = @step.learning_route
-      @profile = @route.learning_profile
+      @profile = @route&.learning_profile
       @user = @profile&.user
       @options = options.symbolize_keys
 
