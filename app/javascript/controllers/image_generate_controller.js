@@ -39,25 +39,16 @@ export default class extends Controller {
 
       const data = await response.json()
 
+      // 202 = queued. Generation takes 30-90s, so the server answers immediately and
+      // we poll. Doing it in the request killed the Puma worker at 60s and returned
+      // 502 to the student.
+      if (response.status === 202 || data.status === "generating") {
+        this._poll(stepId, sectionIndex, btn, originalHTML)
+        return
+      }
+
       if (data.success && (data.html || data.image_url)) {
-        const container = document.getElementById(`visual_image_${stepId}_${sectionIndex}`)
-        if (container) {
-          // Defense-in-depth: server already escapes values via ERB html_escape.
-          // Re-sanitize before innerHTML; keep `style` so the framed-image design
-          // survives, and DOMPurify strips the inline onload handler (the JS
-          // below re-wires the fade-in).
-          container.innerHTML = DOMPurify.sanitize(
-            data.html || this._buildImageHTML(data.image_url),
-            { ADD_ATTR: ["loading"] }
-          )
-          // Animate in
-          const img = container.querySelector("img")
-          if (img) {
-            img.style.opacity = "0"
-            img.style.transition = "opacity 0.5s ease"
-            img.onload = () => { img.style.opacity = "1" }
-          }
-        }
+        this._render(stepId, sectionIndex, data.html || this._buildImageHTML(data.image_url))
       } else {
         this._showError(btn, data.error || "Image generation failed")
         btn.innerHTML = originalHTML
@@ -68,6 +59,67 @@ export default class extends Controller {
       this._showError(btn, "Something went wrong. Please try again.")
       btn.innerHTML = originalHTML
       btn.disabled = false
+    }
+  }
+
+  disconnect() {
+    if (this._timer) clearInterval(this._timer)
+  }
+
+  // Poll until the job writes a result. Capped so a job that dies silently stops the
+  // spinner instead of leaving it turning forever.
+  _poll(stepId, sectionIndex, btn, originalHTML, attempt = 0) {
+    const MAX_ATTEMPTS = 60 // 3s apart = 3 minutes
+    const url = `/content/section_images/${stepId}/${sectionIndex}/status`
+
+    this._timer = setInterval(async () => {
+      attempt += 1
+      if (attempt > MAX_ATTEMPTS) {
+        clearInterval(this._timer)
+        this._showError(btn, "This is taking longer than expected. Try again in a moment.")
+        btn.innerHTML = originalHTML
+        btn.disabled = false
+        return
+      }
+
+      try {
+        const res = await fetch(url, {
+          headers: { Accept: "application/json", "X-Requested-With": "XMLHttpRequest" },
+          credentials: "same-origin"
+        })
+        if (!res.ok) return
+
+        const data = await res.json()
+
+        if (data.status === "ready") {
+          clearInterval(this._timer)
+          this._render(stepId, sectionIndex, data.html || this._buildImageHTML(data.image_url))
+        } else if (data.status === "failed") {
+          clearInterval(this._timer)
+          this._showError(btn, data.error || "Image generation failed")
+          btn.innerHTML = originalHTML
+          btn.disabled = false
+        }
+      } catch {
+        // Network blip: keep polling, the cap ends it.
+      }
+    }, 3000)
+  }
+
+  _render(stepId, sectionIndex, html) {
+    const container = document.getElementById(`visual_image_${stepId}_${sectionIndex}`)
+    if (!container) return
+
+    // Defense-in-depth: server already escapes values via ERB html_escape.
+    // Re-sanitize before innerHTML; keep `style` so the framed-image design survives,
+    // and DOMPurify strips the inline onload handler (re-wired below).
+    container.innerHTML = DOMPurify.sanitize(html, { ADD_ATTR: ["loading"] })
+
+    const img = container.querySelector("img")
+    if (img) {
+      img.style.opacity = "0"
+      img.style.transition = "opacity 0.5s ease"
+      img.onload = () => { img.style.opacity = "1" }
     }
   }
 

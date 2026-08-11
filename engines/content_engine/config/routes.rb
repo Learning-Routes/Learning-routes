@@ -20,6 +20,8 @@ ContentEngine::Engine.routes.draw do
   # On-demand image generation for visual sections
   scope "section_images/:step_id/:section_index", controller: :section_images, as: :section_image do
     post :generate, action: :generate
+    # Polled while SectionImageJob runs; generation is async because it takes 30-90s.
+    get :status, action: :status
   end
 
   resources :notes, only: [:create, :update, :destroy]

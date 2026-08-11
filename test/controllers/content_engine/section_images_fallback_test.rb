@@ -59,36 +59,49 @@ class ContentEngine::SectionImagesFallbackTest < ActionDispatch::IntegrationTest
     "/content/section_images/#{@step.id}/#{section_index}/generate"
   end
 
-  # Swap the service so nothing reaches OpenAI. The repo's idiom (see
-  # call_site_locale_test) is define_method around the original.
-  def with_stubbed_image_service
-    svc = ContentEngine::ImageGenerationService
-    original_generate = svc.instance_method(:generate)
-    original_remaining = svc.instance_method(:images_remaining_for_step)
-    svc.define_method(:generate) { |image_description:, metadata: {}|
-      { image_url: "/fake-image.png", cost_cents: 0, generation_time_ms: 1 }
-    }
-    svc.define_method(:images_remaining_for_step) { 5 }
-    yield
-  ensure
-    svc.define_method(:generate, original_generate)
-    svc.define_method(:images_remaining_for_step, original_remaining)
-  end
-
   test "a visual section resolves even when parsed_sections was never persisted" do
     assert_nil @step.metadata["parsed_sections"], "fixture must start without parsed_sections"
 
-    with_stubbed_image_service do
+    assert_enqueued_with(job: ContentEngine::SectionImageJob) do
       post generate_url(index_of("visual"))
     end
 
-    assert_response :success
-    body = JSON.parse(response.body)
-    assert_equal true, body["success"], "the controller failed on a description that is on screen"
+    assert_response :accepted
+    assert_equal "generating", JSON.parse(response.body)["status"]
 
     persisted = @step.reload.metadata["parsed_sections"]
     assert persisted.is_a?(Array), "the sections the page rendered against must be persisted"
-    assert_equal "/fake-image.png", persisted[index_of("visual")]["image_url"]
+    assert_equal "generating", persisted[index_of("visual")]["image_status"]
+  end
+
+  # Generation takes 30-90s. Doing it in the request timed out at the proxy (504) and
+  # then killed the Puma worker (502), so the endpoint must never block on it.
+  test "generate enqueues and answers immediately, it does not generate inline" do
+    assert_enqueued_jobs 1, only: ContentEngine::SectionImageJob do
+      post generate_url(index_of("visual"))
+    end
+
+    assert_response :accepted
+  end
+
+  test "status reports generating, then the image once the job has written it" do
+    post generate_url(index_of("visual"))
+    get "/content/section_images/#{@step.id}/#{index_of('visual')}/status"
+
+    assert_response :success
+    assert_equal "generating", JSON.parse(response.body)["status"]
+
+    # Simulate the job landing.
+    metadata = @step.reload.metadata
+    parsed = metadata["parsed_sections"]
+    parsed[index_of("visual")]["image_url"] = "/fake-image.png"
+    parsed[index_of("visual")]["image_status"] = "ready"
+    @step.update!(metadata: metadata.merge("parsed_sections" => parsed))
+
+    get "/content/section_images/#{@step.id}/#{index_of('visual')}/status"
+    body = JSON.parse(response.body)
+    assert_equal "ready", body["status"]
+    assert_equal "/fake-image.png", body["image_url"]
   end
 
   test "a section with no description fails in the student language, not English" do

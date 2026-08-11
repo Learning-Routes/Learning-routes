@@ -5,6 +5,9 @@ module ContentEngine
     before_action :authenticate_user!
     before_action :set_step_and_authorize!
 
+    # Enqueue and answer immediately. Generation takes 30-90s; doing it here meant the
+    # proxy timed out at 30s (504) and, once that was raised, Puma killed the worker at
+    # 60s (502). See SectionImageJob for the full chain.
     def generate
       section_index = params[:section_index].to_i
       section = load_section(section_index)
@@ -16,56 +19,38 @@ module ContentEngine
         }, status: :unprocessable_entity
       end
 
-      # Check if already has image
       if section["image_url"].present?
         return render json: { image_url: section["image_url"], success: true, already_exists: true }
       end
 
-      locale = @step.learning_route.locale || current_user.locale || "en"
-      service = ImageGenerationService.new(user: current_user, step: @step, locale: locale)
+      mark_generating!(section_index)
+      SectionImageJob.perform_later(@step.id, section_index, current_user.id)
 
-      # Check remaining budget
-      if service.images_remaining_for_step <= 0
-        return render json: {
-          error: I18n.t("content_engine.image_generation.max_reached", default: "Maximum images for this lesson reached."),
-          success: false
-        }, status: :unprocessable_entity
-      end
+      render json: { success: true, status: "generating" }, status: :accepted
+    end
 
-      result = service.generate(
-        image_description: section["image_description"],
-        metadata: {
-          topic: @step.learning_route.localized_topic,
-          importance: :low # On-demand = low quality to save cost
+    # Polled by image_generate_controller.js until the job lands.
+    def status
+      section_index = params[:section_index].to_i
+      section = load_section(section_index)
+
+      return render json: { status: "unknown" }, status: :not_found if section.blank?
+
+      if section["image_url"].present?
+        render json: {
+          status: "ready",
+          image_url: section["image_url"],
+          html: render_image_html(section["image_url"], section)
         }
-      )
-
-      # Update section metadata with new image URL
-      update_section_image!(section_index, result[:image_url])
-
-      # Track as user-initiated interaction
-      AiOrchestrator::AiInteraction.where(
-        user: current_user,
-        model: "gpt-image-1"
-      ).order(created_at: :desc).first&.update(
-        metadata: { "user_initiated" => true, "step_id" => @step.id, "section_index" => section_index }
-      )
-
-      render json: {
-        success: true,
-        image_url: result[:image_url],
-        cost_cents: result[:cost_cents],
-        generation_time_ms: result[:generation_time_ms],
-        html: render_image_html(result[:image_url], section)
-      }
-    rescue ImageGenerationService::GenerationError => e
-      render json: { error: e.message, success: false }, status: :unprocessable_entity
-    rescue => e
-      Rails.logger.error("[SectionImagesController] Image generation failed: #{e.message}")
-      render json: {
-        error: I18n.t("content_engine.image_generation.failed", default: "Image generation failed. Please try again."),
-        success: false
-      }, status: :internal_server_error
+      elsif section["image_status"] == "failed"
+        render json: {
+          status: "failed",
+          error: section["image_error"].presence ||
+                 I18n.t("content_engine.image_generation.failed", default: "Image generation failed.")
+        }
+      else
+        render json: { status: "generating" }
+      end
     end
 
     private
@@ -92,6 +77,16 @@ module ContentEngine
       return nil unless sections.is_a?(Array) && sections[section_index]
 
       sections[section_index]
+    end
+
+    def mark_generating!(section_index)
+      metadata = @step.metadata || {}
+      parsed = metadata["parsed_sections"]
+      return unless parsed.is_a?(Array) && parsed[section_index]
+
+      parsed[section_index]["image_status"] = "generating"
+      parsed[section_index]["image_error"] = nil
+      @step.update!(metadata: metadata.merge("parsed_sections" => parsed))
     end
 
     def update_section_image!(section_index, image_url)
