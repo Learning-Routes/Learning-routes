@@ -27,26 +27,28 @@ module LearningRoutesEngine
       section_types = sections.map { |s| s[:type] }.tally
       Rails.logger.info("[ContentPipeline] Stage 2 complete: #{sections.size} sections (#{section_types})")
 
-      # Stages 3-4: Parallel media generation (images, audio, mermaid validation)
-      begin
-        Rails.logger.info("[ContentPipeline] Stages 3-4: Parallel media prefetch")
-        ContentEngine::MediaPrefetchJob.perform_now(@step.id, @options)
-        Rails.logger.info("[ContentPipeline] Stages 3-4 complete")
-      rescue => e
-        Rails.logger.error("[ContentPipeline] Stages 3-4 FAILED: #{e.class}: #{e.message}\n#{e.backtrace.first(5).join("\n")}")
-      end
+      # The lesson is readable the moment the text is parsed. Mark it ready here,
+      # before the enrichment below.
+      #
+      # MediaPrefetchJob used to run inline (perform_now) between parsing and
+      # mark_ready!, so the student watched a skeleton for the whole of image and
+      # audio generation — six threads, three retries each — for a lesson whose text
+      # was already sitting in the database. That is most of the eleven-minute wait.
+      mark_ready!
 
-      # Stage 5: Step quiz generation
+      # Stage 5: quiz. Already async (StepQuizGenerationJob.perform_later); the
+      # rescue stays because a failure here must not fail an otherwise good lesson.
       begin
         Rails.logger.info("[ContentPipeline] Stage 5: Quiz generation")
         stage_quiz_generation!
-        Rails.logger.info("[ContentPipeline] Stage 5 complete")
       rescue => e
-        Rails.logger.error("[ContentPipeline] Stage 5 FAILED: #{e.class}: #{e.message}\n#{e.backtrace.first(5).join("\n")}")
+        Rails.logger.error("[ContentPipeline] Stage 5 FAILED: #{e.class}: #{e.message}")
       end
 
-      # Stage 6: Mark as ready + broadcast
-      mark_ready!
+      # Stages 3-4: media enrichment, now off the student's critical path. Results
+      # are written into parsed_sections and show on the next render of the step.
+      ContentEngine::MediaPrefetchJob.perform_later(@step.id, @options)
+      Rails.logger.info("[ContentPipeline] Media prefetch enqueued for step #{route_step_id}")
 
       Rails.logger.info("[ContentPipelineJob] Pipeline complete for step #{route_step_id}")
     rescue => e

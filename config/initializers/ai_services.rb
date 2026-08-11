@@ -32,7 +32,7 @@ Rails.application.config.ai_model_defaults = {
   # generic template. It runs inside WizardRouteGenerationJob, never a request
   # thread, so a generous ceiling costs nothing but patience.
   curriculum_design:    { temperature: 0.5, max_tokens: 6144, request_timeout: 120 },
-  lesson_content:       { temperature: 0.7, max_tokens: 8192 },
+  lesson_content:       { temperature: 0.7, max_tokens: 8192, request_timeout: 180 },
   code_generation:      { temperature: 0.3, max_tokens: 4096 },
   exam_questions:       { temperature: 0.6, max_tokens: 4096 },
   quick_grading:        { temperature: 0.2, max_tokens: 1024 },
