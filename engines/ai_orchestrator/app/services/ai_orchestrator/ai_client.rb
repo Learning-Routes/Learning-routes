@@ -134,21 +134,23 @@ module AiOrchestrator
       merged = defaults.merge(params)
 
       size = merged[:size] || "1024x1024"
-      quality = merged[:quality] || "medium"
 
+      # ruby_llm 1.11.0's Image.paint accepts only prompt, model:, provider:,
+      # assume_model_exists:, size: and context:, and forwards just model: and size:
+      # to the provider. There is NO quality parameter anywhere in this version.
+      #
+      # The `quality` entries in ai_model_defaults have therefore never had an effect,
+      # and passing quality: (or params:) raised ArgumentError on every single call.
+      # The rescue below relabelled that as "GPT Image generation failed", which reads
+      # like a provider outage — so image generation had never worked once, and the
+      # error pointed away from the signature that caused it.
+      #
+      # Cost note for WP-7: every image now renders at gpt-image-1's default quality,
+      # so the medium/low split cost_tracker assumes is fiction. Upgrading the gem
+      # (1.14 accepts params:, and dependabot has that PR open) is what restores the
+      # control — do not re-add the keyword to this version.
       start_time = monotonic_now
-      # `quality` is a gpt-image-1 parameter, not a RubyLLM one. Passing it as a
-      # keyword raised ArgumentError: unknown keyword: :quality on every single call,
-      # which the rescue below turned into "GPT Image generation failed" — so image
-      # generation had never worked, and the failure read like a provider problem.
-      # RubyLLM.paint takes model:, size:, with:, mask: and params:; provider-specific
-      # options go inside params:.
-      image = RubyLLM.paint(
-        prompt,
-        model: @model,
-        size: size,
-        params: { quality: quality }
-      )
+      image = RubyLLM.paint(prompt, model: @model, size: size)
       elapsed_ms = ((monotonic_now - start_time) * 1000).round
 
       # RubyLLM returns an Image object with .url or .data (base64)

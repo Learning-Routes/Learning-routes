@@ -1,5 +1,11 @@
 import { Controller } from "@hotwired/stimulus"
-import { connectStreamSource, disconnectStreamSource } from "@hotwired/turbo-rails"
+// Do NOT import these by name. The bundled turbo-rails module does not export
+// connectStreamSource, and a named import that does not exist is a SyntaxError at
+// load time, which kills the whole controller — the tutor chat has been dead in
+// production for exactly this reason. turbo-rails installs Turbo on window, so read
+// them from there and degrade to a no-op rather than taking the chat down.
+const connectStreamSource = (el) => window.Turbo?.connectStreamSource?.(el)
+const disconnectStreamSource = (el) => window.Turbo?.disconnectStreamSource?.(el)
 
 export default class extends Controller {
   static targets = ["panel", "messages", "input", "fab", "badge", "backdrop", "sendBtn"]
