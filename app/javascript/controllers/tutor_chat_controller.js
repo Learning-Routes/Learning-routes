@@ -1,5 +1,5 @@
 import { Controller } from "@hotwired/stimulus"
-import { connectStreamSource, disconnectStreamSource } from "@hotwired/turbo"
+import { connectStreamSource, disconnectStreamSource } from "@hotwired/turbo-rails"
 
 export default class extends Controller {
   static targets = ["panel", "messages", "input", "fab", "badge", "backdrop", "sendBtn"]

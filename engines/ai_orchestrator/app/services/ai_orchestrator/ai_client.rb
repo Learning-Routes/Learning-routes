@@ -137,11 +137,17 @@ module AiOrchestrator
       quality = merged[:quality] || "medium"
 
       start_time = monotonic_now
+      # `quality` is a gpt-image-1 parameter, not a RubyLLM one. Passing it as a
+      # keyword raised ArgumentError: unknown keyword: :quality on every single call,
+      # which the rescue below turned into "GPT Image generation failed" — so image
+      # generation had never worked, and the failure read like a provider problem.
+      # RubyLLM.paint takes model:, size:, with:, mask: and params:; provider-specific
+      # options go inside params:.
       image = RubyLLM.paint(
         prompt,
         model: @model,
         size: size,
-        quality: quality
+        params: { quality: quality }
       )
       elapsed_ms = ((monotonic_now - start_time) * 1000).round
 
