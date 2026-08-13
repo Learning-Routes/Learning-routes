@@ -63,7 +63,18 @@
     </div>
   <% end %>
 
-  <% if section[:body].present? %>
+  <%#
+    For a heading-parsed visual, `body` IS the image description — the parser does
+    `image_description = body.to_s.strip`. Rendering both printed the raw image prompt
+    underneath the illustration as if it were lesson text, which is the one thing a
+    student should never see.
+
+    Still render the body when it carries something the description does not: a fenced
+    block (a mermaid diagram authored inside a visual would otherwise be lost).
+  %>
+  <% body_is_the_prompt = section[:body].to_s.strip == image_description.to_s.strip &&
+                          !section[:body].to_s.include?("```") %>
+  <% if section[:body].present? && !body_is_the_prompt %>
     <%
       body_html = ContentEngine::MarkdownRenderer.render(section[:body])
     %>
