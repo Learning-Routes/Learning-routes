@@ -4,7 +4,7 @@ import { submitBlock, announceResult } from "controllers/block_submission"
 
 export default class extends Controller {
   static targets = ["input", "feedback"]
-  static values = { answers: Array }
+  static values = { successText: { type: String, default: "All blanks filled correctly" }, answers: Array }
 
   connect() {
     this.correct = new Set()
@@ -26,7 +26,7 @@ export default class extends Controller {
       this.correct.add(index)
 
       if (this.correct.size === this.answersValue.length) {
-        this.feedbackTarget.textContent = "All blanks filled correctly!"
+        this.feedbackTarget.textContent = this.successTextValue
         submitBlock(this.element, {
           answers: Array.from(this.inputTargets || []).map((i) => i.value)
         }).then((r) => announceResult(this.element, r))

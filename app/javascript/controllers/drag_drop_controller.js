@@ -3,6 +3,7 @@ import { Controller } from "@hotwired/stimulus"
 import { submitBlock, announceResult } from "controllers/block_submission"
 
 export default class extends Controller {
+  static values = { successText: { type: String, default: "All matched correctly" } }
   static targets = ["term", "dropZone", "feedback", "termsContainer", "defsContainer"]
 
   connect() {
@@ -74,7 +75,7 @@ export default class extends Controller {
       this.matched.add(termIndex)
 
       if (this.matched.size === this.termTargets.length) {
-        this.feedbackTarget.textContent = "All matched correctly!"
+        this.feedbackTarget.textContent = this.successTextValue
         this._submitMatches()
         this.feedbackTarget.style.color = "#10b981"
         this.feedbackTarget.classList.remove("hidden")

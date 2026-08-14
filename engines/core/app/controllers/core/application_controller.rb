@@ -1,7 +1,7 @@
 module Core
   class ApplicationController < ActionController::Base
     before_action :set_current_session
-    before_action :set_locale
+    around_action :with_locale
     before_action :set_theme
     before_action :require_email_verification!
 
@@ -34,13 +34,30 @@ module Core
       exempt.include?(controller_path)
     end
 
-    def set_locale
+    # around_action, not before_action.
+    #
+    # `I18n.locale = x` writes to the current thread and never resets. Puma reuses its
+    # threads between requests, so a Spanish user left the thread on :es and the next
+    # request handled by that thread rendered in Spanish for whoever it belonged to —
+    # any request that does not pass through here (a controller outside this hierarchy,
+    # an error page) inherits whatever the previous one left behind.
+    #
+    # It also leaks in tests: one integration test signing in a Spanish user changed the
+    # locale for every test after it in the same worker, which is why the engine suite
+    # had failures that moved around between runs.
+    #
+    # I18n.with_locale restores the previous value when the block ends.
+    def with_locale(&block)
+      I18n.with_locale(resolved_locale, &block)
+    end
+
+    def resolved_locale
       locale = if current_user
         current_user.locale&.to_sym
       else
         cookies[:locale]&.to_sym
       end
-      I18n.locale = I18n.available_locales.include?(locale) ? locale : I18n.default_locale
+      I18n.available_locales.include?(locale) ? locale : I18n.default_locale
     end
 
     def current_locale
