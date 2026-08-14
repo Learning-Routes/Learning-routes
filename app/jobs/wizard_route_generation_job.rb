@@ -169,23 +169,23 @@ class WizardRouteGenerationJob < ApplicationJob
   private
 
   def pregenerate_content!(route)
-    priority_steps = route.route_steps
-      .where.not(content_type: :assessment)
-      .order(:position)
-      .limit(3)
+    # Claim through ContentPrefetcher rather than update! + enqueue. The old version set
+    # content_generating with a plain update! and fired all three jobs, which raced with
+    # BackgroundContentGenerationJob 30s later — ContentPipelineJob only guards on
+    # content_ready, so a step still in flight got a SECOND pipeline and a second paid
+    # lesson_content call.
+    #
+    # BATCH SIZE: 3 steps, ~3¢ each measured (median 3¢, max 4¢ across 11 real calls)
+    # => ~9-12¢ per route at creation. Median pipeline latency is ~20s and the prefetcher
+    # allows 2 concurrently, so the first three lessons are ready in roughly 40s — long
+    # before a student finishes step 1.
+    step_ids = LearningRoutesEngine::ContentPrefetcher.pending_step_ids(route, limit: 3)
+    enqueued = LearningRoutesEngine::ContentPrefetcher.prefetch(route, step_ids)
 
-    priority_steps.each do |step|
-      # Mark as content_generating so the UI can show skeleton
-      step.update!(metadata: (step.metadata || {}).merge("content_generating" => true))
-
-      # Fire all three jobs in parallel — the previous 5s stagger was a
-      # conservative throttle. With gpt-5.2's 60rpm limit and SolidQueue's
-      # worker pool, 3 concurrent calls is well under any ceiling and cuts
-      # cold-start time for the user from ~10s to whatever the slowest call
-      # takes (~3-5s). We don't block the wizard job with perform_now because
-      # the user should see the route dashboard immediately.
-      LearningRoutesEngine::ContentPipelineJob.perform_later(step.id, { pregenerate_audio: true })
-    end
+    Rails.logger.info(
+      "[WizardRouteGeneration] Pre-generating #{enqueued.size} of #{step_ids.size} priority steps " \
+      "for route #{route.id} (concurrency cap #{LearningRoutesEngine::ContentPrefetcher::MAX_IN_FLIGHT_PER_ROUTE})"
+    )
 
     # Background generation for remaining steps (4+)
     LearningRoutesEngine::BackgroundContentGenerationJob.set(wait: 30.seconds).perform_later(route.id)

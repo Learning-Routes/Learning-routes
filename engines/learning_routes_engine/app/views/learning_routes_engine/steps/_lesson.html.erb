@@ -13,6 +13,9 @@
       continue: t('learning_engine.lesson.continue'),
       complete_lesson: t('learning_engine.lesson.complete_lesson'),
       answer_to_continue: t('learning_engine.lesson.answer_to_continue'),
+      # Shown when a student tries to skip past an unsatisfied gating block. Pluralized,
+      # and already used by the server-side gate in StepsController#complete.
+      blocks_required: t('learning_engine.blocks.required', count: 1),
       route_complete: t('learning_engine.lesson.celebration.route_complete'),
       lesson_complete: t('learning_engine.lesson.celebration.lesson_complete'),
       route_complete_sub: t('learning_engine.lesson.celebration.route_complete_sub'),
@@ -128,6 +131,15 @@
              <% if section[:type] == "check" %>
                data-lesson-check="true"
              <% end %>
+             <%# Whether this section gates navigation, and whether this student has
+                 already satisfied it. Both come from the SERVER — BlockGrader::GATING_TYPES
+                 and BlockAttempt — so the JS reads the policy instead of keeping a sixth
+                 copy of the block vocabulary (WP-6 removed the fifth).
+
+                 NOTE "satisfied", not "correct": a block released after three failures
+                 satisfies navigation while still recording correct = false. %>
+             data-gating="<%= LearningRoutesEngine::BlockGrader.gating?(section[:type]) %>"
+             data-block-satisfied="<%= (@satisfied_sections || Set.new).include?(i) %>"
              style="<%= i > 0 ? 'display:none;' : '' %>">
           <%# Dispatch against ContentEngine::LessonBlocks rather than an inline list.
               This was a hardcoded array — a fifth, anonymous copy of the vocabulary

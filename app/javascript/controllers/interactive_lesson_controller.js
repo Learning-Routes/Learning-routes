@@ -131,6 +131,12 @@ export default class extends Controller {
     // Listen for quiz modal close
     this._onQuizModalClose = this._handleQuizModalClose.bind(this)
 
+    // block:graded is dispatched by block_submission.js for every graded block. WP-10
+    // built the server side, the persistence and the event; nothing listened to it, so
+    // grading a block never unlocked the Continue button.
+    this._onBlockGraded = this._handleBlockGraded.bind(this)
+    this.element.addEventListener("block:graded", this._onBlockGraded)
+
     this.element.addEventListener("quiz:completed", this._onQuizCompleted)
     this.element.addEventListener("quiz:correct", this._onQuizCorrect)
     this.element.addEventListener("lesson-check:answered", this._onLegacyCheckAnswered)
@@ -175,6 +181,7 @@ export default class extends Controller {
       this.sectionsContainerTarget.removeEventListener("touchend", this._onTouchEnd)
     }
 
+    this.element.removeEventListener("block:graded", this._onBlockGraded)
     this.element.removeEventListener("quiz:completed", this._onQuizCompleted)
     this.element.removeEventListener("quiz:correct", this._onQuizCorrect)
     this.element.removeEventListener("lesson-check:answered", this._onLegacyCheckAnswered)
@@ -191,7 +198,9 @@ export default class extends Controller {
     if (this._animating || this._completed) return
 
     if (this._locked) {
+      // Shaking alone left the student guessing at why the button did nothing.
       this._shakeButton()
+      this._announceLocked()
       return
     }
 
@@ -368,7 +377,22 @@ export default class extends Controller {
     const isCheck = section.dataset.lessonCheck === "true"
     const isAnswered = section.dataset.lessonCheckAnswered === "true"
 
-    this._locked = isCheck && !isAnswered
+    // WP-10 made five block types gate step completion server-side, but this only ever
+    // locked navigation for `check`, so a student could press Continuar straight past an
+    // untouched drag_drop, fill_blank, scenario or flashcards.
+    //
+    // data-gating and data-block-satisfied are rendered by the server from
+    // BlockGrader::GATING_TYPES and BlockAttempt — the JS reads the policy rather than
+    // keeping its own copy of the vocabulary.
+    //
+    // "satisfied", never "correct": a block released after three failures satisfies
+    // navigation while still recording correct = false (WP-10's release valve).
+    const gates = section.dataset.gating === "true"
+    const satisfied = section.dataset.blockSatisfied === "true"
+
+    // `check` keeps its own answered flag as well — it is set by lesson_check_controller
+    // synchronously and predates the server round-trip.
+    this._locked = gates && !satisfied && !(isCheck && isAnswered)
     // Track whether this check section has a lesson-quiz controller
     // (which dispatches quiz:completed with proper delay)
     this._hasQuizController = isCheck && !!section.querySelector('[data-controller*="lesson-quiz"]')
@@ -842,6 +866,51 @@ export default class extends Controller {
   }
 
   // ── Shake ──────────────────────────────────────────────────────
+
+  // A block reported its server-side verdict. Unlock when the server says the section is
+  // satisfied — which includes a released block, and excludes a merely-attempted one.
+  _handleBlockGraded(event) {
+    const detail = event.detail || {}
+    const section = event.target?.closest?.(".lesson-section")
+    if (!section) return
+
+    if (detail.satisfied) {
+      section.dataset.blockSatisfied = "true"
+      if (Number(section.dataset.sectionIndex) === this.currentSectionValue) {
+        this._locked = false
+        this._updateContinueButton()
+      }
+    }
+  }
+
+  // Say why the button refused. Uses the same localized string as the server-side gate
+  // (learning_engine.blocks.required), so both halves of the policy speak with one voice.
+  _announceLocked() {
+    const t = this.i18nValue || {}
+    const message = t.blocks_required || t.answer_to_continue
+    if (!message) return
+
+    const section = this.sectionTargets[this.currentSectionValue]
+    if (!section) return
+
+    let note = section.querySelector(".lesson-section__gate-note")
+    if (!note) {
+      note = document.createElement("div")
+      note.className = "lesson-section__gate-note"
+      note.setAttribute("role", "status")
+      note.setAttribute("aria-live", "polite")
+      note.style.cssText =
+        "margin-top:12px; padding:9px 14px; border-radius:9px; font-size:0.8rem; text-align:center;" +
+        "background:var(--color-flash-alert-bg, rgba(176,96,80,0.08));" +
+        "border:1px solid var(--color-flash-alert-border, rgba(176,96,80,0.15));" +
+        "color:var(--color-flash-alert-text, #B06050);"
+      section.appendChild(note)
+    }
+    note.textContent = message
+
+    const timer = setTimeout(() => note?.remove(), 4000)
+    this._timers.push(timer)
+  }
 
   _shakeButton() {
     if (!this.hasContinueBtnTarget) return

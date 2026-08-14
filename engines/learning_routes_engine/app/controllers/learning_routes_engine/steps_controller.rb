@@ -9,6 +9,7 @@ module LearningRoutesEngine
 
     def show
       mark_in_progress_if_available!
+      load_satisfied_sections!
       load_step_content
       prefetch_upcoming_steps!
       @study_session = find_or_start_study_session
@@ -18,6 +19,7 @@ module LearningRoutesEngine
 
     # Turbo Frame polling endpoint — returns just the step content frame
     def content_status
+      load_satisfied_sections!
       load_step_content
       render partial: "step_content_frame", layout: false
     end
@@ -135,30 +137,24 @@ module LearningRoutesEngine
     # already-flagged rows, mutating only the one key via jsonb_set, and using
     # RETURNING to learn which rows we actually flipped. We enqueue jobs only
     # for those, so a concurrent request that lost the race enqueues nothing.
+    # Keep a rolling window of generated content ahead of the student.
+    #
+    # DEPTH 2, unchanged and deliberate. The owner's requirement is "al llegar al 2 se
+    # genera el 3" — depth 1. Depth 2 satisfies that with a step of margin, and generation
+    # is now ~20s median where it used to be minutes, so a student who spends any real
+    # time on a step always finds the next one ready. Deeper spends ~3¢ per lesson on
+    # steps a student may never reach; routes run 8-18 steps and abandonment is real.
+    #
+    # The atomic claim that used to live inline here is now ContentPrefetcher — the same
+    # mechanism the wizard and the background job use, so no path can double-enqueue a
+    # step that is already in flight and pay for it twice.
     def prefetch_upcoming_steps!
-      candidate_ids = @route.route_steps
-        .where("position > ?", @step.position)
-        .order(:position)
-        .limit(2)
-        .pluck(:id)
-      return if candidate_ids.empty?
+      step_ids = ContentPrefetcher.pending_step_ids(
+        @route, after_position: @step.position, limit: 2
+      )
+      return if step_ids.empty?
 
-      sql = ActiveRecord::Base.send(:sanitize_sql_array, [
-        <<~SQL.squish, candidate_ids
-          UPDATE learning_routes_engine_route_steps
-          SET metadata = jsonb_set(COALESCE(metadata, '{}'::jsonb), '{content_generating}', 'true'::jsonb),
-              updated_at = NOW()
-          WHERE id IN (?)
-            AND (metadata->>'content_ready')      IS DISTINCT FROM 'true'
-            AND (metadata->>'content_generating') IS DISTINCT FROM 'true'
-          RETURNING id
-        SQL
-      ])
-      flipped_ids = ActiveRecord::Base.connection.execute(sql).map { |row| row["id"] }
-
-      flipped_ids.each do |step_id|
-        ContentPipelineJob.perform_later(step_id, { pregenerate_audio: true })
-      end
+      ContentPrefetcher.prefetch(@route, step_ids)
     end
 
     # Worst FSRS rating across the step's graded block attempts, or GOOD when the step
@@ -223,6 +219,16 @@ module LearningRoutesEngine
 
       backoff = Rails.application.config.content_generation_retry_backoff * (2**[attempts - 1, 0].max)
       Time.current >= failed_at + backoff
+    end
+
+    # Section indices this user has already satisfied, rendered by the view as
+    # data-block-satisfied. Loaded once here rather than per-section, so a 16-section
+    # lesson does not issue 16 queries.
+    def load_satisfied_sections!
+      @satisfied_sections = BlockAttempt.where(user: current_user, route_step: @step)
+                                        .satisfied
+                                        .pluck(:section_index)
+                                        .to_set
     end
 
     def load_step_content
