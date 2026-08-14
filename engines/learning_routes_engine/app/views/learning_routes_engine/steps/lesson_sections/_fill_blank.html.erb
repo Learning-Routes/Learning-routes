@@ -6,17 +6,17 @@
     COMPLETE
   </div>
 
-  <h2 class="text-2xl font-bold" style="color: #1C1812;"><%= section[:title] %></h2>
+  <h2 class="text-2xl font-bold" style="color: var(--color-txt);"><%= section[:title] %></h2>
 
-  <div class="rounded-2xl p-6" style="background: #FEFDFB; border: 1px solid rgba(28, 24, 18, 0.06); border-left: 4px solid #10b981;">
-    <p class="text-lg leading-relaxed" style="color: #1C1812;">
+  <div class="rounded-2xl p-6" style="background: var(--color-card); border: 1px solid rgba(28, 24, 18, 0.06); border-left: 4px solid #10b981;">
+    <p class="text-lg leading-relaxed" style="color: var(--color-txt);">
       <% blank_index = 0 %>
       <% section[:sentence].to_s.split("___").each_with_index do |part, i| %>
         <%= part %>
         <% if i < (section[:blanks]&.length || 0) %>
           <input type="text"
                  class="fill-blank-input inline-block mx-1 px-2 py-1 rounded-lg text-center font-medium transition-all duration-300"
-                 style="border: 2px solid rgba(28, 24, 18, 0.15); background: rgba(28, 24, 18, 0.02); color: #1C1812; min-width: 80px; width: <%= [section[:blanks][i].to_s.length * 12 + 32, 80].max %>px; font-family: 'DM Mono', monospace;"
+                 style="border: 2px solid rgba(28, 24, 18, 0.15); background: rgba(28, 24, 18, 0.02); color: var(--color-txt); min-width: 80px; width: <%= [section[:blanks][i].to_s.length * 12 + 32, 80].max %>px; font-family: 'DM Mono', monospace;"
                  data-fill-blank-target="input"
                  data-blank-index="<%= blank_index %>"
                  data-action="input->fill-blank#checkAnswer"

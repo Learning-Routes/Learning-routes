@@ -9,17 +9,17 @@
     PLAYGROUND
   </div>
 
-  <h2 class="text-2xl font-bold" style="color: #1C1812;"><%= section[:title] %></h2>
+  <h2 class="text-2xl font-bold" style="color: var(--color-txt);"><%= section[:title] %></h2>
 
   <div class="rounded-2xl overflow-hidden" style="border: 1px solid rgba(28, 24, 18, 0.1);">
     <!-- Editor toolbar -->
-    <div class="flex items-center justify-between px-4 py-2" style="background: #2C261E;">
-      <span class="text-xs font-medium" style="color: #E8E4DC; font-family: 'DM Mono', monospace;"><%= section[:language] || 'python' %></span>
+    <div class="flex items-center justify-between px-4 py-2" style="background: var(--color-txt);">
+      <span class="text-xs font-medium" style="color: var(--color-card); font-family: 'DM Mono', monospace;"><%= section[:language] || 'python' %></span>
       <div class="flex gap-2">
         <button class="px-3 py-1 rounded-lg text-xs font-medium transition-all duration-200"
-                style="background: rgba(255,255,255,0.1); color: #E8E4DC;"
+                style="background: rgba(255,255,255,0.1); color: var(--color-card);"
                 data-action="click->code-playground#reset"
-                aria-label="Reset code">Reset</button>
+                aria-label="Reset code"><%= t('learning_engine.blocks.reset') %></button>
         <button class="px-4 py-1 rounded-lg text-xs font-bold transition-all duration-200"
                 style="background: #10b981; color: white;"
                 data-action="click->code-playground#run"
@@ -37,8 +37,8 @@
     </div>
 
     <!-- Output panel -->
-    <div class="px-4 py-3" style="background: #1C1812; border-top: 1px solid rgba(255,255,255,0.1);">
-      <p class="text-xs mb-1" style="color: #887F72; font-family: 'DM Mono', monospace;">Output</p>
+    <div class="px-4 py-3" style="background: var(--color-txt); border-top: 1px solid rgba(255,255,255,0.1);">
+      <p class="text-xs mb-1" style="color: #887F72; font-family: 'DM Mono', monospace;"><%= t('learning_engine.blocks.output') %></p>
       <pre data-code-playground-target="output"
            class="text-sm whitespace-pre-wrap"
            style="color: #10b981; font-family: 'DM Mono', monospace; min-height: 24px;">Click Run to execute...</pre>
@@ -47,7 +47,7 @@
     <% if section[:expected_output].present? %>
       <div class="px-4 py-2" style="background: rgba(28, 24, 18, 0.03); border-top: 1px solid rgba(28, 24, 18, 0.06);">
         <p class="text-xs" style="color: #887F72; font-family: 'DM Mono', monospace;">
-          Expected: <span style="color: #6D665B;"><%= section[:expected_output].to_s.truncate(200) %></span>
+          Expected: <span style="color: var(--color-sub);"><%= section[:expected_output].to_s.truncate(200) %></span>
         </p>
       </div>
     <% end %>

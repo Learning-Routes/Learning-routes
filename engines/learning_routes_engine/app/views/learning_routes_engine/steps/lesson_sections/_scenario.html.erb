@@ -6,17 +6,17 @@
     SCENARIO
   </div>
 
-  <h2 class="text-2xl font-bold" style="color: #1C1812;"><%= section[:title] %></h2>
+  <h2 class="text-2xl font-bold" style="color: var(--color-txt);"><%= section[:title] %></h2>
 
-  <div class="rounded-2xl p-6" style="background: #FEFDFB; border: 1px solid rgba(28, 24, 18, 0.06);">
+  <div class="rounded-2xl p-6" style="background: var(--color-card); border: 1px solid rgba(28, 24, 18, 0.06);">
     <!-- Situation -->
-    <p class="text-base mb-6" style="color: #1C1812; line-height: 1.7;"><%= section[:situation] %></p>
+    <p class="text-base mb-6" style="color: var(--color-txt); line-height: 1.7;"><%= section[:situation] %></p>
 
     <!-- Options -->
     <div class="space-y-3" data-scenario-target="optionsContainer">
       <% section[:options]&.each_with_index do |option, i| %>
         <button class="scenario-option w-full text-left px-5 py-4 rounded-xl transition-all duration-200"
-                style="background: rgba(168, 85, 247, 0.04); border: 2px solid rgba(168, 85, 247, 0.12); color: #1C1812;"
+                style="background: rgba(168, 85, 247, 0.04); border: 2px solid rgba(168, 85, 247, 0.12); color: var(--color-txt);"
                 data-scenario-target="option"
                 data-option-index="<%= i %>"
                 data-consequence="<%= option[:consequence]&.gsub('"', '&quot;') %>"
@@ -35,7 +35,7 @@
     <!-- Consequence reveal -->
     <div data-scenario-target="consequence" class="mt-4 px-5 py-4 rounded-xl hidden" style="background: rgba(168, 85, 247, 0.06); border: 1px solid rgba(168, 85, 247, 0.15);">
       <p class="text-sm font-medium mb-1" style="color: #a855f7;">Result:</p>
-      <p data-scenario-target="consequenceText" style="color: #1C1812;"></p>
+      <p data-scenario-target="consequenceText" style="color: var(--color-txt);"></p>
     </div>
 
     <!-- Retry button -->

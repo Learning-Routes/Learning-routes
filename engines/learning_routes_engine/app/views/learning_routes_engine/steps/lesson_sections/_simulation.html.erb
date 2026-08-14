@@ -9,28 +9,28 @@
     SIMULATION
   </div>
 
-  <h2 class="text-2xl font-bold" style="color: #1C1812;"><%= section[:title] %></h2>
+  <h2 class="text-2xl font-bold" style="color: var(--color-txt);"><%= section[:title] %></h2>
 
-  <div class="rounded-2xl p-6" style="background: #FEFDFB; border: 1px solid rgba(28, 24, 18, 0.06);">
+  <div class="rounded-2xl p-6" style="background: var(--color-card); border: 1px solid rgba(28, 24, 18, 0.06);">
     <% if section[:body].present? %>
-      <p class="text-sm mb-4" style="color: #6D665B;"><%= section[:body].to_s.truncate(300) %></p>
+      <p class="text-sm mb-4" style="color: var(--color-sub);"><%= section[:body].to_s.truncate(300) %></p>
     <% end %>
 
     <!-- Canvas visualization -->
     <div class="rounded-xl overflow-hidden mb-4" style="border: 1px solid rgba(28, 24, 18, 0.08);">
-      <canvas data-simulation-target="canvas" width="600" height="300" style="width: 100%; height: auto; background: #FEFDFB;"></canvas>
+      <canvas data-simulation-target="canvas" width="600" height="300" style="width: 100%; height: auto; background: var(--color-card);"></canvas>
     </div>
 
     <!-- Sliders -->
     <div class="space-y-4" data-simulation-target="controls">
       <% (section[:variables] || []).each_with_index do |var, i| %>
         <div class="flex items-center gap-4">
-          <label class="text-sm font-medium w-24 shrink-0" style="color: #1C1812; font-family: 'DM Mono', monospace;">
+          <label class="text-sm font-medium w-24 shrink-0" style="color: var(--color-txt); font-family: 'DM Mono', monospace;">
             <%= var[:name] || var["name"] %>
           </label>
           <input type="range"
                  class="flex-1 accent-current"
-                 style="accent-color: #2C261E;"
+                 style="accent-color: var(--color-txt);"
                  min="<%= var[:min] || var["min"] || 0 %>"
                  max="<%= var[:max] || var["max"] || 100 %>"
                  value="<%= var[:default] || var["default"] || 50 %>"
@@ -40,14 +40,14 @@
                  data-var-index="<%= i %>"
                  data-action="input->simulation#update"
                  aria-label="<%= var[:name] || var["name"] %> slider">
-          <span class="text-sm font-medium w-16 text-right" style="color: #2C261E; font-family: 'DM Mono', monospace;"
+          <span class="text-sm font-medium w-16 text-right" style="color: var(--color-txt); font-family: 'DM Mono', monospace;"
                 data-simulation-target="sliderValue"><%= var[:default] || var["default"] || 50 %></span>
         </div>
       <% end %>
     </div>
 
     <% if section[:formula].present? %>
-      <div class="mt-4 px-3 py-2 rounded-lg text-sm" style="background: rgba(28, 24, 18, 0.04); color: #6D665B; font-family: 'DM Mono', monospace;">
+      <div class="mt-4 px-3 py-2 rounded-lg text-sm" style="background: rgba(28, 24, 18, 0.04); color: var(--color-sub); font-family: 'DM Mono', monospace;">
         Formula: <span data-simulation-target="result"><%= section[:formula] %></span>
       </div>
     <% end %>
