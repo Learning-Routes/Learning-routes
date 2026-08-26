@@ -141,6 +141,23 @@
   --color-info: #2563EB;
   --color-info-bg: rgba(37, 99, 235, 0.08);
   --color-info-border: rgba(37, 99, 235, 0.18);
+
+  /* ── Step page geometry (WP-15 §C/§D) ──────────────────────────────────
+     Four numbers were spread across two templates and one stylesheet, and they
+     disagreed: the lesson body was capped at 48rem while the likes bar, the
+     navigation and the comments filled the 50rem column, and the row reserved
+     82rem it could not use, leaving 128px stranded to the RIGHT of the sidebar.
+     One measure, one sidebar width, one gutter, declared once. */
+  --step-measure: 48rem;
+  --step-sidebar-w: 19rem;
+  --step-gutter: 2.5rem;
+  --step-page-pad: 1.25rem;
+
+  /* Height of the FIXED .lesson-nav-footer. Measured at 78px (0.75rem padding
+     top and bottom around a 48px button, plus a 1px border); 5rem leaves a
+     little margin for a longer label. Four different places used to reserve
+     space for this footer — see .lesson-sections-container below. */
+  --lesson-footer-h: 5rem;
 }
 
 html[data-theme="dark"] {
@@ -1132,8 +1149,35 @@ html[data-theme="dark"] .learning-nav {
 /* ── Sections container ── */
 .lesson-sections-container {
   position: relative;
+  /* WP-15 §C. This used to carry `min-height: 12rem` and `padding-bottom: 5rem`,
+     and both were removed for reasons that were measured, not guessed:
+
+     `padding-bottom: 5rem` reserved room for .lesson-nav-footer — but that footer
+     is `position: fixed` to the VIEWPORT, so it never overlaps this point in the
+     document. It only overlaps whatever is at the bottom of the scroll. The
+     reserve is now taken once, at the bottom of .step-page, where the footer
+     actually is. Three other places reserved it too; they are gone as well.
+
+     `min-height: 12rem` was measured across all fifteen sections of a real
+     lesson: it binds on exactly one block type. `check` renders its body into a
+     position:fixed modal and therefore occupies 0px in flow; every other type
+     measured 179-1027px, all above the 192px floor, so the floor only padded
+     them. It is not a transition guard either — _transitionToSection sets
+     `incoming.style.display = ""` BEFORE hiding the outgoing section 400ms
+     later, so the container is never empty mid-animation. The floor now sits on
+     the one section that needs it, below. */
+}
+
+/* The only section whose in-flow height is zero: its content is a fixed modal. */
+.lesson-section[data-section-type="check"] {
   min-height: 12rem;
-  padding-bottom: 5rem; /* space for fixed footer */
+}
+
+/* The AI supplementary slot is empty until a tool fills it. It used to carry an
+   inline `margin-top:1rem` unconditionally, so an empty div contributed 16px of
+   nothing to the gap the owner was pointing at. */
+.lesson-ai-supplementary:not(:empty) {
+  margin-top: 1rem;
 }
 
 .lesson-section {
@@ -2418,14 +2462,111 @@ html[data-theme="dark"] .lesson-companion-body {
   .lesson-companion-body { width: 2.75rem; height: 2.75rem; font-size: 1.375rem; }
 }
 
+/* ── Step page layout (WP-15 §D) ──────────────────────────────────────────
+   Was a flex row inside a 82rem container: content `flex:1; max-width:50rem`,
+   gutter 2.5rem, aside 19rem — 71.5rem of a 79.5rem usable row. `flex-start`
+   put the leftover 8rem (128px, measured) to the RIGHT of the sidebar, so the
+   page read as pushed left with a hole on the right at every viewport width.
+
+   A grid fixes the structure — the sidebar is pinned to the right track — and
+   capping the container at exactly measure + gutter + sidebar means there is no
+   leftover to strand. The page is then genuinely centred, and the reading column
+   is the single --step-measure everything else on the page also uses. */
+.step-page {
+  max-width: calc(var(--step-measure) + var(--step-gutter) + var(--step-sidebar-w) + 2 * var(--step-page-pad));
+  margin: 0 auto;
+  /* The ONE reserve for the fixed .lesson-nav-footer, taken at the bottom of the
+     scroll where the footer actually sits. */
+  padding: 1.5rem var(--step-page-pad) calc(var(--lesson-footer-h) + 1.5rem);
+}
+
+.step-page-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) var(--step-sidebar-w);
+  gap: var(--step-gutter);
+  align-items: start;
+}
+
+.step-page-layout > aside {
+  width: auto;
+}
+
+/* ── Sidebar: INFO DEL PASO ──────────────────────────────────────────────
+   Four tinted, rounded, full-width rows read as four buttons and spent most of
+   the card's height on chrome. A label/value grid on the hairline the rest of
+   the page already uses says the same four things in about half the space, with
+   no colour that is not already a theme token. */
+.step-info-list {
+  margin: 0;
+  display: grid;
+}
+
+.step-info-row {
+  display: grid;
+  grid-template-columns: 0.875rem 1fr auto;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4375rem 0;
+  border-top: 1px solid var(--color-border-subtle);
+}
+
+.step-info-row:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.step-info-row:last-child {
+  padding-bottom: 0;
+}
+
+.step-info-label {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.75rem;
+  color: var(--color-muted);
+  margin: 0;
+}
+
+.step-info-value {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-txt);
+  margin: 0;
+  text-align: right;
+}
+
 /* ── Step page responsive layout ── */
 @media (max-width: 1280px) {
   .step-page-layout {
-    flex-direction: column !important;
+    grid-template-columns: minmax(0, 1fr);
   }
   .step-page-layout > aside {
     display: block !important;
-    width: 100% !important;
+    width: auto !important;
+  }
+}
+
+/* The fixed footer spans the viewport, so its inner bar has to reproduce the page
+   geometry to sit under the reading column instead of under the middle of the
+   window — it was centred on the viewport and therefore ~190px to the right of
+   the Continue button's own column. */
+.lesson-nav-footer-inner {
+  max-width: calc(var(--step-measure) + var(--step-gutter) + var(--step-sidebar-w) + 2 * var(--step-page-pad));
+  margin: 0 auto;
+  padding: 0 var(--step-page-pad);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) var(--step-sidebar-w);
+  gap: var(--step-gutter);
+}
+
+.lesson-nav-footer-actions {
+  display: flex;
+  gap: 0.75rem;
+}
+
+@media (max-width: 1280px) {
+  .lesson-nav-footer-inner {
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 

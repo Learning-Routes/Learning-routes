@@ -245,6 +245,41 @@ class LearningRoutesEngine::BlockVariantRenderingTest < ActionDispatch::Integrat
     assert_equal 0,     body["attempts_remaining"]
   end
 
+  # ── §C/§D: the page geometry the measurements were taken against ───────
+
+  # These four reserves each existed for the same fixed footer, and the measured dead
+  # region between the lesson body and the likes bar was 325px because of it. A Rails
+  # test cannot measure pixels, but it can pin the structure the browser measurement
+  # was taken against, so a later edit cannot quietly put the reserves back.
+  test "the step page reserves the fixed footer once and declares one reading measure" do
+    doc = page
+
+    assert doc.css(".step-page").any?, "the page wrapper carries the geometry"
+    assert doc.css(".step-page-layout").any?
+    assert doc.css(".lesson-nav-footer-inner").any?,
+           "the fixed footer mirrors the page grid so its button sits under the reading column"
+
+    assert_empty doc.css('[id^="ai_supplementary_"][style*="margin"]'),
+                 "the empty AI slot must not carry an unconditional inline margin"
+
+    # The four literals the WP-15 §C/§D measurement identified, by name.
+    body = response.body
+    assert_not_includes body, "max-width:82rem",     "the row no longer claims width it cannot use"
+    assert_not_includes body, "max-width:50rem",     "the column width comes from --step-measure"
+    assert_not_includes body, "padding:0 1rem 6rem", "the second footer reserve is gone"
+    assert_not_includes body, "max-width:48rem",     "the lesson body no longer sets its own measure"
+  end
+
+  test "the sidebar renders the step facts as a list rather than four identical pills" do
+    rows = page.css(".step-info-row")
+
+    assert_operator rows.size, :>=, 2
+    rows.each do |row|
+      assert row.at_css(".step-info-label"), "every row names its fact"
+      assert row.at_css(".step-info-value"), "every row carries its value"
+    end
+  end
+
   # ── §B: check ──────────────────────────────────────────────────────────
 
   test "check renders its options permuted while keeping the original index" do
