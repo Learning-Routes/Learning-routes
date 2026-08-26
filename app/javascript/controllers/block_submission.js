@@ -52,3 +52,20 @@ export function announceResult(element, result) {
     detail: result
   }))
 }
+
+// The index an option/term/definition occupies in the SERVER'S stored array, which is
+// not its position on screen: WP-15 permutes those columns per student and per attempt
+// so position is not a tell, and every element keeps its original index in a data
+// attribute. Grading is index identity against the stored array, so this is the only
+// index a block may ever send or compare.
+//
+// Falls back to DOM position for a block rendered before the permutation shipped, or by
+// anything that forgot the attribute — that is the pre-WP-15 behaviour, and it is only
+// correct when the board is unpermuted, which is exactly when the fallback applies.
+export function originalIndexOf(element, siblings) {
+  const declared = Number(element?.dataset?.optionIndex ?? element?.dataset?.termIndex)
+  if (Number.isInteger(declared)) return declared
+
+  const position = Array.from(siblings || []).indexOf(element)
+  return position >= 0 ? position : null
+}

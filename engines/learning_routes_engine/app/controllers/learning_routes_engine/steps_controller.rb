@@ -222,13 +222,18 @@ module LearningRoutesEngine
     end
 
     # Section indices this user has already satisfied, rendered by the view as
-    # data-block-satisfied. Loaded once here rather than per-section, so a 16-section
-    # lesson does not issue 16 queries.
+    # data-block-satisfied, plus the attempt count per section, which seeds
+    # BlockVariant so the shuffle is stable within an attempt and new after a failure.
+    #
+    # ONE query for both, and only the two columns we read. Loaded here rather than
+    # per-section so a 16-section lesson does not issue 16 queries, and plucked rather
+    # than loaded so strict_loading has nothing to complain about.
     def load_satisfied_sections!
-      @satisfied_sections = BlockAttempt.where(user: current_user, route_step: @step)
-                                        .satisfied
-                                        .pluck(:section_index)
-                                        .to_set
+      rows = BlockAttempt.where(user: current_user, route_step: @step)
+                         .pluck(:section_index, :attempts, :completed_at)
+
+      @satisfied_sections   = rows.filter_map { |index, _attempts, done| index if done }.to_set
+      @block_attempt_counts = rows.to_h { |index, attempts, _done| [index, attempts.to_i] }
     end
 
     def load_step_content

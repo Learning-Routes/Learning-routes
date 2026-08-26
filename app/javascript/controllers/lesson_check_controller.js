@@ -1,5 +1,5 @@
 import { Controller } from "@hotwired/stimulus"
-import { submitBlock, announceResult } from "controllers/block_submission"
+import { submitBlock, announceResult, originalIndexOf } from "controllers/block_submission"
 
 // Handles inline knowledge check questions within lessons.
 // Each option has data-correct="true"|"false". On selection, shows
@@ -78,8 +78,12 @@ export default class extends Controller {
     // Dispatch event so lesson-nav can ungate the continue button
     // Send the RAW choice; the server decides whether it was right. The visual
     // feedback above is optimistic and is corrected by the response if they disagree.
-    const optionIndex = Array.from(this.optionTargets || []).indexOf(btn)
-    submitBlock(this.element, { option_index: optionIndex >= 0 ? optionIndex : Number(btn.dataset.optionIndex) })
+    // data-option-index FIRST, position only as a fallback. WP-15 §B permutes the
+    // options for display while keeping each one's original index in the stored
+    // `options` array, and `grade_check` compares against that original index — so a
+    // position-derived index would now be the wrong answer on a shuffled board.
+    const optionIndex = originalIndexOf(btn, this.optionTargets)
+    submitBlock(this.element, { option_index: optionIndex })
       .then((result) => announceResult(this.element, result))
 
     this.element.dispatchEvent(new CustomEvent("lesson-check:answered", {
