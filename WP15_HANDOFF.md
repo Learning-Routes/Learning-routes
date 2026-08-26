@@ -298,9 +298,11 @@ removed seven partials' hardcoded light hex is visibly still in force.
 
 ### Screenshots
 
-`before_1440.png`, `after_1440.png`, `before_1920.png`, `after_1920.png` in the session
-scratchpad. The before shots show the two empty bands, the empty strip to the right of the
-sidebar, the offset Continue button, and the footer covering "Comentar". The after shots show
+`docs/wp15/before-1440.png`, `docs/wp15/after-1440.png`, `docs/wp15/before-1920.png`,
+`docs/wp15/after-1920.png`, all against the same real 15-section lesson in dark theme.
+
+The before shots show the two empty bands, the empty strip to the right of the sidebar, the
+offset Continue button, and the footer covering the "Comentar" button. The after shots show
 the comments section fitting on one screen at 1440, which it did not before.
 
 ---
