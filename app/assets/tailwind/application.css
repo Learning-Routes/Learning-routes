@@ -1324,7 +1324,9 @@ html[data-theme="dark"] .lesson-section-badge--tip {
   left: 0;
   right: 0;
   z-index: 30;
-  padding: 0.75rem 1rem;
+  /* Horizontal padding lives on .lesson-nav-footer-inner so the bar lines up with
+     the reading column at every width instead of adding to it. */
+  padding: 0.75rem 0;
   background: linear-gradient(to top, var(--color-bg) 80%, transparent);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
