@@ -35,6 +35,11 @@ class LearningRoutesEngine::BlockVariantRenderingTest < ActionDispatch::Integrat
   DRAG_DROP_INDEX = 1
   CHECK_INDEX     = 2
 
+  WRONG_BOARD = {
+    "0" => "1", "1" => "2", "2" => "3", "3" => "4",
+    "4" => "5", "5" => "6", "6" => "7", "7" => "0"
+  }.freeze
+
   SECTIONS = [
     { "type" => "concept", "title" => "Intro", "body" => "..." },                     # 0
     { "type" => "drag_drop", "title" => "Empareja", "pairs" => PAIRS },               # 1
@@ -122,16 +127,16 @@ class LearningRoutesEngine::BlockVariantRenderingTest < ActionDispatch::Integrat
                      "both columns moved together — the positional shortcut survives"
   end
 
-  test "the board is identical on a reload and different after a failure" do
-    first  = page.css("[data-drag-drop-target='term']").map { |n| n["data-term-index"] }
-    reload = page.css("[data-drag-drop-target='term']").map { |n| n["data-term-index"] }
-    assert_equal first, reload, "a reload mid-exercise must not scramble the board"
+  test "incomplete placements keep the same variant and a completed failure advances it" do
+    first = page.css("[data-drag-drop-target='term']").map { |n| n["data-term-index"] }
 
-    submit(DRAG_DROP_INDEX, { matches: { "0" => "1" } })   # a failure — attempts becomes 1
-    assert_equal 1, attempt_for(DRAG_DROP_INDEX).attempts
+    submit(DRAG_DROP_INDEX, { matches: { "0" => "1" }, submission_complete: false })
+    assert_equal 0, attempt_for(DRAG_DROP_INDEX).attempts
+    assert_equal first, page.css("[data-drag-drop-target='term']").map { |n| n["data-term-index"] }
 
-    assert_not_equal first, page.css("[data-drag-drop-target='term']").map { |n| n["data-term-index"] },
-                     "retrying must not be muscle memory"
+    submit(DRAG_DROP_INDEX, { matches: WRONG_BOARD, submission_complete: true })
+    assert_equal 1, attempt_for(DRAG_DROP_INDEX).reload.attempts
+    assert_not_equal first, page.css("[data-drag-drop-target='term']").map { |n| n["data-term-index"] }
   end
 
   test "two students do not share a board" do
@@ -217,17 +222,17 @@ class LearningRoutesEngine::BlockVariantRenderingTest < ActionDispatch::Integrat
   # ── §A3: a wrong placement is recorded, and the valve is reachable ──────
 
   test "three failed submissions release the block without ever claiming it was correct" do
-    3.times { submit(DRAG_DROP_INDEX, { matches: { "0" => "1" } }) }
+    3.times { submit(DRAG_DROP_INDEX, { matches: WRONG_BOARD, submission_complete: true }) }
 
     attempt = attempt_for(DRAG_DROP_INDEX)
-    assert_equal 3, attempt.attempts, "a wrong placement must increment attempts or the valve can never fire"
+    assert_equal 3, attempt.attempts, "a completed wrong board must make the valve reachable"
     assert attempt.released?, "RELEASE_AFTER never fired — a student facing a bad answer key is trapped"
     assert_equal false, attempt.correct, "released is NOT a pass"
     assert attempt.satisfied?, "a released block must still satisfy navigation"
   end
 
   test "the released block is published to the client as satisfied" do
-    3.times { submit(DRAG_DROP_INDEX, { matches: { "0" => "1" } }) }
+    3.times { submit(DRAG_DROP_INDEX, { matches: WRONG_BOARD, submission_complete: true }) }
 
     node = page.css(".lesson-section[data-section-index='#{DRAG_DROP_INDEX}']").first
     assert_equal "true", node["data-gating"]
@@ -235,14 +240,27 @@ class LearningRoutesEngine::BlockVariantRenderingTest < ActionDispatch::Integrat
   end
 
   test "the release response tells the client it is satisfied but not correct" do
-    2.times { submit(DRAG_DROP_INDEX, { matches: { "0" => "1" } }) }
-    submit(DRAG_DROP_INDEX, { matches: { "0" => "1" } })
+    2.times { submit(DRAG_DROP_INDEX, { matches: WRONG_BOARD, submission_complete: true }) }
+    submit(DRAG_DROP_INDEX, { matches: WRONG_BOARD, submission_complete: true })
 
     body = JSON.parse(response.body)
     assert_equal false, body["correct"]
     assert_equal true,  body["released"]
     assert_equal true,  body["satisfied"]
     assert_equal 0,     body["attempts_remaining"]
+  end
+
+  test "three partial submissions keep the block unsatisfied" do
+    3.times do
+      submit(DRAG_DROP_INDEX, { matches: { "0" => "1" }, submission_complete: false })
+    end
+
+    attempt = attempt_for(DRAG_DROP_INDEX)
+    assert_equal 0, attempt.attempts
+    assert_not attempt.released?
+
+    node = page.css(".lesson-section[data-section-index='#{DRAG_DROP_INDEX}']").first
+    assert_equal "false", node["data-block-satisfied"]
   end
 
   # ── §C/§D: the page geometry the measurements were taken against ───────
