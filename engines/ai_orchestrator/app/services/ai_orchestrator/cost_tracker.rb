@@ -8,6 +8,9 @@ module AiOrchestrator
       "claude-haiku-4-5"   => { input: 100, output: 500 },
       "claude-sonnet-4-5"  => { input: 300, output: 1500 },
       "elevenlabs"         => { flat: 0 },
+      "eleven_multilingual_v2" => { per_1k_chars: 10 },
+      "eleven_flash_v2_5"      => { per_1k_chars: 5 },
+      "scribe_v2"               => { per_hour: 22 },
       "gpt-image-1"        => { input: 500, image_input: 1000, output: 4000 },
       "tavily"             => { provider_reported_credits: true }
     }.freeze
@@ -23,6 +26,11 @@ module AiOrchestrator
 
       if pricing[:flat]
         pricing[:flat] * MICROCENTS_PER_CENT
+      elsif pricing[:per_1k_chars]
+        Rational(characters.to_i * pricing[:per_1k_chars] * MICROCENTS_PER_CENT, 1_000).round
+      elsif pricing[:per_hour]
+        seconds = Rational(audio_seconds.to_s)
+        (seconds * pricing[:per_hour] * MICROCENTS_PER_CENT / 3_600).round
       elsif pricing[:per_image]
         pricing[:per_image] * MICROCENTS_PER_CENT
       elsif pricing[:per_request]

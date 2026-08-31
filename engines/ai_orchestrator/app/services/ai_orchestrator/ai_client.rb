@@ -120,6 +120,8 @@ module AiOrchestrator
       {
         content: response.body,
         model: "elevenlabs",
+        model_id: merged[:model_id] || "eleven_multilingual_v2",
+        billed_characters: Integer(response["character-cost"], exception: false),
         input_tokens: text.length,
         output_tokens: 0,
         latency_ms: elapsed_ms,

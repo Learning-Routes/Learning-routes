@@ -44,6 +44,7 @@ module AiOrchestrator
       curriculum_design
       content_agent
       web_search
+      transcription
     ].freeze
 
     validates :task_type, inclusion: { in: TASK_TYPES }

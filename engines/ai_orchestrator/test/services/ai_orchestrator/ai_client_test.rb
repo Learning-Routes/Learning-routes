@@ -74,6 +74,18 @@ module AiOrchestrator
       assert_raises(AiClient::TimeoutError) { image_client.chat(prompt: "illustration") }
     end
 
+    test "ElevenLabs TTS returns provider billed characters and exact model id" do
+      stub_request(:post, /api\.elevenlabs\.io\/v1\/text-to-speech/).to_return(
+        status: 200, body: "audio", headers: { "character-cost" => "37" }
+      )
+
+      result = AiClient.new(model: "elevenlabs", task_type: :voice_narration)
+        .chat(prompt: "spoken text", params: { model_id: "eleven_multilingual_v2" })
+
+      assert_equal 37, result[:billed_characters]
+      assert_equal "eleven_multilingual_v2", result[:model_id]
+    end
+
     private
 
     def image_client

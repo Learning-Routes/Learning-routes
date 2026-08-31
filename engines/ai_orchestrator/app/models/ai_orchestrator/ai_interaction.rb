@@ -33,6 +33,9 @@ module AiOrchestrator
       claude-sonnet-4-5
       gpt-4.1-mini
       elevenlabs
+      eleven_multilingual_v2
+      eleven_flash_v2_5
+      scribe_v2
       gpt-image-1
       tavily
     ].freeze

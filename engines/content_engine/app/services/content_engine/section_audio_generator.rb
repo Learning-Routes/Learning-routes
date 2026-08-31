@@ -188,7 +188,7 @@ module ContentEngine
         }
       )
 
-      track_audio_cost!(user, text.length, result[:latency_ms])
+      AiOrchestrator::SpeechCostRecorder.record_tts!(user: user, result: result)
       store_audio_file(result[:content])
     end
 
@@ -221,23 +221,6 @@ module ContentEngine
     def estimate_duration(text)
       word_count = text.split(/\s+/).size
       (word_count / 150.0 * 60).round(1)
-    end
-
-    def track_audio_cost!(user, text_length, latency_ms)
-      AiOrchestrator::AiInteraction.create!(
-        user: user,
-        model: "elevenlabs",
-        task_type: "voice_narration",
-        prompt: "section_audio:#{@step_id}:#{@section_index}",
-        status: :completed,
-        response: "audio_generated",
-        input_tokens: text_length,
-        output_tokens: 0,
-        latency_ms: latency_ms || 0,
-        cost_cents: AiOrchestrator::CostTracker.estimate_cost(model: "elevenlabs")
-      )
-    rescue => e
-      Rails.logger.warn("[SectionAudioGenerator] Cost tracking failed: #{e.message}")
     end
 
     def update_step_audio_status!(status, url = nil, duration = nil)
