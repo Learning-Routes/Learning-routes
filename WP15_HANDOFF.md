@@ -97,6 +97,15 @@ at the existing whole-answer/engagement points in `scenario`, `lesson_check`, `f
 `simulation`. `code_playground_controller` imports the helper but never submits; that
 pre-existing WP-10 gap remains in `FINDINGS_WP15.md`.
 
+Concurrent submissions are serialized by `BlockAttemptRecorder`: it opens a database
+transaction, resolves the authoritative attempt row, acquires a pessimistic row lock with
+`lock!`, and performs the stale-type reset, counter increment, grading update, release check,
+and save while holding that lock. The concurrency test uses distinct PostgreSQL backend
+connections and `pg_blocking_pids` to prove three completed submissions are simultaneously
+waiting on the database lock before it is released; the final row has exactly three attempts,
+is released and satisfied, and remains incorrect. This proof is intentionally PostgreSQL-only
+and is not portable to adapters without PostgreSQL row-lock and activity functions.
+
 ---
 
 ## §B — `BlockVariant`
@@ -374,8 +383,8 @@ stayed locked, which is precisely what the owner reported.
 
 | Path | Before WP-15B (`8672602`) | After WP-15B |
 |---|---|---|
-| `env -u RAILS_MASTER_KEY bin/rails test test` | 242 runs, 767 assertions, 0F 0E | **249 runs, 804 assertions, 0F 0E** |
-| `env -u RAILS_MASTER_KEY bin/rails test test engines/*/test` | 550 runs, 1623 assertions, 3F 9E | **557 runs, 1660 assertions, 3F 9E** |
+| `env -u RAILS_MASTER_KEY bin/rails test test` | 242 runs, 767 assertions, 0F 0E | **252 runs, 821 assertions, 0F 0E** |
+| `env -u RAILS_MASTER_KEY bin/rails test test engines/*/test` | 550 runs, 1623 assertions, 3F 9E | **560 runs, 1677 assertions, 3F 9E** |
 
 **Red engine tests: 12 before, 12 after.** Measured as the intersection of 3 runs on each
 side — all three runs agreed exactly on both sides (`3 failures, 9 errors`), and the twelve
@@ -385,15 +394,16 @@ names are identical: four `ContentEngine::AudioControllerTest`, four
 touched, as instructed. WP-15B measured both sides in three seeded runs; no failures were
 added or removed.
 
-Focused browser: 2 runs, 15 assertions, 0F 0E. Focused server/rendering: 44 runs,
-216 assertions, 0F 0E. RuboCop: 7 changed Ruby files, no offenses.
+Focused browser: 3 runs, 20 assertions, 0F 0E. Focused server/rendering/concurrency: 46 runs,
+228 assertions, 0F 0E. The concurrency file alone: 1 run, 8 assertions, 0F 0E. RuboCop:
+6 relevant changed Ruby files, no offenses.
 
 `bin/importmap audit` remains red only for pre-existing dependency pins that the owner kept
 out of WP-15B: DOMPurify `3.4.12` contributes one moderate finding and Mermaid `11.16.0`
 contributes four moderate plus one low finding (six total: five moderate, one low). No pins
 were changed in this branch; the debt is recorded in `FINDINGS_WP15.md`.
 
-**37 new tests across WP-15 and WP-15B:**
+**40 new tests across WP-15 and WP-15B:**
 
 - `BlockVariantTest` (15) — same seed → same permutation; a different `attempts`, user, step,
   section or salt → a different one; it is a permutation and not a sample; degenerate sizes;
@@ -410,11 +420,15 @@ were changed in this branch; the debt is recorded in `FINDINGS_WP15.md`.
   release response says satisfied-but-not-correct; `check` renders permuted and still grades
   against the original index; the correct option does not stay pinned to the first row; and two
   guards on the §C/§D geometry so the four reserves cannot quietly come back.
-- `BlockAttemptsTest` WP-15B additions (4) — incomplete interactions stay at attempt zero;
+- `BlockAttemptsTest` WP-15B additions (5) — incomplete interactions stay at attempt zero;
   only completed wrong boards consume the release counter; forged correctness remains ignored;
-  and missing completion metadata is incomplete.
-- `BlockAttemptSemanticsTest` (2) — real Chrome/Stimulus/Fetch proof for three partial drops
-  staying gated and three completed wrong rounds releasing without becoming a pass.
+  missing completion metadata is incomplete; and three wrong completed fill-blank boards reach
+  the release valve without becoming a pass.
+- `BlockAttemptSemanticsTest` (3) — real Chrome/Stimulus/Fetch proof for three partial drops
+  staying gated, three completed wrong rounds releasing without becoming a pass, and an
+  identical completed fill-blank board retrying after a failed request.
+- `BlockAttemptConcurrencyTest` (1) — three PostgreSQL backends demonstrably overlap behind a
+  held row lock, then preserve all three increments and release at the exact threshold.
 
 ---
 
