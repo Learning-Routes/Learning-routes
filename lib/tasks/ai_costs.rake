@@ -32,10 +32,15 @@ namespace :ai_costs do
     scope.find_each do |row|
       calculation = case row.model
       when "gpt-5.2", "gpt-4.1-mini", "claude-opus-4-5", "claude-haiku-4-5", "claude-sonnet-4-5"
+        next if row.input_tokens.nil? || row.output_tokens.nil?
+        next unless row.input_tokens.positive? || row.output_tokens.positive?
+
         [AiOrchestrator::CostTracker.estimate_microcents(
           model: row.model, input_tokens: row.input_tokens, output_tokens: row.output_tokens
         ), "text-rates-2026-08-31"]
       when "elevenlabs"
+        next unless row.input_tokens.to_i.positive?
+
         [AiOrchestrator::CostTracker.estimate_microcents(
           model: "eleven_multilingual_v2", characters: row.input_tokens
         ), "elevenlabs-multilingual-v2-2026-08-31"]

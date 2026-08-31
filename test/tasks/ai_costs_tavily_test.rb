@@ -42,6 +42,26 @@ class AiCostsTavilyTest < ActiveSupport::TestCase
     assert_equal "unpriced", failed.reload.pricing_status
   end
 
+  test "apply prices only authoritative historical text and TTS usage" do
+    text_nil = legacy_row(model: "gpt-4.1-mini", input_tokens: nil, output_tokens: nil)
+    text_blank = legacy_row(model: "gpt-4.1-mini", input_tokens: "", output_tokens: "")
+    text_zero = legacy_row(model: "gpt-4.1-mini", input_tokens: 0, output_tokens: 0)
+    text_valid = legacy_row(model: "gpt-4.1-mini", input_tokens: 1_000, output_tokens: 0)
+    tts_nil = legacy_row(model: "elevenlabs", input_tokens: nil)
+    tts_blank = legacy_row(model: "elevenlabs", input_tokens: "")
+    tts_zero = legacy_row(model: "elevenlabs", input_tokens: 0)
+    tts_valid = legacy_row(model: "elevenlabs", input_tokens: 100)
+    ENV["APPLY"] = "1"
+
+    capture_io { invoke_task("ai_costs:backfill") }
+
+    [text_nil, text_blank, text_zero, tts_nil, tts_blank, tts_zero].each do |row|
+      assert_equal "unpriced", row.reload.pricing_status
+    end
+    assert_equal ["priced", 400], [text_valid.reload.pricing_status, text_valid.cost_microcents]
+    assert_equal ["priced", 10_000], [tts_valid.reload.pricing_status, tts_valid.cost_microcents]
+  end
+
   test "image and transcription history without usage remain unknown" do
     image = legacy_row(model: "gpt-image-1", input_tokens: 100)
     stt = legacy_row(model: "scribe_v2")
