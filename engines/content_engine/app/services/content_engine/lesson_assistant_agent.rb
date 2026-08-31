@@ -186,6 +186,9 @@ module ContentEngine
     end
 
     def track_interaction!(action, message, result, input_tokens: 0, output_tokens: 0, latency_ms: 0)
+      cost_microcents = AiOrchestrator::CostTracker.estimate_microcents(
+        model: "gpt-4.1-mini", input_tokens: input_tokens, output_tokens: output_tokens
+      )
       AiOrchestrator::AiInteraction.create!(
         user: @user,
         model: "gpt-4.1-mini",
@@ -196,11 +199,10 @@ module ContentEngine
         input_tokens: input_tokens,
         output_tokens: output_tokens,
         latency_ms: latency_ms,
-        cost_cents: AiOrchestrator::CostTracker.estimate_cost(
-          model: "gpt-4.1-mini",
-          input_tokens: input_tokens,
-          output_tokens: output_tokens
-        ),
+        cost_microcents: cost_microcents,
+        cost_cents: AiOrchestrator::CostTracker.microcents_to_cents(cost_microcents),
+        pricing_status: "priced",
+        pricing_version: "openai-2026-08-31",
         metadata: {
           step_id: @step.id,
           route_id: @route.id,
@@ -210,7 +212,7 @@ module ContentEngine
         }
       )
     rescue => e
-      Rails.logger.warn("[LessonAssistantAgent] Failed to track interaction: #{e.message}")
+      Rails.logger.warn("[LessonAssistantAgent] Failed to track interaction (#{e.class.name})")
     end
 
     class RateLimitExceeded < StandardError; end

@@ -47,6 +47,7 @@ module AiOrchestrator
       transcription
       translation
       diagram_generation
+      lesson_assistant
     ].freeze
 
     validates :task_type, inclusion: { in: TASK_TYPES }
