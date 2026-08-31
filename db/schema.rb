@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_11_000001) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_24_000001) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -46,6 +46,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_11_000001) do
     t.string "cache_key"
     t.boolean "cached", default: false, null: false
     t.integer "cost_cents", default: 0
+    t.bigint "cost_microcents", default: 0, null: false
     t.datetime "created_at", null: false
     t.text "error_message"
     t.integer "input_tokens", default: 0
@@ -66,6 +67,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_11_000001) do
     t.index ["model"], name: "index_ai_orchestrator_ai_interactions_on_model"
     t.index ["status"], name: "index_ai_orchestrator_ai_interactions_on_status"
     t.index ["task_type"], name: "index_ai_orchestrator_ai_interactions_on_task_type"
+    t.index ["user_id", "created_at", "cost_microcents"], name: "idx_ai_interactions_usage_billing"
     t.index ["user_id", "created_at"], name: "idx_ai_interactions_user_date"
     t.index ["user_id"], name: "index_ai_orchestrator_ai_interactions_on_user_id"
   end

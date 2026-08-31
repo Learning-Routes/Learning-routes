@@ -159,7 +159,8 @@ module AiOrchestrator
           response: cached[:content],
           cached: true,
           latency_ms: 0,
-          cost_cents: 0
+          cost_cents: 0,
+          cost_microcents: 0
         )
         return
       end

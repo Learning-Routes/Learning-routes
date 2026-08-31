@@ -136,14 +136,16 @@ module AiOrchestrator
     def check_cost_limit!
       alerts = Rails.application.config.ai_cost_alerts
 
-      daily = CostTracker.daily_cost
-      if daily >= alerts[:daily_limit]
-        raise RateLimitExceeded, "Daily cost limit exceeded: #{daily} cents (limit: #{alerts[:daily_limit]})"
+      daily = CostTracker.daily_cost_microcents
+      daily_limit = alerts[:daily_limit].to_i * CostTracker::MICROCENTS_PER_CENT
+      if daily >= daily_limit
+        raise RateLimitExceeded, "Daily cost limit exceeded (limit: #{alerts[:daily_limit]} cents)"
       end
 
       if @user
-        user_daily = CostTracker.cost_by_user(user_id: @user.id, period: Date.current.all_day)
-        if user_daily >= alerts[:per_user_daily]
+        user_daily = CostTracker.cost_by_user_microcents(user_id: @user.id, period: Date.current.all_day)
+        user_limit = alerts[:per_user_daily].to_i * CostTracker::MICROCENTS_PER_CENT
+        if user_daily >= user_limit
           raise RateLimitExceeded, "Per-user daily cost limit exceeded for user #{@user.id}"
         end
       end

@@ -23,6 +23,7 @@ module AiOrchestrator
     scope :today, -> { where("created_at >= ?", Time.current.beginning_of_day) }
     scope :this_week, -> { where("created_at >= ?", Time.current.beginning_of_week) }
     scope :this_month, -> { where("created_at >= ?", Time.current.beginning_of_month) }
+    scope :billable, -> { where(status: :completed, cached: [false, nil]) }
 
     SUPPORTED_MODELS = %w[
       gpt-5.2
@@ -38,7 +39,7 @@ module AiOrchestrator
     validates :task_type, inclusion: { in: AiModelConfig::TASK_TYPES }, allow_nil: true
 
     def cost_dollars
-      cost_cents / 100.0
+      BigDecimal(cost_microcents.to_s) / CostTracker::MICROCENTS_PER_DOLLAR
     end
 
     def latency_seconds
@@ -49,7 +50,18 @@ module AiOrchestrator
       (input_tokens || 0) + (output_tokens || 0)
     end
 
-    def mark_completed!(response_text:, input_tokens: 0, output_tokens: 0, latency_ms: 0)
+    def mark_completed!(response_text:, input_tokens: 0, output_tokens: 0, latency_ms: 0,
+                        image_input_tokens: 0, characters: nil, audio_seconds: nil)
+      microcents = if cached?
+        0
+      else
+        CostTracker.estimate_microcents(
+          model: model, input_tokens: input_tokens, output_tokens: output_tokens,
+          image_input_tokens: image_input_tokens, characters: characters,
+          audio_seconds: audio_seconds
+        )
+      end
+
       update!(
         status: :completed,
         response: response_text,
@@ -57,11 +69,8 @@ module AiOrchestrator
         output_tokens: output_tokens,
         tokens_used: input_tokens + output_tokens,
         latency_ms: latency_ms,
-        cost_cents: CostTracker.estimate_cost(
-          model: model,
-          input_tokens: input_tokens,
-          output_tokens: output_tokens
-        )
+        cost_microcents: microcents,
+        cost_cents: CostTracker.microcents_to_cents(microcents)
       )
     end
 
