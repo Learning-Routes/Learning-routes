@@ -26,9 +26,9 @@ designed on a submission that was structurally empty. That is why the owner saw
 
 **Fix:** `checkMatch` writes `term.dataset.placedDef = defIndex` on a correct placement.
 
-**Checked, and left alone:** the six other block controllers. `fill_blank` sends `answers`,
-`lesson_check` sends `option_index`, `scenario` sends `choice_index`, `flashcards` sends
-`ratings`. Only `drag_drop` had this defect.
+**Checked:** the other block controllers. `fill_blank` sends `answers`; `lesson_check` and
+`scenario` send `option_index`; `flashcards` sends `ratings`; `simulation` sends its existing
+engagement event. WP-15B now marks each deliberate whole answer explicitly.
 
 ### A2 confirmed, against the code
 
@@ -68,17 +68,34 @@ The test that A2 would have failed is
 it reads the rendered orders, pairs row *k* with row *k*, and asserts the server says wrong.
 Under the old partial that submission was the guaranteed-correct answer.
 
-### A3 — the release valve was unreachable
+### A3 / WP-15B — a completed answer is one attempt
 
 `_submitMatches()` fired only when every term was placed, and a wrong drop bounced without
 submitting. So `BlockAttempt#attempts` could not increment on a failure, `RELEASE_AFTER = 3`
 could never fire, and — given A2 proves the answer keys were wrong — a student facing one was
 trapped with no way past the block.
 
-A wrong placement now submits. The UI is unchanged (the drop still bounces); this is about
-the record. The wrong pairing is included in **that** submission so the stored payload is what
-the student actually did, but it is not written to the DOM, so the next submission does not
-carry it.
+WP-15 made a wrong placement submit, which made the valve reachable but counted each misplaced
+tile as a whole attempt. Three ordinary exploratory drops therefore released the gate. WP-15B
+defines an attempt once: **a submission the student intended the server to judge as a whole**.
+
+The shared envelope now carries `block.submission_complete`. `block_submission.js` always sets
+it to a literal boolean and defaults omission to `false`; the server likewise accepts only the
+literal `true`. Every POST is still stored and graded, but only complete submissions increment
+`attempts` or call `maybe_release!`.
+
+| Block | Before WP-15B | After WP-15B |
+|---|---|---|
+| `drag_drop` | every wrong placement incremented; three drops released | partial drops are recorded with `attempts=0`; one pass across every term increments once |
+| `fill_blank` | only an entirely correct board submitted | a complete correct or wrong board submits once per answer snapshot |
+| `scenario` | one option submitted and incremented implicitly | one selected option is explicitly complete and increments once |
+| `lesson_check` | one option submitted and incremented implicitly | one selected option is explicitly complete and increments once |
+
+The flag is set in `drag_drop_controller` when the round covers every term, in
+`fill_blank_controller` when every blank has reached the finished-answer length, and as `true`
+at the existing whole-answer/engagement points in `scenario`, `lesson_check`, `flashcards`, and
+`simulation`. `code_playground_controller` imports the helper but never submits; that
+pre-existing WP-10 gap remains in `FINDINGS_WP15.md`.
 
 ---
 
@@ -106,8 +123,8 @@ the same page different; `salt` makes the terms column and the definitions colum
 *same* section permute independently, which is the whole reason the positional shortcut
 cannot come back; and `attempt_number` is `BlockAttempt#attempts` for that
 `(user, route_step, section_index)` triple, which the table already stores under
-`idx_block_attempts_unique_per_section` and already increments on every submission, so nothing
-new is persisted. It is `attempts` rather than a timestamp because a timestamp changes on
+`idx_block_attempts_unique_per_section` and now increments only on completed submissions, so
+nothing new is persisted. It is `attempts` rather than a timestamp because a timestamp changes on
 every render and would scramble a board the student is halfway through, and rather than a
 session value because a session value does not survive a logout or a second device — both of
 which break "stable within an attempt". The parts are joined with a separator that cannot
@@ -148,15 +165,11 @@ compared it against an index into the *stored* array. Correct while the two orde
 wrong the moment the board is permuted. Both now read `data-option-index` through one shared
 `originalIndexOf` helper in `block_submission.js`.
 
-### One tension, stated rather than hidden
+### WP-15B resolves the attempt-seed tension
 
-A3 makes `attempts` increment on every wrong *placement*, not once per completed round. So
-the board is stable until the student gets something wrong, and new on the next render after
-that. "Stable within an attempt" holds in the sense that matters — nothing re-renders the
-section while the student is working in it (`_transitionToSection` reveals sections that are
-already in the DOM; the block submits by `fetch` and never re-renders) — but a student who
-fails a placement and *then* reloads gets a fresh board. Placements are client-only state and
-a reload loses them regardless, so nothing is destroyed that survived anyway.
+Incomplete placements leave `attempts` at zero, so a reload during exploration returns the
+same permutation. A completed failed board increments once and the next render uses a new
+permutation. `BlockVariant` did not change; correcting the counter fixed its seed semantics.
 
 ---
 
@@ -324,17 +337,17 @@ correctDefs [0, 1, 3, 2]     == termOrder, i.e. every term still points at its o
 Row 1 shows *Sustantivo* beside *"Como vai?"*, which is not its definition. Under the old
 partial that pairing would have been marked correct.
 
-**One wrong placement:**
-
-```
-attempts 1 · correct false · satisfied false
-stored payload {"matches": {"0": "3"}}          <- the wrong pairing, recorded
-block:graded {correct: false, attempts: 1, attempts_remaining: 2, released: false}
-```
-
-Before this package that submission did not happen at all.
-
 **Three wrong placements:**
+
+```
+attempts 0 · correct false · satisfied false
+stored payload includes submission_complete:false
+footer "Responde para continuar"
+```
+
+The interactions are recorded, but they do not consume attempts or release navigation.
+
+**Three completed wrong boards:**
 
 ```
 block:graded {correct: false, attempts: 3, attempts_remaining: 0, released: true, satisfied: true}
@@ -359,36 +372,49 @@ stayed locked, which is precisely what the owner reported.
 
 ## Tests
 
-| Path | Before (`adfbc37`) | After |
+| Path | Before WP-15B (`8672602`) | After WP-15B |
 |---|---|---|
-| `env -u RAILS_MASTER_KEY bin/rails db:test:prepare test` | 227 runs, 653 assertions, 0F 0E | **242 runs, 767 assertions, 0F 0E** |
-| `env -u RAILS_MASTER_KEY bin/rails test test engines/*/test` | 520 runs, 1478 assertions, 3F 9E | **550 runs, 1623 assertions, 3F 9E** |
+| `env -u RAILS_MASTER_KEY bin/rails test test` | 242 runs, 767 assertions, 0F 0E | **249 runs, 804 assertions, 0F 0E** |
+| `env -u RAILS_MASTER_KEY bin/rails test test engines/*/test` | 550 runs, 1623 assertions, 3F 9E | **557 runs, 1660 assertions, 3F 9E** |
 
 **Red engine tests: 12 before, 12 after.** Measured as the intersection of 3 runs on each
 side — all three runs agreed exactly on both sides (`3 failures, 9 errors`), and the twelve
 names are identical: four `ContentEngine::AudioControllerTest`, four
 `ContentEngine::SectionAudioControllerTest`, `GapAnalysisJobTest`, `ReinforcementJobTest`,
 `RouteGenerationJobTest`, `RouteGeneratorTest`. The same twelve WP-10 and WP-12 reported. Not
-touched, as instructed. The "before" numbers were taken from a `git worktree` at `adfbc37`,
-not inferred by subtraction.
+touched, as instructed. WP-15B measured both sides in three seeded runs; no failures were
+added or removed.
 
-`bin/rubocop`: 424 files, no offenses.
+Focused browser: 2 runs, 15 assertions, 0F 0E. Focused server/rendering: 44 runs,
+216 assertions, 0F 0E. RuboCop: 7 changed Ruby files, no offenses.
 
-**30 new tests:**
+`bin/importmap audit` remains red only for pre-existing dependency pins that the owner kept
+out of WP-15B: DOMPurify `3.4.12` contributes one moderate finding and Mermaid `11.16.0`
+contributes four moderate plus one low finding (six total: five moderate, one low). No pins
+were changed in this branch; the debt is recorded in `FINDINGS_WP15.md`.
+
+**37 new tests across WP-15 and WP-15B:**
 
 - `BlockVariantTest` (15) — same seed → same permutation; a different `attempts`, user, step,
   section or salt → a different one; it is a permutation and not a sample; degenerate sizes;
   `nil` user and `nil` step do not raise and stay deterministic; the separator actually
   separates; attempt 0 is the first render.
-- `BlockVariantRenderingTest` (15) — every rendered term carries its original index and the
+- `BlockVariantRenderingTest` (16) — every rendered term carries its original index and the
   definition it truly belongs to; the two columns are permuted independently; the board is
-  identical on a reload and different after a failure; two students do not share a board; a
+  identical across partial placements and different after a completed failure; two students
+  do not share a board; a
   submission built from the rendered DOM grades correct; a mismatched one grades incorrect;
-  **matching row-for-row by screen position no longer grades correct**; three failures release
-  without setting `correct`; the released block is published to the client as satisfied; the
+  **matching row-for-row by screen position no longer grades correct**; three completed wrong
+  boards release without setting `correct`; three partial submissions remain unsatisfied; the
+  released block is published to the client as satisfied; the
   release response says satisfied-but-not-correct; `check` renders permuted and still grades
   against the original index; the correct option does not stay pinned to the first row; and two
   guards on the §C/§D geometry so the four reserves cannot quietly come back.
+- `BlockAttemptsTest` WP-15B additions (4) — incomplete interactions stay at attempt zero;
+  only completed wrong boards consume the release counter; forged correctness remains ignored;
+  and missing completion metadata is incomplete.
+- `BlockAttemptSemanticsTest` (2) — real Chrome/Stimulus/Fetch proof for three partial drops
+  staying gated and three completed wrong rounds releasing without becoming a pass.
 
 ---
 

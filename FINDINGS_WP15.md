@@ -100,3 +100,24 @@ the board. Both now read `data-option-index` through one shared helper.
 
 If a future package permutes anything else that is graded by index, that helper —
 `originalIndexOf` in `block_submission.js` — is the thing to reuse.
+
+---
+
+## 7. `code_playground_controller` imports `submitBlock` but never submits
+
+The controller imports `submitBlock` and `announceResult`, but no execution path calls either
+one. Running code therefore does not persist the engagement event that WP-10's server tests
+can accept. WP-15B left this alone because defining code-playground completion is separate
+from making existing submissions distinguish whole answers from partial interactions.
+
+---
+
+## 8. Importmap audit has six pre-existing dependency findings
+
+`bin/importmap audit` reports six findings: five moderate and one low. The exact pins are
+Mermaid `11.16.0` in `config/importmap.rb:20` (four moderate, one low; fixed versions begin at
+`11.16.1`) and DOMPurify `3.4.12` in `config/importmap.rb:23` (one moderate; the vulnerable
+range includes `<=3.4.12`).
+
+The owner explicitly classified these as pre-existing security debt outside WP-15B. This
+branch does not modify `config/importmap.rb` or update either dependency.
