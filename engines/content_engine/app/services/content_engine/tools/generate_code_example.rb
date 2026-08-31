@@ -12,7 +12,6 @@ module ContentEngine
       param :difficulty, desc: "Difficulty level: beginner, intermediate, advanced", required: false
 
       def execute(concept:, language: "python", difficulty: "beginner")
-        chat = RubyLLM.chat(model: "gpt-4.1-mini")
         prompt = <<~PROMPT
           Write a #{difficulty}-level #{language} code example that demonstrates: #{concept}
 
@@ -25,8 +24,8 @@ module ContentEngine
           Keep it concise and educational.
         PROMPT
 
-        response = chat.ask(prompt)
-        halt response.content.strip
+        content = AiOrchestrator::TrackedTextCall.call(prompt: prompt, task_type: "code_generation")
+        halt content.strip
       rescue => e
         "Could not generate code example: #{e.message}"
       end

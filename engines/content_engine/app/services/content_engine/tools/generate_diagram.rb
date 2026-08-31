@@ -11,7 +11,6 @@ module ContentEngine
       param :diagram_type, desc: "Type of Mermaid diagram: flowchart, sequence, mindmap, classDiagram, stateDiagram, erDiagram", required: false
 
       def execute(description:, diagram_type: "flowchart")
-        chat = RubyLLM.chat(model: "gpt-4.1-mini")
         prompt = <<~PROMPT
           Generate a Mermaid #{diagram_type} diagram for: #{description}
 
@@ -23,8 +22,9 @@ module ContentEngine
           - Ensure valid Mermaid syntax
         PROMPT
 
-        response = chat.ask(prompt)
-        mermaid_code = response.content.strip
+        mermaid_code = AiOrchestrator::TrackedTextCall.call(
+          prompt: prompt, task_type: "diagram_generation"
+        ).strip
           .gsub(/\A```\w*\n?/, "")
           .gsub(/\n?```\z/, "")
           .strip

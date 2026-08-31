@@ -12,7 +12,6 @@ module ContentEngine
       param :to_locale, desc: "Target language code: en, es, fr, de, etc."
 
       def execute(content:, from_locale:, to_locale:)
-        chat = RubyLLM.chat(model: "gpt-4.1-mini")
         prompt = <<~PROMPT
           Translate the following from #{from_locale} to #{to_locale}.
           Include pronunciation hints in parentheses for key words.
@@ -22,8 +21,8 @@ module ContentEngine
           #{content}
         PROMPT
 
-        response = chat.ask(prompt)
-        halt response.content.strip
+        content = AiOrchestrator::TrackedTextCall.call(prompt: prompt, task_type: "translation")
+        halt content.strip
       rescue => e
         "Could not translate: #{e.message}"
       end

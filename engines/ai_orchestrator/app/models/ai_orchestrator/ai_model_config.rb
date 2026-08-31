@@ -45,6 +45,8 @@ module AiOrchestrator
       content_agent
       web_search
       transcription
+      translation
+      diagram_generation
     ].freeze
 
     validates :task_type, inclusion: { in: TASK_TYPES }

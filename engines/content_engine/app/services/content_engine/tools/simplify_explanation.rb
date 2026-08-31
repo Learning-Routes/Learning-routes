@@ -12,8 +12,6 @@ module ContentEngine
 
       def execute(content:, level: "basic")
         locale = Thread.current[:lesson_agent_locale] || "en"
-        chat = RubyLLM.chat(model: "gpt-4.1-mini")
-
         style_instruction = case level
         when "eli5"
           "Explain this as if the reader is 5 years old. Use very simple words, fun analogies, and short sentences."
@@ -32,8 +30,8 @@ module ContentEngine
           Write in #{locale} language. Use **bold** for key terms. Keep it under 200 words.
         PROMPT
 
-        response = chat.ask(prompt)
-        halt response.content.strip
+        content = AiOrchestrator::TrackedTextCall.call(prompt: prompt, task_type: "simplify_content")
+        halt content.strip
       rescue => e
         "Could not simplify: #{e.message}"
       end
