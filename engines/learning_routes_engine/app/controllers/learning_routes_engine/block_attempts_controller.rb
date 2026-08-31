@@ -13,43 +13,12 @@ module LearningRoutesEngine
       section = parsed_section
       return head(:not_found) if section.blank?
 
-      attempt = BlockAttempt.find_or_initialize_by(
-        user: current_user, route_step: @step, section_index: section_index
-      )
-
-      # Re-check the type at this index. parsed_sections is stable for the life of the
-      # content but not across a regeneration, so an attempt recorded against a section
-      # that has since changed type is stale and must not be mis-attributed.
-      if attempt.persisted? && attempt.block_type != section["type"]
-        Rails.logger.info(
-          "[BlockAttempt] section #{section_index} of step #{@step.id} changed type " \
-          "#{attempt.block_type} -> #{section['type']}; resetting the stale attempt"
-        )
-        attempt.assign_attributes(attempts: 0, correct: nil, score: nil,
-                                  completed_at: nil, released_at: nil)
-      end
-
       result = BlockGrader.new(section: section, payload: block_payload).call
-
-      attempt.block_type = section["type"]
-      attempt.payload    = block_payload
-      attempt.attempts   = attempt.attempts.to_i + 1 if complete_submission?
-
-      if result.gradable?
-        attempt.correct = result.correct
-        attempt.score   = result.score
-        attempt.completed_at = Time.current if result.correct
-        maybe_release!(attempt) if complete_submission?
-      else
-        # Engagement-only: interacting IS completing. Correct stays NULL so nothing
-        # downstream mistakes it for a right answer.
-        attempt.correct = nil
-        attempt.score   = nil
-        attempt.completed_at = Time.current
-        Rails.logger.debug { "[BlockAttempt] #{result.reason}" } if result.reason
-      end
-
-      attempt.save!
+      attempt = BlockAttemptRecorder.call(
+        user: current_user, route_step: @step, section_index: section_index,
+        block_type: section["type"], payload: block_payload, grading: result,
+        complete: complete_submission?
+      )
       feed_spaced_repetition!(attempt)
 
       @attempt = attempt
@@ -64,27 +33,6 @@ module LearningRoutesEngine
     end
 
     private
-
-    # The escape valve. A well-formed block with a WRONG answer key is likelier than a
-    # malformed one — every block is AI-generated and the prompts were rewritten days ago
-    # — and unlimited retry against an unwinnable question is a trap, not generosity.
-    #
-    # After RELEASE_AFTER failures the block stops gating. It is NOT marked correct:
-    # released_at is a separate column precisely so this never reads as a pass.
-    def maybe_release!(attempt)
-      return if attempt.correct
-      return if attempt.released?
-      return if attempt.attempts.to_i < BlockAttempt::RELEASE_AFTER
-
-      attempt.released_at  = Time.current
-      attempt.completed_at = Time.current
-
-      Rails.logger.warn(
-        "[BlockAttempt] RELEASED after #{attempt.attempts} failures — the answer key is " \
-        "probably wrong. route=#{@route.id} step=#{@step.id} " \
-        "section_index=#{attempt.section_index} block_type=#{attempt.block_type}"
-      )
-    end
 
     # Objective blocks feed FSRS through the step's own schedule. A released attempt
     # returns nil from #fsrs_rating and is skipped — see BlockAttempt#fsrs_rating.
