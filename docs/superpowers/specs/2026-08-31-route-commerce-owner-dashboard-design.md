@@ -220,6 +220,20 @@ The current journey compresses all topics into a horizontal fan. Replace it with
 
 Before/after screenshots and DOM measurements are required. Visual acceptance is a browser result, not a Rails rendering test.
 
+### Real primary route on the landing page
+
+For an authenticated user, the landing-page journey is not a demo or a separately maintained illustration. It renders the user's real primary learning route through the same vertical journey component used by the route experience:
+
+- select the most recently active, non-completed route as primary using a deterministic database ordering;
+- derive its title, modules, steps, progress, availability, and purchase/lock states from persisted user-owned records;
+- link every actionable node to the corresponding real route or step;
+- when no active route exists, show the create-route call to action instead of fabricated personal progress;
+- anonymous visitors may see a clearly labeled demo, but it must never be presented as their route;
+- any fragment or data cache must include the user and route identity so one user's route cannot appear to another user;
+- reuse the WP-19 vertical component and view model rather than creating a second landing-only route implementation.
+
+Acceptance coverage must include a user with multiple routes, a user whose previous route is completed, a user with no routes, an anonymous visitor, node-link correctness, and explicit cross-user isolation.
+
 ## Failure Behavior
 
 - Quote failure leaves the user with a recoverable wizard state and creates no provider checkout.
@@ -261,6 +275,9 @@ Before/after screenshots and DOM measurements are required. Visual acceptance is
 - generation retry never charges again;
 - estimated and actual costs remain distinct;
 - existing-route module migration preserves order and progress;
+- landing selects and renders the authenticated user's real primary route with correct links;
+- landing handles multiple, completed, and absent routes without fabricated progress;
+- landing route data and caches remain isolated across users;
 - dashboard query count remains bounded as users/routes grow.
 
 ### Real integration and browser
@@ -269,6 +286,7 @@ Before/after screenshots and DOM measurements are required. Visual acceptance is
 - successful payment, declined card, duplicate event, delayed event, and premature success redirect;
 - JavaScript system test for locked-to-paid/generating/ready states;
 - owner dashboard at realistic data volume;
+- authenticated landing page showing the same real primary route and state as the route experience;
 - vertical journey at 1440px, 1920px, and a mobile viewport;
 - dark/light themes and English/Spanish copy;
 - full main and engine suites, with every pre-existing failure named rather than hidden in a total.
