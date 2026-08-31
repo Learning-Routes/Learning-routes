@@ -2,6 +2,8 @@ require "open3"
 
 module ContentEngine
   class VoiceEvaluator
+    class TranscriptionError < StandardError; end
+
     STT_MODEL = "scribe_v2"
     def self.evaluate!(voice_response)
       new(voice_response).evaluate!
@@ -47,11 +49,6 @@ module ContentEngine
       request["xi-api-key"] = api_key
 
       duration = audio_duration_seconds(audio_path)
-      interaction = AiOrchestrator::AiInteraction.create!(
-        user: @response.user, model: STT_MODEL, task_type: "transcription",
-        prompt: "provider_usage", status: :processing, pricing_status: "unpriced"
-      )
-
       form_data = [
         ["file", File.open(audio_path, "rb")],
         ["model_id", STT_MODEL]
@@ -65,30 +62,38 @@ module ContentEngine
       response = http.request(request)
 
       unless response.is_a?(Net::HTTPSuccess)
-        raise "ElevenLabs STT error: #{response.code} - #{response.body}"
+        record_failed_transcription!
+        failure_recorded = true
+        raise TranscriptionError, "Scribe request failed with HTTP #{response.code}"
       end
 
-      transcription = JSON.parse(response.body)["text"]
-      metered = AiOrchestrator::SpeechCostRecorder.record_stt!(
+      provider_completed = true
+      AiOrchestrator::SpeechCostRecorder.record_stt!(
         user: @response.user, duration_seconds: duration
       )
-      if metered
-        begin
-          interaction.destroy!
-        rescue ActiveRecord::ActiveRecordError => e
-          Rails.logger.warn("[VoiceEvaluator] Metering cleanup failed (#{e.class.name})")
-        end
-      else
-        interaction.update!(status: :completed, provider_units: duration && (duration * 1_000).round)
-      end
+      transcription = parse_transcription(response.body)
       transcription
     rescue => e
-      begin
-        interaction&.update!(status: :failed, pricing_status: "unpriced")
-      rescue ActiveRecord::ActiveRecordError
-        nil
-      end
+      record_failed_transcription! unless provider_completed || failure_recorded
       raise
+    end
+
+    def parse_transcription(body)
+      transcription = JSON.parse(body)["text"]
+      raise TranscriptionError, "Scribe response missing transcription text" if transcription.blank?
+
+      transcription
+    rescue JSON::ParserError
+      raise TranscriptionError, "Malformed Scribe response"
+    end
+
+    def record_failed_transcription!
+      AiOrchestrator::AiInteraction.create!(
+        user: @response.user, model: STT_MODEL, task_type: "transcription",
+        prompt: "provider_usage", status: :failed, pricing_status: "unpriced"
+      )
+    rescue ActiveRecord::ActiveRecordError
+      nil
     end
 
     def audio_duration_seconds(audio_path)
