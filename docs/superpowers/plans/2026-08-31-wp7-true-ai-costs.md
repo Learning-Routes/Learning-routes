@@ -10,6 +10,12 @@
 
 **Spec:** `docs/superpowers/specs/2026-08-31-route-commerce-owner-dashboard-design.md`
 
+**Execution status (2026-08-31):** Tasks 1–5 are implemented and verified with the documented
+pre-existing combined-suite failures and importmap security debt. Tavily was added as
+credit-priced usage with an immutable configured rate snapshot; missing rates remain explicitly
+unknown. The final command evidence, commit map, limitations, and pending importmap security debt
+are recorded in `WP7_HANDOFF.md` and `FINDINGS_WP7.md`.
+
 ## Global Constraints
 
 - Work from the current WP-15B head and verify `d33768d` and `1a6c4b7` are ancestors before editing.
