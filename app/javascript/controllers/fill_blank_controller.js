@@ -9,6 +9,7 @@ export default class extends Controller {
   connect() {
     this.correct = new Set()
     this.lastSubmittedSnapshot = null
+    this.pendingSnapshots = new Set()
   }
 
   checkAnswer(event) {
@@ -62,10 +63,16 @@ export default class extends Controller {
 
     const answers = inputs.map((input) => input.value)
     const snapshot = JSON.stringify(answers)
-    if (snapshot === this.lastSubmittedSnapshot) return
+    if (snapshot === this.lastSubmittedSnapshot || this.pendingSnapshots.has(snapshot)) return
 
-    this.lastSubmittedSnapshot = snapshot
+    this.pendingSnapshots.add(snapshot)
     submitBlock(this.element, { answers }, { complete: true })
-      .then((result) => announceResult(this.element, result))
+      .then((result) => {
+        this.pendingSnapshots.delete(snapshot)
+        if (!result) return
+
+        this.lastSubmittedSnapshot = snapshot
+        announceResult(this.element, result)
+      })
   }
 }

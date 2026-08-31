@@ -15,7 +15,9 @@ class BlockAttemptSemanticsTest < ApplicationSystemTestCase
   DRAG_DROP_INDEX = 1
   SECTIONS = [
     { "type" => "concept", "title" => "Intro", "body" => "..." },
-    { "type" => "drag_drop", "title" => "Empareja", "pairs" => PAIRS }
+    { "type" => "drag_drop", "title" => "Empareja", "pairs" => PAIRS },
+    { "type" => "fill_blank", "title" => "Completa", "sentence" => "Bom ___",
+      "blanks" => ["dia"] }
   ].freeze
 
   def setup
@@ -92,6 +94,43 @@ class BlockAttemptSemanticsTest < ApplicationSystemTestCase
     assert_equal true, result["released"]
     assert_equal true, result["satisfied"]
     assert_equal false, result["correct"]
+  end
+
+  test "a failed fill blank request can retry the identical completed board" do
+    page.execute_script(<<~JS)
+      window.__originalFetch = window.fetch
+      window.__failedFetchSeen = false
+      window.fetch = async (..._args) => {
+        window.fetch = window.__originalFetch
+        window.__failedFetchSeen = true
+        return { ok: false }
+      }
+
+      const input = document.querySelector("[data-fill-blank-target='input']")
+      input.value = "noche"
+      input.dispatchEvent(new Event("input", { bubbles: true }))
+    JS
+
+    Timeout.timeout(Capybara.default_max_wait_time) do
+      sleep 0.05 until page.evaluate_script(<<~JS)
+        (() => {
+          const root = document.querySelector("[data-controller='fill-blank']")
+          const controller = window.Stimulus.getControllerForElementAndIdentifier(root, "fill-blank")
+          return window.__failedFetchSeen && controller.pendingSnapshots?.size === 0
+        })()
+      JS
+    end
+
+    page.execute_script(<<~JS)
+      const input = document.querySelector("[data-fill-blank-target='input']")
+      input.dispatchEvent(new Event("input", { bubbles: true }))
+    JS
+    wait_for_result_count(1)
+
+    attempt = BA.find_by!(user: @user, route_step: @step, section_index: 2)
+    assert_equal 1, attempt.attempts
+    assert_equal false, attempt.correct
+    assert_not attempt.released?
   end
 
   private

@@ -189,6 +189,18 @@ class LearningRoutesEngine::BlockAttemptsTest < ActionDispatch::IntegrationTest
     assert_equal false, a.correct
   end
 
+  test "three completed wrong fill blank boards release without becoming correct" do
+    %w[noche tarde luego].each do |answer|
+      submit(3, { answers: [answer] }, complete: true)
+    end
+
+    a = attempt_for(3)
+    assert_equal 3, a.attempts
+    assert a.released?
+    assert_equal false, a.correct
+    assert a.satisfied?
+  end
+
   test "a forged correctness claim is ignored even on a completed submission" do
     submit(1, { option_index: 1, correct: true, score: 100, passed: true }, complete: true)
 
