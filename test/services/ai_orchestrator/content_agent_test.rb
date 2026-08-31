@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require "test_helper"
+require "ostruct"
 
 class AiOrchestrator::ContentAgentTest < ActiveSupport::TestCase
   # These tests only exercise ContentAgent's static config + tool wiring (no
@@ -84,5 +85,18 @@ class AiOrchestrator::ContentAgentTest < ActiveSupport::TestCase
     agent = AiOrchestrator::ContentAgent.new
     assert_respond_to agent, :messages
     assert_kind_of Array, agent.messages
+  end
+
+  test "aggregates every provider response in a tool loop" do
+    agent = AiOrchestrator::ContentAgent.new
+    messages = [
+      OpenStruct.new(role: :user, input_tokens: nil, output_tokens: nil),
+      OpenStruct.new(role: :assistant, input_tokens: 100, output_tokens: 20),
+      OpenStruct.new(role: :tool, input_tokens: nil, output_tokens: nil),
+      OpenStruct.new(role: :assistant, input_tokens: 140, output_tokens: 30)
+    ]
+    agent.chat.define_singleton_method(:messages) { messages }
+
+    assert_equal [240, 50], agent.usage_totals
   end
 end

@@ -162,6 +162,25 @@ class ContentEngine::Tools::WebSearchTest < ActiveSupport::TestCase
     assert_kind_of Integer, AiOrchestrator::AiInteraction.find_by!(model: "tavily").cost_microcents
   end
 
+  test "metering persistence failure does not discard successful results" do
+    stub_success(credits: 1)
+    configure_tavily(rate: "0.008", version: "exact-rate")
+
+    singleton = AiOrchestrator::AiInteraction.singleton_class
+    singleton.alias_method :_original_create_for_tavily_test, :create!
+    AiOrchestrator::AiInteraction.define_singleton_method(:create!) do |**|
+      raise ActiveRecord::StatementInvalid, "down"
+    end
+
+    result = execute_tool(query: "current fact")
+    assert_equal [], JSON.parse(result)
+  ensure
+    if singleton&.method_defined?(:_original_create_for_tavily_test)
+      singleton.alias_method :create!, :_original_create_for_tavily_test
+      singleton.remove_method :_original_create_for_tavily_test
+    end
+  end
+
   private
 
   # Execute the tool, unwrapping Halt objects (halt returns a Halt wrapper, not

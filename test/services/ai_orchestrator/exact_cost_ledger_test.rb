@@ -54,6 +54,17 @@ module AiOrchestrator
       assert_equal 0, cached.cost_cents
     end
 
+    test "completed text with missing provider usage is explicitly unpriced" do
+      interaction = create_interaction(status: :processing, model: "gpt-4.1-mini")
+
+      interaction.mark_completed!(response_text: "ok", input_tokens: nil, output_tokens: nil)
+
+      assert interaction.completed?
+      assert_equal "unpriced", interaction.pricing_status
+      assert_equal 0, interaction.cost_microcents
+      assert_not_includes AiInteraction.billable, interaction
+    end
+
     private
 
     def create_interaction(status:, model: "gpt-5.2", task_type: nil, cached: false,

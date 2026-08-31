@@ -74,6 +74,9 @@ module ContentEngine
           cost_microcents: priced ? credits * rate : 0,
           cost_cents: priced ? AiOrchestrator::CostTracker.microcents_to_cents(credits * rate) : 0
         )
+      rescue ActiveRecord::ActiveRecordError => e
+        Rails.logger.warn("[WebSearch] Metering failed (#{e.class.name})")
+        nil
       end
 
       def record_failed_interaction!

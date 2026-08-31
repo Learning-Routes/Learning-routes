@@ -73,7 +73,11 @@ module ContentEngine
         user: @response.user, duration_seconds: duration
       )
       if metered
-        interaction.destroy!
+        begin
+          interaction.destroy!
+        rescue ActiveRecord::ActiveRecordError => e
+          Rails.logger.warn("[VoiceEvaluator] Metering cleanup failed (#{e.class.name})")
+        end
       else
         interaction.update!(status: :completed, provider_units: duration && (duration * 1_000).round)
       end

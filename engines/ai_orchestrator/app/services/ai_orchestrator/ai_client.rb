@@ -68,8 +68,8 @@ module AiOrchestrator
         # valid JSON and would fail on the way back out.
         content: serialize_content(response.content),
         model: @model,
-        input_tokens: response.input_tokens || 0,
-        output_tokens: response.output_tokens || 0,
+        input_tokens: response.input_tokens,
+        output_tokens: response.output_tokens,
         latency_ms: elapsed_ms
       }
     rescue => e
