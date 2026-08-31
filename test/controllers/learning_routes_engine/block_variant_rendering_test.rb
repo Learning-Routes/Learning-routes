@@ -73,7 +73,7 @@ class LearningRoutesEngine::BlockVariantRenderingTest < ActionDispatch::Integrat
 
   def submit(section_index, payload)
     post learning_routes_engine.route_step_block_attempt_path(@route, @step, section_index),
-         params: { block: payload }, as: :json
+         params: { block: { submission_complete: true }.merge(payload) }, as: :json
   end
 
   def attempt_for(section_index)

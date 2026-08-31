@@ -58,9 +58,9 @@ class LearningRoutesEngine::BlockAttemptsTest < ActionDispatch::IntegrationTest
     super
   end
 
-  def submit(section_index, payload)
+  def submit(section_index, payload, complete: true)
     post learning_routes_engine.route_step_block_attempt_path(@route, @step, section_index),
-         params: { block: payload }, as: :json
+         params: { block: payload.merge(submission_complete: complete) }, as: :json
   end
 
   def attempt_for(section_index)
@@ -140,7 +140,12 @@ class LearningRoutesEngine::BlockAttemptsTest < ActionDispatch::IntegrationTest
     # The answer key is in the DOM, so a student can read it. What they cannot do is
     # tell the server they were right when they were not.
     post learning_routes_engine.route_step_block_attempt_path(@route, @step, 1),
-         params: { block: { option_index: 1, correct: true, score: 100, passed: true } },
+         params: {
+           block: {
+             option_index: 1, correct: true, score: 100, passed: true,
+             submission_complete: true
+           }
+         },
          as: :json
 
     a = attempt_for(1)
@@ -156,6 +161,51 @@ class LearningRoutesEngine::BlockAttemptsTest < ActionDispatch::IntegrationTest
   end
 
   # ── The approved amendment: release after 3 failures ────────────────────
+
+  test "incomplete interactions are stored and graded without consuming an attempt" do
+    3.times { submit(2, { matches: { "0" => "1" } }, complete: false) }
+
+    a = attempt_for(2)
+    assert_equal 0, a.attempts
+    assert_equal false, a.correct
+    assert_equal({ "matches" => { "0" => "1" }, "submission_complete" => false }, a.payload)
+    assert_not a.released?
+    assert_not a.satisfied?
+
+    assert_equal 3, response.parsed_body["attempts_remaining"]
+  end
+
+  test "only completed wrong answers consume the release counter" do
+    7.times { submit(2, { matches: { "0" => "1" } }, complete: false) }
+    2.times { submit(2, { matches: { "0" => "1", "1" => "0" } }, complete: true) }
+
+    a = attempt_for(2)
+    assert_equal 2, a.attempts
+    assert_not a.released?
+
+    submit(2, { matches: { "0" => "1", "1" => "0" } }, complete: true)
+    assert_equal 3, a.reload.attempts
+    assert a.released?
+    assert_equal false, a.correct
+  end
+
+  test "a forged correctness claim is ignored even on a completed submission" do
+    submit(1, { option_index: 1, correct: true, score: 100, passed: true }, complete: true)
+
+    a = attempt_for(1)
+    assert_equal 1, a.attempts
+    assert_equal false, a.correct
+    assert_not a.satisfied?
+  end
+
+  test "missing submission_complete is incomplete rather than legacy-complete" do
+    post learning_routes_engine.route_step_block_attempt_path(@route, @step, 1),
+         params: { block: { option_index: 1 } }, as: :json
+
+    assert_response :success
+    assert_equal 0, attempt_for(1).attempts
+    assert_not attempt_for(1).released?
+  end
 
   test "a correctness-gated block stops gating after three failures" do
     3.times { submit(1, { option_index: 1 }) }
@@ -222,7 +272,7 @@ class LearningRoutesEngine::BlockAttemptsTest < ActionDispatch::IntegrationTest
     as_other = open_session
     as_other.post "/sign_in", params: { email: other.email, password: "password123" }
     as_other.post learning_routes_engine.route_step_block_attempt_path(@route, @step, 1),
-                  params: { block: { option_index: 0 } }, as: :json
+                  params: { block: { option_index: 0, submission_complete: true } }, as: :json
 
     assert_equal 403, as_other.response.status
     assert_nil BA.find_by(user: other, route_step: @step)

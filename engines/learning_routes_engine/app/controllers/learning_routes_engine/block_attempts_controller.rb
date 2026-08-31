@@ -33,13 +33,13 @@ module LearningRoutesEngine
 
       attempt.block_type = section["type"]
       attempt.payload    = block_payload
-      attempt.attempts   = attempt.attempts.to_i + 1
+      attempt.attempts   = attempt.attempts.to_i + 1 if complete_submission?
 
       if result.gradable?
         attempt.correct = result.correct
         attempt.score   = result.score
         attempt.completed_at = Time.current if result.correct
-        maybe_release!(attempt)
+        maybe_release!(attempt) if complete_submission?
       else
         # Engagement-only: interacting IS completing. Correct stays NULL so nothing
         # downstream mistakes it for a right answer.
@@ -131,6 +131,10 @@ module LearningRoutesEngine
 
     def block_payload
       params.fetch(:block, {}).permit!.to_h
+    end
+
+    def complete_submission?
+      params.dig(:block, :submission_complete) == true
     end
 
     def set_route_and_step

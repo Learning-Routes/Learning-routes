@@ -114,7 +114,9 @@ class LearningRoutesEngine::BlockNavigationGateTest < ActionDispatch::Integratio
 
   test "a passed block is published as satisfied so navigation unlocks" do
     post learning_routes_engine.route_step_block_attempt_path(@route, @step, 1),
-         params: { block: { matches: { "0" => "0", "1" => "1" } } }, as: :json
+         params: {
+           block: { matches: { "0" => "0", "1" => "1" }, submission_complete: true }
+         }, as: :json
     assert_equal true, BA.find_by(user: @user, route_step: @step, section_index: 1).correct
 
     assert_equal true, satisfied_flags(show_page)[1]
@@ -124,7 +126,9 @@ class LearningRoutesEngine::BlockNavigationGateTest < ActionDispatch::Integratio
     # The load-bearing WP-10 distinction: navigation follows `satisfied`, never `correct`.
     3.times do
       post learning_routes_engine.route_step_block_attempt_path(@route, @step, 1),
-           params: { block: { matches: { "0" => "1", "1" => "0" } } }, as: :json
+           params: {
+             block: { matches: { "0" => "1", "1" => "0" }, submission_complete: true }
+           }, as: :json
     end
 
     attempt = BA.find_by(user: @user, route_step: @step, section_index: 1)
@@ -137,7 +141,9 @@ class LearningRoutesEngine::BlockNavigationGateTest < ActionDispatch::Integratio
 
   test "a wrong-but-not-yet-released block stays unsatisfied" do
     post learning_routes_engine.route_step_block_attempt_path(@route, @step, 1),
-         params: { block: { matches: { "0" => "1", "1" => "0" } } }, as: :json
+         params: {
+           block: { matches: { "0" => "1", "1" => "0" }, submission_complete: true }
+         }, as: :json
 
     assert_equal false, satisfied_flags(show_page)[1]
   end
@@ -156,7 +162,9 @@ class LearningRoutesEngine::BlockNavigationGateTest < ActionDispatch::Integratio
   test "a student who bypasses the JS is still stopped by the server" do
     # Satisfy only one of the two gating blocks, then post complete directly.
     post learning_routes_engine.route_step_block_attempt_path(@route, @review_step, 1),
-         params: { block: { matches: { "0" => "0", "1" => "1" } } }, as: :json
+         params: {
+           block: { matches: { "0" => "0", "1" => "1" }, submission_complete: true }
+         }, as: :json
 
     post learning_routes_engine.complete_route_step_path(@route, @review_step), as: :json
 
@@ -166,9 +174,11 @@ class LearningRoutesEngine::BlockNavigationGateTest < ActionDispatch::Integratio
 
   test "satisfying every gating block lets the step complete and unlocks the next" do
     post learning_routes_engine.route_step_block_attempt_path(@route, @review_step, 1),
-         params: { block: { matches: { "0" => "0", "1" => "1" } } }, as: :json
+         params: {
+           block: { matches: { "0" => "0", "1" => "1" }, submission_complete: true }
+         }, as: :json
     post learning_routes_engine.route_step_block_attempt_path(@route, @review_step, 2),
-         params: { block: { answers: ["si"] } }, as: :json
+         params: { block: { answers: ["si"], submission_complete: true } }, as: :json
 
     post learning_routes_engine.complete_route_step_path(@route, @review_step), as: :json
 
