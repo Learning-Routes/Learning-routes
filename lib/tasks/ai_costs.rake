@@ -24,6 +24,39 @@ namespace :ai_costs do
     apply = ENV["APPLY"] == "1"
     puts apply ? "APPLY mode" : "DRY RUN (no writes)"
 
+    scope = AiOrchestrator::AiInteraction.unpriced
+      .where(status: :completed, cached: [false, nil])
+    recoverable = 0
+    before = AiOrchestrator::AiInteraction.billable.sum(:cost_microcents)
+
+    scope.find_each do |row|
+      calculation = case row.model
+      when "gpt-5.2", "gpt-4.1-mini", "claude-opus-4-5", "claude-haiku-4-5", "claude-sonnet-4-5"
+        [AiOrchestrator::CostTracker.estimate_microcents(
+          model: row.model, input_tokens: row.input_tokens, output_tokens: row.output_tokens
+        ), "text-rates-2026-08-31"]
+      when "elevenlabs"
+        [AiOrchestrator::CostTracker.estimate_microcents(
+          model: "eleven_multilingual_v2", characters: row.input_tokens
+        ), "elevenlabs-multilingual-v2-2026-08-31"]
+      end
+      next unless calculation
+
+      recoverable += 1
+      next unless apply
+
+      microcents, version = calculation
+      AiOrchestrator::AiInteraction.where(id: row.id).update_all(
+        cost_microcents: microcents,
+        cost_cents: AiOrchestrator::CostTracker.microcents_to_cents(microcents),
+        pricing_status: "priced", pricing_version: version, updated_at: Time.current
+      )
+    end
+
+    after = AiOrchestrator::AiInteraction.billable.sum(:cost_microcents)
+    puts "  recoverable rows: #{recoverable}"
+    puts "  exact totals: before=#{before} microcents after=#{after} microcents"
+
     AiOrchestrator::AiInteraction.unpriced.group(:model).sum(:provider_units).each do |model, units|
       unit_label = model == "tavily" ? "credits" : "units"
       puts "  #{model}: #{units.to_i} #{unit_label}, cost unknown; no historical rate invented"
