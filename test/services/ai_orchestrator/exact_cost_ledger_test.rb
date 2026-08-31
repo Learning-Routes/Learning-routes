@@ -61,6 +61,7 @@ module AiOrchestrator
       AiInteraction.create!(
         model: model, prompt: "metering fixture", status: status, task_type: task_type,
         cached: cached, cost_microcents: cost_microcents,
+        pricing_status: "priced",
         cost_cents: (cost_microcents.to_f / 10_000).round
       )
     end

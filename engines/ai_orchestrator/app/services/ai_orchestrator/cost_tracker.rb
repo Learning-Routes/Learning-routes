@@ -9,7 +9,7 @@ module AiOrchestrator
       "claude-sonnet-4-5"  => { input: 300, output: 1500 },
       "elevenlabs"         => { flat: 0 },
       "gpt-image-1"        => { per_image: 7 },
-      "tavily"             => { per_request: 0 }
+      "tavily"             => { provider_reported_credits: true }
     }.freeze
 
     MICROCENTS_PER_CENT = 10_000
@@ -19,6 +19,7 @@ module AiOrchestrator
                                  image_input_tokens: 0, characters: nil, audio_seconds: nil)
       pricing = PRICING[model]
       return 0 unless pricing
+      raise ArgumentError, "#{model} requires provider-reported usage and a rate snapshot" if pricing[:provider_reported_credits]
 
       if pricing[:flat]
         pricing[:flat] * MICROCENTS_PER_CENT

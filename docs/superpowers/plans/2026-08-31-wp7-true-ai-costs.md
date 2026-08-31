@@ -35,6 +35,7 @@
 - `engines/content_engine/app/services/content_engine/audio_generator.rb`: persist full-lesson TTS usage.
 - `engines/content_engine/app/services/content_engine/section_audio_generator.rb`: persist section TTS usage.
 - `engines/content_engine/app/services/content_engine/voice_evaluator.rb`: persist STT duration/usage separately from text evaluation.
+- `engines/content_engine/app/services/content_engine/tools/web_search.rb`: persist Tavily provider-reported credits with an immutable configured rate snapshot.
 - `lib/tasks/ai_costs.rake`: dry-run backfill and reconciliation report.
 - Focused tests live beside the affected engines plus `test/services/ai_orchestrator/` for cross-engine billing paths.
 
@@ -53,7 +54,21 @@
 - [ ] Run the focused model, tracker, and router tests. Review the migration, schema, and diff.
 - [ ] Commit as `fix(costs): add exact billable AI ledger`.
 
-## Task 2: Provider-reported OpenAI image usage
+## Task 2: Provider-reported Tavily credit usage
+
+**Interfaces:**
+- Tavily successful responses persist provider-reported credits, a configured USD-per-credit snapshot, exact microcent cost, and a pricing version/effective-date identifier.
+- The rate comes only from encrypted credentials or `TAVILY_USD_PER_CREDIT`; it is never inferred from a plan name.
+- Missing rate produces an explicitly unpriced completed interaction, not a zero-cost billable row.
+
+- [ ] Write failing tests for one-credit and multi-credit responses, provider credits overriding request assumptions, missing-rate unknown cost, failed/cached non-billable rows, immutable rate snapshots, and exact integer aggregation.
+- [ ] Add the minimum ledger fields needed to distinguish priced and unpriced usage and snapshot provider units/rates/version without Float persistence. Run the migration and test preparation.
+- [ ] Persist one interaction for each completed Tavily request. Preserve provider-reported credits even when the rate is absent; never log the configured rate, provider body, query, or user data.
+- [ ] Extend reporting and reconciliation so unpriced Tavily rows are counted as unknown and historical calls are never assigned an invented rate.
+- [ ] Run focused Tavily, ledger, tracker, and reconciliation tests. Review `git diff` and `git diff --check`.
+- [ ] Commit as `fix(costs): meter Tavily credits with rate snapshots`.
+
+## Task 3: Provider-reported OpenAI image usage
 
 **Interfaces:**
 - `AiClient#chat` for `gpt-image-1` returns `content`, `content_type`, `input_tokens`, `image_input_tokens`, `output_tokens`, and `latency_ms` from the API response.
@@ -65,7 +80,7 @@
 - [ ] Run focused AI client and image-generation tests and `git diff --check`.
 - [ ] Commit as `fix(costs): meter images from provider usage`.
 
-## Task 3: Meter every ElevenLabs TTS and STT path
+## Task 4: Meter every ElevenLabs TTS and STT path
 
 **Interfaces:**
 - TTS uses actual billed character count and the verified model-specific character rate.
@@ -73,13 +88,14 @@
 
 - [ ] Inventory every direct call to ElevenLabs and write a test that fails if a paid path completes without one corresponding billable row. Cover section narration, full-lesson narration, and voice-response transcription.
 - [ ] Verify the exact ElevenLabs model IDs used by the code and their official current units/rates. Encode separate rate keys when multilingual/Flash/Turbo/Scribe differ; never use one generic flat `elevenlabs` price to hide model differences.
+- [ ] Replace the removed `scribe_v1` request model with `scribe_v2` and prove the multipart request contract in a focused HTTP-stubbed test.
 - [ ] Make full-lesson and section TTS persist actual characters and exact cost once—no duplicate row when the call already passed through `Orchestrate`.
 - [ ] For STT, determine audio duration from the stored file or provider response using an existing supported library. Persist the duration and rate version. If duration cannot be measured, mark the interaction unpriced/unknown rather than billable at zero.
 - [ ] Register the transcription task type through the existing `AiModelConfig::TASK_TYPES` and model validation contracts. Ensure provider failure produces a failed non-billable interaction without masking the original failure.
 - [ ] Run focused audio, voice evaluator, task-type, and billable interaction tests.
 - [ ] Commit as `fix(costs): meter speech synthesis and transcription`.
 
-## Task 4: Safe historical reconciliation and final verification
+## Task 5: Safe historical reconciliation and final verification
 
 **Interfaces:**
 - `bin/rails ai_costs:backfill` is dry-run by default; only `APPLY=1` writes.
@@ -87,11 +103,10 @@
 
 - [ ] Write failing rake-task/service tests for dry-run immutability, explicit apply, idempotence, cached/failed exclusion, recoverable text/TTS rows, and refusal to invent image/STT usage absent from historical rows.
 - [ ] Implement the backfill in batches. Print counts and before/after totals; label unrecoverable rows explicitly. Never read or modify production as part of WP-7 verification.
-- [ ] Add a handoff documenting official rate URLs and verification date, every metered call path, precision rules, unknown historical rows, migrations, and remaining risks. Do not include provider keys, prompts, user data, or invoice data.
+- [ ] Add a handoff documenting official rate URLs and verification date, every metered call path including Tavily, precision rules, unknown historical rows, migrations, and remaining risks. Do not include provider keys, prompts, user data, invoice data, or account rate configuration.
 - [ ] Run focused tests, then the main Rails suite with three seeds, then the combined app/engine suite with three seeds, RuboCop, Brakeman, Bundler Audit, and importmap audit. Compare failures by exact test name to the known baseline; never describe a red command as passing.
 - [ ] Commit as `docs(wp7): record true-cost verification`.
 
 ## Review Gates
 
 After each task, perform a requirements review and a code-quality review before starting the next task. Critical and important findings are fixed in a new focused commit; minor findings are recorded explicitly. The final handoff must list every commit hash, command, seed, run/assertion/failure/error count, official pricing source, unpriced historical category, and manual verification still required.
-

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_24_000001) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_31_000002) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -54,7 +54,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_24_000001) do
     t.jsonb "metadata", default: {}
     t.string "model", null: false
     t.integer "output_tokens", default: 0
+    t.string "pricing_status", default: "unpriced", null: false
+    t.string "pricing_version"
     t.text "prompt", null: false
+    t.bigint "provider_rate_microcents"
+    t.bigint "provider_units"
     t.text "response"
     t.integer "status", default: 0, null: false
     t.string "task_type"
@@ -65,6 +69,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_24_000001) do
     t.index ["cached"], name: "index_ai_orchestrator_ai_interactions_on_cached"
     t.index ["created_at"], name: "index_ai_orchestrator_ai_interactions_on_created_at"
     t.index ["model"], name: "index_ai_orchestrator_ai_interactions_on_model"
+    t.index ["pricing_status"], name: "index_ai_orchestrator_ai_interactions_on_pricing_status"
     t.index ["status"], name: "index_ai_orchestrator_ai_interactions_on_status"
     t.index ["task_type"], name: "index_ai_orchestrator_ai_interactions_on_task_type"
     t.index ["user_id", "created_at", "cost_microcents"], name: "idx_ai_interactions_usage_billing"

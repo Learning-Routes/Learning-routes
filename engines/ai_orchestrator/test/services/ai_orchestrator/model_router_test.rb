@@ -112,7 +112,7 @@ module AiOrchestrator
       original = Rails.application.config.ai_cost_alerts
       AiInteraction.create!(
         model: "gpt-5.2", prompt: "near limit", status: :completed,
-        cost_cents: 0, cost_microcents: 49_999_999
+        pricing_status: "priced", cost_cents: 0, cost_microcents: 49_999_999
       )
       Rails.application.config.ai_cost_alerts = original.merge(daily_limit: 5_000)
 
@@ -122,7 +122,7 @@ module AiOrchestrator
 
       AiInteraction.create!(
         model: "gpt-5.2", prompt: "last fraction", status: :completed,
-        cost_cents: 0, cost_microcents: 1
+        pricing_status: "priced", cost_cents: 0, cost_microcents: 1
       )
       assert_raises(ModelRouter::RateLimitExceeded) do
         ModelRouter.new(task_type: :quick_grading).send(:check_cost_limit!)
