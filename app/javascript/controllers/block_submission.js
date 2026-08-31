@@ -5,11 +5,14 @@
 // pairing, which strings — and the server re-grades it against the stored section and
 // returns the verdict. The client no longer gets a vote.
 //
+// A complete submission is an answer the student intended the server to judge as a
+// whole. A pointer movement, keystroke, or single misplaced tile is incomplete.
+//
 // The element must carry:
 //   data-block-url-value="/learning/routes/:id/steps/:id/blocks/:section_index"
 // which the partials render from the section index.
 
-export async function submitBlock(element, payload) {
+export async function submitBlock(element, payload, { complete = false } = {}) {
   // The URL lives on the .lesson-section wrapper rendered by _lesson.html.erb, so a
   // block partial needs no plumbing of its own.
   const host = element.closest("[data-block-url-value]")
@@ -21,6 +24,7 @@ export async function submitBlock(element, payload) {
   }
 
   const token = document.querySelector('meta[name="csrf-token"]')?.content
+  const block = { ...payload, submission_complete: complete === true }
 
   try {
     const response = await fetch(url, {
@@ -30,7 +34,7 @@ export async function submitBlock(element, payload) {
         "Accept": "application/json",
         "X-CSRF-Token": token || ""
       },
-      body: JSON.stringify({ block: payload })
+      body: JSON.stringify({ block })
     })
 
     if (!response.ok) return null

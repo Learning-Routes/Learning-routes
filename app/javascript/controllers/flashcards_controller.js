@@ -78,7 +78,7 @@ export default class extends Controller {
     // Persist. The server maps hard/normal/easy to FSRS HARD/GOOD/EASY and carries the
     // WORST rating to the step — one card still hard means the step should come back
     // sooner than four easy ones would suggest.
-    submitBlock(this.element, { ratings: this.ratings, rated_count: rated })
+    submitBlock(this.element, { ratings: this.ratings, rated_count: rated }, { complete: true })
       .then((result) => announceResult(this.element, result))
 
     if (this.hasButtonsTarget) {

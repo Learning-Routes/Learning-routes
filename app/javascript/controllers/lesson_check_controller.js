@@ -83,7 +83,7 @@ export default class extends Controller {
     // `options` array, and `grade_check` compares against that original index — so a
     // position-derived index would now be the wrong answer on a shuffled board.
     const optionIndex = originalIndexOf(btn, this.optionTargets)
-    submitBlock(this.element, { option_index: optionIndex })
+    submitBlock(this.element, { option_index: optionIndex }, { complete: true })
       .then((result) => announceResult(this.element, result))
 
     this.element.dispatchEvent(new CustomEvent("lesson-check:answered", {

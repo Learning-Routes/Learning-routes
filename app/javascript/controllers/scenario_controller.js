@@ -10,7 +10,11 @@ export default class extends Controller {
 
   choose(event) {
     const idx = event.currentTarget?.dataset?.optionIndex
-    submitBlock(this.element, { option_index: idx === undefined ? null : Number(idx) })
+    submitBlock(
+      this.element,
+      { option_index: idx === undefined ? null : Number(idx) },
+      { complete: true }
+    )
       .then((r) => announceResult(this.element, r))
 
     if (this.chosen) return
