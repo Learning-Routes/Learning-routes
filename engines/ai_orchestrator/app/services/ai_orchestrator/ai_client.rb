@@ -134,49 +134,54 @@ module AiOrchestrator
       merged = defaults.merge(params)
 
       size = merged[:size] || "1024x1024"
-
-      # ruby_llm 1.11.0's Image.paint accepts only prompt, model:, provider:,
-      # assume_model_exists:, size: and context:, and forwards just model: and size:
-      # to the provider. There is NO quality parameter anywhere in this version.
-      #
-      # The `quality` entries in ai_model_defaults have therefore never had an effect,
-      # and passing quality: (or params:) raised ArgumentError on every single call.
-      # The rescue below relabelled that as "GPT Image generation failed", which reads
-      # like a provider outage — so image generation had never worked once, and the
-      # error pointed away from the signature that caused it.
-      #
-      # Cost note for WP-7: every image now renders at gpt-image-1's default quality,
-      # so the medium/low split cost_tracker assumes is fiction. Upgrading the gem
-      # (1.14 accepts params:, and dependabot has that PR open) is what restores the
-      # control — do not re-add the keyword to this version.
-      # The global request_timeout is 30s, and gpt-image-1 takes 30-90s, so paint timed
-      # out on the client before OpenAI ever answered. Image.paint accepts context: and
-      # resolves its config from it (config = context&.config || RubyLLM.config), so a
-      # cloned context widens the timeout for this call only — same idiom as build_chat.
+      quality = merged[:quality]
       timeout = merged[:request_timeout] || 180
-      context = RubyLLM.context { |c| c.request_timeout = timeout }
+      api_key = Rails.application.credentials.dig(:openai, :api_key) || ENV["OPENAI_API_KEY"]
+      raise RequestError, "OpenAI API key is not configured" if api_key.blank?
+
+      uri = URI("https://api.openai.com/v1/images/generations")
+      http = Net::HTTP.new(uri.host, uri.port)
+      http.use_ssl = true
+      http.read_timeout = timeout
+      http.open_timeout = 15
+
+      request = Net::HTTP::Post.new(uri.path)
+      request["Authorization"] = "Bearer #{api_key}"
+      request["Content-Type"] = "application/json"
+      body = { model: @model, prompt: prompt, size: size, n: 1 }
+      body[:quality] = quality if quality.present?
+      request.body = body.to_json
 
       start_time = monotonic_now
-      image = RubyLLM.paint(prompt, model: @model, size: size, context: context)
+      response = http.request(request)
       elapsed_ms = ((monotonic_now - start_time) * 1000).round
 
-      # RubyLLM returns an Image object with .url or .data (base64)
-      content = image.url.presence || image.data
-      raise RequestError, "GPT Image returned no image data" unless content.present?
+      raise RequestError, "GPT Image API error: #{response.code}" unless response.is_a?(Net::HTTPSuccess)
+
+      payload = JSON.parse(response.body)
+      datum = payload.dig("data", 0) || {}
+      content = datum["url"].presence || datum["b64_json"].presence
+      raise RequestError, "GPT Image returned no image data" if content.blank?
+
+      usage = payload["usage"]
+      details = usage&.fetch("input_tokens_details", nil)
+      unless usage && details && usage["output_tokens"] && details["text_tokens"] && details["image_tokens"]
+        raise RequestError, "GPT Image returned no billable usage"
+      end
 
       {
         content: content,
         model: @model,
-        input_tokens: prompt.length,
-        output_tokens: 0,
+        input_tokens: details["text_tokens"].to_i,
+        image_input_tokens: details["image_tokens"].to_i,
+        output_tokens: usage["output_tokens"].to_i,
         latency_ms: elapsed_ms,
-        content_type: image.mime_type || "image/png"
+        content_type: "image/png"
       }
-    rescue => e
-      if e.message.include?("timeout") || e.message.include?("Timeout")
-        raise TimeoutError, "GPT Image request timed out: #{e.message}"
-      end
-      raise RequestError, "GPT Image generation failed: #{e.message}"
+    rescue Net::ReadTimeout, Net::OpenTimeout
+      raise TimeoutError, "GPT Image request timed out"
+    rescue JSON::ParserError
+      raise RequestError, "GPT Image returned unparseable JSON"
     end
 
     # Build the chat, optionally with a per-task request timeout.

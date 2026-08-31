@@ -8,7 +8,7 @@ module AiOrchestrator
       "claude-haiku-4-5"   => { input: 100, output: 500 },
       "claude-sonnet-4-5"  => { input: 300, output: 1500 },
       "elevenlabs"         => { flat: 0 },
-      "gpt-image-1"        => { per_image: 7 },
+      "gpt-image-1"        => { input: 500, image_input: 1000, output: 4000 },
       "tavily"             => { provider_reported_credits: true }
     }.freeze
 
@@ -29,6 +29,7 @@ module AiOrchestrator
         pricing[:per_request] * MICROCENTS_PER_CENT
       else
         numerator = input_tokens.to_i * pricing[:input].to_i
+        numerator += image_input_tokens.to_i * pricing[:image_input].to_i
         numerator += output_tokens.to_i * pricing[:output].to_i
         Rational(numerator, 100).round
       end

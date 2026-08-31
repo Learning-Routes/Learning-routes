@@ -29,8 +29,9 @@ module AiOrchestrator
     end
 
     test "estimates cost for gpt-image-1" do
-      cost = CostTracker.estimate_cost(model: "gpt-image-1")
-      assert_equal 7, cost
+      cost = CostTracker.estimate_cost(model: "gpt-image-1", input_tokens: 60,
+                                       image_input_tokens: 10, output_tokens: 1_056)
+      assert_equal 4, cost
     end
 
     test "estimates flat cost for elevenlabs" do
