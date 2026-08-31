@@ -27,11 +27,19 @@ module AiOrchestrator
       "curriculum_design"         => 12.hours,
       # Agent runs are conversational and tool-using; replaying one is meaningless.
       # (run_agent does not go through CacheService anyway — this keeps the map total.)
-      "content_agent"             => 0
+      "content_agent"             => 0,
+      "web_search"                => 0,
+      "transcription"             => 0,
+      "translation"               => 0,
+      "diagram_generation"        => 0,
+      "lesson_assistant"          => 0
     }.freeze
 
     # Tasks that should never be cached
-    NON_CACHEABLE = %w[quick_grading gap_analysis exercise_hint voice_evaluation tutor_reply].freeze
+    NON_CACHEABLE = %w[
+      quick_grading gap_analysis exercise_hint voice_evaluation tutor_reply content_agent
+      web_search transcription translation diagram_generation lesson_assistant
+    ].freeze
 
     def self.fetch(task_type:, prompt:, model:)
       return nil if NON_CACHEABLE.include?(task_type.to_s)
