@@ -18,8 +18,8 @@ module AiOrchestrator
         prompt: "content_tool", status: :processing
       )
       interaction.mark_completed!(
-        response_text: "tool_completed", input_tokens: result[:input_tokens].to_i,
-        output_tokens: result[:output_tokens].to_i, latency_ms: result[:latency_ms].to_i
+        response_text: "tool_completed", input_tokens: result[:input_tokens],
+        output_tokens: result[:output_tokens], latency_ms: result[:latency_ms].to_i
       )
     rescue ActiveRecord::ActiveRecordError => e
       Rails.logger.warn("[TrackedTextCall] Metering failed (#{e.class.name})")
