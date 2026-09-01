@@ -1,7 +1,7 @@
 module LearningRoutesEngine
   class RouteStep < ApplicationRecord
     belongs_to :learning_route
-    belongs_to :route_module, optional: true
+    belongs_to :route_module
 
     has_one :step_quiz, -> { where(assessment_type: :step_quiz) },
             class_name: "Assessments::Assessment",
@@ -32,6 +32,7 @@ module LearningRoutesEngine
               numericality: { greater_than_or_equal_to: 0 }
     validates :title, presence: true, length: { maximum: 255 }
     validate :route_module_belongs_to_learning_route
+    before_validation :assign_preview_module, on: :create
 
     scope :by_level, ->(level) { where(level: level) }
     scope :available_steps, -> { where(status: :available) }
@@ -134,6 +135,12 @@ module LearningRoutesEngine
     end
 
     private
+
+    def assign_preview_module
+      return if route_module_id.present? || learning_route_id.blank?
+
+      self.route_module = RouteModule.find_by(learning_route_id: learning_route_id, access_state: :preview)
+    end
 
     def route_module_belongs_to_learning_route
       return if route_module.nil? || route_module.learning_route_id == learning_route_id

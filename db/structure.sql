@@ -711,7 +711,7 @@ CREATE TABLE public.learning_routes_engine_route_steps (
     title character varying NOT NULL,
     translations jsonb DEFAULT '{}'::jsonb NOT NULL,
     updated_at timestamp(6) without time zone NOT NULL,
-    route_module_id uuid
+    route_module_id uuid NOT NULL
 );
 
 
@@ -2633,6 +2633,7 @@ ALTER TABLE ONLY public.learning_routes_engine_route_steps
 SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
+('20260901000005'),
 ('20260901000004'),
 ('20260901000003'),
 ('20260901000002'),

@@ -65,16 +65,30 @@ module LearningRoutesEngine
           step.update_column(:route_module_id, other_module.id)
         end
       end
-      assert_nil step.reload.route_module_id
+      assert_equal @preview.id, step.reload.route_module_id
     end
 
-    test "existing steps remain valid without a module until backfill" do
+    test "new compatibility-path steps default to the permanent preview" do
       step = RouteStep.create!(learning_route: @route, position: 1, title: "Legacy step",
         status: :completed, completed_at: Time.current)
 
       assert step.valid?
-      assert_nil step.route_module
+      assert_equal @preview.id, step.route_module_id
       assert step.completed?
+    end
+
+    test "PostgreSQL requires module ownership after backfill" do
+      attributes = {
+        learning_route_id: @route.id,
+        position: 1,
+        title: "Bypass",
+        created_at: Time.current,
+        updated_at: Time.current
+      }
+
+      assert_raises(ActiveRecord::NotNullViolation) do
+        RouteStep.insert!(attributes)
+      end
     end
   end
 end
