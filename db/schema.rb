@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_31_000002) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_01_000001) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -411,6 +411,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_31_000002) do
     t.index ["onboarding_completed"], name: "index_core_users_on_onboarding_completed"
     t.index ["provider", "uid"], name: "index_core_users_on_provider_and_uid", unique: true, where: "(provider IS NOT NULL)"
     t.index ["remember_token"], name: "index_core_users_on_remember_token", unique: true
+    t.index ["role"], name: "idx_core_users_single_owner", unique: true, where: "(role = 2)"
     t.index ["role"], name: "index_core_users_on_role"
   end
 

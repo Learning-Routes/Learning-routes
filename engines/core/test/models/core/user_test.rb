@@ -52,7 +52,7 @@ module Core
     end
 
     test "role enum values" do
-      assert_equal({ "student" => 0, "teacher" => 1, "admin" => 2 }, Core::User.roles)
+      assert_equal({ "student" => 0, "teacher" => 1, "owner" => 2 }, Core::User.roles)
     end
 
     test "authenticates with correct password" do
@@ -123,8 +123,8 @@ module Core
       assert_not user.can_manage_content?
     end
 
-    test "authorization - admin" do
-      user = Core::User.new(valid_user_attributes.merge(role: :admin))
+    test "authorization - owner" do
+      user = Core::User.new(valid_user_attributes.merge(role: :owner))
       assert user.can_manage_users?
       assert user.can_manage_content?
       assert user.can_access_analytics?

@@ -43,7 +43,7 @@ module Core
     has_many :following, through: :active_follows, source: :followed
     has_many :followers, through: :passive_follows, source: :follower
 
-    enum :role, { student: 0, teacher: 1, admin: 2 }
+    enum :role, { student: 0, teacher: 1, owner: 2 }
 
     VALID_THEMES = %w[light dark system].freeze
 
@@ -55,6 +55,7 @@ module Core
     validates :locale, inclusion: { in: %w[en es] }
     validates :theme, inclusion: { in: VALID_THEMES }
     validates :role, presence: true
+    validates :role, uniqueness: true, if: :owner?
 
     normalizes :email, with: ->(email) { email.strip.downcase }
 
@@ -68,15 +69,15 @@ module Core
     # --- Authorization helpers ---
 
     def can_manage_users?
-      admin?
+      owner?
     end
 
     def can_manage_content?
-      admin? || teacher?
+      owner? || teacher?
     end
 
     def can_access_analytics?
-      admin? || teacher?
+      owner? || teacher?
     end
 
     def can_create_routes?
