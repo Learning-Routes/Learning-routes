@@ -710,7 +710,8 @@ CREATE TABLE public.learning_routes_engine_route_steps (
     status integer DEFAULT 0 NOT NULL,
     title character varying NOT NULL,
     translations jsonb DEFAULT '{}'::jsonb NOT NULL,
-    updated_at timestamp(6) without time zone NOT NULL
+    updated_at timestamp(6) without time zone NOT NULL,
+    route_module_id uuid
 );
 
 
@@ -1426,6 +1427,13 @@ CREATE INDEX idx_results_on_user_and_assessment ON public.assessments_assessment
 
 
 --
+-- Name: idx_route_modules_id_and_route; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX idx_route_modules_id_and_route ON public.learning_routes_engine_route_modules USING btree (id, learning_route_id);
+
+
+--
 -- Name: idx_route_modules_route_position; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -1472,6 +1480,13 @@ CREATE UNIQUE INDEX idx_route_steps_on_route_and_position ON public.learning_rou
 --
 
 CREATE INDEX idx_route_steps_on_route_and_status ON public.learning_routes_engine_route_steps USING btree (learning_route_id, status);
+
+
+--
+-- Name: idx_route_steps_on_route_module; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_route_steps_on_route_module ON public.learning_routes_engine_route_steps USING btree (route_module_id);
 
 
 --
@@ -2604,12 +2619,21 @@ ALTER TABLE ONLY public.core_sessions
 
 
 --
+-- Name: learning_routes_engine_route_steps fk_route_steps_module_same_route; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.learning_routes_engine_route_steps
+    ADD CONSTRAINT fk_route_steps_module_same_route FOREIGN KEY (route_module_id, learning_route_id) REFERENCES public.learning_routes_engine_route_modules(id, learning_route_id) ON DELETE RESTRICT;
+
+
+--
 -- PostgreSQL database dump complete
 --
 
 SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
+('20260901000004'),
 ('20260901000003'),
 ('20260901000002'),
 ('20260901000001'),

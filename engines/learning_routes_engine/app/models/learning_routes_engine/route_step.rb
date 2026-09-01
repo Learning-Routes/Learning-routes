@@ -1,6 +1,7 @@
 module LearningRoutesEngine
   class RouteStep < ApplicationRecord
     belongs_to :learning_route
+    belongs_to :route_module, optional: true
 
     has_one :step_quiz, -> { where(assessment_type: :step_quiz) },
             class_name: "Assessments::Assessment",
@@ -30,6 +31,7 @@ module LearningRoutesEngine
               uniqueness: { scope: :learning_route_id },
               numericality: { greater_than_or_equal_to: 0 }
     validates :title, presence: true, length: { maximum: 255 }
+    validate :route_module_belongs_to_learning_route
 
     scope :by_level, ->(level) { where(level: level) }
     scope :available_steps, -> { where(status: :available) }
@@ -129,6 +131,14 @@ module LearningRoutesEngine
         return @_liked_by_cached
       end
       likes.exists?(user_id: user.id)
+    end
+
+    private
+
+    def route_module_belongs_to_learning_route
+      return if route_module.nil? || route_module.learning_route_id == learning_route_id
+
+      errors.add(:route_module, "must belong to the same learning route")
     end
   end
 end

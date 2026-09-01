@@ -1,6 +1,7 @@
 module LearningRoutesEngine
   class RouteModule < ApplicationRecord
     belongs_to :learning_route
+    has_many :route_steps, -> { order(:position, :id) }
 
     enum :access_state, { preview: 0, locked: 1, purchased: 2 }, prefix: :access
     enum :generation_state, { outlined: 0, generating: 1, ready: 2, failed: 3 }, prefix: :generation
