@@ -992,6 +992,7 @@ en:
       output: "Output"
       all_matched: "All matched correctly"
       all_filled: "All blanks filled correctly"
+      drop_zone_for: "Drop zone for: %{definition}"
       badge_match: "MATCH"
       badge_complete: "COMPLETE"
       badge_flashcards: "FLASHCARDS"

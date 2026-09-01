@@ -1,43 +1,39 @@
-<aside class="hidden xl:block" style="width:19rem; flex-shrink:0;">
+<aside class="hidden xl:block">
   <div class="sticky top-20" style="display:flex; flex-direction:column; gap:1rem;">
 
     <%# ── Step Info Card ── %>
     <div style="background:var(--color-card); border:1px solid var(--color-border-subtle); border-radius:16px; padding:1.25rem; box-shadow:0 1px 3px rgba(0,0,0,0.02), 0 4px 12px rgba(0,0,0,0.01);">
       <h3 style="font-family:'DM Mono',monospace; font-size:0.625rem; font-weight:600; color:var(--color-muted); text-transform:uppercase; letter-spacing:0.1em; margin:0 0 1rem;"><%= t('learning_engine.sidebar.step_info') %></h3>
-      <div style="display:flex; flex-direction:column; gap:0.625rem;">
-        <div style="display:flex; align-items:center; justify-content:space-between; padding:0.5rem 0.75rem; border-radius:10px; background:var(--color-tint);">
-          <div style="display:flex; align-items:center; gap:0.5rem;">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--color-muted)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
-            <span style="font-family:'DM Sans',sans-serif; font-size:0.75rem; color:var(--color-muted);"><%= t('learning_engine.sidebar.type') %></span>
-          </div>
-          <span style="font-family:'DM Sans',sans-serif; font-size:0.75rem; font-weight:600; color:var(--color-txt);"><%= @step.content_type ? t("content_types.#{@step.content_type}", default: @step.content_type.capitalize) : "\u2014" %></span>
+      <%# WP-15 §D. Four visually identical tinted pills, one per fact, made the card
+          read as a list of buttons and gave 40% of its height to chrome. Same facts,
+          same theme tokens, no new colours: a label/value grid separated by the
+          hairline the rest of the page already uses. %>
+      <dl class="step-info-list">
+        <div class="step-info-row">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--color-muted)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+          <dt class="step-info-label"><%= t('learning_engine.sidebar.type') %></dt>
+          <dd class="step-info-value"><%= @step.content_type ? t("content_types.#{@step.content_type}", default: @step.content_type.capitalize) : "\u2014" %></dd>
         </div>
-        <div style="display:flex; align-items:center; justify-content:space-between; padding:0.5rem 0.75rem; border-radius:10px; background:var(--color-tint);">
-          <div style="display:flex; align-items:center; gap:0.5rem;">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--color-muted)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-            <span style="font-family:'DM Sans',sans-serif; font-size:0.75rem; color:var(--color-muted);"><%= t('learning_engine.sidebar.level') %></span>
-          </div>
-          <span style="font-family:'DM Sans',sans-serif; font-size:0.75rem; font-weight:600; color:var(--color-txt);"><%= @step.level ? t("content_levels.#{@step.level}", default: @step.level.upcase) : "\u2014" %></span>
+        <div class="step-info-row">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--color-muted)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+          <dt class="step-info-label"><%= t('learning_engine.sidebar.level') %></dt>
+          <dd class="step-info-value"><%= @step.level ? t("content_levels.#{@step.level}", default: @step.level.upcase) : "\u2014" %></dd>
         </div>
         <% if @step.estimated_minutes.to_i > 0 %>
-          <div style="display:flex; align-items:center; justify-content:space-between; padding:0.5rem 0.75rem; border-radius:10px; background:var(--color-tint);">
-            <div style="display:flex; align-items:center; gap:0.5rem;">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--color-muted)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-              <span style="font-family:'DM Sans',sans-serif; font-size:0.75rem; color:var(--color-muted);"><%= t('learning_engine.sidebar.duration') %></span>
-            </div>
-            <span style="font-family:'DM Sans',sans-serif; font-size:0.75rem; font-weight:600; color:var(--color-txt);"><%= t('learning_engine.route.duration', minutes: @step.estimated_minutes) %></span>
+          <div class="step-info-row">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--color-muted)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            <dt class="step-info-label"><%= t('learning_engine.sidebar.duration') %></dt>
+            <dd class="step-info-value"><%= t('learning_engine.route.duration', minutes: @step.estimated_minutes) %></dd>
           </div>
         <% end %>
         <% if @step.bloom_level.to_i > 0 %>
-          <div style="display:flex; align-items:center; justify-content:space-between; padding:0.5rem 0.75rem; border-radius:10px; background:var(--color-tint);">
-            <div style="display:flex; align-items:center; gap:0.5rem;">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--color-muted)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20V10"/><path d="M18 20V4"/><path d="M6 20v-4"/></svg>
-              <span style="font-family:'DM Sans',sans-serif; font-size:0.75rem; color:var(--color-muted);"><%= t('learning_engine.sidebar.blooms') %></span>
-            </div>
-            <span style="font-family:'DM Sans',sans-serif; font-size:0.75rem; font-weight:600; color:var(--color-txt);"><%= Assessments::Question::BLOOM_LEVELS[@step.bloom_level.to_i] rescue t("units.level", n: @step.bloom_level) %></span>
+          <div class="step-info-row">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--color-muted)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20V10"/><path d="M18 20V4"/><path d="M6 20v-4"/></svg>
+            <dt class="step-info-label"><%= t('learning_engine.sidebar.blooms') %></dt>
+            <dd class="step-info-value"><%= Assessments::Question::BLOOM_LEVELS[@step.bloom_level.to_i] rescue t("units.level", n: @step.bloom_level) %></dd>
           </div>
         <% end %>
-      </div>
+      </dl>
     </div>
 
     <%# ── Notes ── %>

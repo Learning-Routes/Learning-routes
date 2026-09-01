@@ -107,5 +107,28 @@ module AiOrchestrator
         end
       end
     end
+
+    test "daily limit compares exact microcents against configured cents" do
+      original = Rails.application.config.ai_cost_alerts
+      AiInteraction.create!(
+        model: "gpt-5.2", prompt: "near limit", status: :completed,
+        pricing_status: "priced", cost_cents: 0, cost_microcents: 49_999_999
+      )
+      Rails.application.config.ai_cost_alerts = original.merge(daily_limit: 5_000)
+
+      assert_nothing_raised do
+        ModelRouter.new(task_type: :quick_grading).send(:check_cost_limit!)
+      end
+
+      AiInteraction.create!(
+        model: "gpt-5.2", prompt: "last fraction", status: :completed,
+        pricing_status: "priced", cost_cents: 0, cost_microcents: 1
+      )
+      assert_raises(ModelRouter::RateLimitExceeded) do
+        ModelRouter.new(task_type: :quick_grading).send(:check_cost_limit!)
+      end
+    ensure
+      Rails.application.config.ai_cost_alerts = original if original
+    end
   end
 end

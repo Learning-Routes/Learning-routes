@@ -95,7 +95,8 @@ export default class extends Controller {
     clearTimeout(this._recordTimer)
     this._recordTimer = setTimeout(() => {
       this._recorded = true
-      submitBlock(this.element, { interacted: true }).then((r) => announceResult(this.element, r))
+      submitBlock(this.element, { interacted: true }, { complete: true })
+        .then((r) => announceResult(this.element, r))
     }, 800)
   }
 }

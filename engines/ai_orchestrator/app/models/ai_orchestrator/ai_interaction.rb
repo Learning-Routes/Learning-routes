@@ -23,6 +23,8 @@ module AiOrchestrator
     scope :today, -> { where("created_at >= ?", Time.current.beginning_of_day) }
     scope :this_week, -> { where("created_at >= ?", Time.current.beginning_of_week) }
     scope :this_month, -> { where("created_at >= ?", Time.current.beginning_of_month) }
+    scope :billable, -> { where(status: :completed, cached: [false, nil], pricing_status: "priced") }
+    scope :unpriced, -> { where(pricing_status: "unpriced") }
 
     SUPPORTED_MODELS = %w[
       gpt-5.2
@@ -31,14 +33,21 @@ module AiOrchestrator
       claude-sonnet-4-5
       gpt-4.1-mini
       elevenlabs
+      eleven_multilingual_v2
+      eleven_flash_v2_5
+      scribe_v2
       gpt-image-1
+      tavily
     ].freeze
 
     validates :model, inclusion: { in: SUPPORTED_MODELS }
     validates :task_type, inclusion: { in: AiModelConfig::TASK_TYPES }, allow_nil: true
+    validates :pricing_status, inclusion: { in: %w[priced unpriced] }
+
+    attr_readonly :provider_units, :provider_rate_microcents, :pricing_version
 
     def cost_dollars
-      cost_cents / 100.0
+      BigDecimal(cost_microcents.to_s) / CostTracker::MICROCENTS_PER_DOLLAR
     end
 
     def latency_seconds
@@ -49,19 +58,30 @@ module AiOrchestrator
       (input_tokens || 0) + (output_tokens || 0)
     end
 
-    def mark_completed!(response_text:, input_tokens: 0, output_tokens: 0, latency_ms: 0)
+    def mark_completed!(response_text:, input_tokens: 0, output_tokens: 0, latency_ms: 0,
+                        image_input_tokens: 0, characters: nil, audio_seconds: nil)
+      provider_priced = CostTracker::PRICING.dig(model, :provider_reported_credits)
+      usage_known = input_tokens.present? && output_tokens.present?
+      microcents = if cached? || provider_priced || !usage_known
+        0
+      else
+        CostTracker.estimate_microcents(
+          model: model, input_tokens: input_tokens, output_tokens: output_tokens,
+          image_input_tokens: image_input_tokens, characters: characters,
+          audio_seconds: audio_seconds
+        )
+      end
+
       update!(
         status: :completed,
         response: response_text,
-        input_tokens: input_tokens,
-        output_tokens: output_tokens,
-        tokens_used: input_tokens + output_tokens,
+        input_tokens: usage_known ? input_tokens.to_i : nil,
+        output_tokens: usage_known ? output_tokens.to_i : nil,
+        tokens_used: input_tokens.to_i + output_tokens.to_i,
         latency_ms: latency_ms,
-        cost_cents: CostTracker.estimate_cost(
-          model: model,
-          input_tokens: input_tokens,
-          output_tokens: output_tokens
-        )
+        pricing_status: provider_priced || (!cached? && !usage_known) ? "unpriced" : "priced",
+        cost_microcents: microcents,
+        cost_cents: CostTracker.microcents_to_cents(microcents)
       )
     end
 

@@ -24,6 +24,7 @@ module ContentEngine
         )
 
         result = client.chat(prompt: truncated, params: params)
+        AiOrchestrator::SpeechCostRecorder.record_tts!(user: user, result: result)
 
         dir = Rails.root.join("storage", "audio")
         FileUtils.mkdir_p(dir)

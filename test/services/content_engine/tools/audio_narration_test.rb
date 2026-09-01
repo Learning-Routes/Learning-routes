@@ -92,6 +92,17 @@ class ContentEngine::Tools::AudioNarrationTest < ActiveSupport::TestCase
     assert_equal({ voice_id: "custom-voice-123" }, captured_params)
   end
 
+  test "successful tool audio writes one billable synthesis row" do
+    stub_ai_client_with(build_mock_client)
+
+    execute_tool(text: "Test text")
+
+    row = AiOrchestrator::AiInteraction.find_by!(model: "eleven_multilingual_v2")
+    assert_equal 100, row.provider_units
+    assert_equal 10_000, row.cost_microcents
+    assert_equal 1, AiOrchestrator::AiInteraction.where(model: "eleven_multilingual_v2").count
+  end
+
   private
 
   def execute_tool(**kwargs)
@@ -108,7 +119,9 @@ class ContentEngine::Tools::AudioNarrationTest < ActiveSupport::TestCase
         input_tokens: 100,
         output_tokens: 0,
         latency_ms: 500,
-        content_type: "audio/mpeg"
+        content_type: "audio/mpeg",
+        billed_characters: 100,
+        model_id: "eleven_multilingual_v2"
       }
     end
     mock

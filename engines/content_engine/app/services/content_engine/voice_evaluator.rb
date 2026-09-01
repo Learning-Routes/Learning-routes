@@ -1,5 +1,10 @@
+require "open3"
+
 module ContentEngine
   class VoiceEvaluator
+    class TranscriptionError < StandardError; end
+
+    STT_MODEL = "scribe_v2"
     def self.evaluate!(voice_response)
       new(voice_response).evaluate!
     end
@@ -43,9 +48,10 @@ module ContentEngine
       request = Net::HTTP::Post.new(uri)
       request["xi-api-key"] = api_key
 
+      duration = audio_duration_seconds(audio_path)
       form_data = [
         ["file", File.open(audio_path, "rb")],
-        ["model_id", "scribe_v1"]
+        ["model_id", STT_MODEL]
       ]
       request.set_form(form_data, "multipart/form-data")
 
@@ -56,10 +62,51 @@ module ContentEngine
       response = http.request(request)
 
       unless response.is_a?(Net::HTTPSuccess)
-        raise "ElevenLabs STT error: #{response.code} - #{response.body}"
+        record_failed_transcription!
+        failure_recorded = true
+        raise TranscriptionError, "Scribe request failed with HTTP #{response.code}"
       end
 
-      JSON.parse(response.body)["text"]
+      provider_completed = true
+      AiOrchestrator::SpeechCostRecorder.record_stt!(
+        user: @response.user, duration_seconds: duration
+      )
+      transcription = parse_transcription(response.body)
+      transcription
+    rescue => e
+      record_failed_transcription! unless provider_completed || failure_recorded
+      raise
+    end
+
+    def parse_transcription(body)
+      transcription = JSON.parse(body)["text"]
+      raise TranscriptionError, "Scribe response missing transcription text" if transcription.blank?
+
+      transcription
+    rescue JSON::ParserError
+      raise TranscriptionError, "Malformed Scribe response"
+    end
+
+    def record_failed_transcription!
+      AiOrchestrator::AiInteraction.create!(
+        user: @response.user, model: STT_MODEL, task_type: "transcription",
+        prompt: "provider_usage", status: :failed, pricing_status: "unpriced"
+      )
+    rescue ActiveRecord::ActiveRecordError
+      nil
+    end
+
+    def audio_duration_seconds(audio_path)
+      output, _error, status = Open3.capture3(
+        "ffprobe", "-v", "error", "-show_entries", "format=duration",
+        "-of", "default=noprint_wrappers=1:nokey=1", audio_path.to_s
+      )
+      return nil unless status.success?
+
+      duration = BigDecimal(output.strip)
+      duration.positive? ? duration : nil
+    rescue ArgumentError, Errno::ENOENT
+      nil
     end
 
     def evaluate_response(transcription)

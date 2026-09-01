@@ -1,4 +1,15 @@
-<% correct_index = section[:options]&.index { |o| o[:correct] } || 0 %>
+<%
+  options       = Array(section[:options])
+  correct_index = options.index { |o| o[:correct] } || 0
+
+  # WP-15 §B. The options used to render in the order the generator produced them, and a
+  # generator that tends to put the correct option first makes position a tell. They are
+  # permuted per (student, step, section, attempt) — deterministic, so a reload does not
+  # reshuffle mid-question — while each option keeps its ORIGINAL index in
+  # data-option-index. `correct_index` below is that same original index, so
+  # `grade_check` and data-lesson-quiz-correct-value both keep working untouched.
+  variant = block_variant_for(step, index)
+%>
 
 <%# Modal overlay — starts hidden, shown by interactive-lesson controller %>
 <div class="quiz-modal-backdrop" data-interactive-lesson-target="quizModal" style="display:none;">
@@ -36,12 +47,12 @@
 
         <%# Options %>
         <div class="lesson-check__options" data-lesson-check-target="options" style="position:relative;">
-          <% section[:options].each_with_index do |opt, i| %>
-            <% letter = ("A".ord + i).chr %>
+          <% variant.permute(options, salt: "options").each_with_index do |(original_index, opt), position| %>
+            <% letter = ("A".ord + position).chr %>
             <button class="lesson-check__option lesson-nav-check-option"
                     data-action="click->lesson-check#select click->lesson-quiz#selectOption"
                     data-correct="<%= opt[:correct] %>"
-                    data-option-index="<%= i %>"
+                    data-option-index="<%= original_index %>"
                     data-lesson-check-target="option"
                     data-lesson-quiz-target="option">
               <span class="lesson-check__letter"><%= letter %></span>

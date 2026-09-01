@@ -5,11 +5,14 @@
 // pairing, which strings — and the server re-grades it against the stored section and
 // returns the verdict. The client no longer gets a vote.
 //
+// A complete submission is an answer the student intended the server to judge as a
+// whole. A pointer movement, keystroke, or single misplaced tile is incomplete.
+//
 // The element must carry:
 //   data-block-url-value="/learning/routes/:id/steps/:id/blocks/:section_index"
 // which the partials render from the section index.
 
-export async function submitBlock(element, payload) {
+export async function submitBlock(element, payload, { complete = false } = {}) {
   // The URL lives on the .lesson-section wrapper rendered by _lesson.html.erb, so a
   // block partial needs no plumbing of its own.
   const host = element.closest("[data-block-url-value]")
@@ -21,6 +24,7 @@ export async function submitBlock(element, payload) {
   }
 
   const token = document.querySelector('meta[name="csrf-token"]')?.content
+  const block = { ...payload, submission_complete: complete === true }
 
   try {
     const response = await fetch(url, {
@@ -30,7 +34,7 @@ export async function submitBlock(element, payload) {
         "Accept": "application/json",
         "X-CSRF-Token": token || ""
       },
-      body: JSON.stringify({ block: payload })
+      body: JSON.stringify({ block })
     })
 
     if (!response.ok) return null
@@ -51,4 +55,21 @@ export function announceResult(element, result) {
     bubbles: true,
     detail: result
   }))
+}
+
+// The index an option/term/definition occupies in the SERVER'S stored array, which is
+// not its position on screen: WP-15 permutes those columns per student and per attempt
+// so position is not a tell, and every element keeps its original index in a data
+// attribute. Grading is index identity against the stored array, so this is the only
+// index a block may ever send or compare.
+//
+// Falls back to DOM position for a block rendered before the permutation shipped, or by
+// anything that forgot the attribute — that is the pre-WP-15 behaviour, and it is only
+// correct when the board is unpermuted, which is exactly when the fallback applies.
+export function originalIndexOf(element, siblings) {
+  const declared = Number(element?.dataset?.optionIndex ?? element?.dataset?.termIndex)
+  if (Number.isInteger(declared)) return declared
+
+  const position = Array.from(siblings || []).indexOf(element)
+  return position >= 0 ? position : null
 }

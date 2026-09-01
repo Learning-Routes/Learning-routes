@@ -111,7 +111,7 @@
     </div>
 
     <%# ── Step title ── %>
-    <div style="max-width:48rem; margin:0 auto; padding:1rem 1rem 0;">
+    <div style="padding:1rem 1rem 0;">
       <h1 style="font-size:1.75rem; font-weight:800; color:var(--color-txt); margin:0; letter-spacing:-0.5px; line-height:1.25;"><%= @step.localized_title %></h1>
       <% if @step.localized_description.present? %>
         <p style="font-size:0.9375rem; color:var(--color-sub); margin:0.5rem 0 0; line-height:1.5;"><%= @step.localized_description %></p>
@@ -158,20 +158,24 @@
 
     <%# ── Fixed continue button ── %>
     <div class="lesson-nav-footer" data-interactive-lesson-target="continueBar">
-      <div style="max-width:48rem; margin:0 auto; display:flex; gap:0.75rem;">
-        <button data-action="click->interactive-lesson#previousSection"
-                data-interactive-lesson-target="backBtn"
-                class="lesson-btn--back"
-                style="display:none;"
-                aria-label="<%= t('learning_engine.lesson.back') %>">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
-        </button>
-        <button data-interactive-lesson-target="continueBtn"
-                data-action="click->interactive-lesson#nextSection"
-                class="lesson-btn--primary"
-                style="flex:1;">
-          <span data-interactive-lesson-target="continueBtnText"><%= t('learning_engine.lesson.continue') %></span>
-        </button>
+      <%# The footer is fixed to the viewport, so it mirrors the page grid to keep the
+          button under the reading column rather than under the middle of the window. %>
+      <div class="lesson-nav-footer-inner">
+        <div class="lesson-nav-footer-actions">
+          <button data-action="click->interactive-lesson#previousSection"
+                  data-interactive-lesson-target="backBtn"
+                  class="lesson-btn--back"
+                  style="display:none;"
+                  aria-label="<%= t('learning_engine.lesson.back') %>">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+          </button>
+          <button data-interactive-lesson-target="continueBtn"
+                  data-action="click->interactive-lesson#nextSection"
+                  class="lesson-btn--primary"
+                  style="flex:1;">
+            <span data-interactive-lesson-target="continueBtnText"><%= t('learning_engine.lesson.continue') %></span>
+          </button>
+        </div>
       </div>
     </div>
 
@@ -191,12 +195,12 @@
     <div class="lesson-toast" data-interactive-lesson-target="toast" aria-live="polite"></div>
 
     <%# ── AI interaction buttons (collapsed at bottom) ── %>
-    <div style="max-width:48rem; margin:0 auto; padding:0 1rem 6rem;">
+    <div style="padding:0 1rem;">
       <div style="border-top:1px solid var(--color-border-subtle); padding-top:1.5rem; margin-top:1rem;">
         <p style="font-family:'DM Mono',monospace; font-size:0.625rem; font-weight:600; color:var(--color-muted); text-transform:uppercase; letter-spacing:0.1em; margin:0 0 0.75rem;"><%= t('learning_engine.lesson.ai_tools') %></p>
         <%= render "ai_buttons" %>
       </div>
-      <div id="ai_supplementary_<%= @step.id %>" style="margin-top:1rem;"></div>
+      <div id="ai_supplementary_<%= @step.id %>" class="lesson-ai-supplementary"></div>
     </div>
 
     <%# ── AI Tutor Chat (floating) ── %>

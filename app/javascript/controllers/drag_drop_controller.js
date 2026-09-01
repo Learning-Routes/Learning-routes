@@ -9,6 +9,7 @@ export default class extends Controller {
   connect() {
     this.matched = new Set()
     this.selectedTerm = null
+    this.roundMatches = {}
   }
 
   dragStart(event) {
@@ -62,9 +63,12 @@ export default class extends Controller {
   checkMatch(termIndex, defIndex, dropZone) {
     const term = this.termTargets.find(t => t.dataset.termIndex === termIndex)
     if (!term) return
+    this.roundMatches[termIndex] = defIndex
 
     if (term.dataset.correctDef === defIndex) {
-      // Correct match
+      // Correct match. Record WHERE the term landed so the completed round carries the
+      // original term-to-definition pairing that BlockGrader expects.
+      term.dataset.placedDef = defIndex
       term.style.background = "rgba(16, 185, 129, 0.15)"
       term.style.borderColor = "#10b981"
       term.setAttribute("draggable", "false")
@@ -76,12 +80,23 @@ export default class extends Controller {
 
       if (this.matched.size === this.termTargets.length) {
         this.feedbackTarget.textContent = this.successTextValue
-        this._submitMatches()
         this.feedbackTarget.style.color = "#10b981"
         this.feedbackTarget.classList.remove("hidden")
       }
+
+      if (this._roundComplete() || this.matched.size === this.termTargets.length) {
+        this._submitRoundInteraction()
+      }
     } else {
-      // Wrong match - shake
+      // Wrong match - shake.
+      //
+      // The UI still bounces and the interaction is recorded, but a single misplaced
+      // tile is not a completed answer and does not consume the release counter.
+      //
+      // The wrong pairing is included in THIS submission so the stored payload reflects
+      // what the student actually did, but it is not written to the DOM: the term is not
+      // placed, so the next submission does not carry it.
+      this._submitRoundInteraction()
       dropZone.style.borderColor = "#ef4444"
       dropZone.style.background = "rgba(239, 68, 68, 0.08)"
       dropZone.classList.add("shake-horizontal")
@@ -94,16 +109,33 @@ export default class extends Controller {
     }
   }
 
-  // Collect term index -> definition index for every placed term and send it. The
-  // server re-derives correctness from the stored `pairs`.
-  _submitMatches() {
-    const matches = {}
-    this.termTargets?.forEach((term) => {
-      const placed = term.dataset.placedDef
-      if (placed !== undefined && placed !== null && placed !== "") {
-        matches[term.dataset.termIndex] = placed
+  // Collect term index -> definition index for placed terms and the current round. The
+  // server re-derives correctness from the stored `pairs`; only a pass across every
+  // term is marked complete.
+  //
+  // Both indices are the ORIGINAL positions in the pairs array — the partial permutes
+  // the two columns for display but never renumbers them — so `matches[i] == i` on the
+  // server means what it says.
+  _roundComplete() {
+    return this.termTargets.every((term) => this.roundMatches[term.dataset.termIndex] !== undefined)
+  }
+
+  _placedMatches() {
+    return this.termTargets.reduce((matches, term) => {
+      if (term.dataset.placedDef !== undefined && term.dataset.placedDef !== "") {
+        matches[term.dataset.termIndex] = term.dataset.placedDef
       }
-    })
-    submitBlock(this.element, { matches }).then((r) => announceResult(this.element, r))
+      return matches
+    }, {})
+  }
+
+  _submitRoundInteraction() {
+    const complete = this._roundComplete()
+    const matches = { ...this._placedMatches(), ...this.roundMatches }
+
+    submitBlock(this.element, { matches }, { complete })
+      .then((result) => announceResult(this.element, result))
+
+    if (complete) this.roundMatches = this._placedMatches()
   }
 }

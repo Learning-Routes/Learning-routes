@@ -74,6 +74,15 @@ module AiOrchestrator
       @chat.messages
     end
 
+    def usage_totals
+      provider_messages = messages.select { |message| message.role.to_s == "assistant" }
+      return [nil, nil] if provider_messages.empty? || provider_messages.any? do |message|
+        message.input_tokens.nil? || message.output_tokens.nil?
+      end
+
+      [provider_messages.sum(&:input_tokens), provider_messages.sum(&:output_tokens)]
+    end
+
     # Access the model info.
     def model
       @chat.model

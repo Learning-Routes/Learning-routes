@@ -1,4 +1,5 @@
 import { Controller } from "@hotwired/stimulus"
+import { originalIndexOf } from "controllers/block_submission"
 
 /**
  * lesson-quiz controller — v2 with Timer + Bonus XP + Hearts
@@ -122,10 +123,12 @@ export default class extends Controller {
         this._markBonusMissed()
 
         // Visually show the correct answer and disable options
-        this.optionTargets.forEach((opt, i) => {
+        // correctValue is the index in the SERVER'S options array, not a screen
+        // position — WP-15 §B permutes the options — so reveal by data-option-index.
+        this.optionTargets.forEach((opt) => {
           opt.style.pointerEvents = "none"
           opt.style.opacity = "0.6"
-          if (i === this.correctValue) {
+          if (originalIndexOf(opt, this.optionTargets) === this.correctValue) {
             opt.classList.add("lesson-check__option--correct")
             opt.style.opacity = "1"
           }
@@ -193,7 +196,7 @@ export default class extends Controller {
     this._stopTimer()
 
     const btn = event.currentTarget
-    const selectedIndex = this.optionTargets.indexOf(btn)
+    const selectedIndex = originalIndexOf(btn, this.optionTargets)
     const isCorrect = selectedIndex === this.correctValue
     const elapsed = this._getElapsedSeconds()
     const earnedBonus = this.timedValue && elapsed < 10 && isCorrect

@@ -8,6 +8,8 @@ export default class extends Controller {
 
   connect() {
     this.correct = new Set()
+    this.lastSubmittedSnapshot = null
+    this.pendingSnapshots = new Set()
   }
 
   checkAnswer(event) {
@@ -18,6 +20,7 @@ export default class extends Controller {
 
     const value = input.value.trim().toLowerCase()
     const answer = expected.toLowerCase()
+    this.correct.delete(index)
 
     if (value === answer) {
       input.style.borderColor = "#10b981"
@@ -27,9 +30,6 @@ export default class extends Controller {
 
       if (this.correct.size === this.answersValue.length) {
         this.feedbackTarget.textContent = this.successTextValue
-        submitBlock(this.element, {
-          answers: Array.from(this.inputTargets || []).map((i) => i.value)
-        }).then((r) => announceResult(this.element, r))
         this.feedbackTarget.style.color = "#10b981"
         this.feedbackTarget.classList.remove("hidden")
       }
@@ -49,5 +49,30 @@ export default class extends Controller {
       input.style.borderColor = "rgba(28, 24, 18, 0.15)"
       input.style.background = "rgba(28, 24, 18, 0.02)"
     }
+
+    this._submitCompletedBoard()
+  }
+
+  _submitCompletedBoard() {
+    const inputs = Array.from(this.inputTargets || [])
+    const complete = inputs.length === this.answersValue.length && inputs.every((input, index) => {
+      const expected = String(this.answersValue[index] || "").trim()
+      return input.value.trim().length >= expected.length
+    })
+    if (!complete) return
+
+    const answers = inputs.map((input) => input.value)
+    const snapshot = JSON.stringify(answers)
+    if (snapshot === this.lastSubmittedSnapshot || this.pendingSnapshots.has(snapshot)) return
+
+    this.pendingSnapshots.add(snapshot)
+    submitBlock(this.element, { answers }, { complete: true })
+      .then((result) => {
+        this.pendingSnapshots.delete(snapshot)
+        if (!result) return
+
+        this.lastSubmittedSnapshot = snapshot
+        announceResult(this.element, result)
+      })
   }
 }

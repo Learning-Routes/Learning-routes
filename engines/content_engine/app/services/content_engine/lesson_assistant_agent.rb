@@ -36,13 +36,14 @@ module ContentEngine
 
       start_time = Process.clock_gettime(Process::CLOCK_MONOTONIC)
       response = chat.ask(user_prompt)
+      input_tokens, output_tokens = aggregate_usage(chat.messages)
       elapsed_ms = ((Process.clock_gettime(Process::CLOCK_MONOTONIC) - start_time) * 1000).round
 
       result = parse_response(response)
 
       track_interaction!(action, message, result,
-        input_tokens: response.input_tokens || 0,
-        output_tokens: response.output_tokens || 0,
+        input_tokens: input_tokens,
+        output_tokens: output_tokens,
         latency_ms: elapsed_ms
       )
       result
@@ -186,6 +187,10 @@ module ContentEngine
     end
 
     def track_interaction!(action, message, result, input_tokens: 0, output_tokens: 0, latency_ms: 0)
+      usage_known = input_tokens.present? && output_tokens.present?
+      cost_microcents = AiOrchestrator::CostTracker.estimate_microcents(
+        model: "gpt-4.1-mini", input_tokens: input_tokens.to_i, output_tokens: output_tokens.to_i
+      )
       AiOrchestrator::AiInteraction.create!(
         user: @user,
         model: "gpt-4.1-mini",
@@ -193,14 +198,13 @@ module ContentEngine
         prompt: "#{action}: #{message}".truncate(500),
         status: :completed,
         response: result[:content].to_s.truncate(2000),
-        input_tokens: input_tokens,
-        output_tokens: output_tokens,
+        input_tokens: input_tokens.to_i,
+        output_tokens: output_tokens.to_i,
         latency_ms: latency_ms,
-        cost_cents: AiOrchestrator::CostTracker.estimate_cost(
-          model: "gpt-4.1-mini",
-          input_tokens: input_tokens,
-          output_tokens: output_tokens
-        ),
+        cost_microcents: cost_microcents,
+        cost_cents: AiOrchestrator::CostTracker.microcents_to_cents(cost_microcents),
+        pricing_status: usage_known ? "priced" : "unpriced",
+        pricing_version: usage_known ? "openai-2026-08-31" : nil,
         metadata: {
           step_id: @step.id,
           route_id: @route.id,
@@ -210,7 +214,16 @@ module ContentEngine
         }
       )
     rescue => e
-      Rails.logger.warn("[LessonAssistantAgent] Failed to track interaction: #{e.message}")
+      Rails.logger.warn("[LessonAssistantAgent] Failed to track interaction (#{e.class.name})")
+    end
+
+    def aggregate_usage(messages)
+      provider_messages = messages.select { |entry| entry.role.to_s == "assistant" }
+      return [nil, nil] if provider_messages.empty? || provider_messages.any? do |entry|
+        entry.input_tokens.nil? || entry.output_tokens.nil?
+      end
+
+      [provider_messages.sum(&:input_tokens), provider_messages.sum(&:output_tokens)]
     end
 
     class RateLimitExceeded < StandardError; end

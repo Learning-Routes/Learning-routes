@@ -992,6 +992,7 @@ es:
       output: "Salida"
       all_matched: "¡Todo emparejado!"
       all_filled: "¡Todos los huecos correctos!"
+      drop_zone_for: "Zona para soltar: %{definition}"
       badge_match: "EMPAREJA"
       badge_complete: "COMPLETA"
       badge_flashcards: "TARJETAS"

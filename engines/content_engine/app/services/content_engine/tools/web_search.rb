@@ -42,18 +42,64 @@ module ContentEngine
         response = http.request(request)
         unless response.is_a?(Net::HTTPSuccess)
           Rails.logger.warn("[WebSearch] Tavily API error: #{response.code}")
+          record_failed_interaction!
           return "[]"
         end
 
         data = JSON.parse(response.body)
+        record_completed_interaction!(data.dig("usage", "credits"))
         results = (data["results"] || []).map do |r|
           { "title" => r["title"], "url" => r["url"], "snippet" => r["content"].to_s.truncate(300) }
         end
 
         halt results.to_json
       rescue Net::ReadTimeout, Net::OpenTimeout, JSON::ParserError, StandardError => e
-        Rails.logger.warn("[WebSearch] Search failed: #{e.message}")
+        record_failed_interaction!
+        Rails.logger.warn("[WebSearch] Search failed (#{e.class.name})")
         "[]"
+      end
+
+      private
+
+      def record_completed_interaction!(reported_credits)
+        credits = Integer(reported_credits, exception: false)
+        rate, version = configured_rate_snapshot
+        priced = credits && credits >= 0 && rate && version.present?
+
+        AiOrchestrator::AiInteraction.create!(
+          user: Thread.current[:lesson_agent_user], model: "tavily", task_type: "web_search",
+          prompt: "tavily_search", response: "search_completed", status: :completed,
+          provider_units: credits, provider_rate_microcents: rate,
+          pricing_version: version, pricing_status: priced ? "priced" : "unpriced",
+          cost_microcents: priced ? credits * rate : 0,
+          cost_cents: priced ? AiOrchestrator::CostTracker.microcents_to_cents(credits * rate) : 0
+        )
+      rescue ActiveRecord::ActiveRecordError => e
+        Rails.logger.warn("[WebSearch] Metering failed (#{e.class.name})")
+        nil
+      end
+
+      def record_failed_interaction!
+        AiOrchestrator::AiInteraction.create!(
+          user: Thread.current[:lesson_agent_user], model: "tavily", task_type: "web_search",
+          prompt: "tavily_search", status: :failed, pricing_status: "unpriced"
+        )
+      rescue ActiveRecord::ActiveRecordError
+        nil
+      end
+
+      def configured_rate_snapshot
+        credentials = Rails.application.credentials
+        raw_rate = credentials.dig(:tavily, :usd_per_credit).presence || ENV["TAVILY_USD_PER_CREDIT"].presence
+        version = credentials.dig(:tavily, :pricing_version).presence || ENV["TAVILY_PRICING_VERSION"].presence
+        return [nil, version] unless raw_rate
+
+        microcents = BigDecimal(raw_rate.to_s) * AiOrchestrator::CostTracker::MICROCENTS_PER_DOLLAR
+        return [nil, version] unless microcents.positive? && microcents.frac.zero?
+
+        [microcents.to_i, version]
+      rescue ArgumentError
+        [nil, version]
       end
     end
   end

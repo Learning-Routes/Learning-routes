@@ -37,7 +37,7 @@ module AiOrchestrator
     end
 
     test "cost_dollars conversion" do
-      interaction = AiInteraction.new(cost_cents: 150)
+      interaction = AiInteraction.new(cost_cents: 150, cost_microcents: 1_500_000)
       assert_equal 1.5, interaction.cost_dollars
     end
 

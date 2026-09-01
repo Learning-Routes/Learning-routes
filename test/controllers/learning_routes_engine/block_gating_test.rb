@@ -51,7 +51,7 @@ class LearningRoutesEngine::BlockGatingTest < ActionDispatch::IntegrationTest
 
   def submit_check(option_index)
     post learning_routes_engine.route_step_block_attempt_path(@route, @step, 1),
-         params: { block: { option_index: option_index } }, as: :json
+         params: { block: { option_index: option_index, submission_complete: true } }, as: :json
   end
 
   test "a step with an unfinished gating block cannot be completed" do
@@ -114,7 +114,9 @@ class LearningRoutesEngine::BlockGatingTest < ActionDispatch::IntegrationTest
     before_reps = @step.fsrs_reps.to_i
 
     post learning_routes_engine.route_step_block_attempt_path(@route, @step, 0),
-         params: { block: { ratings: { "0" => "hard" }, rated_count: 1 } }, as: :json
+         params: {
+           block: { ratings: { "0" => "hard" }, rated_count: 1, submission_complete: true }
+         }, as: :json
 
     @step.reload
     assert_operator @step.fsrs_reps.to_i, :>, before_reps,
@@ -131,9 +133,9 @@ class LearningRoutesEngine::BlockGatingTest < ActionDispatch::IntegrationTest
 
     # Correct, but only after two wrong tries -> HARD, not GOOD.
     post learning_routes_engine.route_step_block_attempt_path(@route, @step, 0),
-         params: { block: { option_index: 1 } }, as: :json
+         params: { block: { option_index: 1, submission_complete: true } }, as: :json
     post learning_routes_engine.route_step_block_attempt_path(@route, @step, 0),
-         params: { block: { option_index: 0 } }, as: :json
+         params: { block: { option_index: 0, submission_complete: true } }, as: :json
 
     attempt = BA.find_by(user: @user, route_step: @step, section_index: 0)
     assert_equal SR::HARD, attempt.fsrs_rating,

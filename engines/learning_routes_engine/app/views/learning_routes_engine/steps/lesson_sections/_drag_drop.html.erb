@@ -1,4 +1,23 @@
 <%# engines/learning_routes_engine/app/views/learning_routes_engine/steps/lesson_sections/_drag_drop.html.erb %>
+<%
+  # WP-15 A2. This used to be `pairs.shuffle.each_with_index` on the terms column and a
+  # plain `each_with_index` on the definitions column, with data-term-index and
+  # data-correct-def both interpolated from the SHUFFLED position. That renumbering
+  # erased the shuffle: whatever term landed on row i was told it belonged to the
+  # definition on row i, so the answer was always "the one beside it" AND the block
+  # certified pairings that were wrong.
+  #
+  # Both columns are now permuted INDEPENDENTLY (two salts) and every element keeps its
+  # ORIGINAL index in the pairs array. `BlockGrader#grade_drag_drop` compares
+  # matches[i] == i against the stored pairs, so index identity stays true and the
+  # grader needed no change.
+  #
+  # The permutation is deterministic in (student, step, section, attempt) rather than a
+  # bare `shuffle`, so a reload does not scramble a board the student is mid-way through
+  # and the view is assertable in a test. See LearningRoutesEngine::BlockVariant.
+  variant = block_variant_for(step, index)
+  pairs   = Array(section[:pairs])
+%>
 <div data-controller="drag-drop" data-drag-drop-success-text-value="<%= t('learning_engine.blocks.all_matched') %>" class="space-y-4">
   <!-- Badge -->
   <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium tracking-wide uppercase" style="background: rgba(139, 92, 246, 0.1); color: #8b5cf6; font-family: 'DM Mono', monospace;">
@@ -14,17 +33,16 @@
       <div>
         <p class="text-sm font-medium mb-3" style="color: var(--color-sub); font-family: 'DM Mono', monospace;"><%= t('learning_engine.blocks.terms') %></p>
         <div class="space-y-2" data-drag-drop-target="termsContainer">
-          <% section[:pairs]&.shuffle&.each_with_index do |pair, i| %>
+          <% variant.permute(pairs, salt: "terms").each do |original_index, pair| %>
             <div class="drag-item px-4 py-3 rounded-xl cursor-grab active:cursor-grabbing select-none transition-all duration-200"
                  style="background: rgba(139, 92, 246, 0.06); border: 2px solid rgba(139, 92, 246, 0.15); color: var(--color-txt);"
                  draggable="true"
                  data-drag-drop-target="term"
-                 data-action="dragstart->drag-drop#dragStart dragend->drag-drop#dragEnd"
-                 data-term-index="<%= i %>"
-                 data-correct-def="<%= i %>"
+                 data-term-index="<%= original_index %>"
+                 data-correct-def="<%= original_index %>"
                  tabindex="0"
                  role="option"
-                 data-action="keydown.enter->drag-drop#keySelect keydown.space->drag-drop#keySelect">
+                 data-action="dragstart->drag-drop#dragStart dragend->drag-drop#dragEnd keydown.enter->drag-drop#keySelect keydown.space->drag-drop#keySelect">
               <%= pair[:term] %>
             </div>
           <% end %>
@@ -35,15 +53,15 @@
       <div>
         <p class="text-sm font-medium mb-3" style="color: var(--color-sub); font-family: 'DM Mono', monospace;"><%= t('learning_engine.blocks.definitions') %></p>
         <div class="space-y-2" data-drag-drop-target="defsContainer">
-          <% section[:pairs]&.each_with_index do |pair, i| %>
+          <% variant.permute(pairs, salt: "definitions").each do |original_index, pair| %>
             <div class="drop-zone px-4 py-3 rounded-xl transition-all duration-200 min-h-[48px] flex items-center"
                  style="background: rgba(28, 24, 18, 0.03); border: 2px dashed rgba(28, 24, 18, 0.12); color: var(--color-sub);"
                  data-drag-drop-target="dropZone"
-                 data-def-index="<%= i %>"
-                 data-action="dragover->drag-drop#dragOver dragleave->drag-drop#dragLeave drop->drag-drop#drop"
+                 data-def-index="<%= original_index %>"
+                 data-action="dragover->drag-drop#dragOver dragleave->drag-drop#dragLeave drop->drag-drop#drop keydown.enter->drag-drop#keySelect keydown.space->drag-drop#keySelect"
                  tabindex="0"
                  role="listbox"
-                 aria-label="Drop zone for: <%= pair[:definition] %>">
+                 aria-label="<%= t('learning_engine.blocks.drop_zone_for', definition: pair[:definition]) %>">
               <span class="text-sm"><%= pair[:definition] %></span>
             </div>
           <% end %>

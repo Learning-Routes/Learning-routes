@@ -126,6 +126,8 @@ module ContentEngine
         params: { voice_id: voice_id, model_id: model_id }
       )
 
+      AiOrchestrator::SpeechCostRecorder.record_tts!(user: @user, result: result)
+
       store_audio_file(result[:content])
     end
 
