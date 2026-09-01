@@ -970,6 +970,7 @@ es:
     proactive_hint: "¿Necesitas ayuda?"
   # ── Learning Engine ──
   learning_engine:
+    modules: { free_preview: "Vista previa gratuita", locked: "Bloqueado hasta la compra" }
     blocks:
       required:
         one: "Completa el ejercicio de arriba para terminar esta lección."

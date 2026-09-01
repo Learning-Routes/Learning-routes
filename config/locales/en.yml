@@ -970,6 +970,7 @@ en:
     open: "Open tutor chat"
     proactive_hint: "Need help?"
   learning_engine:
+    modules: { free_preview: "Free preview", locked: "Locked until purchase" }
     blocks:
       required:
         one: "Complete the exercise above to finish this lesson."

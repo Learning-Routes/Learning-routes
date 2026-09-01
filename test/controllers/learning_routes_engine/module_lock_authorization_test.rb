@@ -36,6 +36,16 @@ class LearningRoutesEngine::ModuleLockAuthorizationTest < ActionDispatch::Integr
     end
   end
 
+  test "route page shows the free module and locked outline without paid content" do
+    get learning_routes_engine.route_path(@route)
+
+    assert_response :success
+    assert_select "[data-route-module]", count: 2
+    assert_select "[data-module-access='preview']"
+    assert_select "[data-module-access='locked']", text: /Paid/
+    assert_no_match(/NEVER-EXPOSE-PAID-BODY|NEVER-EXPOSE-ANSWER/, response.body)
+  end
+
   test "locked content polling and completion endpoints cannot read or mutate the step" do
     get learning_routes_engine.content_status_route_step_path(@route, @paid_step)
     assert_response :forbidden

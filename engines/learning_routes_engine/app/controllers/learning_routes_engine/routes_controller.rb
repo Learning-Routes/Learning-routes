@@ -11,7 +11,8 @@ module LearningRoutesEngine
     layout "learning"
 
     def show
-      @steps = @route.route_steps.order(:position)
+      @modules = @route.route_modules.includes(:route_steps).order(:position, :id)
+      @steps = @modules.select(&:access_preview?).flat_map(&:route_steps)
       @progress = RouteProgressTracker.new(@route).progress_summary
       @due_reviews = SpacedRepetition.new.due_reviews(@route)
     end
