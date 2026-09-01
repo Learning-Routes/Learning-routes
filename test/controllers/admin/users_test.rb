@@ -10,6 +10,8 @@ class AdminUsersTest < ActionDispatch::IntegrationTest
     @route = profile.learning_routes.create!(topic: "Private Algebra", status: :paused, generation_status: "completed")
     @route.route_steps.create!(title: "Finished", position: 0, status: :completed)
     @route.route_steps.create!(title: "Waiting", position: 1, status: :locked)
+    @route.route_modules.find_by!(access_state: :preview).update!(title: "Free foundations")
+    @paid_module = @route.route_modules.create!(position: 2, title: "Advanced work", access_state: :locked)
     AiOrchestrator::AiInteraction.create!(user: @student, model: "gpt-5.2", prompt: "PRIVATE PROMPT",
       response: "PRIVATE RESPONSE", status: :completed, pricing_status: "priced", cost_microcents: 50_000,
       metadata: { route_id: @route.id })
@@ -50,8 +52,11 @@ class AdminUsersTest < ActionDispatch::IntegrationTest
     assert_select "[data-route-id='#{@route.id}']", text: /1.*2/m
     assert_select "[data-route-cost]", text: /0\.0500/
     assert_select "[data-route-cost-status]", text: /Pricing incomplete/
-    assert_select "a[href='#{learning_routes_engine.route_path(@route)}']"
-    assert_no_match(/purchase|revenue|profit|fee|quote|payment/i, response.body)
+    assert_select "[data-module-count]", text: /2/
+    assert_select "[data-paid-module-count]", text: /1/
+    assert_select "[data-preview-module]", text: /Free foundations/
+    assert_select "[data-quote-status]", text: /unavailable/i
+    assert_no_match(/purchase|revenue|profit|fee|payment/i, response.body)
     assert_no_match(/PRIVATE PROMPT|PRIVATE RESPONSE|password_digest|remember_token/i, response.body)
   end
 
@@ -63,6 +68,16 @@ class AdminUsersTest < ActionDispatch::IntegrationTest
 
     assert_select "[data-route-id]", count: 25
     assert_select "a[href*='route_page=2']"
+  end
+
+  test "route drill-down shows bounded module metadata without customer entitlement" do
+    get admin_route_path(@route)
+
+    assert_response :success
+    assert_select "h1", text: "Private Algebra"
+    assert_select "[data-module-id]", count: 2
+    assert_select "[data-module-id='#{@paid_module.id}']", text: /Advanced work/
+    assert_no_match(/PRIVATE PROMPT|PRIVATE RESPONSE|answer.key|password|remember.token/i, response.body)
   end
 
   test "unknown user is a private not found response" do

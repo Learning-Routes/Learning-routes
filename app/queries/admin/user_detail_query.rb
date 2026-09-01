@@ -6,7 +6,9 @@ module Admin
     UserRow = Data.define(:id, :name, :email, :role, :email_verified, :onboarding_completed,
       :registered_at, :last_active_at, :cost_microcents, :unpriced_interactions)
     RouteRow = Data.define(:id, :topic, :state, :generation_state, :created_at, :updated_at,
-      :completed_steps, :total_steps, :cost_microcents, :unpriced_interactions, :purchase_ready)
+      :completed_steps, :total_steps, :cost_microcents, :unpriced_interactions, :purchase_ready,
+      :module_count, :paid_module_count, :preview_module_id, :preview_module_title,
+      :quote_status, :quote_id, :quote_blocked_reason, :estimated_ai_cost_microcents)
 
     def self.call(user_id:, page: 1, per_page: PER_PAGE)
       user = Core::User.find(user_id)
@@ -30,10 +32,30 @@ module Admin
         SELECT r.id, r.topic, r.status, r.generation_status, r.created_at, r.updated_at,
           COUNT(s.id) FILTER (WHERE s.status = 3) AS completed_steps, COUNT(s.id) AS total_steps,
           COALESCE(MAX(costs.cost_microcents), 0) AS cost_microcents,
-          COALESCE(MAX(costs.unpriced_interactions), 0) AS unpriced_interactions
+          COALESCE(MAX(costs.unpriced_interactions), 0) AS unpriced_interactions,
+          MAX(modules.module_count) AS module_count,
+          MAX(modules.paid_module_count) AS paid_module_count,
+          MAX(modules.preview_module_id::text) AS preview_module_id,
+          MAX(modules.preview_module_title) AS preview_module_title,
+          MAX(quote.id::text) AS quote_id,
+          MAX(quote.estimated_ai_cost_microcents) AS estimated_ai_cost_microcents,
+          MAX(r.generation_params->>'quote_blocked_reason') AS quote_blocked_reason
         FROM learning_routes_engine_learning_routes r
         JOIN learning_routes_engine_learning_profiles p ON p.id = r.learning_profile_id
         LEFT JOIN learning_routes_engine_route_steps s ON s.learning_route_id = r.id
+        LEFT JOIN LATERAL (
+          SELECT COUNT(*) AS module_count,
+            COUNT(*) FILTER (WHERE access_state <> 0) AS paid_module_count,
+            MAX(id::text) FILTER (WHERE access_state = 0) AS preview_module_id,
+            MAX(title) FILTER (WHERE access_state = 0) AS preview_module_title
+          FROM learning_routes_engine_route_modules m WHERE m.learning_route_id = r.id
+        ) modules ON true
+        LEFT JOIN LATERAL (
+          SELECT q.id, q.estimated_ai_cost_microcents
+          FROM commerce_route_quotes q
+          WHERE q.learning_route_id = r.id AND q.user_id = :user_id AND q.superseded_at IS NULL
+          ORDER BY q.created_at DESC, q.id DESC LIMIT 1
+        ) quote ON true
         LEFT JOIN LATERAL (
           SELECT COALESCE(SUM(i.cost_microcents) FILTER (WHERE i.pricing_status = 'priced'), 0) AS cost_microcents,
             COUNT(*) FILTER (WHERE i.pricing_status = 'unpriced') AS unpriced_interactions
@@ -51,7 +73,13 @@ module Admin
           completed_steps: route.completed_steps.to_i, total_steps: route.total_steps.to_i,
           cost_microcents: route.cost_microcents.to_i,
           unpriced_interactions: route.unpriced_interactions.to_i,
-          purchase_ready: route.generation_status == "completed" && route.total_steps.to_i.positive?)
+          purchase_ready: route.generation_status == "completed" && route.total_steps.to_i.positive?,
+          module_count: route.module_count.to_i, paid_module_count: route.paid_module_count.to_i,
+          preview_module_id: route.preview_module_id, preview_module_title: route.preview_module_title,
+          quote_status: route.quote_id.present? ? "available" : "unavailable",
+          quote_id: route.quote_id, quote_blocked_reason: route.quote_blocked_reason.presence ||
+            (route.quote_id.present? ? nil : "not_quoted"),
+          estimated_ai_cost_microcents: route.quote_id.present? ? route.estimated_ai_cost_microcents.to_i : nil)
       end
       count_sql = ActiveRecord::Base.sanitize_sql_array([<<~SQL, binds])
         SELECT COUNT(*) FROM learning_routes_engine_learning_routes r

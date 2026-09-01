@@ -1620,6 +1620,14 @@ en:
     owner_area: "Private owner area"
     dashboard: { title: "Owner dashboard", subtitle: "A truthful view of learning activity and AI cost.", summary: "Summary", registered_users: "Registered users", routes: "Routes created", actual_ai_cost: "Exact AI cost", cost_note: "Billable WP-7 cost only. Commerce figures appear only after real commerce records exist.", view_users: "View registered users" }
     users: { title: "Registered users", count: "%{count} accounts", search: "Search name or email", apply: "Apply filters", routes: "Learning routes", open_route: "Open learning route" }
+    modules: { title: "Route modules", summary: "%{count} persisted modules", total: "%{count} modules", paid: "%{count} paid modules", preview: "Free preview: %{title}", steps: "%{count} steps", inspect: "Inspect module metadata" }
+    module_access: { preview: "Free preview", locked: "Locked", purchased: "Purchased" }
+    module_generation: { outlined: "Outlined", generating: "Generating", ready: "Ready", failed: "Failed" }
+    quotes:
+      available: "Quote available"
+      unavailable: "Quote unavailable"
+      estimated_cost: "Estimated full-route AI cost: %{amount}"
+      blocked: { not_quoted: "No quote has been created", pricing_configuration_missing: "Required pricing configuration is missing" }
     filters: { all_activity: "All activity", active: "Active in 30 days", inactive: "Inactive", all_routes: "All route states" }
     fields: { user: "User", registered: "Registered", last_activity: "Last activity", routes: "Routes", progress: "Educational progress", readiness: "Purchase readiness", cost: "Exact AI cost" }
     states: { draft: "Draft", active: "Active", completed: "Completed", paused: "Paused" }

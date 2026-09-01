@@ -1,0 +1,12 @@
+<% content_for(:title) { @detail.route.topic } %>
+<% content_for(:head) { stylesheet_link_tag "admin", "data-turbo-track": "reload" } %>
+<% content_for(:full_width) { true } %>
+<div class="admin-shell">
+  <header class="admin-head"><div><div class="admin-kicker"><%= link_to @detail.user.name, admin_user_path(@detail.user), class: "admin-link" %></div><h1 class="admin-title"><%= @detail.route.topic %></h1><p class="admin-sub"><%= t("admin.modules.summary", count: @detail.total_count) %></p></div></header>
+  <section class="admin-routes" aria-label="<%= t('admin.modules.title') %>">
+    <% @detail.modules.each do |route_module| %>
+      <article class="admin-card admin-route" data-module-id="<%= route_module.id %>"><div><span class="admin-state"><%= t("admin.module_access.#{route_module.access_state}") %> · <%= t("admin.module_generation.#{route_module.generation_state}") %></span><h2><%= route_module.position %>. <%= route_module.title %></h2><p class="admin-sub"><%= route_module.description %></p></div><div class="admin-mono"><%= t("admin.modules.steps", count: route_module.step_count) %></div></article>
+    <% end %>
+    <% pages = (@detail.total_count.to_f / @detail.per_page).ceil %><nav class="admin-pagination"><span><%= t("admin.pagination.page", current: @detail.page, total: [pages, 1].max) %></span><span><% if @detail.page > 1 %><%= link_to t("admin.pagination.previous"), admin_route_path(@detail.route, page: @detail.page - 1), class: "admin-link" %><% end %> <% if @detail.page < pages %><%= link_to t("admin.pagination.next"), admin_route_path(@detail.route, page: @detail.page + 1), class: "admin-link" %><% end %></span></nav>
+  </section>
+</div>

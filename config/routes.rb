@@ -24,6 +24,7 @@ Rails.application.routes.draw do
   namespace :admin do
     root "dashboard#show"
     resources :users, only: [:index, :show]
+    resources :routes, only: [:show]
   end
 
   # Profile
