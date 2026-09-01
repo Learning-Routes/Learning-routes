@@ -1616,3 +1616,15 @@ es:
     bilingual_label: "Bilingüe"
     target_label: "Aprendiendo"
     content_label: "Explicaciones en"
+  admin:
+    owner_area: "Área privada del propietario"
+    dashboard: { title: "Panel del propietario", subtitle: "Una vista veraz de la actividad educativa y el costo de IA.", summary: "Resumen", registered_users: "Usuarios registrados", routes: "Rutas creadas", actual_ai_cost: "Costo exacto de IA", cost_note: "Solo costo facturable de WP-7. Las cifras comerciales aparecerán cuando existan registros comerciales reales.", view_users: "Ver usuarios registrados" }
+    users: { title: "Usuarios registrados", count: "%{count} cuentas", search: "Buscar nombre o correo", apply: "Aplicar filtros", routes: "Rutas educativas", open_route: "Abrir ruta educativa" }
+    filters: { all_activity: "Toda actividad", active: "Activo en 30 días", inactive: "Inactivo", all_routes: "Todos los estados" }
+    fields: { user: "Usuario", registered: "Registro", last_activity: "Última actividad", routes: "Rutas", progress: "Progreso educativo", readiness: "Preparación de compra", cost: "Costo exacto de IA" }
+    states: { draft: "Borrador", active: "Activa", completed: "Completada", paused: "Pausada" }
+    generation: { pending: "Pendiente", generating: "Generando", completed: "Lista", failed: "Fallida", unknown: "Desconocida" }
+    ready: "Lista para comercio futuro"
+    not_ready: "No lista"
+    never: "Nunca"
+    pagination: { label: "Páginas de usuarios", page: "Página %{current} de %{total}", previous: "Anterior", next: "Siguiente" }

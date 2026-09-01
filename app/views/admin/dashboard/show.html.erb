@@ -1,0 +1,15 @@
+<% content_for(:title) { t("admin.dashboard.title") } %>
+<% content_for(:head) { stylesheet_link_tag "admin", "data-turbo-track": "reload" } %>
+<% content_for(:full_width) { true } %>
+<div class="admin-shell">
+  <header class="admin-head">
+    <div><div class="admin-kicker"><%= t("admin.owner_area") %></div><h1 class="admin-title"><%= t("admin.dashboard.title") %></h1><p class="admin-sub"><%= t("admin.dashboard.subtitle") %></p></div>
+    <%= link_to t("admin.dashboard.view_users"), admin_users_path, class: "admin-link" %>
+  </header>
+  <section class="admin-metrics" aria-label="<%= t('admin.dashboard.summary') %>">
+    <article class="admin-card"><div class="admin-label"><%= t("admin.dashboard.registered_users") %></div><div class="admin-figure" data-metric="registered-users"><%= @summary.registered_users %></div></article>
+    <article class="admin-card"><div class="admin-label"><%= t("admin.dashboard.routes") %></div><div class="admin-figure" data-metric="routes"><%= @summary.routes %></div></article>
+    <article class="admin-card"><div class="admin-label"><%= t("admin.dashboard.actual_ai_cost") %></div><div class="admin-figure" data-metric="ai-cost"><%= number_to_currency(@summary.cost_microcents / 1_000_000.0, precision: 4) %></div></article>
+  </section>
+  <p class="admin-sub"><%= t("admin.dashboard.cost_note") %></p>
+</div>
