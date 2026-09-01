@@ -32,10 +32,30 @@ class AdminUserIndexQueryTest < ActiveSupport::TestCase
   test "query count does not grow with users" do
     small = count_queries { Admin::UserIndexQuery.new.call }
     30.times { |i| Core::User.create!(name: "Bulk #{i}", email: "bulk#{i}@example.test", password: "password123") }
+    30.times do |index|
+      route = @user.learning_profile.learning_routes.create!(topic: "Bulk Route #{index}", generation_status: "completed")
+      route.route_steps.create!(title: "Bulk Step #{index}", position: 0)
+    end
     large = count_queries { Admin::UserIndexQuery.new.call }
 
     assert_equal 2, small
     assert_equal 2, large
+  end
+
+  test "readiness requires completed generation and a step on the same route" do
+    empty_completed = user_with_route("empty", generation_status: "completed", with_step: false)
+    ready = user_with_route("ready", generation_status: "completed", with_step: true)
+    mixed = create_test_user(name: "Mixed User", email: "mixed-readiness@example.test")
+    mixed_profile = LearningRoutesEngine::LearningProfile.create!(user: mixed)
+    mixed_profile.learning_routes.create!(topic: "Completed Empty", generation_status: "completed")
+    route_with_content = mixed_profile.learning_routes.create!(topic: "Content Not Completed", generation_status: "generating")
+    route_with_content.route_steps.create!(title: "Real Step", position: 0)
+
+    rows = Admin::UserIndexQuery.new(search: "readiness@example.test").call.rows.index_by(&:id)
+
+    assert_equal false, rows.fetch(empty_completed.id).purchase_ready
+    assert_equal true, rows.fetch(ready.id).purchase_ready
+    assert_equal false, rows.fetch(mixed.id).purchase_ready
   end
 
   test "filters by activity and route state while escaping wildcard search" do
@@ -57,6 +77,14 @@ class AdminUserIndexQueryTest < ActiveSupport::TestCase
   end
 
   private
+
+  def user_with_route(prefix, generation_status:, with_step:)
+    user = create_test_user(name: "#{prefix.titleize} User", email: "#{prefix}-readiness@example.test")
+    profile = LearningRoutesEngine::LearningProfile.create!(user: user)
+    route = profile.learning_routes.create!(topic: "#{prefix.titleize} Route", generation_status: generation_status)
+    route.route_steps.create!(title: "Real Step", position: 0) if with_step
+    user
+  end
 
   def count_queries
     count = 0

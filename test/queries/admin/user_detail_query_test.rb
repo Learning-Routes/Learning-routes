@@ -65,6 +65,19 @@ class AdminUserDetailQueryTest < ActiveSupport::TestCase
     assert_equal 5, large
   end
 
+  test "route readiness requires completed generation and real content" do
+    user = create_test_user
+    profile = LearningRoutesEngine::LearningProfile.create!(user: user)
+    empty = profile.learning_routes.create!(topic: "Completed Empty", generation_status: "completed")
+    ready = profile.learning_routes.create!(topic: "Completed Content", generation_status: "completed")
+    ready.route_steps.create!(title: "Real Step", position: 0)
+
+    rows = Admin::UserDetailQuery.call(user_id: user.id).routes.index_by(&:id)
+
+    assert_equal false, rows.fetch(empty.id).purchase_ready
+    assert_equal true, rows.fetch(ready.id).purchase_ready
+  end
+
   private
 
   def count_queries

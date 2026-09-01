@@ -39,14 +39,20 @@ module Admin
           SELECT user_id, MAX(last_active_at) AS last_active_at FROM core_sessions GROUP BY user_id
         ) sessions ON sessions.user_id = u.id
         LEFT JOIN (
-          SELECT p.user_id, COUNT(DISTINCT r.id) AS route_count,
-            COUNT(s.id) FILTER (WHERE s.status = 3) AS completed_steps,
-            COUNT(s.id) AS total_steps,
-            BOOL_OR(r.generation_status = 'completed') AS purchase_ready
-          FROM learning_routes_engine_learning_profiles p
-          JOIN learning_routes_engine_learning_routes r ON r.learning_profile_id = p.id
-          LEFT JOIN learning_routes_engine_route_steps s ON s.learning_route_id = r.id
-          GROUP BY p.user_id
+          SELECT route_rows.user_id, COUNT(*) AS route_count,
+            SUM(route_rows.completed_steps) AS completed_steps,
+            SUM(route_rows.total_steps) AS total_steps,
+            BOOL_OR(route_rows.generation_status = 'completed' AND route_rows.total_steps > 0) AS purchase_ready
+          FROM (
+            SELECT p.user_id, r.id, r.generation_status,
+              COUNT(s.id) FILTER (WHERE s.status = 3) AS completed_steps,
+              COUNT(s.id) AS total_steps
+            FROM learning_routes_engine_learning_profiles p
+            JOIN learning_routes_engine_learning_routes r ON r.learning_profile_id = p.id
+            LEFT JOIN learning_routes_engine_route_steps s ON s.learning_route_id = r.id
+            GROUP BY p.user_id, r.id
+          ) route_rows
+          GROUP BY route_rows.user_id
         ) routes ON routes.user_id = u.id
         LEFT JOIN (
           SELECT user_id,
