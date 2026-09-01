@@ -14,6 +14,11 @@
 - `eedf842` — dry-run-first historical reconciliation and unknown-cost reporting.
 - `d8c9cb7` — new metered task types explicitly registered as non-cacheable.
 - `ccc5b6c` — unknown token usage, multi-call agent aggregation, and metering containment.
+- `940f1c9` — historical reconciliation requires authoritative positive usage.
+- `0a6990d` — direct text tools preserve absent provider counters.
+- `0b3eb8c` — successful Scribe charges finalize before response parsing.
+- `8285817` — image charges finalize before local storage and presentation.
+- `7c176b3` — unknown provider counters remain null in the ledger.
 
 ## Schema and precision
 
@@ -65,12 +70,16 @@ Legacy text token and ElevenLabs character rows can be priced. Historical image 
 provider usage, old Scribe calls lack measured duration, and old Tavily calls lack rate snapshots.
 Those costs remain unknown; no historical Tavily rate is invented.
 
+Reconciliation additionally rejects null/blank/all-zero text counters and null/blank/non-positive
+legacy TTS character counts. Successful Scribe and image calls finalize their provider charge
+before parsing, decoding, storage, metadata, formatting, or downstream evaluation work.
+
 ## Verification
 
-- Focused WP-7: 91 runs, 359 assertions, 0 failures, 0 errors (seed 10367).
+- Focused WP-7: 103 runs, 411 assertions, 0 failures, 0 errors (seed 54922).
 - Cache contract: 8 runs, 36 assertions, 0 failures, 0 errors (seed 18858).
-- Main seeds 17601, 17602, 17603: 277 runs, 896 assertions, 0 failures, 0 errors each.
-- Combined seeds 17701, 17702, 17703: 593 runs, 1803 assertions, 3 failures, 9 errors each.
+- Main seeds 17801, 17802, 17803: 289 runs, 948 assertions, 0 failures, 0 errors each.
+- Combined seeds 17901, 17902, 17903: 605 runs, 1855 assertions, 3 failures, 9 errors each.
   The exact intersection is the pre-existing twelve: four `AudioControllerTest`, four
   `SectionAudioControllerTest`, `GapAnalysisJobTest`, `ReinforcementJobTest`,
   `RouteGenerationJobTest`, and `RouteGeneratorTest`.

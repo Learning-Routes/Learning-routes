@@ -14,6 +14,8 @@ Brakeman and Bundler Audit are green. Upgrade and compatibility testing remain s
 - Legacy Tavily calls have no immutable account rate snapshot and may lack reported credits.
 
 Reconciliation keeps these rows explicitly unpriced and does not invent values.
+Null, blank, zero, or otherwise absent historical counters are also preserved as unknown; only
+authoritative positive usage is eligible for reconciliation.
 
 ## Operational limitations
 
@@ -22,3 +24,10 @@ Reconciliation keeps these rows explicitly unpriced and does not invent values.
 - Tavily requires an account-specific rate and version in encrypted credentials or narrowly named
   runtime variables.
 - `AiRequestJob` has no active async caller, but uses the exact ledger if re-enabled later.
+
+## Review corrections completed
+
+- Direct paid text tools retain absent token counters as null and explicitly unpriced.
+- Scribe usage is finalized immediately after HTTP success, before sanitized response parsing.
+- Image usage is finalized before decoding, storage, metadata, or output formatting.
+- Later local failures do not relabel or erase an incurred provider charge.
