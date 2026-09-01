@@ -46,6 +46,18 @@ class LearningRoutesEngine::ModuleLockAuthorizationTest < ActionDispatch::Integr
     assert_no_match(/NEVER-EXPOSE-PAID-BODY|NEVER-EXPOSE-ANSWER/, response.body)
   end
 
+  test "journey and review index do not list paid-module steps" do
+    @paid_step.update!(status: :completed, fsrs_next_review_at: 1.minute.ago)
+
+    get learning_routes_engine.journey_route_path(@route)
+    assert_response :success
+    assert_not_includes response.body, "Secret lesson"
+
+    get learning_routes_engine.reviews_path
+    assert_response :success
+    assert_not_includes response.body, "Secret lesson"
+  end
+
   test "locked content polling and completion endpoints cannot read or mutate the step" do
     get learning_routes_engine.content_status_route_step_path(@route, @paid_step)
     assert_response :forbidden

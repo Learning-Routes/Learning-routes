@@ -13,6 +13,8 @@ module LearningRoutesEngine
         if route_ids.any?
           due_steps = RouteStep
             .where(learning_route_id: route_ids)
+            .joins(:route_module)
+            .where(learning_routes_engine_route_modules: { access_state: :preview })
             .due_for_review
             .includes(:learning_route)
             .order(:fsrs_next_review_at)
