@@ -2,6 +2,14 @@
 
 ## Review corrections completed
 
+- Owner promotion now clears the promoted account's persistent remember-token digest in the same
+  transaction that changes its role and deletes its sessions. Regression coverage proves both an
+  old session cookie and a replayed remember-me cookie cannot authenticate or create a new owner
+  session. The idempotent current-owner path returns before revocation, preserving credentials
+  issued after the original promotion.
+- Purchase readiness is now calculated per route before user roll-up. A route must have completed
+  generation and at least one step of its own; completed empty routes cannot borrow content from
+  another incomplete route. User index and drill-down apply the same definition.
 - Comment moderation still called the removed `admin?` predicate. Owner moderation now uses
   `owner?`, students receive 403, and comment destruction no longer fails under strict loading.
 - AI cost alerts contained a committed administrative recipient. Alerts now resolve the sole

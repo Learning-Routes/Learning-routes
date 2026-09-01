@@ -26,8 +26,10 @@ Branch: `wp16-owner-dashboard`
 - `36a9baf` — exact route-cost attribution and explicit unpriced usage.
 - `a539e45` — basic account state in the user drill-down.
 - `7d43266` — exact fixed-query-count evidence.
+- `98b4ecb` — revoked session and remember-me credentials during first owner promotion.
+- `7c1248c` — required completed generation and same-route content for readiness.
 
-The final documentation commit is the commit containing this handoff.
+The latest documentation commit is the commit containing this revised handoff.
 
 ## Database invariants and migrations
 
@@ -41,9 +43,11 @@ references, action, request ID, SHA-256 IP/user-agent digests, JSON metadata, an
 Model callbacks reject update/destroy, and sensitive metadata key names are rejected.
 
 Promotion additionally takes PostgreSQL transaction advisory lock `691016`, rechecks the current
-owner inside the transaction, promotes exactly one authenticated existing account, deletes all of
-that account's sessions, and records `owner.promoted`. The unique index remains the final database
-boundary.
+owner inside the transaction, promotes exactly one authenticated existing account, clears its
+remember-token digest, deletes all of that account's sessions, and records `owner.promoted`. The
+unique index remains the final database boundary. An idempotent repeat for the existing owner
+returns before credential revocation, so sessions and remember credentials issued after the first
+promotion are preserved.
 
 ## Owner promotion procedure
 
@@ -59,9 +63,11 @@ bin/rails owner:promote
 unset OWNER_EMAIL OWNER_PASSWORD
 ```
 
-The task authenticates the existing password; it does not create an account. Repeating it for the
-same owner is idempotent. A different account is rejected once an owner exists. No owner email,
-password, secret, or default login-capable owner is seeded or committed.
+The task authenticates the existing password; it does not create an account. The first promotion
+revokes both database sessions and persistent remember-me credentials. Repeating it for the same
+owner is idempotent and does not revoke newly issued credentials. A different account is rejected
+once an owner exists. No owner email, password, secret, or default login-capable owner is seeded or
+committed.
 
 ## Dashboard fields and authoritative sources
 
@@ -111,6 +117,8 @@ absent because no authoritative commerce tables exist yet.
   without horizontal overflow.
 - Two synchronized PostgreSQL threads prove one promotion succeeds, one receives
   `OwnerExistsError`, one owner persists, and one promotion audit event exists.
+- A real integration client proves the old session cookie fails after promotion; a fresh client
+  replaying only the captured pre-promotion remember-me cookie also fails and creates no session.
 
 ## Query bounds
 
@@ -124,10 +132,10 @@ absent because no authoritative commerce tables exist yet.
 Focused final surface:
 
 ```bash
-env -u RAILS_MASTER_KEY bin/rails test test/models/core/single_owner_database_test.rb engines/core/test/models/core/user_test.rb test/services/owner/promotion_test.rb test/services/owner/promotion_concurrency_test.rb test/tasks/owner_test.rb test/controllers/admin test/queries/admin test/system/owner_dashboard_test.rb test/controllers/community_engine/comment_moderation_test.rb engines/ai_orchestrator/test/mailers/ai_orchestrator/admin_mailer_test.rb engines/ai_orchestrator/test/jobs/ai_orchestrator/ai_request_job_test.rb --seed 16712
+env -u RAILS_MASTER_KEY bin/rails test test/models/core/single_owner_database_test.rb engines/core/test/models/core/user_test.rb test/services/owner/promotion_test.rb test/services/owner/promotion_concurrency_test.rb test/integration/owner_promotion_authentication_test.rb test/tasks/owner_test.rb test/controllers/admin test/queries/admin test/system/owner_dashboard_test.rb test/controllers/community_engine/comment_moderation_test.rb engines/ai_orchestrator/test/mailers/ai_orchestrator/admin_mailer_test.rb engines/ai_orchestrator/test/jobs/ai_orchestrator/ai_request_job_test.rb --seed 16903
 ```
 
-Result: 61 runs, 347 assertions, 0 failures, 0 errors, 0 skips.
+Result: 65 runs, 368 assertions, 0 failures, 0 errors, 0 skips.
 
 Main suite:
 
@@ -158,6 +166,10 @@ Additional verification:
 - `bundle exec brakeman --no-pager` — one unrelated pre-existing medium warning documented in
   `FINDINGS_WP16.md`; no WP-16 warning.
 - `bin/importmap audit` — the six explicitly deferred DOMPurify/Mermaid advisories only.
+- Targeted correction tests: persistent-session seed `16901` — 8 runs, 44 assertions; readiness
+  seed `16902` — 14 runs, 86 assertions. Both had zero failures, errors, or skips.
+- Targeted review: five changed Ruby/test files inspected by RuboCop with no offenses; Brakeman
+  reported no new warning; the two-commit diff passed `git diff --check`.
 
 ## Scope confirmation
 
