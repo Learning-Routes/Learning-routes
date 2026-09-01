@@ -24,4 +24,19 @@ class AdminUserDetailQueryTest < ActiveSupport::TestCase
     assert_equal 8_765, row.cost_microcents
     assert_equal false, row.purchase_ready
   end
+
+  test "paginates a user's routes with a fixed upper bound" do
+    user = create_test_user
+    profile = LearningRoutesEngine::LearningProfile.create!(user: user)
+    26.times { |index| profile.learning_routes.create!(topic: "Route #{index}") }
+
+    first_page = Admin::UserDetailQuery.call(user_id: user.id)
+    second_page = Admin::UserDetailQuery.call(user_id: user.id, page: 2)
+
+    assert_equal 25, first_page.routes.size
+    assert_equal 26, first_page.total_count
+    assert_equal 1, first_page.page
+    assert_equal 1, second_page.routes.size
+    assert_equal 2, second_page.page
+  end
 end

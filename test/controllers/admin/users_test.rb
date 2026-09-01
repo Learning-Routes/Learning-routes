@@ -48,6 +48,16 @@ class AdminUsersTest < ActionDispatch::IntegrationTest
     assert_no_match(/PRIVATE PROMPT|PRIVATE RESPONSE|password_digest|remember_token/i, response.body)
   end
 
+  test "drill-down paginates routes independently from the user index" do
+    profile = @student.learning_profile
+    25.times { |index| profile.learning_routes.create!(topic: "Additional Route #{index}") }
+
+    get admin_user_path(@student)
+
+    assert_select "[data-route-id]", count: 25
+    assert_select "a[href*='route_page=2']"
+  end
+
   test "unknown user is a private not found response" do
     get admin_user_path("00000000-0000-0000-0000-000000000000")
 

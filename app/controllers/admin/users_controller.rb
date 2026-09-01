@@ -7,7 +7,7 @@ module Admin
     end
 
     def show
-      @detail = UserDetailQuery.call(user_id: params[:id])
+      @detail = UserDetailQuery.call(user_id: params[:id], page: params[:route_page])
     end
   end
 end
