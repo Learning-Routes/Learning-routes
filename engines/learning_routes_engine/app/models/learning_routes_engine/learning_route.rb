@@ -5,6 +5,7 @@ module LearningRoutesEngine
     # PostgreSQL owns this cascade. Loading/destroying the permanent preview before
     # deleting its route would correctly trip the preview-preservation trigger.
     has_many :route_modules, -> { order(:position, :id) }
+    has_many :route_quotes, class_name: "Commerce::RouteQuote", dependent: :restrict_with_error
     has_many :route_steps, -> { order(:position) }, dependent: :destroy
     has_many :knowledge_gaps, dependent: :destroy
     has_many :reinforcement_routes, dependent: :destroy

@@ -3,6 +3,7 @@ module Core
     has_secure_password
 
     has_many :sessions, dependent: :destroy
+    has_many :route_quotes, class_name: "Commerce::RouteQuote", dependent: :restrict_with_error
     has_many :route_requests, class_name: "::RouteRequest", foreign_key: :user_id, dependent: :destroy
     has_one :learning_profile, class_name: "LearningRoutesEngine::LearningProfile", dependent: :destroy
 

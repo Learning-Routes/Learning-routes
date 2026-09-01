@@ -11,6 +11,42 @@ SET client_min_messages = warning;
 SET row_security = off;
 
 --
+-- Name: commerce_route_quote_immutable_guard(); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION public.commerce_route_quote_immutable_guard() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+  IF ROW(OLD.user_id, OLD.learning_route_id, OLD.currency, OLD.total_module_count, OLD.paid_module_count, OLD.estimated_ai_cost_microcents, OLD.estimated_fee_cents, OLD.markup_basis_points, OLD.minimum_price_per_paid_module_cents, OLD.cost_based_price_cents, OLD.minimum_price_cents, OLD.final_price_cents, OLD.estimator_version, OLD.provider_rate_versions, OLD.fee_version, OLD.image_quality, OLD.route_shape_assumptions, OLD.provider_rate_assumptions, OLD.fee_assumptions, OLD.expires_at, OLD.created_at) IS DISTINCT FROM ROW(NEW.user_id, NEW.learning_route_id, NEW.currency, NEW.total_module_count, NEW.paid_module_count, NEW.estimated_ai_cost_microcents, NEW.estimated_fee_cents, NEW.markup_basis_points, NEW.minimum_price_per_paid_module_cents, NEW.cost_based_price_cents, NEW.minimum_price_cents, NEW.final_price_cents, NEW.estimator_version, NEW.provider_rate_versions, NEW.fee_version, NEW.image_quality, NEW.route_shape_assumptions, NEW.provider_rate_assumptions, NEW.fee_assumptions, NEW.expires_at, NEW.created_at) THEN
+    RAISE EXCEPTION 'route quote pricing snapshots are immutable' USING ERRCODE = '23514';
+  END IF;
+  RETURN NEW;
+END;
+$$;
+
+
+--
+-- Name: commerce_route_quote_owner_guard(); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION public.commerce_route_quote_owner_guard() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM learning_routes_engine_learning_routes routes
+    JOIN learning_routes_engine_learning_profiles profiles ON profiles.id = routes.learning_profile_id
+    WHERE routes.id = NEW.learning_route_id AND profiles.user_id = NEW.user_id
+  ) THEN
+    RAISE EXCEPTION 'route quote owner must own learning route' USING ERRCODE = '23514';
+  END IF;
+  RETURN NEW;
+END;
+$$;
+
+
+--
 -- Name: learning_routes_engine_check_route_preview(); Type: FUNCTION; Schema: public; Owner: -
 --
 
@@ -316,6 +352,49 @@ CREATE TABLE public.assessments_voice_responses (
     transcription text,
     updated_at timestamp(6) without time zone NOT NULL,
     user_id uuid NOT NULL
+);
+
+
+--
+-- Name: commerce_route_quotes; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.commerce_route_quotes (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    user_id uuid NOT NULL,
+    learning_route_id uuid NOT NULL,
+    currency character varying NOT NULL,
+    total_module_count integer NOT NULL,
+    paid_module_count integer NOT NULL,
+    estimated_ai_cost_microcents bigint NOT NULL,
+    estimated_fee_cents bigint NOT NULL,
+    markup_basis_points integer NOT NULL,
+    minimum_price_per_paid_module_cents integer NOT NULL,
+    cost_based_price_cents bigint NOT NULL,
+    minimum_price_cents bigint NOT NULL,
+    final_price_cents bigint NOT NULL,
+    estimator_version character varying NOT NULL,
+    provider_rate_versions jsonb DEFAULT '{}'::jsonb NOT NULL,
+    fee_version character varying NOT NULL,
+    image_quality character varying NOT NULL,
+    route_shape_assumptions jsonb DEFAULT '{}'::jsonb NOT NULL,
+    provider_rate_assumptions jsonb DEFAULT '{}'::jsonb NOT NULL,
+    fee_assumptions jsonb DEFAULT '{}'::jsonb NOT NULL,
+    expires_at timestamp(6) without time zone NOT NULL,
+    superseded_at timestamp(6) without time zone,
+    attachment_state character varying DEFAULT 'unattached'::character varying NOT NULL,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL,
+    CONSTRAINT route_quotes_approved_markup CHECK ((markup_basis_points = 5000)),
+    CONSTRAINT route_quotes_approved_minimum CHECK ((minimum_price_per_paid_module_cents = 299)),
+    CONSTRAINT route_quotes_attachment_state CHECK (((attachment_state)::text = ANY ((ARRAY['unattached'::character varying, 'checkout'::character varying, 'purchase'::character varying])::text[]))),
+    CONSTRAINT route_quotes_final_formula CHECK ((final_price_cents = GREATEST(cost_based_price_cents, minimum_price_cents))),
+    CONSTRAINT route_quotes_future_expiration CHECK ((expires_at > created_at)),
+    CONSTRAINT route_quotes_minimum_formula CHECK ((minimum_price_cents = (paid_module_count * minimum_price_per_paid_module_cents))),
+    CONSTRAINT route_quotes_nonnegative_money CHECK (((estimated_ai_cost_microcents >= 0) AND (estimated_fee_cents >= 0) AND (cost_based_price_cents >= 0) AND (minimum_price_cents >= 0) AND (final_price_cents >= 0))),
+    CONSTRAINT route_quotes_paid_module_count CHECK ((paid_module_count = (total_module_count - 1))),
+    CONSTRAINT route_quotes_positive_modules CHECK ((total_module_count >= 1)),
+    CONSTRAINT route_quotes_usd_only CHECK (((currency)::text = 'USD'::text))
 );
 
 
@@ -973,6 +1052,14 @@ ALTER TABLE ONLY public.assessments_voice_responses
 
 
 --
+-- Name: commerce_route_quotes commerce_route_quotes_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.commerce_route_quotes
+    ADD CONSTRAINT commerce_route_quotes_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: community_engine_activities community_engine_activities_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1455,6 +1542,20 @@ CREATE UNIQUE INDEX idx_route_modules_single_preview ON public.learning_routes_e
 
 
 --
+-- Name: idx_route_quotes_owner_route; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_route_quotes_owner_route ON public.commerce_route_quotes USING btree (user_id, learning_route_id);
+
+
+--
+-- Name: idx_route_quotes_route_created; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_route_quotes_route_created ON public.commerce_route_quotes USING btree (learning_route_id, created_at);
+
+
+--
 -- Name: idx_route_steps_on_fsrs_next_review; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -1802,6 +1903,20 @@ CREATE INDEX index_assessments_voice_responses_on_status ON public.assessments_v
 --
 
 CREATE INDEX index_assessments_voice_responses_on_user_id ON public.assessments_voice_responses USING btree (user_id);
+
+
+--
+-- Name: index_commerce_route_quotes_on_learning_route_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_commerce_route_quotes_on_learning_route_id ON public.commerce_route_quotes USING btree (learning_route_id);
+
+
+--
+-- Name: index_commerce_route_quotes_on_user_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_commerce_route_quotes_on_user_id ON public.commerce_route_quotes USING btree (user_id);
 
 
 --
@@ -2190,6 +2305,20 @@ CREATE INDEX index_xp_transactions_on_user_id_and_created_at ON public.xp_transa
 
 
 --
+-- Name: commerce_route_quotes commerce_route_quotes_immutable_guard; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER commerce_route_quotes_immutable_guard BEFORE UPDATE ON public.commerce_route_quotes FOR EACH ROW EXECUTE FUNCTION public.commerce_route_quote_immutable_guard();
+
+
+--
+-- Name: commerce_route_quotes commerce_route_quotes_owner_guard; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER commerce_route_quotes_owner_guard BEFORE INSERT OR UPDATE OF user_id, learning_route_id ON public.commerce_route_quotes FOR EACH ROW EXECUTE FUNCTION public.commerce_route_quote_owner_guard();
+
+
+--
 -- Name: learning_routes_engine_learning_routes learning_routes_exactly_one_preview; Type: TRIGGER; Schema: public; Owner: -
 --
 
@@ -2451,6 +2580,14 @@ ALTER TABLE ONLY public.content_engine_user_notes
 
 
 --
+-- Name: commerce_route_quotes fk_rails_b69b051121; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.commerce_route_quotes
+    ADD CONSTRAINT fk_rails_b69b051121 FOREIGN KEY (user_id) REFERENCES public.core_users(id) ON DELETE RESTRICT;
+
+
+--
 -- Name: community_engine_follows fk_rails_b703a3d4a6; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -2472,6 +2609,14 @@ ALTER TABLE ONLY public.content_engine_ai_contents
 
 ALTER TABLE ONLY public.learning_routes_engine_reinforcement_routes
     ADD CONSTRAINT fk_rails_bb9ddc8d6d FOREIGN KEY (learning_route_id) REFERENCES public.learning_routes_engine_learning_routes(id);
+
+
+--
+-- Name: commerce_route_quotes fk_rails_beb90d708b; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.commerce_route_quotes
+    ADD CONSTRAINT fk_rails_beb90d708b FOREIGN KEY (learning_route_id) REFERENCES public.learning_routes_engine_learning_routes(id) ON DELETE RESTRICT;
 
 
 --
@@ -2633,6 +2778,7 @@ ALTER TABLE ONLY public.learning_routes_engine_route_steps
 SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
+('20260901000006'),
 ('20260901000005'),
 ('20260901000004'),
 ('20260901000003'),
