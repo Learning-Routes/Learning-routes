@@ -8,6 +8,7 @@ class OwnerDashboardTest < ApplicationSystemTestCase
     profile = LearningRoutesEngine::LearningProfile.create!(user: @student)
     @route = profile.learning_routes.create!(topic: "Browser Route", status: :active, generation_status: "completed")
     @route.route_steps.create!(title: "Browser Step", position: 0, status: :completed)
+    @paid_module = @route.route_modules.create!(position: 2, title: "Browser Locked Module", access_state: :locked)
     26.times { |index| create_test_user(name: "Browser Page #{index}") }
     sign_in_through_ui
   end
@@ -21,7 +22,9 @@ class OwnerDashboardTest < ApplicationSystemTestCase
     assert_text @student.email
     click_link @student.name
     assert_text "Browser Route"
-    assert_link I18n.t("admin.users.open_route"), href: learning_routes_engine.route_path(@route)
+    visit admin_route_path(@route)
+    assert_text "Browser Locked Module"
+    assert_text I18n.t("admin.module_access.locked")
 
     visit admin_users_path
     assert_link I18n.t("admin.pagination.next")
