@@ -75,8 +75,8 @@ module AiOrchestrator
       update!(
         status: :completed,
         response: response_text,
-        input_tokens: input_tokens.to_i,
-        output_tokens: output_tokens.to_i,
+        input_tokens: usage_known ? input_tokens.to_i : nil,
+        output_tokens: usage_known ? output_tokens.to_i : nil,
         tokens_used: input_tokens.to_i + output_tokens.to_i,
         latency_ms: latency_ms,
         pricing_status: provider_priced || (!cached? && !usage_known) ? "unpriced" : "priced",

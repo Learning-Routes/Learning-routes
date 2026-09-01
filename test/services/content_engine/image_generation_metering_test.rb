@@ -59,6 +59,27 @@ class ContentEngine::ImageGenerationMeteringTest < ActiveSupport::TestCase
     assert_equal ["priced", 42_640], [rows.first.pricing_status, rows.first.cost_microcents]
   end
 
+  test "service records missing provider usage as explicitly unpriced" do
+    client = Object.new
+    client.define_singleton_method(:chat) do |**|
+      { content: Base64.strict_encode64("image"), content_type: "image/png", latency_ms: 2 }
+    end
+    singleton = AiOrchestrator::AiClient.singleton_class
+    singleton.alias_method :_original_new_for_missing_image_usage_test, :new
+    AiOrchestrator::AiClient.define_singleton_method(:new) { |**| client }
+
+    ContentEngine::ImageGenerationService.new(user: @user).generate(image_description: "diagram")
+
+    rows = AiOrchestrator::AiInteraction.where(model: "gpt-image-1")
+    assert_equal 1, rows.count
+    assert_equal "unpriced", rows.first.pricing_status
+  ensure
+    if singleton&.method_defined?(:_original_new_for_missing_image_usage_test)
+      singleton.alias_method :new, :_original_new_for_missing_image_usage_test
+      singleton.remove_method :_original_new_for_missing_image_usage_test
+    end
+  end
+
   private
 
   def stub_successful_image

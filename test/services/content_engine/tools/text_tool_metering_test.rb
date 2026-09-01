@@ -24,6 +24,7 @@ class ContentEngine::Tools::TextToolMeteringTest < ActiveSupport::TestCase
     rows = AiOrchestrator::AiInteraction.where(model: "gpt-4.1-mini")
     assert_equal 4, rows.count
     assert rows.all? { |row| row.pricing_status == "unpriced" }
+    assert rows.all? { |row| row.input_tokens.nil? && row.output_tokens.nil? }
     assert rows.none? { |row| AiOrchestrator::AiInteraction.billable.exists?(row.id) }
   end
 

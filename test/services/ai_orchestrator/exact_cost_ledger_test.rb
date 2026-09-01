@@ -61,6 +61,8 @@ module AiOrchestrator
 
       assert interaction.completed?
       assert_equal "unpriced", interaction.pricing_status
+      assert_nil interaction.input_tokens
+      assert_nil interaction.output_tokens
       assert_equal 0, interaction.cost_microcents
       assert_not_includes AiInteraction.billable, interaction
     end
