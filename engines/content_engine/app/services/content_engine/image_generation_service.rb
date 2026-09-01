@@ -45,17 +45,18 @@ module ContentEngine
 
       raise GenerationError, "No image data returned" unless result[:content].present?
 
-      image_url = resolve_image_url(result[:content], result[:content_type])
-      cost_microcents = AiOrchestrator::CostTracker.estimate_microcents(
+      usage_known = image_usage_known?(result)
+      cost_microcents = usage_known ? AiOrchestrator::CostTracker.estimate_microcents(
         model: "gpt-image-1", input_tokens: result[:input_tokens],
         image_input_tokens: result[:image_input_tokens], output_tokens: result[:output_tokens]
-      )
+      ) : 0
       cost_cents = AiOrchestrator::CostTracker.microcents_to_cents(cost_microcents)
+      track_interaction!(prompt, result, cost_cents, cost_microcents, elapsed_ms, task_type, usage_known)
+
+      image_url = resolve_image_url(result[:content], result[:content_type])
 
       # Also store image_url on AiContent if step has one
       store_image_url_on_ai_content!(image_url) if @step
-
-      track_interaction!(prompt, image_url, result, cost_cents, cost_microcents, elapsed_ms, task_type)
 
       result_hash = {
         image_url: image_url,
@@ -185,23 +186,29 @@ module ContentEngine
       Rails.logger.warn("[ImageGenerationService] Could not update AiContent.image_url: #{e.message}")
     end
 
-    def track_interaction!(prompt, image_url, result, cost_cents, cost_microcents, elapsed_ms, task_type)
+    def image_usage_known?(result)
+      %i[input_tokens image_input_tokens output_tokens].all? { |key| !result[key].nil? }
+    end
+
+    def track_interaction!(prompt, result, cost_cents, cost_microcents, elapsed_ms, task_type, usage_known)
       AiOrchestrator::AiInteraction.create!(
         user: @user,
         model: "gpt-image-1",
         task_type: task_type.to_s,
         prompt: prompt.truncate(500),
         status: :completed,
-        response: image_url.to_s.truncate(500),
+        response: "image_generated",
         input_tokens: result[:input_tokens] || 0,
         output_tokens: result[:output_tokens] || 0,
         latency_ms: elapsed_ms,
         cost_cents: cost_cents,
         cost_microcents: cost_microcents,
-        pricing_status: "priced",
-        pricing_version: "openai-2026-08-31",
+        pricing_status: usage_known ? "priced" : "unpriced",
+        pricing_version: usage_known ? "openai-2026-08-31" : nil,
         metadata: { image_input_tokens: result[:image_input_tokens].to_i }
       )
+    rescue ActiveRecord::ActiveRecordError => e
+      Rails.logger.warn("[ImageGenerationService] Metering failed (#{e.class.name})")
     end
   end
 end

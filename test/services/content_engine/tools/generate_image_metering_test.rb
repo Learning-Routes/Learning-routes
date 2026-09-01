@@ -2,18 +2,50 @@ require "test_helper"
 
 class ContentEngine::Tools::GenerateImageMeteringTest < ActiveSupport::TestCase
   setup do
+    @provider_result = {
+      content: "aW1hZ2U=", content_type: "image/png",
+      input_tokens: 100, image_input_tokens: 200, output_tokens: 300,
+      latency_ms: 9
+    }
+    owner = self
     @client = Object.new
     @client.define_singleton_method(:chat) do |**|
-      {
-        content: "aW1hZ2U=", content_type: "image/png",
-        input_tokens: 100, image_input_tokens: 200, output_tokens: 300,
-        latency_ms: 9
-      }
+      owner.instance_variable_get(:@provider_result)
     end
     singleton = AiOrchestrator::AiClient.singleton_class
     singleton.alias_method :_original_new_for_image_tool_test, :new
     client = @client
     AiOrchestrator::AiClient.define_singleton_method(:new) { |**| client }
+  end
+
+  test "formatting failure after provider success leaves one priced interaction" do
+    description = Class.new(String) do
+      def gsub(*)
+        raise "formatting failed"
+      end
+    end.new("a cell")
+
+    result = ContentEngine::Tools::GenerateImage.new.execute(description: description)
+
+    assert_match(/formatting failed/, result)
+    rows = AiOrchestrator::AiInteraction.where(model: "gpt-image-1")
+    assert_equal 1, rows.count
+    assert_equal ["priced", 14_500], [rows.first.pricing_status, rows.first.cost_microcents]
+  end
+
+  test "formatting failure with missing usage leaves one explicitly unpriced interaction" do
+    @provider_result = { content: "aW1hZ2U=", content_type: "image/png", latency_ms: 9 }
+    description = Class.new(String) do
+      def gsub(*)
+        raise "formatting failed"
+      end
+    end.new("a cell")
+
+    ContentEngine::Tools::GenerateImage.new.execute(description: description)
+
+    rows = AiOrchestrator::AiInteraction.where(model: "gpt-image-1")
+    assert_equal 1, rows.count
+    assert_equal "unpriced", rows.first.pricing_status
   end
 
   teardown do
