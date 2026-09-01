@@ -28,6 +28,7 @@ Branch: `wp16-owner-dashboard`
 - `7d43266` — exact fixed-query-count evidence.
 - `98b4ecb` — revoked session and remember-me credentials during first owner promotion.
 - `7c1248c` — required completed generation and same-route content for readiness.
+- `db06f3f` — serialized remember-token recovery and promotion with a shared PostgreSQL row lock.
 
 The latest documentation commit is the commit containing this revised handoff.
 
@@ -43,11 +44,14 @@ references, action, request ID, SHA-256 IP/user-agent digests, JSON metadata, an
 Model callbacks reject update/destroy, and sensitive metadata key names are rejected.
 
 Promotion additionally takes PostgreSQL transaction advisory lock `691016`, rechecks the current
-owner inside the transaction, promotes exactly one authenticated existing account, clears its
-remember-token digest, deletes all of that account's sessions, and records `owner.promoted`. The
-unique index remains the final database boundary. An idempotent repeat for the existing owner
-returns before credential revocation, so sessions and remember credentials issued after the first
-promotion are preserved.
+owner inside the transaction, and locks the authoritative candidate user row before making the
+idempotency decision. Initial promotion then clears its remember-token digest, changes its role,
+deletes all of that account's sessions, and records `owner.promoted` before releasing the row lock.
+Remember-token recovery uses the same row lock in its own transaction, reloads and compares the
+digest after acquiring it, and creates any recovered session before releasing it. The partial
+unique index remains the final database owner boundary. An idempotent repeat for the existing
+owner returns after locking but before credential revocation, so sessions and remember credentials
+issued after the first promotion are preserved.
 
 ## Owner promotion procedure
 
@@ -119,6 +123,11 @@ absent because no authoritative commerce tables exist yet.
   `OwnerExistsError`, one owner persists, and one promotion audit event exists.
 - A real integration client proves the old session cookie fails after promotion; a fresh client
   replaying only the captured pre-promotion remember-me cookie also fails and creates no session.
+- Synchronized PostgreSQL tests prove both row-lock orderings. When recovery locks first, promotion
+  waits and subsequently deletes the recovered session. When promotion locks first, recovery
+  waits, reloads the cleared digest, rejects the token, and creates no session. Both tests query
+  `pg_stat_activity.wait_event_type` and observe `Lock`, proving actual database blocking rather
+  than sequential thread scheduling.
 
 ## Query bounds
 
@@ -132,10 +141,10 @@ absent because no authoritative commerce tables exist yet.
 Focused final surface:
 
 ```bash
-env -u RAILS_MASTER_KEY bin/rails test test/models/core/single_owner_database_test.rb engines/core/test/models/core/user_test.rb test/services/owner/promotion_test.rb test/services/owner/promotion_concurrency_test.rb test/integration/owner_promotion_authentication_test.rb test/tasks/owner_test.rb test/controllers/admin test/queries/admin test/system/owner_dashboard_test.rb test/controllers/community_engine/comment_moderation_test.rb engines/ai_orchestrator/test/mailers/ai_orchestrator/admin_mailer_test.rb engines/ai_orchestrator/test/jobs/ai_orchestrator/ai_request_job_test.rb --seed 16903
+env -u RAILS_MASTER_KEY bin/rails test test/models/core/single_owner_database_test.rb engines/core/test/models/core/user_test.rb engines/core/test/models/core/remember_me_test.rb test/services/owner/promotion_test.rb test/services/owner/promotion_concurrency_test.rb test/integration/owner_promotion_authentication_test.rb test/tasks/owner_test.rb test/controllers/admin test/queries/admin test/system/owner_dashboard_test.rb test/controllers/community_engine/comment_moderation_test.rb engines/ai_orchestrator/test/mailers/ai_orchestrator/admin_mailer_test.rb engines/ai_orchestrator/test/jobs/ai_orchestrator/ai_request_job_test.rb --seed 17008
 ```
 
-Result: 65 runs, 368 assertions, 0 failures, 0 errors, 0 skips.
+Result: 76 runs, 404 assertions, 0 failures, 0 errors, 0 skips.
 
 Main suite:
 
@@ -170,6 +179,12 @@ Additional verification:
   seed `16902` — 14 runs, 86 assertions. Both had zero failures, errors, or skips.
 - Targeted review: five changed Ruby/test files inspected by RuboCop with no offenses; Brakeman
   reported no new warning; the two-commit diff passed `git diff --check`.
+- Synchronized row-lock concurrency seed `17006` — 3 runs, 22 assertions; all owner, remember,
+  promotion, authentication, and task tests seed `17007` — 20 runs, 84 assertions. Both had zero
+  failures, errors, or skips.
+- Final row-lock review: six changed Ruby/test files inspected by RuboCop with no offenses; the only
+  production remember-cookie consumer calls the locked transactional recovery API; Brakeman
+  reported no new warning; `git diff --check` passed.
 
 ## Scope confirmation
 

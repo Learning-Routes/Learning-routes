@@ -2,6 +2,13 @@
 
 ## Review corrections completed
 
+- Remember-token recovery and initial owner promotion now serialize on the same PostgreSQL user-row
+  lock. Recovery opens a transaction, selects the authoritative user `FOR UPDATE`, reloads and
+  compares the digest only after acquiring the lock, and inserts the recovered session before the
+  transaction releases that lock. Promotion acquires the same row lock before its idempotency
+  check, token clearing, role change, and session deletion. Synchronized tests observe each losing
+  backend in PostgreSQL's `Lock` wait state and prove both transaction orderings leave no replayable
+  token or surviving recovered session.
 - Owner promotion now clears the promoted account's persistent remember-token digest in the same
   transaction that changes its role and deletes its sessions. Regression coverage proves both an
   old session cookie and a replayed remember-me cookie cannot authenticate or create a new owner
