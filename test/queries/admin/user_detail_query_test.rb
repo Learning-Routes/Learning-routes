@@ -52,4 +52,29 @@ class AdminUserDetailQueryTest < ActiveSupport::TestCase
     assert_equal 1, second_page.routes.size
     assert_equal 2, second_page.page
   end
+
+  test "query count remains fixed as route volume grows" do
+    user = create_test_user
+    profile = LearningRoutesEngine::LearningProfile.create!(user: user)
+
+    small = count_queries { Admin::UserDetailQuery.call(user_id: user.id) }
+    30.times { |index| profile.learning_routes.create!(topic: "Volume Route #{index}") }
+    large = count_queries { Admin::UserDetailQuery.call(user_id: user.id) }
+
+    assert_equal 5, small
+    assert_equal 5, large
+  end
+
+  private
+
+  def count_queries
+    count = 0
+    callback = ActiveSupport::Notifications.subscribe("sql.active_record") do |*, payload|
+      count += 1 unless payload[:name].to_s.match?(/SCHEMA|TRANSACTION/)
+    end
+    yield
+    count
+  ensure
+    ActiveSupport::Notifications.unsubscribe(callback)
+  end
 end

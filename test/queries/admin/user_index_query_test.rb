@@ -34,8 +34,8 @@ class AdminUserIndexQueryTest < ActiveSupport::TestCase
     30.times { |i| Core::User.create!(name: "Bulk #{i}", email: "bulk#{i}@example.test", password: "password123") }
     large = count_queries { Admin::UserIndexQuery.new.call }
 
-    assert_operator large - small, :<=, 1
-    assert_operator large, :<=, 3
+    assert_equal 2, small
+    assert_equal 2, large
   end
 
   test "filters by activity and route state while escaping wildcard search" do
