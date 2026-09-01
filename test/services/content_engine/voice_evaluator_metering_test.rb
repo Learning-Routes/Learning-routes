@@ -27,6 +27,7 @@ class ContentEngine::VoiceEvaluatorMeteringTest < ActiveSupport::TestCase
     assert_equal 60_000, row.provider_units
     assert_equal 3_667, row.cost_microcents
     assert_equal "transcription", row.task_type
+    assert_equal 1, scribe_rows.count
   end
 
   test "malformed successful JSON preserves the priced Scribe charge" do
@@ -78,6 +79,7 @@ class ContentEngine::VoiceEvaluatorMeteringTest < ActiveSupport::TestCase
     assert row.completed?
     assert_equal "unpriced", row.pricing_status
     assert_nil row.provider_units
+    assert_equal 1, scribe_rows.count
   end
 
   test "non-2xx provider failure remains failed without response body disclosure" do
@@ -92,6 +94,8 @@ class ContentEngine::VoiceEvaluatorMeteringTest < ActiveSupport::TestCase
     row = AiOrchestrator::AiInteraction.find_by!(model: "scribe_v2")
     assert row.failed?
     assert_not_includes error.message, "secret"
+    assert_equal 1, scribe_rows.count
+    assert_equal 0, scribe_rows.where(status: :completed).count
   end
 
   private
@@ -101,6 +105,13 @@ class ContentEngine::VoiceEvaluatorMeteringTest < ActiveSupport::TestCase
     assert row.completed?
     assert_equal "priced", row.pricing_status
     assert_equal 3_667, row.cost_microcents
+    assert_equal 1, scribe_rows.count
+    assert_equal 1, scribe_rows.where(status: :completed).count
+    assert_equal 0, scribe_rows.where(status: :failed).count
+  end
+
+  def scribe_rows
+    AiOrchestrator::AiInteraction.where(model: "scribe_v2")
   end
 
   class MeteringResponse

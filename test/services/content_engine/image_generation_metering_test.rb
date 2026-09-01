@@ -73,6 +73,9 @@ class ContentEngine::ImageGenerationMeteringTest < ActiveSupport::TestCase
     rows = AiOrchestrator::AiInteraction.where(model: "gpt-image-1")
     assert_equal 1, rows.count
     assert_equal "unpriced", rows.first.pricing_status
+    assert_nil rows.first.input_tokens
+    assert_nil rows.first.output_tokens
+    assert_nil rows.first.metadata["image_input_tokens"]
   ensure
     if singleton&.method_defined?(:_original_new_for_missing_image_usage_test)
       singleton.alias_method :new, :_original_new_for_missing_image_usage_test

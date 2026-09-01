@@ -198,14 +198,14 @@ module ContentEngine
         prompt: prompt.truncate(500),
         status: :completed,
         response: "image_generated",
-        input_tokens: result[:input_tokens] || 0,
-        output_tokens: result[:output_tokens] || 0,
+        input_tokens: result[:input_tokens],
+        output_tokens: result[:output_tokens],
         latency_ms: elapsed_ms,
         cost_cents: cost_cents,
         cost_microcents: cost_microcents,
         pricing_status: usage_known ? "priced" : "unpriced",
         pricing_version: usage_known ? "openai-2026-08-31" : nil,
-        metadata: { image_input_tokens: result[:image_input_tokens].to_i }
+        metadata: { image_input_tokens: result[:image_input_tokens] }
       )
     rescue ActiveRecord::ActiveRecordError => e
       Rails.logger.warn("[ImageGenerationService] Metering failed (#{e.class.name})")

@@ -51,12 +51,12 @@ module ContentEngine
         AiOrchestrator::AiInteraction.create!(
           user: Thread.current[:lesson_agent_user], model: "gpt-image-1", task_type: "quick_images",
           prompt: prompt.truncate(500), response: "image_generated", status: :completed,
-          input_tokens: result[:input_tokens].to_i, output_tokens: result[:output_tokens].to_i,
+          input_tokens: result[:input_tokens], output_tokens: result[:output_tokens],
           latency_ms: result[:latency_ms].to_i, cost_microcents: microcents,
           cost_cents: AiOrchestrator::CostTracker.microcents_to_cents(microcents),
           pricing_status: usage_known ? "priced" : "unpriced",
           pricing_version: usage_known ? "openai-2026-08-31" : nil,
-          metadata: { image_input_tokens: result[:image_input_tokens].to_i }
+          metadata: { image_input_tokens: result[:image_input_tokens] }
         )
       rescue ActiveRecord::ActiveRecordError => e
         Rails.logger.warn("[GenerateImage] Metering failed (#{e.class.name})")

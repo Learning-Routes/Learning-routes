@@ -46,6 +46,9 @@ class ContentEngine::Tools::GenerateImageMeteringTest < ActiveSupport::TestCase
     rows = AiOrchestrator::AiInteraction.where(model: "gpt-image-1")
     assert_equal 1, rows.count
     assert_equal "unpriced", rows.first.pricing_status
+    assert_nil rows.first.input_tokens
+    assert_nil rows.first.output_tokens
+    assert_nil rows.first.metadata["image_input_tokens"]
   end
 
   teardown do
