@@ -35,6 +35,24 @@ class AdminUserIndexQueryTest < ActiveSupport::TestCase
     assert_operator large, :<=, 3
   end
 
+  test "filters by activity and route state while escaping wildcard search" do
+    inactive = Core::User.create!(name: "Percent % User", email: "percent@example.test", password: "password123")
+
+    active = Admin::UserIndexQuery.new(search: "%", activity: "active", route_state: "active").call
+    inactive_result = Admin::UserIndexQuery.new(search: "%", activity: "inactive").call
+
+    assert_empty active.rows
+    assert_equal [inactive.id], inactive_result.rows.map(&:id)
+  end
+
+  test "pagination is bounded and deterministic" do
+    result = Admin::UserIndexQuery.new(page: -4, per_page: 500).call
+
+    assert_equal 1, result.page
+    assert_equal 100, result.per_page
+    assert_equal result.rows.sort_by { |row| [row.registered_at, row.id] }.reverse.map(&:id), result.rows.map(&:id)
+  end
+
   private
 
   def count_queries
