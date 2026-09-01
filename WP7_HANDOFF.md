@@ -19,6 +19,7 @@
 - `0b3eb8c` — successful Scribe charges finalize before response parsing.
 - `8285817` — image charges finalize before local storage and presentation.
 - `7c176b3` — unknown provider counters remain null in the ledger.
+- `6919dba` — unknown image counters remain null and Scribe metering is exactly once.
 
 ## Schema and precision
 
@@ -73,10 +74,13 @@ Those costs remain unknown; no historical Tavily rate is invented.
 Reconciliation additionally rejects null/blank/all-zero text counters and null/blank/non-positive
 legacy TTS character counts. Successful Scribe and image calls finalize their provider charge
 before parsing, decoding, storage, metadata, formatting, or downstream evaluation work.
+For unpriced images, each absent OpenAI text-input, image-input, or output counter remains null
+independently; zero is used only for the non-billable compatibility cost fields.
 
 ## Verification
 
-- Focused WP-7: 103 runs, 411 assertions, 0 failures, 0 errors (seed 54922).
+- Final affected image/Scribe tests: 13 runs, 72 assertions, 0 failures, 0 errors (seed 24090).
+- Focused WP-7: 103 runs, 430 assertions, 0 failures, 0 errors (seed 35376).
 - Cache contract: 8 runs, 36 assertions, 0 failures, 0 errors (seed 18858).
 - Main seeds 17801, 17802, 17803: 289 runs, 948 assertions, 0 failures, 0 errors each.
 - Combined seeds 17901, 17902, 17903: 605 runs, 1855 assertions, 3 failures, 9 errors each.

@@ -31,3 +31,6 @@ authoritative positive usage is eligible for reconciliation.
 - Scribe usage is finalized immediately after HTTP success, before sanitized response parsing.
 - Image usage is finalized before decoding, storage, metadata, or output formatting.
 - Later local failures do not relabel or erase an incurred provider charge.
+- Missing OpenAI image counters remain null independently, including image-input metadata.
+- Scribe success, parse failure, missing text, downstream failure, unknown duration, and provider
+  failure tests each assert exactly one interaction and reject duplicate status rows.
