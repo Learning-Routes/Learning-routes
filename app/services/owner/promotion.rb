@@ -17,7 +17,7 @@ module Owner
         return existing if existing&.id == user.id
         raise OwnerExistsError, "An owner already exists" if existing
 
-        user.update!(role: :owner)
+        user.update!(role: :owner, remember_token: nil)
         user.sessions.delete_all
         OwnerAuditEvent.record!(action: "owner.promoted", actor: user, subject: user)
         user
