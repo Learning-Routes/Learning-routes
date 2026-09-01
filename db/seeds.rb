@@ -9,18 +9,6 @@ if Rails.env.local?
   demo_password = ENV.fetch("DEMO_USER_PASSWORD", "password123")
 
   # === Core: Users ===
-  admin = Core::User.find_or_create_by!(email: "admin@learning-routes.com") do |user|
-    user.name = "Admin User"
-    user.password = demo_password
-    user.password_confirmation = demo_password
-    user.role = :admin
-    user.locale = "en"
-    user.timezone = "UTC"
-    user.email_verified_at = Time.current
-    user.onboarding_completed = true
-  end
-  puts "  Created admin: #{admin.email}"
-
   teacher = Core::User.find_or_create_by!(email: "teacher@learning-routes.com") do |user|
     user.name = "Demo Teacher"
     user.password = demo_password
@@ -94,29 +82,6 @@ if Rails.env.local?
   puts "  Created #{steps_data.size} route steps"
 else
   puts "  Skipping demo users/content (not a local environment)."
-
-  # === Production admin bootstrap (opt-in via ENV) ==========================
-  # Only creates an admin when BOTH env vars are set, so there is no default
-  # backdoor account. The password must be strong enough to satisfy the User
-  # model validations, and should be rotated after first login.
-  admin_email = ENV["SEED_ADMIN_EMAIL"].presence
-  admin_password = ENV["SEED_ADMIN_PASSWORD"].presence
-
-  if admin_email && admin_password
-    admin = Core::User.find_or_create_by!(email: admin_email) do |user|
-      user.name = ENV.fetch("SEED_ADMIN_NAME", "Administrator")
-      user.password = admin_password
-      user.password_confirmation = admin_password
-      user.role = :admin
-      user.locale = ENV.fetch("SEED_ADMIN_LOCALE", "en")
-      user.timezone = ENV.fetch("SEED_ADMIN_TIMEZONE", "UTC")
-      user.email_verified_at = Time.current
-      user.onboarding_completed = true
-    end
-    puts "  Ensured admin account: #{admin.email}"
-  else
-    puts "  No SEED_ADMIN_EMAIL/SEED_ADMIN_PASSWORD provided — skipping admin bootstrap."
-  end
 end
 
 # === AI Orchestrator: Model Configs (all environments) ======================
