@@ -1627,5 +1627,10 @@ en:
     ready: "Ready for future commerce"
     not_ready: "Not ready"
     pricing_incomplete: "Pricing incomplete (%{count} unpriced)"
+    roles: { student: "Student", teacher: "Teacher", owner: "Owner" }
+    verified: "Email verified"
+    unverified: "Email unverified"
+    onboarding_complete: "Onboarding complete"
+    onboarding_incomplete: "Onboarding incomplete"
     never: "Never"
     pagination: { label: "User pages", page: "Page %{current} of %{total}", previous: "Previous", next: "Next" }

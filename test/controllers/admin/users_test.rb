@@ -43,6 +43,9 @@ class AdminUsersTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select "h1", text: "Needle Student"
+    assert_select "[data-account-role]", text: /Student/
+    assert_select "[data-email-status]", text: /unverified/i
+    assert_select "[data-onboarding-status]", text: /Onboarding incomplete/
     assert_select "[data-route-id='#{@route.id}']", text: /Private Algebra/
     assert_select "[data-route-id='#{@route.id}']", text: /1.*2/m
     assert_select "[data-route-cost]", text: /0\.0500/

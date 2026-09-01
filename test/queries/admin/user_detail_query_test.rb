@@ -2,7 +2,7 @@ require "test_helper"
 
 class AdminUserDetailQueryTest < ActiveSupport::TestCase
   test "returns only the requested user's routes progress states and attributed cost" do
-    user = create_test_user(name: "Detail Student")
+    user = create_test_user(name: "Detail Student", email_verified_at: Time.current, onboarding_completed: true)
     other = create_test_user
     profile = LearningRoutesEngine::LearningProfile.create!(user: user)
     route = profile.learning_routes.create!(topic: "Private Route", status: :paused, generation_status: "failed")
@@ -22,6 +22,9 @@ class AdminUserDetailQueryTest < ActiveSupport::TestCase
     detail = Admin::UserDetailQuery.call(user_id: user.id)
 
     assert_equal user.id, detail.user.id
+    assert_equal "student", detail.user.role
+    assert detail.user.email_verified
+    assert detail.user.onboarding_completed
     assert_equal [route.id], detail.routes.map(&:id)
     row = detail.routes.sole
     assert_equal "paused", row.state

@@ -1627,5 +1627,10 @@ es:
     ready: "Lista para comercio futuro"
     not_ready: "No lista"
     pricing_incomplete: "Precios incompletos (%{count} sin precio)"
+    roles: { student: "Estudiante", teacher: "Docente", owner: "Propietario" }
+    verified: "Correo verificado"
+    unverified: "Correo sin verificar"
+    onboarding_complete: "Incorporación completa"
+    onboarding_incomplete: "Incorporación incompleta"
     never: "Nunca"
     pagination: { label: "Páginas de usuarios", page: "Página %{current} de %{total}", previous: "Anterior", next: "Siguiente" }

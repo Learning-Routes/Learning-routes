@@ -3,8 +3,8 @@ module Admin
     PER_PAGE = 25
     MAX_PER_PAGE = 100
     Result = Data.define(:user, :routes, :page, :per_page, :total_count, :commerce_available)
-    UserRow = Data.define(:id, :name, :email, :registered_at, :last_active_at,
-      :cost_microcents, :unpriced_interactions)
+    UserRow = Data.define(:id, :name, :email, :role, :email_verified, :onboarding_completed,
+      :registered_at, :last_active_at, :cost_microcents, :unpriced_interactions)
     RouteRow = Data.define(:id, :topic, :state, :generation_state, :created_at, :updated_at,
       :completed_steps, :total_steps, :cost_microcents, :unpriced_interactions, :purchase_ready)
 
@@ -20,7 +20,8 @@ module Admin
         WHERE user_id = :user_id AND status = 2 AND cached IS NOT TRUE
       SQL
       user_cost = AiOrchestrator::AiInteraction.connection.select_one(cost_sql)
-      user_row = UserRow.new(id: user.id, name: user.name, email: user.email,
+      user_row = UserRow.new(id: user.id, name: user.name, email: user.email, role: user.role,
+        email_verified: user.email_verified?, onboarding_completed: user.onboarding_completed?,
         registered_at: user.created_at, last_active_at: last_active,
         cost_microcents: user_cost["cost_microcents"].to_i,
         unpriced_interactions: user_cost["unpriced_interactions"].to_i)
