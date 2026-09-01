@@ -40,7 +40,20 @@ module Commerce
 
     def versions_for(calls)
       models = calls.filter_map { |call| call["model"] }.uniq
-      @versions.slice(*models).merge("tavily" => @tavily[:version]).compact
+      versions = @versions.slice(*models)
+      versions["tavily"] = @tavily[:version] if calls.any? { |call| call["kind"] == "tavily" }
+      versions.compact
+    end
+
+    def rate_assumptions_for(calls)
+      models = calls.filter_map { |call| call["model"] }.uniq
+      assumptions = models.to_h do |model|
+        [model, AiOrchestrator::CostTracker::PRICING.fetch(model).transform_keys(&:to_s)]
+      end
+      if calls.any? { |call| call["kind"] == "tavily" }
+        assumptions["tavily"] = { "microcents_per_credit" => @tavily[:microcents_per_credit] }
+      end
+      assumptions
     end
 
     private

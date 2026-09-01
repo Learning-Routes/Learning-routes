@@ -3,7 +3,7 @@
 module Commerce
   class RouteCostEstimator
     Available = Data.define(:cost_microcents, :estimator_version, :provider_rate_versions,
-      :route_shape_assumptions, :image_quality) do
+      :provider_rate_assumptions, :route_shape_assumptions, :image_quality) do
       def available? = true
     end
     Unavailable = Data.define(:reason, :missing) do
@@ -29,6 +29,7 @@ module Commerce
         cost_microcents: shape.calls.sum { |call| catalog.estimate_microcents(call) },
         estimator_version: @configuration.fetch(:estimator_version),
         provider_rate_versions: catalog.versions_for(shape.calls),
+        provider_rate_assumptions: catalog.rate_assumptions_for(shape.calls),
         route_shape_assumptions: shape.snapshot,
         image_quality: @configuration.fetch(:image_quality)
       )
