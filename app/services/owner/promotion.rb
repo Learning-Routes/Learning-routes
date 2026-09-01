@@ -13,6 +13,7 @@ module Owner
 
       Core::User.transaction do
         Core::User.connection.execute("SELECT pg_advisory_xact_lock(#{ADVISORY_LOCK_ID})")
+        user.lock!
         existing = Core::User.find_by(role: :owner)
         return existing if existing&.id == user.id
         raise OwnerExistsError, "An owner already exists" if existing

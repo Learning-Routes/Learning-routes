@@ -143,6 +143,20 @@ module Core
       nil
     end
 
+    def self.recover_session_from_remember_credential(user_id:, raw_token:, session_attributes:)
+      return if user_id.blank? || raw_token.blank?
+
+      transaction do
+        user = lock.find_by(id: user_id)
+        next unless user&.remember_token.present?
+
+        candidate = digest_remember_token(raw_token)
+        next unless ActiveSupport::SecurityUtils.secure_compare(user.remember_token, candidate)
+
+        user.sessions.create!(session_attributes)
+      end
+    end
+
     # --- Onboarding ---
 
     def onboarding_completed?

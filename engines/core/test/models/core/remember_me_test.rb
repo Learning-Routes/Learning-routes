@@ -60,5 +60,18 @@ module Core
       assert_nil Core::User.find_by_remember_credential(user_id: @user.id, raw_token: first)
       assert_equal @user.id, Core::User.find_by_remember_credential(user_id: @user.id, raw_token: second)&.id
     end
+
+    test "recovery validates the token and creates the session transactionally" do
+      raw = @user.remember!
+
+      session = Core::User.recover_session_from_remember_credential(
+        user_id: @user.id,
+        raw_token: raw,
+        session_attributes: { ip_address: "127.0.0.1", user_agent: "test", last_active_at: Time.current }
+      )
+
+      assert_equal @user.id, session.user_id
+      assert Core::Session.exists?(session.id)
+    end
   end
 end

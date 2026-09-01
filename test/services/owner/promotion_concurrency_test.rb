@@ -47,4 +47,117 @@ class OwnerPromotionConcurrencyTest < ActiveSupport::TestCase
     assert_equal 1, outcomes.count { |result| result.is_a?(Owner::Promotion::OwnerExistsError) }
     assert_equal 1, OwnerAuditEvent.where(action: "owner.promoted").count
   end
+
+  test "recovery lock first makes promotion wait and delete the recovered session" do
+    user = concurrent_user("recovery-first")
+    raw_token = user.remember!
+    recovery_locked = Queue.new
+    release_recovery = Queue.new
+
+    recovery = Thread.new do
+      ActiveRecord::Base.connection_pool.with_connection do
+        Core::User.transaction do
+          session = Core::User.recover_session_from_remember_credential(
+            user_id: user.id, raw_token: raw_token, session_attributes: session_attributes
+          )
+          recovery_locked << session.id
+          release_recovery.pop
+        end
+      end
+    end
+    recovered_session_id = recovery_locked.pop
+
+    promotion_pid = Queue.new
+    promotion = Thread.new do
+      ActiveRecord::Base.connection_pool.with_connection do |connection|
+        promotion_pid << connection.select_value("SELECT pg_backend_pid()")
+        Owner::Promotion.call(email: user.email, password: "password123")
+      end
+    end
+
+    assert_backend_waiting_on_lock(promotion_pid.pop)
+    release_recovery << true
+    recovery.value
+    promotion.value
+
+    assert_not Core::Session.exists?(recovered_session_id)
+    assert_revoked_owner_state(user, raw_token)
+  ensure
+    release_recovery << true if release_recovery
+    recovery&.join
+    promotion&.join
+  end
+
+  test "promotion lock first makes recovery wait and reject the cleared token" do
+    user = concurrent_user("promotion-first")
+    raw_token = user.remember!
+    promotion_locked = Queue.new
+    release_promotion = Queue.new
+
+    promotion = Thread.new do
+      ActiveRecord::Base.connection_pool.with_connection do
+        Core::User.transaction do
+          Owner::Promotion.call(email: user.email, password: "password123")
+          promotion_locked << true
+          release_promotion.pop
+        end
+      end
+    end
+    promotion_locked.pop
+
+    recovery_pid = Queue.new
+    recovery = Thread.new do
+      ActiveRecord::Base.connection_pool.with_connection do |connection|
+        recovery_pid << connection.select_value("SELECT pg_backend_pid()")
+        Core::User.recover_session_from_remember_credential(
+          user_id: user.id, raw_token: raw_token, session_attributes: session_attributes
+        )
+      end
+    end
+
+    assert_backend_waiting_on_lock(recovery_pid.pop)
+    release_promotion << true
+    promotion.value
+    assert_nil recovery.value
+
+    assert_revoked_owner_state(user, raw_token)
+  ensure
+    release_promotion << true if release_promotion
+    promotion&.join
+    recovery&.join
+  end
+
+  private
+
+  def concurrent_user(suffix)
+    Core::User.create!(name: "Concurrent Owner", email: "concurrent-owner-#{suffix}@example.test",
+      password: "password123", password_confirmation: "password123")
+  end
+
+  def session_attributes
+    { ip_address: "127.0.0.1", user_agent: "concurrency-test", last_active_at: Time.current }
+  end
+
+  def assert_backend_waiting_on_lock(pid)
+    deadline = Process.clock_gettime(Process::CLOCK_MONOTONIC) + 5
+    loop do
+      wait_type = ActiveRecord::Base.connection.select_value(
+        "SELECT wait_event_type FROM pg_stat_activity WHERE pid = #{Integer(pid)}"
+      )
+      return assert_equal("Lock", wait_type) if wait_type == "Lock"
+      flunk("PostgreSQL backend #{pid} did not block on a database lock") if Process.clock_gettime(Process::CLOCK_MONOTONIC) >= deadline
+
+      Thread.pass
+    end
+  end
+
+  def assert_revoked_owner_state(user, raw_token)
+    assert_equal 1, Core::User.owner.count
+    assert_nil Core::User.find_by_remember_credential(user_id: user.id, raw_token: raw_token)
+    assert_empty Core::Session.where(user_id: user.id)
+    assert_nil Core::User.recover_session_from_remember_credential(
+      user_id: user.id, raw_token: raw_token, session_attributes: session_attributes
+    )
+    assert_empty Core::Session.where(user_id: user.id)
+  end
 end

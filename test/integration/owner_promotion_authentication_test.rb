@@ -32,6 +32,19 @@ class OwnerPromotionAuthenticationTest < ActionDispatch::IntegrationTest
     assert_empty Core::Session.where(user_id: @candidate.id)
   end
 
+  test "valid remember-me authentication recovers through the transactional path" do
+    post core.sign_in_path, params: {
+      email: @candidate.email, password: "password123", remember_me: "1"
+    }
+    assert_response :redirect
+    @candidate.sessions.delete_all
+
+    get profile_path
+
+    assert_response :success
+    assert_equal 1, Core::Session.where(user_id: @candidate.id).count
+  end
+
   test "repeating promotion does not revoke a current owner's new credentials" do
     Owner::Promotion.call(email: @candidate.email, password: "password123")
     current_token = @candidate.remember!
