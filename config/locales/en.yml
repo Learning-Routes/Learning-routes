@@ -1626,5 +1626,6 @@ en:
     generation: { pending: "Pending", generating: "Generating", completed: "Ready", failed: "Failed", unknown: "Unknown" }
     ready: "Ready for future commerce"
     not_ready: "Not ready"
+    pricing_incomplete: "Pricing incomplete (%{count} unpriced)"
     never: "Never"
     pagination: { label: "User pages", page: "Page %{current} of %{total}", previous: "Previous", next: "Next" }

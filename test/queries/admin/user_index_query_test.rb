@@ -10,6 +10,8 @@ class AdminUserIndexQueryTest < ActiveSupport::TestCase
     @user.sessions.create!(last_active_at: 2.hours.ago)
     AiOrchestrator::AiInteraction.create!(user: @user, model: "gpt-5.2", prompt: "secret", status: :completed,
       pricing_status: "priced", cost_microcents: 12_345, metadata: { route_id: @route.id })
+    AiOrchestrator::AiInteraction.create!(user: @user, model: "tavily", prompt: "provider usage", status: :completed,
+      pricing_status: "unpriced", metadata: { route_id: @route.id })
   end
 
   test "returns bounded searched user metrics and exact billable cost" do
@@ -21,6 +23,7 @@ class AdminUserIndexQueryTest < ActiveSupport::TestCase
     assert_equal 1, row.completed_steps
     assert_equal 1, row.total_steps
     assert_equal 12_345, row.cost_microcents
+    assert_equal 1, row.unpriced_interactions
     assert row.purchase_ready
     assert_equal 2.hours.ago.to_i, row.last_active_at.to_i
     assert_equal 25, result.per_page

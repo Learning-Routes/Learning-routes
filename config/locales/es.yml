@@ -1626,5 +1626,6 @@ es:
     generation: { pending: "Pendiente", generating: "Generando", completed: "Lista", failed: "Fallida", unknown: "Desconocida" }
     ready: "Lista para comercio futuro"
     not_ready: "No lista"
+    pricing_incomplete: "Precios incompletos (%{count} sin precio)"
     never: "Nunca"
     pagination: { label: "Páginas de usuarios", page: "Página %{current} de %{total}", previous: "Anterior", next: "Siguiente" }

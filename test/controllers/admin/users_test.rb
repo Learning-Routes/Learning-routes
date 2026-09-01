@@ -13,6 +13,8 @@ class AdminUsersTest < ActionDispatch::IntegrationTest
     AiOrchestrator::AiInteraction.create!(user: @student, model: "gpt-5.2", prompt: "PRIVATE PROMPT",
       response: "PRIVATE RESPONSE", status: :completed, pricing_status: "priced", cost_microcents: 50_000,
       metadata: { route_id: @route.id })
+    AiOrchestrator::AiInteraction.create!(user: @student, model: "tavily", prompt: "PRIVATE UNPRICED PROMPT",
+      status: :completed, pricing_status: "unpriced", metadata: { route_id: @route.id })
     sign_in_as(@owner)
   end
 
@@ -23,6 +25,7 @@ class AdminUsersTest < ActionDispatch::IntegrationTest
     assert_select "input[name='search'][value='needle']"
     assert_select "a[href='#{admin_user_path(@student)}']", text: "Needle Student"
     assert_select "[data-user-id='#{@student.id}']", count: 1
+    assert_select "[data-user-id='#{@student.id}'] [data-cost-status]", text: /Pricing incomplete/
     assert_no_match(/PRIVATE PROMPT|PRIVATE RESPONSE/, response.body)
   end
 
@@ -43,6 +46,7 @@ class AdminUsersTest < ActionDispatch::IntegrationTest
     assert_select "[data-route-id='#{@route.id}']", text: /Private Algebra/
     assert_select "[data-route-id='#{@route.id}']", text: /1.*2/m
     assert_select "[data-route-cost]", text: /0\.0500/
+    assert_select "[data-route-cost-status]", text: /Pricing incomplete/
     assert_select "a[href='#{learning_routes_engine.route_path(@route)}']"
     assert_no_match(/purchase|revenue|profit|fee|quote|payment/i, response.body)
     assert_no_match(/PRIVATE PROMPT|PRIVATE RESPONSE|password_digest|remember_token/i, response.body)

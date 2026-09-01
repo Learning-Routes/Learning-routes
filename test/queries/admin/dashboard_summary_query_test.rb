@@ -9,12 +9,15 @@ class AdminDashboardSummaryQueryTest < ActiveSupport::TestCase
       pricing_status: "priced", cached: false, cost_microcents: 43_210)
     AiOrchestrator::AiInteraction.create!(user: user, model: "gpt-5.2", prompt: "cached", status: :completed,
       pricing_status: "priced", cached: true, cost_microcents: 99_999)
+    AiOrchestrator::AiInteraction.create!(user: user, model: "tavily", prompt: "provider usage", status: :completed,
+      pricing_status: "unpriced", cached: false)
 
     summary = Admin::DashboardSummaryQuery.call
 
     assert_equal Core::User.count, summary.registered_users
     assert_equal LearningRoutesEngine::LearningRoute.count, summary.routes
     assert_equal 43_210, summary.cost_microcents
+    assert_equal 1, summary.unpriced_interactions
     assert_equal false, summary.commerce_available
   end
 end

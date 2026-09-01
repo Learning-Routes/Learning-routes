@@ -10,6 +10,13 @@ class AdminUserDetailQueryTest < ActiveSupport::TestCase
     route.route_steps.create!(title: "Locked", position: 1, status: :locked)
     AiOrchestrator::AiInteraction.create!(user: user, model: "gpt-5.2", prompt: "secret", status: :completed,
       pricing_status: "priced", cost_microcents: 8_765, metadata: { route_id: route.id })
+    outline = AiOrchestrator::AiInteraction.create!(user: user, model: "gpt-5.2", prompt: "outline",
+      status: :completed, pricing_status: "priced", cost_microcents: 12_345)
+    route.update!(ai_interaction_id: outline.id)
+    AiOrchestrator::AiInteraction.create!(user: user, model: "tavily", prompt: "provider usage",
+      status: :completed, pricing_status: "unpriced", metadata: { route_id: route.id })
+    AiOrchestrator::AiInteraction.create!(user: user, model: "gpt-5.2", prompt: "invalid attribution",
+      status: :completed, pricing_status: "priced", cost_microcents: 99_999, metadata: { route_id: "invalid" })
     LearningRoutesEngine::LearningProfile.create!(user: other).learning_routes.create!(topic: "Other Route")
 
     detail = Admin::UserDetailQuery.call(user_id: user.id)
@@ -21,7 +28,10 @@ class AdminUserDetailQueryTest < ActiveSupport::TestCase
     assert_equal "failed", row.generation_state
     assert_equal 1, row.completed_steps
     assert_equal 2, row.total_steps
-    assert_equal 8_765, row.cost_microcents
+    assert_equal 21_110, row.cost_microcents
+    assert_equal 1, row.unpriced_interactions
+    assert_equal 121_109, detail.user.cost_microcents
+    assert_equal 1, detail.user.unpriced_interactions
     assert_equal false, row.purchase_ready
   end
 

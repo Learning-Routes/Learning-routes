@@ -9,6 +9,8 @@ class AdminDashboardTest < ActionDispatch::IntegrationTest
     profile.learning_routes.create!(topic: "Real Learning Route", status: :active)
     AiOrchestrator::AiInteraction.create!(user: @student, model: "gpt-5.2", prompt: "DO NOT LEAK PROMPT",
       response: "DO NOT LEAK RESPONSE", status: :completed, pricing_status: "priced", cost_microcents: 12_345)
+    AiOrchestrator::AiInteraction.create!(user: @student, model: "tavily", prompt: "DO NOT LEAK UNPRICED",
+      status: :completed, pricing_status: "unpriced")
     sign_in_as(@owner)
   end
 
@@ -20,6 +22,7 @@ class AdminDashboardTest < ActionDispatch::IntegrationTest
     assert_select "[data-metric='registered-users']", text: Core::User.count.to_s
     assert_select "[data-metric='routes']", text: LearningRoutesEngine::LearningRoute.count.to_s
     assert_select "[data-metric='ai-cost']", text: /0\.0123/
+    assert_select "[data-cost-status]", text: /Pricing incomplete/
     assert_select "a[href='#{admin_users_path}']"
     assert_no_match(/purchase|revenue|profit|fee|quote|payment/i, response.body)
     assert_no_match(/DO NOT LEAK|password_digest|remember_token/i, response.body)
