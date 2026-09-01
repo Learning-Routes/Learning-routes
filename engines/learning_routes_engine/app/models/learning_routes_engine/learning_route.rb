@@ -2,6 +2,9 @@ module LearningRoutesEngine
   class LearningRoute < ApplicationRecord
     belongs_to :learning_profile
 
+    # PostgreSQL owns this cascade. Loading/destroying the permanent preview before
+    # deleting its route would correctly trip the preview-preservation trigger.
+    has_many :route_modules, -> { order(:position, :id) }
     has_many :route_steps, -> { order(:position) }, dependent: :destroy
     has_many :knowledge_gaps, dependent: :destroy
     has_many :reinforcement_routes, dependent: :destroy
@@ -27,6 +30,8 @@ module LearningRoutesEngine
     # not a UI locale — so use the LanguageDetector's vocabulary, not I18n.available_locales.
     validates :target_locale, inclusion: { in: ->(_) { LearningRoutesEngine::LanguageDetector::LANGUAGE_MAP.keys } }, allow_nil: true
     validate :target_locale_differs_from_locale
+
+    after_create :create_initial_preview_module!
 
     scope :active_routes, -> { where(status: :active) }
     scope :by_topic, ->(topic) { where("topic ILIKE ?", "%#{topic}%") }
@@ -124,6 +129,20 @@ module LearningRoutesEngine
     end
 
     private
+
+    def create_initial_preview_module!
+      route_modules.create!(
+        position: 1,
+        title: I18n.t("learning_engine.modules.preview_title", locale: locale, default: "Free preview"),
+        translations: {
+          "en" => { "title" => "Free preview", "description" => "Your permanent free module" },
+          "es" => { "title" => "Vista previa gratuita", "description" => "Tu módulo gratuito permanente" }
+        },
+        access_state: :preview,
+        generation_state: :outlined,
+        metadata: { "source" => "route_creation", "mapping_version" => 1 }
+      )
+    end
 
     def filter_loaded_or_scope(level)
       if association(:route_steps).loaded?

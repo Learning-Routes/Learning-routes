@@ -47,6 +47,11 @@ module LearningRoutes
     # Enable strict loading by default to catch N+1 queries
     config.active_record.strict_loading_by_default = true
 
+    # WP-17 uses PostgreSQL constraint triggers for cross-row route-module invariants.
+    # Ruby schema dumps cannot represent trigger functions, so retain the authoritative
+    # database structure as SQL for fresh test and deployment databases.
+    config.active_record.schema_format = :sql
+
     # === CACHING STRATEGY ===
     # Configure for Russian doll caching: combine fragment cache with action cache
     # Automatic cache key generation (Rails 6.1+) includes dependencies
