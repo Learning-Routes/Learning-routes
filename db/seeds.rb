@@ -3,8 +3,8 @@ puts "Seeding database..."
 # === Demo users / sample content ============================================
 # Demo accounts use a shared, well-known password and are LOGIN-CAPABLE, so
 # they must NEVER be created in production. Gate everything sample-related
-# behind local (development/test) environments. Production gets its admin from
-# the ENV-driven bootstrap below instead.
+# behind local (development/test) environments. Owner promotion is deliberately
+# excluded from seeds and handled by the credentials-first owner task.
 if Rails.env.local?
   demo_password = ENV.fetch("DEMO_USER_PASSWORD", "password123")
 
