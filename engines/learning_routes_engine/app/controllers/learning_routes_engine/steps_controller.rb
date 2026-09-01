@@ -1,8 +1,8 @@
 module LearningRoutesEngine
   class StepsController < ApplicationController
     before_action :authenticate_user!
+    before_action :authorize_module_access!
     before_action :set_route_and_step
-    before_action :authorize_route_owner!
     before_action :ensure_step_accessible!, only: [:show]
 
     layout "learning"
@@ -108,11 +108,10 @@ module LearningRoutesEngine
       @step = @route.route_steps.find(params[:id])
     end
 
-    def authorize_route_owner!
-      unless @route.learning_profile&.user_id == current_user.id
-        redirect_to main_app.dashboard_path, alert: t("flash.not_authorized")
-        nil
-      end
+    def authorize_module_access!
+      return if ModuleAccessPolicy.allowed?(user: current_user, route_id: params[:route_id], step_id: params[:id])
+
+      head :forbidden
     end
 
     def ensure_step_accessible!

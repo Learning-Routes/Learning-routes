@@ -3,8 +3,8 @@
 module LearningRoutesEngine
   class TutorChatsController < ::ApplicationController
     before_action :authenticate_user!
+    before_action :authorize_module_access!
     before_action :set_step
-    before_action :authorize_step_owner!
 
     def index
       @messages = TutorMessage.where(user: current_user, step: @step).order(created_at: :asc).last(20)
@@ -45,10 +45,10 @@ module LearningRoutesEngine
     # Without this, any authenticated user could POST against another user's
     # step id, read their lesson content back via the reply, and run billable
     # AI jobs on arbitrary steps (IDOR).
-    def authorize_step_owner!
-      unless @step&.learning_route&.learning_profile&.user_id == current_user.id
-        head :forbidden
-      end
+    def authorize_module_access!
+      return if ModuleAccessPolicy.allowed?(user: current_user, route_id: params[:route_id], step_id: params[:step_id])
+
+      head :forbidden
     end
   end
 end

@@ -2,10 +2,12 @@ module ContentEngine
   class NotesController < ApplicationController
     before_action :authenticate_user!
     before_action :set_note, only: [:update, :destroy]
+    before_action :authorize_note_step_access!, only: [:update, :destroy]
 
     def create
+      return unless authorize_route_step_access!(params[:route_step_id])
+
       step = LearningRoutesEngine::RouteStep.find(params[:route_step_id])
-      return unless authorize_step_owner!(step)
 
       @note = UserNote.new(
         user: current_user,
@@ -60,12 +62,8 @@ module ContentEngine
       @note = UserNote.for_user(current_user).find(params[:id])
     end
 
-    def authorize_step_owner!(step)
-      unless step.learning_route&.learning_profile&.user_id == current_user.id
-        head :forbidden
-        return false
-      end
-      true
+    def authorize_note_step_access!
+      authorize_route_step_access!(@note.route_step_id)
     end
   end
 end

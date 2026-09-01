@@ -9,11 +9,13 @@ module Assessments
     ALLOWED_CONTENT_TYPES = %w[audio/webm audio/ogg audio/mp4 audio/mpeg].freeze
 
     def create
-      step = LearningRoutesEngine::RouteStep.find(params[:route_step_id])
+      unless LearningRoutesEngine::ModuleAccessPolicy.allowed_step?(
+        user: current_user, step_id: params[:route_step_id]
+      )
+        return head :forbidden
+      end
 
-      # Authorization: verify user owns this step's route
-      route = step.learning_route
-      return head(:forbidden) unless route.learning_profile&.user_id == current_user.id
+      step = LearningRoutesEngine::RouteStep.find(params[:route_step_id])
 
       # Validate audio file
       audio = params[:audio]

@@ -25,13 +25,12 @@ module LearningRoutesEngine
     end
 
     def submit_review
+      unless ModuleAccessPolicy.allowed_step?(user: current_user, step_id: params[:id])
+        return head :forbidden
+      end
+
       @step = RouteStep.find(params[:id])
       route = @step.learning_route
-
-      unless route.learning_profile&.user_id == current_user.id
-        redirect_to main_app.dashboard_path, alert: t("flash.not_authorized")
-        return
-      end
 
       rating = params[:rating].to_i
       unless rating.between?(1, 4)
