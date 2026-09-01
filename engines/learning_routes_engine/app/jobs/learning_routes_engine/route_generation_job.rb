@@ -8,15 +8,15 @@ module LearningRoutesEngine
 
       route = RouteGenerator.new(profile).generate!
 
-      # Pre-generate content for the first 3 steps
-      route.route_steps.order(:position).limit(3).each do |step|
+      preview = RouteModule.find_by!(learning_route_id: route.id, access_state: :preview)
+      RouteStep.where(route_module_id: preview.id).order(:position).each do |step|
         next if step.content_type_assessment?
 
         ContentGenerationJob.perform_later(step.id)
       end
 
       # Pre-generate assessments
-      route.route_steps.where(content_type: :assessment).find_each do |step|
+      RouteStep.where(route_module_id: preview.id, content_type: :assessment).find_each do |step|
         AssessmentGenerationJob.perform_later(step.id)
       end
 

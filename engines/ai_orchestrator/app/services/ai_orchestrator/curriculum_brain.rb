@@ -16,7 +16,8 @@ module AiOrchestrator
   class CurriculumBrain
     class InvalidStructureError < StandardError; end
 
-    REQUIRED_ROUTE_KEYS = %w[title subtitle subject_area subject_family translations steps].freeze
+    REQUIRED_ROUTE_KEYS = %w[title subtitle subject_area subject_family translations modules].freeze
+    REQUIRED_MODULE_KEYS = %w[title description translations steps].freeze
     REQUIRED_STEP_KEYS = %w[label description level level_enum bloom_level content_type delivery_format estimated_minutes prerequisites exercise_types translations].freeze
     ALLOWED_CONTENT_TYPES = %w[lesson exercise assessment review].freeze
     ALLOWED_DELIVERY_FORMATS = %w[text audio interactive mixed].freeze
@@ -154,7 +155,8 @@ module AiOrchestrator
     # to the template — a curriculum with a bad bloom level or a first-step
     # assessment is wrong in ways that cannot be silently patched.
     def repair!(payload)
-      steps = payload["steps"]
+      repair_legacy_flat_steps!(payload)
+      steps = flattened_steps(payload)
       return unless steps.is_a?(Array)
 
       dropped = 0
@@ -177,11 +179,16 @@ module AiOrchestrator
 
     def validate!(payload)
       raise InvalidStructureError, "response is not a JSON object" unless payload.is_a?(Hash)
+      repair_legacy_flat_steps!(payload)
 
       missing = REQUIRED_ROUTE_KEYS - payload.keys
       raise InvalidStructureError, "missing top-level keys: #{missing.join(", ")}" if missing.any?
 
-      steps = payload["steps"]
+      modules = payload["modules"]
+      raise InvalidStructureError, "modules must be a non-empty array" unless modules.is_a?(Array) && modules.any?
+
+      modules.each_with_index { |route_module, index| validate_module!(route_module, index) }
+      steps = flattened_steps(payload)
       raise InvalidStructureError, "steps must be a non-empty array" unless steps.is_a?(Array) && steps.any?
       raise InvalidStructureError, "too few steps: #{steps.size}" if steps.size < 3
       raise InvalidStructureError, "too many steps: #{steps.size}" if steps.size > 24
@@ -203,6 +210,17 @@ module AiOrchestrator
       # means asking the student to be tested on content the route hasn't taught yet.
       first_type = steps.first["content_type"].to_s
       raise InvalidStructureError, "first step is an assessment (#{first_type})" if first_type == "assessment"
+    end
+
+    def validate_module!(route_module, index)
+      raise InvalidStructureError, "module #{index} is not an object" unless route_module.is_a?(Hash)
+
+      missing = REQUIRED_MODULE_KEYS - route_module.keys
+      raise InvalidStructureError, "module #{index} missing keys: #{missing.join(', ')}" if missing.any?
+      raise InvalidStructureError, "module #{index} has no steps" unless route_module["steps"].is_a?(Array) && route_module["steps"].any?
+      unless route_module["translations"].is_a?(Hash) && route_module["translations"].any?
+        raise InvalidStructureError, "module #{index} missing translations hash"
+      end
     end
 
     def validate_step!(step, idx, total)
@@ -249,14 +267,47 @@ module AiOrchestrator
     # WizardRouteGenerationJob's step-creation code expects, so it's a drop-in
     # replacement for generate_fallback_route's output.
     def normalize(payload)
+      repair_legacy_flat_steps!(payload)
+      modules = payload["modules"].map { |route_module| normalize_module(route_module) }
       {
         title: payload["title"].to_s,
         subtitle: payload["subtitle"].to_s,
         subject_area: payload["subject_area"].to_s,
         subject_family: payload["subject_family"].to_s,
         translations: payload["translations"].is_a?(Hash) ? payload["translations"] : {},
-        steps: payload["steps"].map { |s| normalize_step(s) }
+        modules: modules,
+        steps: modules.flat_map { |route_module| route_module.fetch(:steps) }
       }
+    end
+
+    def normalize_module(route_module)
+      {
+        title: route_module["title"].to_s,
+        description: route_module["description"].to_s,
+        translations: route_module["translations"].is_a?(Hash) ? route_module["translations"] : {},
+        steps: route_module["steps"].map { |step| normalize_step(step) }
+      }
+    end
+
+    def repair_legacy_flat_steps!(payload)
+      return if payload["modules"].present? || !payload["steps"].is_a?(Array)
+
+      payload["modules"] = payload.delete("steps").each_slice(3).with_index.map do |steps, index|
+        first = steps.first
+        translations = first.fetch("translations", {}).transform_values do |localized|
+          { "title" => localized["title"].to_s, "description" => localized["description"].to_s }
+        end
+        {
+          "title" => first["label"].presence || "Module #{index + 1}",
+          "description" => first["description"].to_s,
+          "translations" => translations,
+          "steps" => steps
+        }
+      end
+    end
+
+    def flattened_steps(payload)
+      Array(payload["modules"]).flat_map { |route_module| Array(route_module["steps"]) }
     end
 
     def normalize_step(step)

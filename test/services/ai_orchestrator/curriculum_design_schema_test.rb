@@ -61,12 +61,15 @@ class AiOrchestrator::CurriculumDesignSchemaTest < ActiveSupport::TestCase
     route_keys = SCHEMA[:properties].keys.map(&:to_s)
     assert_equal [], AiOrchestrator::CurriculumBrain::REQUIRED_ROUTE_KEYS - route_keys
 
-    step_keys = SCHEMA[:properties][:steps][:items][:properties].keys.map(&:to_s)
+    module_keys = SCHEMA[:properties][:modules][:items][:properties].keys.map(&:to_s)
+    assert_equal [], AiOrchestrator::CurriculumBrain::REQUIRED_MODULE_KEYS - module_keys
+
+    step_keys = SCHEMA[:properties][:modules][:items][:properties][:steps][:items][:properties].keys.map(&:to_s)
     assert_equal [], AiOrchestrator::CurriculumBrain::REQUIRED_STEP_KEYS - step_keys
   end
 
   test "closed enums match the values CurriculumBrain accepts" do
-    step = SCHEMA[:properties][:steps][:items][:properties]
+    step = SCHEMA[:properties][:modules][:items][:properties][:steps][:items][:properties]
 
     assert_equal AiOrchestrator::CurriculumBrain::ALLOWED_CONTENT_TYPES.sort,
                  step[:content_type][:enum].sort
@@ -82,7 +85,9 @@ class AiOrchestrator::CurriculumDesignSchemaTest < ActiveSupport::TestCase
     expected = I18n.available_locales.map(&:to_s).sort
 
     assert_equal expected, SCHEMA[:properties][:translations][:properties].keys.map(&:to_s).sort
-    step_translations = SCHEMA[:properties][:steps][:items][:properties][:translations]
+    module_schema = SCHEMA[:properties][:modules][:items][:properties]
+    assert_equal expected, module_schema[:translations][:properties].keys.map(&:to_s).sort
+    step_translations = module_schema[:steps][:items][:properties][:translations]
     assert_equal expected, step_translations[:properties].keys.map(&:to_s).sort
   end
 

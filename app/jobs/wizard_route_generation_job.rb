@@ -44,8 +44,10 @@ class WizardRouteGenerationJob < ApplicationJob
         target_locale: target_locale
       )
       route_data = brain_data || generate_fallback_route(request, user_locale)
+      module_outlines = module_outline(route_data)
+      outlined_steps = module_outlines.flat_map { |route_module| route_module.fetch(:steps) }
       curriculum_source = brain_data ? "brain" : "template"
-      Rails.logger.info("[WizardRouteGeneration] Curriculum source=#{curriculum_source} for request #{request.id} (#{route_data[:steps].size} steps)")
+      Rails.logger.info("[WizardRouteGeneration] Curriculum source=#{curriculum_source} for request #{request.id} (#{outlined_steps.size} steps)")
 
       # Find or create the user's learning profile
       profile = LearningRoutesEngine::LearningProfile.find_or_create_by!(user: request.user) do |p|
@@ -76,7 +78,7 @@ class WizardRouteGenerationJob < ApplicationJob
           target_locale: target_locale,
           translations: route_data[:translations],
           status: :active,
-          total_steps: route_data[:steps].length,
+          total_steps: outlined_steps.length,
           generation_status: "completed",
           generated_at: Time.current,
           generation_params: {
@@ -87,7 +89,8 @@ class WizardRouteGenerationJob < ApplicationJob
             pace: request.pace,
             learning_style: dominant_style,
             weekly_hours: request.weekly_hours,
-            session_minutes: request.session_minutes
+            session_minutes: request.session_minutes,
+            quote_blocked_reason: "pricing_configuration_missing"
           },
           content_preferences: {
             primary_style: dominant_style,
@@ -98,32 +101,56 @@ class WizardRouteGenerationJob < ApplicationJob
 
         # Delivery format per step comes from the Brain when available;
         # we compute a VARK-based fallback distribution for template routes.
-        template_delivery_formats = assign_delivery_formats(route_data[:steps].length, content_mix)
+        template_delivery_formats = assign_delivery_formats(outlined_steps.length, content_mix)
 
-        created_steps = route_data[:steps].each_with_index.map do |step_data, index|
-          route.route_steps.create!(
-            position: index,
-            title: step_data[:label],
-            description: step_data[:description].presence || Array(step_data[:topics]).join(", "),
-            translations: step_data[:translations] || {},
-            level: step_data[:level_enum] || :nv1,
-            bloom_level: step_data[:bloom_level],
-            content_type: (step_data[:content_type].presence || "lesson").to_sym,
-            status: index == 0 ? :available : :locked,
-            estimated_minutes: step_data[:estimated_minutes] || 30,
-            delivery_format: step_data[:delivery_format].presence || template_delivery_formats[index] || "mixed",
-            metadata: {
-              "satellite_topics" => Array(step_data[:topics]),
-              "exercise_types" => Array(step_data[:exercise_types]),
-              "curriculum_source" => curriculum_source
-            }
-          )
+        persisted_modules = module_outlines.each_with_index.map do |outline, module_index|
+          attributes = {
+            title: outline.fetch(:title), description: outline[:description],
+            translations: outline[:translations] || {},
+            access_state: module_index.zero? ? :preview : :locked,
+            generation_state: module_index.zero? ? :generating : :outlined,
+            metadata: { "outline_source" => curriculum_source }
+          }
+          if module_index.zero?
+            preview = LearningRoutesEngine::RouteModule.find_by!(learning_route_id: route.id, access_state: :preview)
+            preview.update!(attributes)
+            preview
+          else
+            LearningRoutesEngine::RouteModule.create!(
+              attributes.merge(learning_route: route, position: module_index + 1)
+            )
+          end
+        end
+
+        created_steps = []
+        module_outlines.each_with_index do |outline, module_index|
+          outline.fetch(:steps).each do |step_data|
+            index = created_steps.size
+            route.route_steps.create!(
+              route_module: persisted_modules.fetch(module_index),
+              position: index,
+              title: step_data[:label],
+              description: step_data[:description].presence || Array(step_data[:topics]).join(", "),
+              translations: step_data[:translations] || {},
+              level: step_data[:level_enum] || :nv1,
+              bloom_level: step_data[:bloom_level],
+              content_type: (step_data[:content_type].presence || "lesson").to_sym,
+              status: index == 0 ? :available : :locked,
+              estimated_minutes: step_data[:estimated_minutes] || 30,
+              delivery_format: step_data[:delivery_format].presence || template_delivery_formats[index] || "mixed",
+              metadata: {
+                "satellite_topics" => Array(step_data[:topics]),
+                "exercise_types" => Array(step_data[:exercise_types]),
+                "curriculum_source" => curriculum_source
+              }
+            ).tap { |step| created_steps << step }
+          end
         end
 
         # Second pass: translate position-based prereq indices from the Brain
         # into the actual RouteStep IDs now that all rows exist.
         created_steps.each_with_index do |step, index|
-          prereq_indices = Array(route_data[:steps][index][:prerequisites])
+          prereq_indices = Array(outlined_steps[index][:prerequisites])
           next if prereq_indices.empty?
 
           prereq_ids = prereq_indices.filter_map { |i| created_steps[i]&.id }
@@ -168,6 +195,21 @@ class WizardRouteGenerationJob < ApplicationJob
 
   private
 
+  def module_outline(route_data)
+    supplied = Array(route_data[:modules])
+    return supplied if supplied.any?
+
+    Array(route_data.fetch(:steps)).each_slice(3).with_index.map do |steps, index|
+      first = steps.first
+      {
+        title: first[:label].presence || "Module #{index + 1}",
+        description: first[:description].presence || Array(first[:topics]).join(", "),
+        translations: first[:translations] || {},
+        steps: steps
+      }
+    end
+  end
+
   def pregenerate_content!(route)
     # Claim through ContentPrefetcher rather than update! + enqueue. The old version set
     # content_generating with a plain update! and fired all three jobs, which raced with
@@ -181,6 +223,10 @@ class WizardRouteGenerationJob < ApplicationJob
     # before a student finishes step 1.
     step_ids = LearningRoutesEngine::ContentPrefetcher.pending_step_ids(route, limit: 3)
     enqueued = LearningRoutesEngine::ContentPrefetcher.prefetch(route, step_ids)
+    preview = LearningRoutesEngine::RouteModule.find_by!(learning_route_id: route.id, access_state: :preview)
+    LearningRoutesEngine::RouteStep.where(route_module_id: preview.id, content_type: :assessment).find_each do |step|
+      LearningRoutesEngine::AssessmentGenerationJob.perform_later(step.id)
+    end
 
     Rails.logger.info(
       "[WizardRouteGeneration] Pre-generating #{enqueued.size} of #{step_ids.size} priority steps " \

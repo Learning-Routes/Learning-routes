@@ -123,6 +123,24 @@ class WizardRouteGenerationJobTest < ActiveSupport::TestCase
     end
   end
 
+  test "persists one multi-step preview and visible outline-only paid modules" do
+    rr = create_request
+    WizardRouteGenerationJob.perform_now(rr.id)
+    route = reload_for_assertions(rr).learning_route
+    modules = LearningRoutesEngine::RouteModule.where(learning_route_id: route.id).order(:position).to_a
+
+    assert_operator modules.size, :>, 1
+    assert modules.first.access_preview?
+    assert modules.first.generation_generating?
+    assert modules.drop(1).all?(&:access_locked?)
+    assert modules.drop(1).all?(&:generation_outlined?)
+    assert_operator LearningRoutesEngine::RouteStep.where(route_module_id: modules.first.id).count, :>, 1
+    assert_empty ContentEngine::AiContent.where(
+      route_step_id: LearningRoutesEngine::RouteStep.where(route_module_id: modules.drop(1).map(&:id)).select(:id)
+    )
+    assert_equal "pricing_configuration_missing", route.generation_params.fetch("quote_blocked_reason")
+  end
+
   test "uses session_minutes for step duration" do
     rr = create_request(session_minutes: 15)
     WizardRouteGenerationJob.perform_now(rr.id)

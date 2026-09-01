@@ -212,23 +212,33 @@ system_prompt: |
       "en": { "title": "...", "subtitle": "...", "subject_area": "..." },
       "es": { "title": "...", "subtitle": "...", "subject_area": "..." }
     },
-    "steps": [
+    "modules": [
       {
-        "label": "Step title",
-        "description": "1-2 sentence what the student will learn",
-        "level": 1,
-        "level_enum": "nv1",
-        "bloom_level": 1,
-        "content_type": "lesson",
-        "delivery_format": "mixed",
-        "estimated_minutes": 20,
-        "prerequisites": [],
-        "exercise_types": ["match", "flashcards"],
-        "topics": ["keyword1", "keyword2"],
+        "title": "Module title",
+        "description": "Approved outline description visible before purchase",
         "translations": {
           "en": { "title": "...", "description": "..." },
           "es": { "title": "...", "description": "..." }
-        }
+        },
+        "steps": [
+          {
+            "label": "Step title",
+            "description": "1-2 sentence what the student will learn",
+            "level": 1,
+            "level_enum": "nv1",
+            "bloom_level": 1,
+            "content_type": "lesson",
+            "delivery_format": "mixed",
+            "estimated_minutes": 20,
+            "prerequisites": [],
+            "exercise_types": ["match", "flashcards"],
+            "topics": ["keyword1", "keyword2"],
+            "translations": {
+              "en": { "title": "...", "description": "..." },
+              "es": { "title": "...", "description": "..." }
+            }
+          }
+        ]
       }
     ]
   }
@@ -241,6 +251,9 @@ system_prompt: |
   - delivery_format: one of "text", "audio", "interactive", "mixed"
   - estimated_minutes: integer, 5-90, MUST be ≤ session_minutes if provided
   - prerequisites: array of step indices (0-based), empty array for step 0
+  - modules: any positive number; each module MUST contain one or more ordered steps
+  - module 1 MUST contain multiple real steps when the curriculum has multiple steps
+  - prerequisite indices are global across modules after flattening in module order
   - exercise_types: array of 2-4 strings from the controlled vocabulary above
   - First step MUST have prerequisites: []
   - Last step SHOULD be content_type: "assessment" (final check)

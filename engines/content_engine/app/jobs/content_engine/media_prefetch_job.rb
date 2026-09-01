@@ -21,6 +21,7 @@ module ContentEngine
       @profile = @route&.learning_profile
       @user = @profile&.user
       @options = options.symbolize_keys
+      return unless @step.preview_access?
 
       sections = @step.metadata&.dig("parsed_sections")
       return unless sections.is_a?(Array)

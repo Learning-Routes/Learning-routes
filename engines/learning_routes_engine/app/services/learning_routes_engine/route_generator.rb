@@ -91,6 +91,7 @@ module LearningRoutesEngine
       previous_step_id = nil
 
       ActiveRecord::Base.transaction do
+        @persisted_modules = persist_modules!(route, modules)
         # Partition modules by level
         nv1_modules, nv2_modules, nv3_modules = partition_modules(modules)
 
@@ -103,17 +104,28 @@ module LearningRoutesEngine
 
         # NV1: lessons → exercises → checkpoint quiz → level-up exam
         position, previous_step_id = create_level_steps!(route, nv1_modules, :nv1, position, previous_step_id)
-        position, previous_step_id = create_assessment_step!(route, :nv1, "Level-Up Exam: NV1 → NV2", position, previous_step_id)
+        if nv1_modules.any?
+          position, previous_step_id = create_assessment_step!(route, module_for(nv1_modules.last), :nv1,
+            "Level-Up Exam: NV1 → NV2", position, previous_step_id)
+        end
 
         # NV2: lessons → exercises → mind map review → practice test → level-up exam
         position, previous_step_id = create_level_steps!(route, nv2_modules, :nv2, position, previous_step_id)
-        position, previous_step_id = create_review_step!(route, :nv2, "Mind Map Review: NV2 Concepts", position, previous_step_id)
-        position, previous_step_id = create_assessment_step!(route, :nv2, "Level-Up Exam: NV2 → NV3", position, previous_step_id)
+        if nv2_modules.any?
+          position, previous_step_id = create_review_step!(route, module_for(nv2_modules.last), :nv2,
+            "Mind Map Review: NV2 Concepts", position, previous_step_id)
+          position, previous_step_id = create_assessment_step!(route, module_for(nv2_modules.last), :nv2,
+            "Level-Up Exam: NV2 → NV3", position, previous_step_id)
+        end
 
         # NV3: lessons → exercises → final exam → comprehensive review
         position, previous_step_id = create_level_steps!(route, nv3_modules, :nv3, position, previous_step_id)
-        position, previous_step_id = create_assessment_step!(route, :nv3, "Final Exam", position, previous_step_id)
-        _position, _previous_step_id = create_review_step!(route, :nv3, "Comprehensive Review", position, previous_step_id)
+        if nv3_modules.any?
+          position, previous_step_id = create_assessment_step!(route, module_for(nv3_modules.last), :nv3,
+            "Final Exam", position, previous_step_id)
+          _position, _previous_step_id = create_review_step!(route, module_for(nv3_modules.last), :nv3,
+            "Comprehensive Review", position, previous_step_id)
+        end
 
         route.update!(total_steps: route.route_steps.count)
 
@@ -122,7 +134,8 @@ module LearningRoutesEngine
         first_step&.unlock!
 
         # Pre-generate audio for the first audio step
-        first_audio_step = route.route_steps.where(delivery_format: "audio").order(:position).first
+        preview_id = @persisted_modules.fetch(modules.first.object_id).id
+        first_audio_step = RouteStep.where(route_module_id: preview_id, delivery_format: "audio").order(:position).first
         if first_audio_step
           ContentEngine::AudioGenerationJob.perform_later(first_audio_step.id)
         end
@@ -150,6 +163,30 @@ module LearningRoutesEngine
       [nv1, nv2, nv3]
     end
 
+    def persist_modules!(route, modules)
+      preview = RouteModule.find_by!(learning_route_id: route.id, access_state: :preview)
+      modules.each_with_index.to_h do |route_module, index|
+        attributes = {
+          title: route_module["name"].presence || "Module #{index + 1}",
+          description: route_module["description"],
+          access_state: index.zero? ? :preview : :locked,
+          generation_state: index.zero? ? :generating : :outlined,
+          metadata: { "outline_source" => "route_generator" }
+        }
+        persisted = if index.zero?
+          preview.update!(attributes)
+          preview
+        else
+          RouteModule.create!(attributes.merge(learning_route: route, position: index + 1))
+        end
+        [route_module.object_id, persisted]
+      end
+    end
+
+    def module_for(outline)
+      @persisted_modules.fetch(outline.object_id)
+    end
+
     def create_level_steps!(route, modules, level, position, previous_step_id)
       bloom_range = BLOOM_LEVELS[level]
 
@@ -164,6 +201,7 @@ module LearningRoutesEngine
           @format_index += 1
 
           step = route.route_steps.create!(
+            route_module: module_for(mod),
             position: position,
             title: lesson["title"] || "#{mod['name']} - Lesson",
             description: lesson["description"] || mod["description"],
@@ -184,6 +222,7 @@ module LearningRoutesEngine
         # If module has an assessment, add it
         if mod["assessment"]
           step = route.route_steps.create!(
+            route_module: module_for(mod),
             position: position,
             title: mod["assessment"]["title"] || "#{mod['name']} - Quiz",
             description: mod["assessment"]["description"],
@@ -203,8 +242,9 @@ module LearningRoutesEngine
       [position, previous_step_id]
     end
 
-    def create_assessment_step!(route, level, title, position, previous_step_id)
+    def create_assessment_step!(route, route_module, level, title, position, previous_step_id)
       step = route.route_steps.create!(
+        route_module: route_module,
         position: position,
         title: title,
         description: "Comprehensive assessment for #{level} level",
@@ -220,8 +260,9 @@ module LearningRoutesEngine
       [position + 1, step.id]
     end
 
-    def create_review_step!(route, level, title, position, previous_step_id)
+    def create_review_step!(route, route_module, level, title, position, previous_step_id)
       step = route.route_steps.create!(
+        route_module: route_module,
         position: position,
         title: title,
         description: "Review and consolidation of #{level} concepts",

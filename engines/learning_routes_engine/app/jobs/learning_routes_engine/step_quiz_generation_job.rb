@@ -9,6 +9,7 @@ module LearningRoutesEngine
       # Eager-load the route/profile/user chain: strict_loading_by_default is on, so
       # traversing these lazily is a violation (raises in dev/test, logs in production).
       step = RouteStep.includes(learning_route: { learning_profile: :user }).find(route_step_id)
+      return unless step.preview_access?
       return unless step.requires_quiz?
       return if Assessments::Assessment.step_quizzes.for_step(step).exists?
 

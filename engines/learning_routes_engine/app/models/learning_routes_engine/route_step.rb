@@ -113,6 +113,10 @@ module LearningRoutesEngine
       metadata&.dig("content_generating") == true
     end
 
+    def preview_access?
+      RouteModule.where(id: route_module_id, learning_route_id: learning_route_id, access_state: :preview).exists?
+    end
+
     def audio_delivery?
       delivery_format == "audio"
     end

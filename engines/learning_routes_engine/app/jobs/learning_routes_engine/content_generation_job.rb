@@ -5,6 +5,7 @@ module LearningRoutesEngine
 
     def perform(route_step_id)
       step = RouteStep.includes(learning_route: { learning_profile: :user }).find(route_step_id)
+      return unless step.preview_access?
       return if ContentEngine::AiContent.where(route_step: step).by_type(:text).exists?
 
       route = step.learning_route

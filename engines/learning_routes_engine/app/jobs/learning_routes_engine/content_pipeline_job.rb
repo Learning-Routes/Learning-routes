@@ -14,6 +14,7 @@ module LearningRoutesEngine
       @profile = @route&.learning_profile
       @user = @profile&.user
       @options = options.symbolize_keys
+      return unless @step.preview_access?
 
       # Idempotency: skip if content already fully generated
       return if @step.metadata&.dig("content_ready")
