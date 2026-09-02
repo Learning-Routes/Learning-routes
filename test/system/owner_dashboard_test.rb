@@ -20,7 +20,10 @@ class OwnerDashboardTest < ApplicationSystemTestCase
     fill_in I18n.t("admin.users.search"), with: "browser-needle"
     click_button I18n.t("admin.users.apply")
     assert_text @student.email
-    click_link @student.name
+    student_path = admin_user_path(@student)
+    assert_link @student.name, href: student_path
+    find("a[href='#{student_path}']").click
+    assert_current_path student_path, wait: 5
     assert_text "Browser Route"
     visit admin_route_path(@route)
     assert_text "Browser Locked Module"
