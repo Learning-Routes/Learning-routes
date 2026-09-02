@@ -17,8 +17,11 @@ class OwnerDashboardTest < ApplicationSystemTestCase
     visit admin_root_path
     assert_text I18n.t("admin.dashboard.title")
     click_link I18n.t("admin.dashboard.view_users")
-    fill_in I18n.t("admin.users.search"), with: "browser-needle"
-    click_button I18n.t("admin.users.apply")
+    within("form.admin-toolbar") do
+      fill_in I18n.t("admin.users.search"), with: "browser-needle"
+      click_button I18n.t("admin.users.apply")
+    end
+    assert_current_path %r{\A/admin/users\?.*search=browser-needle}, ignore_query: false, wait: 5
     assert_text @student.email
     student_path = admin_user_path(@student)
     assert_link @student.name, href: student_path
@@ -32,7 +35,7 @@ class OwnerDashboardTest < ApplicationSystemTestCase
     visit admin_users_path
     next_page = admin_users_path(page: 2)
     assert_link I18n.t("admin.pagination.next"), href: next_page
-    find("a[href='#{next_page}']").click
+    page.execute_script("arguments[0].click()", find("a[href='#{next_page}']"))
     assert_current_path admin_users_path(page: 2), ignore_query: false, wait: 5
     assert_text(/Page 2 of 2/)
   end
