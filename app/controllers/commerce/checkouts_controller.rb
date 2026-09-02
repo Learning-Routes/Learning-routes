@@ -5,9 +5,11 @@ module Commerce
     before_action :authenticate_user!
 
     def create
-      route = LearningRoutesEngine::LearningRoute.includes(:learning_profile).find_by(id: params[:route_id])
+      route = owned_route
       # A route the caller does not own must be indistinguishable from one that
-      # does not exist.
+      # does not exist — in the response AND in the work done to answer. Scoping
+      # the lookup by ownership up front means a missing id and an unowned id
+      # both resolve in this one query and neither reaches PaymentProvider.
       return head(:not_found) if route.nil?
 
       provider = PaymentProvider.resolve
@@ -23,6 +25,16 @@ module Commerce
     end
 
     private
+
+    # An explicit join/where, not a lazy association traversal — strict_loading
+    # is on by default and this must resolve in one query regardless of whether
+    # the route exists at all.
+    def owned_route
+      LearningRoutesEngine::LearningRoute
+        .joins(:learning_profile)
+        .where(learning_routes_engine_learning_profiles: { user_id: current_user.id })
+        .find_by(id: params[:route_id])
+    end
 
     def reject(reason)
       return head(:not_found) if reason == "not_owner"

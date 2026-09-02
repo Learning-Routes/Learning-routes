@@ -1652,4 +1652,5 @@ en:
       already_purchased: "You already own this route."
       provider_unavailable: "Payments are not available right now."
       provider_error: "We could not start the checkout. Nothing was charged."
+      checkout_error: "We could not start the checkout. Nothing was charged."
       unavailable: "Checkout is not available right now."

@@ -122,5 +122,23 @@ module Commerce
       assert_equal "unattached", @quote.reload.attachment_state
       assert_equal 0, Commerce::RoutePurchase.count
     end
+
+    test "a failure inside the transaction rolls back and leaves the quote unattached" do
+      original = Commerce::RoutePurchase.method(:create!)
+      Commerce::RoutePurchase.define_singleton_method(:create!) do |*|
+        raise ActiveRecord::RecordInvalid, Commerce::RoutePurchase.new
+      end
+
+      result = begin
+        create
+      ensure
+        Commerce::RoutePurchase.define_singleton_method(:create!, original)
+      end
+
+      assert_not result.created?
+      assert_equal "checkout_error", result.reason
+      assert_equal "unattached", @quote.reload.attachment_state
+      assert_equal 0, Commerce::RoutePurchase.count
+    end
   end
 end

@@ -55,7 +55,13 @@ module Commerce
       stranger_profile = LearningRoutesEngine::LearningProfile.create!(user: stranger, current_level: "beginner")
       stranger_route = LearningRoutesEngine::LearningRoute.create!(learning_profile: stranger_profile, topic: "Other")
 
-      with_fake_provider { post commerce_route_checkout_path(stranger_route.id) }
+      # No with_fake_provider here, deliberately: the ownership lookup must
+      # short-circuit BEFORE PaymentProvider.resolve is ever called, for both a
+      # route that exists but isn't owned and one that doesn't exist at all. If
+      # either path reached the provider, it would hit the (unconfigured, in
+      # test) real resolver, get Unavailable, and redirect 303 instead of 404 —
+      # so a bare 404 here is itself proof neither path resolved a provider.
+      post commerce_route_checkout_path(stranger_route.id)
       assert_response :not_found
       not_owned_body = response.body
 
@@ -63,6 +69,31 @@ module Commerce
       assert_response :not_found
       assert_equal not_owned_body, response.body
       assert_equal 0, Commerce::RoutePurchase.count
+    end
+
+    test "neither an unowned route nor a missing route ever reaches the payment provider" do
+      sign_in_as(@user)
+      stranger_profile = LearningRoutesEngine::LearningProfile.create!(user: create_test_user, current_level: "beginner")
+      stranger_route = LearningRoutesEngine::LearningRoute.create!(learning_profile: stranger_profile, topic: "Other")
+
+      resolve_calls = 0
+      original = Commerce::PaymentProvider.method(:resolve)
+      Commerce::PaymentProvider.define_singleton_method(:resolve) do |**|
+        resolve_calls += 1
+        Commerce::PaymentProvider::Available.new(adapter: Commerce::Providers::Fake.new)
+      end
+
+      begin
+        post commerce_route_checkout_path(stranger_route.id)
+        assert_response :not_found
+
+        post commerce_route_checkout_path(SecureRandom.uuid)
+        assert_response :not_found
+      ensure
+        Commerce::PaymentProvider.define_singleton_method(:resolve, original)
+      end
+
+      assert_equal 0, resolve_calls, "neither the unowned nor the missing route should reach the payment provider"
     end
 
     test "a route with no quote is rejected as unprocessable with the localized message" do

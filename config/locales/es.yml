@@ -1652,4 +1652,5 @@ es:
       already_purchased: "Ya tienes esta ruta."
       provider_unavailable: "Los pagos no están disponibles en este momento."
       provider_error: "No pudimos iniciar el pago. No se te ha cobrado nada."
+      checkout_error: "No pudimos iniciar el pago. No se te ha cobrado nada."
       unavailable: "El pago no está disponible en este momento."
