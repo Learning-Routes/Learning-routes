@@ -61,7 +61,11 @@ module Commerce
         data: {
           id: "ord_1",
           attributes: {
-            store_id: "1", identifier: "chk_#{@quote.id}", total: 299,
+            # A real taxed order: `subtotal` is the custom price we charged,
+            # `total` is what the card was charged after tax. Entitlement is
+            # decided on the subtotal.
+            store_id: "1", identifier: "ord-uuid-1", subtotal: 299, tax: 60,
+            discount_total: 0, total: 359,
             currency: "USD", fee: 45, refunded_amount: 0, status: "paid", test_mode: true
           }
         }
@@ -79,7 +83,7 @@ module Commerce
     test "a body mutated after signing is unauthorized" do
       body = valid_body
       signature = fake.sign(body)
-      tampered = body.sub('"total":299', '"total":1')
+      tampered = body.sub('"subtotal":299', '"subtotal":1')
 
       post commerce_lemon_squeezy_webhook_path, params: tampered,
            headers: { "CONTENT_TYPE" => "application/json", "X-Signature" => signature }

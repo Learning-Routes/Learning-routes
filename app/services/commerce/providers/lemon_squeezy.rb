@@ -92,8 +92,27 @@ module Commerce
           test_mode: !!attributes["test_mode"],
           store_id: attributes["store_id"].to_s,
           order_id: data["id"].to_s,
-          checkout_id: attributes["identifier"].to_s,
-          amount_cents: integer_or_nil(attributes["total"]),
+          # An ORDER payload carries no checkout id. `identifier` is the order's
+          # own customer-facing UUID, and writing it into `provider_checkout_id`
+          # (which `OrderProcessor#recover_purchase!` does) produced rows that
+          # could never be reconciled against the checkout we actually created.
+          # The order is already identified by `order_id`; leave this nil rather
+          # than store a plausible-looking wrong value.
+          checkout_id: nil,
+          # What the customer paid FOR OUR ITEM, excluding tax.
+          #
+          # `total` is post-tax: the documented example is
+          # `subtotal: 999, tax: 200, total: 1199`. Lemon Squeezy is the
+          # merchant of record and collects VAT/sales tax, so comparing `total`
+          # against the quote — which is the `custom_price` we sent, a subtotal
+          # — made `amount_mismatch` the normal outcome for a legitimately paid
+          # order in every tax jurisdiction.
+          #
+          # `discount_total` is subtracted rather than ignored, so a store-wide
+          # or dashboard discount code leaves the customer paying less than
+          # quoted and still fails the equality check instead of entitling for
+          # a price we never offered.
+          amount_cents: net_item_cents(attributes),
           currency: attributes["currency"].to_s,
           actual_fee_cents: integer_or_nil(attributes["fee"] || attributes["total_fee"]),
           refunded_amount_cents: integer_or_nil(attributes["refunded_amount"]),
@@ -102,6 +121,15 @@ module Commerce
           custom_user_id: custom["user_id"].presence&.to_s,
           status: attributes["status"].to_s
         )
+      end
+
+      # Absent `subtotal` stays nil so it fails the amount check, rather than
+      # collapsing to 0 and matching a hypothetical free quote.
+      def net_item_cents(attributes)
+        subtotal = integer_or_nil(attributes["subtotal"])
+        return nil if subtotal.nil?
+
+        subtotal - (integer_or_nil(attributes["discount_total"]) || 0)
       end
 
       # Money arrives as an integer number of cents or not at all. A String that

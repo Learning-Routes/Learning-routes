@@ -10,7 +10,12 @@ class Commerce::Providers::LemonSqueezyTest < ActiveSupport::TestCase
     )
   end
 
-  def order_created_body(order_id: "ord_1", amount_cents: 299, currency: "USD", fee_cents: 45)
+  # Shaped like a real Lemon Squeezy order: `subtotal` is what we charged for
+  # the item (the `custom_price` we sent), `tax` is added on top as merchant of
+  # record, and `total` is the post-tax sum the customer's card was charged.
+  def order_created_body(order_id: "ord_1", subtotal_cents: 299, tax_cents: 0,
+                         discount_cents: 0, currency: "USD", fee_cents: 45)
+    total = subtotal_cents - discount_cents + tax_cents
     {
       meta: {
         event_name: "order_created",
@@ -20,11 +25,12 @@ class Commerce::Providers::LemonSqueezyTest < ActiveSupport::TestCase
         id: order_id,
         attributes: {
           store_id: 1, identifier: "id-1", status: "paid", test_mode: true,
-          currency: currency, total: amount_cents,
-          total_usd: amount_cents, refunded_amount: 0,
+          currency: currency, subtotal: subtotal_cents, total: total,
+          total_usd: total, refunded_amount: 0,
           first_order_item: { product_id: 2, variant_id: 3 },
           # Lemon Squeezy reports its cut in cents on the order.
-          tax: 0, discount_total: 0, setup_fee: 0, total_formatted: "$2.99"
+          tax: tax_cents, discount_total: discount_cents, setup_fee: 0,
+          total_formatted: "$#{format('%.2f', total / 100.0)}"
         }
       }
     }.to_json
@@ -45,6 +51,36 @@ class Commerce::Providers::LemonSqueezyTest < ActiveSupport::TestCase
     assert_equal "q-1", event.custom_quote_id
     assert_equal "u-1", event.custom_user_id
     assert event.identity.present?
+  end
+
+  # Lemon Squeezy is the merchant of record and adds VAT/sales tax on top of the
+  # custom price we set. Reading `total` made a legitimately paid order look
+  # like an `amount_mismatch` for every customer in a taxed jurisdiction.
+  test "a taxed order reports the item subtotal, not the post-tax total" do
+    body = order_created_body(subtotal_cents: 299, tax_cents: 60)
+    event = adapter.verify_event(raw_body: body, signature: sign(body))
+
+    assert_equal 299, event.amount_cents
+  end
+
+  # A discount means the customer did not pay the quoted price, so the amount
+  # must fail the quote's equality check rather than entitle at a price we
+  # never offered.
+  test "a discounted order reports less than the quoted price" do
+    body = order_created_body(subtotal_cents: 299, discount_cents: 100, tax_cents: 60)
+    event = adapter.verify_event(raw_body: body, signature: sign(body))
+
+    assert_equal 199, event.amount_cents
+  end
+
+  # `identifier` is the ORDER's UUID. Storing it as the checkout id produced
+  # purchase rows that could never be reconciled against a real checkout.
+  test "an order payload yields no checkout id" do
+    body = order_created_body
+    event = adapter.verify_event(raw_body: body, signature: sign(body))
+
+    assert_nil event.checkout_id
+    assert_equal "ord_1", event.order_id
   end
 
   test "a wrong signature raises before any business field is read" do
