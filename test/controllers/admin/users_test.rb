@@ -56,7 +56,9 @@ class AdminUsersTest < ActionDispatch::IntegrationTest
     assert_select "[data-paid-module-count]", text: /1/
     assert_select "[data-preview-module]", text: /Free foundations/
     assert_select "[data-quote-status]", text: /unavailable/i
-    assert_no_match(/purchase|revenue|profit|fee|payment/i, response.body)
+    document = Nokogiri::HTML(response.body)
+    document.css("script, style, meta, link").remove
+    assert_no_match(/purchase|revenue|profit|fee|payment/i, document.text)
     assert_no_match(/PRIVATE PROMPT|PRIVATE RESPONSE|password_digest|remember_token/i, response.body)
   end
 

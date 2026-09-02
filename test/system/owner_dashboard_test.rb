@@ -27,8 +27,10 @@ class OwnerDashboardTest < ApplicationSystemTestCase
     assert_text I18n.t("admin.module_access.locked")
 
     visit admin_users_path
-    assert_link I18n.t("admin.pagination.next")
-    click_link I18n.t("admin.pagination.next")
+    next_page = admin_users_path(page: 2)
+    assert_link I18n.t("admin.pagination.next"), href: next_page
+    find("a[href='#{next_page}']").click
+    assert_current_path admin_users_path(page: 2), ignore_query: false, wait: 5
     assert_text(/Page 2 of 2/)
   end
 
@@ -61,6 +63,7 @@ class OwnerDashboardTest < ApplicationSystemTestCase
     fill_in "email", with: @student.email
     fill_in "password", with: "password123"
     find("input[type='submit']").click
+    assert_current_path core.verify_pending_path, wait: 5
 
     visit admin_root_path
 
@@ -75,6 +78,6 @@ class OwnerDashboardTest < ApplicationSystemTestCase
     fill_in "email", with: @owner.email
     fill_in "password", with: "password123"
     find("input[type='submit']").click
-    assert_no_current_path core.sign_in_path
+    assert_current_path main_app.profile_path, wait: 5
   end
 end
