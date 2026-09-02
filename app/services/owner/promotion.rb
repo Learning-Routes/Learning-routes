@@ -7,13 +7,14 @@ module Owner
 
     def self.call(email:, password:)
       user = Core::User.find_by(email: email.to_s.strip.downcase)
-      unless user&.authenticate(password.to_s)
-        raise AuthenticationError, "Owner promotion credentials are invalid"
-      end
 
       Core::User.transaction do
         Core::User.connection.execute("SELECT pg_advisory_xact_lock(#{ADVISORY_LOCK_ID})")
-        user.lock!
+        user&.lock!
+        unless user&.authenticate(password.to_s)
+          raise AuthenticationError, "Owner promotion credentials are invalid"
+        end
+
         existing = Core::User.find_by(role: :owner)
         return existing if existing&.id == user.id
         raise OwnerExistsError, "An owner already exists" if existing

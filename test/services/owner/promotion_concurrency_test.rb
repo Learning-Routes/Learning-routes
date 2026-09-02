@@ -127,6 +127,46 @@ class OwnerPromotionConcurrencyTest < ActiveSupport::TestCase
     recovery&.join
   end
 
+  test "promotion authenticates the locked user snapshot after a concurrent password rotation" do
+    user = concurrent_user("password-rotation")
+    rotation_locked = Queue.new
+    release_rotation = Queue.new
+    promotion_pid = Queue.new
+    result = Queue.new
+    rotation = Thread.new do
+      ActiveRecord::Base.connection_pool.with_connection do
+        Core::User.transaction do
+          locked_user = Core::User.lock.find(user.id)
+          locked_user.update!(password: "rotated-password", password_confirmation: "rotated-password")
+          rotation_locked << true
+          release_rotation.pop
+        end
+      end
+    end
+    rotation_locked.pop
+
+    promotion = Thread.new do
+      ActiveRecord::Base.connection_pool.with_connection do |connection|
+        promotion_pid << connection.select_value("SELECT pg_backend_pid()")
+        result << Owner::Promotion.call(email: user.email, password: "password123")
+      rescue StandardError => error
+        result << error
+      end
+    end
+
+    assert_backend_waiting_on_lock(promotion_pid.pop)
+    release_rotation << true
+    rotation.value
+    promotion.value
+    assert_instance_of Owner::Promotion::AuthenticationError, result.pop
+    assert_predicate user.reload, :student?
+    assert_equal 0, Core::User.owner.count
+  ensure
+    release_rotation << true if release_rotation
+    rotation&.join
+    promotion&.join
+  end
+
   private
 
   def concurrent_user(suffix)
@@ -141,13 +181,19 @@ class OwnerPromotionConcurrencyTest < ActiveSupport::TestCase
   def assert_backend_waiting_on_lock(pid)
     deadline = Process.clock_gettime(Process::CLOCK_MONOTONIC) + 5
     loop do
-      wait_type = ActiveRecord::Base.connection.select_value(
-        "SELECT wait_event_type FROM pg_stat_activity WHERE pid = #{Integer(pid)}"
-      )
+      ActiveRecord::Base.connection.execute("SELECT pg_stat_clear_snapshot()")
+      activity = ActiveRecord::Base.connection.select_one(<<~SQL)
+        SELECT state, wait_event_type, wait_event, query
+        FROM pg_stat_activity
+        WHERE pid = #{Integer(pid)}
+      SQL
+      wait_type = activity&.fetch("wait_event_type", nil)
       return assert_equal("Lock", wait_type) if wait_type == "Lock"
-      flunk("PostgreSQL backend #{pid} did not block on a database lock") if Process.clock_gettime(Process::CLOCK_MONOTONIC) >= deadline
+      if Process.clock_gettime(Process::CLOCK_MONOTONIC) >= deadline
+        flunk("PostgreSQL backend #{pid} did not block on a database lock: #{activity.inspect}")
+      end
 
-      Thread.pass
+      sleep 0.1
     end
   end
 
