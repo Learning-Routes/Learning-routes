@@ -138,7 +138,7 @@ class WizardRouteGenerationJobTest < ActiveSupport::TestCase
     assert_empty ContentEngine::AiContent.where(
       route_step_id: LearningRoutesEngine::RouteStep.where(route_module_id: modules.drop(1).map(&:id)).select(:id)
     )
-    assert_equal "pricing_configuration_missing", route.generation_params.fetch("quote_blocked_reason")
+    assert_equal "estimator_configuration_missing", route.generation_params.fetch("quote_blocked_reason")
   end
 
   test "uses session_minutes for step duration" do
