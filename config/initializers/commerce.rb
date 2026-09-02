@@ -33,8 +33,19 @@ Rails.application.config.x.commerce_payment_provider = {
     ENV["LEMON_SQUEEZY_VARIANT_ID"],
   # Live mode stays off until WP-4 and the payment-critical WP-8 findings close
   # and a human approves activation.
+  #
+  # NOT `.presence` here, unlike every string setting above. `false.blank?` is
+  # true, so `false.presence` is nil: a credentials value of `test_mode: false`
+  # fell through to the ENV default and resolved back to `true`. Live mode was
+  # therefore unreachable through credentials, and an operator who set it
+  # believed they were live while OrderProcessor's `mode_mismatch` check
+  # rejected every real webhook — money taken, entitlement refused. `compact`
+  # distinguishes "set to false" from "not set".
   test_mode: ActiveModel::Type::Boolean.new.cast(
-    Rails.application.credentials.dig(:lemon_squeezy, :test_mode).presence ||
-      ENV.fetch("LEMON_SQUEEZY_TEST_MODE", "true")
+    [
+      Rails.application.credentials.dig(:lemon_squeezy, :test_mode),
+      ENV["LEMON_SQUEEZY_TEST_MODE"].presence,
+      true
+    ].compact.first
   )
 }.freeze
