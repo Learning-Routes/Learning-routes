@@ -4,6 +4,9 @@ module LearningRoutesEngine
   class TutorChatsController < ::ApplicationController
     before_action :authenticate_user!
     before_action :authorize_module_access!
+    # `create` enqueues a billable TutorReplyJob. Reading the transcript back
+    # survives a refund; commissioning a new reply does not.
+    before_action :authorize_module_generation!, only: :create
     before_action :set_step
 
     def index
@@ -47,6 +50,14 @@ module LearningRoutesEngine
     # AI jobs on arbitrary steps (IDOR).
     def authorize_module_access!
       return if ModuleAccessPolicy.allowed?(user: current_user, route_id: params[:route_id], step_id: params[:step_id])
+
+      head :forbidden
+    end
+
+    def authorize_module_generation!
+      return if ModuleAccessPolicy.generation_allowed?(
+        user: current_user, route_id: params[:route_id], step_id: params[:step_id]
+      )
 
       head :forbidden
     end

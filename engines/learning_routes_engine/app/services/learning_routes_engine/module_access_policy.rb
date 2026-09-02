@@ -25,6 +25,28 @@ module LearningRoutesEngine
       allowed?(user: user, route_id: nil, step_id: step_id)
     end
 
+    # May this user cause NEW paid AI generation on this step?
+    #
+    # Strictly narrower than `allowed?`. Reading is entitled by a purchase that
+    # is `paid` OR `refunded`, because a refund deliberately does not revoke
+    # access to content already generated (spec lines 246 and 316). Spending
+    # more money is not the same question: a refunded route must stop costing
+    # us. Every endpoint that enqueues an AI job — tutor replies, voice
+    # evaluation, TTS, image generation — asks THIS, not `allowed?`.
+    #
+    # A preview module answers true either way: the free preview is free for
+    # everyone, refunded or never purchased alike.
+    def self.generation_allowed?(user:, step_id:, route_id: nil)
+      return false unless user
+
+      step = owned_step(user: user, step_id: step_id, route_id: route_id)
+      return false if step.nil?
+
+      return true if step[:access_state] == "preview"
+
+      Commerce::RoutePurchase.generation_authorized?(route_id: step[:route_id])
+    end
+
     # Two bounded queries at most, and only when the module is not the preview.
     def self.owned_step(user:, step_id:, route_id: nil)
       scope = RouteStep.joins(:route_module, learning_route: :learning_profile)

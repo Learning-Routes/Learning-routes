@@ -4,6 +4,9 @@ module ContentEngine
   class SectionAudioController < ApplicationController
     before_action :authenticate_user!
     before_action :set_step_and_authorize!
+    # `generate` spends money, so it needs the narrower gate: a refunded
+    # purchase keeps reading what exists but must not commission more.
+    before_action -> { authorize_route_step_generation!(params[:step_id]) }, only: :generate
 
     # POST /content/section_audio/:step_id/:section_index/generate
     def generate

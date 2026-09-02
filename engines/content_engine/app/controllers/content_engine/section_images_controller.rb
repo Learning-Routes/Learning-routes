@@ -4,6 +4,9 @@ module ContentEngine
   class SectionImagesController < ApplicationController
     before_action :authenticate_user!
     before_action :set_step_and_authorize!
+    # `generate` spends money, so it needs the narrower gate: a refunded
+    # purchase keeps reading what exists but must not commission more.
+    before_action -> { authorize_route_step_generation!(params[:step_id]) }, only: :generate
 
     # Enqueue and answer immediately. Generation takes 30-90s; doing it here meant the
     # proxy timed out at 30s (504) and, once that was raised, Puma killed the worker at

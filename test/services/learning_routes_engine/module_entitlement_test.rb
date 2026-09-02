@@ -95,6 +95,43 @@ class LearningRoutesEngine::ModuleEntitlementTest < ActiveSupport::TestCase
     assert Policy.allowed_step?(user: @user, step_id: @paid_step.id)
   end
 
+  # The other half of that ruling, which had no enforcement at all:
+  # `RoutePurchase.generation_authorized?` was written so a refunded route
+  # would stop costing us money, and then never called from anywhere. Reading
+  # survives the refund; commissioning new AI work must not.
+  test "a refunded purchase keeps reading but stops authorizing new generation" do
+    purchase = pay!
+    assert Policy.generation_allowed?(user: @user, step_id: @paid_step.id)
+
+    purchase.mark_refunded!(refunded_amount_cents: 299, refunded_at: Time.current)
+
+    assert Policy.allowed_step?(user: @user, step_id: @paid_step.id),
+      "a refund must not revoke access to content already generated"
+    assert_not Policy.generation_allowed?(user: @user, step_id: @paid_step.id),
+      "a refunded route must not be able to commission more paid AI work"
+  end
+
+  test "generation on the free preview is unaffected by purchase state" do
+    assert Policy.generation_allowed?(user: @user, step_id: @free_step.id)
+
+    pay!.mark_refunded!(refunded_amount_cents: 299, refunded_at: Time.current)
+
+    assert Policy.generation_allowed?(user: @user, step_id: @free_step.id)
+  end
+
+  test "generation is refused before payment and never crosses to another user" do
+    assert_not Policy.generation_allowed?(user: @user, step_id: @paid_step.id)
+
+    pay!
+    stranger = Core::User.create!(
+      name: "Str", email: "gen-str-#{SecureRandom.hex(4)}@example.com",
+      password: "password123", password_confirmation: "password123",
+      email_verified_at: Time.current
+    )
+    assert_not Policy.generation_allowed?(user: stranger, step_id: @paid_step.id)
+    assert_not Policy.generation_allowed?(user: nil, step_id: @paid_step.id)
+  end
+
   test "the cache key's entitlement component still reflects the broadened (paid-or-refunded) definition" do
     purchase = pay!
     entitled_key = Policy.cache_key(user: @user, step: @paid_step.reload)
