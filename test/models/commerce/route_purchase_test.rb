@@ -119,4 +119,35 @@ class Commerce::RoutePurchaseTest < ActiveSupport::TestCase
   test "money columns reject negatives" do
     assert_not build_purchase(amount_cents: -1).valid?
   end
+
+  # Spec: route-commerce-owner-dashboard-design.md line 246 ("Automated
+  # post-refund access revocation is outside the first implementation unless a
+  # separate policy is approved") and line 316 (listed under Explicitly
+  # Deferred). A refund must NOT flip entitled? to false.
+  test "entitled? stays true after a refund, but generation_authorized? does not" do
+    purchase = build_purchase
+    purchase.save!
+    purchase.mark_paid!(order_id: "ord_1", actual_fee_cents: 1, paid_at: Time.current)
+
+    assert Commerce::RoutePurchase.entitled?(route_id: @route.id)
+    assert Commerce::RoutePurchase.generation_authorized?(route_id: @route.id)
+
+    purchase.mark_refunded!(refunded_amount_cents: 299, refunded_at: Time.current)
+
+    assert Commerce::RoutePurchase.entitled?(route_id: @route.id),
+      "a refunded customer keeps read access — revocation is deliberately deferred"
+    assert_not Commerce::RoutePurchase.generation_authorized?(route_id: @route.id),
+      "a refunded route must stop costing us money on new AI generation"
+  end
+
+  test "neither entitled? nor generation_authorized? are true for pending or failed" do
+    pending_purchase = build_purchase
+    pending_purchase.save!
+    assert_not Commerce::RoutePurchase.entitled?(route_id: @route.id)
+    assert_not Commerce::RoutePurchase.generation_authorized?(route_id: @route.id)
+
+    pending_purchase.update!(state: "failed", failure_reason: "declined")
+    assert_not Commerce::RoutePurchase.entitled?(route_id: @route.id)
+    assert_not Commerce::RoutePurchase.generation_authorized?(route_id: @route.id)
+  end
 end

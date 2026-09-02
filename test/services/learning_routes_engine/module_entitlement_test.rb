@@ -80,6 +80,32 @@ class LearningRoutesEngine::ModuleEntitlementTest < ActiveSupport::TestCase
     assert_not_equal before, Policy.cache_key(user: @user, step: @paid_step.reload)
   end
 
+  # Spec: route-commerce-owner-dashboard-design.md line 246 ("Automated
+  # post-refund access revocation is outside the first implementation unless a
+  # separate policy is approved") and line 316 (listed under Explicitly
+  # Deferred). Do NOT "fix" this test to expect access to be revoked — that
+  # would contradict the approved spec. If revocation is ever wanted, it needs
+  # its own explicitly-approved policy change, not a silent tightening here.
+  test "a refunded purchase keeps access because revocation is deliberately deferred" do
+    purchase = pay!
+    assert Policy.allowed_step?(user: @user, step_id: @paid_step.id)
+
+    purchase.mark_refunded!(refunded_amount_cents: 299, refunded_at: Time.current)
+
+    assert Policy.allowed_step?(user: @user, step_id: @paid_step.id)
+  end
+
+  test "the cache key's entitlement component still reflects the broadened (paid-or-refunded) definition" do
+    purchase = pay!
+    entitled_key = Policy.cache_key(user: @user, step: @paid_step.reload)
+    assert_includes entitled_key, "entitled"
+
+    purchase.mark_refunded!(refunded_amount_cents: 299, refunded_at: Time.current)
+    still_entitled_key = Policy.cache_key(user: @user, step: @paid_step.reload)
+    assert_includes still_entitled_key, "entitled"
+    assert_not_includes still_entitled_key, "unentitled"
+  end
+
   private
 
   def create_purchase(state:)
@@ -103,7 +129,8 @@ class LearningRoutesEngine::ModuleEntitlementTest < ActiveSupport::TestCase
   end
 
   def pay!
-    create_purchase(state: "pending")
-      .mark_paid!(order_id: "ord_#{SecureRandom.hex(3)}", actual_fee_cents: 45, paid_at: Time.current)
+    purchase = create_purchase(state: "pending")
+    purchase.mark_paid!(order_id: "ord_#{SecureRandom.hex(3)}", actual_fee_cents: 45, paid_at: Time.current)
+    purchase
   end
 end

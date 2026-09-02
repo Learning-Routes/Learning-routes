@@ -39,9 +39,13 @@ module LearningRoutesEngine
     end
     private_class_method :owned_step
 
+    # `.pick` on a Rails `enum` attribute returns the label ("preview"), not
+    # the underlying integer column value — confirmed empirically; the
+    # opposite assumption (that this needs an integer comparison) silently
+    # breaks every access check, because the DB stores an integer but
+    # ActiveRecord type-casts pick/pluck results through the enum mapping.
     def self.reachable?(step)
-      preview = RouteModule.access_states[:preview]
-      return true if step[:access_state] == preview || step[:access_state].to_s == "preview"
+      return true if step[:access_state] == "preview"
 
       Commerce::RoutePurchase.entitled?(route_id: step[:route_id])
     end

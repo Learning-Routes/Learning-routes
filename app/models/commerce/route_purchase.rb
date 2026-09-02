@@ -24,6 +24,10 @@ module Commerce
 
     scope :paid, -> { where(state: "paid") }
     scope :active_for_route, ->(route_id) { where(learning_route_id: route_id).where(state: %w[pending paid]) }
+    # A refund revokes nothing per spec (route-commerce-owner-dashboard-design.md
+    # line 246/316: automated post-refund access revocation is explicitly
+    # deferred). A refunded customer keeps what they already bought.
+    scope :entitling, -> { where(state: %w[paid refunded]) }
 
     def paid?     = state == "paid"
     def pending?  = state == "pending"
@@ -31,7 +35,24 @@ module Commerce
 
     # Entitlement in one bounded query. This is the hot path behind every locked
     # step read, so it must never load a record or traverse an association.
+    #
+    # A refunded purchase still counts: automatic post-refund access
+    # revocation is deliberately deferred (spec: route-commerce-owner-dashboard
+    # -design.md lines 246 and 316). Do not narrow this back to `paid` alone —
+    # that would revoke access the instant a refund is recorded, which the
+    # approved spec explicitly forbids absent a separate policy decision.
     def self.entitled?(route_id:)
+      return false if route_id.blank?
+
+      entitling.where(learning_route_id: route_id).exists?
+    end
+
+    # Spending money on NEW AI generation is a different question from read
+    # access, and must NOT follow the refunded-still-counts rule above: a
+    # refunded route must stop costing us money even though the customer keeps
+    # reading what was already generated. One bounded query, same shape as
+    # `entitled?`, deliberately `paid` only.
+    def self.generation_authorized?(route_id:)
       return false if route_id.blank?
 
       paid.where(learning_route_id: route_id).exists?
