@@ -27,6 +27,11 @@ Rails.application.routes.draw do
     resources :routes, only: [:show]
   end
 
+  namespace :commerce do
+    post "routes/:route_id/checkout", to: "checkouts#create", as: :route_checkout
+    post "webhooks/lemon_squeezy", to: "webhooks#lemon_squeezy", as: :lemon_squeezy_webhook
+  end
+
   # Profile
   get "profile", to: "profiles#show", as: :profile
 

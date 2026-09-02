@@ -1643,3 +1643,13 @@ es:
     onboarding_incomplete: "Incorporación incompleta"
     never: "Nunca"
     pagination: { label: "Páginas de usuarios", page: "Página %{current} de %{total}", previous: "Anterior", next: "Siguiente" }
+
+  # ── Comercio ──
+  commerce:
+    checkout:
+      no_quote: "Esta ruta todavía no tiene precio. Inténtalo de nuevo en un momento."
+      quote_expired: "Ese precio ha expirado. Actualiza la página para obtener uno nuevo."
+      already_purchased: "Ya tienes esta ruta."
+      provider_unavailable: "Los pagos no están disponibles en este momento."
+      provider_error: "No pudimos iniciar el pago. No se te ha cobrado nada."
+      unavailable: "El pago no está disponible en este momento."

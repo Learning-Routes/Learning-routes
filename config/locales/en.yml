@@ -1643,3 +1643,13 @@ en:
     onboarding_incomplete: "Onboarding incomplete"
     never: "Never"
     pagination: { label: "User pages", page: "Page %{current} of %{total}", previous: "Previous", next: "Next" }
+
+  # ── Commerce ──
+  commerce:
+    checkout:
+      no_quote: "This route does not have a price yet. Try again in a moment."
+      quote_expired: "That price has expired. Refresh the page to get a new one."
+      already_purchased: "You already own this route."
+      provider_unavailable: "Payments are not available right now."
+      provider_error: "We could not start the checkout. Nothing was charged."
+      unavailable: "Checkout is not available right now."

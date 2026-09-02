@@ -40,6 +40,23 @@ module Commerce
     scope :active, -> { where(superseded_at: nil) }
     scope :unattached, -> { where(attachment_state: "unattached") }
 
+    ATTACHMENT_STATES = %w[unattached checkout purchase].freeze
+
+    def attached? = attachment_state != "unattached"
+
+    # `unattached -> checkout -> purchase` only, and never backwards. An attached
+    # quote is the price the customer agreed to; nothing may move it.
+    def attach!(state)
+      raise ArgumentError, "unknown attachment state #{state}" unless ATTACHMENT_STATES.include?(state)
+
+      allowed = { "unattached" => ["checkout"], "checkout" => ["purchase"], "purchase" => [] }
+      unless allowed.fetch(attachment_state, []).include?(state)
+        raise ArgumentError, "cannot move an attached quote from #{attachment_state} to #{state}"
+      end
+
+      update!(attachment_state: state)
+    end
+
     def self.create_snapshot!(attributes)
       route = LearningRoutesEngine::LearningRoute.find(attributes.fetch(:learning_route).id)
       route.with_lock do
