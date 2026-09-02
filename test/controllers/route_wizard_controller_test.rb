@@ -1,17 +1,11 @@
 require "test_helper"
 
 class RouteWizardControllerTest < ActionDispatch::IntegrationTest
+  # Owns its user — see the note in test_helper.rb. The wizard requires a
+  # verified email, which is now set at creation instead of being patched onto
+  # whichever user the class happened to adopt.
   def setup
-    @user = Core::User.first || Core::User.create!(
-      name: "Test User",
-      email: "test-wizard@example.com",
-      password: "password123",
-      password_confirmation: "password123"
-    )
-    # Wizard controller requires a verified email; existing fixture/first
-    # users may have a nil email_verified_at, which causes the before_action
-    # chain to redirect to /verify_pending and tests to assert against that 302.
-    @user.update!(email_verified_at: Time.current) if @user.email_verified_at.nil?
+    @user = create_test_user(email_verified_at: Time.current)
   end
 
   def sign_in(user)
