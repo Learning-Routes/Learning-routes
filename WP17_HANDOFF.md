@@ -1,6 +1,6 @@
 # WP-17 Handoff
 
-Branch: `wp17-route-commerce-foundation` (based on WP-16 `847978f`). No production access, live provider call, checkout/payment integration, merge, push, or deployment occurred.
+Branch: `wp17-route-commerce-foundation`, updated by merge commit `a9b95ff` from corrected WP-16 main (`a4e4cf6`) without rewriting WP-17 commits. No production access, live provider call, checkout/payment integration, push, or deployment occurred during WP-17 implementation.
 
 ## Delivered
 
@@ -26,15 +26,15 @@ All monetary truth uses integer, `Rational`, or exact ceiling operations. Markup
 
 ## Verification
 
-- Focused WP-17, migration, concurrency, authorization, and browser suite: seed `18201`, 126 runs, 595 assertions, 0 failures/errors.
-- Main suite: seeds `18202`, `18203`, `18204`; each 407 runs, 1699 assertions, 0 failures/errors.
-- Combined suite: seeds `18211`, `18212`, `18213`; each 736 runs, 2660 assertions, exactly 3 failures/1 error:
+- Final focused WP-17, migration, concurrency, authorization, and browser suite: seed `18481`, 137 runs, 777 assertions, 0 failures/errors.
+- Main suite: seeds `18482`, `18483`, `18484`; each 409 runs, 1724 assertions, 0 failures/errors.
+- Combined suite: seeds `18491`, `18492`, `18493`; each 738 runs, 2685 assertions, exactly the same 3 failures/1 error:
   - `LearningRoutesEngine::GapAnalysisJobTest#test_enqueues_reinforcement_job_when_gaps_found`
   - `LearningRoutesEngine::ReinforcementJobTest#test_generates_reinforcement_routes_for_unresolved_gaps`
   - `LearningRoutesEngine::RouteGenerationJobTest#test_generates_route_and_creates_steps`
   - `LearningRoutesEngine::RouteGeneratorTest#test_route_has_level-up_exams_and_final_exam`
-- Browser seed `18006`: 4 runs, 24 assertions, green; covers preview/locked presentation, direct denial, admin navigation/search/pagination, responsive layout, and light/dark themes.
-- RuboCop: 501 files, no offenses. Bundler Audit: no vulnerabilities. Brakeman: one existing medium `permit!` warning in `BlockAttemptsController`. Importmap: six known out-of-scope Mermaid/DOMPurify advisories.
+- Browser seeds `18471` through `18480`: each 3 runs, 27 assertions, green; covers admin navigation/search/pagination, user/route drill-down, responsive layout, light/dark themes, and hard non-owner denial. The complete focused suite also covers preview/locked presentation and direct denial.
+- No pending test migrations; Zeitwerk eager load passed. RuboCop: 501 files, no offenses. Bundler Audit: no vulnerabilities. Brakeman: one existing medium `permit!` warning in `BlockAttemptsController`. Importmap: six known out-of-scope Mermaid/DOMPurify advisories.
 
 ## Deferred to WP-18
 
