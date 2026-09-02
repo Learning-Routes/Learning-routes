@@ -1,0 +1,37 @@
+<%# Shown when this step has no content yet AND this user is not authorized to
+    commission new generation for it — today that means the route's purchase was
+    refunded (reads survive a refund by approved policy; new AI spend does not).
+
+    Deliberately NOT `_content_failed`: that partial says "we couldn't build this
+    lesson" and offers a retry button. Both would be untrue here. Nothing failed,
+    and no amount of retrying will produce the lesson, because the decision is a
+    policy one and not a transient error. A spinner would be worse still — the
+    poll endpoint re-runs load_step_content, so an unauthorized step would spin
+    every 3s forever against a decision that will never change on its own.
+
+    The step's existing content, where there is any, is untouched and still
+    rendered by the normal branches of _step_content_frame. %>
+
+<div style="max-width:560px; margin:48px auto; padding:28px 32px; border-radius:14px;
+            background:var(--color-surface-muted, rgba(120,120,120,0.05));
+            border:1px solid var(--color-border-subtle, rgba(120,120,120,0.16));
+            font-family:'DM Sans',sans-serif; text-align:center;">
+
+  <div style="font-size:1.6rem; margin-bottom:10px;">🔒</div>
+
+  <h2 style="font-size:1.05rem; font-weight:600; margin:0 0 10px;
+             color:var(--color-text-primary, #2C2C2C);">
+    <%= t("learning_engine.content_unavailable.title") %>
+  </h2>
+
+  <p style="font-size:0.85rem; line-height:1.55; margin:0 0 20px;
+            color:var(--color-text-secondary, #6B6B6B);">
+    <%= t("learning_engine.content_unavailable.body") %>
+  </p>
+
+  <div style="margin-top:18px;">
+    <%= link_to t("learning_engine.content_unavailable.back"),
+                route_path(@route),
+                style: "font-size:0.78rem; color:var(--color-text-secondary, #6B6B6B);" %>
+  </div>
+</div>

@@ -51,7 +51,9 @@ module LearningRoutesEngine
       if @step.requires_quiz? && !@step.quiz_passed_by?(current_user)
         @step_quiz = @step.step_quiz
         if @step_quiz.nil?
-          StepQuizGenerationJob.perform_later(@step.id) unless @step.metadata&.dig("step_quiz_generated")
+          if generation_authorized? && !@step.metadata&.dig("step_quiz_generated")
+            StepQuizGenerationJob.perform_later(@step.id)
+          end
           @quiz_generating = true
         else
           @questions = @step_quiz.questions.order(:created_at)
@@ -114,6 +116,25 @@ module LearningRoutesEngine
       head :forbidden
     end
 
+    # May THIS request commission new paid AI work on this step?
+    #
+    # `authorize_module_access!` above is the READ gate and resolves through
+    # `RoutePurchase.entitled?`, which counts `refunded` by design — the approved
+    # spec defers post-refund read revocation and we are not narrowing it here.
+    # But every enqueue in this controller was riding on that same read answer,
+    # so a refunded route still commissioned `lesson_content`, the single most
+    # expensive call the app makes, plus quiz, assessment and audio work.
+    #
+    # Memoized: `show` asks up to four times per request and this is two bounded
+    # queries.
+    def generation_authorized?
+      return @generation_authorized if defined?(@generation_authorized)
+
+      @generation_authorized = ModuleAccessPolicy.generation_allowed?(
+        user: current_user, route_id: params[:route_id], step_id: params[:id]
+      )
+    end
+
     def ensure_step_accessible!
       if @step.locked?
         redirect_to learning_routes_engine.route_path(@route),
@@ -148,6 +169,16 @@ module LearningRoutesEngine
     # mechanism the wizard and the background job use, so no path can double-enqueue a
     # step that is already in flight and pay for it twice.
     def prefetch_upcoming_steps!
+      # Deliberately NOT gated on `generation_authorized?` for the step being
+      # viewed. `pending_step_ids` returns preview-module steps only, so what it
+      # prefetches is free content, free for everyone — gating it on the current
+      # step would stop a refunded student warming the free preview, which the
+      # policy explicitly protects.
+      #
+      # ContentPrefetcher's preview-only filter IS the spend boundary here. When
+      # Task 8 widens it to `purchased` modules, this call must start filtering
+      # by `ModuleAccessPolicy.generation_allowed?` per prefetched step, or a
+      # refunded route silently resumes prefetching paid lessons two at a time.
       step_ids = ContentPrefetcher.pending_step_ids(
         @route, after_position: @step.position, limit: 2
       )
@@ -179,6 +210,15 @@ module LearningRoutesEngine
     #
     # Sets @content_generating / @content_failed / @content_error for the view.
     def request_content_generation!
+      # A refunded route keeps every lesson it already has, but must not
+      # commission a new one. Answered before the generating/backoff branches so
+      # a step that was mid-flight at refund time also stops here rather than
+      # polling a skeleton that will never resolve.
+      unless generation_authorized?
+        @content_unavailable = true
+        return
+      end
+
       metadata = @step.metadata || {}
 
       if metadata["content_generating"]
@@ -264,9 +304,11 @@ module LearningRoutesEngine
         @rendered_html = ContentEngine::MarkdownRenderer.render(@content.body) if @content
       when "assessment"
         @assessment = Assessments::Assessment.find_by(route_step: @step)
-        unless @assessment
+        if @assessment.nil? && generation_authorized?
           begin; LearningRoutesEngine::AssessmentGenerationJob.perform_later(@step.id); rescue => e; Rails.logger.error("Assessment generation failed for step ##{@step.id}: #{e.message}"); end
           @assessment_generating = true
+        elsif @assessment.nil?
+          @content_unavailable = true
         end
         @existing_result = Assessments::AssessmentResult.find_by(
           user: current_user, assessment: @assessment
@@ -284,6 +326,11 @@ module LearningRoutesEngine
 
       # If no text content yet, generate it first via pipeline
       unless @content
+        unless generation_authorized?
+          @content_unavailable = true
+          return
+        end
+
         unless @step.metadata&.dig("content_generating")
           begin
             LearningRoutesEngine::ContentPipelineJob.perform_later(@step.id, { pregenerate_audio: true })
@@ -311,7 +358,7 @@ module LearningRoutesEngine
       end
 
       # If text content exists but audio hasn't been generated, trigger on-demand
-      if @content.needs_audio?
+      if @content.needs_audio? && generation_authorized?
         begin
           ContentEngine::AudioGenerationJob.perform_later(@step.id)
           @content.mark_audio_generating!

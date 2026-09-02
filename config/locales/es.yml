@@ -1000,6 +1000,10 @@ es:
       badge_scenario: "ESCENARIO"
       badge_simulation: "SIMULACIÓN"
       badge_playground: "PRÁCTICA"
+    content_unavailable:
+      title: "Esta lección no se está generando"
+      body: "Tu compra de esta ruta fue reembolsada, por lo que no se crean lecciones nuevas para ella. Todo lo que ya se generó sigue disponible para leer."
+      back: "Volver a la ruta"
     content_failed:
       title: "No pudimos crear esta lección"
       body: "Algo salió mal al generar el contenido de este paso. No se ha perdido nada — puedes intentarlo de nuevo en unos minutos, o continuar y volver más tarde."

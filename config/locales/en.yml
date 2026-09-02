@@ -1000,6 +1000,10 @@ en:
       badge_scenario: "SCENARIO"
       badge_simulation: "SIMULATION"
       badge_playground: "PLAYGROUND"
+    content_unavailable:
+      title: "This lesson isn't being generated"
+      body: "Your purchase for this route was refunded, so new lessons aren't being created for it. Anything already generated stays available to read."
+      back: "Back to the route"
     content_failed:
       title: "We couldn't build this lesson"
       body: "Something went wrong while generating the content for this step. It hasn't been lost — you can try again in a few minutes, or move on and come back to it."
