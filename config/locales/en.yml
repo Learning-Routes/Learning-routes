@@ -1628,7 +1628,7 @@ en:
       available: "Quote available"
       unavailable: "Quote unavailable"
       estimated_cost: "Estimated full-route AI cost: %{amount}"
-      blocked: { not_quoted: "No quote has been created", pricing_configuration_missing: "Required pricing configuration is missing" }
+      blocked: { not_quoted: "No quote has been created", pricing_configuration_missing: "Required pricing configuration is missing", estimator_configuration_missing: "AI cost estimator configuration is missing", fee_configuration_missing: "Payment provider fee configuration is missing", no_paid_modules: "This route has no paid modules to price", quote_error: "Quoting failed unexpectedly — see the logs" }
     filters: { all_activity: "All activity", active: "Active in 30 days", inactive: "Inactive", all_routes: "All route states" }
     fields: { user: "User", registered: "Registered", last_activity: "Last activity", routes: "Routes", progress: "Educational progress", readiness: "Purchase readiness", cost: "Exact AI cost" }
     states: { draft: "Draft", active: "Active", completed: "Completed", paused: "Paused" }

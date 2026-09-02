@@ -1628,7 +1628,7 @@ es:
       available: "Cotización disponible"
       unavailable: "Cotización no disponible"
       estimated_cost: "Costo estimado de IA de la ruta completa: %{amount}"
-      blocked: { not_quoted: "No se ha creado una cotización", pricing_configuration_missing: "Falta configuración de precios requerida" }
+      blocked: { not_quoted: "No se ha creado una cotización", pricing_configuration_missing: "Falta configuración de precios requerida", estimator_configuration_missing: "Falta la configuración del estimador de costos de IA", fee_configuration_missing: "Falta la configuración de comisiones del proveedor de pago", no_paid_modules: "Esta ruta no tiene módulos de pago que cotizar", quote_error: "La cotización falló inesperadamente: consulta los registros" }
     filters: { all_activity: "Toda actividad", active: "Activo en 30 días", inactive: "Inactivo", all_routes: "Todos los estados" }
     fields: { user: "Usuario", registered: "Registro", last_activity: "Última actividad", routes: "Rutas", progress: "Progreso educativo", readiness: "Preparación de compra", cost: "Costo exacto de IA" }
     states: { draft: "Borrador", active: "Activa", completed: "Completada", paused: "Pausada" }
