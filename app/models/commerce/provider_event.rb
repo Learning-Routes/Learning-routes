@@ -14,7 +14,7 @@ module Commerce
 
     EVIDENCE_KEYS = %w[
       order_id checkout_id store_id product_id variant_id
-      amount_cents currency actual_fee_cents refunded_amount_cents
+      amount_cents discount_cents currency actual_fee_cents refunded_amount_cents
       route_id quote_id user_id status occurred_at
     ].freeze
 

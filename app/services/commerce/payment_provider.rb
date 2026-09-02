@@ -11,9 +11,14 @@ module Commerce
 
     Checkout = Data.define(:checkout_id, :checkout_url, :store_id, :product_id, :variant_id, :test_mode)
 
+    # `amount_cents` is what the customer paid FOR OUR ITEM excluding tax.
+    # `discount_cents` is carried separately rather than folded away, so a
+    # discounted order is diagnosable as its own condition instead of arriving
+    # as an indistinguishable amount mismatch.
     Event = Data.define(
       :identity, :name, :test_mode, :store_id, :order_id, :checkout_id,
-      :amount_cents, :currency, :actual_fee_cents, :refunded_amount_cents,
+      :amount_cents, :discount_cents, :currency, :actual_fee_cents,
+      :refunded_amount_cents,
       :custom_route_id, :custom_quote_id, :custom_user_id, :status
     )
 

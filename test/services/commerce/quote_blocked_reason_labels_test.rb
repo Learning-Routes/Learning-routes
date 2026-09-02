@@ -43,6 +43,45 @@ module Commerce
       end
     end
 
+    # The webhook rejection ladder gets the same treatment. Nothing renders these
+    # yet — Task 10 owns the owner-dashboard commerce screen — but they are
+    # derived from OrderProcessor rather than invented, so the list cannot drift,
+    # and Task 10 inherits a complete set instead of rediscovering it.
+    REJECTION_REASONS_SOURCE = Rails.root.join("app/services/commerce/order_processor.rb")
+
+    test "every webhook rejection reason has a distinct label in every locale" do
+      reasons = File.read(REJECTION_REASONS_SOURCE).scan(/return "([a-z_]+)"/).flatten.uniq
+      assert_operator reasons.size, :>=, 14, "the rejection ladder shrank; check this test still mirrors it"
+
+      LOCALES.each do |locale|
+        seen = {}
+        reasons.each do |reason|
+          label = I18n.t("admin.quotes.rejected.#{reason}", locale: locale, default: nil)
+
+          assert label.present?,
+            "admin.quotes.rejected.#{reason} is missing in #{locale}; the operator would " \
+            "see a raw reason code, or nothing, for a customer who has been charged"
+          assert_nil seen[label],
+            "#{reason} and #{seen[label]} share a label in #{locale}; they are different " \
+            "conditions and need different diagnoses"
+          seen[label] = reason
+        end
+      end
+    end
+
+    # A discount is charged by the provider and then refused by us, so it must be
+    # diagnosable as itself rather than as a tampered amount.
+    test "the discount rejection is not worded as an amount mismatch" do
+      LOCALES.each do |locale|
+        discount = I18n.t("admin.quotes.rejected.discount_not_supported", locale: locale)
+        mismatch = I18n.t("admin.quotes.rejected.amount_mismatch", locale: locale)
+
+        assert_not_equal mismatch, discount
+        assert I18n.t("admin.commerce_notes.discounts_unsupported", locale: locale, default: nil).present?,
+          "the operator note that stops a discount code being created is missing in #{locale}"
+      end
+    end
+
     # Guards the list above against drifting away from the code it mirrors.
     test "the reasons under test are the ones the services can actually emit" do
       emitted = Dir[Rails.root.join("app/services/commerce/*.rb")]

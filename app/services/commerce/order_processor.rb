@@ -134,6 +134,7 @@ module Commerce
       {
         "order_id" => @event.order_id, "checkout_id" => @event.checkout_id,
         "store_id" => @event.store_id, "amount_cents" => @event.amount_cents,
+        "discount_cents" => @event.discount_cents,
         "currency" => @event.currency, "actual_fee_cents" => @event.actual_fee_cents,
         "route_id" => @event.custom_route_id, "quote_id" => @event.custom_quote_id,
         "user_id" => @event.custom_user_id, "status" => @event.status
@@ -186,6 +187,17 @@ module Commerce
       return "ownership_mismatch" unless quote.user_id == user.id && quote.learning_route_id == route.id
       return "ownership_mismatch" unless LearningRoutesEngine::LearningProfile
         .where(id: route.learning_profile_id, user_id: user.id).exists?
+
+      # A discount code is not an amount mismatch and must not be diagnosed as
+      # one. We never offer discounts: the checkout is created with an explicit
+      # `custom_price` taken from the quote, so any `discount_total` was applied
+      # in the provider's dashboard, after the price was agreed. Refusing to
+      # entitle at a price we never offered is the deliberate policy — but the
+      # trigger is a button in the Lemon Squeezy UI, not a code change, so the
+      # operator needs to see WHY rather than hunt a phantom tampering bug.
+      #
+      # Checked before the amount, which a discount would fail anyway.
+      return "discount_not_supported" if @event.discount_cents.to_i.positive?
 
       # The price is the LOCAL quote's, never the provider's claim.
       return "amount_mismatch" unless @event.amount_cents == quote.final_price_cents

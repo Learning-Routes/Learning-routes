@@ -110,9 +110,11 @@ module Commerce
           #
           # `discount_total` is subtracted rather than ignored, so a store-wide
           # or dashboard discount code leaves the customer paying less than
-          # quoted and still fails the equality check instead of entitling for
-          # a price we never offered.
+          # quoted instead of entitling for a price we never offered. It is also
+          # carried through as `discount_cents` so OrderProcessor can name that
+          # case rather than report it as an amount mismatch.
           amount_cents: net_item_cents(attributes),
+          discount_cents: integer_or_nil(attributes["discount_total"]) || 0,
           currency: attributes["currency"].to_s,
           actual_fee_cents: integer_or_nil(attributes["fee"] || attributes["total_fee"]),
           refunded_amount_cents: integer_or_nil(attributes["refunded_amount"]),

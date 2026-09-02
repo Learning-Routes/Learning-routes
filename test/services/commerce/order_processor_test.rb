@@ -65,7 +65,7 @@ module Commerce
       Commerce::PaymentProvider::Event.new(**{
         identity: "order_created:ord_1", name: "order_created", test_mode: true,
         store_id: "1", order_id: "ord_1", checkout_id: "chk_#{@quote.id}",
-        amount_cents: @quote.final_price_cents, currency: "USD",
+        amount_cents: @quote.final_price_cents, discount_cents: 0, currency: "USD",
         actual_fee_cents: 45, refunded_amount_cents: 0,
         custom_route_id: @route.id, custom_quote_id: @quote.id, custom_user_id: @user.id,
         status: "paid"
@@ -155,6 +155,23 @@ module Commerce
       assert result.processed?, result.try(:reason)
       assert_equal "paid", result.purchase.reload.state
       assert_equal 1, Commerce::ProviderEvent.where(event_identity: "order_created:ord_1").count
+    end
+
+    # We never offer discounts — the checkout carries an explicit `custom_price`
+    # from the quote — so a `discount_total` was applied in the provider's
+    # dashboard after the price was agreed. Refusing is the deliberate policy;
+    # diagnosing it as a tampered amount is not.
+    test "a discounted order is rejected under its own reason, not amount_mismatch" do
+      result = process(event(amount_cents: @quote.final_price_cents - 100, discount_cents: 100))
+
+      assert_not result.processed?
+      assert_equal "discount_not_supported", result.reason
+
+      stored = Commerce::ProviderEvent.find_by!(event_identity: "order_created:ord_1")
+      assert_equal "discount_not_supported", stored.rejection_reason
+      assert_equal 100, stored.evidence["discount_cents"],
+        "the operator needs the discount amount to diagnose this without the provider dashboard"
+      assert_equal 0, Commerce::RoutePurchase.paid.count
     end
 
     test "a currency, store or mode mismatch is rejected" do
@@ -333,7 +350,7 @@ module Commerce
       body_event = Commerce::PaymentProvider::Event.new(
         identity: EVENT_IDENTITY, name: "order_created", test_mode: true,
         store_id: "1", order_id: "ord_concurrent", checkout_id: "chk_#{@quote.id}",
-        amount_cents: @quote.final_price_cents, currency: "USD",
+        amount_cents: @quote.final_price_cents, discount_cents: 0, currency: "USD",
         actual_fee_cents: 45, refunded_amount_cents: 0,
         custom_route_id: @route.id, custom_quote_id: @quote.id, custom_user_id: @user.id,
         status: "paid"
@@ -411,7 +428,7 @@ module Commerce
       Commerce::PaymentProvider::Event.new(
         identity: identity, name: "order_created", test_mode: true,
         store_id: "1", order_id: order_id, checkout_id: "chk_#{quote.id}",
-        amount_cents: quote.final_price_cents, currency: "USD",
+        amount_cents: quote.final_price_cents, discount_cents: 0, currency: "USD",
         actual_fee_cents: 45, refunded_amount_cents: 0,
         custom_route_id: @route.id, custom_quote_id: quote.id, custom_user_id: @user.id,
         status: "paid"
