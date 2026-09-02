@@ -83,6 +83,8 @@ class OwnerDashboardTest < ApplicationSystemTestCase
     visit core.sign_in_path
     fill_in "email", with: @owner.email
     fill_in "password", with: "password123"
+    assert_field "email", with: @owner.email
+    assert_field "password", with: "password123"
     find("input[type='submit']").click
     assert_current_path main_app.profile_path, wait: 5
   end
