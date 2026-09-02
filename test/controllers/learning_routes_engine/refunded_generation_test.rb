@@ -127,6 +127,22 @@ class LearningRoutesEngine::RefundedGenerationTest < ActionDispatch::Integration
     end
   end
 
+  # Found by sweeping every paid enqueue rather than trusting the docstring's
+  # list. `Assessments::ResultsController` authorizes on RESULT OWNERSHIP alone,
+  # which stays true after a refund, and GapAnalyzer plus ReinforcementGenerator
+  # are two paid Orchestrate calls per submit.
+  test "a refunded route enqueues no gap analysis when an assessment is submitted" do
+    refund!
+    assessment = Assessments::Assessment.create!(
+      route_step: @paid_step, assessment_type: :step_quiz, passing_score: 70
+    )
+    result = Assessments::AssessmentResult.create!(user: @user, assessment: assessment)
+
+    assert_no_enqueued_jobs(only: LearningRoutesEngine::GapAnalysisJob) do
+      post assessments.submit_result_path(result), as: :json
+    end
+  end
+
   # ── the free preview is unaffected for everyone ─────────────────────────
 
   test "the free preview still generates for a user with no purchase at all" do
