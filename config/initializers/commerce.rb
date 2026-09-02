@@ -14,6 +14,22 @@ Rails.application.config.x.commerce_fee_configuration = {
 # The estimator's per-call assumptions. Versioned so an old quote stays
 # explainable after rates change. Supplied as YAML in credentials under
 # `commerce.estimator`, or left absent to block quoting.
+# How long a price this customer has ALREADY BEEN SHOWN for a route is honoured
+# if a later re-quote comes out higher.
+#
+# Re-quoting an existing route is deterministic: RouteQuoteBuilder reads the
+# route's own shape, the estimator rates and PricingConstants, so the number
+# only moves when the OWNER changes something and deploys. This window
+# therefore costs nothing except in exactly the case it exists for — a customer
+# who saw a price shortly before a deliberate price rise — and it is bounded so
+# a year-old quote can never bind us.
+#
+# A default is correct here, unlike the provider values above: this is a policy
+# choice with a safe answer, not an account-specific secret that must fail closed.
+Rails.application.config.x.commerce_quote_honour_window =
+  (Rails.application.credentials.dig(:commerce, :quote_honour_window_days).presence ||
+    ENV["COMMERCE_QUOTE_HONOUR_WINDOW_DAYS"].presence || 30).to_i.days
+
 Rails.application.config.x.commerce_estimator =
   (Rails.application.credentials.dig(:commerce, :estimator) || {}).deep_symbolize_keys.freeze
 

@@ -79,7 +79,7 @@ module Commerce
       assert_equal 0, Commerce::RoutePurchase.count
     end
 
-    test "an expired quote is rejected" do
+    test "an expired quote with no way to re-price reports that it could not be priced" do
       # `commerce_route_quotes_immutable_guard` blocks ANY change to expires_at on
       # UPDATE (that is the point of the trigger), so an already-persisted quote can
       # never be pushed into the past with update_column. Simulate a quote whose
@@ -93,7 +93,11 @@ module Commerce
       result = create
 
       assert_not result.created?
-      assert_equal "quote_expired", result.reason
+      # No estimator configuration exists in the test environment, so the
+      # re-quote fails closed. The customer is told the truth — we could not
+      # work out a price — instead of the old "refresh the page to get a new
+      # one", which nothing would ever have produced.
+      assert_equal "pricing_unavailable", result.reason
       assert_equal 0, Commerce::RoutePurchase.count
     end
 

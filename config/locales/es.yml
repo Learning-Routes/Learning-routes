@@ -1654,8 +1654,10 @@ es:
   # ── Comercio ──
   commerce:
     checkout:
-      no_quote: "Esta ruta todavía no tiene precio. Inténtalo de nuevo en un momento."
-      quote_expired: "Ese precio ha expirado. Actualiza la página para obtener uno nuevo."
+      no_quote: "No pudimos calcular un precio para esta ruta. No se te ha cobrado nada; inténtalo de nuevo en unos minutos."
+      pricing_unavailable: "No pudimos calcular un precio para esta ruta. No se te ha cobrado nada; inténtalo de nuevo en unos minutos."
+      no_paid_modules: "Esta ruta es gratuita: no hay nada que comprar."
+      quote_expired: "Ese precio ha expirado. Vuelve a iniciar el pago para obtener uno actual."
       already_purchased: "Ya tienes esta ruta."
       provider_unavailable: "Los pagos no están disponibles en este momento."
       provider_error: "No pudimos iniciar el pago. No se te ha cobrado nada."

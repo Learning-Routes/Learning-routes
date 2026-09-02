@@ -9,7 +9,8 @@ module Commerce
       def available? = false
     end
 
-    def self.call(route:, estimator_configuration:, fee_configuration:, expires_in: 24.hours)
+    def self.call(route:, estimator_configuration:, fee_configuration:,
+                  expires_in: RouteQuote::DEFAULT_VALIDITY)
       new(route, estimator_configuration, fee_configuration, expires_in).call
     end
 

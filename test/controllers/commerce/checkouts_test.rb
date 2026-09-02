@@ -96,17 +96,21 @@ module Commerce
       assert_equal 0, resolve_calls, "neither the unowned nor the missing route should reach the payment provider"
     end
 
-    test "a route with no quote is rejected as unprocessable with the localized message" do
+    # No quote AND no estimator configuration (none is set in test): checkout now
+    # tries to mint one and reports that it could not, rather than the old
+    # `no_quote` "this route does not have a price yet", which implied a price
+    # was on its way when nothing would ever produce one.
+    test "a route that cannot be priced is rejected as unprocessable with the localized message" do
       sign_in_as(@user)
 
       with_fake_provider do
         post commerce_route_checkout_path(@route.id), as: :json
         assert_response :unprocessable_entity
-        assert_equal "no_quote", JSON.parse(response.body)["error"]
+        assert_equal "pricing_unavailable", JSON.parse(response.body)["error"]
 
         post commerce_route_checkout_path(@route.id)
         assert_response :see_other
-        assert_equal I18n.t("commerce.checkout.no_quote"), flash[:alert]
+        assert_equal I18n.t("commerce.checkout.pricing_unavailable"), flash[:alert]
       end
       assert_equal 0, Commerce::RoutePurchase.count
     end

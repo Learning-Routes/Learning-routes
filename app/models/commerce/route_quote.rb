@@ -42,6 +42,10 @@ module Commerce
 
     ATTACHMENT_STATES = %w[unattached checkout purchase].freeze
 
+    # How long a freshly minted quote stays usable. Defined here rather than as
+    # RouteQuoteBuilder's default argument now that two callers mint quotes.
+    DEFAULT_VALIDITY = 24.hours
+
     def attached? = attachment_state != "unattached"
 
     # `unattached -> checkout -> purchase` only, and never backwards. An attached
