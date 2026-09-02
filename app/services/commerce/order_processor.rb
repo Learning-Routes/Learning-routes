@@ -20,6 +20,12 @@ module Commerce
 
     SUPPORTED_EVENTS = %w[order_created].freeze
 
+    # The name of the partial unique index that IS the single-paid-purchase
+    # boundary. Only a violation of this specific constraint is a routine
+    # concurrent-payment race; any other uniqueness violation is a real error
+    # and must propagate, not be swallowed as "already paid".
+    SINGLE_PAID_INDEX_NAME = "idx_route_purchases_single_paid"
+
     def self.call(event:, provider_name:)
       new(event, provider_name).call
     end
@@ -30,10 +36,13 @@ module Commerce
     end
 
     def call
-      return Ignored.new(reason: "unsupported_event") unless SUPPORTED_EVENTS.include?(@event.name)
-
-      # Claim FIRST. The unique index decides which concurrent delivery of the
-      # same identity proceeds; the loser stops here without touching a purchase.
+      # Claim FIRST, regardless of event type. The unique index decides which
+      # concurrent delivery of the same identity proceeds; the loser stops here
+      # without touching a purchase. Claiming before the SUPPORTED_EVENTS check
+      # (fix round 1, finding C1) means even an event type we do not process —
+      # today that's only `order_refunded`, since Task 9 will intercept refunds
+      # in the controller before OrderProcessor is ever consulted — is durably
+      # recorded rather than silently dropped.
       record = ProviderEvent.claim!(
         provider: @provider_name, event_identity: @event.identity, event_name: @event.name,
         test_mode: @event.test_mode, evidence: evidence
@@ -43,20 +52,46 @@ module Commerce
       reason = rejection_reason
       if reason
         record.mark_rejected!(reason: reason)
-        Rails.logger.error(
-          "[Webhook] rejected #{@event.name} #{@event.identity}: #{reason} " \
-          "route=#{@event.custom_route_id} quote=#{@event.custom_quote_id}"
-        )
+        log_rejection(reason)
         return Rejected.new(reason: reason)
       end
 
-      purchase = apply!
+      begin
+        purchase = apply!
+      rescue ActiveRecord::RecordNotUnique => e
+        # Two DISTINCT event identities for the same route can both pass the
+        # (unlocked) `already_paid` read above and both reach `apply!`. Only one
+        # `mark_paid!` can win `idx_route_purchases_single_paid`; the loser's
+        # write raises here. `apply!`'s own `transaction do...end` has already
+        # rolled back by the time this rescue runs (Rails issues ROLLBACK before
+        # re-raising out of the block), so the connection is clean and this
+        # write below can still commit — positioning the rescue OUTSIDE that
+        # transaction is exactly what avoids the poisoned-transaction trap
+        # Task 3 hit with `ProviderEvent.claim!`.
+        raise unless single_paid_purchase_conflict?(e)
+
+        record.mark_rejected!(reason: "already_paid")
+        log_rejection("already_paid")
+        return Rejected.new(reason: "already_paid")
+      end
+
       record.mark_processed!
       PaidModuleGenerationJob.perform_later(purchase.id)
       Processed.new(purchase: purchase)
     end
 
     private
+
+    def log_rejection(reason)
+      Rails.logger.error(
+        "[Webhook] rejected #{@event.name} #{@event.identity}: #{reason} " \
+        "route=#{@event.custom_route_id} quote=#{@event.custom_quote_id}"
+      )
+    end
+
+    def single_paid_purchase_conflict?(error)
+      (error.cause&.message || error.message).to_s.include?(SINGLE_PAID_INDEX_NAME)
+    end
 
     def evidence
       {
@@ -85,6 +120,8 @@ module Commerce
     # is genuinely already entitled (e.g. this event belongs to a superseded
     # quote) is never re-recovered into a second purchase.
     def rejection_reason
+      return "unsupported_event" unless SUPPORTED_EVENTS.include?(@event.name)
+
       return "mode_mismatch" unless @event.test_mode == !!configured[:test_mode]
       return "store_mismatch" unless @event.store_id.to_s == configured[:store_id].to_s
       return "currency_mismatch" unless @event.currency == "USD"

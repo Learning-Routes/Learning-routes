@@ -128,12 +128,25 @@ module Commerce
       assert_equal "unknown_user",  process(event(identity: "u3", custom_user_id: SecureRandom.uuid)).reason
     end
 
-    test "an out-of-order refund arriving before the order is ignored, not applied" do
+    # FINDING C1 (fix round 1): a real, correctly signed `order_refunded`
+    # delivery must never be silently dropped. OrderProcessor claims the event
+    # identity BEFORE checking whether it supports the event type, so even an
+    # unsupported type leaves a durable, reconciliation-visible row — it is
+    # rejected, not merely ignored in memory. (Task 9 will route
+    # `order_refunded` to a dedicated RefundProcessor in the controller before
+    # OrderProcessor is ever consulted; until then, this is the correct
+    # fail-safe behavior.)
+    test "an out-of-order refund arriving before the order is durably recorded, not applied" do
       result = Commerce::OrderProcessor.call(
-        event: event(identity: "r1", name: "order_refunded"), provider_name: "lemon_squeezy"
+        event: event(identity: "order_refunded:ord_1", name: "order_refunded"), provider_name: "lemon_squeezy"
       )
       assert_not result.processed?
       assert_equal "unsupported_event", result.reason
+
+      stored = Commerce::ProviderEvent.find_by!(event_identity: "order_refunded:ord_1")
+      assert_equal "rejected", stored.processing_state
+      assert_equal "unsupported_event", stored.rejection_reason
+      assert_equal 0, Commerce::RoutePurchase.paid.count
     end
 
     test "a rejected event is recorded with its reason for reconciliation" do
@@ -216,6 +229,7 @@ module Commerce
 
     EMAIL_PATTERN = "order-processor-concurrency-%"
     EVENT_IDENTITY = "order_created:ord_concurrent"
+    RACE_IDENTITIES = %w[order_created:ord_race_a order_created:ord_race_b].freeze
 
     setup do
       delete_concurrency_records
@@ -285,7 +299,70 @@ module Commerce
       assert_equal 1, Commerce::ProviderEvent.where(event_identity: body_event.identity).count
     end
 
+    # FINDING I2 (fix round 1): TWO DISTINCT event identities for the SAME
+    # route — not a replay of one identity, which the test above already
+    # covers. A second, independently valid quote/pending-purchase pair for
+    # @route is built so both threads have a real row to move to `paid`; only
+    # one can win `idx_route_purchases_single_paid`. Before the fix, the
+    # loser's `mark_paid!` raised `ActiveRecord::RecordNotUnique` straight out
+    # of `OrderProcessor.call` (an unhandled 500 from the controller, and its
+    # ProviderEvent row stuck in "pending" forever). Now it must be caught and
+    # resolved as a durable `Rejected(reason: "already_paid")`.
+    test "two distinct events for the same route racing produce one paid purchase and no raised errors" do
+      second_quote = Commerce::RouteQuote.create_snapshot!(
+        user: @user, learning_route: @route, currency: "USD",
+        total_module_count: 2, paid_module_count: 1,
+        estimated_ai_cost_microcents: 1_000_000, estimated_fee_cents: 40,
+        markup_basis_points: Commerce::PricingConstants::MARKUP_BASIS_POINTS,
+        minimum_price_per_paid_module_cents: Commerce::PricingConstants::MINIMUM_PRICE_PER_PAID_MODULE_CENTS,
+        cost_based_price_cents: 210, minimum_price_cents: 299, final_price_cents: 299,
+        estimator_version: "wp18-v1", provider_rate_versions: { "gpt-5.2" => "2026-08-31" },
+        fee_version: "ls-test-v1", image_quality: "medium",
+        route_shape_assumptions: { "outline" => [] }, provider_rate_assumptions: { "gpt-5.2" => {} },
+        fee_assumptions: { "version" => "ls-test-v1" }, expires_at: 24.hours.from_now
+      )
+      second_checkout = Commerce::CheckoutCreator.call(
+        user: @user, route: @route, adapter: Commerce::Providers::Fake.new,
+        success_url: "https://example.test/ok", cancel_url: "https://example.test/no"
+      )
+      unless second_checkout.created?
+        raise "setup failed to create the second checkout: #{second_checkout.try(:reason)}"
+      end
+
+      event_a = race_event(identity: RACE_IDENTITIES[0], order_id: "ord_race_a", quote: @quote)
+      event_b = race_event(identity: RACE_IDENTITIES[1], order_id: "ord_race_b", quote: second_quote)
+
+      results = []
+      threads = [event_a, event_b].map do |body_event|
+        Thread.new do
+          ActiveRecord::Base.connection_pool.with_connection do
+            results << Commerce::OrderProcessor.call(event: body_event, provider_name: "lemon_squeezy")
+          end
+        end
+      end
+      threads.each(&:join) # re-raises if either call raised — proving neither does
+
+      assert_equal 1, results.count(&:processed?)
+      rejected = results.find { |result| result.is_a?(Commerce::OrderProcessor::Rejected) }
+      assert_equal "already_paid", rejected.reason
+      assert_equal 1, Commerce::RoutePurchase.paid.where(learning_route_id: @route.id).count
+
+      states = Commerce::ProviderEvent.where(event_identity: RACE_IDENTITIES).pluck(:processing_state).sort
+      assert_equal %w[processed rejected], states
+    end
+
     private
+
+    def race_event(identity:, order_id:, quote:)
+      Commerce::PaymentProvider::Event.new(
+        identity: identity, name: "order_created", test_mode: true,
+        store_id: "1", order_id: order_id, checkout_id: "chk_#{quote.id}",
+        amount_cents: quote.final_price_cents, currency: "USD",
+        actual_fee_cents: 45, refunded_amount_cents: 0,
+        custom_route_id: @route.id, custom_quote_id: quote.id, custom_user_id: @user.id,
+        status: "paid"
+      )
+    end
 
     # Deletes only rows this class's own tests could have created (scoped by the
     # unique email pattern and the fixed event identity), in FK-safe order —
@@ -294,7 +371,7 @@ module Commerce
     # CASCADEs to its modules; deleting a module directly while its route still
     # exists trips `learning_routes_engine_preserve_preview`).
     def delete_concurrency_records
-      Commerce::ProviderEvent.where(event_identity: EVENT_IDENTITY).delete_all
+      Commerce::ProviderEvent.where(event_identity: [EVENT_IDENTITY, *RACE_IDENTITIES]).delete_all
 
       users = Core::User.where("email LIKE ?", EMAIL_PATTERN)
       profiles = LearningRoutesEngine::LearningProfile.where(user_id: users.select(:id))

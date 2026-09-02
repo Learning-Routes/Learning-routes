@@ -24,9 +24,14 @@ module Commerce
         return head(:bad_request)
       end
 
-      # Task 6 processes `order_created` only. A refund handler is future work;
-      # routing an unsupported event name to OrderProcessor still durably
-      # records it (as "unsupported_event") rather than silently dropping it.
+      # Task 6 processes `order_created` only. Every other signed event type
+      # (today, only `order_refunded`) is still routed to OrderProcessor, which
+      # claims its identity FIRST and only then rejects it as
+      # "unsupported_event" — so it is durably recorded, not silently dropped.
+      # Task 9 adds a real refund handler and will intercept `order_refunded`
+      # here, before OrderProcessor is consulted at all; OrderProcessor must
+      # never be the thing that claims a refund's identity in the finished
+      # system.
       result = OrderProcessor.call(event: event, provider_name: provider.adapter.name)
 
       # A duplicate or business rejection is still a delivery we have durably
