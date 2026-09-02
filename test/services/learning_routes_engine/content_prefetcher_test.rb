@@ -36,7 +36,7 @@ class LearningRoutesEngine::ContentPrefetcherTest < ActiveSupport::TestCase
     mark(@steps[0], content_ready: true)
     mark(@steps[1], content_generating: true)
 
-    claimed = CP.claim(@steps.map(&:id))
+    claimed = CP.claim(@steps.map(&:id), access_states: CP::PREVIEW_ONLY)
 
     assert_not_includes claimed, @steps[0].id, "a ready step must not be re-claimed"
     assert_not_includes claimed, @steps[1].id, "an in-flight step must not be re-claimed — this is the double-billing case"
@@ -44,8 +44,8 @@ class LearningRoutesEngine::ContentPrefetcherTest < ActiveSupport::TestCase
   end
 
   test "claiming is atomic — a second claim of the same steps returns nothing" do
-    first = CP.claim(@steps.map(&:id))
-    second = CP.claim(@steps.map(&:id))
+    first = CP.claim(@steps.map(&:id), access_states: CP::PREVIEW_ONLY)
+    second = CP.claim(@steps.map(&:id), access_states: CP::PREVIEW_ONLY)
 
     assert first.any?
     assert_equal [], second, "the loser of the race must claim nothing"
@@ -54,7 +54,7 @@ class LearningRoutesEngine::ContentPrefetcherTest < ActiveSupport::TestCase
   test "the claim flips content_generating without destroying other metadata" do
     @steps[0].update!(metadata: { "parsed_sections" => [{ "type" => "concept" }], "keep" => "me" })
 
-    CP.claim([@steps[0].id])
+    CP.claim([@steps[0].id], access_states: CP::PREVIEW_ONLY)
 
     md = @steps[0].reload.metadata
     assert_equal true, md["content_generating"]

@@ -193,10 +193,39 @@ module LearningRoutesEngine
         return
       end
 
+      # ATOMIC CLAIM, not read-check-write.
+      #
+      # The `content_generating` check above is necessary but NOT sufficient:
+      # that flag is only written when the job STARTS (ContentPipelineJob
+      # #mark_generating!), and the frame polls `content_status` every 3s, which
+      # re-runs this method. With the queue full at route-creation time,
+      # enqueue-to-start is tens of seconds, so every poll inside that window saw
+      # `content_generating` still false and enqueued another pipeline for the
+      # same step. The job only guards on `content_ready`, so every duplicate ran
+      # and every duplicate billed ~2.33¢.
+      #
+      # The claim is the same atomic UPDATE ... RETURNING that ContentPrefetcher
+      # already uses for the prefetch path — the fix the comment above
+      # `prefetch_upcoming_steps!` describes, finally applied to the path for the
+      # step the student is actually looking at. Every access state is allowed
+      # here: `authorize_module_access!` has already decided whether this user may
+      # be on this step, and the prefetch path's preview-only rule is about
+      # spending on steps NOBODY asked for.
+      claimed = ContentPrefetcher.claim([@step.id], access_states: RouteModule.access_states.keys)
+      if claimed.empty?
+        # Another request won the race, or the step became ready between the read
+        # above and now. Either way this request must not enqueue.
+        @content_generating = true
+        return
+      end
+
       begin
         LearningRoutesEngine::ContentPipelineJob.perform_later(@step.id)
         @content_generating = true
       rescue => e
+        # Never leave a claim standing that no job will ever consume — the step
+        # would look permanently in flight and nothing would regenerate it.
+        ContentPrefetcher.release([@step.id])
         Rails.logger.error("Content pipeline failed for step ##{@step.id}: #{e.message}")
         @content_failed = true
         @content_error = e.message

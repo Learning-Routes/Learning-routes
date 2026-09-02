@@ -14,10 +14,19 @@ module LearningRoutesEngine
       @profile = @route&.learning_profile
       @user = @profile&.user
       @options = options.symbolize_keys
-      return unless @step.preview_access?
+      # Callers now CLAIM the step (ContentPrefetcher.claim) before enqueuing, so
+      # every early return here has to give that claim back. Without this the
+      # step is left looking permanently in flight and nothing regenerates it.
+      unless @step.preview_access?
+        ContentPrefetcher.release([@step.id])
+        return
+      end
 
       # Idempotency: skip if content already fully generated
-      return if @step.metadata&.dig("content_ready")
+      if @step.metadata&.dig("content_ready")
+        ContentPrefetcher.release([@step.id])
+        return
+      end
 
       mark_generating!
 
