@@ -21,8 +21,10 @@ module Commerce
     validates :estimated_ai_cost_microcents, :estimated_fee_cents, :cost_based_price_cents,
       :minimum_price_cents, :final_price_cents,
       numericality: { only_integer: true, greater_than_or_equal_to: 0 }
-    validates :markup_basis_points, inclusion: { in: [5000] }
-    validates :minimum_price_per_paid_module_cents, inclusion: { in: [299] }
+    validates :markup_basis_points,
+      inclusion: { in: [Commerce::PricingConstants::MARKUP_BASIS_POINTS] }
+    validates :minimum_price_per_paid_module_cents,
+      inclusion: { in: [Commerce::PricingConstants::MINIMUM_PRICE_PER_PAID_MODULE_CENTS] }
     validates :estimator_version, :fee_version, :image_quality, presence: true
     validates :provider_rate_versions, :route_shape_assumptions,
       :provider_rate_assumptions, :fee_assumptions, presence: true

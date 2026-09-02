@@ -10,7 +10,7 @@ module Commerce
 
     test "estimates outline preview and paid modules with exact WP-7 arithmetic" do
       @route.route_modules.create!(position: 2, title: "Paid", access_state: :locked)
-      result = RouteCostEstimator.call(route: @route, configuration: complete_configuration)
+      result = RouteCostEstimator.call(route: @route, configuration: valid_configuration)
 
       assert result.available?
       # text: (2,000*40 + 1,000*160)/100 = 2,400 microcents
@@ -25,7 +25,7 @@ module Commerce
     end
 
     test "supports a one-module route with zero paid modules" do
-      config = complete_configuration.deep_dup
+      config = valid_configuration.deep_dup
       config[:modules] = config[:modules].first(1)
 
       result = RouteCostEstimator.call(route: @route, configuration: config)
@@ -37,7 +37,7 @@ module Commerce
 
     test "fails closed and names missing configuration keys without substituting zero" do
       @route.route_modules.create!(position: 2, title: "Paid", access_state: :locked)
-      config = complete_configuration.deep_dup
+      config = valid_configuration.deep_dup
       config[:tavily].delete(:version)
       config[:provider_versions].delete("gpt-image-1")
 
@@ -52,7 +52,7 @@ module Commerce
 
     test "rejects a route shape that omits modules or outline usage" do
       result = RouteCostEstimator.call(route: @route,
-        configuration: complete_configuration.merge(outline: [], modules: []))
+        configuration: valid_configuration.merge(outline: [], modules: []))
 
       assert_not result.available?
       assert_includes result.missing, "outline"
@@ -60,7 +60,7 @@ module Commerce
     end
 
     test "binds assumptions to persisted module positions and access states" do
-      config = complete_configuration.deep_dup
+      config = valid_configuration.deep_dup
       config[:modules] = config[:modules].first(1)
       config[:modules].first[:access] = "locked"
 
@@ -71,7 +71,7 @@ module Commerce
     end
 
     test "rejects floating point and incomplete usage assumptions" do
-      config = complete_configuration.deep_dup
+      config = valid_configuration.deep_dup
       config[:outline].first[:input_tokens] = 1.5
       config[:modules].first[:steps].first[:calls].first.delete(:output_tokens)
 
@@ -82,9 +82,28 @@ module Commerce
       assert result.missing.any? { |key| key.end_with?("output_tokens") }
     end
 
+    test "a genuine internal KeyError is raised, not reported as missing configuration" do
+      # Minitest::Mock#stub ships in a separate gem this bundle does not pin
+      # (Minitest 6 split `stub` out of core), so the collaborator is swapped
+      # in by hand and restored in `ensure` rather than via `.stub`.
+      @route.route_modules.create!(position: 2, title: "Paid", access_state: :locked)
+      configuration = valid_configuration
+      catalog = Commerce::ProviderRateCatalog.new(configuration)
+      def catalog.estimate_microcents(_call) = raise(KeyError, "internal defect")
+
+      Commerce::ProviderRateCatalog.define_singleton_method(:new) { |*| catalog }
+      begin
+        assert_raises(KeyError) do
+          Commerce::RouteCostEstimator.call(route: @route, configuration: configuration)
+        end
+      ensure
+        Commerce::ProviderRateCatalog.singleton_class.send(:remove_method, :new)
+      end
+    end
+
     private
 
-    def complete_configuration
+    def valid_configuration
       {
         estimator_version: "route-cost-v1",
         image_quality: "medium",
