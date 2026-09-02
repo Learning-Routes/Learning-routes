@@ -60,4 +60,43 @@ class Commerce::ProviderEventTest < ActiveSupport::TestCase
       )
     end
   end
+
+  test "a losing claim inside an enclosing transaction does not poison it" do
+    first = nil
+    second = :not_set
+    survived = nil
+    ActiveRecord::Base.transaction do
+      first = claim(identity: "evt_tx")
+      second = claim(identity: "evt_tx")
+      # The whole point: a statement AFTER the losing claim must still work.
+      survived = Commerce::ProviderEvent.where(event_identity: "evt_tx").count
+    end
+
+    assert first.present?
+    assert_nil second
+    assert_equal 1, survived
+    assert_equal 1, Commerce::ProviderEvent.where(event_identity: "evt_tx").count
+  end
+
+  test "a unique violation on a different constraint is not swallowed as a replay" do
+    # No second unique constraint exists on this table today besides the
+    # primary key, so we force a primary-key collision (a real, distinct
+    # unique index) through the private insertion path to prove the rescue
+    # is targeted at idx_provider_events_identity specifically, not at
+    # RecordNotUnique in general.
+    id = SecureRandom.uuid
+    first = Commerce::ProviderEvent.send(
+      :insert_pending!, provider: "lemon_squeezy", event_identity: "evt_pk_a",
+      event_name: "order_created", test_mode: true, evidence: {}, id: id
+    )
+    assert first.present?
+
+    error = assert_raises(ActiveRecord::RecordNotUnique) do
+      Commerce::ProviderEvent.send(
+        :insert_pending!, provider: "lemon_squeezy", event_identity: "evt_pk_b",
+        event_name: "order_created", test_mode: true, evidence: {}, id: id
+      )
+    end
+    assert_match(/commerce_provider_events_pkey/, error.cause&.message || error.message)
+  end
 end

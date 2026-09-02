@@ -20,16 +20,19 @@ module Commerce
 
     MAX_EVIDENCE_BYTES = 8_192
 
+    # The name of the unique index that IS the idempotency boundary. Only a
+    # violation of this specific constraint means "already claimed" — any
+    # other uniqueness violation (e.g. a future constraint) is a real error
+    # and must propagate, not be swallowed as a routine replay.
+    IDENTITY_INDEX_NAME = "idx_provider_events_identity"
+
     validates :provider, :event_identity, :event_name, presence: true
     validates :processing_state, inclusion: { in: PROCESSING_STATES }
     validates :test_mode, inclusion: { in: [true, false] }
 
     def self.claim!(provider:, event_identity:, event_name:, test_mode:, evidence:)
-      safe = sanitize_evidence(evidence)
-      create!(provider: provider, event_identity: event_identity, event_name: event_name,
-              test_mode: test_mode, evidence: safe, processing_state: "pending")
-    rescue ActiveRecord::RecordNotUnique
-      nil
+      insert_pending!(provider: provider, event_identity: event_identity, event_name: event_name,
+                       test_mode: test_mode, evidence: sanitize_evidence(evidence))
     end
 
     def self.sanitize_evidence(evidence)
@@ -51,5 +54,31 @@ module Commerce
       update!(processing_state: "rejected", processed_at: Time.current,
               rejection_reason: reason.to_s.truncate(255))
     end
+
+    # `id:` is accepted only so a losing insert against a DIFFERENT unique
+    # constraint (e.g. the primary key) can be forced in tests — production
+    # callers always go through `claim!`, which never passes it.
+    def self.insert_pending!(provider:, event_identity:, event_name:, test_mode:, evidence:, id: nil)
+      attributes = { provider: provider, event_identity: event_identity, event_name: event_name,
+                     test_mode: test_mode, evidence: evidence, processing_state: "pending" }
+      attributes[:id] = id if id
+
+      # A unique violation aborts the whole enclosing PG transaction, not just
+      # the failed statement. `requires_new: true` opens a SAVEPOINT so the
+      # losing claim rolls back to it instead of poisoning a caller's
+      # transaction (Task 6 calls `claim!` inside one before touching a
+      # purchase).
+      ActiveRecord::Base.transaction(requires_new: true) { create!(attributes) }
+    rescue ActiveRecord::RecordNotUnique => e
+      raise unless identity_index_conflict?(e)
+
+      nil
+    end
+    private_class_method :insert_pending!
+
+    def self.identity_index_conflict?(error)
+      (error.cause&.message || error.message).to_s.include?(IDENTITY_INDEX_NAME)
+    end
+    private_class_method :identity_index_conflict?
   end
 end
