@@ -130,6 +130,33 @@ module Commerce
       assert_equal 0, Commerce::RoutePurchase.paid.count
     end
 
+    # `claim!` commits before `apply!` runs. If an unanticipated failure inside
+    # `apply!` left that claim standing, the provider's retry would lose the
+    # insert race and be answered `duplicate_event` forever — customer charged,
+    # purchase never paid, no path back.
+    test "an unexpected failure releases the claim so the provider's retry still pays" do
+      boom = Class.new(StandardError)
+      processor = Commerce::OrderProcessor
+      original = processor.instance_method(:apply!)
+      processor.define_method(:apply!) { raise boom, "queue exploded" }
+
+      begin
+        assert_raises(boom) { process }
+      ensure
+        processor.define_method(:apply!, original)
+      end
+
+      # Nothing written, and the identity is free again.
+      assert_equal 0, Commerce::ProviderEvent.where(event_identity: "order_created:ord_1").count
+      assert_equal 0, Commerce::RoutePurchase.paid.count
+
+      result = process
+
+      assert result.processed?, result.try(:reason)
+      assert_equal "paid", result.purchase.reload.state
+      assert_equal 1, Commerce::ProviderEvent.where(event_identity: "order_created:ord_1").count
+    end
+
     test "a currency, store or mode mismatch is rejected" do
       assert_equal "currency_mismatch", process(event(identity: "e1", currency: "EUR")).reason
       assert_equal "store_mismatch",    process(event(identity: "e2", store_id: "999")).reason

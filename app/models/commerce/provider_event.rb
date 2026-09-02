@@ -50,6 +50,18 @@ module Commerce
       update!(processing_state: "processed", processed_at: Time.current, rejection_reason: nil)
     end
 
+    # Give the identity back so the provider's next delivery is processed
+    # instead of being answered "duplicate" forever.
+    #
+    # Only for the case where processing failed BEFORE anything was written:
+    # the claim is what makes a replay a no-op, so releasing it after a
+    # successful write would let the same event be applied twice. OrderProcessor
+    # calls this only from the rescue around its (transactional, already
+    # rolled-back) `apply!`.
+    def release!
+      destroy!
+    end
+
     def mark_rejected!(reason:)
       update!(processing_state: "rejected", processed_at: Time.current,
               rejection_reason: reason.to_s.truncate(255))

@@ -72,11 +72,32 @@ module Commerce
         # write below can still commit — positioning the rescue OUTSIDE that
         # transaction is exactly what avoids the poisoned-transaction trap
         # Task 3 hit with `ProviderEvent.claim!`.
-        raise unless single_paid_purchase_conflict?(e)
+        # A uniqueness violation on any OTHER index is a real defect, not a
+        # routine concurrent payment. It still leaves nothing written, so give
+        # the identity back before surfacing it — otherwise the defect costs a
+        # customer their entitlement permanently on top of being a bug.
+        unless single_paid_purchase_conflict?(e)
+          release_claim(record)
+          raise
+        end
 
         record.mark_rejected!(reason: "already_paid")
         log_rejection("already_paid")
         return Rejected.new(reason: "already_paid")
+      rescue StandardError
+        # Anything else — a deadlock, a statement timeout, a RecordInvalid out
+        # of `recover_purchase!`, a failure in the RouteModule update — was
+        # NOT anticipated, and `claim!` has already COMMITTED its row. Without
+        # this the event is unrecoverable: the exception becomes a 500, Lemon
+        # Squeezy retries, `claim!` loses the insert race, and every retry is
+        # answered `duplicate_event` + 202 forever. The customer has paid, the
+        # purchase is never marked paid, and no retry can ever fix it.
+        #
+        # `apply!` is transactional and has already rolled back here, so
+        # nothing was written and the identity is safe to give back. Re-raise
+        # so the request really does fail and the provider really does retry.
+        release_claim(record)
+        raise
       end
 
       record.mark_processed!
@@ -85,6 +106,18 @@ module Commerce
     end
 
     private
+
+    # Never let a failed release mask the failure that caused it: if the
+    # database is the thing that broke, `destroy!` breaks too, and the original
+    # exception is the one worth seeing. A surviving claim is recoverable by
+    # hand from the pending ProviderEvent row; a swallowed root cause is not.
+    def release_claim(record)
+      record.release!
+    rescue StandardError => e
+      Rails.logger.error(
+        "[Webhook] could not release claim on #{@event.identity}: #{e.class}: #{e.message}"
+      )
+    end
 
     def log_rejection(reason)
       Rails.logger.error(
