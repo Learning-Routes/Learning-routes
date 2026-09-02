@@ -13,6 +13,7 @@ module ContentEngine
 
     def perform(route_step_id)
       step = LearningRoutesEngine::RouteStep.find(route_step_id)
+      return unless step.preview_access?
       content = AudioGenerator.generate!(step)
 
       Turbo::StreamsChannel.broadcast_replace_to(

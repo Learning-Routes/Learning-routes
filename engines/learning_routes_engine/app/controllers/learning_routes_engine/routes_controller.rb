@@ -11,13 +11,15 @@ module LearningRoutesEngine
     layout "learning"
 
     def show
-      @steps = @route.route_steps.order(:position)
+      @modules = @route.route_modules.includes(:route_steps).order(:position, :id)
+      @steps = @modules.select(&:access_preview?).flat_map(&:route_steps)
       @progress = RouteProgressTracker.new(@route).progress_summary
       @due_reviews = SpacedRepetition.new.due_reviews(@route)
     end
 
     def journey
-      @steps = @route.route_steps.order(:position)
+      @steps = @route.route_steps.joins(:route_module)
+        .where(learning_routes_engine_route_modules: { access_state: :preview }).order(:position)
       @progress = RouteProgressTracker.new(@route).progress_summary
       @due_reviews = SpacedRepetition.new.due_reviews(@route)
       @stages = build_journey_stages(@steps)

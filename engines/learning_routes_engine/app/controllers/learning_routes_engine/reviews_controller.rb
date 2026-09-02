@@ -13,6 +13,8 @@ module LearningRoutesEngine
         if route_ids.any?
           due_steps = RouteStep
             .where(learning_route_id: route_ids)
+            .joins(:route_module)
+            .where(learning_routes_engine_route_modules: { access_state: :preview })
             .due_for_review
             .includes(:learning_route)
             .order(:fsrs_next_review_at)
@@ -25,13 +27,12 @@ module LearningRoutesEngine
     end
 
     def submit_review
+      unless ModuleAccessPolicy.allowed_step?(user: current_user, step_id: params[:id])
+        return head :forbidden
+      end
+
       @step = RouteStep.find(params[:id])
       route = @step.learning_route
-
-      unless route.learning_profile&.user_id == current_user.id
-        redirect_to main_app.dashboard_path, alert: t("flash.not_authorized")
-        return
-      end
 
       rating = params[:rating].to_i
       unless rating.between?(1, 4)

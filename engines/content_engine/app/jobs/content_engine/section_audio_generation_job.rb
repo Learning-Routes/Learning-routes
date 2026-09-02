@@ -12,6 +12,9 @@ module ContentEngine
              wait: :polynomially_longer, attempts: 2
 
     def perform(step_id, section_index, section_text, locale, target_locale = nil)
+      step = LearningRoutesEngine::RouteStep.find(step_id)
+      return unless step.preview_access?
+
       tl = target_locale.present? ? target_locale : nil
 
       result = SectionAudioGenerator.generate!(

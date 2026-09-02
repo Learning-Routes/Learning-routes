@@ -90,6 +90,23 @@ module AiOrchestrator
         additionalProperties: false
       }.freeze
 
+      MODULE_OUTLINE = {
+        type: "object",
+        properties: {
+          title: { type: "string" },
+          description: { type: "string" },
+          translations: {
+            type: "object",
+            properties: { en: LOCALISED_STEP, es: LOCALISED_STEP },
+            required: %w[en es],
+            additionalProperties: false
+          },
+          steps: { type: "array", items: STEP }
+        },
+        required: %w[title description translations steps],
+        additionalProperties: false
+      }.freeze
+
       SCHEMA = {
         type: "object",
         properties: {
@@ -103,9 +120,9 @@ module AiOrchestrator
             required: %w[en es],
             additionalProperties: false
           },
-          steps: { type: "array", items: STEP }
+          modules: { type: "array", items: MODULE_OUTLINE }
         },
-        required: %w[title subtitle subject_area subject_family translations steps],
+        required: %w[title subtitle subject_area subject_family translations modules],
         additionalProperties: false
       }.freeze
 

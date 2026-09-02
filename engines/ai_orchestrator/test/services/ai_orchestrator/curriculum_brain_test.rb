@@ -99,6 +99,8 @@ module AiOrchestrator
     test "normalize produces the shape WizardRouteGenerationJob consumes" do
       out = @brain.send(:normalize, valid_payload)
       assert_kind_of Hash, out
+      assert_equal 2, out[:modules].size
+      assert_equal [3, 2], out[:modules].map { |route_module| route_module[:steps].size }
       assert_equal 5, out[:steps].size
       first = out[:steps].first
       assert first.key?(:label)
@@ -113,6 +115,18 @@ module AiOrchestrator
       assert first.key?(:exercise_types)
       assert first.key?(:topics)
       assert first.key?(:translations)
+    end
+
+    test "accepts an arbitrary module-native outline" do
+      payload = valid_payload
+      @brain.send(:repair_legacy_flat_steps!, payload)
+      payload["modules"].first["title"] = "Free foundations"
+      payload["modules"].last["title"] = "Paid practice"
+
+      assert_nothing_raised { @brain.send(:validate!, payload) }
+      normalized = @brain.send(:normalize, payload)
+      assert_equal ["Free foundations", "Paid practice"], normalized[:modules].map { |route_module| route_module[:title] }
+      assert_equal 3, normalized[:modules].first[:steps].size
     end
 
     test "parse_response strips code fences the LLM may add" do

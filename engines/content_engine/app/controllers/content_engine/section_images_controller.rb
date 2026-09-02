@@ -60,13 +60,11 @@ module ContentEngine
     # click of the generate button in production. The action then reads
     # route.locale and route.localized_topic off the same chain.
     def set_step_and_authorize!
+      return unless authorize_route_step_access!(params[:step_id])
+
       @step = LearningRoutesEngine::RouteStep
                 .includes(learning_route: { learning_profile: :user })
                 .find(params[:step_id])
-      route = @step.learning_route
-      unless route.learning_profile&.user_id == current_user.id
-        head :forbidden
-      end
     end
 
     # Resolve through SectionResolver so the index we look up is the index the page was

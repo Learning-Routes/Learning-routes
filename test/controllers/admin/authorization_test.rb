@@ -28,6 +28,15 @@ class AdminAuthorizationTest < ActionDispatch::IntegrationTest
     end
   end
 
+  test "an unverified student receives a hard private 403 instead of a verification redirect" do
+    user = create_user(role: :student, email_verified_at: nil)
+    sign_in(user)
+
+    get "/admin"
+
+    assert_private_forbidden
+  end
+
   test "owner receives private no-store responses and access is audited" do
     owner = create_user(role: :owner)
     sign_in(owner)
@@ -53,11 +62,11 @@ class AdminAuthorizationTest < ActionDispatch::IntegrationTest
 
   private
 
-  def create_user(role:)
+  def create_user(role:, email_verified_at: Time.current)
     Core::User.create!(
       name: "Authorization User", email: "auth-#{SecureRandom.hex(4)}@example.test",
       password: "password123", password_confirmation: "password123",
-      role: role, email_verified_at: Time.current
+      role: role, email_verified_at: email_verified_at
     )
   end
 

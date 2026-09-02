@@ -96,11 +96,9 @@ module ContentEngine
     private
 
     def set_step_and_authorize!
+      return unless authorize_route_step_access!(params[:step_id])
+
       @step = LearningRoutesEngine::RouteStep.find(params[:step_id])
-      route = @step.learning_route
-      unless route.learning_profile&.user_id == current_user.id
-        head :forbidden
-      end
     end
 
     def update_audio_section_status!(section_index, status, url = nil, duration = nil)

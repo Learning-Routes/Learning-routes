@@ -13,6 +13,7 @@ module LearningRoutesEngine
 
     def perform(route_step_id)
       step = RouteStep.includes(learning_route: { learning_profile: :user }).find(route_step_id)
+      return unless step.preview_access?
       return if Assessments::Assessment.where(route_step: step).exists?
 
       route = step.learning_route

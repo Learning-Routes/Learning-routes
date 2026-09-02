@@ -1,8 +1,8 @@
 module LearningRoutesEngine
   class StepQuizzesController < ApplicationController
     before_action :authenticate_user!
+    before_action :authorize_module_access!
     before_action :set_route_and_step
-    before_action :authorize_route_owner!
     before_action :set_quiz, only: [:submit, :retry_quiz]
 
     layout "learning"
@@ -101,11 +101,10 @@ module LearningRoutesEngine
       @step = @route.route_steps.find(params[:step_id])
     end
 
-    def authorize_route_owner!
-      unless @route.learning_profile&.user_id == current_user.id
-        redirect_to main_app.dashboard_path, alert: t("learning_engine.not_authorized")
-        nil
-      end
+    def authorize_module_access!
+      return if ModuleAccessPolicy.allowed?(user: current_user, route_id: params[:route_id], step_id: params[:step_id])
+
+      head :forbidden
     end
 
     def set_quiz

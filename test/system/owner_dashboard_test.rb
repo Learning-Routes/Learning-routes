@@ -8,6 +8,7 @@ class OwnerDashboardTest < ApplicationSystemTestCase
     profile = LearningRoutesEngine::LearningProfile.create!(user: @student)
     @route = profile.learning_routes.create!(topic: "Browser Route", status: :active, generation_status: "completed")
     @route.route_steps.create!(title: "Browser Step", position: 0, status: :completed)
+    @paid_module = @route.route_modules.create!(position: 2, title: "Browser Locked Module", access_state: :locked)
     26.times { |index| create_test_user(name: "Browser Page #{index}") }
     sign_in_through_ui
   end
@@ -16,16 +17,26 @@ class OwnerDashboardTest < ApplicationSystemTestCase
     visit admin_root_path
     assert_text I18n.t("admin.dashboard.title")
     click_link I18n.t("admin.dashboard.view_users")
-    fill_in I18n.t("admin.users.search"), with: "browser-needle"
-    click_button I18n.t("admin.users.apply")
+    within("form.admin-toolbar") do
+      fill_in I18n.t("admin.users.search"), with: "browser-needle"
+      click_button I18n.t("admin.users.apply")
+    end
+    assert_current_path %r{\A/admin/users\?.*search=browser-needle}, ignore_query: false, wait: 5
     assert_text @student.email
-    click_link @student.name
+    student_path = admin_user_path(@student)
+    assert_link @student.name, href: student_path
+    find("a[href='#{student_path}']").click
+    assert_current_path student_path, wait: 5
     assert_text "Browser Route"
-    assert_link I18n.t("admin.users.open_route"), href: learning_routes_engine.route_path(@route)
+    visit admin_route_path(@route)
+    assert_text "Browser Locked Module"
+    assert_text I18n.t("admin.module_access.locked")
 
     visit admin_users_path
-    assert_link I18n.t("admin.pagination.next")
-    click_link I18n.t("admin.pagination.next")
+    next_page = admin_users_path(page: 2)
+    assert_link I18n.t("admin.pagination.next"), href: next_page
+    page.execute_script("arguments[0].click()", find("a[href='#{next_page}']"))
+    assert_current_path admin_users_path(page: 2), ignore_query: false, wait: 5
     assert_text(/Page 2 of 2/)
   end
 
@@ -58,6 +69,7 @@ class OwnerDashboardTest < ApplicationSystemTestCase
     fill_in "email", with: @student.email
     fill_in "password", with: "password123"
     find("input[type='submit']").click
+    assert_current_path core.verify_pending_path, wait: 5
 
     visit admin_root_path
 
@@ -71,7 +83,9 @@ class OwnerDashboardTest < ApplicationSystemTestCase
     visit core.sign_in_path
     fill_in "email", with: @owner.email
     fill_in "password", with: "password123"
+    assert_field "email", with: @owner.email
+    assert_field "password", with: "password123"
     find("input[type='submit']").click
-    assert_no_current_path core.sign_in_path
+    assert_current_path main_app.profile_path, wait: 5
   end
 end

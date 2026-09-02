@@ -6,8 +6,8 @@ module LearningRoutesEngine
   # already does grading end to end.
   class BlockAttemptsController < ApplicationController
     before_action :authenticate_user!
+    before_action :authorize_module_access!
     before_action :set_route_and_step
-    before_action :authorize_route_owner!
 
     def create
       section = parsed_section
@@ -93,8 +93,10 @@ module LearningRoutesEngine
       @route = @step.learning_route
     end
 
-    def authorize_route_owner!
-      head(:forbidden) unless @route&.learning_profile&.user_id == current_user.id
+    def authorize_module_access!
+      return if ModuleAccessPolicy.allowed?(user: current_user, route_id: params[:route_id], step_id: params[:step_id])
+
+      head :forbidden
     end
   end
 end

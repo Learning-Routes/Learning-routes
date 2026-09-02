@@ -1,5 +1,6 @@
 module Admin
   class BaseController < ApplicationController
+    skip_before_action :require_email_verification!
     before_action :secure_admin_response!
     before_action :require_owner!
     before_action :audit_owner_access!

@@ -57,7 +57,7 @@
        data-auth-form-required-msg-value="<%= t('auth_alerts.validation_required') %>"
        data-auth-form-email-msg-value="<%= t('auth_alerts.validation_email') %>"
        data-auth-form-min-length-msg-value="<%= t('auth_alerts.validation_min_length') %>">
-    <%= form_with(url: core.sign_in_path) do |f| %>
+    <%= form_with(url: core.sign_in_path, data: { turbo: false }) do |f| %>
 
       <div style="display:flex; flex-direction:column; gap:1rem;">
 

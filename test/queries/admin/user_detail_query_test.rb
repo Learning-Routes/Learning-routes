@@ -78,6 +78,33 @@ class AdminUserDetailQueryTest < ActiveSupport::TestCase
     assert_equal true, rows.fetch(ready.id).purchase_ready
   end
 
+  test "reports persisted module and active quote facts without deriving commerce claims" do
+    user = create_test_user
+    profile = LearningRoutesEngine::LearningProfile.create!(user: user)
+    quoted = profile.learning_routes.create!(topic: "Quoted", generation_status: "completed")
+    preview = quoted.route_modules.find_by!(access_state: :preview)
+    preview.update!(title: "Real preview")
+    quoted.route_modules.create!(position: 2, title: "Paid", access_state: :locked)
+    quote = Commerce::RouteQuote.create!(quote_attributes(user, quoted))
+    blocked = profile.learning_routes.create!(
+      topic: "Blocked", generation_params: { "quote_blocked_reason" => "pricing_configuration_missing" }
+    )
+
+    rows = Admin::UserDetailQuery.call(user_id: user.id).routes.index_by(&:id)
+    quoted_row = rows.fetch(quoted.id)
+    blocked_row = rows.fetch(blocked.id)
+
+    assert_equal 2, quoted_row.module_count
+    assert_equal 1, quoted_row.paid_module_count
+    assert_equal preview.id, quoted_row.preview_module_id
+    assert_equal "Real preview", quoted_row.preview_module_title
+    assert_equal "available", quoted_row.quote_status
+    assert_equal quote.id, quoted_row.quote_id
+    assert_equal 1_234_567, quoted_row.estimated_ai_cost_microcents
+    assert_equal "pricing_configuration_missing", blocked_row.quote_blocked_reason
+    assert_nil blocked_row.estimated_ai_cost_microcents
+  end
+
   private
 
   def count_queries
@@ -89,5 +116,21 @@ class AdminUserDetailQueryTest < ActiveSupport::TestCase
     count
   ensure
     ActiveSupport::Notifications.unsubscribe(callback)
+  end
+
+
+  def quote_attributes(user, route)
+    {
+      user: user, learning_route: route, currency: "USD", total_module_count: 2,
+      paid_module_count: 1, estimated_ai_cost_microcents: 1_234_567,
+      estimated_fee_cents: 20, markup_basis_points: 5000,
+      minimum_price_per_paid_module_cents: 299, cost_based_price_cents: 350,
+      minimum_price_cents: 299, final_price_cents: 350, estimator_version: "route-cost-v1",
+      provider_rate_versions: { "openai" => "v1" }, fee_version: "fee-v1",
+      image_quality: "medium", route_shape_assumptions: { "modules" => 2 },
+      provider_rate_assumptions: { "openai" => { "version" => "v1" } },
+      fee_assumptions: { "percentage_basis_points" => 500, "fixed_cents" => 10 },
+      expires_at: 1.day.from_now
+    }
   end
 end
