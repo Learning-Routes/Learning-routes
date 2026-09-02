@@ -1,7 +1,7 @@
 <% content_for(:title) { t("admin.users.title") } %><% content_for(:head) { stylesheet_link_tag "admin", "data-turbo-track": "reload" } %><% content_for(:full_width) { true } %>
 <div class="admin-shell">
   <header class="admin-head"><div><div class="admin-kicker"><%= link_to t("admin.dashboard.title"), admin_root_path, class: "admin-link" %></div><h1 class="admin-title"><%= t("admin.users.title") %></h1><p class="admin-sub"><%= t("admin.users.count", count: @result.total_count) %></p></div></header>
-  <%= form_with url: admin_users_path, method: :get, class: "admin-toolbar" do |form| %>
+  <%= form_with url: admin_users_path, method: :get, class: "admin-toolbar", data: { turbo: false } do |form| %>
     <%= form.search_field :search, value: params[:search], placeholder: t("admin.users.search"), class: "admin-control", aria: { label: t("admin.users.search") } %>
     <%= form.select :activity, [[t("admin.filters.all_activity"), ""], [t("admin.filters.active"), "active"], [t("admin.filters.inactive"), "inactive"]], { selected: params[:activity] }, class: "admin-control" %>
     <%= form.select :route_state, [[t("admin.filters.all_routes"), ""]] + LearningRoutesEngine::LearningRoute.statuses.keys.map { |state| [t("admin.states.#{state}"), state] }, { selected: params[:route_state] }, class: "admin-control" %>
