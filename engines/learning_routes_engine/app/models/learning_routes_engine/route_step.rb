@@ -30,6 +30,10 @@ module LearningRoutesEngine
     validates :position, presence: true,
               uniqueness: { scope: :learning_route_id },
               numericality: { greater_than_or_equal_to: 0 }
+    # Raised when a step is created without a module on a route that has paid
+    # modules — see `assign_preview_module`.
+    class ImplicitPreviewModule < StandardError; end
+
     validates :title, presence: true, length: { maximum: 255 }
     validate :route_module_belongs_to_learning_route
     before_validation :assign_preview_module, on: :create
@@ -140,10 +144,43 @@ module LearningRoutesEngine
 
     private
 
+    # Default a step with no module into the preview module.
+    #
+    # This is a CONVENIENCE for routes that have only one module, where there is
+    # exactly one possible answer. It is NOT a safe default on a route that has
+    # paid modules: preview is the filter ContentPrefetcher uses to decide what
+    # to generate for free, so a billable step landing there by omission is money
+    # we spend and never charge for. That is precisely how AdaptiveDifficulty's
+    # reinforcement steps became free content on paid routes.
+    #
+    # So on a route that HAS a non-preview module, omitting `route_module` is
+    # treated as a caller bug: it raises in development and test, and logs in
+    # production, mirroring `strict_loading_by_default`'s posture — a student
+    # mid-assessment must not get a 500 out of it, but no developer may add such
+    # a caller without hearing about it. Every production creation path already
+    # passes `route_module:` explicitly; only tests and single-module routes rely
+    # on this default.
     def assign_preview_module
       return if route_module_id.present? || learning_route_id.blank?
 
-      self.route_module = RouteModule.find_by(learning_route_id: learning_route_id, access_state: :preview)
+      preview = RouteModule.find_by(learning_route_id: learning_route_id, access_state: :preview)
+      report_implicit_preview_module! if monetised_route?
+      self.route_module = preview
+    end
+
+    def monetised_route?
+      RouteModule.where(learning_route_id: learning_route_id)
+                 .where.not(access_state: :preview).exists?
+    end
+
+    def report_implicit_preview_module!
+      message = "RouteStep created without route_module on route #{learning_route_id}, " \
+                "which has paid modules; it would default into the FREE preview module. " \
+                "Pass route_module: explicitly."
+
+      raise ImplicitPreviewModule, message if Rails.env.local?
+
+      Rails.logger.error("[RouteStep] #{message}")
     end
 
     def route_module_belongs_to_learning_route

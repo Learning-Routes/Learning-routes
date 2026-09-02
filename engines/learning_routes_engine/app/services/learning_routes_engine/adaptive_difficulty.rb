@@ -137,6 +137,21 @@ module LearningRoutesEngine
       current_position = @route.current_step
       current_level = current_assessment_level
 
+      module_id = triggering_module_id
+      if module_id.nil?
+        # Fail CLOSED on spend. Creating the steps anyway would let
+        # `assign_preview_module` drop them into the free module, which is the
+        # exact filter ContentPrefetcher uses to decide what to generate at our
+        # expense — and this path runs on every submission with score < 60, with
+        # no ceiling, because AssessmentsController#start mints a fresh result
+        # whenever the previous one has a score.
+        Rails.logger.error(
+          "[AdaptiveDifficulty] no triggering module for route #{@route.id}; " \
+          "skipping reinforcement rather than inserting it into the free module"
+        )
+        return
+      end
+
       reinforcement_steps = build_reinforcement_steps(current_level)
       return if reinforcement_steps.empty?
 
@@ -159,6 +174,7 @@ module LearningRoutesEngine
         # Insert reinforcement steps
         reinforcement_steps.each_with_index do |attrs, idx|
           @route.route_steps.create!(
+            route_module_id: module_id,
             position: current_position + 1 + idx,
             title: attrs[:title],
             description: attrs[:description],
@@ -174,6 +190,36 @@ module LearningRoutesEngine
 
         @route.update!(total_steps: @route.route_steps.count)
       end
+    end
+
+    # The module a reinforcement step belongs to: the one the step that TRIGGERED
+    # the assessment is in. Paid module -> paid reinforcement, preview module ->
+    # free reinforcement. Owner's decision; do not re-litigate.
+    #
+    # The MODULE is inherited, not its access state. A module that is `locked`
+    # today and `purchased` tomorrow carries its reinforcement steps with it,
+    # which is what makes "a module that has since changed state" a non-issue
+    # rather than an edge case needing a rule.
+    #
+    # One query, no association traversal — `strict_loading_by_default` is on and
+    # only logs in production, so a lazy `@result.assessment.route_step` here
+    # would raise in test and go silently N+1 in production.
+    #
+    # `route_module_id` is NOT NULL on route_steps, so a resolved step always has
+    # a module; nil here means the RESULT is not an assessment result at all
+    # (`extract_score` accepts a duck), and the caller fails closed.
+    def triggering_module_id
+      return @triggering_module_id if defined?(@triggering_module_id)
+
+      assessment_id = @result.respond_to?(:assessment_id) ? @result.assessment_id : nil
+      @triggering_module_id =
+        if assessment_id.nil?
+          nil
+        else
+          RouteStep.where(id: Assessments::Assessment.where(id: assessment_id).select(:route_step_id))
+                   .where(learning_route_id: @route.id)
+                   .pick(:route_module_id)
+        end
     end
 
     def build_reinforcement_steps(level)
