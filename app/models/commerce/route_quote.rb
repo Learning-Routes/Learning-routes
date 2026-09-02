@@ -14,6 +14,8 @@ module Commerce
 
     belongs_to :user, class_name: "Core::User"
     belongs_to :learning_route, class_name: "LearningRoutesEngine::LearningRoute"
+    has_many :route_purchases, class_name: "Commerce::RoutePurchase",
+             foreign_key: :route_quote_id, dependent: :restrict_with_error
 
     validates :currency, inclusion: { in: ["USD"] }
     validates :total_module_count, numericality: { only_integer: true, greater_than_or_equal_to: 1 }
