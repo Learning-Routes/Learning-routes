@@ -25,8 +25,17 @@ class OwnerDashboardTest < ApplicationSystemTestCase
     assert_text @student.email
     student_path = admin_user_path(@student)
     assert_link @student.name, href: student_path
-    find("a[href='#{student_path}']").click
-    assert_current_path student_path, wait: 5
+
+    # Dispatch via the DOM rather than a physical WebDriver click: a real click
+    # is coordinate-based and this row sits right under the search toolbar, so
+    # it's the same class of flake the pagination click below was already
+    # written to avoid. Then assert on rendered CONTENT first — Capybara's text
+    # matchers wait on the DOM, whereas assert_current_path polls the driver's
+    # URL and can start (or, under load, even finish) before Turbo has actually
+    # swapped the body. The path assertion then confirms the URL settled.
+    page.execute_script("arguments[0].click()", find("a[href='#{student_path}']"))
+    assert_selector "h1", text: @student.name, wait: 10
+    assert_current_path student_path, wait: 10
     assert_text "Browser Route"
     visit admin_route_path(@route)
     assert_text "Browser Locked Module"
@@ -36,8 +45,8 @@ class OwnerDashboardTest < ApplicationSystemTestCase
     next_page = admin_users_path(page: 2)
     assert_link I18n.t("admin.pagination.next"), href: next_page
     page.execute_script("arguments[0].click()", find("a[href='#{next_page}']"))
-    assert_current_path admin_users_path(page: 2), ignore_query: false, wait: 5
-    assert_text(/Page 2 of 2/)
+    assert_text(/Page 2 of 2/, wait: 10)
+    assert_current_path admin_users_path(page: 2), ignore_query: false, wait: 10
   end
 
   test "dashboard is responsive and resolves both persisted themes" do
@@ -64,7 +73,17 @@ class OwnerDashboardTest < ApplicationSystemTestCase
   end
 
   test "a non-owner browser session receives a hard forbidden page without owner data" do
-    click_button I18n.t("nav.sign_out") if page.has_button?(I18n.t("nav.sign_out"), wait: 0)
+    if page.has_button?(I18n.t("nav.sign_out"), wait: 0)
+      click_button I18n.t("nav.sign_out")
+      # The sign-out button is a plain Turbo-driven button_to (no data-turbo="false"),
+      # so the click above returns before the DELETE request lands and the session
+      # cookie is cleared. Visiting sign_in_path immediately can race that: if the
+      # server still sees a signed-in user, GET /sign_in redirects to the dashboard
+      # instead of rendering the form, and the next fill_in fails oddly downstream.
+      # Wait for the button to disappear (proof the sign-out response was received
+      # and rendered) before treating the session as clear.
+      assert_no_button I18n.t("nav.sign_out"), wait: 10
+    end
     visit core.sign_in_path
     fill_in "email", with: @student.email
     fill_in "password", with: "password123"
