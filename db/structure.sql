@@ -391,6 +391,27 @@ CREATE TABLE public.assessments_voice_responses (
 
 
 --
+-- Name: commerce_provider_events; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.commerce_provider_events (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    provider character varying NOT NULL,
+    event_identity character varying NOT NULL,
+    event_name character varying NOT NULL,
+    test_mode boolean NOT NULL,
+    processing_state character varying DEFAULT 'pending'::character varying NOT NULL,
+    evidence jsonb DEFAULT '{}'::jsonb NOT NULL,
+    rejection_reason character varying,
+    processed_at timestamp(6) without time zone,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL,
+    CONSTRAINT provider_events_bounded_evidence CHECK ((pg_column_size(evidence) <= 8192)),
+    CONSTRAINT provider_events_processing_state CHECK (((processing_state)::text = ANY ((ARRAY['pending'::character varying, 'processed'::character varying, 'rejected'::character varying])::text[])))
+);
+
+
+--
 -- Name: commerce_route_purchases; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -1123,6 +1144,14 @@ ALTER TABLE ONLY public.assessments_voice_responses
 
 
 --
+-- Name: commerce_provider_events commerce_provider_events_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.commerce_provider_events
+    ADD CONSTRAINT commerce_provider_events_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: commerce_route_purchases commerce_route_purchases_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1583,6 +1612,20 @@ CREATE INDEX idx_on_user_id_step_id_4321622576 ON public.learning_routes_engine_
 --
 
 CREATE UNIQUE INDEX idx_progress_snapshots_unique ON public.analytics_progress_snapshots USING btree (user_id, learning_route_id, snapshot_date);
+
+
+--
+-- Name: idx_provider_events_identity; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX idx_provider_events_identity ON public.commerce_provider_events USING btree (provider, event_identity);
+
+
+--
+-- Name: idx_provider_events_name_time; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_provider_events_name_time ON public.commerce_provider_events USING btree (provider, event_name, created_at);
 
 
 --
@@ -2930,6 +2973,7 @@ ALTER TABLE ONLY public.learning_routes_engine_route_steps
 SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
+('20260902000002'),
 ('20260902000001'),
 ('20260901000006'),
 ('20260901000005'),
