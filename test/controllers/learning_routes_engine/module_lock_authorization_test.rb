@@ -130,4 +130,73 @@ class LearningRoutesEngine::ModuleLockAuthorizationTest < ActionDispatch::Integr
     assert_response :forbidden
     assert_empty response.body
   end
+
+  # Cross-format direct-request controls. The negative half repeats what test 1
+  # already proves (locked -> 403 for every format the client might request).
+  # The positive half is what makes that meaningful: the SAME requests, against
+  # the SAME step, must stop being refused once a verified purchase exists —
+  # proving the lock is entitlement-driven, not a permanently closed gate that
+  # merely happens to answer 403 today.
+  test "a locked step is refused for HTML, JSON and Turbo Stream, and stops being refused once paid" do
+    requests = {
+      html: -> { get learning_routes_engine.route_step_path(@route, @paid_step) },
+      json: -> { get learning_routes_engine.route_step_path(@route, @paid_step), as: :json },
+      turbo_stream: lambda {
+        get learning_routes_engine.route_step_path(@route, @paid_step),
+          headers: { "Accept" => "text/vnd.turbo-stream.html" }
+      }
+    }
+
+    requests.each_value do |request|
+      request.call
+      assert_response :forbidden
+      assert_empty response.body
+    end
+
+    pay_for_route!(@route)
+
+    # HTML: the step actually renders, proving the paid body is genuinely
+    # readable now, not merely "not 403".
+    requests[:html].call
+    assert_response :success
+    assert_includes response.body, "NEVER-EXPOSE-PAID-BODY"
+    # The answer key is never rendered to anyone, paid or not — payment
+    # entitles the lesson body, never the quiz's own answer key.
+    assert_not_includes response.body, "NEVER-EXPOSE-ANSWER"
+
+    # JSON and Turbo Stream have no dedicated `show` template in this app, so a
+    # paid request lands on ActionController::UnknownFormat (406) rather than a
+    # rendered body — but the authorization gate itself, which is what this
+    # task changes, no longer fires: it is a content-negotiation failure, not
+    # the security 403 it was before payment. (Not asserting on response.body
+    # here — Rails' own exception page for an unhandled UnknownFormat dumps a
+    # source backtrace in the test environment, which is framework noise, not
+    # application content.)
+    [:json, :turbo_stream].each do |format|
+      requests[format].call
+      assert_not response.forbidden?, "expected #{format} to stop being refused after payment"
+    end
+  end
+
+  private
+
+  def pay_for_route!(route)
+    quote = Commerce::RouteQuote.create_snapshot!(
+      user: @user, learning_route: route, currency: "USD",
+      total_module_count: 2, paid_module_count: 1,
+      estimated_ai_cost_microcents: 1_000_000, estimated_fee_cents: 40,
+      markup_basis_points: Commerce::PricingConstants::MARKUP_BASIS_POINTS,
+      minimum_price_per_paid_module_cents: Commerce::PricingConstants::MINIMUM_PRICE_PER_PAID_MODULE_CENTS,
+      cost_based_price_cents: 210, minimum_price_cents: 299, final_price_cents: 299,
+      estimator_version: "wp18-v1", provider_rate_versions: { "gpt-5.2" => "2026-08-31" },
+      fee_version: "ls-test-v1", image_quality: "medium",
+      route_shape_assumptions: { "outline" => [] }, provider_rate_assumptions: { "gpt-5.2" => {} },
+      fee_assumptions: { "version" => "ls-test-v1" }, expires_at: 24.hours.from_now
+    )
+    Commerce::RoutePurchase.create!(
+      user: @user, learning_route: route, route_quote: quote, state: "pending",
+      provider: "lemon_squeezy", test_mode: true, amount_cents: 299, currency: "USD",
+      estimated_ai_cost_microcents: 1_000_000, estimated_fee_cents: 40
+    ).mark_paid!(order_id: "ord_#{SecureRandom.hex(3)}", actual_fee_cents: 45, paid_at: Time.current)
+  end
 end
