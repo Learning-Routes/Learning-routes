@@ -103,6 +103,33 @@ module Commerce
       assert_equal 0, Commerce::RoutePurchase.paid.count
     end
 
+    # `order_created` fires for orders that are merely placed. Granting on it
+    # hands over the whole route for money that was never captured.
+    test "an order that has not captured payment is rejected and entitles nothing" do
+      %w[pending failed refunded].each_with_index do |status, index|
+        result = process(event(identity: "uncaptured-#{index}", status: status))
+
+        assert_not result.processed?, "#{status} must not entitle"
+        assert_equal "payment_not_captured", result.reason
+      end
+
+      assert_equal 0, Commerce::RoutePurchase.paid.count
+      assert_equal 0, LearningRoutesEngine::RouteModule.where(id: @paid_module.id, access_state: :purchased).count
+    end
+
+    # A blank order id passes the paid-needs-order CHECK but collides on
+    # `idx_route_purchases_provider_order`, which is not the race index, so it
+    # would escape as a 500 instead of a recorded rejection.
+    test "an order carrying no provider order id is rejected before anything is written" do
+      result = process(event(order_id: ""))
+
+      assert_not result.processed?
+      assert_equal "missing_order_reference", result.reason
+      assert_equal "missing_order_reference",
+        Commerce::ProviderEvent.find_by!(event_identity: "order_created:ord_1").rejection_reason
+      assert_equal 0, Commerce::RoutePurchase.paid.count
+    end
+
     test "a currency, store or mode mismatch is rejected" do
       assert_equal "currency_mismatch", process(event(identity: "e1", currency: "EUR")).reason
       assert_equal "store_mismatch",    process(event(identity: "e2", store_id: "999")).reason

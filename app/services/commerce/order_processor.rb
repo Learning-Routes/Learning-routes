@@ -20,6 +20,10 @@ module Commerce
 
     SUPPORTED_EVENTS = %w[order_created].freeze
 
+    # The only order status that means the money actually landed. Lemon Squeezy
+    # also emits `pending`, `failed` and `refunded`.
+    CAPTURED_STATUS = "paid"
+
     # The name of the partial unique index that IS the single-paid-purchase
     # boundary. Only a violation of this specific constraint is a routine
     # concurrent-payment race; any other uniqueness violation is a real error
@@ -121,6 +125,23 @@ module Commerce
     # quote) is never re-recovered into a second purchase.
     def rejection_reason
       return "unsupported_event" unless SUPPORTED_EVENTS.include?(@event.name)
+
+      # `order_created` is NOT proof of payment. Lemon Squeezy fires it for
+      # orders whose status is `pending` (PayPal can sit there for days before
+      # confirming) or `failed`, and the status was previously captured into
+      # `evidence` but never asserted — so a signed `order_created` for money
+      # that was never captured granted the whole route. Only a captured order
+      # entitles; a pending one that later captures arrives again as its own
+      # signed event with a distinct identity.
+      return "payment_not_captured" unless @event.status == CAPTURED_STATUS
+
+      # `provider_order_id` is the reconciliation handle and the second half of
+      # `idx_route_purchases_provider_order`. A blank one still satisfies the
+      # `route_purchases_paid_needs_order` CHECK (which only tests NOT NULL), so
+      # a second blank-id order would collide on an index that
+      # `single_paid_purchase_conflict?` does not recognise and surface as a 500
+      # instead of a clean rejection.
+      return "missing_order_reference" if @event.order_id.blank?
 
       return "mode_mismatch" unless @event.test_mode == !!configured[:test_mode]
       return "store_mismatch" unless @event.store_id.to_s == configured[:store_id].to_s
