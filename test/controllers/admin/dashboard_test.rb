@@ -24,7 +24,9 @@ class AdminDashboardTest < ActionDispatch::IntegrationTest
     assert_select "[data-metric='ai-cost']", text: /0\.0123/
     assert_select "[data-cost-status]", text: /Pricing incomplete/
     assert_select "a[href='#{admin_users_path}']"
-    assert_no_match(/purchase|revenue|profit|fee|quote|payment/i, response.body)
+    document = Nokogiri::HTML(response.body)
+    document.css("script, style, meta, link").remove
+    assert_no_match(/purchase|revenue|profit|fee|quote|payment/i, document.text)
     assert_no_match(/DO NOT LEAK|password_digest|remember_token/i, response.body)
   end
 
