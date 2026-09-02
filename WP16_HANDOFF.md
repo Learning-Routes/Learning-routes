@@ -191,3 +191,22 @@ Additional verification:
 No RouteModule work, pricing UI, payment integration, purchases, webhooks, refunds, module locks,
 paid generation, landing redesign, dependency-pin update, production access, deployment, merge,
 push, or WP-17 work occurred. The branch is intentionally preserved for later integration.
+
+## Integration addendum — 2026-09-01
+
+- `249d77b` moves promotion credential verification behind the authoritative PostgreSQL user-row
+  lock. A synchronized password-rotation regression proves a credential accepted before the lock
+  cannot cross a concurrent password change; the pre-fix ordering fails by promoting the stale
+  credential, while the corrected ordering rejects it.
+- The shared lock observer now clears PostgreSQL's transaction-scoped statistics snapshot and
+  yields between polls, while still requiring `pg_stat_activity.wait_event_type = 'Lock'`.
+- `aed11e2` makes the dashboard's GET search and pagination navigation synchronous, eliminating
+  Turbo timing races without changing query or authorization behavior.
+- Final focused seed `18341`: 77 runs, 409 assertions, zero failures/errors/skips.
+- Final application seeds `18342`, `18343`, and `18344`: each 336 runs, 1,335 assertions, zero
+  failures/errors/skips.
+- Final combined seeds `18351`, `18352`, and `18353`: each 652 runs, 2,230 assertions, with exactly
+  the documented three failures and nine errors and no new test name.
+- Zeitwerk passed; RuboCop inspected 467 files with no offenses; Bundler Audit found no
+  vulnerabilities. Brakeman and importmap retained only the documented baseline findings.
+- Targeted requirements and security review found no open Critical or Important WP-16 issue.

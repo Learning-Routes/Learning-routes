@@ -78,3 +78,20 @@ not changed because unrelated engine work is outside WP-16.
 - Local VIPS emits optional HEIF/OpenSlide dynamic-library warnings. They do not affect WP-16.
 
 No production access, merge, push, deployment, dependency update, or WP-17 work occurred.
+
+## Final integration review — 2026-09-01
+
+The integration gate identified and corrected two additional WP-16 issues in separate commits:
+
+- Promotion previously authenticated before acquiring the authoritative user-row lock. A
+  concurrent password rotation could therefore commit while promotion waited, after which the
+  stale credential could still receive owner privileges. Promotion now reloads and authenticates
+  only after taking that row lock.
+- Admin search and pagination used asynchronous Turbo navigation for ordinary GET requests, which
+  made browser completion nondeterministic under suite load. Both transitions now use synchronous
+  navigation and pass three repeated real-browser seeds.
+
+No Critical or Important WP-16 finding remains after the final acceptance and targeted security
+review. The older scope statement above describes the original WP-16 implementation session; the
+subsequent integration and deployment activity is recorded by the repository's merge history and
+deployment evidence.
