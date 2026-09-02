@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_31_000002) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_01_000002) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -411,6 +411,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_31_000002) do
     t.index ["onboarding_completed"], name: "index_core_users_on_onboarding_completed"
     t.index ["provider", "uid"], name: "index_core_users_on_provider_and_uid", unique: true, where: "(provider IS NOT NULL)"
     t.index ["remember_token"], name: "index_core_users_on_remember_token", unique: true
+    t.index ["role"], name: "idx_core_users_single_owner", unique: true, where: "(role = 2)"
     t.index ["role"], name: "index_core_users_on_role"
   end
 
@@ -561,6 +562,21 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_31_000002) do
     t.index ["user_id", "step_id"], name: "idx_on_user_id_step_id_4321622576"
   end
 
+  create_table "owner_audit_events", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.string "action", null: false
+    t.uuid "actor_user_id"
+    t.datetime "created_at", null: false
+    t.string "ip_digest"
+    t.jsonb "metadata", default: {}, null: false
+    t.string "request_id"
+    t.uuid "subject_user_id"
+    t.datetime "updated_at", null: false
+    t.string "user_agent_digest"
+    t.index ["action", "created_at"], name: "index_owner_audit_events_on_action_and_created_at"
+    t.index ["actor_user_id"], name: "index_owner_audit_events_on_actor_user_id"
+    t.index ["subject_user_id"], name: "index_owner_audit_events_on_subject_user_id"
+  end
+
   create_table "playing_with_neon", id: :serial, force: :cascade do |t|
     t.text "name", null: false
     t.float "value", limit: 24
@@ -666,6 +682,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_31_000002) do
   add_foreign_key "learning_routes_engine_reinforcement_routes", "learning_routes_engine_knowledge_gaps", column: "knowledge_gap_id"
   add_foreign_key "learning_routes_engine_reinforcement_routes", "learning_routes_engine_learning_routes", column: "learning_route_id"
   add_foreign_key "learning_routes_engine_route_steps", "learning_routes_engine_learning_routes", column: "learning_route_id"
+  add_foreign_key "owner_audit_events", "core_users", column: "actor_user_id", on_delete: :nullify
+  add_foreign_key "owner_audit_events", "core_users", column: "subject_user_id", on_delete: :nullify
   add_foreign_key "route_requests", "core_users", column: "user_id"
   add_foreign_key "route_requests", "learning_routes_engine_learning_routes", column: "learning_route_id"
   add_foreign_key "user_engagements", "core_users", column: "user_id"

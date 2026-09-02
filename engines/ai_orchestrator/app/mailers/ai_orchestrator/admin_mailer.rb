@@ -1,11 +1,9 @@
 module AiOrchestrator
   class AdminMailer < ApplicationMailer
-    ADMIN_EMAIL = "admin@learning-routes.com".freeze
-
-    def cost_alert(violation)
+    def cost_alert(violation, owner)
       @violation = violation
       mail(
-        to: ADMIN_EMAIL,
+        to: owner.email,
         subject: "[Cost Alert] AI spending #{violation[:type]} limit exceeded"
       )
     end

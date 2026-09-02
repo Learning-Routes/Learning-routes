@@ -43,7 +43,7 @@ module Core
     has_many :following, through: :active_follows, source: :followed
     has_many :followers, through: :passive_follows, source: :follower
 
-    enum :role, { student: 0, teacher: 1, admin: 2 }
+    enum :role, { student: 0, teacher: 1, owner: 2 }
 
     VALID_THEMES = %w[light dark system].freeze
 
@@ -55,6 +55,7 @@ module Core
     validates :locale, inclusion: { in: %w[en es] }
     validates :theme, inclusion: { in: VALID_THEMES }
     validates :role, presence: true
+    validates :role, uniqueness: true, if: :owner?
 
     normalizes :email, with: ->(email) { email.strip.downcase }
 
@@ -68,15 +69,15 @@ module Core
     # --- Authorization helpers ---
 
     def can_manage_users?
-      admin?
+      owner?
     end
 
     def can_manage_content?
-      admin? || teacher?
+      owner? || teacher?
     end
 
     def can_access_analytics?
-      admin? || teacher?
+      owner? || teacher?
     end
 
     def can_create_routes?
@@ -140,6 +141,20 @@ module Core
       return user if ActiveSupport::SecurityUtils.secure_compare(user.remember_token, candidate)
 
       nil
+    end
+
+    def self.recover_session_from_remember_credential(user_id:, raw_token:, session_attributes:)
+      return if user_id.blank? || raw_token.blank?
+
+      transaction do
+        user = lock.find_by(id: user_id)
+        next unless user&.remember_token.present?
+
+        candidate = digest_remember_token(raw_token)
+        next unless ActiveSupport::SecurityUtils.secure_compare(user.remember_token, candidate)
+
+        user.sessions.create!(session_attributes)
+      end
     end
 
     # --- Onboarding ---

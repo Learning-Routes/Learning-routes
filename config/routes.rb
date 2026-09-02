@@ -21,6 +21,11 @@ Rails.application.routes.draw do
   # Dashboard
   get "dashboard", to: redirect("/profile"), as: :dashboard
 
+  namespace :admin do
+    root "dashboard#show"
+    resources :users, only: [:index, :show]
+  end
+
   # Profile
   get "profile", to: "profiles#show", as: :profile
 

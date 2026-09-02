@@ -85,7 +85,7 @@ module CommunityEngine
     end
 
     def destroy
-      return head(:forbidden) unless @comment.owned_by?(current_user) || current_user.admin?
+      return head(:forbidden) unless @comment.owned_by?(current_user) || current_user.owner?
 
       @comment.destroy
       respond_to do |format|
@@ -97,7 +97,7 @@ module CommunityEngine
     private
 
     def set_comment
-      @comment = Comment.find(params[:id])
+      @comment = Comment.strict_loading(false).find(params[:id])
     end
 
     def comment_params

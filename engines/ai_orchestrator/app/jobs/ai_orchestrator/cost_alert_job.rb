@@ -5,6 +5,7 @@ module AiOrchestrator
 
     def perform
       violations = CostTracker.check_alerts
+      owner = Core::User.find_by(role: :owner)
 
       violations.each do |violation|
         Rails.logger.error(
@@ -12,7 +13,7 @@ module AiOrchestrator
           "#{violation[:current]} cents (limit: #{violation[:limit]} cents)"
         )
 
-        AdminMailer.cost_alert(violation).deliver_later
+        AdminMailer.cost_alert(violation, owner).deliver_later if owner
       end
     end
   end

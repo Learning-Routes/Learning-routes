@@ -138,21 +138,24 @@ module Core
       end
 
       user_id, raw_token = payload
-      user = Core::User.find_by_remember_credential(user_id: user_id, raw_token: raw_token)
-      unless user
+      sess = Core::User.recover_session_from_remember_credential(
+        user_id: user_id,
+        raw_token: raw_token,
+        session_attributes: {
+          ip_address: request.remote_ip,
+          user_agent: request.user_agent,
+          last_active_at: Time.current
+        }
+      )
+      unless sess
         Rails.logger.info("[Auth] remember_token did not match any user — deleting cookie")
         cookies.delete(:remember_token)
         return
       end
 
-      sess = user.sessions.create!(
-        ip_address: request.remote_ip,
-        user_agent: request.user_agent,
-        last_active_at: Time.current
-      )
       session[:core_session_id] = sess.id
       Rails.logger.info("[Auth] Recovered session via remember_token")
-      Rails.logger.debug { "[Auth] Recovered session for user=#{user.id} (new session=#{sess.id})" }
+      Rails.logger.debug { "[Auth] Recovered session for user=#{sess.user_id} (new session=#{sess.id})" }
       sess
     end
 
