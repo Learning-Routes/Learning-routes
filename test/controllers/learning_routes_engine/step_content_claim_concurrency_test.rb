@@ -78,6 +78,31 @@ module LearningRoutesEngine
         "an enqueue that never happened must not leave the step claimed forever"
     end
 
+    # WP-18's authorization guard and WP-19's atomic claim both live in
+    # `request_content_generation!`, and the merge of the two put the guard
+    # FIRST. That order is load-bearing: a claim taken for a request that is
+    # then refused would flip `content_generating` on a step no job will ever
+    # generate — the exact stranding the test above exists to prevent.
+    #
+    # Nothing pinned the order until now. Each branch was green on its own and
+    # git reported no conflict here, because the two changes touch different
+    # lines of the same method.
+    test "an unauthorized request is refused before it can claim the step" do
+      locked = @route.route_modules.create!(position: 2, title: "Paid", access_state: :locked)
+      paid_step = RouteStep.create!(
+        learning_route: @route, route_module: locked, position: 2,
+        title: "Paid lesson", content_type: :lesson, status: :locked
+      )
+      controller = controller_for(RouteStep.find(paid_step.id))
+
+      assert_no_enqueued_jobs(only: ContentPipelineJob) do
+        controller.send(:request_content_generation!)
+      end
+
+      assert_nil paid_step.reload.metadata["content_generating"],
+        "a request refused by the authorization guard must not leave a claim behind"
+    end
+
     test "a step the pipeline declines to run gives its claim back" do
       locked = @route.route_modules.create!(position: 2, title: "Paid", access_state: :locked)
       paid_step = RouteStep.create!(
@@ -127,7 +152,20 @@ module LearningRoutesEngine
     end
 
     def controller_for(step)
-      StepsController.new.tap { |controller| controller.instance_variable_set(:@step, step) }
+      user = @user
+      StepsController.new.tap do |controller|
+        controller.instance_variable_set(:@step, step)
+        # WP-18 put `generation_authorized?` at the top of
+        # `request_content_generation!`, and it resolves the student through
+        # `current_user` -> `current_session` -> `session`, which needs a request
+        # this bare controller does not have. Supply the user directly.
+        #
+        # This stubs the SESSION PLUMBING ONLY. `ModuleAccessPolicy` still runs
+        # for real against the database on every call, so the authorization is
+        # genuinely exercised — the step above is in the free preview module, so
+        # it is genuinely allowed.
+        controller.define_singleton_method(:current_user) { user }
+      end
     end
 
     def delete_concurrency_records
