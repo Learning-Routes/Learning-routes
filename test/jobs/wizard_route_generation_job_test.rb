@@ -1,13 +1,11 @@
 require "test_helper"
 
 class WizardRouteGenerationJobTest < ActiveSupport::TestCase
+  # Owns its user — see the note in test_helper.rb. This also removes the
+  # profile teardown the "creates learning profile" test used to need: a user
+  # created here cannot already have one.
   def setup
-    @user = Core::User.first || Core::User.create!(
-      name: "Test User",
-      email: "test-job@example.com",
-      password: "password123",
-      password_confirmation: "password123"
-    )
+    @user = create_test_user
   end
 
   def create_request(overrides = {})
@@ -62,8 +60,11 @@ class WizardRouteGenerationJobTest < ActiveSupport::TestCase
   end
 
   test "creates learning profile for new user" do
-    # Ensure no profile exists
-    LearningRoutesEngine::LearningProfile.where(user: @user).destroy_all
+    # No `destroy_all` first: `setup` creates this user, so it has no profile.
+    # The old teardown existed only to undo the adopted-user setup, and it was
+    # itself a strict-loading violation waiting to happen — `dependent: :destroy`
+    # on LearningProfile#learning_routes must load the association to cascade.
+    assert_nil LearningRoutesEngine::LearningProfile.find_by(user: @user)
 
     rr = create_request
     WizardRouteGenerationJob.perform_now(rr.id)
@@ -138,7 +139,7 @@ class WizardRouteGenerationJobTest < ActiveSupport::TestCase
     assert_empty ContentEngine::AiContent.where(
       route_step_id: LearningRoutesEngine::RouteStep.where(route_module_id: modules.drop(1).map(&:id)).select(:id)
     )
-    assert_equal "pricing_configuration_missing", route.generation_params.fetch("quote_blocked_reason")
+    assert_equal "estimator_configuration_missing", route.generation_params.fetch("quote_blocked_reason")
   end
 
   test "uses session_minutes for step duration" do

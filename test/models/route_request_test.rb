@@ -1,13 +1,12 @@
 require "test_helper"
 
 class RouteRequestTest < ActiveSupport::TestCase
+  # Owns its user. `Core::User.first ||` ADOPTED whatever user happened to be
+  # in the database, which made the class depend on rows it never created —
+  # including rows another process was concurrently deleting. See the note on
+  # the shared test database in test_helper.rb.
   def setup
-    @user = Core::User.first || Core::User.create!(
-      name: "Test User",
-      email: "test-rr@example.com",
-      password: "password123",
-      password_confirmation: "password123"
-    )
+    @user = create_test_user
   end
 
   def valid_attrs

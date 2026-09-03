@@ -9,7 +9,8 @@ module Commerce
       def available? = false
     end
 
-    def self.call(route:, estimator_configuration:, fee_configuration:, expires_in: 24.hours)
+    def self.call(route:, estimator_configuration:, fee_configuration:,
+                  expires_in: RouteQuote::DEFAULT_VALIDITY)
       new(route, estimator_configuration, fee_configuration, expires_in).call
     end
 
@@ -41,16 +42,19 @@ module Commerce
         percentage_basis_points: fee.percentage_basis_points,
         fixed_cents: fee.fixed_cents
       )
-      minimum = (module_count - 1) * 299
+      minimum = (module_count - 1) * PricingConstants::MINIMUM_PRICE_PER_PAID_MODULE_CENTS
       final = [gross.gross_cents, minimum].max
-      estimated_fee = Rational(final * fee.percentage_basis_points, 10_000).ceil + fee.fixed_cents
+      estimated_fee = Rational(
+        final * fee.percentage_basis_points, PricingConstants::BASIS_POINTS_SCALE
+      ).ceil + fee.fixed_cents
       profile = LearningRoutesEngine::LearningProfile.find(@route.learning_profile_id)
 
       RouteQuote.create_snapshot!(
         user: Core::User.find(profile.user_id), learning_route: @route, currency: "USD",
         total_module_count: module_count, paid_module_count: module_count - 1,
         estimated_ai_cost_microcents: estimate.cost_microcents, estimated_fee_cents: estimated_fee,
-        markup_basis_points: 5000, minimum_price_per_paid_module_cents: 299,
+        markup_basis_points: PricingConstants::MARKUP_BASIS_POINTS,
+        minimum_price_per_paid_module_cents: PricingConstants::MINIMUM_PRICE_PER_PAID_MODULE_CENTS,
         cost_based_price_cents: gross.gross_cents, minimum_price_cents: minimum, final_price_cents: final,
         estimator_version: estimate.estimator_version, provider_rate_versions: estimate.provider_rate_versions,
         fee_version: fee.version, image_quality: estimate.image_quality,

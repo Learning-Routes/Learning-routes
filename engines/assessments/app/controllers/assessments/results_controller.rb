@@ -67,10 +67,20 @@ module Assessments
       # Adaptive difficulty adjustment
       LearningRoutesEngine::AdaptiveDifficulty.new(route, @result).adjust!
 
-      # Gap analysis in background
-      LearningRoutesEngine::GapAnalysisJob.perform_later(
-        route.id, assessment_result_id: @result.id
+      # Gap analysis in background.
+      #
+      # GapAnalyzer and, through it, ReinforcementGenerator both make paid
+      # Orchestrate calls, so this asks the GENERATION policy. This controller
+      # authorizes on result ownership alone, which stays true after a refund —
+      # so without this a refunded customer could keep submitting an assessment
+      # generated while they were paid and commission two AI calls per submit.
+      if LearningRoutesEngine::ModuleAccessPolicy.generation_allowed?(
+        user: current_user, step_id: step.id
       )
+        LearningRoutesEngine::GapAnalysisJob.perform_later(
+          route.id, assessment_result_id: @result.id
+        )
+      end
 
       # Complete step
       tracker = LearningRoutesEngine::RouteProgressTracker.new(route)
@@ -86,8 +96,17 @@ module Assessments
 
     private
 
+    # Eager-loads the chain `submit` walks: assessment -> route_step ->
+    # learning_route, plus the questions it scores against.
+    #
+    # This was a bare `find`, so `@result.assessment` on the first line of
+    # `submit` was a strict-loading violation on every assessment submission —
+    # invisible because production only LOGS violations and no test reached this
+    # action. It raises the moment one does.
     def set_result
-      @result = AssessmentResult.find(params[:id])
+      @result = AssessmentResult
+        .includes(assessment: [:questions, { route_step: :learning_route }])
+        .find(params[:id])
     end
 
     def authorize_result_owner!

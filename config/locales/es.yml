@@ -1000,6 +1000,10 @@ es:
       badge_scenario: "ESCENARIO"
       badge_simulation: "SIMULACIÓN"
       badge_playground: "PRÁCTICA"
+    content_unavailable:
+      title: "Esta lección no se está generando"
+      body: "Tu compra de esta ruta fue reembolsada, por lo que no se crean lecciones nuevas para ella. Todo lo que ya se generó sigue disponible para leer."
+      back: "Volver a la ruta"
     content_failed:
       title: "No pudimos crear esta lección"
       body: "Algo salió mal al generar el contenido de este paso. No se ha perdido nada — puedes intentarlo de nuevo en unos minutos, o continuar y volver más tarde."
@@ -1628,7 +1632,10 @@ es:
       available: "Cotización disponible"
       unavailable: "Cotización no disponible"
       estimated_cost: "Costo estimado de IA de la ruta completa: %{amount}"
-      blocked: { not_quoted: "No se ha creado una cotización", pricing_configuration_missing: "Falta configuración de precios requerida" }
+      blocked: { not_quoted: "No se ha creado una cotización", pricing_configuration_missing: "Falta configuración de precios requerida", estimator_configuration_missing: "Falta la configuración del estimador de costos de IA", fee_configuration_missing: "Falta la configuración de comisiones del proveedor de pago", no_paid_modules: "Esta ruta no tiene módulos de pago que cotizar", quote_error: "La cotización falló inesperadamente: consulta los registros" }
+      rejected: { unsupported_event: "Tipo de evento no procesado", payment_not_captured: "El pedido nunca capturó el pago", missing_order_reference: "El pedido no traía identificador de orden del proveedor", mode_mismatch: "El modo prueba/producción no coincide con este despliegue", store_mismatch: "El pedido vino de otra tienda", currency_mismatch: "El pedido no estaba en USD", unknown_route: "La ruta no existe", unknown_user: "El usuario no existe", unknown_quote: "La cotización no existe", ownership_mismatch: "La cotización, la ruta y el usuario no concuerdan", amount_mismatch: "El importe pagado no coincide con la cotización", discount_not_supported: "Se aplicó un código de descuento: los descuentos no son compatibles", already_paid: "Esta ruta ya estaba pagada", quote_not_attached: "La cotización no estaba en un estado que un checkout hubiera dejado" }
+    commerce_notes:
+      discounts_unsupported: "Los códigos de descuento no son compatibles. El checkout se crea con un precio exacto tomado de la cotización, así que cualquier descuento aplicado en el panel de Lemon Squeezy hace que el cliente pague menos de lo cotizado; ese pedido se cobra en el proveedor y luego se rechaza aquí como \"discount_not_supported\", dejando al cliente pagado y sin acceso. No crees un código de descuento hasta que se decida esta política."
     filters: { all_activity: "Toda actividad", active: "Activo en 30 días", inactive: "Inactivo", all_routes: "Todos los estados" }
     fields: { user: "Usuario", registered: "Registro", last_activity: "Última actividad", routes: "Rutas", progress: "Progreso educativo", readiness: "Preparación de compra", cost: "Costo exacto de IA" }
     states: { draft: "Borrador", active: "Activa", completed: "Completada", paused: "Pausada" }
@@ -1643,3 +1650,16 @@ es:
     onboarding_incomplete: "Incorporación incompleta"
     never: "Nunca"
     pagination: { label: "Páginas de usuarios", page: "Página %{current} de %{total}", previous: "Anterior", next: "Siguiente" }
+
+  # ── Comercio ──
+  commerce:
+    checkout:
+      no_quote: "No pudimos calcular un precio para esta ruta. No se te ha cobrado nada; inténtalo de nuevo en unos minutos."
+      pricing_unavailable: "No pudimos calcular un precio para esta ruta. No se te ha cobrado nada; inténtalo de nuevo en unos minutos."
+      no_paid_modules: "Esta ruta es gratuita: no hay nada que comprar."
+      quote_expired: "Ese precio ha expirado. Vuelve a iniciar el pago para obtener uno actual."
+      already_purchased: "Ya tienes esta ruta."
+      provider_unavailable: "Los pagos no están disponibles en este momento."
+      provider_error: "No pudimos iniciar el pago. No se te ha cobrado nada."
+      checkout_error: "No pudimos iniciar el pago. No se te ha cobrado nada."
+      unavailable: "El pago no está disponible en este momento."

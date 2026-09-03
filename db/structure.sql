@@ -11,6 +11,41 @@ SET client_min_messages = warning;
 SET row_security = off;
 
 --
+-- Name: commerce_route_purchase_owner_guard(); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION public.commerce_route_purchase_owner_guard() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1
+    FROM learning_routes_engine_learning_routes r
+    JOIN learning_routes_engine_learning_profiles p ON p.id = r.learning_profile_id
+    WHERE r.id = NEW.learning_route_id AND p.user_id = NEW.user_id
+  ) THEN
+    RAISE EXCEPTION 'route purchase user must own the learning route'
+      USING ERRCODE = '23514';
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1 FROM commerce_route_quotes q
+    WHERE q.id = NEW.route_quote_id
+      AND q.learning_route_id = NEW.learning_route_id
+      AND q.user_id = NEW.user_id
+      AND q.final_price_cents = NEW.amount_cents
+      AND q.currency = NEW.currency
+  ) THEN
+    RAISE EXCEPTION 'route purchase must match its quote owner, route, amount and currency'
+      USING ERRCODE = '23514';
+  END IF;
+
+  RETURN NEW;
+END;
+$$;
+
+
+--
 -- Name: commerce_route_quote_immutable_guard(); Type: FUNCTION; Schema: public; Owner: -
 --
 
@@ -161,7 +196,6 @@ CREATE TABLE public.ai_orchestrator_ai_interactions (
     cache_key character varying,
     cached boolean DEFAULT false NOT NULL,
     cost_cents integer DEFAULT 0,
-    cost_microcents bigint DEFAULT 0 NOT NULL,
     created_at timestamp(6) without time zone NOT NULL,
     error_message text,
     input_tokens integer DEFAULT 0,
@@ -169,17 +203,18 @@ CREATE TABLE public.ai_orchestrator_ai_interactions (
     metadata jsonb DEFAULT '{}'::jsonb,
     model character varying NOT NULL,
     output_tokens integer DEFAULT 0,
-    pricing_status character varying DEFAULT 'unpriced'::character varying NOT NULL,
-    pricing_version character varying,
     prompt text NOT NULL,
-    provider_rate_microcents bigint,
-    provider_units bigint,
     response text,
     status integer DEFAULT 0 NOT NULL,
     task_type character varying,
     tokens_used integer DEFAULT 0,
     updated_at timestamp(6) without time zone NOT NULL,
-    user_id uuid
+    user_id uuid,
+    cost_microcents bigint DEFAULT 0 NOT NULL,
+    provider_units bigint,
+    provider_rate_microcents bigint,
+    pricing_status character varying DEFAULT 'unpriced'::character varying NOT NULL,
+    pricing_version character varying
 );
 
 
@@ -352,6 +387,63 @@ CREATE TABLE public.assessments_voice_responses (
     transcription text,
     updated_at timestamp(6) without time zone NOT NULL,
     user_id uuid NOT NULL
+);
+
+
+--
+-- Name: commerce_provider_events; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.commerce_provider_events (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    provider character varying NOT NULL,
+    event_identity character varying NOT NULL,
+    event_name character varying NOT NULL,
+    test_mode boolean NOT NULL,
+    processing_state character varying DEFAULT 'pending'::character varying NOT NULL,
+    evidence jsonb DEFAULT '{}'::jsonb NOT NULL,
+    rejection_reason character varying,
+    processed_at timestamp(6) without time zone,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL,
+    CONSTRAINT provider_events_bounded_evidence CHECK ((pg_column_size(evidence) <= 8192)),
+    CONSTRAINT provider_events_processing_state CHECK (((processing_state)::text = ANY ((ARRAY['pending'::character varying, 'processed'::character varying, 'rejected'::character varying])::text[])))
+);
+
+
+--
+-- Name: commerce_route_purchases; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.commerce_route_purchases (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    user_id uuid NOT NULL,
+    learning_route_id uuid NOT NULL,
+    route_quote_id uuid NOT NULL,
+    state character varying DEFAULT 'pending'::character varying NOT NULL,
+    provider character varying NOT NULL,
+    test_mode boolean DEFAULT true NOT NULL,
+    provider_checkout_id character varying,
+    provider_order_id character varying,
+    provider_store_id character varying,
+    provider_product_id character varying,
+    provider_variant_id character varying,
+    amount_cents bigint NOT NULL,
+    currency character varying NOT NULL,
+    estimated_ai_cost_microcents bigint NOT NULL,
+    estimated_fee_cents bigint NOT NULL,
+    actual_fee_cents bigint,
+    refunded_amount_cents bigint,
+    failure_reason character varying,
+    paid_at timestamp(6) without time zone,
+    refunded_at timestamp(6) without time zone,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL,
+    CONSTRAINT route_purchases_nonnegative_money CHECK (((amount_cents >= 0) AND (estimated_ai_cost_microcents >= 0) AND (estimated_fee_cents >= 0) AND ((actual_fee_cents IS NULL) OR (actual_fee_cents >= 0)) AND ((refunded_amount_cents IS NULL) OR (refunded_amount_cents >= 0)))),
+    CONSTRAINT route_purchases_paid_needs_order CHECK ((((state)::text <> 'paid'::text) OR ((provider_order_id IS NOT NULL) AND (paid_at IS NOT NULL)))),
+    CONSTRAINT route_purchases_refund_needs_timestamp CHECK ((((state)::text <> 'refunded'::text) OR (refunded_at IS NOT NULL))),
+    CONSTRAINT route_purchases_state CHECK (((state)::text = ANY ((ARRAY['pending'::character varying, 'paid'::character varying, 'failed'::character varying, 'refunded'::character varying])::text[]))),
+    CONSTRAINT route_purchases_usd_only CHECK (((currency)::text = 'USD'::text))
 );
 
 
@@ -537,7 +629,6 @@ CREATE TABLE public.content_engine_ai_contents (
     id uuid DEFAULT gen_random_uuid() NOT NULL,
     ai_model character varying,
     audio_duration double precision,
-    audio_error_message text,
     audio_status character varying DEFAULT 'pending'::character varying NOT NULL,
     audio_transcript text,
     audio_url character varying,
@@ -551,7 +642,8 @@ CREATE TABLE public.content_engine_ai_contents (
     route_step_id uuid NOT NULL,
     tokens_used integer DEFAULT 0,
     updated_at timestamp(6) without time zone NOT NULL,
-    voice_id character varying
+    voice_id character varying,
+    audio_error_message text
 );
 
 
@@ -632,18 +724,18 @@ CREATE TABLE public.core_users (
 
 CREATE TABLE public.learning_routes_engine_block_attempts (
     id uuid DEFAULT gen_random_uuid() NOT NULL,
-    attempts integer DEFAULT 0 NOT NULL,
-    block_type character varying NOT NULL,
-    completed_at timestamp(6) without time zone,
-    correct boolean,
-    created_at timestamp(6) without time zone NOT NULL,
-    payload jsonb DEFAULT '{}'::jsonb NOT NULL,
-    released_at timestamp(6) without time zone,
+    user_id uuid NOT NULL,
     route_step_id uuid NOT NULL,
-    score numeric(5,2),
     section_index integer NOT NULL,
-    updated_at timestamp(6) without time zone NOT NULL,
-    user_id uuid NOT NULL
+    block_type character varying NOT NULL,
+    payload jsonb DEFAULT '{}'::jsonb NOT NULL,
+    correct boolean,
+    score numeric(5,2),
+    attempts integer DEFAULT 0 NOT NULL,
+    completed_at timestamp(6) without time zone,
+    released_at timestamp(6) without time zone,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL
 );
 
 
@@ -653,7 +745,6 @@ CREATE TABLE public.learning_routes_engine_block_attempts (
 
 CREATE TABLE public.learning_routes_engine_knowledge_gaps (
     id uuid DEFAULT gen_random_uuid() NOT NULL,
-    assessment_result_id uuid,
     created_at timestamp(6) without time zone NOT NULL,
     description text,
     identified_from character varying,
@@ -662,7 +753,8 @@ CREATE TABLE public.learning_routes_engine_knowledge_gaps (
     severity integer DEFAULT 0 NOT NULL,
     topic character varying NOT NULL,
     updated_at timestamp(6) without time zone NOT NULL,
-    user_id uuid NOT NULL
+    user_id uuid NOT NULL,
+    assessment_result_id uuid
 );
 
 
@@ -818,13 +910,13 @@ CREATE TABLE public.owner_audit_events (
     id uuid DEFAULT gen_random_uuid() NOT NULL,
     action character varying NOT NULL,
     actor_user_id uuid,
-    created_at timestamp(6) without time zone NOT NULL,
-    ip_digest character varying,
-    metadata jsonb DEFAULT '{}'::jsonb NOT NULL,
-    request_id character varying,
     subject_user_id uuid,
-    updated_at timestamp(6) without time zone NOT NULL,
-    user_agent_digest character varying
+    request_id character varying,
+    ip_digest character varying,
+    user_agent_digest character varying,
+    metadata jsonb DEFAULT '{}'::jsonb NOT NULL,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL
 );
 
 
@@ -1049,6 +1141,22 @@ ALTER TABLE ONLY public.assessments_user_answers
 
 ALTER TABLE ONLY public.assessments_voice_responses
     ADD CONSTRAINT assessments_voice_responses_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: commerce_provider_events commerce_provider_events_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.commerce_provider_events
+    ADD CONSTRAINT commerce_provider_events_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: commerce_route_purchases commerce_route_purchases_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.commerce_route_purchases
+    ADD CONSTRAINT commerce_route_purchases_pkey PRIMARY KEY (id);
 
 
 --
@@ -1507,6 +1615,20 @@ CREATE UNIQUE INDEX idx_progress_snapshots_unique ON public.analytics_progress_s
 
 
 --
+-- Name: idx_provider_events_identity; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX idx_provider_events_identity ON public.commerce_provider_events USING btree (provider, event_identity);
+
+
+--
+-- Name: idx_provider_events_name_time; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_provider_events_name_time ON public.commerce_provider_events USING btree (provider, event_name, created_at);
+
+
+--
 -- Name: idx_results_on_user_and_assessment; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -1539,6 +1661,27 @@ CREATE INDEX idx_route_modules_route_states ON public.learning_routes_engine_rou
 --
 
 CREATE UNIQUE INDEX idx_route_modules_single_preview ON public.learning_routes_engine_route_modules USING btree (learning_route_id) WHERE (access_state = 0);
+
+
+--
+-- Name: idx_route_purchases_provider_order; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX idx_route_purchases_provider_order ON public.commerce_route_purchases USING btree (provider, provider_order_id) WHERE (provider_order_id IS NOT NULL);
+
+
+--
+-- Name: idx_route_purchases_route_state; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_route_purchases_route_state ON public.commerce_route_purchases USING btree (learning_route_id, state);
+
+
+--
+-- Name: idx_route_purchases_single_paid; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX idx_route_purchases_single_paid ON public.commerce_route_purchases USING btree (learning_route_id) WHERE ((state)::text = 'paid'::text);
 
 
 --
@@ -1903,6 +2046,27 @@ CREATE INDEX index_assessments_voice_responses_on_status ON public.assessments_v
 --
 
 CREATE INDEX index_assessments_voice_responses_on_user_id ON public.assessments_voice_responses USING btree (user_id);
+
+
+--
+-- Name: index_commerce_route_purchases_on_learning_route_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_commerce_route_purchases_on_learning_route_id ON public.commerce_route_purchases USING btree (learning_route_id);
+
+
+--
+-- Name: index_commerce_route_purchases_on_route_quote_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_commerce_route_purchases_on_route_quote_id ON public.commerce_route_purchases USING btree (route_quote_id);
+
+
+--
+-- Name: index_commerce_route_purchases_on_user_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_commerce_route_purchases_on_user_id ON public.commerce_route_purchases USING btree (user_id);
 
 
 --
@@ -2305,6 +2469,13 @@ CREATE INDEX index_xp_transactions_on_user_id_and_created_at ON public.xp_transa
 
 
 --
+-- Name: commerce_route_purchases commerce_route_purchases_owner_guard; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER commerce_route_purchases_owner_guard BEFORE INSERT OR UPDATE OF user_id, learning_route_id, route_quote_id, amount_cents, currency ON public.commerce_route_purchases FOR EACH ROW EXECUTE FUNCTION public.commerce_route_purchase_owner_guard();
+
+
+--
 -- Name: commerce_route_quotes commerce_route_quotes_immutable_guard; Type: TRIGGER; Schema: public; Owner: -
 --
 
@@ -2417,6 +2588,14 @@ ALTER TABLE ONLY public.owner_audit_events
 
 ALTER TABLE ONLY public.owner_audit_events
     ADD CONSTRAINT fk_rails_1d6fb8faaa FOREIGN KEY (actor_user_id) REFERENCES public.core_users(id) ON DELETE SET NULL;
+
+
+--
+-- Name: commerce_route_purchases fk_rails_1e9d24bdd5; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.commerce_route_purchases
+    ADD CONSTRAINT fk_rails_1e9d24bdd5 FOREIGN KEY (route_quote_id) REFERENCES public.commerce_route_quotes(id) ON DELETE RESTRICT;
 
 
 --
@@ -2572,6 +2751,14 @@ ALTER TABLE ONLY public.analytics_study_sessions
 
 
 --
+-- Name: commerce_route_purchases fk_rails_afda20d3f5; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.commerce_route_purchases
+    ADD CONSTRAINT fk_rails_afda20d3f5 FOREIGN KEY (learning_route_id) REFERENCES public.learning_routes_engine_learning_routes(id) ON DELETE RESTRICT;
+
+
+--
 -- Name: content_engine_user_notes fk_rails_b091220a8e; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -2617,6 +2804,14 @@ ALTER TABLE ONLY public.learning_routes_engine_reinforcement_routes
 
 ALTER TABLE ONLY public.commerce_route_quotes
     ADD CONSTRAINT fk_rails_beb90d708b FOREIGN KEY (learning_route_id) REFERENCES public.learning_routes_engine_learning_routes(id) ON DELETE RESTRICT;
+
+
+--
+-- Name: commerce_route_purchases fk_rails_bfb54227c9; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.commerce_route_purchases
+    ADD CONSTRAINT fk_rails_bfb54227c9 FOREIGN KEY (user_id) REFERENCES public.core_users(id) ON DELETE RESTRICT;
 
 
 --
@@ -2778,6 +2973,8 @@ ALTER TABLE ONLY public.learning_routes_engine_route_steps
 SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
+('20260902000002'),
+('20260902000001'),
 ('20260901000006'),
 ('20260901000005'),
 ('20260901000004'),
@@ -2848,3 +3045,4 @@ INSERT INTO "schema_migrations" (version) VALUES
 ('20250213000003'),
 ('20250213000002'),
 ('20250213000001');
+

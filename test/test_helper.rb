@@ -35,6 +35,23 @@ WebMock.disable_net_connect!(allow_localhost: true)
 # rack_attack_test re-enables it per-test.
 Rack::Attack.enabled = false if defined?(Rack::Attack)
 
+# RUN ONE SUITE AT A TIME.
+#
+# Every `bin/rails test` process shares ONE test database, and several classes
+# set `use_transactional_tests = false` in order to exercise real concurrent
+# connections (`order_processor_test.rb`, `promotion_concurrency_test.rb`,
+# `route_module_concurrency_test.rb`, `block_attempt_concurrency_test.rb`,
+# `legacy_module_backfill_concurrency_test.rb`). Those classes COMMIT rows and
+# then delete them in teardown. A second suite running at the same time sees
+# those rows appear and vanish underneath it, which surfaces as
+# `PG::ForeignKeyViolation` on an id that was present moments earlier, or as a
+# `StrictLoadingViolationError` on a cascade that suddenly has rows to load.
+#
+# This is what made the suite look ~18% intermittently red while two runs
+# overlapped. Six captured failing seeds (116, 117, 118, 120, 121, 127) all
+# passed cleanly when re-run one at a time. The suite is deterministic; the
+# database is the shared resource. If you need parallel runs, give each process
+# its own database rather than turning the concurrency coverage off.
 module ActiveSupport
   class TestCase
     # Run tests serially on arm64-darwin — the pg gem (1.6.x) segfaults when

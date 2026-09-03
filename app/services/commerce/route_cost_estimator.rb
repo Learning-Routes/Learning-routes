@@ -25,6 +25,8 @@ module Commerce
       missing = base_missing + shape.missing + shape.calls.flat_map { |call| catalog.missing_for(call) }
       return Unavailable.new(reason: "pricing_configuration_missing", missing: missing.uniq.sort) if missing.any?
 
+      # A KeyError from here IS a bug, not missing configuration: `missing` above
+      # already proved every required key is present. Letting it raise is the point.
       Available.new(
         cost_microcents: shape.calls.sum { |call| catalog.estimate_microcents(call) },
         estimator_version: @configuration.fetch(:estimator_version),
@@ -33,8 +35,6 @@ module Commerce
         route_shape_assumptions: shape.snapshot,
         image_quality: @configuration.fetch(:image_quality)
       )
-    rescue KeyError
-      Unavailable.new(reason: "pricing_configuration_missing", missing: ["route_shape.usage"])
     end
 
     private

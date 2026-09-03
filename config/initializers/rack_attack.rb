@@ -58,6 +58,18 @@ class Rack::Attack
     req.ip if path == "/routes/create" || path.end_with?("/tutor_chats", "/generate")
   end
 
+  # Checkout creation calls a payment provider and writes a purchase row. Ten a
+  # minute per IP is far above any real customer and well below abuse.
+  throttle("checkouts/ip", limit: 10, period: 60) do |req|
+    req.ip if req.post? && req.path.match?(%r{\A/commerce/routes/[^/]+/checkout\z})
+  end
+
+  # Webhooks are authenticated by signature, not by session, so throttle by IP
+  # only to bound a flood. Lemon Squeezy retries are far below this.
+  throttle("provider_webhooks/ip", limit: 120, period: 60) do |req|
+    req.ip if req.post? && req.path.start_with?("/commerce/webhooks/")
+  end
+
   # General DDoS backstop — 300 requests / 5 min per IP. Excludes static
   # assets and the frequent status-poll endpoints (audio/image generation polls
   # every couple seconds), so normal heavy use never trips it.

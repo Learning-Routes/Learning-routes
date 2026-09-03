@@ -9,7 +9,10 @@ module Assessments
     ALLOWED_CONTENT_TYPES = %w[audio/webm audio/ogg audio/mp4 audio/mpeg].freeze
 
     def create
-      unless LearningRoutesEngine::ModuleAccessPolicy.allowed_step?(
+      # Transcribing and evaluating this recording is billable AI work, so it
+      # asks the generation gate, not the read gate: a refunded route keeps its
+      # existing content but stops commissioning more.
+      unless LearningRoutesEngine::ModuleAccessPolicy.generation_allowed?(
         user: current_user, step_id: params[:route_step_id]
       )
         return head :forbidden

@@ -14,6 +14,8 @@ module Commerce
 
     belongs_to :user, class_name: "Core::User"
     belongs_to :learning_route, class_name: "LearningRoutesEngine::LearningRoute"
+    has_many :route_purchases, class_name: "Commerce::RoutePurchase",
+             foreign_key: :route_quote_id, dependent: :restrict_with_error
 
     validates :currency, inclusion: { in: ["USD"] }
     validates :total_module_count, numericality: { only_integer: true, greater_than_or_equal_to: 1 }
@@ -21,8 +23,10 @@ module Commerce
     validates :estimated_ai_cost_microcents, :estimated_fee_cents, :cost_based_price_cents,
       :minimum_price_cents, :final_price_cents,
       numericality: { only_integer: true, greater_than_or_equal_to: 0 }
-    validates :markup_basis_points, inclusion: { in: [5000] }
-    validates :minimum_price_per_paid_module_cents, inclusion: { in: [299] }
+    validates :markup_basis_points,
+      inclusion: { in: [Commerce::PricingConstants::MARKUP_BASIS_POINTS] }
+    validates :minimum_price_per_paid_module_cents,
+      inclusion: { in: [Commerce::PricingConstants::MINIMUM_PRICE_PER_PAID_MODULE_CENTS] }
     validates :estimator_version, :fee_version, :image_quality, presence: true
     validates :provider_rate_versions, :route_shape_assumptions,
       :provider_rate_assumptions, :fee_assumptions, presence: true
@@ -35,6 +39,27 @@ module Commerce
 
     scope :active, -> { where(superseded_at: nil) }
     scope :unattached, -> { where(attachment_state: "unattached") }
+
+    ATTACHMENT_STATES = %w[unattached checkout purchase].freeze
+
+    # How long a freshly minted quote stays usable. Defined here rather than as
+    # RouteQuoteBuilder's default argument now that two callers mint quotes.
+    DEFAULT_VALIDITY = 24.hours
+
+    def attached? = attachment_state != "unattached"
+
+    # `unattached -> checkout -> purchase` only, and never backwards. An attached
+    # quote is the price the customer agreed to; nothing may move it.
+    def attach!(state)
+      raise ArgumentError, "unknown attachment state #{state}" unless ATTACHMENT_STATES.include?(state)
+
+      allowed = { "unattached" => ["checkout"], "checkout" => ["purchase"], "purchase" => [] }
+      unless allowed.fetch(attachment_state, []).include?(state)
+        raise ArgumentError, "cannot move an attached quote from #{attachment_state} to #{state}"
+      end
+
+      update!(attachment_state: state)
+    end
 
     def self.create_snapshot!(attributes)
       route = LearningRoutesEngine::LearningRoute.find(attributes.fetch(:learning_route).id)

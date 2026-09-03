@@ -21,6 +21,20 @@ module LearningRoutesEngine
   # already ready or already generating, RETURNING the rows it actually flipped — and
   # enqueues only those. A caller that loses the race enqueues nothing.
   class ContentPrefetcher
+    # THE PREVIEW FILTER IN THIS CLASS IS A SPEND BOUNDARY, NOT A DISPLAY RULE.
+    #
+    # `claim`, `available_slots` and `pending_step_ids` all restrict to
+    # `access_state: :preview`, and that is currently the only thing stopping a
+    # refunded route from prefetching paid lessons: this class has no user and
+    # therefore cannot ask `ModuleAccessPolicy.generation_allowed?`.
+    #
+    # Task 8 has to widen this to reach `purchased` modules. When it does, the
+    # entitlement check has to arrive at the same time — a purchase that has
+    # since been refunded leaves its modules in `purchased`, so widening the
+    # filter alone re-opens exactly the hole this comment exists to prevent.
+    # `test/services/learning_routes_engine/content_prefetcher_scope_test.rb`
+    # fails if the filter is widened without one.
+
     # Most pipelines this route may have in flight at once.
     #
     # ContentPipelineJob runs on `default`, whose Solid Queue pool is 3 threads SHARED

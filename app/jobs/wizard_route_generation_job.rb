@@ -69,6 +69,7 @@ class WizardRouteGenerationJob < ApplicationJob
       dominant_style = style_result["dominant"] || style_result[:dominant]
       secondary_style = style_result["secondary"] || style_result[:secondary]
 
+      route = nil
       ActiveRecord::Base.transaction do
         route = LearningRoutesEngine::LearningRoute.create!(
           learning_profile: profile,
@@ -89,8 +90,7 @@ class WizardRouteGenerationJob < ApplicationJob
             pace: request.pace,
             learning_style: dominant_style,
             weekly_hours: request.weekly_hours,
-            session_minutes: request.session_minutes,
-            quote_blocked_reason: "pricing_configuration_missing"
+            session_minutes: request.session_minutes
           },
           content_preferences: {
             primary_style: dominant_style,
@@ -160,6 +160,12 @@ class WizardRouteGenerationJob < ApplicationJob
         request.update!(status: "completed", learning_route: route)
       end
 
+      # Quote the complete outline. Quoting is deliberately OUTSIDE the creation
+      # transaction: a pricing-configuration problem must leave a usable route with
+      # an explicit reason, not roll back the student's route. No checkout exists
+      # yet, so an unquoted route is recoverable by re-quoting later.
+      record_route_quote!(route)
+
       # Pre-generate content for the first 3 non-assessment steps
       pregenerate_content!(request.learning_route)
 
@@ -194,6 +200,37 @@ class WizardRouteGenerationJob < ApplicationJob
   end
 
   private
+
+  def record_route_quote!(route)
+    estimator = Commerce::EstimatorConfiguration.call(route: route)
+    unless estimator.available?
+      return block_quote!(route, estimator.reason, estimator.missing)
+    end
+
+    result = Commerce::RouteQuoteBuilder.call(
+      route: route,
+      estimator_configuration: estimator.configuration,
+      fee_configuration: Rails.application.config.x.commerce_fee_configuration
+    )
+    return block_quote!(route, result.reason, result.missing) unless result.available?
+
+    clear_quote_block!(route)
+  rescue => e
+    # Quoting must never destroy a generated route.
+    Rails.logger.error("[WizardRouteGeneration] quoting failed for route #{route.id}: #{e.class}: #{e.message}")
+    block_quote!(route, "quote_error", [])
+  end
+
+  def block_quote!(route, reason, missing)
+    Rails.logger.warn(
+      "[WizardRouteGeneration] route #{route.id} not quoted: #{reason} missing=#{Array(missing).join(',')}"
+    )
+    route.update!(generation_params: route.generation_params.merge("quote_blocked_reason" => reason))
+  end
+
+  def clear_quote_block!(route)
+    route.update!(generation_params: route.generation_params.except("quote_blocked_reason"))
+  end
 
   def module_outline(route_data)
     supplied = Array(route_data[:modules])
