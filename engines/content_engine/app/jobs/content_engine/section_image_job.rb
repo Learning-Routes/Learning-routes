@@ -61,7 +61,7 @@ module ContentEngine
       parsed[section_index]["image_status"] = status
       parsed[section_index]["image_url"] = image_url if image_url.present?
       parsed[section_index]["image_error"] = error
-      step.update!(metadata: metadata.merge("parsed_sections" => parsed))
+      step.merge_metadata!("parsed_sections" => parsed)
     end
   end
 end

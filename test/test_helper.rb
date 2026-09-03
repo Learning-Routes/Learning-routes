@@ -67,6 +67,7 @@ module ActiveSupport
     # Setup all fixtures in test/fixtures/*.yml for all tests in alphabetical order.
     fixtures :all
 
+
     # ─── Shared helpers ──────────────────────────────────────────────
 
     # Create a persisted test user with a unique email (no fixtures needed).

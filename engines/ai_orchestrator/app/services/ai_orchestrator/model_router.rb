@@ -36,7 +36,10 @@ module AiOrchestrator
       "gpt-image-1"        => 30
     }.freeze
 
-    class RateLimitExceeded < StandardError; end
+    # Kept as an alias so existing `rescue ModelRouter::RateLimitExceeded`
+    # call sites (AiRequestJob) still catch the refusal now that SpendGuard
+    # owns it.
+    RateLimitExceeded = SpendGuard::LimitExceeded
     class AllModelsUnavailable < StandardError; end
 
     def initialize(task_type:, user: nil)
@@ -47,19 +50,29 @@ module AiOrchestrator
     # Execute a request with automatic fallback
     def execute(&block)
       primary = model_for(@task_type)
-      check_rate_limit!(primary)
-      check_cost_limit!
 
       begin
         yield primary, model_params(primary)
+      rescue SpendGuard::LimitExceeded
+        # A ceiling refusing to spend is NOT a model failure. Falling back would
+        # ask the same guard the same question about a different model, burn a
+        # second rate-limit slot, and convert a clear "we declined to spend" into
+        # AllModelsUnavailable. The block's AiClient already consulted the guard;
+        # let the refusal out untouched.
+        raise
       rescue => e
         Rails.logger.warn("[AiOrchestrator::ModelRouter] Primary model #{primary} failed: #{e.message}")
         fallback = fallback_for(@task_type)
         raise AllModelsUnavailable, "Primary model #{primary} failed and no fallback available" unless fallback
 
-        check_rate_limit!(fallback)
         begin
+          # No check here either: the block builds an AiClient for `fallback`,
+          # and that client asks SpendGuard about the model it is ACTUALLY going
+          # to call. The old code checked the rate limit for a model name it only
+          # hoped the block would use.
           yield fallback, model_params(fallback)
+        rescue SpendGuard::LimitExceeded
+          raise
         rescue => e
           raise AllModelsUnavailable, "Both primary (#{primary}) and fallback (#{fallback}) failed: #{e.message}"
         end
@@ -99,56 +112,6 @@ module AiOrchestrator
       defaults = Rails.application.config.ai_model_defaults[@task_type] || {}
       db_config = AiModelConfig.enabled.find_by(model_name: model_name, task_type: @task_type.to_s)
       defaults.merge(db_config&.settings || {})
-    end
-
-    def check_rate_limit!(model_name)
-      limit = rate_limit_for(model_name)
-      return unless limit
-
-      key = "ai_rate_limit:#{model_name}"
-
-      # Atomic increment-then-check: increment first, check after
-      if Rails.cache.respond_to?(:increment)
-        # Initialize key if missing, then atomically increment.
-        # Rails.cache.increment can return nil if the key write race-loses or the
-        # backend doesn't support increment with unless_exist semantics — coerce
-        # to_i so we never compare nil > Integer.
-        Rails.cache.write(key, 0, expires_in: 1.minute, unless_exist: true)
-        count = Rails.cache.increment(key).to_i
-        if count > limit
-          Rails.cache.decrement(key)
-          raise RateLimitExceeded, "Rate limit exceeded for #{model_name}: #{count}/#{limit} rpm"
-        end
-      else
-        current = Rails.cache.read(key).to_i
-        if current >= limit
-          raise RateLimitExceeded, "Rate limit exceeded for #{model_name}: #{current}/#{limit} rpm"
-        end
-        Rails.cache.write(key, current + 1, expires_in: 1.minute)
-      end
-    end
-
-    def rate_limit_for(model_name)
-      db_config = AiModelConfig.enabled.find_by(model_name: model_name, task_type: @task_type.to_s)
-      db_config&.rate_limit || RATE_LIMITS[model_name]
-    end
-
-    def check_cost_limit!
-      alerts = Rails.application.config.ai_cost_alerts
-
-      daily = CostTracker.daily_cost_microcents
-      daily_limit = alerts[:daily_limit].to_i * CostTracker::MICROCENTS_PER_CENT
-      if daily >= daily_limit
-        raise RateLimitExceeded, "Daily cost limit exceeded (limit: #{alerts[:daily_limit]} cents)"
-      end
-
-      if @user
-        user_daily = CostTracker.cost_by_user_microcents(user_id: @user.id, period: Date.current.all_day)
-        user_limit = alerts[:per_user_daily].to_i * CostTracker::MICROCENTS_PER_CENT
-        if user_daily >= user_limit
-          raise RateLimitExceeded, "Per-user daily cost limit exceeded for user #{@user.id}"
-        end
-      end
     end
   end
 end

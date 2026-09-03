@@ -23,10 +23,13 @@ module LearningRoutesEngine
   class ContentPrefetcher
     # THE PREVIEW FILTER IN THIS CLASS IS A SPEND BOUNDARY, NOT A DISPLAY RULE.
     #
-    # `claim`, `available_slots` and `pending_step_ids` all restrict to
-    # `access_state: :preview`, and that is currently the only thing stopping a
-    # refunded route from prefetching paid lessons: this class has no user and
-    # therefore cannot ask `ModuleAccessPolicy.generation_allowed?`.
+    # `available_slots` and `pending_step_ids` restrict to `access_state: :preview`.
+    # `claim` restricts to the states its caller passes, and the prefetch path passes
+    # PREVIEW_ONLY — the parameter exists so the student's current step can reuse the
+    # SAME atomic claim without a second copy of the SQL, not to loosen this boundary.
+    # Together they are currently the only thing stopping a refunded route from
+    # prefetching paid lessons: this class has no user and therefore cannot ask
+    # `ModuleAccessPolicy.generation_allowed?`.
     #
     # Task 8 has to widen this to reach `purchased` modules. When it does, the
     # entitlement check has to arrive at the same time — a purchase that has
@@ -34,6 +37,13 @@ module LearningRoutesEngine
     # filter alone re-opens exactly the hole this comment exists to prevent.
     # `test/services/learning_routes_engine/content_prefetcher_scope_test.rb`
     # fails if the filter is widened without one.
+
+    # The module states the free prefetch path is allowed to spend on. Passed
+    # explicitly rather than baked into the SQL so that the ONE atomic claim in
+    # this codebase can serve both the prefetch path (preview only) and the
+    # student's current step (whatever they are authorized to read). Task 8 will
+    # widen the prefetch path; a second copy of the SQL would drift from this one.
+    PREVIEW_ONLY = %i[preview].freeze
 
     # Most pipelines this route may have in flight at once.
     #
@@ -46,7 +56,8 @@ module LearningRoutesEngine
     class << self
       # Claim up to `limit` not-yet-generated steps of `route` and enqueue them.
       # Returns the step ids actually enqueued.
-      def prefetch(route, step_ids, options: { pregenerate_audio: true }, limit: nil)
+      def prefetch(route, step_ids, options: { pregenerate_audio: true }, limit: nil,
+                   access_states: PREVIEW_ONLY)
         step_ids = Array(step_ids).compact
         return [] if step_ids.empty?
 
@@ -54,7 +65,7 @@ module LearningRoutesEngine
         return [] if budget.zero?
 
         budget = [budget, limit].compact.min
-        claimed = claim(step_ids.first(budget))
+        claimed = claim(step_ids.first(budget), access_states: access_states)
 
         claimed.each { |id| ContentPipelineJob.perform_later(id, options) }
         claimed
@@ -79,12 +90,13 @@ module LearningRoutesEngine
       # rewriting the whole blob to flip one flag is wasteful. RETURNING makes the claim
       # and the read of who-won a single statement, so two concurrent callers cannot both
       # think they claimed the same step.
-      def claim(step_ids)
+      def claim(step_ids, access_states:)
         step_ids = Array(step_ids).compact
-        return [] if step_ids.empty?
+        states = Array(access_states).map { |state| RouteModule.access_states.fetch(state.to_s) }
+        return [] if step_ids.empty? || states.empty?
 
         sql = ActiveRecord::Base.send(:sanitize_sql_array, [
-          <<~SQL.squish, step_ids
+          <<~SQL.squish, step_ids, states
             UPDATE learning_routes_engine_route_steps
             SET metadata = jsonb_set(COALESCE(metadata, '{}'::jsonb), '{content_generating}', 'true'::jsonb),
                 updated_at = NOW()
@@ -93,10 +105,34 @@ module LearningRoutesEngine
                 SELECT 1 FROM learning_routes_engine_route_modules modules
                 WHERE modules.id = learning_routes_engine_route_steps.route_module_id
                   AND modules.learning_route_id = learning_routes_engine_route_steps.learning_route_id
-                  AND modules.access_state = 0
+                  AND modules.access_state IN (?)
               )
               AND (metadata->>'content_ready')      IS DISTINCT FROM 'true'
               AND (metadata->>'content_generating') IS DISTINCT FROM 'true'
+            RETURNING id
+          SQL
+        ])
+
+        ActiveRecord::Base.connection.execute(sql).map { |row| row["id"] }
+      end
+
+      # Give a claim back, atomically and without touching the rest of the blob.
+      #
+      # A claim that is never released is worse than no claim at all: the step
+      # looks permanently in-flight and nothing will ever generate it. Every
+      # caller that claims must release on any path where the pipeline will not
+      # actually run.
+      def release(step_ids)
+        step_ids = Array(step_ids).compact
+        return [] if step_ids.empty?
+
+        sql = ActiveRecord::Base.send(:sanitize_sql_array, [
+          <<~SQL.squish, step_ids
+            UPDATE learning_routes_engine_route_steps
+            SET metadata = COALESCE(metadata, '{}'::jsonb) - 'content_generating',
+                updated_at = NOW()
+            WHERE id IN (?)
+              AND (metadata->>'content_generating') IS NOT DISTINCT FROM 'true'
             RETURNING id
           SQL
         ])

@@ -1006,6 +1006,8 @@ es:
       back: "Volver a la ruta"
     content_failed:
       title: "No pudimos crear esta lección"
+      budget_title: "En pausa por hoy"
+      budget_body: "Hemos alcanzado el límite de hoy para generar lecciones nuevas. No ha fallado nada y no se ha perdido nada: se restablece mañana."
       body: "Algo salió mal al generar el contenido de este paso. No se ha perdido nada — puedes intentarlo de nuevo en unos minutos, o continuar y volver más tarde."
       retry: "Intentar de nuevo"
       exhausted: "Lo hemos intentado varias veces sin éxito. Nuestro equipo puede ver el error y lo revisará."
@@ -1621,6 +1623,11 @@ es:
     bilingual_label: "Bilingüe"
     target_label: "Aprendiendo"
     content_label: "Explicaciones en"
+  ai_orchestrator:
+    spend_guard:
+      daily_budget: "Hemos alcanzado el límite de hoy para generar contenido nuevo. No ha fallado nada: se restablece mañana."
+      user_budget: "Has alcanzado tu límite diario para generar contenido nuevo. Se restablece mañana."
+      rate_limit: "Demasiadas solicitudes a %{model} en este momento. Inténtalo de nuevo en un minuto."
   admin:
     owner_area: "Área privada del propietario"
     dashboard: { title: "Panel del propietario", subtitle: "Una vista veraz de la actividad educativa y el costo de IA.", summary: "Resumen", registered_users: "Usuarios registrados", routes: "Rutas creadas", actual_ai_cost: "Costo exacto de IA", cost_note: "Solo costo facturable de WP-7. Las cifras comerciales aparecerán cuando existan registros comerciales reales.", view_users: "Ver usuarios registrados" }

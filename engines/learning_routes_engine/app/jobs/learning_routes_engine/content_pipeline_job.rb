@@ -3,6 +3,10 @@ module LearningRoutesEngine
     queue_as :default
 
     retry_on StandardError, wait: 10.seconds, attempts: 2
+    # A ceiling refusing to spend is not a transient failure. Retrying it burns a
+    # queue slot to ask the same question and get the same answer. Declared after
+    # retry_on so it wins for this class.
+    discard_on AiOrchestrator::SpendGuard::LimitExceeded
 
     def perform(route_step_id, options = {})
       # Eager-load the route/profile/user chain in one query. strict_loading_by_default
@@ -14,10 +18,19 @@ module LearningRoutesEngine
       @profile = @route&.learning_profile
       @user = @profile&.user
       @options = options.symbolize_keys
-      return unless @step.preview_access?
+      # Callers now CLAIM the step (ContentPrefetcher.claim) before enqueuing, so
+      # every early return here has to give that claim back. Without this the
+      # step is left looking permanently in flight and nothing regenerates it.
+      unless @step.preview_access?
+        ContentPrefetcher.release([@step.id])
+        return
+      end
 
       # Idempotency: skip if content already fully generated
-      return if @step.metadata&.dig("content_ready")
+      if @step.metadata&.dig("content_ready")
+        ContentPrefetcher.release([@step.id])
+        return
+      end
 
       mark_generating!
 
@@ -65,12 +78,16 @@ module LearningRoutesEngine
         # controller treated "not generating" as "start it again".
         attempts = @step.metadata&.dig("content_attempts").to_i + 1
 
-        @step.update!(metadata: (@step.metadata || {}).merge(
+        @step.merge_metadata!(
           "content_error" => e.message.truncate(500),
+          # What the student is told depends on WHY. A spend ceiling is a
+          # business limit, not a breakage, and "try again in a few minutes" is
+          # untrue when a DAILY budget has tripped.
+          "content_error_kind" => (e.is_a?(AiOrchestrator::SpendGuard::LimitExceeded) ? "budget" : "error"),
           "content_failed_at" => Time.current.iso8601,
           "content_attempts" => attempts,
           "content_generating" => false
-        ))
+        )
       end
       raise
     end
@@ -78,10 +95,10 @@ module LearningRoutesEngine
     private
 
     def mark_generating!
-      @step.update!(metadata: (@step.metadata || {}).merge(
+      @step.merge_metadata!(
         "content_generating" => true,
         "pipeline_started_at" => Time.current.iso8601
-      ))
+      )
     end
 
     # ── Stage 1: Text Generation ─────────────────────────────────────
@@ -154,10 +171,10 @@ module LearningRoutesEngine
         audio_url: content.audio_url
       )
 
-      @step.update!(metadata: (@step.metadata || {}).merge(
+      @step.merge_metadata!(
         "content_generated" => true,
         "parsed_sections" => sections.map(&:as_json)
-      ))
+      )
 
       sections
     end
@@ -174,11 +191,11 @@ module LearningRoutesEngine
     # ── Stage 6: Mark Ready + Broadcast ──────────────────────────────
 
     def mark_ready!
-      @step.update!(metadata: (@step.metadata || {}).merge(
+      @step.merge_metadata!(
         "content_ready" => true,
         "content_generating" => false,
         "generated_at" => Time.current.iso8601
-      ))
+      )
 
       broadcast_content_ready!
     end

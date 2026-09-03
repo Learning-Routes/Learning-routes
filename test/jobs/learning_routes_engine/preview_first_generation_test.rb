@@ -21,7 +21,8 @@ module LearningRoutesEngine
 
       assert_equal @preview_steps.map(&:id), ids
       assert_equal @preview_steps.map(&:id).sort,
-        ContentPrefetcher.claim(@preview_steps.map(&:id) + [@locked_step.id]).sort
+        ContentPrefetcher.claim(@preview_steps.map(&:id) + [@locked_step.id],
+                                access_states: ContentPrefetcher::PREVIEW_ONLY).sort
       assert_not @locked_step.reload.content_generating?
     end
 

@@ -45,12 +45,13 @@ class LearningRoutesEngine::ContentPrefetcherScopeTest < ActiveSupport::TestCase
   test "claim refuses a purchased step even when it is named directly" do
     paid_step = step_in(access_state: :purchased, position: 2)
 
-    assert_empty Prefetcher.claim([paid_step.id])
+    assert_empty Prefetcher.claim([paid_step.id], access_states: Prefetcher::PREVIEW_ONLY)
     assert_nil paid_step.reload.metadata&.dig("content_generating")
   end
 
   test "claim still works for the free preview" do
-    assert_equal [@preview_step.id], Prefetcher.claim([@preview_step.id])
+    assert_equal [@preview_step.id],
+                 Prefetcher.claim([@preview_step.id], access_states: Prefetcher::PREVIEW_ONLY)
   end
 
   test "prefetch enqueues nothing for a purchased step" do

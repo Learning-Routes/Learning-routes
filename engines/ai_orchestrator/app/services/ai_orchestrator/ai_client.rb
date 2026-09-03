@@ -19,6 +19,13 @@ module AiOrchestrator
     end
 
     def chat(prompt:, system_prompt: nil, params: {})
+      # EVERY paid provider call goes through here — ruby_llm, ElevenLabs and
+      # gpt-image alike — so this is the only place a ceiling has to be checked
+      # to be checked everywhere. It raises BEFORE any request and before any
+      # caller writes an AiInteraction row, so a refusal can never leave a
+      # half-written interaction behind.
+      SpendGuard.call(model: @model, task_type: @task_type, user: @user)
+
       if RUBY_LLM_MODELS.include?(@model)
         chat_via_ruby_llm(prompt: prompt, system_prompt: system_prompt, params: params)
       elsif @model == "elevenlabs"
