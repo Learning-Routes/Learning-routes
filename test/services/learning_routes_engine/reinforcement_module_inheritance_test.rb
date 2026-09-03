@@ -63,14 +63,30 @@ module LearningRoutesEngine
       assert reinforcement_steps.all? { |step| step.route_module_id == @paid.id }
     end
 
-    # Fails CLOSED: creating the steps anyway would drop them into the free
-    # module, which is the whole defect.
-    test "a result that names no assessment inserts nothing rather than free content" do
-      before = RouteStep.where(learning_route_id: @route.id).count
+    # A result that names no assessment (the service accepts a duck) falls back
+    # to the module of the step the student is on — still a module derived from a
+    # real step, never the free module chosen by omission.
+    test "a result that names no assessment inherits the current step's module" do
+      @route.update!(current_step: @paid_step.position)
 
       AdaptiveDifficulty.new(@route, Struct.new(:score).new(10.0)).adjust!
 
-      assert_equal before, RouteStep.where(learning_route_id: @route.id).count
+      inserted = reinforcement_steps
+      assert inserted.any?
+      assert inserted.all? { |step| step.route_module_id == @paid.id }
+    end
+
+    # Fails CLOSED when no step can be resolved at all: creating the steps anyway
+    # would drop them into the free module, which is the whole defect.
+    test "a route with no resolvable step inserts nothing rather than free content" do
+      empty = LearningRoute.create!(
+        learning_profile: LearningProfile.create!(user: create_test_user, current_level: "beginner"),
+        topic: "No steps", locale: "en"
+      )
+
+      AdaptiveDifficulty.new(empty, Struct.new(:score).new(10.0)).adjust!
+
+      assert_equal 0, RouteStep.where(learning_route_id: empty.id).count
     end
 
     # Confirmed by reading it rather than assumed by symmetry: the mirror branch

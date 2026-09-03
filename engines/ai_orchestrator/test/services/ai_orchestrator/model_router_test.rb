@@ -108,6 +108,9 @@ module AiOrchestrator
       end
     end
 
+    # The exact-microcent comparison moved with the check itself: SpendGuard owns
+    # it now, and `ModelRouter::RateLimitExceeded` is an alias of the class it
+    # raises, so this still asserts the same boundary through the same constant.
     test "daily limit compares exact microcents against configured cents" do
       original = Rails.application.config.ai_cost_alerts
       AiInteraction.create!(
@@ -117,7 +120,7 @@ module AiOrchestrator
       Rails.application.config.ai_cost_alerts = original.merge(daily_limit: 5_000)
 
       assert_nothing_raised do
-        ModelRouter.new(task_type: :quick_grading).send(:check_cost_limit!)
+        SpendGuard.call(model: "gpt-5.2", task_type: :quick_grading)
       end
 
       AiInteraction.create!(
@@ -125,7 +128,7 @@ module AiOrchestrator
         pricing_status: "priced", cost_cents: 0, cost_microcents: 1
       )
       assert_raises(ModelRouter::RateLimitExceeded) do
-        ModelRouter.new(task_type: :quick_grading).send(:check_cost_limit!)
+        SpendGuard.call(model: "gpt-5.2", task_type: :quick_grading)
       end
     ensure
       Rails.application.config.ai_cost_alerts = original if original
