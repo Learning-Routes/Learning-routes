@@ -151,19 +151,28 @@ module LearningRoutesEngine
       { enqueued: jobs.size, enqueued_step_ids: jobs.map { |job| (job["arguments"] || job[:args]).first } }
     end
 
+    # A bare `StepsController.new` was enough until WP-18 put
+    # `generation_authorized?` at the top of `request_content_generation!`.
+    # That guard needs two things this test cannot fake piecemeal:
+    #
+    #   * `current_user`, which resolves through `session` and therefore a request
+    #   * `params[:route_id]` / `params[:id]` — note it resolves the step from
+    #     PARAMS, not from `@step`, so without them the policy would be asked
+    #     about a nil step and this test would assert nothing at all
+    #
+    # So the controller gets a real TestRequest carrying the right path
+    # parameters. Only the SESSION is stubbed, by handing `current_user` the
+    # student directly; `ModuleAccessPolicy` still runs for real against the
+    # database, on the real step, on every call.
     def controller_for(step)
       user = @user
+      request = ActionDispatch::TestRequest.create
+      request.path_parameters = { route_id: step.learning_route_id, id: step.id }
+
       StepsController.new.tap do |controller|
         controller.instance_variable_set(:@step, step)
-        # WP-18 put `generation_authorized?` at the top of
-        # `request_content_generation!`, and it resolves the student through
-        # `current_user` -> `current_session` -> `session`, which needs a request
-        # this bare controller does not have. Supply the user directly.
-        #
-        # This stubs the SESSION PLUMBING ONLY. `ModuleAccessPolicy` still runs
-        # for real against the database on every call, so the authorization is
-        # genuinely exercised — the step above is in the free preview module, so
-        # it is genuinely allowed.
+        controller.set_request!(request)
+        controller.set_response!(StepsController.make_response!(request))
         controller.define_singleton_method(:current_user) { user }
       end
     end
