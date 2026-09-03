@@ -1002,6 +1002,8 @@ en:
       badge_playground: "PLAYGROUND"
     content_failed:
       title: "We couldn't build this lesson"
+      budget_title: "Paused for today"
+      budget_body: "We have reached today's limit for generating new lessons. Nothing has gone wrong and nothing has been lost — this resets tomorrow."
       body: "Something went wrong while generating the content for this step. It hasn't been lost — you can try again in a few minutes, or move on and come back to it."
       retry: "Try again"
       exhausted: "We've tried a few times without success. Our team can see the error and will look into it."
@@ -1617,6 +1619,11 @@ en:
     bilingual_label: "Bilingual"
     target_label: "Learning"
     content_label: "Explanations in"
+  ai_orchestrator:
+    spend_guard:
+      daily_budget: "We have reached today's limit for generating new content. Nothing has gone wrong — this resets tomorrow."
+      user_budget: "You have reached your daily limit for generating new content. It resets tomorrow."
+      rate_limit: "Too many requests to %{model} right now. Please try again in a minute."
   admin:
     owner_area: "Private owner area"
     dashboard: { title: "Owner dashboard", subtitle: "A truthful view of learning activity and AI cost.", summary: "Summary", registered_users: "Registered users", routes: "Routes created", actual_ai_cost: "Exact AI cost", cost_note: "Billable WP-7 cost only. Commerce figures appear only after real commerce records exist.", view_users: "View registered users" }

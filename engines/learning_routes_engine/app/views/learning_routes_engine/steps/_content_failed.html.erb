@@ -17,15 +17,17 @@
 
   <h2 style="font-size:1.05rem; font-weight:600; margin:0 0 10px;
              color:var(--color-text-primary, #2C2C2C);">
-    <%= t("learning_engine.content_failed.title") %>
+    <%= t("learning_engine.content_failed.#{@content_error_kind == "budget" ? "budget_title" : "title"}") %>
   </h2>
 
   <p style="font-size:0.85rem; line-height:1.55; margin:0 0 20px;
             color:var(--color-text-secondary, #6B6B6B);">
-    <%= t("learning_engine.content_failed.body") %>
+    <%= t("learning_engine.content_failed.#{@content_error_kind == "budget" ? "budget_body" : "body"}") %>
   </p>
 
-  <% if @content_attempts.to_i >= Rails.application.config.content_generation_max_attempts %>
+  <%# No retry button on a budget refusal: pressing it cannot help today. %>
+  <% if @content_error_kind == "budget" %>
+  <% elsif @content_attempts.to_i >= Rails.application.config.content_generation_max_attempts %>
     <p style="font-size:0.78rem; margin:0 0 18px; color:var(--color-text-secondary, #6B6B6B);">
       <%= t("learning_engine.content_failed.exhausted") %>
     </p>

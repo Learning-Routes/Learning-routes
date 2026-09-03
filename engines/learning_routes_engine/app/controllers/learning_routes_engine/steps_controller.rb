@@ -189,6 +189,7 @@ module LearningRoutesEngine
       @content_error = metadata["content_error"]
       if @content_error.present? && !content_retry_due?(metadata)
         @content_failed = true
+        @content_error_kind = metadata["content_error_kind"]
         @content_attempts = metadata["content_attempts"].to_i
         return
       end

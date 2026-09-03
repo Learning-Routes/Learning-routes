@@ -186,6 +186,15 @@ module AiOrchestrator
         model: interaction.model,
         response: result[:content]
       )
+    rescue SpendGuard::LimitExceeded => e
+      # Record it like any other failure — the interaction row must not be left
+      # half-written — but do NOT swallow it. A ceiling refusing to spend is a
+      # different answer from a provider breaking, and callers have to be able to
+      # tell them apart: ContentPipelineJob shows the student "paused for today"
+      # instead of "we couldn't build this lesson", and discards instead of
+      # retrying a decision that will not change.
+      interaction.mark_failed!(error: e)
+      raise
     rescue => e
       interaction.mark_failed!(error: e)
     end

@@ -3,6 +3,10 @@ module LearningRoutesEngine
     queue_as :default
 
     retry_on StandardError, wait: 10.seconds, attempts: 2
+    # A ceiling refusing to spend is not a transient failure. Retrying it burns a
+    # queue slot to ask the same question and get the same answer. Declared after
+    # retry_on so it wins for this class.
+    discard_on AiOrchestrator::SpendGuard::LimitExceeded
 
     def perform(route_step_id, options = {})
       # Eager-load the route/profile/user chain in one query. strict_loading_by_default
@@ -76,6 +80,10 @@ module LearningRoutesEngine
 
         @step.update!(metadata: (@step.metadata || {}).merge(
           "content_error" => e.message.truncate(500),
+          # What the student is told depends on WHY. A spend ceiling is a
+          # business limit, not a breakage, and "try again in a few minutes" is
+          # untrue when a DAILY budget has tripped.
+          "content_error_kind" => (e.is_a?(AiOrchestrator::SpendGuard::LimitExceeded) ? "budget" : "error"),
           "content_failed_at" => Time.current.iso8601,
           "content_attempts" => attempts,
           "content_generating" => false

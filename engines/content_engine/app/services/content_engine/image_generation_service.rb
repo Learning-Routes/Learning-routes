@@ -26,8 +26,7 @@ module ContentEngine
         return cached
       end
 
-      validate_cost_budget!
-
+      # No `validate_cost_budget!` here any more — see below.
       task_type = determine_task_type(metadata)
       prompt = build_prompt(image_description, metadata)
 
@@ -97,14 +96,19 @@ module ContentEngine
       "image_gen:#{@step&.id}:#{digest}"
     end
 
-    def validate_cost_budget!
-      if AiOrchestrator::CostTracker.alert_exceeded?(user: @user)
-        raise GenerationError, I18n.t(
-          "content_engine.image_generation.cost_limit_reached",
-          default: "Daily cost limit reached. Image generation skipped."
-        )
-      end
-    end
+    # FOLDED INTO SpendGuard, deliberately, rather than kept as a third opinion.
+    #
+    # This asked the same question as `SpendGuard#check_cost_limit!` — the daily
+    # and per-user ceilings — in a different dialect: `CostTracker.alert_exceeded?`
+    # returns a boolean where the guard raises, and it ran BEFORE the AiClient
+    # that now consults the guard itself. Keeping it would mean two answers to
+    # one question that could disagree after any edit to either, and image
+    # generation would be the only path where "am I allowed to spend?" had a
+    # local override.
+    #
+    # What is NOT folded away is the cache check above it: returning a cached
+    # image is not a paid call and must stay reachable when the ceiling is up.
+    # That is why the guard belongs at AiClient and not at the top of `call`.
 
     # First image of a lesson gets medium quality; subsequent get low quality.
     def determine_task_type(metadata)
