@@ -144,11 +144,46 @@
           <%# Dispatch against ContentEngine::LessonBlocks rather than an inline list.
               This was a hardcoded array — a fifth, anonymous copy of the vocabulary
               that silently rewrote any unlisted section type to "concept". %>
-          <% section_type = ContentEngine::LessonBlocks.known?(section[:type]) ? section[:type] : "concept" %>
-          <%= render "learning_routes_engine/steps/lesson_sections/#{section_type}", section: section, step: @step, index: i %>
+          <%# A `check` renders NOTHING here — its modal is emitted after this
+              container. The section element itself stays: it carries the index, the
+              gating contract and the timing dataset the controller reads. %>
+          <% unless section[:type] == "check" %>
+            <% section_type = ContentEngine::LessonBlocks.known?(section[:type]) ? section[:type] : "concept" %>
+            <%= render "learning_routes_engine/steps/lesson_sections/#{section_type}", section: section, step: @step, index: i %>
+          <% end %>
         </div>
       <% end %>
     </div>
+
+    <%# ── Check modals ──────────────────────────────────────────────
+        OUTSIDE the sections container, INSIDE the interactive-lesson element.
+
+        These used to render inside their own `.lesson-section`, and every section
+        after the first carries `display:none` — by design, because the controller
+        deliberately never transitions to a check, it overlays the modal on the
+        content section the student is reading. A descendant of a `display:none`
+        ancestor is not rendered at all, whatever its own styles say, so the modal
+        had its full content and occupied zero pixels: `getComputedStyle` reported
+        display:flex / opacity:1 / visibility:visible while
+        `getBoundingClientRect()` returned [0,0,0,0]. Every lesson with a check
+        past section 0 was impossible to finish.
+
+        There is a SECOND reason they cannot live in a section: `.lesson-section`
+        takes `transform: translateX(...)` during transitions, and a transformed
+        ancestor becomes the containing block for `position: fixed` descendants —
+        so even a visible check section would have positioned this modal against
+        the section instead of the viewport.
+
+        Kept inside the controller element on purpose: `data-interactive-lesson
+        -target="quizModal"` only resolves within it, and all six quiz events
+        (quiz:completed, quiz:correct, quiz:wrong, quiz:modal-close,
+        lesson-check:answered, block:graded) are dispatched with bubbles:true and
+        listened for on `this.element`. Moving these to document.body would break
+        every one of them. %>
+    <% @sections.each_with_index do |section, i| %>
+      <% next unless section[:type] == "check" %>
+      <%= render "learning_routes_engine/steps/lesson_sections/check", section: section, step: @step, index: i %>
+    <% end %>
 
     <%# ── Companion (floating helper — not an owl!) ── %>
     <div class="lesson-companion" data-interactive-lesson-target="companion" data-action="click->interactive-lesson#companionTap">

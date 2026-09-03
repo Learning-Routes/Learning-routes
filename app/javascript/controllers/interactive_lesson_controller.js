@@ -123,6 +123,15 @@ export default class extends Controller {
       }
     })
 
+    // A lesson whose FIRST section is a check has no navigation event to open
+    // its modal: `_showQuizModal` is only ever reached from `nextSection`.
+    // Without this the student sees an empty section with Continuar locked by
+    // the gate and nothing to answer — the same "impossible to finish" outcome
+    // as the modal-in-a-hidden-section bug, arrived at from the other side.
+    if (this._quizSectionIndices.has(this.currentSectionValue)) {
+      this._showQuizModal(this.currentSectionValue)
+    }
+
     // Listen for quiz events bubbling from child controllers
     this._onQuizCompleted = this._handleQuizCompleted.bind(this)
     this._onQuizCorrect = this._handleQuizCorrect.bind(this)
@@ -259,7 +268,7 @@ export default class extends Controller {
       this._sectionStartTime = Date.now()
       this._detectQuizLock(index)
       this.updateUI()
-      this._activateQuizInSection(incoming)
+      this._activateQuizIn(incoming)
       this._animating = false
       return
     }
@@ -294,7 +303,7 @@ export default class extends Controller {
           this._animating = false
 
           // Activate quiz controller on the new section
-          this._activateQuizInSection(incoming)
+          this._activateQuizIn(incoming)
 
           // v2: companion message for new section type
           this._showCompanionForSection(incoming)
@@ -395,7 +404,10 @@ export default class extends Controller {
     this._locked = gates && !satisfied && !(isCheck && isAnswered)
     // Track whether this check section has a lesson-quiz controller
     // (which dispatches quiz:completed with proper delay)
-    this._hasQuizController = isCheck && !!section.querySelector('[data-controller*="lesson-quiz"]')
+    // The lesson-quiz controller for a check lives in its modal, not in the
+    // section, so this has to ask the host rather than the section.
+    const host = this._quizHostFor(index)
+    this._hasQuizController = isCheck && !!host && !!host.querySelector('[data-controller*="lesson-quiz"]')
   }
 
   // Retry activation for the initial section until lazy-loaded child controllers
@@ -403,18 +415,18 @@ export default class extends Controller {
   // delay (16, 32, 64, 128ms) so typical cached imports resolve on the first
   // or second tick and uncached imports resolve by the fourth.
   _activateInitialQuizWithRetry(sectionIndex, attempt = 0) {
-    const section = this.sectionTargets[sectionIndex]
-    if (!section) return
+    const host = this._quizHostFor(sectionIndex)
+    if (!host) return
 
-    const quizEl = section.querySelector('[data-controller*="lesson-quiz"]')
-    const checkEl = section.querySelector('[data-controller*="lesson-check"]')
+    const quizEl = host.querySelector('[data-controller*="lesson-quiz"]')
+    const checkEl = host.querySelector('[data-controller*="lesson-check"]')
     if (!quizEl && !checkEl) return // nothing to activate
 
     const quizReady = !quizEl || this.application.getControllerForElementAndIdentifier(quizEl, "lesson-quiz")
     const checkReady = !checkEl || this.application.getControllerForElementAndIdentifier(checkEl, "lesson-check")
 
     if (quizReady && checkReady) {
-      this._activateQuizInSection(section)
+      this._activateQuizIn(host)
       return
     }
 
@@ -422,17 +434,20 @@ export default class extends Controller {
     setTimeout(() => this._activateInitialQuizWithRetry(sectionIndex, attempt + 1), 16 << attempt)
   }
 
-  // Activate quiz/check controllers when a section becomes visible
-  _activateQuizInSection(section) {
-    if (!section) return
+  // Activate quiz/check controllers inside a HOST element — the modal for a
+  // check section, the section itself otherwise. Renamed from
+  // `_activateQuizInSection`: it no longer receives a section, and a name that
+  // says "section" is how the modal ended up scoped to one in the first place.
+  _activateQuizIn(host) {
+    if (!host) return
 
-    const quizEl = section.querySelector('[data-controller*="lesson-quiz"]')
+    const quizEl = host.querySelector('[data-controller*="lesson-quiz"]')
     if (quizEl) {
       const quizCtrl = this.application.getControllerForElementAndIdentifier(quizEl, "lesson-quiz")
       if (quizCtrl) quizCtrl.activate()
     }
 
-    const checkEl = section.querySelector('[data-controller*="lesson-check"]')
+    const checkEl = host.querySelector('[data-controller*="lesson-check"]')
     if (checkEl) {
       const checkCtrl = this.application.getControllerForElementAndIdentifier(checkEl, "lesson-check")
       if (checkCtrl && typeof checkCtrl.activate === "function") checkCtrl.activate()
@@ -453,12 +468,34 @@ export default class extends Controller {
 
   // ── Quiz Modal ────────────────────────────────────────────────
 
+  // The modal for a check section.
+  //
+  // These used to be found with `section.querySelector('.quiz-modal-backdrop')`,
+  // which is exactly what forced them to live inside a `.lesson-section` — and
+  // every section after the first is `display:none`, so the modal rendered with
+  // full content and zero pixels. They now render after the sections container
+  // and are matched by index instead of by containment.
+  _quizModalFor(sectionIndex) {
+    if (!this.hasQuizModalTarget) return null
+
+    return this.quizModalTargets.find(
+      (modal) => Number(modal.dataset.sectionIndex) === Number(sectionIndex)
+    ) || null
+  }
+
+  // Where this section's lesson-quiz / lesson-check controllers actually live:
+  // the modal for a check, the section itself for anything else. Stimulus looks
+  // controllers up by element through the application registry, so it does not
+  // care that the modal is no longer a descendant of the section.
+  _quizHostFor(sectionIndex) {
+    return this._quizModalFor(sectionIndex) || this.sectionTargets[sectionIndex] || null
+  }
+
   _showQuizModal(sectionIndex) {
     const section = this.sectionTargets[sectionIndex]
     if (!section) return
 
-    // Find the quiz modal backdrop within this section
-    const modal = section.querySelector('.quiz-modal-backdrop')
+    const modal = this._quizModalFor(sectionIndex)
     if (!modal) {
       // Fallback: no modal wrapper, show inline
       this._transitionToSection(sectionIndex, "forward")
@@ -489,7 +526,7 @@ export default class extends Controller {
     this._updateContinueButton()
 
     // Activate the quiz controller inside the modal
-    this._activateQuizInSection(section)
+    this._activateQuizIn(modal)
 
     // Update progress bar to show we're on this section
     this._updateProgressForQuizModal(sectionIndex)
