@@ -122,6 +122,23 @@ export default class extends Controller {
         this._answered = true
         this._markBonusMissed()
 
+        // RECORD IT FIRST, before the options are disabled below.
+        //
+        // This branch used to end the block client-side and tell the server
+        // nothing: it set `_answered` (which feeds the navigation lock's local
+        // `isAnswered`), killed pointer-events on every option, and dispatched
+        // `quiz:completed`. The only submitter for a check is
+        // `lesson-check#select`, which fires on a click that is now impossible —
+        // so no BlockAttempt was written, the gate never cleared, and
+        // `_showOutstandingBlocks` sent the student back to a dead question.
+        // Forever.
+        //
+        // `lesson-check` owns submission; this controller owns the timer. It is
+        // told, and it records.
+        this.element.dispatchEvent(new CustomEvent("lesson-check:timed-out", {
+          bubbles: false
+        }))
+
         // Visually show the correct answer and disable options
         // correctValue is the index in the SERVER'S options array, not a screen
         // position — WP-15 §B permutes the options — so reveal by data-option-index.

@@ -231,11 +231,16 @@ class LessonCompletionTest < ApplicationSystemTestCase
   end
 
   def wait_for_attempt(index, timeout: 8)
+    # `sleep` is not politeness here: Puma runs in a thread of THIS process during
+    # a system test, so a busy loop starves the very server the browser is
+    # waiting on and the row can never appear.
     deadline = Time.current + timeout
     loop do
       row = BA.find_by(user: @user, route_step: @step, section_index: index)
       return row if row
       break if Time.current > deadline
+
+      sleep 0.1
     end
     nil
   end

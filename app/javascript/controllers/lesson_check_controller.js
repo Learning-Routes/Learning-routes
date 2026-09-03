@@ -7,13 +7,45 @@ import { submitBlock, announceResult, originalIndexOf } from "controllers/block_
 export default class extends Controller {
   static targets = ["options", "option", "feedback", "explanation"]
 
+  // THE ONLY SUBMITTER for a check block.
+  //
+  // `lesson-quiz` shares this element and owns the timer, XP and hearts; it must
+  // never POST. Two controllers submitting to one endpoint is how the timeout
+  // hole was made: the timer branch ended the block, disabled every option, and
+  // dispatched `quiz:completed` — while the sole submit path lived in `select()`,
+  // which only fires on a click the student could no longer make. The server was
+  // never told, so no BlockAttempt existed, `outstanding_blocks_for` never
+  // cleared, and `complete` refused forever.
   connect() {
     this._answered = false
+    this._submitted = false
     this._timers = []
+
+    // The timer lives in the sibling controller on this same element; it tells
+    // us the block ended and we record it, rather than POSTing itself.
+    this._onTimedOut = this.recordTimeout.bind(this)
+    this.element.addEventListener("lesson-check:timed-out", this._onTimedOut)
   }
 
   disconnect() {
+    this.element.removeEventListener("lesson-check:timed-out", this._onTimedOut)
     if (this._timers) this._timers.forEach(t => clearTimeout(t))
+  }
+
+  // A timeout is an OUTCOME, not the absence of one.
+  //
+  // `BlockGrader#grade_check` returns `graded(false, 0)` for a nil choice, so
+  // this records a wrong answer worth zero that SATISFIES the gate — which is
+  // the point. `BlockAttempt::RELEASE_AFTER = 3` exists so a student who cannot
+  // get it right is not trapped, and a timeout that records nothing bypasses
+  // that release entirely.
+  recordTimeout() {
+    if (this._submitted) return
+
+    this._answered = true
+    this._submitted = true
+    submitBlock(this.element, { option_index: null, timed_out: true }, { complete: true })
+      .then((result) => announceResult(this.element, result))
   }
 
   // Called by interactive-lesson when this section becomes visible
@@ -24,6 +56,7 @@ export default class extends Controller {
   // Reset state for revisiting
   reset() {
     this._answered = false
+    this._submitted = false
     if (this._timers) this._timers.forEach(t => clearTimeout(t))
     this._timers = []
 
@@ -44,9 +77,10 @@ export default class extends Controller {
 
   select(event) {
     const btn = event.currentTarget
-    if (this._answered) return
+    if (this._answered || this._submitted) return
 
     this._answered = true
+    this._submitted = true
     const isCorrect = btn.dataset.correct === "true"
 
     // Disable all options
