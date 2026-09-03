@@ -1168,10 +1168,12 @@ html[data-theme="dark"] .learning-nav {
      the one section that needs it, below. */
 }
 
-/* The only section whose in-flow height is zero: its content is a fixed modal. */
-.lesson-section[data-section-type="check"] {
-  min-height: 12rem;
-}
+/* WP-21 removed the `min-height: 12rem` that used to sit here.
+   Its stated reason — "the only section whose in-flow height is zero: its
+   content is a fixed modal" — stopped being true when the check modal moved out
+   of the section entirely. A check `.lesson-section` now renders nothing at all
+   and is never transitioned to, so the floor could only ever reserve 12rem of
+   blank space if a check happened to be the first section. */
 
 /* The AI supplementary slot is empty until a tool fills it. It used to carry an
    inline `margin-top:1rem` unconditionally, so an empty div contributed 16px of

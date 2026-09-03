@@ -11,8 +11,15 @@
   variant = block_variant_for(step, index)
 %>
 
-<%# Modal overlay — starts hidden, shown by interactive-lesson controller %>
-<div class="quiz-modal-backdrop" data-interactive-lesson-target="quizModal" style="display:none;">
+<%# Modal overlay — starts hidden, shown by interactive-lesson controller.
+    Rendered by _lesson.html.erb AFTER the sections container, never inside a
+    `.lesson-section`; see the comment there. `data-section-index` is how the
+    controller finds the right modal now that it can no longer scope the lookup
+    to the section element. %>
+<div class="quiz-modal-backdrop"
+     data-interactive-lesson-target="quizModal"
+     data-section-index="<%= index %>"
+     style="display:none;">
   <div class="quiz-modal-card">
     <div data-controller="lesson-check lesson-quiz"
          data-lesson-quiz-correct-value="<%= correct_index %>"
