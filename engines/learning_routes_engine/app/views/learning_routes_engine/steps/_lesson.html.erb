@@ -138,7 +138,14 @@
 
                  NOTE "satisfied", not "correct": a block released after three failures
                  satisfies navigation while still recording correct = false. %>
-             data-gating="<%= LearningRoutesEngine::BlockGrader.gating?(section[:type]) %>"
+             <%# `gating?` alone is not enough: a check generated with no stem, no
+                 options or no correct answer is unanswerable, and the server
+                 already refuses to count it in `outstanding_blocks_for`. If this
+                 attribute still said true, the CLIENT would keep the Continue
+                 button locked on a question nobody can answer — the server would
+                 let them through and the button would not. %>
+             data-gating="<%= LearningRoutesEngine::BlockGrader.gating?(section[:type]) &&
+                               LearningRoutesEngine::BlockGrader.answerable?(section) %>"
              data-block-satisfied="<%= (@satisfied_sections || Set.new).include?(i) %>"
              style="<%= i > 0 ? 'display:none;' : '' %>">
           <%# Dispatch against ContentEngine::LessonBlocks rather than an inline list.

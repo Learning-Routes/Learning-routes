@@ -35,6 +35,40 @@ module LearningRoutesEngine
     end
 
     def self.gradable?(block_type) = GRADABLE_TYPES.include?(block_type.to_s)
+
+    # Can a student actually answer this section as rendered?
+    #
+    # The same fail-OPEN instinct as `ungradable` below, applied one level up. A
+    # section we cannot grade must never trap a student behind our own generation
+    # bug — but grading is decided per SUBMISSION, and the GATE is decided before
+    # any submission exists. So a `check` generated without a stem, without
+    # options, or without a correct answer used to render as a gate the student
+    # could not pass: seen in production as a "Elige la traducción correcta"
+    # modal with four Spanish options and no English sentence to translate. It is
+    # unanswerable except by guessing, and a wrong guess costs a heart.
+    #
+    # Only `check` is inspected. The other gating types are engagement-only or
+    # carry their own content; a `flashcards` with no cards renders nothing to
+    # interact with and is caught by the same emptiness rule below.
+    def self.answerable?(section)
+      section = (section || {}).with_indifferent_access
+      type = section[:type].to_s
+      return true unless gating?(type)
+
+      case type
+      when "check"
+        options = Array(section[:options])
+        return false if section[:question].to_s.strip.empty?
+        return false if options.empty?
+
+        options.any? { |option| option.with_indifferent_access[:correct] }
+      when "drag_drop"  then Array(section[:pairs]).any?
+      when "fill_blank" then Array(section[:blanks]).any?
+      when "flashcards" then Array(section[:cards]).any?
+      when "scenario"   then Array(section[:options]).any?
+      else true
+      end
+    end
     def self.gating?(block_type)   = GATING_TYPES.include?(block_type.to_s)
 
     def call

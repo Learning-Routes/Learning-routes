@@ -128,6 +128,14 @@ module LearningRoutesEngine
         type = section.is_a?(Hash) ? (section["type"] || section[:type]).to_s : nil
         next unless type && BlockGrader.gating?(type)
 
+        # A block the student cannot answer must not gate the step. `BlockGrader`
+        # already fails OPEN on data quality when GRADING; the GATE is decided
+        # before any submission exists, so it needs the same instinct or a
+        # generation defect becomes a trap — a `check` with no stem, no options,
+        # or no correct answer is unanswerable except by guessing, and guessing
+        # costs a heart.
+        next unless BlockGrader.answerable?(section)
+
         { section_index: index, block_type: type }
       end
       return [] if gating.empty?
