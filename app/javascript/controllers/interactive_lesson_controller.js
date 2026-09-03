@@ -81,7 +81,21 @@ export default class extends Controller {
       this.totalSectionsValue = this.sectionTargets.length
     }
 
-    if (this.totalSectionsValue === 0) return
+    // INERT. An interactive-lesson mounted on an element with no sections can
+    // still have its actions fired, and `nextSection` on it computes
+    // `0 + 1 >= 0` and calls `completeLesson()` — which POSTs, gets refused, and
+    // (before this commit) rendered a response that mounted another one. An
+    // early return in connect() is not enough on its own: it skips SETUP but
+    // leaves every action method callable. The flag is checked by the two entry
+    // points a stray action can reach.
+    //
+    // Chosen over a required value with no default because the element genuinely
+    // has no sections — refusing to act is the correct behaviour, not a
+    // configuration error to raise about in a student's browser.
+    if (this.totalSectionsValue === 0) {
+      this._inert = true
+      return
+    }
 
     // Section timing analytics
     this.sectionTimes = {}
@@ -204,7 +218,7 @@ export default class extends Controller {
   // ── Actions ────────────────────────────────────────────────────
 
   nextSection() {
-    if (this._animating || this._completed) return
+    if (this._inert || this._animating || this._completed) return
 
     if (this._locked) {
       // Shaking alone left the student guessing at why the button did nothing.
@@ -231,7 +245,7 @@ export default class extends Controller {
   }
 
   previousSection() {
-    if (this._animating || this._completed) return
+    if (this._inert || this._animating || this._completed) return
 
     const to = this.currentSectionValue - 1
     if (to < 0) return
@@ -960,7 +974,7 @@ export default class extends Controller {
   // ── Completion ─────────────────────────────────────────────────
 
   async completeLesson() {
-    if (this._completed) return
+    if (this._inert || this._completed) return
     this._completed = true
 
     // Record final section time
@@ -1004,11 +1018,22 @@ export default class extends Controller {
         if (response.ok) {
           serverData = await response.json()
         } else if (response.status === 422) {
-          // Quiz gate — step requires a quiz before completion
           const errorData = await response.json().catch(() => ({}))
           if (errorData.quiz_required) {
             this._completed = false // Allow retry after quiz
             this._showQuizGate()
+            return
+          }
+
+          // The OTHER refusal: gating blocks are still outstanding. This branch
+          // did not exist, so a refusal fell through to _showCelebrationScreen
+          // below and the student was congratulated for a lesson the server had
+          // just declined to complete — with `this._completed` left true, which
+          // makes every later nextSection() return early. That is the "nothing
+          // responds any more" the owner reported.
+          if (errorData.blocks_required) {
+            this._completed = false
+            this._showOutstandingBlocks(errorData.sections || [])
             return
           }
         } else {
@@ -1021,6 +1046,45 @@ export default class extends Controller {
 
     // Show celebration screen with server data
     this._showCelebrationScreen(serverData)
+  }
+
+  // Tell the student what is missing, and take them to it.
+  //
+  // `show_outstanding_blocks.turbo_stream.erb` carried this intent in a comment
+  // ("Scrolls them back to the first one rather than just refusing") and a
+  // `data-controller="interactive-lesson"` on the message div. That controller
+  // never read `data-outstanding-sections`, so nothing scrolled; what it did do
+  // was mount a SECOND interactive-lesson on an element with no sections. This
+  // does the job in the controller that actually has the sections.
+  _showOutstandingBlocks(sections) {
+    this._shakeButton()
+
+    const target = sections
+      .map((index) => Number(index))
+      .filter((index) => Number.isInteger(index) && index >= 0 && index < this.totalSectionsValue)
+      .sort((a, b) => a - b)[0]
+
+    if (target == null) {
+      // Refused, but we cannot tell which section. Say so where they clicked.
+      this._announceLocked()
+      return
+    }
+
+    this._locked = true
+    this._updateContinueButton()
+
+    if (this._quizSectionIndices.has(target)) {
+      // The modal IS the thing to answer; it needs no note beside it.
+      this._showQuizModal(target)
+      return
+    }
+
+    this._transitionToSection(target, target < this.currentSectionValue ? "backward" : "forward")
+    // `_announceLocked` writes into sectionTargets[currentSectionValue], so it has
+    // to run after the 400ms transition has moved that pointer — otherwise the
+    // note lands on the section the student is leaving.
+    const timer = setTimeout(() => this._announceLocked(), 450)
+    this._timers.push(timer)
   }
 
   // ── Quiz Gate ──────────────────────────────────────────────────

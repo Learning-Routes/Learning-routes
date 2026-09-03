@@ -136,6 +136,51 @@ class LessonCompletionTest < ApplicationSystemTestCase
       "the server still refuses: it is these sections the 422 named in production"
   end
 
+  # ── §A: the phantom controller ──────────────────────────────────────────
+
+  # The 422 template used to carry `data-controller="interactive-lesson"` on a
+  # message div with no sections. Stimulus mounted a second controller there;
+  # `nextSection` on it computes `0 + 1 >= 0` and calls `completeLesson()`, which
+  # POSTs, is refused, and rendered a response that mounted another one. Every
+  # Continuar click after the first refusal only re-fired the refusal.
+  test "an interactive-lesson with no sections does nothing when its actions fire" do
+    posts_before = BA.where(user: @user, route_step: @step).count
+
+    fired = page.evaluate_script(<<~JS)
+      (() => {
+        const host = document.createElement("div")
+        host.id = "phantom-lesson"
+        host.setAttribute("data-controller", "interactive-lesson")
+        host.setAttribute("data-action", "click->interactive-lesson#nextSection")
+        document.body.appendChild(host)
+        return true
+      })()
+    JS
+    assert fired
+
+    # Give Stimulus a tick to mount, then fire the action the phantom exposes.
+    assert_selector "#phantom-lesson", visible: :all, wait: 5
+    page.execute_script("document.getElementById('phantom-lesson').click()")
+
+    assert_equal "true",
+      page.evaluate_script("String(document.getElementById('phantom-lesson') !== null)")
+
+    # It must not have completed anything, and must not have recorded anything.
+    assert_equal posts_before, BA.where(user: @user, route_step: @step).count
+    assert_not @step.reload.completed?,
+      "a controller with no sections completed the lesson"
+  end
+
+  test "the refusal template mounts no second controller" do
+    template = Rails.root.join(
+      "engines/learning_routes_engine/app/views/learning_routes_engine/steps/show_outstanding_blocks.turbo_stream.erb"
+    ).read
+
+    assert_no_match(/data-controller=["']interactive-lesson/, template,
+      "the refusal message must not mount a second interactive-lesson: it has no " \
+      "sections, and nextSection on it calls completeLesson immediately")
+  end
+
   private
 
   def modal_selector(index) = ".quiz-modal-backdrop[data-section-index='#{index}']"
