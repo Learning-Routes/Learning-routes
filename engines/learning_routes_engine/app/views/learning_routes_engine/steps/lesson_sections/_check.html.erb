@@ -19,6 +19,18 @@
 <div class="quiz-modal-backdrop"
      data-interactive-lesson-target="quizModal"
      data-section-index="<%= index %>"
+     <%# THE SUBMISSION URL MUST LIVE ON THIS ELEMENT.
+         `block_submission.js` resolves it with
+         `element.closest("[data-block-url-value]")`, and until WP-21 the only
+         copy was on the `.lesson-section` wrapper this modal used to sit inside.
+         WP-21 moved the modal out of that wrapper to give it a size, which
+         severed the lookup: `closest` found nothing, `submitBlock` hit its
+         `if (!url) return null` and failed SILENTLY, so answering a check
+         produced no request at all and the server's gate could never be
+         satisfied. Six blocks recorded, the two checks recorded nothing.
+         The modal is self-sufficient now, which is what it has to be given it
+         no longer has a section ancestor. %>
+     data-block-url-value="<%= learning_routes_engine.route_step_block_attempt_path(@route, step, index) %>"
      style="display:none;">
   <div class="quiz-modal-card">
     <div data-controller="lesson-check lesson-quiz"

@@ -8,13 +8,20 @@
 // A complete submission is an answer the student intended the server to judge as a
 // whole. A pointer movement, keystroke, or single misplaced tile is incomplete.
 //
-// The element must carry:
+// The element must carry, ON ITSELF OR ON AN ANCESTOR:
 //   data-block-url-value="/learning/routes/:id/steps/:id/blocks/:section_index"
-// which the partials render from the section index.
+//
+// There is no single blessed carrier. This comment used to name the
+// `.lesson-section` wrapper as "the" one, and WP-21 moved the check modal out of
+// that wrapper — a change that looked safe precisely because this file said the
+// plumbing lived somewhere else. `closest` found nothing, the submission was
+// dropped by the `return null` below, and no check reached the server for a week.
+// Any element that hosts a block controller and is NOT inside a `.lesson-section`
+// has to render the attribute itself; `_check.html.erb` does.
 
 export async function submitBlock(element, payload, { complete = false } = {}) {
-  // The URL lives on the .lesson-section wrapper rendered by _lesson.html.erb, so a
-  // block partial needs no plumbing of its own.
+  // Nearest carrier wins: the `.lesson-section` wrapper for in-flow blocks, the
+  // modal backdrop itself for the check (which has no section ancestor).
   const host = element.closest("[data-block-url-value]")
   const url = host?.dataset?.blockUrlValue
   if (!url) {

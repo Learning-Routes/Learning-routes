@@ -1,8 +1,13 @@
 <%# Rendered when the student tries to complete a step with gating blocks still
     outstanding. Scrolls them back to the first one rather than just refusing. %>
 <%= turbo_stream.replace "step-complete-feedback" do %>
+  <%# NO data-controller here. It used to say `interactive-lesson`, which mounted
+      a SECOND copy of that controller on an element with no sections, no
+      total-sections-value and no targets — and it never read
+      `data-outstanding-sections`, so the "scroll them back" intent in the
+      comment above was never implemented. The real controller now handles the
+      422 itself (_showOutstandingBlocks) and it has the sections to scroll to. %>
   <div id="step-complete-feedback"
-       data-controller="interactive-lesson"
        data-outstanding-sections="<%= @outstanding_sections.to_json %>"
        style="max-width:640px; margin:16px auto; padding:12px 18px; border-radius:10px;
               background:var(--color-flash-alert-bg, rgba(176,96,80,0.08));
