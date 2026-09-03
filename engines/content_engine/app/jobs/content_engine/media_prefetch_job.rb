@@ -186,7 +186,12 @@ module ContentEngine
     end
 
     def apply_results!(sections, results)
-      metadata = @step.metadata || {}
+      # RE-READ. `@step` was loaded before minutes of image and TTS generation
+      # across six threads. Anything written in between — an `image_url` from a
+      # student's manual SectionImageJob, `step_quiz_generated`, `audio_sections`
+      # — is in the row and not in this copy, and building the write from the
+      # stale copy is what erased it.
+      metadata = @step.fresh_metadata
       parsed = metadata["parsed_sections"]
       audio_sections = metadata["audio_sections"] || {}
 
@@ -239,11 +244,13 @@ module ContentEngine
         end
       end
 
-      @step.update!(metadata: metadata.merge(
+      # Only the three keys this job owns. Anything else on the row is left
+      # untouched by the database rather than rewritten from a copy.
+      @step.merge_metadata!(
         "parsed_sections" => parsed,
         "audio_sections" => audio_sections,
         "media_prefetch_completed_at" => Time.current.iso8601
-      ))
+      )
     end
 
     def broadcast_progress(completed, total)

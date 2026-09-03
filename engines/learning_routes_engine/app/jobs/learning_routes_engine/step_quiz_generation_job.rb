@@ -72,7 +72,7 @@ module LearningRoutesEngine
             )
           end
 
-          step.update!(metadata: step.metadata.merge("step_quiz_id" => assessment.id, "step_quiz_generated" => true))
+          step.merge_metadata!("step_quiz_id" => assessment.id, "step_quiz_generated" => true)
         end
         Rails.logger.info("[StepQuizGenerationJob] Quiz generated for step #{route_step_id}: #{parsed['questions']&.size} questions")
       else

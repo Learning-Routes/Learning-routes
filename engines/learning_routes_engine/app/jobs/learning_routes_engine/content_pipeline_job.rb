@@ -78,7 +78,7 @@ module LearningRoutesEngine
         # controller treated "not generating" as "start it again".
         attempts = @step.metadata&.dig("content_attempts").to_i + 1
 
-        @step.update!(metadata: (@step.metadata || {}).merge(
+        @step.merge_metadata!(
           "content_error" => e.message.truncate(500),
           # What the student is told depends on WHY. A spend ceiling is a
           # business limit, not a breakage, and "try again in a few minutes" is
@@ -87,7 +87,7 @@ module LearningRoutesEngine
           "content_failed_at" => Time.current.iso8601,
           "content_attempts" => attempts,
           "content_generating" => false
-        ))
+        )
       end
       raise
     end
@@ -95,10 +95,10 @@ module LearningRoutesEngine
     private
 
     def mark_generating!
-      @step.update!(metadata: (@step.metadata || {}).merge(
+      @step.merge_metadata!(
         "content_generating" => true,
         "pipeline_started_at" => Time.current.iso8601
-      ))
+      )
     end
 
     # ── Stage 1: Text Generation ─────────────────────────────────────
@@ -171,10 +171,10 @@ module LearningRoutesEngine
         audio_url: content.audio_url
       )
 
-      @step.update!(metadata: (@step.metadata || {}).merge(
+      @step.merge_metadata!(
         "content_generated" => true,
         "parsed_sections" => sections.map(&:as_json)
-      ))
+      )
 
       sections
     end
@@ -191,11 +191,11 @@ module LearningRoutesEngine
     # ── Stage 6: Mark Ready + Broadcast ──────────────────────────────
 
     def mark_ready!
-      @step.update!(metadata: (@step.metadata || {}).merge(
+      @step.merge_metadata!(
         "content_ready" => true,
         "content_generating" => false,
         "generated_at" => Time.current.iso8601
-      ))
+      )
 
       broadcast_content_ready!
     end

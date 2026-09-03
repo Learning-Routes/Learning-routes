@@ -50,7 +50,7 @@ module ContentEngine
           "status" => "failed",
           "error" => e.message.to_s.truncate(300)
         }
-        step.update!(metadata: metadata.merge("audio_sections" => audio_sections))
+        step.merge_metadata!("audio_sections" => audio_sections)
       rescue
         nil
       end

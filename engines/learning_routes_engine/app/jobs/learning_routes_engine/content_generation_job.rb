@@ -52,10 +52,10 @@ module LearningRoutesEngine
             audio_url: content.audio_url
           )
 
-          step.update!(metadata: step.metadata.merge(
+          step.merge_metadata!(
             content_generated: true,
             parsed_sections: parsed_sections.map(&:as_json)
-          ))
+          )
         end
 
         Rails.logger.info("[ContentGenerationJob] Content generated for step #{route_step_id}")
