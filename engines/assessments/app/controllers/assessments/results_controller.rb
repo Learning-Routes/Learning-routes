@@ -72,7 +72,11 @@ module Assessments
       #
       # So: everything that can fail cheaply runs first, each isolated so one
       # failure cannot skip the rest; the spend runs LAST, once, on a claim.
-      bookkeeping_ok = record_bookkeeping(route, step, score)
+      # §3. `complete_step!` used to run unconditionally, so failing the exam
+      # completed the step and unlocked the next one. Three ways forward, and
+      # only one of them is passing.
+      decision = AdvancementPolicy.new(result: @result).decide
+      bookkeeping_ok = record_bookkeeping(route, step, score, decision)
 
       # The spend happens only if everything cheap succeeded. Isolating the
       # failures above is what keeps the student's result reachable; it must NOT
@@ -81,7 +85,7 @@ module Assessments
       enqueue_gap_analysis_once(route, step) if bookkeeping_ok
 
       notice = if bookkeeping_ok
-        t("flash.assessment_submitted", score: score.round(1))
+        advancement_notice(decision, score)
       else
         # The score IS committed. Saying so is the one thing the app was certain
         # about and never told them.
@@ -96,7 +100,26 @@ module Assessments
     # Derived work. The score is already committed; none of this may deny the
     # student their result, and a failure in one step must not skip the others.
     # Returns false if ANY step failed, which is what stops the paid enqueue.
-    def record_bookkeeping(route, step, score)
+    # Four outcomes, four things to say. A student who failed used to be
+    # congratulated and moved on, which is the same defect this project keeps
+    # finding: the client not telling the student what the server decided.
+    def advancement_notice(decision, score)
+      key = case decision.reason
+      when :passed then "flash.assessment_submitted"
+      when :released then "flash.assessment_released"
+      when :unanswerable then "flash.assessment_unanswerable"
+      else "flash.assessment_failed"
+      end
+
+      passing = @result.assessment.passing_score
+      t(key, score: score.round(1),
+             # "Necesitas 70%", not "70.0%" — it is stored as a decimal and read
+             # by a student.
+             passing_score: (passing.to_f % 1).zero? ? passing.to_i : passing.round(1),
+             attempts_left: decision.attempts_left)
+    end
+
+    def record_bookkeeping(route, step, score, decision)
       results = []
 
       results << isolate("study session") do
@@ -114,8 +137,23 @@ module Assessments
         LearningRoutesEngine::AdaptiveDifficulty.new(route, @result).adjust!
       end
 
-      results << isolate("complete step") do
-        LearningRoutesEngine::RouteProgressTracker.new(route).complete_step!(step)
+      if decision.advance?
+        # An escape valve is not a pass. Recorded on the step so a progress
+        # report, and anything built on it later, can tell "earned it" from "we
+        # stopped blocking them".
+        unless decision.passed?
+          results << isolate("record release") do
+            step.merge_metadata!(
+              "advanced_without_passing" => true,
+              "advanced_reason" => decision.reason.to_s,
+              "advanced_at" => Time.current.utc.iso8601
+            )
+          end
+        end
+
+        results << isolate("complete step") do
+          LearningRoutesEngine::RouteProgressTracker.new(route).complete_step!(step)
+        end
       end
 
       results << isolate("progress snapshot") do

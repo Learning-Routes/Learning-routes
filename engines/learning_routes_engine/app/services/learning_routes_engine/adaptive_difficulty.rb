@@ -152,6 +152,26 @@ module LearningRoutesEngine
         return
       end
 
+      # THE CAP. `MAX_SKIP_RATIO` bounds skipping; nothing bounded insertion, and
+      # WP-19 §1b flagged that as "sin tope" and left it as a decision nobody
+      # made. Put next to §1, the consequence was total: the grader could never
+      # mark an answer correct, so EVERY assessment ever submitted scored under
+      # REINFORCE_THRESHOLD and inserted three more steps. One live route went
+      # from 7 steps to 43 — twelve identical triplets in one day, all in the
+      # FREE preview module, each of which generates paid content (~12¢ measured)
+      # the moment a student opens it.
+      #
+      # One unfinished triplet at a time. A student who has not worked through
+      # the reinforcement they already have does not need more of it, and the cap
+      # belongs here rather than in the controller so no future caller can miss it.
+      if unfinished_reinforcement?
+        Rails.logger.info(
+          "[AdaptiveDifficulty] route #{@route.id} already has unfinished reinforcement; " \
+          "inserting none"
+        )
+        return
+      end
+
       reinforcement_steps = build_reinforcement_steps(current_level)
       return if reinforcement_steps.empty?
 
@@ -235,19 +255,33 @@ module LearningRoutesEngine
                .pick(:route_module_id)
     end
 
+    # Does this route already carry reinforcement the student has not worked
+    # through? "Not worked through" means locked or available — a step they have
+    # started or finished has served its purpose and does not block new ones.
+    def unfinished_reinforcement?
+      RouteStep.where(learning_route_id: @route.id)
+               .where("metadata->>'reinforcement' = 'true'")
+               .where(status: %i[locked available])
+               .exists?
+    end
+
+    # Titles and descriptions in the ROUTE's language, not English on a Spanish
+    # route. Same rule WP-9 applied everywhere else; these were the last hardcoded
+    # strings a student could see, and the live route showed 36 of them in English.
     def build_reinforcement_steps(level)
       bloom_range = RouteGenerator::BLOOM_LEVELS[level.to_sym] || [1, 2]
+      locale = @route.locale.presence || I18n.default_locale
+
       [
-        { title: "Reinforcement: Review Key Concepts",
-          description: "Review the concepts that need strengthening",
-          content_type: :lesson, estimated_minutes: 20, bloom_level: bloom_range.first },
-        { title: "Reinforcement: Guided Practice",
-          description: "Practice exercises with additional guidance",
-          content_type: :exercise, estimated_minutes: 25, bloom_level: bloom_range.first },
-        { title: "Reinforcement: Re-Assessment",
-          description: "Quick check to verify understanding",
-          content_type: :assessment, estimated_minutes: 15, bloom_level: bloom_range.last }
-      ]
+        { key: "review", content_type: :lesson, estimated_minutes: 20, bloom_level: bloom_range.first },
+        { key: "practice", content_type: :exercise, estimated_minutes: 25, bloom_level: bloom_range.first },
+        { key: "reassessment", content_type: :assessment, estimated_minutes: 15, bloom_level: bloom_range.last }
+      ].map do |step|
+        step.except(:key).merge(
+          title: I18n.t("learning_engine.reinforcement.#{step[:key]}.title", locale: locale),
+          description: I18n.t("learning_engine.reinforcement.#{step[:key]}.description", locale: locale)
+        )
+      end
     end
 
     def current_assessment_level

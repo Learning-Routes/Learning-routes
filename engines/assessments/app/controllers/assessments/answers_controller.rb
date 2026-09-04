@@ -73,7 +73,14 @@ module Assessments
 
     def grade_answer!(question, answer)
       if question.multiple_choice?
-        is_correct = params[:answer].to_s.strip.downcase == question.correct_answer.to_s.strip.downcase
+        # THE shared normalizer. This line used to be a bare downcased string
+        # comparison, and the radio's value is the option verbatim
+        # ("A) Subject + Verb + Object") while the generator stores "A" — so it
+        # was `"a) subject + verb + object" == "a"`, false, always. No
+        # multiple-choice answer had ever graded correct on an assessment.
+        is_correct = AnswerNormalizer.correct?(
+          given: params[:answer], expected: question.correct_answer
+        )
         answer.update!(
           correct: is_correct,
           feedback: is_correct ? t("flash.correct") : t("flash.incorrect", explanation: question.explanation)

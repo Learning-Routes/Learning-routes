@@ -277,6 +277,9 @@ en:
     assessment_not_submitted: "Assessment not yet submitted."
     assessment_submitted: "Assessment submitted! Score: %{score}%"
     assessment_submitted_with_issue: "Your answers were saved and scored (%{score}%%). Some follow-up did not finish — your result is safe."
+    assessment_failed: "You scored %{score}%%. You need %{passing_score}%% to continue. Try again — after %{attempts_left} more attempt(s) we will let you move on anyway."
+    assessment_released: "You scored %{score}%%, below the %{passing_score}%% needed. You have tried enough times, so we are not going to keep you here — the step is marked as not passed and you can continue."
+    assessment_unanswerable: "You scored %{score}%%, but this exam has a fault that makes the pass mark unreachable. That is our problem, not yours: the step is marked as not passed and you can continue."
     review_recorded: "Review recorded."
     invalid_rating: "Invalid rating."
     ai_generation_failed: "AI generation failed. Please try again."
@@ -971,6 +974,16 @@ en:
     open: "Open tutor chat"
     proactive_hint: "Need help?"
   learning_engine:
+    reinforcement:
+      review:
+        title: "Reinforcement: Review Key Concepts"
+        description: "Review the concepts that need strengthening"
+      practice:
+        title: "Reinforcement: Guided Practice"
+        description: "Practice exercises with additional guidance"
+      reassessment:
+        title: "Reinforcement: Re-Assessment"
+        description: "Quick check to verify understanding"
     modules: { free_preview: "Free preview", locked: "Locked until purchase" }
     blocks:
       required:
@@ -1201,6 +1214,7 @@ en:
       save_forbidden: "You cannot answer this exam."
       save_network_error: "Connection lost. Your answer was not saved — try again."
       save_failed: "We could not save that answer. Try again."
+      save_partial: "We could not save your answer to question __questions__, so the exam was not handed in. Fix it and press send again."
       saved: "Saved!"
       answered_template: "__count__ of __total__ answered"
       previous: "Previous"

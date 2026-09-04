@@ -277,6 +277,9 @@ es:
     assessment_not_submitted: "La evaluación aún no ha sido enviada."
     assessment_submitted: "¡Evaluación enviada! Puntuación: %{score}%"
     assessment_submitted_with_issue: "Tus respuestas se guardaron y se calificaron (%{score}%%). Algo posterior no terminó, pero tu resultado está a salvo."
+    assessment_failed: "Obtuviste %{score}%%. Necesitas %{passing_score}%% para continuar. Inténtalo otra vez: después de %{attempts_left} intento(s) más te dejaremos seguir de todos modos."
+    assessment_released: "Obtuviste %{score}%%, por debajo del %{passing_score}%% necesario. Ya lo has intentado suficientes veces, así que no vamos a retenerte aquí: el paso queda marcado como no superado y puedes continuar."
+    assessment_unanswerable: "Obtuviste %{score}%%, pero esta evaluación tiene un fallo que hace imposible alcanzar la nota de aprobado. Eso es problema nuestro, no tuyo: el paso queda como no superado y puedes continuar."
     review_recorded: "Repaso registrado."
     invalid_rating: "Calificación inválida."
     ai_generation_failed: "La generación de IA falló. Inténtalo de nuevo."
@@ -971,6 +974,16 @@ es:
     proactive_hint: "¿Necesitas ayuda?"
   # ── Learning Engine ──
   learning_engine:
+    reinforcement:
+      review:
+        title: "Refuerzo: repasa los conceptos clave"
+        description: "Repasa los conceptos que necesitan afianzarse"
+      practice:
+        title: "Refuerzo: práctica guiada"
+        description: "Ejercicios de práctica con apoyo adicional"
+      reassessment:
+        title: "Refuerzo: nueva evaluación"
+        description: "Comprobación rápida para verificar que lo has entendido"
     modules: { free_preview: "Vista previa gratuita", locked: "Bloqueado hasta la compra" }
     blocks:
       required:
@@ -1201,6 +1214,7 @@ es:
       save_forbidden: "No puedes responder este examen."
       save_network_error: "Se perdió la conexión. Tu respuesta no se guardó: inténtalo de nuevo."
       save_failed: "No pudimos guardar esa respuesta. Inténtalo de nuevo."
+      save_partial: "No pudimos guardar tu respuesta a la pregunta __questions__, así que la evaluación no se entregó. Corrígelo y pulsa enviar otra vez."
       saved: "¡Guardado!"
       answered_template: "__count__ de __total__ respondidas"
       previous: "Anterior"

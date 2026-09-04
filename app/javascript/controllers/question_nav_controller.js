@@ -1,7 +1,7 @@
 import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
-  static targets = ["navItem", "questionPanel", "currentIndicator", "saveError"]
+  static targets = ["navItem", "questionPanel", "currentIndicator", "saveError", "saveButton", "submitButton"]
   static values = {
     currentIndex: { type: Number, default: 0 },
     totalQuestions: Number,
@@ -13,12 +13,19 @@ export default class extends Controller {
     errorClosed: { type: String, default: "" },
     errorForbidden: { type: String, default: "" },
     errorNetwork: { type: String, default: "" },
-    errorGeneric: { type: String, default: "" }
+    errorGeneric: { type: String, default: "" },
+    // Named questions, because "something failed" is not something a student can
+    // act on when four answers are at stake.
+    errorPartial: { type: String, default: "" }
   }
 
   connect() {
     this.answeredSet = new Set()
     this._buttonResetTimeout = null
+    // `_gathered` lets the second pass through: `requestSubmit()` fires `submit`
+    // again, and without it `submitExam` would re-enter itself forever.
+    this._gathered = false
+    this._submitting = false
     this.updateDisplay()
   }
 
@@ -65,26 +72,97 @@ export default class extends Controller {
     }
   }
 
+  // SUBMIT GATHERS WHAT IS SELECTED.
+  //
+  // The only binding to the save path was the "Guardar respuesta" button, and
+  // `change->markAnswered` only touches client state. A student who selected all
+  // four options and pressed "Enviar evaluación" sent four checked radios and
+  // ZERO requests to /answers — the exam scored 0% with four "sin responder".
+  //
+  // So submit now hands in what is selected, through the SAME `_save` path the
+  // button uses (one submitter, not a copy), and scores only once every save has
+  // landed. Deliberately NOT auto-saving on `change`: WP-27 made an answer final
+  // once given, so saving on first click would make the first click final and
+  // lock out a change of mind — and relaxing that rule to allow re-answering
+  // reopens the click-every-option hole WP-27 closed. "Handed in for grading" is
+  // the moment a student already understands to be final.
+  async submitExam(event) {
+    if (this._gathered) return
+
+    event.preventDefault()
+    if (this._submitting) return
+
+    const form = event.currentTarget
+    const pending = this.saveButtonTargets.filter((btn) => this.answerFor(btn) !== "")
+    if (pending.length === 0) {
+      // Nothing selected. Let it through and let the server score an empty exam
+      // rather than trapping the student in a form that will not submit.
+      this._gathered = true
+      form.requestSubmit()
+      return
+    }
+
+    this._submitting = true
+    this.setSubmitDisabled(true)
+
+    const failures = []
+    for (const btn of pending) {
+      // `announce: false` — during a gather each refused save would otherwise
+      // stomp the banner in turn, so the student would see up to four different
+      // messages flicker past and the last one to land would be whichever
+      // request finished last. The summary below is the message that matters,
+      // and it is written exactly once.
+      const saved = await this._save(btn, { announce: false })
+      if (!saved) failures.push(parseInt(btn.dataset.index, 10) + 1)
+    }
+
+    this._submitting = false
+
+    if (failures.length > 0) {
+      // Submitting after a partial save scores a full exam on half its answers.
+      this.setSubmitDisabled(false)
+      this._showSaveMessage(null, this.errorPartialValue.replace("__questions__", failures.join(", ")))
+      return
+    }
+
+    // Stays disabled: the gather succeeded and the form is on its way.
+    this._gathered = true
+    form.requestSubmit()
+  }
+
   async saveAnswer(event) {
-    const btn = event.currentTarget
-    const index = parseInt(btn.dataset.index, 10)
-    const panel = this.questionPanelTargets[index]
-    if (!panel) return
+    await this._save(event.currentTarget)
+  }
 
-    const questionId = btn.dataset.questionId
-    const url = btn.dataset.saveUrl
+  // Whatever this question's panel currently holds, or "" for unanswered.
+  answerFor(btn) {
+    const panel = this.questionPanelTargets[parseInt(btn.dataset.index, 10)]
+    if (!panel) return ""
 
-    // Extract answer from the panel's form inputs
-    let answer = ""
     const radio = panel.querySelector("input[type='radio']:checked")
-    const textarea = panel.querySelector("textarea")
     const hiddenInput = panel.querySelector("input[data-code-editor-target='hiddenInput']")
+    const textarea = panel.querySelector("textarea")
 
+    let answer = ""
     if (radio) answer = radio.value
     else if (hiddenInput && hiddenInput.value) answer = hiddenInput.value
     else if (textarea) answer = textarea.value
 
-    if (!answer.trim()) return
+    return answer.trim()
+  }
+
+  setSubmitDisabled(disabled) {
+    if (this.hasSubmitButtonTarget) this.submitButtonTarget.disabled = disabled
+  }
+
+  // Returns true when the answer is safely on the server.
+  async _save(btn, { announce = true } = {}) {
+    const index = parseInt(btn.dataset.index, 10)
+    const questionId = btn.dataset.questionId
+    const url = btn.dataset.saveUrl
+
+    const answer = this.answerFor(btn)
+    if (!answer) return true
 
     const token = document.querySelector('meta[name="csrf-token"]')?.content
     const formData = new FormData()
@@ -109,6 +187,7 @@ export default class extends Controller {
 
         const html = await response.text()
         if (html.includes("turbo-stream")) Turbo.renderStreamMessage(html)
+        return true
       } else {
         // THE `else` THIS NEVER HAD.
         //
@@ -117,17 +196,19 @@ export default class extends Controller {
         // never said "Guardado", `catch` never ran, and nothing was logged. The
         // console stayed clean while every answer was thrown away — which is why
         // this took four packages to find.
-        await this._showSaveError(btn, response)
+        await this._showSaveError(btn, response, announce)
+        return false
       }
     } catch (error) {
       // Network failure is a third thing, and the student should be able to tell
       // it from a refusal.
       console.error("Save answer failed:", error)
-      this._showSaveMessage(btn, this.errorNetworkValue)
+      this._showSaveMessage(btn, this.errorNetworkValue, announce)
+      return false
     }
   }
 
-  async _showSaveError(btn, response) {
+  async _showSaveError(btn, response, announce = true) {
     let message = this.errorGenericValue
 
     if (response.status === 403) {
@@ -138,21 +219,26 @@ export default class extends Controller {
       message = body.message || this.errorClosedValue
     }
 
-    this._showSaveMessage(btn, message)
+    this._showSaveMessage(btn, message, announce)
   }
 
-  _showSaveMessage(btn, message) {
+  // `btn` is null for the submit-time summary, which belongs in the banner only.
+  // `announce` false puts the message on the button only, leaving the banner for
+  // the one summary that describes the whole gather.
+  _showSaveMessage(btn, message, announce = true) {
     if (!message) return
 
-    btn.textContent = message
-    btn.classList.add("question-nav__save--error")
-    clearTimeout(this._buttonResetTimeout)
-    this._buttonResetTimeout = setTimeout(() => {
-      btn.textContent = this.saveTextValue
-      btn.classList.remove("question-nav__save--error")
-    }, 6000)
+    if (btn) {
+      btn.textContent = message
+      btn.classList.add("question-nav__save--error")
+      clearTimeout(this._buttonResetTimeout)
+      this._buttonResetTimeout = setTimeout(() => {
+        btn.textContent = this.saveTextValue
+        btn.classList.remove("question-nav__save--error")
+      }, 6000)
+    }
 
-    if (this.hasSaveErrorTarget) {
+    if (announce && this.hasSaveErrorTarget) {
       this.saveErrorTarget.textContent = message
       this.saveErrorTarget.hidden = false
     }

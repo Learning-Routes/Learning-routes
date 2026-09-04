@@ -1,9 +1,13 @@
 <% content_for(:title, t("assessments.exam.title_prefix") + @step.localized_title) %>
 
 <div class="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 py-8">
-  <div class="flex gap-6">
-    <!-- Questions area -->
-    <div class="flex-1" data-controller="exam-timer question-nav"
+  <%# The controller wraps BOTH columns. It used to sit on `.flex-1` only, so the
+      sidebar below was a SIBLING: `navItem` and `currentIndicator` were outside
+      its scope entirely. `hasCurrentIndicatorTarget` was false, so `updateDisplay`
+      no-opped and the counter was stuck at the server-rendered "0 de 4 respondidas"
+      no matter how many answers saved; the squares never turned green; and the
+      sidebar's number buttons were dead, because `goToQuestion` never fired. %>
+  <div class="flex gap-6" data-controller="exam-timer question-nav"
          data-exam-timer-duration-seconds-value="<%= (@questions.count * 120).clamp(300, 3600) %>"
          data-question-nav-total-questions-value="<%= @questions.count %>"
          data-question-nav-saved-text-value="<%= t('assessments.exam.saved') %>"
@@ -12,7 +16,10 @@
          data-question-nav-error-closed-value="<%= t('assessments.answers.no_attempt') %>"
          data-question-nav-error-forbidden-value="<%= t('assessments.exam.save_forbidden') %>"
          data-question-nav-error-network-value="<%= t('assessments.exam.save_network_error') %>"
-         data-question-nav-error-generic-value="<%= t('assessments.exam.save_failed') %>">
+         data-question-nav-error-generic-value="<%= t('assessments.exam.save_failed') %>"
+         data-question-nav-error-partial-value="<%= t('assessments.exam.save_partial') %>">
+    <!-- Questions area -->
+    <div class="flex-1">
       <%# A refused save has to be legible. Before this the button simply never
           changed and nothing was logged, so every answer was thrown away in
           silence. %>
@@ -37,7 +44,7 @@
 
       <!-- Questions form -->
       <%= form_with url: assessments.submit_result_path(@result), method: :post,
-          data: { exam_timer_target: "form" }, local: true do |f| %>
+          data: { exam_timer_target: "form", action: "submit->question-nav#submitExam" }, local: true do |f| %>
 
         <% @questions.each_with_index do |question, index| %>
           <div data-question-nav-target="questionPanel"
@@ -70,6 +77,7 @@
               <div id="answer_feedback_<%= question.id %>"></div>
               <button type="button"
                       data-action="click->question-nav#saveAnswer"
+                      data-question-nav-target="saveButton"
                       data-index="<%= index %>"
                       data-question-id="<%= question.id %>"
                       data-save-url="<%= assessments.assessment_answers_path(@assessment) %>"
@@ -99,7 +107,8 @@
         <div class="mt-6 text-center">
           <%= f.submit t("assessments.exam.submit"),
               class: "rounded-lg px-6 py-3 text-sm font-semibold text-white bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-400 hover:to-purple-400 transition cursor-pointer",
-              data: { confirm: t("assessments.exam.confirm") } %>
+              data: { confirm: t("assessments.exam.confirm"),
+                      question_nav_target: "submitButton" } %>
         </div>
       <% end %>
     </div>

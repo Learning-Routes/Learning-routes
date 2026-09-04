@@ -99,6 +99,47 @@ module LearningRoutesEngine
       assert_equal before, RouteStep.where(learning_route_id: @route.id).count
     end
 
+  # ── §4: the cap, and the language ───────────────────────────────────────
+
+  # `MAX_SKIP_RATIO` bounded skipping; nothing bounded insertion. With §1's
+  # grader unable to mark anything correct, every assessment ever submitted
+  # scored under REINFORCE_THRESHOLD, so one live route went from 7 steps to 43:
+  # twelve identical triplets in a day, all in the FREE preview module, each
+  # generating ~12¢ of paid content the moment a student opens it.
+  test "a route with unfinished reinforcement gets no more of it" do
+    reinforce_from(@paid_step)
+    first_batch = reinforcement_steps.size
+    assert_operator first_batch, :>, 0
+
+    3.times { reinforce_from(@paid_step) }
+
+    assert_equal first_batch, reinforcement_steps.size,
+      "nothing capped insertion, so every failed submit added another triplet"
+  end
+
+  # The cap must not become a permanent block: reinforcement the student has
+  # actually worked through has served its purpose.
+  test "once the reinforcement is worked through, more may be inserted" do
+    reinforce_from(@paid_step)
+    first_batch = reinforcement_steps.size
+
+    reinforcement_steps.each { |step| step.update!(status: :completed) }
+    reinforce_from(@paid_step)
+
+    assert_operator reinforcement_steps.size, :>, first_batch
+  end
+
+  test "reinforcement is titled in the route's language, not English" do
+    @route.update!(locale: "es")
+
+    reinforce_from(@paid_step)
+
+    titles = reinforcement_steps.map(&:title)
+    assert_includes titles, I18n.t("learning_engine.reinforcement.review.title", locale: :es)
+    assert titles.none? { |t| t.start_with?("Reinforcement:") },
+      "36 of these were sitting in English on a Spanish route"
+  end
+
     # ── the general case: the class ─────────────────────────────────────────
 
     test "creating a step with no module on a monetised route is a caller bug" do
