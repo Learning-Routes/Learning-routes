@@ -24,7 +24,21 @@ module Assessments
       audio = params[:audio]
       return head(:bad_request) unless audio.respond_to?(:read)
       return head(:request_entity_too_large) if audio.respond_to?(:size) && audio.size > MAX_AUDIO_SIZE
-      return head(:unsupported_media_type) if audio.respond_to?(:content_type) && !ALLOWED_CONTENT_TYPES.include?(audio.content_type)
+      # Compare the MEDIA TYPE, not the whole Content-Type header.
+      #
+      # `MediaRecorder` reports its mimeType WITH parameters, and the recorder's
+      # first candidate is "audio/webm;codecs=opus" — which Chrome supports, so
+      # every recording made in Chrome was uploaded as that string and compared
+      # with `include?` against a list containing only "audio/webm". Exact string
+      # equality against a list written without codec parameters: this refused
+      # every Chrome recording the feature has ever taken.
+      #
+      # Parsing the parameters off is the fix. Adding "audio/webm;codecs=opus" to
+      # the list would fix one browser and leave Firefox
+      # ("audio/ogg;codecs=opus") and the next codec string to fail identically.
+      if audio.respond_to?(:content_type) && !ALLOWED_CONTENT_TYPES.include?(media_type_of(audio))
+        return head(:unsupported_media_type)
+      end
 
       dir = Rails.root.join("storage", "voice_responses")
       FileUtils.mkdir_p(dir)
@@ -53,6 +67,13 @@ module Assessments
         transcription: vr.transcription,
         ai_evaluation: vr.ai_evaluation
       }
+    end
+
+    private
+
+    # "audio/webm;codecs=opus" -> "audio/webm"
+    def media_type_of(audio)
+      audio.content_type.to_s.split(";").first.to_s.strip.downcase
     end
   end
 end

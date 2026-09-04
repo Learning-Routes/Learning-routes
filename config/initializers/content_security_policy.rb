@@ -32,6 +32,20 @@ Rails.application.configure do
       end
     policy.connect_src :self, *ws_sources
 
+    # Media: lesson audio is same-origin (SectionAudioGenerator writes to
+    # /storage/audio/sections/...), and `blob:` is the voice recorder's PREVIEW —
+    # the student listening back to their own recording before sending it. There
+    # was no media_src at all, so <audio> fell through to `default_src :self` and
+    # every blob: preview was refused; the recorder logged "Failed to load
+    # because no supported source was found" and the student could not hear
+    # themselves.
+    policy.media_src   :self, :blob
+
+    # Workers: canvas-confetti builds its worker from a blob: URL. There was no
+    # worker_src either, so it fell through to script_src and the celebration on
+    # a correct answer never fired. (This closes WP-23 §3.)
+    policy.worker_src  :self, :blob
+
     # Frames: allow same-origin so the code-playground sandbox iframe
     # (/sandbox.html) can load. It is additionally locked down with the
     # `sandbox="allow-scripts"` attribute (opaque origin).
