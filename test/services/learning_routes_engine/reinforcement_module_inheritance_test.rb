@@ -99,7 +99,7 @@ module LearningRoutesEngine
       assert_equal before, RouteStep.where(learning_route_id: @route.id).count
     end
 
-    # ── §4: the cap, and the language ───────────────────────────────────────
+  # ── §4: the cap, and the language ───────────────────────────────────────
 
   # `MAX_SKIP_RATIO` bounded skipping; nothing bounded insertion. With §1's
   # grader unable to mark anything correct, every assessment ever submitted
@@ -140,7 +140,7 @@ module LearningRoutesEngine
       "36 of these were sitting in English on a Spanish route"
   end
 
-  # ── the general case: the class ─────────────────────────────────────────
+    # ── the general case: the class ─────────────────────────────────────────
 
     test "creating a step with no module on a monetised route is a caller bug" do
       error = assert_raises(RouteStep::ImplicitPreviewModule) do
