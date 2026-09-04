@@ -316,7 +316,8 @@ CREATE TABLE public.assessments_assessment_results (
     passed boolean DEFAULT false NOT NULL,
     score numeric(5,2),
     updated_at timestamp(6) without time zone NOT NULL,
-    user_id uuid NOT NULL
+    user_id uuid NOT NULL,
+    gap_analysis_enqueued_at timestamp(6) without time zone
 );
 
 
@@ -2989,6 +2990,7 @@ ALTER TABLE ONLY public.learning_routes_engine_route_steps
 SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
+('20260904000002'),
 ('20260904000001'),
 ('20260902000002'),
 ('20260902000001'),

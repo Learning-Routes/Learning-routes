@@ -51,55 +51,115 @@ module Assessments
       end
 
       if score == :already_scored
+        # Not a no-op any more. A previous submit may have committed the score and
+        # then failed its bookkeeping, which used to leave the paid analysis
+        # skipped FOREVER — the retry short-circuited here and redirected. The
+        # enqueue is claimed on the RESULT, so completing it now is safe and
+        # cannot buy a second one.
+        enqueue_gap_analysis_once(route, step)
         redirect_to result_path(@result), notice: t("flash.assessment_submitted", score: @result.score.round(1))
         return
       end
 
-      # End study session
-      Analytics::StudySession.for_user(current_user)
-        .active
-        .where(route_step_id: step.id)
-        .find_each(&:finish!)
-
-      # Record metrics
-      Analytics::LearningMetric.record!(
-        user: current_user,
-        metric_type: "average_score",
-        value: score,
-        subject: route.topic
-      )
-
-      # Adaptive difficulty adjustment
-      LearningRoutesEngine::AdaptiveDifficulty.new(route, @result).adjust!
-
-      # Gap analysis in background.
+      # ORDER BY COST, and never let bookkeeping cost the student their result.
       #
-      # GapAnalyzer and, through it, ReinforcementGenerator both make paid
-      # Orchestrate calls, so this asks the GENERATION policy. This controller
-      # authorizes on result ownership alone, which stays true after a refund —
-      # so without this a refunded customer could keep submitting an assessment
-      # generated while they were paid and commission two AI calls per submit.
-      if LearningRoutesEngine::ModuleAccessPolicy.generation_allowed?(
-        user: current_user, step_id: step.id
-      )
-        LearningRoutesEngine::GapAnalysisJob.perform_later(
-          route.id, assessment_result_id: @result.id
-        )
+      # These seven side effects run AFTER the score has committed and outside any
+      # transaction. `take_snapshot!` used to raise here and 422 the request —
+      # after the metric was written, difficulty adjusted, reinforcement steps
+      # possibly inserted, the step completed, and the PAID GapAnalysisJob already
+      # enqueued at step 4 of 6. The student saw nothing, started the exam again,
+      # and bought the whole thing again.
+      #
+      # So: everything that can fail cheaply runs first, each isolated so one
+      # failure cannot skip the rest; the spend runs LAST, once, on a claim.
+      bookkeeping_ok = record_bookkeeping(route, step, score)
+
+      # The spend happens only if everything cheap succeeded. Isolating the
+      # failures above is what keeps the student's result reachable; it must NOT
+      # also mean we shrug and buy the analysis anyway. A later submit can still
+      # complete this — the claim is on the result, not the request.
+      enqueue_gap_analysis_once(route, step) if bookkeeping_ok
+
+      notice = if bookkeeping_ok
+        t("flash.assessment_submitted", score: score.round(1))
+      else
+        # The score IS committed. Saying so is the one thing the app was certain
+        # about and never told them.
+        t("flash.assessment_submitted_with_issue", score: score.round(1))
       end
 
-      # Complete step
-      tracker = LearningRoutesEngine::RouteProgressTracker.new(route)
-      tracker.complete_step!(step)
-
-      Analytics::ProgressSnapshot.take_snapshot!(
-        user: current_user,
-        learning_route: route
-      )
-
-      redirect_to result_path(@result), notice: t("flash.assessment_submitted", score: score.round(1))
+      redirect_to result_path(@result), notice: notice
     end
 
     private
+
+    # Derived work. The score is already committed; none of this may deny the
+    # student their result, and a failure in one step must not skip the others.
+    # Returns false if ANY step failed, which is what stops the paid enqueue.
+    def record_bookkeeping(route, step, score)
+      results = []
+
+      results << isolate("study session") do
+        Analytics::StudySession.for_user(current_user).active
+          .where(route_step_id: step.id).find_each(&:finish!)
+      end
+
+      results << isolate("learning metric") do
+        Analytics::LearningMetric.record!(
+          user: current_user, metric_type: "average_score", value: score, subject: route.topic
+        )
+      end
+
+      results << isolate("adaptive difficulty") do
+        LearningRoutesEngine::AdaptiveDifficulty.new(route, @result).adjust!
+      end
+
+      results << isolate("complete step") do
+        LearningRoutesEngine::RouteProgressTracker.new(route).complete_step!(step)
+      end
+
+      results << isolate("progress snapshot") do
+        Analytics::ProgressSnapshot.take_snapshot!(user: current_user, learning_route: route)
+      end
+
+      results.all?
+    end
+
+    # NOT idempotent, so it is not retried: `AdaptiveDifficulty#adjust!` inserts
+    # reinforcement steps and `LearningMetric.record!` is a bare `create!`. A
+    # failure is logged with the result id and left alone rather than duplicated
+    # on the next submit. The paid enqueue is the one piece that IS repairable,
+    # because it has a claim.
+    def isolate(label)
+      yield
+      true
+    rescue StandardError => e
+      Rails.logger.error(
+        "[ResultsController#submit] #{label} failed for result #{@result.id}: #{e.class}: #{e.message}"
+      )
+      false
+    end
+
+    # The spend, exactly once per attempt.
+    #
+    # A conditional UPDATE is the claim: only the caller whose UPDATE actually
+    # matches a row with a NULL marker may enqueue, so concurrent submits and
+    # retries after a failure can never buy two analyses.
+    def enqueue_gap_analysis_once(route, step)
+      # GapAnalyzer and ReinforcementGenerator are paid Orchestrate calls, so this
+      # asks the GENERATION policy — this controller authorizes on result
+      # ownership alone, which stays true after a refund.
+      return unless LearningRoutesEngine::ModuleAccessPolicy.generation_allowed?(
+        user: current_user, step_id: step.id
+      )
+
+      claimed = AssessmentResult
+        .where(id: @result.id, gap_analysis_enqueued_at: nil)
+        .update_all(gap_analysis_enqueued_at: Time.current)
+      return unless claimed == 1
+
+      LearningRoutesEngine::GapAnalysisJob.perform_later(route.id, assessment_result_id: @result.id)
+    end
 
     # Eager-loads the chain `submit` walks: assessment -> route_step ->
     # learning_route, plus the questions it scores against.
