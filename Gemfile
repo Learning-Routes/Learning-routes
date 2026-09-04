@@ -50,7 +50,8 @@ gem "rack-cors"
 gem "rack-attack"
 
 # Use Active Storage variants [https://guides.rubyonrails.org/active_storage_overview.html#transforming-images]
-gem "image_processing", "~> 1.2"
+gem "image_processing", "~> 2.0"
+gem "ruby-vips", "~> 2.3"
 
 # === AI Services ===
 # Unified multi-provider AI API (OpenAI, Anthropic, Gemini) [https://rubyllm.com]
