@@ -13,40 +13,44 @@ module Assessments
       @route = @step.learning_route
     end
 
+    # POST: mutate, then redirect. Never render.
+    #
+    # Turbo requires a form submission to end in a redirect or a turbo_stream.
+    # A 200 with an HTML body is discarded with "Form responses must redirect to
+    # another location", which is exactly what the student saw after the 406 was
+    # fixed: the button worked, the server answered, and the page did not move.
+    #
+    # 303 See Other is not cosmetic — it is what tells the browser to follow with
+    # a GET. A 302 would re-issue the POST.
     def start
       existing = AssessmentResult.find_by(user: current_user, assessment: @assessment, score: nil)
-      @result = existing || AssessmentResult.create!(user: current_user, assessment: @assessment)
-      @questions = @assessment.questions.order(:created_at)
-      @step = @assessment.route_step
-      @route = @step.learning_route
+      existing || AssessmentResult.create!(user: current_user, assessment: @assessment)
 
-      @step.update!(status: :in_progress) if @step.available?
+      step = @assessment.route_step
+      step.update!(status: :in_progress) if step.available?
 
       Analytics::StudySession.find_or_create_by!(
         user: current_user,
-        learning_route: @route,
-        route_step: @step,
+        learning_route: step.learning_route,
+        route_step: step,
         ended_at: nil
       ) { |s| s.started_at = Time.current }
 
-      # HTML ONLY. Starting an exam is a NAVIGATION, not an in-place update.
-      #
-      # `format.turbo_stream` was declared here and `start.turbo_stream.erb` has
-      # never existed — `git log --diff-filter=A` on that path is empty. Both call
-      # sites are a plain `button_to`, which Turbo intercepts and sends with
-      # `Accept: text/vnd.turbo-stream.html, text/html, …`. `respond_to` picked
-      # turbo_stream because it is first in that list, found no template, and
-      # raised `ActionController::MissingExactTemplate` — which subclasses
-      # `ActionController::UnknownFormat` and is therefore mapped to 406 Not
-      # Acceptable. That is why the button did nothing at all.
-      #
-      # Declaring a format you cannot render is the defect; adding a template to
-      # justify the declaration would be building a feature to cover a mistake.
-      # `start.html.erb` is a full page (`content_for(:title)`, its own layout),
-      # which is what the original intent looks like.
-      respond_to do |format|
-        format.html
-      end
+      redirect_to take_assessment_path(@assessment), status: :see_other
+    end
+
+    # GET: render the exam. Creates nothing.
+    #
+    # A GET that created an AssessmentResult would hand one out to every refresh,
+    # every back-button and every prefetch. If there is no result in progress the
+    # student has not started, so send them to the intro card that has the button.
+    def take
+      @result = AssessmentResult.find_by(user: current_user, assessment: @assessment, score: nil)
+      return redirect_to assessment_path(@assessment), status: :see_other if @result.nil?
+
+      @questions = @assessment.questions.order(:created_at)
+      @step = @assessment.route_step
+      @route = @step.learning_route
     end
 
     private
