@@ -16,19 +16,23 @@
 #   bin/rails wp29:cleanup   deletes, and only what nobody has touched
 #
 namespace :wp29 do
+  # Locals, not constants: a rake file loaded twice (the task test does exactly
+  # that) re-initialises top-level constants and warns. Task blocks are closures,
+  # so these are simply captured.
+  #
   # Qualified: `includes` becomes a JOIN once this string condition references a
   # column, and `metadata` exists on more than one joined table.
-  REINFORCEMENT = "learning_routes_engine_route_steps.metadata->>'reinforcement' = 'true'"
+  reinforcement_sql = "learning_routes_engine_route_steps.metadata->>'reinforcement' = 'true'"
   # Untouched: never opened. A step a student has started or finished is THEIR
   # WORK and is never deleted, however junk its origin.
-  UNTOUCHED = { status: %i[locked available] }.freeze
+  untouched_status = { status: %i[locked available] }.freeze
 
   desc "Count reinforcement steps and how many a student has actually touched (read only)"
   task census: :environment do
     step = LearningRoutesEngine::RouteStep
-    all = step.where(REINFORCEMENT)
-    untouched = all.where(**UNTOUCHED)
-    touched = all.where.not(**UNTOUCHED)
+    all = step.where(reinforcement_sql)
+    untouched = all.where(**untouched_status)
+    touched = all.where.not(**untouched_status)
 
     by_route = all.group(:learning_route_id).count
     worst = by_route.max_by(5) { |_id, count| count }
@@ -42,7 +46,7 @@ namespace :wp29 do
     worst.each { |route_id, count| puts "  #{route_id}  #{count} steps" }
     puts
     puts "routes whose steps are ALL untouched (safe to clear entirely): " \
-         "#{by_route.keys.count { |id| all.where(learning_route_id: id).where.not(**UNTOUCHED).none? }}"
+         "#{by_route.keys.count { |id| all.where(learning_route_id: id).where.not(**untouched_status).none? }}"
     puts
     puts "Nothing was modified. Run wp29:cleanup to delete the untouched ones."
   end
@@ -53,7 +57,7 @@ namespace :wp29 do
     # Eager-load what `destroy!` cascades into. `strict_loading_by_default` is on
     # and only LOGS in production, so without this the task would emit a
     # violation per row per association while quietly issuing the N+1 anyway.
-    doomed = step.where(REINFORCEMENT).where(**UNTOUCHED)
+    doomed = step.where(reinforcement_sql).where(**untouched_status)
                  .includes(:step_quiz, :ai_contents, :voice_responses, :comments, :likes)
     total = doomed.count
 
