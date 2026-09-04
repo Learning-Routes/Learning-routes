@@ -1450,6 +1450,8 @@ es:
     view_transcript: "Ver transcripción"
     try_again: "Intentar de nuevo"
     mic_error: "No se pudo acceder al micrófono. Verifica los permisos."
+    error_locked: "Esta ruta no está desbloqueada para ti, así que no podemos evaluar esta grabación. No se te ha cobrado nada."
+    error_failed: "No pudimos enviar tu grabación. No se ha perdido nada: inténtalo de nuevo."
     record_aria: "Iniciar grabación"
     stop_aria: "Detener grabación"
     play_preview_aria: "Reproducir vista previa"

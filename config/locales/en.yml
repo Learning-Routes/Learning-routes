@@ -1395,6 +1395,8 @@ en:
     view_transcript: "View transcript"
     try_again: "Try again"
     mic_error: "Could not access microphone. Check your permissions."
+    error_locked: "This route isn't unlocked for you, so we can't evaluate this recording. Nothing was charged."
+    error_failed: "We couldn't send your recording. Nothing has been lost — try recording it again."
     record_aria: "Start recording"
     stop_aria: "Stop recording"
     play_preview_aria: "Play preview"

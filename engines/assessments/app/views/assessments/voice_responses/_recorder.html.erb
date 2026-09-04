@@ -125,6 +125,29 @@
     </div>
   </div>
 
+  <%# ── 4b. Error State ──
+      A refused or failed submission used to be a console.error and a silent
+      return to "idle": the student saw the spinner vanish and nothing else, which
+      is indistinguishable from the app being broken. The most likely refusal is
+      the entitlement gate in voice_responses_controller, which answers a bare
+      `head :forbidden` — correct policy, invisible outcome. %>
+  <div data-voice-recorder-target="stateError" class="hidden"
+       data-error-locked="<%= t("voice_recorder.error_locked") %>"
+       data-error-failed="<%= t("voice_recorder.error_failed") %>">
+    <div class="flex flex-col items-center gap-3 py-6">
+      <div style="font-size:1.5rem;">⚠️</div>
+      <p data-voice-recorder-target="errorMessage"
+         class="text-sm text-center"
+         style="color: var(--color-flash-alert-text, #B06050); font-family: 'DM Sans', sans-serif; max-width: 28rem;"></p>
+      <button data-voice-recorder-target="errorRetryButton"
+              data-action="click->voice-recorder#retryAfterError"
+              class="text-sm px-4 py-2 rounded-xl"
+              style="background: var(--color-tint); color: var(--color-txt); border: 1px solid var(--color-border-subtle); font-family: 'DM Sans', sans-serif;">
+        <%= t("voice_recorder.re_record") %>
+      </button>
+    </div>
+  </div>
+
   <%# ── 5. Evaluating State ── %>
   <div data-voice-recorder-target="stateEvaluating" class="hidden">
     <div class="flex flex-col items-center gap-3 py-6">
