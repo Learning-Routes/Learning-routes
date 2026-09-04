@@ -8,21 +8,7 @@
          data-question-nav-total-questions-value="<%= @questions.count %>"
          data-question-nav-saved-text-value="<%= t('assessments.exam.saved') %>"
          data-question-nav-save-text-value="<%= t('assessments.exam.save_answer') %>"
-         data-question-nav-answered-template-value="<%= t('assessments.exam.answered_template') %>"
-         data-question-nav-error-closed-value="<%= t('assessments.answers.no_attempt') %>"
-         data-question-nav-error-forbidden-value="<%= t('assessments.exam.save_forbidden') %>"
-         data-question-nav-error-network-value="<%= t('assessments.exam.save_network_error') %>"
-         data-question-nav-error-generic-value="<%= t('assessments.exam.save_failed') %>">
-      <%# A refused save has to be legible. Before this the button simply never
-          changed and nothing was logged, so every answer was thrown away in
-          silence. %>
-      <p data-question-nav-target="saveError" hidden
-         role="status" aria-live="polite"
-         style="margin:10px 0 0; padding:9px 14px; border-radius:9px; font-size:0.82rem;
-                background:var(--color-flash-alert-bg, rgba(176,96,80,0.08));
-                border:1px solid var(--color-flash-alert-border, rgba(176,96,80,0.15));
-                color:var(--color-flash-alert-text, #B06050);
-                font-family:'DM Sans',sans-serif;"></p>
+         data-question-nav-answered-template-value="<%= t('assessments.exam.answered_template') %>">
 
       <!-- Header with timer -->
       <div class="flex items-center justify-between mb-6">

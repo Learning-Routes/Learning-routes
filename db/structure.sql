@@ -367,7 +367,8 @@ CREATE TABLE public.assessments_user_answers (
     feedback text,
     question_id uuid NOT NULL,
     updated_at timestamp(6) without time zone NOT NULL,
-    user_id uuid NOT NULL
+    user_id uuid NOT NULL,
+    assessment_result_id uuid
 );
 
 
@@ -1748,10 +1749,10 @@ CREATE INDEX idx_study_sessions_user_step_active ON public.analytics_study_sessi
 
 
 --
--- Name: idx_user_answers_on_user_and_question; Type: INDEX; Schema: public; Owner: -
+-- Name: idx_user_answers_on_result_and_question; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE UNIQUE INDEX idx_user_answers_on_user_and_question ON public.assessments_user_answers USING btree (user_id, question_id);
+CREATE UNIQUE INDEX idx_user_answers_on_result_and_question ON public.assessments_user_answers USING btree (assessment_result_id, question_id);
 
 
 --
@@ -2004,6 +2005,13 @@ CREATE INDEX index_assessments_questions_on_difficulty ON public.assessments_que
 --
 
 CREATE INDEX index_assessments_questions_on_question_type ON public.assessments_questions USING btree (question_type);
+
+
+--
+-- Name: index_assessments_user_answers_on_assessment_result_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_assessments_user_answers_on_assessment_result_id ON public.assessments_user_answers USING btree (assessment_result_id);
 
 
 --
@@ -2895,6 +2903,14 @@ ALTER TABLE ONLY public.community_engine_notifications
 
 
 --
+-- Name: assessments_user_answers fk_rails_d7c03ea07b; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.assessments_user_answers
+    ADD CONSTRAINT fk_rails_d7c03ea07b FOREIGN KEY (assessment_result_id) REFERENCES public.assessments_assessment_results(id);
+
+
+--
 -- Name: community_engine_shared_routes fk_rails_dd0482774d; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -2973,6 +2989,7 @@ ALTER TABLE ONLY public.learning_routes_engine_route_steps
 SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
+('20260904000001'),
 ('20260902000002'),
 ('20260902000001'),
 ('20260901000006'),

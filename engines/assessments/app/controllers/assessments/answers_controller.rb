@@ -7,8 +7,10 @@ module Assessments
     def create
       question = @assessment.questions.find(params[:question_id])
 
-      # Once the assessment has been submitted/scored, answering is closed.
-      return head(:unprocessable_entity) if submitted?
+      # The attempt this answer belongs to. Without one the student has not
+      # started (or has already submitted), and there is nothing to answer INTO.
+      @result = in_progress_result
+      return refuse(:no_attempt) if @result.nil?
 
       # Answers are FINAL once given. Previously an answer could be updated in
       # place and re-graded unlimited times, so a student could click each option
@@ -16,7 +18,7 @@ module Assessments
       # (user_id, question_id) is the real guard: it also stops the CONCURRENT
       # variant where parallel POSTs (one per option) each slip past find_by and
       # create a separately-graded row. We create-or-find and never re-grade.
-      existing = UserAnswer.find_by(user: current_user, question: question)
+      existing = UserAnswer.find_by(assessment_result: @result, question: question)
       if existing
         @answer = existing
       else
@@ -24,13 +26,14 @@ module Assessments
           @answer = UserAnswer.create!(
             user: current_user,
             question: question,
+            assessment_result: @result,
             answer: params[:answer]
           )
           grade_answer!(question, @answer)
         rescue ActiveRecord::RecordNotUnique
           # A concurrent request already created (and graded) the answer.
           # Serve that locked row without re-grading.
-          @answer = UserAnswer.find_by!(user: current_user, question: question)
+          @answer = UserAnswer.find_by!(assessment_result: @result, question: question)
         end
       end
 
@@ -42,12 +45,30 @@ module Assessments
 
     private
 
-    # True once an AssessmentResult for this user+assessment has been scored.
-    def submitted?
+    # The caller's OPEN attempt, or nil.
+    #
+    # This replaces `submitted?`, which asked "has this user ever been scored on
+    # this assessment" and answered with `where.not(score: nil).exists?`. A score
+    # of 0.0 is not nil — and 0.0 is exactly what the earlier broken flow
+    # produced — so one scored attempt refused every future answer with 422,
+    # permanently, for that user and that assessment. The refusal then recreated
+    # the state that caused it: no answers saved -> submit counts zero -> another
+    # 0.0 result.
+    #
+    # "Is THIS attempt still open" is the question that was always meant.
+    def in_progress_result
       AssessmentResult
-        .where(user: current_user, assessment: @assessment)
-        .where.not(score: nil)
-        .exists?
+        .where(user: current_user, assessment: @assessment, score: nil)
+        .order(:created_at)
+        .last
+    end
+
+    # A refusal the student can see. Four packages in a row have now been the
+    # client not telling the student the server said no (WP-24 §1, WP-25 §2,
+    # WP-26 §1, and this) — the reason is in the body so the widget can say it.
+    def refuse(reason)
+      render json: { error: reason, message: t("assessments.answers.#{reason}") },
+             status: :unprocessable_entity
     end
 
     def grade_answer!(question, answer)
@@ -62,8 +83,15 @@ module Assessments
       end
     end
 
+    # Eager-loads what `authorize_assessment_owner!` walks on every request:
+    # route_step -> learning_route -> learning_profile. Same bare-`find` defect
+    # WP-25 fixed in AssessmentsController; `strict_loading_by_default` only LOGS
+    # in production, so this was an N+1 on every answer save rather than a
+    # visible failure.
     def set_assessment
-      @assessment = Assessment.find(params[:assessment_id])
+      @assessment = Assessment
+        .includes(route_step: { learning_route: :learning_profile })
+        .find(params[:assessment_id])
     end
 
     def authorize_assessment_owner!

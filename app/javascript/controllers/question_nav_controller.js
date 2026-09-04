@@ -1,13 +1,19 @@
 import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
-  static targets = ["navItem", "questionPanel", "currentIndicator"]
+  static targets = ["navItem", "questionPanel", "currentIndicator", "saveError"]
   static values = {
     currentIndex: { type: Number, default: 0 },
     totalQuestions: Number,
     savedText: { type: String, default: "Saved!" },
     saveText: { type: String, default: "Save Answer" },
-    answeredTemplate: { type: String, default: "__count__ of __total__ answered" }
+    answeredTemplate: { type: String, default: "__count__ of __total__ answered" },
+    // Three different things, three different messages: the attempt is closed,
+    // the student does not own this exam, the network failed.
+    errorClosed: { type: String, default: "" },
+    errorForbidden: { type: String, default: "" },
+    errorNetwork: { type: String, default: "" },
+    errorGeneric: { type: String, default: "" }
   }
 
   connect() {
@@ -103,9 +109,52 @@ export default class extends Controller {
 
         const html = await response.text()
         if (html.includes("turbo-stream")) Turbo.renderStreamMessage(html)
+      } else {
+        // THE `else` THIS NEVER HAD.
+        //
+        // A 422 is a RESOLVED promise with ok:false. Without this branch the
+        // `if` was simply skipped: nothing was added to answeredSet, the button
+        // never said "Guardado", `catch` never ran, and nothing was logged. The
+        // console stayed clean while every answer was thrown away — which is why
+        // this took four packages to find.
+        await this._showSaveError(btn, response)
       }
     } catch (error) {
+      // Network failure is a third thing, and the student should be able to tell
+      // it from a refusal.
       console.error("Save answer failed:", error)
+      this._showSaveMessage(btn, this.errorNetworkValue)
+    }
+  }
+
+  async _showSaveError(btn, response) {
+    let message = this.errorGenericValue
+
+    if (response.status === 403) {
+      message = this.errorForbiddenValue
+    } else if (response.status === 422) {
+      // The server names the reason so the widget does not have to guess.
+      const body = await response.json().catch(() => ({}))
+      message = body.message || this.errorClosedValue
+    }
+
+    this._showSaveMessage(btn, message)
+  }
+
+  _showSaveMessage(btn, message) {
+    if (!message) return
+
+    btn.textContent = message
+    btn.classList.add("question-nav__save--error")
+    clearTimeout(this._buttonResetTimeout)
+    this._buttonResetTimeout = setTimeout(() => {
+      btn.textContent = this.saveTextValue
+      btn.classList.remove("question-nav__save--error")
+    }, 6000)
+
+    if (this.hasSaveErrorTarget) {
+      this.saveErrorTarget.textContent = message
+      this.saveErrorTarget.hidden = false
     }
   }
 

@@ -89,7 +89,40 @@ class ExamStartTest < ApplicationSystemTestCase
     assert_equal 1, Assessments::AssessmentResult.where(user: @user, assessment: @assessment).count
   end
 
+  # §3. A 422 is a RESOLVED promise with ok:false, so `if (response.ok)` was
+  # simply skipped: no answeredSet entry, no "Guardado", no catch, nothing
+  # logged. Every answer was thrown away in silence, which is why the console was
+  # clean while the exam recorded nothing.
+  test "a refused answer save puts a visible message on the page" do
+    visit assessments.assessment_path(@assessment)
+    click_start
+    assert_current_path assessments.take_assessment_path(@assessment), wait: 10
+
+    # Answer normally, then close the attempt underneath the open page — exactly
+    # the state that used to refuse every save with no sign of it.
+    # `update_all`, not `update!`: a validation on the record lazily loads
+    # :assessment and strict_loading raises. The test is about the browser, not
+    # about that association.
+    Assessments::AssessmentResult
+      .where(user: @user, assessment: @assessment, score: nil)
+      .update_all(score: 0.0, updated_at: Time.current)
+
+    save_an_answer
+
+    assert_selector "[data-question-nav-target='saveError']", visible: true, wait: 8
+    assert_equal I18n.t("assessments.answers.no_attempt", locale: :es),
+      find("[data-question-nav-target='saveError']").text,
+      "the student must be told the attempt is closed, not left watching a button that never changes"
+  end
+
   private
+
+  def save_an_answer
+    within "[data-question-nav-target='questionPanel']", match: :first do
+      find("input[type='radio']", match: :first).click
+    end
+    find("[data-action*='question-nav#saveAnswer']", match: :first).click
+  end
 
   def assert_button_present
     assert_selector "form[action='#{assessments.start_assessment_path(@assessment)}'] input[type='submit'], " \
