@@ -36,13 +36,22 @@ module Assessments
       post core.sign_in_path, params: { email: @user.email, password: "password123" }
     end
 
-    test "starting an exam from a Turbo button returns the exam page, not 406" do
+    # WP-26 §1 replaced this assertion. It used to be `assert_response :success`,
+    # which a 200 HTML render passes — and a 200 HTML render is exactly what Turbo
+    # REFUSES for a form submission ("Form responses must redirect to another
+    # location"). So the server was healthy, this test was green, and the button
+    # still did nothing. A status code cannot express "the page navigated";
+    # test/system/exam_start_test.rb asserts that in a real browser.
+    #
+    # What this file can pin is the SHAPE: a POST mutates and redirects with 303,
+    # which is what lets Turbo turn it into a GET.
+    test "starting an exam redirects to the exam with 303, never renders" do
       post assessments.start_assessment_path(@assessment), headers: { "Accept" => TURBO_ACCEPT }
 
-      assert_response :success,
-        "Turbo sends turbo_stream first in Accept; a declared format with no " \
-        "template raises MissingExactTemplate and the student sees nothing happen"
-      assert_equal "text/html", response.media_type
+      assert_response :see_other,
+        "Turbo discards a 2xx HTML form response; only a redirect (303, so the " \
+        "POST becomes a GET) actually moves the student to the exam"
+      assert_redirected_to assessments.take_assessment_path(@assessment)
     end
 
     test "starting an exam creates the result the exam page needs" do
@@ -54,16 +63,36 @@ module Assessments
     test "pressing start twice reuses the unfinished result rather than opening a second" do
       2.times do
         post assessments.start_assessment_path(@assessment), headers: { "Accept" => TURBO_ACCEPT }
-        assert_response :success
+        assert_response :see_other
       end
 
       assert_equal 1, AssessmentResult.where(user: @user, assessment: @assessment).count
     end
 
-    test "a plain HTML request still works" do
+    test "a plain HTML request redirects the same way" do
       post assessments.start_assessment_path(@assessment), headers: { "Accept" => "text/html" }
 
+      assert_response :see_other
+      assert_redirected_to assessments.take_assessment_path(@assessment)
+    end
+
+    # The GET half. A GET must never create — otherwise every refresh, prefetch
+    # and back-button hands out another AssessmentResult.
+    test "the exam page is a GET that creates nothing" do
+      post assessments.start_assessment_path(@assessment), headers: { "Accept" => TURBO_ACCEPT }
+      assert_equal 1, AssessmentResult.where(user: @user, assessment: @assessment).count
+
+      assert_no_difference -> { AssessmentResult.where(user: @user, assessment: @assessment).count } do
+        3.times { get assessments.take_assessment_path(@assessment) }
+      end
       assert_response :success
+    end
+
+    test "the exam page sends a student who has not started back to the intro" do
+      get assessments.take_assessment_path(@assessment)
+
+      assert_redirected_to assessments.assessment_path(@assessment)
+      assert_equal 0, AssessmentResult.where(user: @user, assessment: @assessment).count
     end
 
     # The before_action chain walks assessment -> route_step -> learning_route ->
