@@ -108,6 +108,11 @@ class ExamSubmitGathersTest < ApplicationSystemTestCase
     # which can be a message written mid-gather.
     assert_selector "[data-question-nav-target='saveError']", visible: true,
       text: /pregunta 1/i, wait: 10
+
+    # The button is disabled while the gather is in flight so it cannot be
+    # pressed twice. It must come back afterwards — a student told to fix
+    # something and then left with a dead button is worse off than before.
+    assert_no_selector "[data-question-nav-target='submitButton'][disabled]", wait: 5
   end
 
   private

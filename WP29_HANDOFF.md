@@ -205,8 +205,8 @@ SELECT count(*) FROM (
            WHERE q.question_type <> 0
               OR EXISTS (SELECT 1 FROM jsonb_array_elements_text(q.options) o
                          WHERE lower(btrim(o.value)) = lower(btrim(q.correct_answer))
-                            OR lower(btrim(q.correct_answer)) ~ '^[a-z]$'
-                           AND lower(btrim(o.value)) ~ ('^' || lower(btrim(q.correct_answer)) || '[).:]'))
+                            OR (lower(btrim(q.correct_answer)) ~ '^[a-z]$'
+                                AND lower(btrim(o.value)) ~ ('^' || lower(btrim(q.correct_answer)) || '[).:]')))
          ) / count(*) < a.passing_score
 ) imposibles;
 
@@ -217,6 +217,10 @@ SELECT count(*) FILTER (WHERE status IN (0,1)) AS sin_tocar_borrables,
 FROM learning_routes_engine_route_steps
 WHERE metadata->>'reinforcement' = 'true';
 ```
+
+Las cuatro consultas **se ejecutaron contra la base de datos de desarrollo** antes de escribirlas
+aquí: corren y devuelven columnas (ahí salen ceros porque esa base no tiene esos datos). Lo que
+está verificado es que el SQL es válido, no las cifras — las cifras sólo salen en producción.
 
 El §4 también está como tarea: `bin/rails wp29:census` (sólo lectura) y `bin/rails wp29:cleanup`
 (destructiva). **Es una tarea rake y no una migración a propósito:** `bin/docker-entrypoint:16`
