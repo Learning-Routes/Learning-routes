@@ -99,9 +99,15 @@ class ExamSubmitGathersTest < ApplicationSystemTestCase
     submit_exam
 
     assert_current_path assessments.take_assessment_path(@assessment), wait: 10
-    assert_selector "[data-question-nav-target='saveError']", visible: true, wait: 10
-    assert_match(/pregunta 1/i, find("[data-question-nav-target='saveError']").text,
-      "the student must be told WHICH answer did not save, not just that something failed")
+    # `text:` so Capybara retries until the banner settles. Asserting presence and
+    # then reading `.text` passes the moment the element appears and can read a
+    # message written mid-gather.
+    # The student must be told WHICH answer did not save, not just that something
+    # failed. `text:` so Capybara retries until the banner settles: asserting
+    # presence and then reading `.text` passes the moment the element appears,
+    # which can be a message written mid-gather.
+    assert_selector "[data-question-nav-target='saveError']", visible: true,
+      text: /pregunta 1/i, wait: 10
   end
 
   private

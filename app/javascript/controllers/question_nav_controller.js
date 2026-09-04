@@ -107,7 +107,12 @@ export default class extends Controller {
 
     const failures = []
     for (const btn of pending) {
-      const saved = await this._save(btn)
+      // `announce: false` — during a gather each refused save would otherwise
+      // stomp the banner in turn, so the student would see up to four different
+      // messages flicker past and the last one to land would be whichever
+      // request finished last. The summary below is the message that matters,
+      // and it is written exactly once.
+      const saved = await this._save(btn, { announce: false })
       if (!saved) failures.push(parseInt(btn.dataset.index, 10) + 1)
     }
 
@@ -151,7 +156,7 @@ export default class extends Controller {
   }
 
   // Returns true when the answer is safely on the server.
-  async _save(btn) {
+  async _save(btn, { announce = true } = {}) {
     const index = parseInt(btn.dataset.index, 10)
     const questionId = btn.dataset.questionId
     const url = btn.dataset.saveUrl
@@ -191,19 +196,19 @@ export default class extends Controller {
         // never said "Guardado", `catch` never ran, and nothing was logged. The
         // console stayed clean while every answer was thrown away — which is why
         // this took four packages to find.
-        await this._showSaveError(btn, response)
+        await this._showSaveError(btn, response, announce)
         return false
       }
     } catch (error) {
       // Network failure is a third thing, and the student should be able to tell
       // it from a refusal.
       console.error("Save answer failed:", error)
-      this._showSaveMessage(btn, this.errorNetworkValue)
+      this._showSaveMessage(btn, this.errorNetworkValue, announce)
       return false
     }
   }
 
-  async _showSaveError(btn, response) {
+  async _showSaveError(btn, response, announce = true) {
     let message = this.errorGenericValue
 
     if (response.status === 403) {
@@ -214,11 +219,13 @@ export default class extends Controller {
       message = body.message || this.errorClosedValue
     }
 
-    this._showSaveMessage(btn, message)
+    this._showSaveMessage(btn, message, announce)
   }
 
   // `btn` is null for the submit-time summary, which belongs in the banner only.
-  _showSaveMessage(btn, message) {
+  // `announce` false puts the message on the button only, leaving the banner for
+  // the one summary that describes the whole gather.
+  _showSaveMessage(btn, message, announce = true) {
     if (!message) return
 
     if (btn) {
@@ -231,7 +238,7 @@ export default class extends Controller {
       }, 6000)
     }
 
-    if (this.hasSaveErrorTarget) {
+    if (announce && this.hasSaveErrorTarget) {
       this.saveErrorTarget.textContent = message
       this.saveErrorTarget.hidden = false
     }
