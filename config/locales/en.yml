@@ -1211,6 +1211,7 @@ en:
       save_forbidden: "You cannot answer this exam."
       save_network_error: "Connection lost. Your answer was not saved — try again."
       save_failed: "We could not save that answer. Try again."
+      save_partial: "We could not save your answer to question __questions__, so the exam was not handed in. Fix it and press send again."
       saved: "Saved!"
       answered_template: "__count__ of __total__ answered"
       previous: "Previous"
