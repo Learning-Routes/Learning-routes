@@ -276,6 +276,7 @@ es:
     step_not_available: "Este paso aún no está disponible."
     assessment_not_submitted: "La evaluación aún no ha sido enviada."
     assessment_submitted: "¡Evaluación enviada! Puntuación: %{score}%"
+    assessment_submitted_with_issue: "Tus respuestas se guardaron y se calificaron (%{score}%%). Algo posterior no terminó, pero tu resultado está a salvo."
     review_recorded: "Repaso registrado."
     invalid_rating: "Calificación inválida."
     ai_generation_failed: "La generación de IA falló. Inténtalo de nuevo."
