@@ -452,6 +452,21 @@ export default class extends Controller {
   // check section, the section itself otherwise. Renamed from
   // `_activateQuizInSection`: it no longer receives a section, and a name that
   // says "section" is how the modal ended up scoped to one in the first place.
+  _resetQuizIn(host) {
+    if (!host) return
+
+    for (const [selector, identifier] of [
+      ['[data-controller*="lesson-quiz"]', "lesson-quiz"],
+      ['[data-controller*="lesson-check"]', "lesson-check"]
+    ]) {
+      const el = host.querySelector(selector)
+      if (!el) continue
+
+      const controller = this.application.getControllerForElementAndIdentifier(el, identifier)
+      if (controller && typeof controller.reset === "function") controller.reset()
+    }
+  }
+
   _activateQuizIn(host) {
     if (!host) return
 
@@ -538,6 +553,20 @@ export default class extends Controller {
     this._locked = true
     this._hasQuizController = true
     this._updateContinueButton()
+
+    // A check the student is SENT BACK to must be answerable again.
+    //
+    // Both child controllers latch: lesson-quiz sets `_activated` (so activate()
+    // returns early and the timer never restarts) and lesson-check sets
+    // `_answered`/`_submitted`. After a timeout the options are left
+    // `pointerEvents: none`, so re-showing the modal presented a dead question.
+    // That matters because a wrong answer or a timeout does NOT satisfy the gate
+    // on its own — `BlockAttemptRecorder` sets `completed_at` only when the
+    // answer is correct or after `BlockAttempt::RELEASE_AFTER` failures — so a
+    // student who cannot retry can never reach the release that un-traps them.
+    if (section.dataset.blockSatisfied !== "true") {
+      this._resetQuizIn(modal)
+    }
 
     // Activate the quiz controller inside the modal
     this._activateQuizIn(modal)
