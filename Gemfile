@@ -55,7 +55,7 @@ gem "ruby-vips", "~> 2.3"
 
 # === AI Services ===
 # Unified multi-provider AI API (OpenAI, Anthropic, Gemini) [https://rubyllm.com]
-gem "ruby_llm", "~> 1.1"
+gem "ruby_llm", "~> 1.16"
 
 # HTTP client for ElevenLabs TTS API
 gem "httparty", "~> 0.22"
