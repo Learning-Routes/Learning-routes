@@ -20,7 +20,12 @@ module LearningRoutesEngine
         )
         user_answer.answer = answer_value
 
-        is_correct = normalize_answer(answer_value) == normalize_answer(question.correct_answer)
+        # Was a private `normalize_answer` here — the only grader that handled the
+        # "A)" prefix, while AnswersController did not. One normalizer now, in
+        # Assessments::AnswerNormalizer, next to the vocabulary it describes.
+        is_correct = Assessments::AnswerNormalizer.correct?(
+          given: answer_value, expected: question.correct_answer
+        )
         user_answer.correct = is_correct
         user_answer.feedback = is_correct ? I18n.t("learning_engine.step_quiz.correct") : question.explanation
         user_answer.save!
@@ -113,16 +118,6 @@ module LearningRoutesEngine
         redirect_to learning_routes_engine.route_step_path(@route, @step),
                     alert: t("learning_engine.step_quiz.not_ready")
         nil
-      end
-    end
-
-    def normalize_answer(value)
-      cleaned = value.to_s.strip.downcase
-      # Extract just the letter if the answer starts with A), B), etc.
-      if cleaned.match?(/\A[a-d]\)/)
-        cleaned[0]
-      else
-        cleaned.gsub(/\A"(.+)"\z/, '\1') # strip surrounding quotes
       end
     end
   end
