@@ -16,7 +16,8 @@ module Assessments
         return
       end
 
-      @answers = UserAnswer.where(user: current_user, question: @assessment.questions).includes(:question)
+      # The answers from THIS attempt, not every answer the user has ever given.
+      @answers = @result.user_answers.includes(:question)
     end
 
     def submit
@@ -34,7 +35,11 @@ module Assessments
         if @result.score.present?
           score = :already_scored
         else
-          answers = UserAnswer.where(user: current_user, question: assessment.questions)
+          # THIS attempt's answers. It used to be
+          # `UserAnswer.where(user:, question: assessment.questions)`, which is
+          # every answer the user has ever given to these questions — so every
+          # retake re-counted the first attempt's rows and could never differ.
+          answers = @result.user_answers
           total = assessment.questions.count
           correct = answers.where(correct: true).count
           score = total > 0 ? (correct.to_f / total * 100).round(2) : 0

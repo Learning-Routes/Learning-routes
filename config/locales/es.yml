@@ -1179,6 +1179,7 @@ es:
   # ── Assessments Engine ──
   assessments:
     answers:
+      no_attempt: "Este examen no está abierto. Vuelve a iniciarlo desde la página del examen para responder."
       correct: "Correcto"
       incorrect: "Incorrecto"
     show:
@@ -1196,6 +1197,9 @@ es:
       title_prefix: "Evaluación - "
       question_of: "Pregunta %{current} de %{total}"
       save_answer: "Guardar respuesta"
+      save_forbidden: "No puedes responder este examen."
+      save_network_error: "Se perdió la conexión. Tu respuesta no se guardó: inténtalo de nuevo."
+      save_failed: "No pudimos guardar esa respuesta. Inténtalo de nuevo."
       saved: "¡Guardado!"
       answered_template: "__count__ de __total__ respondidas"
       previous: "Anterior"

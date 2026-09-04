@@ -1179,6 +1179,7 @@ en:
   # ── Assessments Engine ──
   assessments:
     answers:
+      no_attempt: "This exam is not open. Start it again from the exam page to answer."
       correct: "Correct"
       incorrect: "Incorrect"
     show:
@@ -1196,6 +1197,9 @@ en:
       title_prefix: "Assessment - "
       question_of: "Question %{current} of %{total}"
       save_answer: "Save Answer"
+      save_forbidden: "You cannot answer this exam."
+      save_network_error: "Connection lost. Your answer was not saved — try again."
+      save_failed: "We could not save that answer. Try again."
       saved: "Saved!"
       answered_template: "__count__ of __total__ answered"
       previous: "Previous"
