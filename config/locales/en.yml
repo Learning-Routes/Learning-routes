@@ -971,6 +971,16 @@ en:
     open: "Open tutor chat"
     proactive_hint: "Need help?"
   learning_engine:
+    reinforcement:
+      review:
+        title: "Reinforcement: Review Key Concepts"
+        description: "Review the concepts that need strengthening"
+      practice:
+        title: "Reinforcement: Guided Practice"
+        description: "Practice exercises with additional guidance"
+      reassessment:
+        title: "Reinforcement: Re-Assessment"
+        description: "Quick check to verify understanding"
     modules: { free_preview: "Free preview", locked: "Locked until purchase" }
     blocks:
       required:

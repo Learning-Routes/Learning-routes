@@ -971,6 +971,16 @@ es:
     proactive_hint: "¿Necesitas ayuda?"
   # ── Learning Engine ──
   learning_engine:
+    reinforcement:
+      review:
+        title: "Refuerzo: repasa los conceptos clave"
+        description: "Repasa los conceptos que necesitan afianzarse"
+      practice:
+        title: "Refuerzo: práctica guiada"
+        description: "Ejercicios de práctica con apoyo adicional"
+      reassessment:
+        title: "Refuerzo: nueva evaluación"
+        description: "Comprobación rápida para verificar que lo has entendido"
     modules: { free_preview: "Vista previa gratuita", locked: "Bloqueado hasta la compra" }
     blocks:
       required:
