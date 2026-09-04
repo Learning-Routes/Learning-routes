@@ -7,7 +7,8 @@ export default class extends Controller {
     "recordButton", "stopButton", "previewButton", "submitButton",
     "timer", "waveform",
     "stateIdle", "stateRecording", "statePreview",
-    "stateSubmitting", "stateEvaluating", "stateResult"
+    "stateSubmitting", "stateEvaluating", "stateResult",
+    "stateError", "errorMessage"
   ]
 
   static values = {
@@ -117,8 +118,18 @@ export default class extends Controller {
         body: formData
       })
 
+      // A REFUSAL MUST BE VISIBLE.
+      //
+      // This used to `throw`, which the catch below turned into a console.error
+      // and a silent `showState("idle")`: the spinner disappeared and nothing
+      // else changed. The owner reported "nothing at all happened", which is
+      // exactly what a student sees when the server answers `head :forbidden`
+      // from the entitlement gate — correct policy, no outcome on screen. It also
+      // made a refused submission indistinguishable from a dead job or a dead
+      // WebSocket, which is why this went undiagnosed for so long.
       if (!response.ok) {
-        throw new Error(`Upload failed: ${response.status}`)
+        this._showError(response.status)
+        return
       }
       if (this._disconnected) return
 
@@ -127,8 +138,28 @@ export default class extends Controller {
       this.pollEvaluation(data.id)
     } catch (err) {
       console.error("[VoiceRecorder] Submit failed:", err)
-      this.showState("idle")
+      this._showError(null)
     }
+  }
+
+  // 403 is the entitlement gate refusing to spend on a route this student has
+  // not unlocked. It is a different message from "the upload broke", because it
+  // is a different thing and the student can act on it.
+  _showError(status) {
+    // Strings come off the error container's own data attributes rather than a
+    // JSON value: one less thing to escape wrongly, and they are visible in the
+    // markup next to the element that shows them.
+    if (this.hasErrorMessageTarget && this.hasStateErrorTarget) {
+      const messages = this.stateErrorTarget.dataset
+      this.errorMessageTarget.textContent =
+        status === 403 ? (messages.errorLocked || "") : (messages.errorFailed || "")
+    }
+
+    this.showState("error")
+  }
+
+  retryAfterError() {
+    this.showState(this.recordingBlob ? "preview" : "idle")
   }
 
   // ── Evaluation Polling ──
@@ -214,7 +245,7 @@ export default class extends Controller {
   // ── State Management ──
 
   showState(state) {
-    const states = ["idle", "recording", "preview", "submitting", "evaluating", "result"]
+    const states = ["idle", "recording", "preview", "submitting", "evaluating", "result", "error"]
 
     states.forEach(s => {
       const hasMethod = `hasState${s.charAt(0).toUpperCase() + s.slice(1)}Target`

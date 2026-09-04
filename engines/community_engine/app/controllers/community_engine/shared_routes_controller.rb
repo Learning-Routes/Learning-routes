@@ -14,7 +14,8 @@ module CommunityEngine
       ActivityTracker.track!(user: current_user, action: "shared", trackable: @shared_route)
 
       respond_to do |format|
-        format.turbo_stream
+        # No `format.turbo_stream`: no create.turbo_stream.erb exists. See the
+        # note in block_attempts_controller — same false promise, same 406.
         format.json { render json: { share_token: @shared_route.share_token, share_url: @shared_route.share_url } }
         format.html { redirect_back(fallback_location: main_app.root_path, notice: t("community_engine.shared_routes.shared")) }
       end

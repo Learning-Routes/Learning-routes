@@ -53,7 +53,11 @@ module ContentEngine
       @response_type = result[:type]
 
       respond_to do |format|
-        format.turbo_stream
+        # No `format.turbo_stream`: `agent_interact.turbo_stream.erb` does not
+        # exist, unlike its four siblings (deepen, explain_differently,
+        # give_example, simplify), so this could only raise MissingExactTemplate
+        # -> 406. The action currently has NO call sites at all; if it is ever
+        # wired up it needs a template like its siblings, and this line back.
         format.json do
           render json: {
             html: @rendered_html,

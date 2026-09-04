@@ -27,7 +27,11 @@ module LearningRoutesEngine
 
       respond_to do |format|
         format.json { render json: attempt_json(attempt, result) }
-        format.turbo_stream
+        # No `format.turbo_stream`: there is no create.turbo_stream.erb and there
+        # never was, so declaring it could only ever raise MissingExactTemplate
+        # (a subclass of UnknownFormat -> 406). Unreachable today because
+        # `block_submission.js` sends `Accept: application/json` explicitly, but a
+        # declaration that can only fail is a trap for the next caller.
         format.html { redirect_to learning_routes_engine.route_step_path(@route, @step) }
       end
     end

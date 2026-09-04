@@ -29,16 +29,38 @@ module Assessments
         ended_at: nil
       ) { |s| s.started_at = Time.current }
 
+      # HTML ONLY. Starting an exam is a NAVIGATION, not an in-place update.
+      #
+      # `format.turbo_stream` was declared here and `start.turbo_stream.erb` has
+      # never existed — `git log --diff-filter=A` on that path is empty. Both call
+      # sites are a plain `button_to`, which Turbo intercepts and sends with
+      # `Accept: text/vnd.turbo-stream.html, text/html, …`. `respond_to` picked
+      # turbo_stream because it is first in that list, found no template, and
+      # raised `ActionController::MissingExactTemplate` — which subclasses
+      # `ActionController::UnknownFormat` and is therefore mapped to 406 Not
+      # Acceptable. That is why the button did nothing at all.
+      #
+      # Declaring a format you cannot render is the defect; adding a template to
+      # justify the declaration would be building a feature to cover a mistake.
+      # `start.html.erb` is a full page (`content_for(:title)`, its own layout),
+      # which is what the original intent looks like.
       respond_to do |format|
         format.html
-        format.turbo_stream
       end
     end
 
     private
 
+    # Eager-loads the chain every action here walks: route_step -> learning_route
+    # -> learning_profile. This was a bare `find`, and `authorize_assessment_owner!`
+    # — a before_action, so it runs on EVERY request to this controller —
+    # immediately does `@assessment.route_step.learning_route.learning_profile`.
+    # Three lazy hops, which `strict_loading_by_default` only LOGS in production,
+    # so it has been an N+1 on every exam page rather than a visible failure.
     def set_assessment
-      @assessment = Assessment.find(params[:id])
+      @assessment = Assessment
+        .includes(route_step: { learning_route: :learning_profile })
+        .find(params[:id])
     end
 
     def authorize_assessment_owner!
