@@ -338,6 +338,44 @@ module ContentEngine
       }
     end
 
+    # ── Where a block ends ───────────────────────────────────────────
+    #
+    # `split_by_headings` cuts the document on `^##\s`, so a body handed to a
+    # `parse_heading_*` method never contains a `##` line. It routinely contains
+    # `###` sub-headings, fenced code, horizontal rules and trailing prose — and a
+    # parser that appends every unrecognised line to whatever it collected last
+    # eats all of it. In production a scenario's last option revealed the word
+    # "Consequence." followed by an entire mermaid `sequenceDiagram` fence,
+    # flattened onto one line, so the diagram could never draw.
+    #
+    # These three patterns are the terminator. Everything from the first match to
+    # the end of the body is the AFTERMATH: real lesson content the author placed
+    # after the block. It is preserved on the section and rendered below the card
+    # — it is not swallowed, and it does not become a new section, because
+    # `block_attempts.section_index` indexes into the persisted array and a
+    # changed section count silently re-points every recorded attempt.
+    SUB_HEADING     = /\A\#{3,6}\s/
+    FENCE           = /\A(?:```|~~~)/
+    HORIZONTAL_RULE = /\A(?:-{3,}|\*{3,}|_{3,})\s*\z/
+
+    # `:rule` is excluded for flashcards, where `---` is the card separator and
+    # therefore part of the block's own grammar rather than the end of it.
+    def split_aftermath(body, rules: %i[heading fence rule])
+      lines = body.to_s.lines
+      boundary = lines.index { |line| aftermath_boundary?(line.strip, rules) }
+      return [body.to_s, nil] if boundary.nil?
+
+      [lines[0...boundary].join, lines[boundary..].join.strip.presence]
+    end
+
+    def aftermath_boundary?(stripped, rules)
+      return false if stripped.empty?
+
+      (rules.include?(:heading) && stripped.match?(SUB_HEADING)) ||
+        (rules.include?(:fence) && stripped.match?(FENCE)) ||
+        (rules.include?(:rule) && stripped.match?(HORIZONTAL_RULE))
+    end
+
     # ── Interactive block parsers ────────────────────────────────────
 
     # ## Match: title / pairs separated by ==>
@@ -353,11 +391,15 @@ module ContentEngine
 
     # ## Complete: title / sentence with BLANK--word--BLANK tokens
     def parse_heading_fill_blank(title, body)
-      text = body.to_s.strip
+      content, aftermath = split_aftermath(body.to_s.strip)
+      text = content.strip
       blanks = text.scan(/BLANK--(.+?)--BLANK/).flatten
       sentence = text.gsub(/BLANK--(.+?)--BLANK/, "___")
 
-      { type: "fill_blank", title: title.presence || "Complete", sentence: sentence, blanks: blanks, body: body }
+      {
+        type: "fill_blank", title: title.presence || "Complete",
+        sentence: sentence, blanks: blanks, aftermath: aftermath, body: body
+      }
     end
 
     # ## Playground: title / code block with optional test outputs
@@ -367,19 +409,26 @@ module ContentEngine
       language = code_match ? code_match[1] : "python"
       code = code_match ? code_match[2].strip : text
       # Extract expected output after the code block
-      after_code = code_match ? text[code_match.end(0)..].to_s.strip : ""
-      expected = after_code.present? ? after_code : nil
+      # Split what follows the code, not the whole body: the block's OWN fence
+      # would otherwise be read as its terminator.
+      after_code = code_match ? text[code_match.end(0)..].to_s : ""
+      expected_text, aftermath = split_aftermath(after_code)
+      expected = expected_text.strip.presence
 
-      { type: "code_playground", title: title.presence || "Playground", language: language, code: code, expected_output: expected, body: body }
+      {
+        type: "code_playground", title: title.presence || "Playground",
+        language: language, code: code, expected_output: expected,
+        aftermath: aftermath, body: body
+      }
     end
 
     # ## Simulation: title / variables, formula, ranges
     def parse_heading_simulation(title, body)
-      text = body.to_s.strip
+      content, aftermath = split_aftermath(body.to_s.strip)
       variables = []
       formula = nil
 
-      text.lines.each do |line|
+      content.lines.each do |line|
         stripped = line.strip
         if stripped.match?(/\A\w+\s*[:=]/)
           name, rest = stripped.split(/[:=]/, 2)
@@ -392,40 +441,57 @@ module ContentEngine
         end
       end
 
-      { type: "simulation", title: title.presence || "Simulation", variables: variables, formula: formula, body: body }
+      {
+        type: "simulation", title: title.presence || "Simulation",
+        variables: variables, formula: formula, aftermath: aftermath, body: body
+      }
     end
 
     # ## Scenario: title / OPTION A, OPTION B, OPTION C with consequences
     def parse_heading_scenario(title, body)
-      text = body.to_s.strip
+      content, aftermath = split_aftermath(body.to_s.strip)
       situation = []
       options = []
       current_option = nil
 
-      text.lines.each do |line|
+      content.lines.each do |line|
         stripped = line.strip
         if stripped.match?(/\AOPTION\s+[A-Z][:.]?\s*/i)
           label = stripped.sub(/\AOPTION\s+[A-Z][:.]?\s*/i, "").strip
-          current_option = { label: label, consequence: "" }
+          current_option = { label: label, lines: [] }
           options << current_option
         elsif current_option
-          current_option[:consequence] = [current_option[:consequence], stripped].reject(&:empty?).join(" ")
+          # Blank lines are kept: a consequence is rendered as markdown, and
+          # without them two paragraphs become one. Each line is stripped so
+          # stray indentation cannot turn prose into a code block.
+          current_option[:lines] << stripped
         else
           situation << stripped
         end
       end
 
-      { type: "scenario", title: title.presence || "Scenario", situation: situation.join(" "), options: options, body: body }
+      options = options.map do |option|
+        { label: option[:label], consequence: option[:lines].join("\n").strip }
+      end
+
+      {
+        type: "scenario", title: title.presence || "Scenario",
+        situation: situation.join(" ").strip, options: options,
+        aftermath: aftermath, body: body
+      }
     end
 
     # ## Flashcards: title / FRONT/BACK pairs separated by ---
     def parse_heading_flashcards(title, body)
+      # `:rule` excluded: `---` separates cards here, so it belongs to this
+      # block's grammar rather than marking the end of it.
+      content, aftermath = split_aftermath(body.to_s, rules: %i[heading fence])
       cards = []
       current_front = nil
       current_back = nil
       side = :front
 
-      body.to_s.lines.each do |line|
+      content.lines.each do |line|
         stripped = line.strip
         if stripped == "---"
           if current_front && current_back
@@ -452,7 +518,10 @@ module ContentEngine
         cards << { front: current_front.strip, back: current_back.strip }
       end
 
-      { type: "flashcards", title: title.presence || "Flashcards", cards: cards, body: body }
+      {
+        type: "flashcards", title: title.presence || "Flashcards",
+        cards: cards, aftermath: aftermath, body: body
+      }
     end
 
     def split_by_paragraphs(text)
