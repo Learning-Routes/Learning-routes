@@ -1,0 +1,11 @@
+<%# The lesson content the author placed AFTER an interactive block.
+    It used to be swallowed by whatever the parser was collecting last — a
+    mermaid diagram reached a scenario's final consequence flattened onto one
+    line, so it could never draw. It is shown here, below the card, always:
+    a hidden diagram is the bug being fixed, and gating it behind a choice
+    would hide it from anyone who does not interact. %>
+<% if section[:aftermath].present? %>
+  <div class="lesson-content mt-6" data-controller="math-renderer" data-math-renderer-target="content">
+    <%= ContentEngine::MarkdownRenderer.render(section[:aftermath]).html_safe %>
+  </div>
+<% end %>

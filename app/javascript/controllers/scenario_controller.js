@@ -2,7 +2,7 @@ import { Controller } from "@hotwired/stimulus"
 import { submitBlock, announceResult } from "controllers/block_submission"
 
 export default class extends Controller {
-  static targets = ["option", "optionsContainer", "consequence", "consequenceText", "retryContainer"]
+  static targets = ["option", "optionsContainer", "consequence", "consequenceFor", "retryContainer"]
 
   connect() {
     this.chosen = false
@@ -21,7 +21,6 @@ export default class extends Controller {
     this.chosen = true
 
     const btn = event.currentTarget
-    const consequence = btn.dataset.consequence
 
     // Highlight chosen option
     this.optionTargets.forEach(opt => {
@@ -32,8 +31,16 @@ export default class extends Controller {
     btn.style.borderColor = "#a855f7"
     btn.style.background = "rgba(168, 85, 247, 0.12)"
 
-    // Show consequence with animation
-    this.consequenceTextTarget.textContent = consequence
+    // Reveal the consequence rendered for THIS option.
+    //
+    // The text used to arrive in a `data-consequence` attribute and be assigned
+    // with `textContent`, which printed `&quot;` for every double quote and
+    // `**asterisks**` for emphasis, and dropped every newline. The markdown is
+    // rendered server-side now; the controller only unhides the right element
+    // and never touches text content.
+    this.consequenceForTargets.forEach((el) => {
+      el.classList.toggle("hidden", el.dataset.optionIndex !== idx)
+    })
     this.consequenceTarget.classList.remove("hidden")
     this.consequenceTarget.style.opacity = "0"
     this.consequenceTarget.style.transform = "translateY(10px)"
@@ -59,6 +66,7 @@ export default class extends Controller {
     })
 
     // Hide consequence and retry
+    this.consequenceForTargets.forEach((el) => el.classList.add("hidden"))
     this.consequenceTarget.classList.add("hidden")
     this.retryContainerTarget.classList.add("hidden")
   }

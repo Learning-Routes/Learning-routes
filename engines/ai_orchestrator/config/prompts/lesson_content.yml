@@ -201,12 +201,12 @@ system_prompt: |
       (math/physics/economics)
 
     ## Scenario: [title]
-      Describe the situation.
-      OPTION A: First choice
-      Consequence.
-      OPTION B: Second choice
-      Consequence.
-      (decision practice)
+      [describe the situation]
+      OPTION A: [first choice]
+      [what happens if the student picks A]
+      OPTION B: [second choice]
+      [what happens if the student picks B]
+      (decision practice; a consequence may be one or two sentences of prose)
 
     ## Flashcards: [title]
       FRONT: Term

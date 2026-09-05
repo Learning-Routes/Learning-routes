@@ -122,9 +122,11 @@ class ContentEngine::LessonBlockContractTest < ActiveSupport::TestCase
   test "every partial on disk is a declared type" do
     on_disk = Dir.children(PARTIALS_DIR)
                  .grep(/\A_(\w+)\.html\.erb\z/) { Regexp.last_match(1) }
-    # section_audio_player is a shared sub-partial rendered BY other sections, not a
-    # section type of its own.
-    orphans = on_disk - LB.types - %w[section_audio_player]
+    # Shared sub-partials rendered BY other sections, not section types of their
+    # own: the audio player, and `aftermath` — the lesson content an author put
+    # after an interactive block, which the five accumulating parsers used to
+    # swallow and now hand over separately.
+    orphans = on_disk - LB.types - %w[section_audio_player aftermath]
 
     assert_equal [], orphans,
       "#{orphans.inspect} exist as partials but are not declared in LessonBlocks — " \
