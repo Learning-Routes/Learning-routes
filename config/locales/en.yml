@@ -1014,6 +1014,8 @@ en:
       badge_scenario: "SCENARIO"
       badge_simulation: "SIMULATION"
       badge_playground: "PLAYGROUND"
+      scenario_consequence: "What happens if you choose this option"
+      scenario_explore_another: "Explore another option"
     content_unavailable:
       title: "This lesson isn't being generated"
       body: "Your purchase for this route was refunded, so new lessons aren't being created for it. Anything already generated stays available to read."

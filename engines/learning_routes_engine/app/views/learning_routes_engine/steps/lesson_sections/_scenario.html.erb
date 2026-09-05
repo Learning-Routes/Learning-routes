@@ -19,7 +19,6 @@
                 style="background: rgba(168, 85, 247, 0.04); border: 2px solid rgba(168, 85, 247, 0.12); color: var(--color-txt);"
                 data-scenario-target="option"
                 data-option-index="<%= i %>"
-                data-consequence="<%= option[:consequence]&.gsub('"', '&quot;') %>"
                 data-action="click->scenario#choose"
                 tabindex="0"
                 role="button"
@@ -32,18 +31,39 @@
       <% end %>
     </div>
 
-    <!-- Consequence reveal -->
+    <%# Consequence reveal.
+        Rendered SERVER-SIDE, one hidden element per option, addressed by index.
+        It used to travel in a data-consequence attribute whose value was built by
+        gsubbing a double quote into the HTML entity, inside an ERB output tag
+        that then escaped it again. The ampersand became its own entity, the
+        browser decoded the attribute back once, and every consequence containing
+        a double quote showed the six literal characters of the entity to the
+        student. The controller then assigned it with textContent, so emphasis
+        printed as asterisks and every newline was gone. The markdown is rendered
+        here now, and the controller only unhides the matching element. %>
     <div data-scenario-target="consequence" class="mt-4 px-5 py-4 rounded-xl hidden" style="background: rgba(168, 85, 247, 0.06); border: 1px solid rgba(168, 85, 247, 0.15);">
-      <p class="text-sm font-medium mb-1" style="color: #a855f7;">Result:</p>
-      <p data-scenario-target="consequenceText" style="color: var(--color-txt);"></p>
+      <p class="text-sm font-medium mb-1" style="color: #a855f7;"><%= t('learning_engine.blocks.scenario_consequence') %></p>
+      <% section[:options]&.each_with_index do |option, i| %>
+        <div class="lesson-content hidden"
+             data-scenario-target="consequenceFor"
+             data-option-index="<%= i %>"
+             style="color: var(--color-txt);">
+          <%= ContentEngine::MarkdownRenderer.render(option[:consequence]).html_safe %>
+        </div>
+      <% end %>
     </div>
 
-    <!-- Retry button -->
+    <%# A scenario has NO correct option — that is the generator's contract and
+        the grader's (`scenario` is in GATING_TYPES, not GRADABLE_TYPES), and the
+        parser produces no `correct` flag because there is none to produce. The
+        old labels said "Result:" and "Try Again", which imply a verdict and a
+        right answer to reach, and were hardcoded English inside a Spanish UI.
+        Renamed, not regraded. %>
     <div data-scenario-target="retryContainer" class="mt-4 text-center hidden">
       <button class="px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200"
               style="background: rgba(168, 85, 247, 0.1); color: #a855f7; border: 1px solid rgba(168, 85, 247, 0.2);"
               data-action="click->scenario#retry">
-        Try Again
+        <%= t('learning_engine.blocks.scenario_explore_another') %>
       </button>
     </div>
   </div>

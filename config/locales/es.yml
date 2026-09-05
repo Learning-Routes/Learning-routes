@@ -1014,6 +1014,8 @@ es:
       badge_scenario: "ESCENARIO"
       badge_simulation: "SIMULACIÓN"
       badge_playground: "PRÁCTICA"
+      scenario_consequence: "Lo que ocurre si eliges esta opción"
+      scenario_explore_another: "Explorar otra opción"
     content_unavailable:
       title: "Esta lección no se está generando"
       body: "Tu compra de esta ruta fue reembolsada, por lo que no se crean lecciones nuevas para ella. Todo lo que ya se generó sigue disponible para leer."
