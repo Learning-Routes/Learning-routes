@@ -100,7 +100,6 @@ asset_path: /rails/public/assets
 
 builder:
     arch: amd64
-    remote: ssh://root@178.156.240.166
 
 # Self-hosted Postgres on the same Hetzner box as the app.
 # Replaces Neon. App reaches it over Kamal's internal Docker network at
