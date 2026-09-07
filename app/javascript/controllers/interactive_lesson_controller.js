@@ -1021,7 +1021,7 @@ export default class extends Controller {
       this.sectionCounterTarget.textContent = `${this.totalSectionsValue}/${this.totalSectionsValue}`
     }
 
-    // POST to server with section timing + quiz results
+    // POST to server with section timing.
     const completeUrl = this.completeUrlValue
     let serverData = null
 
@@ -1034,13 +1034,15 @@ export default class extends Controller {
             "Accept": "application/json",
             "Content-Type": "application/json"
           },
+          // `quiz_results` used to be sent here and the server decided the
+          // lesson XP rate from it — a `correct` and a `total` the BROWSER
+          // supplied, compared to each other. It reads the persisted step-quiz
+          // result now (WP-32 §3), so sending these would be sending numbers
+          // nothing uses. The counters stay for the celebration screen below,
+          // which is the client's own business.
           body: JSON.stringify({
             section_times: this.sectionTimes,
-            total_time: totalTime,
-            quiz_results: {
-              correct: this._quizCorrect,
-              total: this._quizTotal
-            }
+            total_time: totalTime
           })
         })
 

@@ -1,0 +1,13 @@
+<%# Rendered when a student tries to complete an assessment step whose exam they
+    have not passed. Same shape as show_outstanding_blocks: replace the feedback
+    slot and say what is missing, rather than refusing in silence. %>
+<%= turbo_stream.replace "step-complete-feedback" do %>
+  <div id="step-complete-feedback"
+       style="max-width:640px; margin:16px auto; padding:12px 18px; border-radius:10px;
+              background:var(--color-flash-alert-bg, rgba(176,96,80,0.08));
+              border:1px solid var(--color-flash-alert-border, rgba(176,96,80,0.15));
+              font-family:'DM Sans',sans-serif; font-size:0.82rem;
+              color:var(--color-flash-alert-text, #B06050); text-align:center;">
+    <%= @gate_message %>
+  </div>
+<% end %>

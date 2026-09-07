@@ -1124,7 +1124,14 @@ en:
       passing_score: "Passing Score"
       minutes: "Minutes"
       start: "Start Assessment"
+      retake: "Try the exam again"
+      attempts_left:
+        one: "1 more attempt and we will let you move on anyway."
+        other: "%{count} more attempts and we will let you move on anyway."
       not_generated: "Assessment not yet generated."
+      gate:
+        assessment_required: "Take this exam before finishing the step."
+        assessment_not_passed: "You have not passed this exam yet, so the step cannot be finished from here."
     review:
       badge: "Review"
       memory_strength: "Memory Strength"
@@ -1239,6 +1246,14 @@ en:
       your_answer: "Your answer:"
       back_to_route: "Back to Route"
       continue: "Continue Learning"
+      retake: "Try again"
+      attempts_left:
+        one: "1 more attempt and we will let you move on anyway."
+        other: "%{count} more attempts and we will let you move on anyway."
+      released_title: "You can move on"
+      released_desc: "You have tried enough times. This step is marked as not passed, and it will not hold you back."
+      unanswerable_title: "That one is on us"
+      unanswerable_desc: "This exam has a fault that makes the pass mark unreachable. The step is marked as not passed, and it will not hold you back."
 
   # ── Content Engine ──
   content_engine:

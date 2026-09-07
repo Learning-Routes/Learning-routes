@@ -107,6 +107,21 @@ module LearningRoutesEngine
       translations.dig(locale.to_s, "description") || description
     end
 
+    # Lesson and exercise only, and the two absentees are deliberate.
+    #
+    # `assessment` is not here because its gate is the EXAM, decided by
+    # Assessments::AdvancementPolicy — a step quiz on top of a level-up exam
+    # would be a second, weaker gate in front of the real one. `steps#complete`
+    # asks the policy for those (WP-32 §1); before that it asked nothing at all
+    # and any assessment step completed on request.
+    #
+    # `review` is not here because a review step COMPLETES FREELY, by design. It
+    # has no answer key: it shows the memory-strength ring, the concept map and a
+    # self-reported "how well do you remember this?" rating that feeds FSRS.
+    # There is nothing a student can get wrong, so there is nothing to gate on —
+    # and inventing a pass mark for a self-report would make FSRS worse, not
+    # better. The interactive-block gate in `steps#complete` still applies to a
+    # review step, so a review that ever does carry gating blocks is covered.
     def requires_quiz?
       content_type_lesson? || content_type_exercise?
     end
