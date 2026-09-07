@@ -26,8 +26,11 @@ module Assessments
     # 303 See Other is not cosmetic — it is what tells the browser to follow with
     # a GET. A 302 would re-issue the POST.
     def start
-      existing = AssessmentResult.find_by(user: current_user, assessment: @assessment, score: nil)
-      existing || AssessmentResult.create!(user: current_user, assessment: @assessment)
+      # Read-then-write let two concurrent starts both miss and both insert, and
+      # nothing in the database stopped the second one. One shared lookup, a
+      # `create_or_find_by!` inside it, and a partial unique index behind that —
+      # see AssessmentResult.open_attempt_for! and WP-32 §4.
+      AssessmentResult.open_attempt_for!(user: current_user, assessment: @assessment)
 
       step = @assessment.route_step
       step.update!(status: :in_progress) if step.available?
@@ -48,7 +51,10 @@ module Assessments
     # every back-button and every prefetch. If there is no result in progress the
     # student has not started, so send them to the intro card that has the button.
     def take
-      @result = AssessmentResult.find_by(user: current_user, assessment: @assessment, score: nil)
+      # The SAME lookup `answers#create` uses. This was an unordered `find_by`
+      # while that one ordered by created_at, so with two open attempts the exam
+      # was rendered from one and answered into the other.
+      @result = AssessmentResult.open_attempt_for(user: current_user, assessment: @assessment)
       return redirect_to assessment_path(@assessment), status: :see_other if @result.nil?
 
       @questions = @assessment.questions.order(:created_at)

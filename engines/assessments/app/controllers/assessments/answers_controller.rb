@@ -56,11 +56,12 @@ module Assessments
     # 0.0 result.
     #
     # "Is THIS attempt still open" is the question that was always meant.
+    # "Is THIS attempt still open" is the question that was always meant, and it
+    # is now asked in one place — `assessments#take` used to ask it with an
+    # unordered `find_by` and could render an exam into a different row than the
+    # one the answers landed on.
     def in_progress_result
-      AssessmentResult
-        .where(user: current_user, assessment: @assessment, score: nil)
-        .order(:created_at)
-        .last
+      AssessmentResult.open_attempt_for(user: current_user, assessment: @assessment)
     end
 
     # A refusal the student can see. Four packages in a row have now been the

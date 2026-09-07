@@ -1610,6 +1610,13 @@ CREATE INDEX idx_on_user_id_step_id_4321622576 ON public.learning_routes_engine_
 
 
 --
+-- Name: idx_open_assessment_attempt_per_student; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX idx_open_assessment_attempt_per_student ON public.assessments_assessment_results USING btree (user_id, assessment_id) WHERE (score IS NULL);
+
+
+--
 -- Name: idx_progress_snapshots_unique; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -2990,6 +2997,7 @@ ALTER TABLE ONLY public.learning_routes_engine_route_steps
 SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
+('20260907000001'),
 ('20260904000002'),
 ('20260904000001'),
 ('20260902000002'),
