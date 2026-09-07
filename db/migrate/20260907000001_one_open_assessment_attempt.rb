@@ -47,7 +47,7 @@ class OneOpenAssessmentAttempt < ActiveRecord::Migration[8.1]
   #   WHERE score IS NULL
   #   GROUP BY 1, 2 HAVING COUNT(*) > 1;
   def merge_existing_duplicates!
-    duplicates = select_all(<<~SQL.squish).to_a
+    duplicates = connection.select_all(<<~SQL.squish).to_a
       SELECT user_id, assessment_id
       FROM assessments_assessment_results
       WHERE score IS NULL
@@ -59,12 +59,12 @@ class OneOpenAssessmentAttempt < ActiveRecord::Migration[8.1]
     say "merging #{duplicates.size} split assessment attempt(s)"
 
     duplicates.each do |row|
-      ids = select_values(<<~SQL.squish)
+      ids = connection.select_values(<<~SQL.squish)
         SELECT r.id
         FROM assessments_assessment_results r
         WHERE r.score IS NULL
-          AND r.user_id = #{quote(row["user_id"])}
-          AND r.assessment_id = #{quote(row["assessment_id"])}
+          AND r.user_id = #{q(row['user_id'])}
+          AND r.assessment_id = #{q(row['assessment_id'])}
         ORDER BY (
           SELECT COUNT(*) FROM assessments_user_answers a WHERE a.assessment_result_id = r.id
         ) DESC, r.created_at DESC, r.id DESC
@@ -76,18 +76,20 @@ class OneOpenAssessmentAttempt < ActiveRecord::Migration[8.1]
     end
   end
 
+  def q(value) = connection.quote(value)
+
   def merge_attempt!(loser:, keeper:)
-    execute(<<~SQL.squish)
+    connection.execute(<<~SQL.squish)
       UPDATE assessments_user_answers a
-      SET assessment_result_id = #{quote(keeper)}
-      WHERE a.assessment_result_id = #{quote(loser)}
+      SET assessment_result_id = #{q(keeper)}
+      WHERE a.assessment_result_id = #{q(loser)}
         AND NOT EXISTS (
           SELECT 1 FROM assessments_user_answers k
-          WHERE k.assessment_result_id = #{quote(keeper)}
+          WHERE k.assessment_result_id = #{q(keeper)}
             AND k.question_id = a.question_id
         )
     SQL
-    execute("DELETE FROM assessments_user_answers WHERE assessment_result_id = #{quote(loser)}")
-    execute("DELETE FROM assessments_assessment_results WHERE id = #{quote(loser)}")
+    connection.execute("DELETE FROM assessments_user_answers WHERE assessment_result_id = #{q(loser)}")
+    connection.execute("DELETE FROM assessments_assessment_results WHERE id = #{q(loser)}")
   end
 end
