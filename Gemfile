@@ -118,7 +118,7 @@ end
 gem "redcarpet", "~> 3.6"
 
 # Code syntax highlighting (server-side)
-gem "rouge", "~> 4.4"
+gem "rouge", "~> 5.1"
 
 gem "rails-i18n", "~> 8.1"
 
