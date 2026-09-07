@@ -383,11 +383,22 @@ module LearningRoutesEngine
           @rendered_html = ContentEngine::MarkdownRenderer.render(@content.body)
         end
       when "exercise"
+        # An exercise IS a lesson whose blocks are practice (WP-35 §3). Its body
+        # comes from the same `lesson_content` prompt, with the same `## Match`,
+        # `## Complete` and `## Scenario` blocks; `stage_section_parsing!`
+        # persists them and `outstanding_blocks_for` counts them. This branch
+        # resolved no sections and the view drew none, so the gate refused
+        # `complete` naming section indices that were not on the page — and the
+        # student saw raw `term ==> definition` lines under a JavaScript editor
+        # nothing had asked for.
         @content = ContentEngine::AiContent.where(route_step: @step).by_type(:exercise).first
         unless @content
           request_content_generation!
         end
-        @rendered_html = ContentEngine::MarkdownRenderer.render(@content.body) if @content
+        if @content
+          @sections = ContentEngine::SectionResolver.call(@step).map(&:deep_symbolize_keys)
+          @rendered_html = ContentEngine::MarkdownRenderer.render(@content.body)
+        end
       when "assessment"
         @assessment = Assessments::Assessment.find_by(route_step: @step)
         if @assessment.nil? && generation_authorized?

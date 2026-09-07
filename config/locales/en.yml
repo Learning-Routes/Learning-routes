@@ -1108,11 +1108,6 @@ en:
         tip: ["Pro tip", "Remember this"]
     exercise:
       badge: "Exercise"
-      reset: "Reset"
-      submit: "Submit Answer"
-      hint: "Get Hint"
-      previous_submissions: "Previous Submissions"
-      score: "Score:"
       no_content: "No exercise content available yet."
     assessment:
       badge: "Assessment"
