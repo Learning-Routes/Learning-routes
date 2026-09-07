@@ -48,10 +48,7 @@ module Assessments
     def latest_scored_result(user:, assessment:)
       AssessmentResult
         .includes(assessment: :questions)
-        .where(user: user, assessment: assessment)
-        .where.not(score: nil)
-        .order(:created_at)
-        .last
+        .latest_scored_for(user: user, assessment: assessment)
     end
 
     # An escape valve is not a pass. Recorded on the step so a progress report,

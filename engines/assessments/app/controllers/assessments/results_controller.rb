@@ -18,6 +18,13 @@ module Assessments
 
       # The answers from THIS attempt, not every answer the user has ever given.
       @answers = @result.user_answers.includes(:question)
+
+      # The page must say what the FLASH said. `submit` told a released or
+      # unanswerable student they may continue, and then this page told the same
+      # student "you need 70% to pass" and offered no way to try again — the
+      # client contradicting the server, which is the defect this project keeps
+      # finding. The policy is asked once, here, and the view reads the answer.
+      @decision = AdvancementPolicy.new(result: @result).decide
     end
 
     def submit
@@ -141,14 +148,13 @@ module Assessments
         # An escape valve is not a pass. Recorded on the step so a progress
         # report, and anything built on it later, can tell "earned it" from "we
         # stopped blocking them".
-        unless decision.passed?
-          results << isolate("record release") do
-            step.merge_metadata!(
-              "advanced_without_passing" => true,
-              "advanced_reason" => decision.reason.to_s,
-              "advanced_at" => Time.current.utc.iso8601
-            )
-          end
+        #
+        # Through StepAdvancement, not inline: `steps#complete` reaches the same
+        # three outcomes by a different door (WP-32 §1) and has to leave the same
+        # mark. Two copies of these three keys would have drifted the first time
+        # one of them learned a fourth.
+        results << isolate("record release") do
+          StepAdvancement.record!(step: step, decision: decision)
         end
 
         results << isolate("complete step") do

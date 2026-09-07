@@ -8,7 +8,10 @@ module Assessments
 
     def show
       @questions_count = @assessment.questions.count
-      @existing_result = AssessmentResult.find_by(user: current_user, assessment: @assessment)
+      # The attempt in progress, or failing that the last one that was scored —
+      # not whichever row `find_by` happened to return. Same lookup the step page
+      # uses, so the two pages cannot show a student different histories.
+      @existing_result = AssessmentResult.current_for(user: current_user, assessment: @assessment)
       @step = @assessment.route_step
       @route = @step.learning_route
     end

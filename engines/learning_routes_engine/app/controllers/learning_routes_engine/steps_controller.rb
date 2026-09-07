@@ -385,9 +385,21 @@ module LearningRoutesEngine
         elsif @assessment.nil?
           @content_unavailable = true
         end
-        @existing_result = Assessments::AssessmentResult.find_by(
-          user: current_user, assessment: @assessment
-        ) if @assessment
+        if @assessment
+          # Was `find_by(user:, assessment:)` — no score filter, no order, so an
+          # ARBITRARY row. Once that row happened to be a scored one the page
+          # showed the score ring and hid the only Start button, `failed_attempts`
+          # could never reach RELEASE_AFTER, and the escape valve WP-29 built was
+          # unreachable. WP-32 §2.
+          @existing_result = Assessments::AssessmentResult.current_for(
+            user: current_user, assessment: @assessment
+          )
+          # What the retake card says: how many attempts are left before the
+          # valve opens, and whether it already has.
+          @assessment_decision = Assessments::StepAdvancement.decide_for(
+            user: current_user, step: @step
+          )
+        end
       when "review"
         @retrievability = SpacedRepetition.new.retrievability(@step)
         @review_steps = @route.route_steps.completed_steps.where.not(id: @step.id).order(:position).limit(20)

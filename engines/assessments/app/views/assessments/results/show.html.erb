@@ -9,11 +9,24 @@
         <%= @result.score.round(0) %>%
       </span>
     </div>
+    <%# Four outcomes, four things to say — the same four `submit` puts in the
+        flash. "Keep going / you need N%" is only true for the one outcome that
+        is still blocking the student: telling a RELEASED or UNANSWERABLE student
+        they need a pass mark contradicts the flash that just told them they may
+        continue, and contradicts the step, which has already advanced. %>
+    <%
+      title_key, desc_key = case @decision&.reason
+      when :passed       then ["congrats", "passed_desc"]
+      when :released     then ["released_title", "released_desc"]
+      when :unanswerable then ["unanswerable_title", "unanswerable_desc"]
+      else                    ["keep_going", "need_score"]
+      end
+    %>
     <h1 class="text-xl font-bold mb-1" style="color:var(--color-txt);">
-      <%= @result.passed? ? t("assessments.results.congrats") : t("assessments.results.keep_going") %>
+      <%= t("assessments.results.#{title_key}") %>
     </h1>
     <p class="text-sm" style="color:var(--color-sub);">
-      <%= @result.passed? ? t("assessments.results.passed_desc") : t("assessments.results.need_score", score: @assessment.passing_score) %>
+      <%= t("assessments.results.#{desc_key}", score: @assessment.passing_score) %>
     </p>
   </div>
 
@@ -63,6 +76,22 @@
   </div>
 
   <!-- Actions -->
+  <%# The retake, on the page the student is actually looking at after failing.
+      This page linked only to the route or the next step, so the flash said
+      "try again" and there was nowhere to try again from (WP-32 §2). Offered
+      only while the decision is still BLOCKING: once released, passed or
+      unanswerable the step has advanced and the way forward is Continue. %>
+  <% if @decision&.blocked? %>
+    <div class="mt-8 text-center">
+      <%= button_to t("assessments.results.retake"), assessments.start_assessment_path(@assessment),
+          method: :post,
+          class: "rounded-lg px-6 py-3 text-sm font-semibold text-white bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-400 hover:to-purple-400 transition" %>
+      <p class="text-xs mt-3" style="color:var(--color-muted);">
+        <%= t("assessments.results.attempts_left", count: @decision.attempts_left) %>
+      </p>
+    </div>
+  <% end %>
+
   <div class="flex items-center justify-center gap-4 mt-8">
     <%= link_to t("assessments.results.back_to_route"), learning_routes_engine.route_path(@route),
         class: "rounded-lg px-4 py-2.5 text-sm font-medium transition",
