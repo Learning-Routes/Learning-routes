@@ -150,9 +150,20 @@ module LearningRoutesEngine
       end
     end
 
+    # Eager-loads the `step_quiz` that `complete` traverses on every request
+    # (`quiz_passed_by?` -> `step_quiz&.passed_by?`) and that `show` renders
+    # through. This was a bare `find`, so that traversal was a lazy load on a
+    # strict_loading record: a 500 in development and, because production
+    # configures the violation as `:log`, a silent N+1 on the busiest write path
+    # in the app.
+    #
+    # The suite did not catch it and still would not without
+    # StepQuizEagerLoadingTest, which pins the `:n_plus_one_only` mode
+    # development and production actually run — `test.rb`'s `:all` is the LOOSER
+    # setting for this association, not the stricter one its comment assumes.
     def set_route_and_step
       @route = LearningRoute.includes(:learning_profile).find(params[:route_id])
-      @step = @route.route_steps.find(params[:id])
+      @step = @route.route_steps.includes(:step_quiz).find(params[:id])
     end
 
     def authorize_module_access!
