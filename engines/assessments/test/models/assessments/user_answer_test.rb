@@ -46,6 +46,13 @@ module Assessments
     # anti-cheat rule and the retake feature cannot both be true.
     test "a different attempt may answer the same question" do
       UserAnswer.create!(user: @user, question: @question, assessment_result: @attempt, answer: "3")
+      # The first attempt is SCORED before the retake opens. It used to be left
+      # open, which is a state that can no longer exist: WP-32 §4 added a partial
+      # unique index allowing one open attempt per (user, assessment), because
+      # two of them split a student's answers across rows and scored the empty
+      # one. A real retake always follows a submitted attempt. The property this
+      # test asserts is untouched.
+      @attempt.update!(score: 0)
       retake = AssessmentResult.create!(user: @user, assessment: @assessment)
 
       second = UserAnswer.new(user: @user, question: @question, assessment_result: retake, answer: "4")

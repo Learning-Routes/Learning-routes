@@ -1124,7 +1124,14 @@ es:
       passing_score: "Puntaje mínimo"
       minutes: "Minutos"
       start: "Iniciar evaluación"
+      retake: "Volver a intentar el examen"
+      attempts_left:
+        one: "1 intento más y te dejaremos seguir de todos modos."
+        other: "%{count} intentos más y te dejaremos seguir de todos modos."
       not_generated: "Evaluación aún no generada."
+      gate:
+        assessment_required: "Haz esta evaluación antes de terminar el paso."
+        assessment_not_passed: "Todavía no has superado esta evaluación, así que el paso no puede terminarse desde aquí."
     review:
       badge: "Repaso"
       memory_strength: "Fortaleza de memoria"
@@ -1239,6 +1246,14 @@ es:
       your_answer: "Tu respuesta:"
       back_to_route: "Volver a la ruta"
       continue: "Seguir aprendiendo"
+      retake: "Intentarlo otra vez"
+      attempts_left:
+        one: "1 intento más y te dejaremos seguir de todos modos."
+        other: "%{count} intentos más y te dejaremos seguir de todos modos."
+      released_title: "Puedes continuar"
+      released_desc: "Ya lo has intentado suficientes veces. El paso queda marcado como no superado y no va a retenerte."
+      unanswerable_title: "Esto es cosa nuestra"
+      unanswerable_desc: "Esta evaluación tiene un fallo que hace imposible alcanzar la nota de aprobado. El paso queda marcado como no superado y no va a retenerte."
 
   # ── Content Engine ──
   content_engine:

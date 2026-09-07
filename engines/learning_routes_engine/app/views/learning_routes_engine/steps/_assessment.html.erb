@@ -40,6 +40,29 @@
 
         <%= link_to t('learning_engine.assessment.view_results'), assessments.result_path(@existing_result),
             style: "display:inline-flex; align-items:center; gap:0.5rem; border-radius:14px; padding:0.75rem 1.75rem; font-family:'DM Sans',sans-serif; font-size:0.9375rem; font-weight:600; color:#fff; text-decoration:none; background:linear-gradient(135deg, #6366f1, #8b5cf6); transition:all 0.25s; box-shadow:0 4px 12px rgba(99,102,241,0.25);" %>
+
+        <%# THE RETAKE. This branch used to end here, and the only Start button in
+            this partial lived in the `else` below — so a student who had been
+            scored once saw "No superado" and no way to try again, forever. That
+            is what made RELEASE_AFTER unreachable and left the header's
+            "Completar paso" as the only way forward (WP-32 §1, §2).
+
+            Shown whenever the step is not completed, whatever the score: a
+            student who passed may still want another run, and one who failed
+            must be able to. A COMPLETED step shows nothing — there is nothing
+            left to earn. %>
+        <% unless @step.completed? %>
+          <div style="margin-top:1.5rem; padding-top:1.5rem; border-top:1px solid var(--color-border-subtle);">
+            <%= button_to t('learning_engine.assessment.retake'), assessments.start_assessment_path(@assessment),
+                method: :post,
+                style: "width:100%; border-radius:14px; padding:0.875rem 1rem; font-family:'DM Sans',sans-serif; font-size:0.9375rem; font-weight:600; color:var(--color-txt); border:1px solid var(--color-border-subtle); cursor:pointer; background:var(--color-tint); transition:all 0.25s;" %>
+            <% if @assessment_decision&.blocked? %>
+              <p style="font-size:0.8125rem; color:var(--color-muted); margin:0.75rem 0 0;">
+                <%= t('learning_engine.assessment.attempts_left', count: @assessment_decision.attempts_left) %>
+              </p>
+            <% end %>
+          </div>
+        <% end %>
       </div>
     <% else %>
       <%# Start assessment %>

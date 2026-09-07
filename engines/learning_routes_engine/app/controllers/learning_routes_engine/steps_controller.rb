@@ -67,6 +67,19 @@ module LearningRoutesEngine
         return
       end
 
+      # Gate assessment steps on the SAME decision `results#submit` asks for.
+      #
+      # Neither gate above can see an exam. `outstanding_blocks_for` is empty
+      # because SectionResolver finds no AiContent for an assessment step, and
+      # `requires_quiz?` is lesson/exercise only. So this action used to complete
+      # an assessment step unconditionally — the side door WP-29 left open.
+      if @step.content_type_assessment?
+        decision = Assessments::StepAdvancement.decide_for(user: current_user, step: @step)
+        return refuse_assessment_advance(decision) unless decision&.advance?
+      end
+
+      already_completed = @step.completed?
+
       tracker = RouteProgressTracker.new(@route)
       # Worst rating across this step's graded blocks (WP10_DESIGN.md §4). Released
       # attempts contribute nothing — see BlockAttempt#fsrs_rating.
@@ -74,8 +87,16 @@ module LearningRoutesEngine
       @xp_result = tracker.xp_result
       finish_study_session!
 
-      # Award lesson-specific XP (on top of step_complete XP from tracker)
-      lesson_xp = award_lesson_xp!
+      # Released and unanswerable advance the student while recording that they
+      # did NOT pass. Written by the same helper `results#submit` uses, so the two
+      # doors cannot drift apart.
+      Assessments::StepAdvancement.record!(step: @step, decision: decision) if decision
+
+      # Award lesson-specific XP (on top of step_complete XP from tracker).
+      # NOT on a replay: `complete_step!` returns early for a step that is already
+      # completed, but this ran anyway and `XpService.award` has no dedupe on
+      # source_id, so every repeat POST paid again.
+      lesson_xp = already_completed ? nil : award_lesson_xp!
 
       next_available = @route.route_steps
         .where("position > ?", @step.position)
@@ -105,9 +126,44 @@ module LearningRoutesEngine
 
     private
 
+    # The third refusal in this action, in the same three formats as the block
+    # gate and the quiz gate above, and for the same reason: a student who is
+    # told nothing tries again, and a client that is told nothing celebrates.
+    #
+    # Two things can be missing, and they are not the same thing to say: there is
+    # no scored attempt at all, or there is one and it did not earn a pass.
+    def refuse_assessment_advance(decision)
+      reason = decision.nil? ? :assessment_required : :assessment_not_passed
+      message = t("learning_engine.assessment.gate.#{reason}",
+                  attempts_left: decision&.attempts_left.to_i)
+
+      respond_to do |format|
+        format.json do
+          render json: { assessment_required: true, reason: reason, message: message },
+                 status: :unprocessable_entity
+        end
+        format.turbo_stream do
+          @gate_message = message
+          render :show_assessment_gate
+        end
+        format.html { redirect_to route_step_path(@route, @step), notice: message }
+      end
+    end
+
+    # Eager-loads the `step_quiz` that `complete` traverses on every request
+    # (`quiz_passed_by?` -> `step_quiz&.passed_by?`) and that `show` renders
+    # through. This was a bare `find`, so that traversal was a lazy load on a
+    # strict_loading record: a 500 in development and, because production
+    # configures the violation as `:log`, a silent N+1 on the busiest write path
+    # in the app.
+    #
+    # The suite did not catch it and still would not without
+    # StepQuizEagerLoadingTest, which pins the `:n_plus_one_only` mode
+    # development and production actually run — `test.rb`'s `:all` is the LOOSER
+    # setting for this association, not the stricter one its comment assumes.
     def set_route_and_step
       @route = LearningRoute.includes(:learning_profile).find(params[:route_id])
-      @step = @route.route_steps.find(params[:id])
+      @step = @route.route_steps.includes(:step_quiz).find(params[:id])
     end
 
     def authorize_module_access!
@@ -340,9 +396,21 @@ module LearningRoutesEngine
         elsif @assessment.nil?
           @content_unavailable = true
         end
-        @existing_result = Assessments::AssessmentResult.find_by(
-          user: current_user, assessment: @assessment
-        ) if @assessment
+        if @assessment
+          # Was `find_by(user:, assessment:)` — no score filter, no order, so an
+          # ARBITRARY row. Once that row happened to be a scored one the page
+          # showed the score ring and hid the only Start button, `failed_attempts`
+          # could never reach RELEASE_AFTER, and the escape valve WP-29 built was
+          # unreachable. WP-32 §2.
+          @existing_result = Assessments::AssessmentResult.current_for(
+            user: current_user, assessment: @assessment
+          )
+          # What the retake card says: how many attempts are left before the
+          # valve opens, and whether it already has.
+          @assessment_decision = Assessments::StepAdvancement.decide_for(
+            user: current_user, step: @step
+          )
+        end
       when "review"
         @retrievability = SpacedRepetition.new.retrievability(@step)
         @review_steps = @route.route_steps.completed_steps.where.not(id: @step.id).order(:position).limit(20)
@@ -401,12 +469,7 @@ module LearningRoutesEngine
     def award_lesson_xp!
       return unless @step.content_type == "lesson"
 
-      quiz_results = params[:quiz_results]
-      all_correct = quiz_results.present? &&
-                    quiz_results[:correct].to_i > 0 &&
-                    quiz_results[:correct].to_i == quiz_results[:total].to_i
-
-      source = all_correct ? "lesson_perfect" : "lesson_complete"
+      source = step_quiz_perfect? ? "lesson_perfect" : "lesson_complete"
       amount = XpService::XP_VALUES[source.to_sym] || 10
 
       XpService.award(current_user, amount, source, source_id: @step.id.to_s)
@@ -414,6 +477,24 @@ module LearningRoutesEngine
     rescue => e
       Rails.logger.warn("[StepsController] Lesson XP award failed: #{e.message}")
       nil
+    end
+
+    # Did this student actually answer every question of this step's quiz
+    # correctly?
+    #
+    # This used to be `params[:quiz_results]` — a `correct` and a `total` the
+    # BROWSER sent, compared to each other. Anyone could post
+    # `{correct: 1, total: 1}` and be paid the perfect-lesson rate, and the
+    # honest client sent them on every replay too. The step quiz persists an
+    # AssessmentResult with a real score; that is the only copy worth reading.
+    def step_quiz_perfect?
+      quiz = Assessments::Assessment.find_by(route_step: @step, assessment_type: :step_quiz)
+      return false if quiz.nil?
+
+      Assessments::AssessmentResult
+        .where(user: current_user, assessment: quiz)
+        .where("score >= ?", 100)
+        .exists?
     end
 
     def find_or_start_study_session

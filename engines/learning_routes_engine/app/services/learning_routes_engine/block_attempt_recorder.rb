@@ -18,9 +18,7 @@ module LearningRoutesEngine
 
     def call
       BlockAttempt.transaction do
-        attempt = BlockAttempt.find_or_create_by!(identity) do |record|
-          record.block_type = @block_type
-        end
+        attempt = find_or_open_attempt
         attempt.lock!
 
         reset_stale_attempt!(attempt)
@@ -31,6 +29,31 @@ module LearningRoutesEngine
     end
 
     private
+
+    # The student's one attempt row for this section, whoever created it.
+    #
+    # Two callers can arrive at once — two fast drops on a drag-drop board — and
+    # there are two ways the second one can be refused:
+    #
+    #   RecordInvalid    `validates :section_index, uniqueness:` on BlockAttempt
+    #                    sees the row and raises before the database is asked.
+    #   RecordNotUnique  the validation's SELECT missed an uncommitted row and
+    #                    `idx_block_attempts_unique_per_section` refuses the
+    #                    insert.
+    #
+    # `find_or_create_by!` rescued neither, so the loser got a 500 on a request
+    # whose only job is to record what the student did. `create_or_find_by!`
+    # handles the second (it rescues RecordNotUnique and re-reads); the first is
+    # rescued here. It also means the insert is always attempted, so the
+    # validation path is exercised by every repeat submission rather than by a
+    # race nobody can schedule — the guarantee is tested, not hoped for.
+    def find_or_open_attempt
+      BlockAttempt.create_or_find_by!(identity) do |record|
+        record.block_type = @block_type
+      end
+    rescue ActiveRecord::RecordInvalid
+      BlockAttempt.find_by!(identity)
+    end
 
     def identity
       { user: @user, route_step: @route_step, section_index: @section_index }

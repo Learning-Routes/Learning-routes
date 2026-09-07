@@ -80,7 +80,13 @@
                  data-lesson-route-id-value="<%= @route&.id %>">
               <span style="font-size:0.75rem; font-family:'DM Mono',monospace; color:var(--color-muted);" data-lesson-target="timer">0:00</span>
 
-              <% if @step && !@step.completed? %>
+              <%# NOT on an assessment step. This layout is used by the exam page and
+                  the results page too (both set @step = @assessment.route_step), so
+                  "Completar paso" sat one click away from a 0% — and `steps#complete`
+                  had no gate that could see an exam. The POST is gated now; the button
+                  is gone from the pages where it never made sense, because an exam
+                  step has its own verbs: Start, Submit, Retake. %>
+              <% if @step && !@step.completed? && !@step.content_type_assessment? %>
                 <div id="step_complete_btn">
                   <%= button_to t("layout.learning.complete_step"),
                       learning_routes_engine.complete_route_step_path(@route, @step),
