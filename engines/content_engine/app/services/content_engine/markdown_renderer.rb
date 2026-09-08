@@ -16,9 +16,19 @@ module ContentEngine
 
         # Mermaid diagrams: render as interactive div inside a styled container
         if language.downcase == "mermaid"
-          diagram_label = ERB::Util.html_escape(I18n.t("learning_engine.lesson.diagram_label", default: "DIAGRAM"))
+          # The SAME two labels `_visual.html.erb` passes. A fenced ```mermaid
+          # block inside a concept body — or inside the WP-24 §2 aftermath, which
+          # renders through this path — used to fail to an icon with an empty
+          # sentence and no disclosure, because the controller read
+          # `fallbackLabelValue` and found nothing. They must also survive
+          # `sanitize` below, which is why both names are on the allow-list.
+          diagram_label = ERB::Util.html_escape(I18n.t("learning_engine.lesson.diagram_label"))
+          fallback_label = ERB::Util.html_escape(I18n.t("learning_engine.lesson.diagram_unavailable"))
+          source_label = ERB::Util.html_escape(I18n.t("learning_engine.lesson.diagram_source"))
           return <<~HTML
-            <div class="mermaid-container" data-controller="mermaid-diagram">
+            <div class="mermaid-container" data-controller="mermaid-diagram"
+                 data-mermaid-diagram-fallback-label-value="#{fallback_label}"
+                 data-mermaid-diagram-source-label-value="#{source_label}">
               <span class="mermaid-label">#{diagram_label}</span>
               <div class="mermaid" data-mermaid-diagram-target="chart">#{ERB::Util.html_escape(code)}</div>
             </div>
@@ -101,6 +111,8 @@ module ContentEngine
                        data-copy-code-target data-copy-code-copied-text-value
                        data-correct data-lesson-check-target
                        data-mermaid-diagram-target
+                       data-mermaid-diagram-fallback-label-value
+                       data-mermaid-diagram-source-label-value
                        colspan rowspan viewBox fill points d stroke stroke-width
                        stroke-linecap stroke-linejoin width height]
       )

@@ -25,6 +25,11 @@ export const DEFAULTS = Object.freeze({
   arcSpan: Math.PI * 0.9,
   // The stage's usable width; the spine wraps inside it.
   stageWidth: 720,
+  // The centre circle the stage label sits in. `route_journey_controller.js`
+  // draws it at r 52 and pulses it to 62; the spine must clear the LARGER one or
+  // the pulse eats its first row. The hub is not a satellite, so nothing that
+  // only looks at satellites can see a collision with it.
+  hubRadius: 62,
   // Never shrink a satellite past this — a circle with a label has a floor.
   minSatelliteRadius: 22
 });
@@ -60,7 +65,10 @@ export function layoutStage(count, overrides = {}) {
   const { ringRadius, gap, arcSpan, stageWidth } = options;
 
   if (count <= 0) {
-    return { satellites: [], capacity: 0, satelliteRadius: options.satelliteRadius, box: emptyBox() };
+    return {
+      satellites: [], capacity: 0, satelliteRadius: options.satelliteRadius,
+      hubRadius: options.hubRadius, box: emptyBox()
+    };
   }
 
   const r = fittedSatelliteRadius(count, options);
@@ -90,8 +98,19 @@ export function layoutStage(count, overrides = {}) {
   if (overflow > 0) {
     const slot = r * 2 + gap;
     const columns = Math.max(1, Math.min(overflow, Math.floor(stageWidth / slot)));
+
+    // Where the spine may start.
+    //
+    // It used to be `Math.max(ringBottom, ringRadius * Math.sin(-Math.PI / 2)) + slot`,
+    // whose second term is always -ringRadius and therefore never won — so it
+    // reduced to `ringBottom + slot`. The ring spans -171° to -9°, so its LOWEST
+    // satellites sit at y ≈ -29, not at the bottom of the circle, and the first
+    // spine row landed at y ≈ +29: on top of the hub and across the stage label.
+    //
+    // Two constraints now, and the row starts below both: clear of the ring's
+    // lowest satellite, and clear of the hub.
     const ringBottom = ringRadius * Math.sin(startAngle + arcSpan);
-    const firstRow = Math.max(ringBottom, ringRadius * Math.sin(-Math.PI / 2)) + slot;
+    const firstRow = Math.max(ringBottom + slot, options.hubRadius + gap + r);
 
     for (let k = 0; k < overflow; k++) {
       const column = k % columns;
@@ -108,7 +127,15 @@ export function layoutStage(count, overrides = {}) {
     }
   }
 
-  return { satellites, capacity, satelliteRadius: r, box: boxFor(satellites) };
+  return {
+    satellites,
+    capacity,
+    satelliteRadius: r,
+    // Reported so callers and tests use the radius the layout cleared, rather
+    // than a second copy of the number that can drift from it.
+    hubRadius: options.hubRadius,
+    box: boxFor(satellites)
+  };
 }
 
 // The stage box every satellite must fit inside. The caller sizes the element

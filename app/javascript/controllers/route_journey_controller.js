@@ -251,6 +251,9 @@ export default class extends Controller {
 
     // Center label (HTML overlay)
     const centerLabel = document.createElement("div")
+    // Named so a test can find it: the hub is not a satellite, so nothing else
+    // in the DOM identifies the thing the spine used to be drawn on top of.
+    centerLabel.className = "journey-center-label"
     centerLabel.style.cssText = "position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); text-align:center; z-index:5; pointer-events:none;"
 
     if (locked) {

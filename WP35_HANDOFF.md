@@ -236,8 +236,11 @@ so "every satellite is inside the stage" holds by construction.
 | 1 | 1 | 0 | 40 | 80×80 |
 | 7 | 7 | 0 | 30 | 425×216 |
 | 8 | 8 | 0 | 25 | 415×202 |
-| 20 | 9 | 11 | 22 | 624×258 |
-| 43 | 9 | 34 | 22 | 682×374 |
+| 20 | 9 | 11 | 22 | 624×327 |
+| 43 | 9 | 34 | 22 | 682×443 |
+
+(The 20 and 43 boxes are taller than the first version of this table reported —
+see "The spine started on top of the hub" below.)
 
 Shown load-bearing by restoring the single-arc version: **collisions at 7, 8, 20 AND 43** — the old
 layout failed at seven, not eight.
@@ -260,6 +263,44 @@ the triggering step in the same module; ordering by position IS the clustering, 
 carry `data-reinforcement` so the view can say so. Every satellite is a tab stop in route order
 with the full title in both `aria-label` and `title`, and the layout's order is asserted so that
 stays true. `prefers-reduced-motion` was already honoured and still is.
+
+### The spine started on top of the hub
+
+Caught in review of `11c9756`, not by me. The first spine row was
+`Math.max(ringBottom, ringRadius * Math.sin(-Math.PI / 2)) + slot`, whose second
+term is always `-ringRadius` and therefore never won — so it reduced to
+`ringBottom + slot`. The ring spans -171° to -9°, so its LOWEST satellites sit at
+y ≈ -29, not at the bottom of the circle, and the first spine row landed at
+y ≈ +29: **inside the centre circle** (r 52, pulsing to 62) and across the stage
+label.
+
+```
+n=10  firstSpineY=29.06  overlapping the hub: #9(0,29)
+n=20  firstSpineY=29.06  overlapping the hub: #13(-58,29) #14(0,29) #15(58,29)
+n=43  firstSpineY=29.06  overlapping the hub: #14(-29,29) #15(29,29)
+```
+
+**Every count above ring capacity did it, and nothing in the suite could see it,
+because the hub is not a satellite** — both overlap tests compared satellites to
+each other. `DEFAULTS.hubRadius` is now 62 (the pulse radius, not the resting
+one), the row starts at `Math.max(ringBottom + slot, hubRadius + gap + r)`, and
+the layout REPORTS its hub radius so a test cannot keep a second copy that drifts
+from the one the controller draws. The centre label gained a
+`journey-center-label` class for the same reason: nothing else in the DOM
+identified the thing the spine was drawn on top of.
+
+Red first, at 10 — the smallest count that overflows — as well as 20 and 43:
+
+```
+satellites overlap the centre circle and the stage label at 10 topics.  Expected: []
+satellites overlap the centre circle and the stage label at 20 topics.
+satellites overlap the centre circle and the stage label at 43 topics.
+the hub radius must come from the layout, or it will drift...  Expected: 62
+  31 runs, 710 assertions, 4 failures
+
+a satellite is drawn on top of the stage label — the spine starts inside the hub.
+  6 runs, 55 assertions, 1 failure          (the measured system test at 43)
+```
 
 ## §5 — the landing drew circles with nothing in them
 
@@ -318,6 +359,42 @@ writes it any more.
 
 Shown load-bearing by flipping `suppressErrorRendering` back to `false`: both assertions fire,
 reproducing the screenshot.
+
+### The markdown path had no fallback labels at all
+
+Also caught in review. `_visual.html.erb` is not the only way a diagram reaches a student:
+`MarkdownRenderer` mounts the same controller for a fenced ```` ```mermaid ```` block, and passed
+NO labels — while its own sanitizer allow-list, which is a security boundary (audit §4.7), would
+have stripped them anyway. It listed `data-mermaid-diagram-target` and neither `-value` name.
+
+So a diagram inside a **concept body** — or inside the WP-24 §2 aftermath, which renders through
+this same path — failed to an icon with an empty sentence and no disclosure. The renderer now emits
+both labels from the same two I18n keys, and the allow-list gains exactly those two names (there is
+a test asserting it gains nothing else).
+
+Red first, in both locales and on the allow-list itself:
+
+```
+Expected /data-mermaid-diagram-fallback-label-value/ to match
+  "<p>Intro.</p>\n<div class=\"mermaid-container\" data-controller=\"mermaid-diagram\">…"
+the fallback sentence was empty or the sanitizer stripped it.          (en and es)
+Expected ["href", "src", …] to include "data-mermaid-diagram-fallback-label-value"
+  5 runs, 11 assertions, 4 failures
+```
+
+And the system case, with the broken diagram in a concept body and **no `mermaid` key in
+`parsed_sections`** — the shape `_visual.html.erb` never sees:
+
+```
+expected to find text "Este diagrama no se ha podido dibujar." in "DIAGRAMA"
+```
+
+That is the whole defect in one line: the label rendered, the sentence did not.
+
+**One thing this cost me twice, worth writing down:** the committed
+`app/assets/builds/tailwind.css` had drifted from `app/assets/tailwind/application.css` and lost
+the `:not([open])` rule, so the collapsed-source assertion failed against a stale build. The file is
+untracked, so nothing stale ships — but a system test is the only thing in this repo that notices.
 
 ## The lazy-load family — swept, not stumbled on
 

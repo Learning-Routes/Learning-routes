@@ -35,6 +35,34 @@ class JourneyHasNoOverlappingSatellitesTest < ApplicationSystemTestCase
     assert_nil first_overlap(boxes)
   end
 
+  # The hub is not a satellite, so the overlap tests above could not see it. The
+  # first spine row used to land at y ≈ +29, inside the centre circle and across
+  # the stage label.
+  test "no satellite is drawn on top of the stage label at 43" do
+    route = build_route_with(43)
+    visit_journey(route)
+
+    collisions = page.evaluate_script(<<~JS)
+      (() => {
+        const label = document.querySelector("[data-route-journey-target='stageSvg'] .journey-center-label")
+          || [...document.querySelectorAll("[data-route-journey-target='stageSvg'] div")]
+               .find((el) => el.style.position === "absolute" && el.textContent.trim().length > 0)
+        if (!label) return -1
+        const l = label.getBoundingClientRect()
+        if (l.width === 0) return -2
+        return [...document.querySelectorAll("[data-sat-idx]")].filter((el) => {
+          const b = el.getBoundingClientRect()
+          return b.left < l.right - 1 && l.left < b.right - 1 &&
+                 b.top < l.bottom - 1 && l.top < b.bottom - 1
+        }).length
+      })()
+    JS
+
+    assert_operator collisions, :>=, 0, "the centre label was not found; the assertion proves nothing"
+    assert_equal 0, collisions,
+      "a satellite is drawn on top of the stage label — the spine starts inside the hub"
+  end
+
   test "every satellite is inside its stage box" do
     route = build_route_with(43)
     visit_journey(route)

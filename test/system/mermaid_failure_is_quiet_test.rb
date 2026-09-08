@@ -106,6 +106,31 @@ class MermaidFailureIsQuietTest < ApplicationSystemTestCase
       "the raw Mermaid source was on screen without being asked for"
   end
 
+  # THE OTHER PATH. `_visual.html.erb` is not the only way a diagram reaches a
+  # student: a fenced ```mermaid block inside a concept body renders through
+  # MarkdownRenderer, which mounted the controller with no fallback labels — and
+  # whose sanitizer would have stripped them anyway. The student got an icon with
+  # an empty sentence and no disclosure.
+  #
+  # Note the fixture: NO `mermaid` key in parsed_sections. The diagram is in the
+  # markdown, which is the case `_visual.html.erb` never sees.
+  test "a broken diagram inside a concept body falls back with a localized sentence" do
+    body = "Mira esto.\n\n```mermaid\n#{BROKEN}```\n\nY esto."
+    @step.update!(metadata: {
+      "parsed_sections" => [{ "type" => "concept", "title" => "Concepto", "body" => body }],
+      "content_ready" => true
+    })
+    ContentEngine::AiContent.where(route_step: @step).update_all(body: "## Concepto: x\n#{body}")
+
+    open_step
+
+    within ".mermaid-container" do
+      assert_text I18n.t("learning_engine.lesson.diagram_unavailable", locale: :es)
+      assert_selector "details", visible: :all
+    end
+    assert_no_match(/Syntax error in text/i, page.text)
+  end
+
   private
 
   def open_step

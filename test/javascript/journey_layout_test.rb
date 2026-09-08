@@ -21,6 +21,16 @@ require "open3"
 # therefore lives in `bin/rails test`, where the team already looks.
 class JourneyLayoutTest < ActiveSupport::TestCase
   COUNTS = [1, 7, 8, 20, 43].freeze
+
+  # 10 is the first count that overflows the ring at the default radius, so it is
+  # the smallest case that can put a satellite on the hub. COUNTS alone missed
+  # this: 20 and 43 overlapped too, but no test looked at the centre.
+  HUB_COUNTS = (COUNTS + [10]).freeze
+
+  # The hub is the centre circle the stage label sits in: r 52 in
+  # route_journey_controller.js, pulsing to 62. The layout must clear the LARGER
+  # one, or the pulse eats the first spine row.
+  HUB_RADIUS = 62
   MODULE_PATH = Rails.root.join("app/javascript/lib/journey_layout.js")
 
   # A stage element is this wide in the layout the controller renders.
@@ -61,6 +71,30 @@ class JourneyLayoutTest < ActiveSupport::TestCase
         "satellites came back reordered; reinforcement steps would drift away " \
         "from the step that triggered them and keyboard order would not match the route"
     end
+  end
+
+  # The hub is not a satellite, so nothing in this file saw it. The first spine
+  # row was computed as `ringBottom + slot`, and the ring spans -171° to -9°, so
+  # its lowest satellites sit at y ≈ -29 and the first spine row landed at
+  # y ≈ +29 — inside the centre circle and across the stage label. Every count
+  # above ring capacity did it.
+  HUB_COUNTS.each do |count|
+    test "#{count} topics: no satellite sits on the hub" do
+      result = layout(count)
+
+      colliding = result["satellites"].select do |sat|
+        sat["x"].abs < sat["r"] + HUB_RADIUS && sat["y"].abs < sat["r"] + HUB_RADIUS
+      end
+
+      assert_equal [], colliding.map { |s| "##{s['index']}(#{s['x'].round},#{s['y'].round})" },
+        "satellites overlap the centre circle and the stage label at #{count} topics"
+    end
+  end
+
+  test "the layout knows the hub radius rather than the test guessing it" do
+    assert_equal HUB_RADIUS, layout(1)["hubRadius"],
+      "the hub radius must come from the layout, or it will drift from the one " \
+      "route_journey_controller.js actually draws"
   end
 
   # The capacity is measured, never a constant. If someone replaces it with a
@@ -113,6 +147,7 @@ class JourneyLayoutTest < ActiveSupport::TestCase
           satellites: result.satellites,
           capacity: result.capacity,
           satelliteRadius: result.satelliteRadius,
+          hubRadius: result.hubRadius,
           box: result.box,
           overlap: m.anyOverlap(result.satellites)
         }));
