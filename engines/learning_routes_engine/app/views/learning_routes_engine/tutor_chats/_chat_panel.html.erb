@@ -1,10 +1,4 @@
 <%# Tutor Chat Slide-Over Panel %>
-<%# THE SUBSCRIPTION. TutorReplyJob broadcasts every reply to this stream and
-    nothing had ever subscribed to it, so answers were written to `tutor_messages`
-    and delivered to nobody (WP-35 §1). It sits INSIDE the panel deliberately: the
-    subscription must live and die with the element, or a Turbo navigation leaves
-    a stream open against a step the student has left. %>
-<%= turbo_stream_from "tutor_chat_step_#{step.id}" %>
 <%
   tutor_i18n = {
     send_forbidden: t("tutor.send_forbidden"),
@@ -17,6 +11,16 @@
      data-tutor-chat-url-value="<%= learning_routes_engine.route_step_tutor_chats_path(step.learning_route, step) %>"
      data-tutor-chat-i18n-value="<%= tutor_i18n.to_json %>"
      id="tutor-chat-container">
+
+  <%# THE SUBSCRIPTION. TutorReplyJob broadcasts every reply to this stream and
+      nothing had ever subscribed to it, so answers were written to
+      `tutor_messages` and delivered to nobody (WP-35 §1).
+
+      INSIDE the container, not beside it: a cable source rendered as a sibling
+      outlives the panel on a Turbo navigation, leaving a stream open against a
+      step the student has left. Asserted by TutorChatPanelTest.
+  %>
+  <%= turbo_stream_from "tutor_chat_step_#{step.id}" %>
 
   <!-- FAB Button -->
   <button data-tutor-chat-target="fab"

@@ -32,6 +32,17 @@ module LearningRoutesEngine
 
     # `index` could always render the transcript and nothing called it, so a
     # reload lost the conversation while every message sat in the database.
+    # "Inside the panel" is not decoration: a subscription rendered as a SIBLING
+    # of the container outlives the element on a Turbo navigation, leaving a
+    # stream open against a step the student has left.
+    test "the subscription lives inside the panel it belongs to" do
+      get learning_routes_engine.route_step_path(@route, @step)
+
+      body = Nokogiri::HTML(response.body)
+      assert body.at_css("#tutor-chat-container turbo-cable-stream-source"),
+        "the cable source is outside #tutor-chat-container, so it does not die with the panel"
+    end
+
     test "the transcript is rendered on load, not just the greeting" do
       TutorMessage.create!(user: @user, step: @step, role: "user", content: "¿Cómo se dice hola?")
       TutorMessage.create!(user: @user, step: @step, role: "assistant", content: "Se dice olá.")
