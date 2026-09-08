@@ -111,22 +111,11 @@ palabra suelta. Commit aparte, como pedía el brief.
 arreglo del parser por sí solo no cambia nada que un alumno pueda ver** en una lección que ya
 existe.
 
-```
-bin/rails wp24:scenario_census      sólo lectura, no modifica nada
-bin/rails wp24:reparse_scenarios    reescribe sólo las compatibles por posición
-```
-
-En el box de producción:
-
-```
-kamal app exec 'bin/rails wp24:scenario_census'
-# leer la salida, y sólo entonces:
-kamal app exec 'bin/rails wp24:reparse_scenarios'
-```
-
-Tarea rake y no migración: `bin/docker-entrypoint:16` ejecuta `db:prepare` en **cada arranque**, así
-que una migración que reescribiera contenido se ejecutaría sola en el próximo despliegue, antes de
-que nadie hubiera leído el censo.
+> **Estas tareas ya no existen.** WP-33 las sustituyó por `wp33:reparse_census` y
+> `wp33:reparse`, que recorren **todos** los pasos (no sólo los que tienen un escenario) y
+> conservan las claves que escriben los jobs de imagen — `wp24:reparse_scenarios` las habría
+> borrado y habría vuelto a pagar por cada ilustración. Los comandos y el orden están en
+> `WP33_HANDOFF.md`. No ejecutes nada de `wp24:`.
 
 **La compatibilidad de posición es toda la regla de seguridad.** `block_attempts.section_index`
 indexa ese array, así que reescribir un paso cuyo parse nuevo tenga distinto número de secciones —

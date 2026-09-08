@@ -161,6 +161,69 @@ class Wp33ReparseTest < ActiveSupport::TestCase
       "the task wrote from a copy it read before the job did; the url is gone"
   end
 
+  # ── §1-§4 together, which is what the owner will actually run ───────────
+  #
+  # A step persisted BEFORE this package: its check swallowed the diagram, its
+  # match lost the intro, its titles were baked in Spanish, and its visual has a
+  # paid image URL. One `wp33:reparse` must fix the first three without touching
+  # the fourth.
+  test "one reparse recovers the aftermath, the intro and the titles, and keeps the image" do
+    body = <<~MARKDOWN
+      ## Visual:
+      A diagram of the cycle.
+
+      ## Pregunta:
+      A) Yes
+      B) No
+      CORRECTA: A
+
+      ```mermaid
+      flowchart TD
+        A --> B
+      ```
+
+      ## Match:
+      Drag each term onto its definition.
+      Dog ==> Perro
+      Cat ==> Gato
+    MARKDOWN
+    ContentEngine::AiContent.where(route_step: @step).update_all(body: body)
+
+    # The OLD shape: what the parser produced before WP-33, plus the image the
+    # media job paid for.
+    stale = ContentEngine::LessonSectionParser.call(body).map(&:as_json)
+    stale.each do |section|
+      section["aftermath"] = nil
+      section["intro"] = nil
+      section["title"] = { "visual" => "Visual", "check" => "Comprueba tu conocimiento",
+                           "drag_drop" => "Match", "summary" => "Resumen",
+                           "concept" => "Concepto" }[section["type"]]
+    end
+    stale[0]["image_url"] = "https://cdn.example.test/cycle.png"
+    stale[0]["image_status"] = "ready"
+    @step.update!(metadata: { "parsed_sections" => stale })
+
+    run_task("wp33:reparse")
+
+    sections = @step.reload.metadata["parsed_sections"]
+    check = sections.find { |s| s["type"] == "check" }
+    match = sections.find { |s| s["type"] == "drag_drop" }
+    visual = sections.find { |s| s["type"] == "visual" }
+
+    assert_includes check["aftermath"].to_s, "```mermaid",
+      "the diagram the check used to swallow was not recovered"
+    assert_equal "Drag each term onto its definition.", match["intro"],
+      "the prose above the board was not recovered"
+    assert_nil check["title"], "a baked-in Spanish default survived the reparse"
+    assert_nil match["title"]
+    assert_equal "https://cdn.example.test/cycle.png", visual["image_url"],
+      "the reparse recovered the text and threw away the image"
+    assert_equal "ready", visual["image_status"]
+    assert_equal stale.size, sections.size, "the section count changed"
+    assert_equal stale.map { |s| s["type"] }, sections.map { |s| s["type"] },
+      "a type moved; every recorded block_attempt would now point elsewhere"
+  end
+
   # ── The sweep that stops the next job reopening it ──────────────────────
 
   test "every key a job writes into parsed_sections is declared as enrichment" do
