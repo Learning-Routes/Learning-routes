@@ -461,10 +461,10 @@ Three runs of each, one suite at a time. The **before** column is my own run on 
 
 | Suite | Before (`aae14b7`) | After |
 |---|---|---|
-| Main (`bin/rails test`) | 708 runs, 2778 assertions, 0F 0E | **739 runs, 3524 assertions, 0F 0E** |
-| Browser (`bin/rails test:system`) | 55 runs, 390 assertions, 0F 0E | **64 runs, 469 assertions, 0F 0E** |
-| Combined (`bin/rails test test engines/*/test`) | 1107 runs, 4389 assertions, **3F 1E** | **1147 runs, 5214 assertions, 3F 1E** |
-| RuboCop | clean, 578 files | **clean, 583 files** |
+| Main (`bin/rails test`) | 708 runs, 2778 assertions, 0F 0E | **751 runs, 3559 assertions, 0F 0E** |
+| Browser (`bin/rails test:system`) | 55 runs, 390 assertions, 0F 0E | **66 runs, 483 assertions, 0F 0E** |
+| Combined (`bin/rails test test engines/*/test`) | 1107 runs, 4389 assertions, **3F 1E** | **1161 runs, 5263 assertions, 3F 1E** |
+| RuboCop | clean, 578 files | **clean, 584 files** |
 
 All nine runs of each column identical. The combined failures are the four known engine ones, the
 same four as every baseline in this repo since WP-24:
@@ -481,8 +481,11 @@ LearningRoutesEngine::ReinforcementJobTest#test_generates_reinforcement_routes_f
   Expected false to be truthy.
 ```
 
-**I did not touch them.** New tests: **40** (24 geometry, 5 journey system, 5 landing, 4 locale,
-4 mermaid system, minus the 3 mermaid-validation tests removed with the validation itself).
+**I did not touch them.** New tests: **54** — 31 geometry (24 plus the 6 hub-collision cases and
+the hub-radius assertion), 6 journey system, 5 landing, 4 locale, 5 mermaid system and 5 markdown
+renderer, minus the 3 mermaid-validation tests removed with the validation itself.
+
+The `after` column is measured at `0079ea5`, which includes the two review fixes below.
 
 ### The before column was wrong twice before it was right
 
