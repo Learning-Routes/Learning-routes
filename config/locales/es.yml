@@ -1434,6 +1434,8 @@ es:
     practical_example: "Ejemplo práctico"
     simplified: "Simplificado"
     example_illustration: "Ilustración del ejemplo"
+    agent_failed: "Esa herramienta no ha podido responder ahora mismo. Inténtalo de nuevo en un momento."
+    agent_rate_limited: "Estás usando las herramientas de IA muy seguido. Espera un momento e inténtalo otra vez."
     score: "Puntuación"
 
   # ── Paso completado ──

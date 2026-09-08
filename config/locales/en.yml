@@ -1494,6 +1494,8 @@ en:
     practical_example: "Practical Example"
     simplified: "Simplified"
     example_illustration: "Example illustration"
+    agent_failed: "That tool could not answer just now. Try again in a moment."
+    agent_rate_limited: "You are using the AI tools quickly. Wait a moment and try again."
     score: "Score"
 
   step_complete:

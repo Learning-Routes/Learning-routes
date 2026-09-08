@@ -36,9 +36,16 @@ export default class extends Controller {
         signal: this._abortController.signal
       })
 
-      if (response.ok) {
-        const html = await response.text()
-        Turbo.renderStreamMessage(html)
+      // Render the stream on ANY response that carries one, ok or not. The
+      // server answers a failure with 429 or 502 now (it used to answer 200), and
+      // `if (response.ok)` would swallow exactly the message the student needs —
+      // the same "client discards the server's verdict" shape this project keeps
+      // finding.
+      const body = await response.text()
+      if (body.trim().startsWith("<turbo-stream")) {
+        Turbo.renderStreamMessage(body)
+      } else if (!response.ok) {
+        console.error("AI interaction failed:", response.status, body.slice(0, 200))
       }
     } catch (error) {
       if (error.name !== "AbortError") {

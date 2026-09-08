@@ -31,10 +31,21 @@ module ContentEngine
 
     private
 
+    # Eager-loads the route every path here walks: the success redirect, both
+    # refusal redirects, and `LessonAssistantAgent` itself. This was a bare
+    # `find`, so `@step.learning_route` (and the profile behind it) was a lazy
+    # load on a strict_loading
+    # record — the third instance of that family found in this branch, after the
+    # step quiz in WP-32 and the tutor message in §1.
+    #
+    # Production sets the violation to `:log`, so there it was an N+1 rather than
+    # a failure; in the test environment it RAISES, was caught by the same
+    # `rescue` that mislabelled the UnknownFormat, and turned every one of these
+    # tests into a 502.
     def set_step_and_authorize!
       return unless authorize_route_step_access!(params[:id])
 
-      @step = LearningRoutesEngine::RouteStep.find(params[:id])
+      @step = LearningRoutesEngine::RouteStep.includes(learning_route: :learning_profile).find(params[:id])
     end
 
     def agent_interact(action, message: nil, section_index: nil)
@@ -53,11 +64,22 @@ module ContentEngine
       @response_type = result[:type]
 
       respond_to do |format|
-        # No `format.turbo_stream`: `agent_interact.turbo_stream.erb` does not
-        # exist, unlike its four siblings (deepen, explain_differently,
-        # give_example, simplify), so this could only raise MissingExactTemplate
-        # -> 406. The action currently has NO call sites at all; if it is ever
-        # wired up it needs a template like its siblings, and this line back.
+        # `format.turbo_stream` is back for the four legacy actions, and this is
+        # the line a115721 (WP-25) removed. Its reasoning — that
+        # `agent_interact.turbo_stream.erb` does not exist — was true of the
+        # method's own name and false of the request: Rails renders the template
+        # named after the calling ACTION, and explain_differently, give_example,
+        # simplify and deepen all have one. The four buttons send
+        # `Accept: text/vnd.turbo-stream.html`, so without this the PAID CALL RAN,
+        # SUCCEEDED, and then `respond_to` raised UnknownFormat — which the
+        # `rescue` below caught as a model failure and answered with escaped
+        # markup at HTTP 200.
+        #
+        # `interact` genuinely has no template, so it is asked rather than
+        # assumed: declare the format exactly when it can be rendered, which is
+        # the invariant `RespondToFormatsHaveTemplatesTest` enforces from the
+        # other side.
+        format.turbo_stream if turbo_stream_template?
         format.json do
           render json: {
             html: @rendered_html,
@@ -68,31 +90,46 @@ module ContentEngine
         format.html { redirect_to learning_routes_engine.route_step_path(@step.learning_route, @step) }
       end
     rescue LessonAssistantAgent::RateLimitExceeded => e
-      respond_to do |format|
-        format.json { render json: { error: e.message, success: false }, status: :too_many_requests }
-        format.turbo_stream do
-          @error = e.message
-          render turbo_stream: turbo_stream.update(
-            "ai_supplementary_#{@step.id}",
-            html: "<p style='color:var(--color-error); padding:0.75rem;'>#{ERB::Util.html_escape(e.message)}</p>"
-          )
-        end
-        format.html { redirect_to learning_routes_engine.route_step_path(@step.learning_route, @step), alert: e.message }
-      end
+      Rails.logger.warn("[LessonsController] Agent rate limited: #{e.class}: #{e.message}")
+      refuse_agent(t("content_actions.agent_rate_limited"), status: :too_many_requests)
     rescue => e
-      Rails.logger.error("[LessonsController] Agent interaction failed: #{e.message}")
-      error_msg = I18n.t("flash.ai_generation_failed", default: "AI generation failed. Please try again.")
+      # `e.class` as well as the message. Without it the production log said
+      # "Agent interaction failed: ..." for an ActionController::UnknownFormat
+      # raised after a successful call, and the diagnosis took a log line that
+      # did not exist.
+      Rails.logger.error("[LessonsController] Agent interaction failed: #{e.class}: #{e.message}")
+      refuse_agent(t("content_actions.agent_failed"), status: :bad_gateway)
+    end
+
+    # One refusal, one partial, the right status in EVERY format.
+    #
+    # The turbo_stream branch used to build its markup in a String and pass it as
+    # `html:`, which `turbo_stream.update` renders through
+    # ActionView::Template::HTML — and that escapes a plain String, so the
+    # student read the tag source. It also carried no `status:`, so a failure was
+    # served as 200 while the JSON branch beside it said 500.
+    def refuse_agent(message, status:)
+      @error = message
 
       respond_to do |format|
-        format.json { render json: { error: error_msg, success: false }, status: :internal_server_error }
         format.turbo_stream do
-          render turbo_stream: turbo_stream.update(
+          render turbo_stream: turbo_stream.append(
             "ai_supplementary_#{@step.id}",
-            html: "<p style='color:var(--color-error); padding:0.75rem;'>#{ERB::Util.html_escape(error_msg)}</p>"
-          )
+            partial: "content_engine/lessons/agent_error",
+            locals: { message: message }
+          ), status: status
         end
-        format.html { redirect_to learning_routes_engine.route_step_path(@step.learning_route, @step), alert: error_msg }
+        format.json { render json: { error: message, success: false }, status: status }
+        format.html do
+          redirect_to learning_routes_engine.route_step_path(@step.learning_route, @step), alert: message
+        end
       end
+    end
+
+    # Can the CALLING action render a turbo stream? The four legacy actions have
+    # a template each; `interact` does not and stays JSON-only.
+    def turbo_stream_template?
+      template_exists?(action_name, lookup_context.prefixes, false, formats: [:turbo_stream])
     end
 
     def load_section(section_index)

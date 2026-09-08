@@ -27,6 +27,16 @@ class RespondToFormatsHaveTemplatesTest < ActiveSupport::TestCase
   # line after `format.x` counts as inline handling.
   INLINE = /format\.\w+\s*\{|format\.\w+\s+do\b/
 
+  # `format.x if …` / `unless …` is not an unconditional promise, and this sweep
+  # exists to catch unconditional promises the app cannot keep.
+  #
+  # `LessonsController#agent_interact` declares
+  # `format.turbo_stream if turbo_stream_template?` because it is shared by five
+  # actions, four of which have a template and one of which does not. That guard
+  # IS the invariant this file asserts, enforced at runtime instead of by
+  # inspection, so flagging it would be the sweep arguing with its own rule.
+  GUARDED = /format\.\w+\s+(?:if|unless)\s/
+
   test "every declared respond_to format can actually be rendered" do
     unrenderable = []
 
@@ -34,13 +44,24 @@ class RespondToFormatsHaveTemplatesTest < ActiveSupport::TestCase
       source = File.read(path)
       controller = Pathname.new(path).relative_path_from(Rails.root).to_s
 
-      each_respond_to_block(source) do |action, formats|
-        formats.each do |format, inline|
-          next if inline
-          next if template_for?(path, action, format)
+      each_respond_to_block(source) do |method, formats|
+        # A PRIVATE helper renders the template of whatever ACTION called it —
+        # Rails looks up by `action_name`, not by the method it happens to be
+        # executing. `LessonsController#agent_interact` is exactly this: four
+        # public actions delegate to it and each has its own turbo_stream
+        # template. Judging it by its own name is what justified deleting its
+        # `format.turbo_stream` in WP-25, and that deletion is the WP-35 §2 bug.
+        targets = callers_of(source, method)
 
-          unrenderable << "#{controller}##{action} declares format.#{format} " \
-                          "with no template and no inline render"
+        targets.each do |action|
+          formats.each do |format, inline|
+            next if inline
+            next if template_for?(path, action, format)
+
+            label = action == method ? "#{controller}##{action}" : "#{controller}##{action} (via #{method})"
+            unrenderable << "#{label} declares format.#{format} " \
+                            "with no template and no inline render"
+          end
         end
       end
     end
@@ -86,12 +107,50 @@ class RespondToFormatsHaveTemplatesTest < ActiveSupport::TestCase
       next unless in_block
 
       if (match = line.match(/^\s*format\.(\w+)/))
-        formats << [match[1], line.match?(INLINE)]
+        formats << [match[1], line.match?(INLINE) || line.match?(GUARDED)]
       elsif line.match?(/^\s*end\s*$/)
         in_block = false
         yield(current_action, formats) if current_action && formats.any?
       end
     end
+  end
+
+  # The action names a `respond_to` in `method` can be reached under.
+  #
+  # A public method answers for itself. A private one answers for every public
+  # action that calls it, because that is the name Rails renders by.
+  def callers_of(source, method)
+    return [method] unless private_methods_in(source).include?(method)
+
+    callers = public_actions_in(source).select do |action|
+      body = method_body(source, action)
+      body&.match?(/(^|[^\w.])#{Regexp.escape(method)}\b/)
+    end
+    callers.presence || [method]
+  end
+
+  def private_methods_in(source)
+    boundary = source.lines.index { |l| l.match?(/^\s*private\s*$/) }
+    return [] if boundary.nil?
+
+    source.lines[boundary..].join.scan(/^\s*def\s+([a-z_][\w]*[?!]?)/).flatten
+  end
+
+  def public_actions_in(source)
+    boundary = source.lines.index { |l| l.match?(/^\s*private\s*$/) } || source.lines.size
+    source.lines[0...boundary].join.scan(/^\s*def\s+([a-z_][\w]*[?!]?)/).flatten
+  end
+
+  def method_body(source, name)
+    lines = source.lines
+    start = lines.index { |l| l =~ /^(\s*)def #{Regexp.escape(name)}\b/ }
+    return nil if start.nil?
+
+    indent = lines[start][/^\s*/].length
+    finish = ((start + 1)...lines.size).find do |i|
+      lines[i] =~ /^\s*end\b/ && lines[i][/^\s*/].length == indent
+    end
+    finish ? lines[(start + 1)...finish].join : nil
   end
 
   def template_for?(controller_path, action, format)
