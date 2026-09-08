@@ -89,13 +89,30 @@ module ContentEngine
           velocity: 0 to 100
           formula: energy = 0.5 * mass * velocity
         MARKDOWN
+      ],
+      # `check` was not in this sweep at all, and `drag_drop` was its CONTROL —
+      # "selecting is already a terminator". Both were wrong in the same way:
+      # neither accumulates the trailing content, but neither KEEPS it either.
+      # A `## Pregunta` discards every line that is not an option, CORRECTA or
+      # EXPLICACIÓN; a `## Match` discards every line without `==>`. The section
+      # count never changes, so the count assertion below stayed green while the
+      # generator's own mandatory mermaid diagram was being deleted.
+      "check" => [
+        "## Pregunta: Which one runs first?",
+        <<~MARKDOWN
+          A) The first one
+          B) The second one
+          C) Neither
+          D) Both
+          CORRECTA: A
+          EXPLICACIÓN: The first statement runs first.
+        MARKDOWN
+      ],
+      "drag_drop" => [
+        "## Match: Spanish animals",
+        "Dog ==> Perro\nCat ==> Gato\n"
       ]
     }.freeze
-
-    # `drag_drop` SELECTS the lines it wants instead of accumulating, so it is
-    # already terminated by construction. It is here as the control: if this ever
-    # goes red, the fix broke the one parser that had the right shape.
-    CONTROL = ["## Match: Spanish animals", "Dog ==> Perro\nCat ==> Gato\n"].freeze
 
     ACCUMULATORS.each_key do |type|
       define_method(:"test_#{type}_does_not_swallow_the_rest_of_the_section") do
@@ -131,13 +148,66 @@ module ContentEngine
       end
     end
 
-    test "drag_drop is unaffected, because selecting is already a terminator" do
-      section = parse_one_of(*CONTROL, "drag_drop")
+    # Selecting keeps the trailing content OUT of `pairs`, which is what the old
+    # control asserted — but it also threw it away. Both halves now.
+    test "drag_drop keeps its pairs clean AND keeps the prose above the board" do
+      section = parse_one("drag_drop")
 
       assert_equal 2, section[:pairs].size
-      TRAILING_MARKERS.each do |marker|
-        assert_not_includes section[:pairs].to_s, marker
-      end
+      TRAILING_MARKERS.each { |marker| assert_not_includes section[:pairs].to_s, marker }
+    end
+
+    # THE CASE THE TEMPLATE ACTUALLY PRODUCES. `lesson_content.yml:127-128` tells
+    # the model to put its first mandatory mermaid diagram immediately after the
+    # CYCLE 2 interactive block, whose preferred types are `## Complete` and
+    # `## Pregunta`. Half the time it lands in the body of a check.
+    test "a check keeps the mermaid diagram the template puts after it" do
+      body = <<~MARKDOWN
+        A) The first one
+        B) The second one
+        C) Neither
+        D) Both
+        CORRECTA: A
+        EXPLICACIÓN: The first statement runs first.
+
+        ```mermaid
+        flowchart TD
+          A[Start] --> B[Finish]
+        ```
+      MARKDOWN
+      section = parse_one_of("## Pregunta: Which one runs first?", body, "check")
+
+      assert_equal 4, section[:options].size, "the options must be untouched"
+      assert_includes section[:aftermath].to_s, "```mermaid",
+        "the diagram the generator is told to emit was deleted by the check parser"
+      assert_includes section[:aftermath].to_s, "flowchart TD"
+      assert_operator section[:aftermath].to_s.lines.size, :>, 1,
+        "the fence must keep its newlines or the diagram cannot render"
+    end
+
+    # THE OTHER HALF, and the reason the terminator cannot simply be "the first
+    # fence": a programming question is a fence FOLLOWED by its options. A fence
+    # before the first option is part of the question, not an aftermath.
+    test "a fence before the first option belongs to the question" do
+      body = <<~MARKDOWN
+        ```python
+        print(2 + 2)
+        ```
+        A) 4
+        B) 22
+        C) An error
+        D) Nothing
+        CORRECTA: A
+      MARKDOWN
+      sections = LessonSectionParser.call("## Pregunta: What does this print?\n\n#{body}")
+      section = sections.find { |s| s[:type] == "check" }
+
+      assert_includes section[:question].to_s, "print(2 + 2)",
+        "the code the question is ABOUT was treated as trailing content"
+      assert_includes section[:question].to_s, "```python"
+      assert_equal 4, section[:options].size
+      assert_nil section[:aftermath].presence,
+        "there is nothing after the last marker line, so there is no aftermath"
     end
 
     # The prose blocks are NOT part of this class and must not be "fixed".

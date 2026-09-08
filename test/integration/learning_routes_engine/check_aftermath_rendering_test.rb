@@ -1,0 +1,109 @@
+require "test_helper"
+
+# WP-33 §2, the half a student sees.
+#
+# A `check` renders no block in the flow — its modal is emitted after the
+# sections container, because the controller overlays it on the content the
+# student is reading rather than transitioning to it. So the `.lesson-section`
+# element for a check is EMPTY, and that is where its aftermath belongs: the
+# student answers the modal, it closes, and the diagram the author put after the
+# question is there in the lesson.
+#
+# Never inside the modal. A modal is a question, not a page, and the controller
+# closes it.
+module LearningRoutesEngine
+  class CheckAftermathRenderingTest < ActionDispatch::IntegrationTest
+    BODY = <<~MARKDOWN.freeze
+      ## Concepto: Warm up
+      Some prose.
+
+      ## Pregunta: What does this print?
+
+      ```python
+      print(2 + 2)
+      ```
+      A) 4
+      B) 22
+      C) An error
+      D) Nothing
+      CORRECTA: A
+      EXPLICACIÓN: Addition happens first.
+
+      ```mermaid
+      flowchart TD
+        A[Start] --> B[Finish]
+      ```
+
+      Trailing prose the author wrote after the question.
+    MARKDOWN
+
+    def setup
+      @user = create_test_user(email_verified_at: Time.current, locale: "es")
+      profile = LearningProfile.create!(user: @user, current_level: "beginner")
+      @route = LearningRoute.create!(
+        learning_profile: profile, topic: "Portugués", locale: "es", status: :active
+      )
+      preview = RouteModule.find_by!(learning_route_id: @route.id, access_state: :preview)
+      sections = ContentEngine::LessonSectionParser.call(BODY).map(&:as_json)
+      @step = @route.route_steps.create!(
+        route_module: preview, title: "Lección", position: 0, status: :in_progress,
+        content_type: :lesson, level: :nv1, bloom_level: 1,
+        metadata: { "parsed_sections" => sections, "content_ready" => true }
+      )
+      ContentEngine::AiContent.create!(route_step: @step, content_type: :text, body: BODY)
+      post core.sign_in_path, params: { email: @user.email, password: "password123" }
+    end
+
+    def check_index
+      @step.metadata["parsed_sections"].index { |s| s["type"] == "check" }
+    end
+
+    test "the aftermath renders inside the check's own section, not in the modal" do
+      get learning_routes_engine.route_step_path(@route, @step)
+
+      assert_response :success
+      doc = Nokogiri::HTML(response.body)
+
+      section = doc.at_css(".lesson-section[data-section-index='#{check_index}']")
+      assert section, "the check's section element is missing"
+      assert_includes section.to_html, "Trailing prose the author wrote after the question.",
+        "the aftermath is not in the check's section; the parser used to delete it entirely"
+      assert section.at_css(".mermaid-container"),
+        "the diagram the generator is told to emit after the question is not rendered"
+
+      modal = doc.at_css(".quiz-modal-backdrop[data-section-index='#{check_index}']")
+      assert modal, "the check modal is missing"
+      assert_not_includes modal.to_html, "Trailing prose the author wrote after the question.",
+        "the aftermath was rendered inside the modal, which closes"
+    end
+
+    # The question of a programming check is a code fence. Printed as plain text
+    # the student read backticks.
+    test "the question reaches the modal as sanitized HTML, not as backticks" do
+      get learning_routes_engine.route_step_path(@route, @step)
+
+      modal = Nokogiri::HTML(response.body)
+        .at_css(".quiz-modal-backdrop[data-section-index='#{check_index}']")
+
+      assert modal.at_css("code"), "the code sample rendered as text; the student saw backticks"
+      assert_includes modal.text, "print(2 + 2)"
+      assert_not_includes modal.text, "```python", "the fence markers reached the student"
+    end
+
+    test "the question markdown is sanitized on the way through" do
+      html = ContentEngine::MarkdownRenderer.render("What is `x`?<script>alert(1)</script>")
+
+      assert_includes html, "<code>x</code>"
+      assert_not_includes html, "<script>"
+    end
+
+    # The rule that governs everything in this package.
+    test "adding fields does not change how many sections the body produces" do
+      sections = ContentEngine::LessonSectionParser.call(BODY)
+
+      assert_equal %w[concept check summary], sections.map { |s| s[:type] },
+        "the section count or order changed; every recorded block_attempt would " \
+        "now point at a different block"
+    end
+  end
+end

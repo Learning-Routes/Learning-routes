@@ -27,6 +27,16 @@
 
   <h2 class="text-2xl font-bold" style="color: var(--color-txt);"><%= section[:title] %></h2>
 
+  <%# The prose the author wrote above the pairs. `parse_heading_drag_drop`
+      selected only the `==>` lines and discarded everything else, so an
+      instruction sentence in front of a board was deleted (WP-33 §2). Rendered
+      through MarkdownRenderer, as `_concept` does. %>
+  <% if section[:intro].present? %>
+    <div class="lesson-content" data-controller="math-renderer" data-math-renderer-target="content">
+      <%= ContentEngine::MarkdownRenderer.render(section[:intro].to_s) %>
+    </div>
+  <% end %>
+
   <div class="rounded-2xl p-6" style="background: var(--color-card); border: 1px solid rgba(28, 24, 18, 0.06);">
     <!-- Terms column -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -72,3 +82,5 @@
     <div data-drag-drop-target="feedback" class="mt-4 text-center text-sm font-medium hidden"></div>
   </div>
 </div>
+
+<%= render "learning_routes_engine/steps/lesson_sections/aftermath", section: section %>

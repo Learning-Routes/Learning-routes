@@ -159,10 +159,20 @@
           <%# Dispatch against ContentEngine::LessonBlocks rather than an inline list.
               This was a hardcoded array — a fifth, anonymous copy of the vocabulary
               that silently rewrote any unlisted section type to "concept". %>
-          <%# A `check` renders NOTHING here — its modal is emitted after this
+          <%# A `check` renders no BLOCK here — its modal is emitted after this
               container. The section element itself stays: it carries the index, the
               gating contract and the timing dataset the controller reads. %>
-          <% unless section[:type] == "check" %>
+          <% if section[:type] == "check" %>
+            <%# ...but its AFTERMATH renders here, in the section that was empty.
+                The parser used to discard every line of a check that was not an
+                option, CORRECTA or EXPLICACIÓN — including the mermaid diagram
+                `lesson_content.yml` tells the model to put right after it
+                (WP-33 §2). It belongs in the flow, where the author put it: the
+                student answers the modal, it closes, and the diagram and the
+                prose are there in the lesson. Never inside the modal, which is
+                a question and not a page. %>
+            <%= render "learning_routes_engine/steps/lesson_sections/aftermath", section: section %>
+          <% else %>
             <% section_type = ContentEngine::LessonBlocks.known?(section[:type]) ? section[:type] : "concept" %>
             <%= render "learning_routes_engine/steps/lesson_sections/#{section_type}", section: section, step: @step, index: i %>
           <% end %>

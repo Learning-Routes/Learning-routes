@@ -258,29 +258,61 @@ module ContentEngine
     end
 
     # Parse ## Pregunta: heading format with A)-D) options, CORRECTA:, EXPLICACIÓN:
+    # ## Pregunta / ## Question
+    #
+    # THE TERMINATOR APPLIES ONLY AFTER THE STRUCTURAL LINES ARE COMPLETE, and
+    # that is the whole difficulty. A programming check is
+    # `## Pregunta ("what does this print?")` followed by a code fence and THEN
+    # its options: a fence before the first option is part of the question, not
+    # an aftermath. So the question is everything before the first option line,
+    # markdown and fences included, and the aftermath starts at the first
+    # terminator AFTER the last recognised marker line.
+    #
+    # Every line that was neither an option, CORRECTA, EXPLICACIÓN nor the first
+    # prose line used to be DISCARDED. `lesson_content.yml:127-128` tells the
+    # model to put its first mandatory mermaid diagram immediately after the
+    # CYCLE 2 block, whose preferred types include `## Pregunta` — so half the
+    # time the diagram landed here and was deleted. The section count never
+    # changed, which is why no test noticed.
     def parse_heading_check(question_from_heading, body)
-      lines = body.lines.map { |l| l.rstrip }
-      question = question_from_heading.presence
+      # RAW lines, newlines intact. The previous version mapped `rstrip` over
+      # them, which is harmless when you only ever inspect a line and fatal when
+      # you re-join a slice: the aftermath came back flattened, which is exactly
+      # what stopped a diagram drawing in WP-24 §2.
+      lines = body.to_s.lines
       options = []
       correct_letter = nil
       explanation = nil
+      first_option_index = nil
+      last_marker_index = nil
 
-      lines.each do |line|
+      lines.each_with_index do |line, index|
         stripped = line.strip
         if stripped.match?(/\A[A-Da-d]\)\s/)
-          label = stripped.sub(/\A[A-Da-d]\)\s*/, "")
-          options << { label: label, correct: false }
+          first_option_index ||= index
+          last_marker_index = index
+          options << { label: stripped.sub(/\A[A-Da-d]\)\s*/, ""), correct: false }
         elsif stripped.match?(/\A(?:CORRECTA|CORRECT|ANSWER):\s*/i)
+          last_marker_index = index
           correct_letter = stripped.sub(/\A(?:CORRECTA|CORRECT|ANSWER):\s*/i, "").strip.upcase
         elsif stripped.match?(/\A(?:EXPLICACI[OÓ]N|EXPLANATION):\s*/i)
+          last_marker_index = index
           explanation = stripped.sub(/\A(?:EXPLICACI[OÓ]N|EXPLANATION):\s*/i, "").strip
-        elsif question.blank? && stripped.present? && options.empty?
-          # If no question from heading, first non-empty line is the question
-          question = stripped
         end
       end
 
-      # Mark correct option
+      # Everything before the first option, kept as markdown. With no options at
+      # all there is nothing structural to protect, so the whole body is the
+      # question — which is still better than throwing it away.
+      body_question = lines[0...(first_option_index || lines.size)].join.strip
+
+      question = [question_from_heading.presence, body_question.presence].compact.join("\n\n")
+
+      aftermath = nil
+      if last_marker_index && last_marker_index + 1 < lines.size
+        _kept, aftermath = split_aftermath(lines[(last_marker_index + 1)..].join)
+      end
+
       if correct_letter && correct_letter.match?(/\A[A-D]\z/)
         correct_index = correct_letter.ord - "A".ord
         options[correct_index][:correct] = true if options[correct_index]
@@ -288,10 +320,11 @@ module ContentEngine
 
       {
         type: "check",
-        title: "Comprueba tu conocimiento",
-        question: question || "",
+        title: nil,
+        question: question,
         options: options,
         explanation: explanation,
+        aftermath: aftermath,
         xp: 15
       }
     end
@@ -379,14 +412,31 @@ module ContentEngine
     # ── Interactive block parsers ────────────────────────────────────
 
     # ## Match: title / pairs separated by ==>
+    #
+    # Selecting the `==>` lines kept the trailing content out of `pairs`, which
+    # is what the old boundaries "control" asserted — but it also threw that
+    # content away. The prose before the first pair is the board's `intro`; the
+    # aftermath starts at the first terminator after the LAST pair.
     def parse_heading_drag_drop(title, body)
-      pairs = body.to_s.lines
-                  .map(&:strip)
-                  .reject(&:empty?)
-                  .select { |l| l.include?("==>") }
-                  .map { |l| parts = l.split("==>", 2); { term: parts[0].to_s.strip, definition: parts[1].to_s.strip } }
+      lines = body.to_s.lines
+      pair_indexes = lines.each_index.select { |i| lines[i].include?("==>") }
 
-      { type: "drag_drop", title: title.presence || "Match", pairs: pairs, body: body }
+      pairs = pair_indexes.map do |i|
+        parts = lines[i].strip.split("==>", 2)
+        { term: parts[0].to_s.strip, definition: parts[1].to_s.strip }
+      end
+
+      intro = lines[0...(pair_indexes.first || lines.size)].join.strip.presence
+
+      aftermath = nil
+      if pair_indexes.any? && pair_indexes.last + 1 < lines.size
+        _kept, aftermath = split_aftermath(lines[(pair_indexes.last + 1)..].join)
+      end
+
+      {
+        type: "drag_drop", title: title.presence, intro: intro,
+        pairs: pairs, aftermath: aftermath, body: body
+      }
     end
 
     # ## Complete: title / sentence with BLANK--word--BLANK tokens
