@@ -1033,6 +1033,7 @@ es:
       exhausted: "Lo hemos intentado varias veces sin éxito. Nuestro equipo puede ver el error y lo revisará."
       back: "Volver a la ruta"
     journey:
+      locked_topic: "Bloqueado"
       route_label: "RUTA"
       scroll_to_explore: "Desplaza para explorar"
       back_to_profile: "Perfil"
@@ -1131,6 +1132,11 @@ es:
       gate:
         assessment_required: "Haz esta evaluación antes de terminar el paso."
         assessment_not_passed: "Todavía no has superado esta evaluación, así que el paso no puede terminarse desde aquí."
+    check:
+      challenge_badge: "DESAFÍO RÁPIDO"
+      speed_bonus: "⚡ +5 XP BONUS si respondes en menos de %{seconds}s"
+      speed_bonus_earned: "⚡ ¡+5 XP BONUS conseguido!"
+      explanation_label: "Explicación:"
     review:
       badge: "Repaso"
       memory_strength: "Fortaleza de memoria"

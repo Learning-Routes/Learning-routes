@@ -20,6 +20,7 @@ export default class extends Controller {
   static targets = ["option", "timerWrap", "timerDisplay", "bonusTag"]
 
   static values = {
+    i18n: Object,
     correct: Number,        // index of the correct option (0-based)
     xp: { type: Number, default: 15 },
     timed: { type: Boolean, default: false },
@@ -80,7 +81,7 @@ export default class extends Controller {
     }
     if (this.hasBonusTagTarget) {
       this.bonusTagTarget.classList.remove("earned", "missed")
-      this.bonusTagTarget.textContent = "⚡ +5 XP BONUS si respondes en <10s"
+      this.bonusTagTarget.textContent = this._t("speed_bonus")
     }
   }
 
@@ -181,7 +182,7 @@ export default class extends Controller {
   _markBonusEarned() {
     if (this.hasBonusTagTarget) {
       this.bonusTagTarget.classList.add("earned")
-      this.bonusTagTarget.textContent = "⚡ +5 XP BONUS ganado!"
+      this.bonusTagTarget.textContent = this._t("speed_bonus_earned")
     }
   }
 
@@ -275,5 +276,11 @@ export default class extends Controller {
       }, 2500)
       this._timers.push(timer)
     }
+  }
+
+  // Strings come from the server through data-lesson-quiz-i18n-value; these two
+  // were hardcoded Spanish shown to every English student (WP-35 §6).
+  _t(key) {
+    return this.i18nValue?.[key] || ""
   }
 }

@@ -1033,6 +1033,7 @@ en:
       exhausted: "We've tried a few times without success. Our team can see the error and will look into it."
       back: "Back to the route"
     journey:
+      locked_topic: "Locked"
       route_label: "ROUTE"
       scroll_to_explore: "Scroll to explore"
       back_to_profile: "Profile"
@@ -1131,6 +1132,11 @@ en:
       gate:
         assessment_required: "Take this exam before finishing the step."
         assessment_not_passed: "You have not passed this exam yet, so the step cannot be finished from here."
+    check:
+      challenge_badge: "QUICK CHALLENGE"
+      speed_bonus: "⚡ +5 XP BONUS if you answer in under %{seconds}s"
+      speed_bonus_earned: "⚡ +5 XP BONUS earned!"
+      explanation_label: "Explanation:"
     review:
       badge: "Review"
       memory_strength: "Memory Strength"

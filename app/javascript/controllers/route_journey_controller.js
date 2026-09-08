@@ -1,4 +1,5 @@
 import { Controller } from "@hotwired/stimulus"
+import { layoutStage } from "journey_layout"
 
 // -- Constants ----------------------------------------------------------------
 const NS = "http://www.w3.org/2000/svg"
@@ -44,18 +45,11 @@ function svg(tag, attrs = {}, children = []) {
   return el
 }
 
-// -- Satellite positions ------------------------------------------------------
-function getSatPositions(count, stageIdx) {
-  const positions = []
-  const arcSpan = Math.PI * 0.9
-  const startAngle = -Math.PI / 2 - arcSpan / 2
-  for (let i = 0; i < count; i++) {
-    const angle = count === 1 ? -Math.PI / 2 : startAngle + (i / (count - 1)) * arcSpan
-    const dist = 185 + (Math.sin(stageIdx * 3 + i * 7) * 0.5 + 0.5) * 30
-    positions.push({ x: Math.cos(angle) * dist, y: Math.sin(angle) * dist })
-  }
-  return positions
-}
+// Satellite geometry lives in app/javascript/lib/journey_layout.js — a pure
+// module with no DOM, tested at 1, 7, 8, 20 and 43 topics. What was here put
+// EVERY topic on one arc of Math.PI * 0.9 at radius 185, which holds about six,
+// with no rule for what happens after that: production has a module with 43
+// steps and rendered forty-three overlapping circles.
 
 // =============================================================================
 export default class extends Controller {
@@ -152,8 +146,18 @@ export default class extends Controller {
     const locked = stage.status === "locked"
     const isCurrent = stage.status === "current"
     const topics = stage.topics || []
-    const satPositions = getSatPositions(topics.length, stageIdx)
+    // Capacity is measured from the ring length and the satellite diameter, and
+    // the overflow goes to a spine below the ring. The wrapper is then sized
+    // from the box the layout reports, so "every satellite is inside the stage"
+    // holds by construction rather than by hope.
+    const stageWidth = wrapper.clientWidth || 720
+    const { satellites, box } = layoutStage(topics.length, { stageWidth })
+    const satPositions = satellites
     const color = stage.color || "#B0A898"
+
+    if (box.height > 0) {
+      wrapper.style.minHeight = `${Math.ceil(box.height + 160)}px`
+    }
 
     // Create SVG element
     const svgEl = svg("svg", {
@@ -268,7 +272,7 @@ export default class extends Controller {
       if (!topic) return
       const done = topic.progress === 100
       const inProg = topic.progress > 0 && topic.progress < 100
-      const r = 40 + (Math.sin(stageIdx * 5 + j * 9) * 0.5 + 0.5) * 8
+      const r = pos.r
 
       // Outer container
       const sat = document.createElement(locked ? "div" : "a")
@@ -276,7 +280,14 @@ export default class extends Controller {
       sat.setAttribute("data-sat-idx", j)
       sat.setAttribute("data-stage-idx", stageIdx)
       sat.style.cssText = `position:absolute; left:calc(50% + ${pos.x}px - ${r}px); top:calc(50% + ${pos.y}px - ${r}px); width:${r * 2}px; height:${r * 2}px; border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:${locked ? "default" : "pointer"}; z-index:10; text-decoration:none; opacity:0; transform:scale(0.5); transition:opacity 0.4s, transform 0.4s;`
+      // The FULL title, even when the visible label is elided, and a real tab
+      // stop in route order. A locked stage renders a <div>, which is not
+      // focusable on its own.
       sat.setAttribute("aria-label", topic.name)
+      sat.setAttribute("title", topic.name)
+      sat.setAttribute("tabindex", "0")
+      if (topic.reinforcement) sat.setAttribute("data-reinforcement", "true")
+      if (pos.placement) sat.setAttribute("data-placement", pos.placement)
 
       // Rings SVG
       const ringSize = r * 2 + 10
