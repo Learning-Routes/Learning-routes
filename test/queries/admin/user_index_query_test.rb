@@ -7,7 +7,14 @@ class AdminUserIndexQueryTest < ActiveSupport::TestCase
     profile = LearningRoutesEngine::LearningProfile.create!(user: @user)
     @route = profile.learning_routes.create!(topic: "Bounded SQL", status: :active, generation_status: "completed")
     @route.route_steps.create!(title: "Done", position: 0, status: :completed)
-    @user.sessions.create!(last_active_at: 2.hours.ago)
+    # Captured, not recomputed. Line 28 used to assert `2.hours.ago.to_i` against
+    # a row written with `2.hours.ago` in this setup — two wall-clock reads, and
+    # the combined suite is long enough that they occasionally land either side
+    # of a second boundary. That is a 1-in-3 red with nothing wrong in the app:
+    # caught by the WP-35 verification pass, pre-existing since before WP-32,
+    # and the only assertion of this shape in the suite.
+    @last_active_at = 2.hours.ago
+    @user.sessions.create!(last_active_at: @last_active_at)
     AiOrchestrator::AiInteraction.create!(user: @user, model: "gpt-5.2", prompt: "secret", status: :completed,
       pricing_status: "priced", cost_microcents: 12_345, metadata: { route_id: @route.id })
     AiOrchestrator::AiInteraction.create!(user: @user, model: "tavily", prompt: "provider usage", status: :completed,
@@ -25,7 +32,7 @@ class AdminUserIndexQueryTest < ActiveSupport::TestCase
     assert_equal 12_345, row.cost_microcents
     assert_equal 1, row.unpriced_interactions
     assert row.purchase_ready
-    assert_equal 2.hours.ago.to_i, row.last_active_at.to_i
+    assert_equal @last_active_at.to_i, row.last_active_at.to_i
     assert_equal 25, result.per_page
   end
 

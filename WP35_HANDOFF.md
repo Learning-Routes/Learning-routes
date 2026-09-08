@@ -277,15 +277,74 @@ violation.
 
 ## Verification
 
-| Suite | Before (`85d6f00`) | After |
+Three runs of each, one suite at a time. The **before** column is my own run on `main` at
+`85d6f00`, not copied.
+
+| Suite | Before (`main` @ `85d6f00`) | After |
 |---|---|---|
 | Main (`bin/rails test`) | 679 runs, 2698 assertions, 0F 0E | **708 runs, 2778 assertions, 0F 0E** |
 | Browser (`bin/rails test:system`) | 50 runs, 370 assertions, 0F 0E | **55 runs, 390 assertions, 0F 0E** |
+| Combined (`bin/rails test test engines/*/test`) | 1073 runs, 4289 assertions, **3F 1E** | **1107 runs, 4389 assertions, 3F 1E** |
 | RuboCop | clean, 572 files | **clean, 578 files** |
 
-**The combined run with engines has not been re-taken since §1–§3 landed** — it is in the closing
-list below, together with the three-runs-each discipline the brief asks for. What is above is a
-single run of each.
+All three runs of each were identical. The combined failures are the four known engine ones, the
+same four as the baseline, in every run — pasted verbatim:
+
+```
+Failure:
+LearningRoutesEngine::RouteGenerationJobTest#test_generates_route_and_creates_steps
+[engines/learning_routes_engine/test/jobs/learning_routes_engine/route_generation_job_test.rb:38]:
+Expected false to be truthy.
+
+Error:
+LearningRoutesEngine::RouteGeneratorTest#test_route_has_level-up_exams_and_final_exam:
+ActiveRecord::StrictLoadingViolationError: `LearningRoutesEngine::LearningRoute` is marked for
+strict_loading. The LearningRoutesEngine::RouteStep association named `:route_steps` cannot be
+lazily loaded.
+    engines/learning_routes_engine/test/services/learning_routes_engine/route_generator_test.rb:56
+
+Failure:
+LearningRoutesEngine::GapAnalysisJobTest#test_enqueues_reinforcement_job_when_gaps_found
+[engines/learning_routes_engine/test/jobs/learning_routes_engine/gap_analysis_job_test.rb:42]:
+No enqueued job found with {:job=>LearningRoutesEngine::ReinforcementJob}
+No jobs of class LearningRoutesEngine::ReinforcementJob were enqueued, job classes enqueued:
+LearningRoutesEngine::GapAnalysisJob
+
+Failure:
+LearningRoutesEngine::ReinforcementJobTest#test_generates_reinforcement_routes_for_unresolved_gaps
+[engines/learning_routes_engine/test/jobs/learning_routes_engine/reinforcement_job_test.rb:44]:
+Expected false to be truthy.
+```
+
+**I did not touch them.** Worth noting for whoever does: the second one is the same
+strict-loading family this package has been chasing — `RouteGeneratorTest` walking
+`route.route_steps` on a strict_loading record — but it is a defect in the TEST, not the app, and
+it belongs with the other four sites listed above.
+
+### One red that was not one of the four, found and fixed
+
+The first pass through this verification produced a FIFTH failure, in one combined run of three:
+
+```
+AdminUserIndexQueryTest#test_returns_bounded_searched_user_metrics_and_exact_billable_cost
+[test/queries/admin/user_index_query_test.rb:28]
+```
+
+It is not §1-§3's. `setup` writes `last_active_at: 2.hours.ago` and line 28 asserted
+`2.hours.ago.to_i` — **two separate wall-clock reads**, and the combined suite is long enough that
+they occasionally land either side of a second boundary. Pre-existing: the line is byte-identical
+on `main` and on `0b72e98` (before WP-32), and the file's last commit is unrelated. It was the
+only assertion of that shape in the suite.
+
+Demonstrated rather than assumed, by advancing the clock one second between the two reads:
+
+```
+DEMO old-style equal? false
+DEMO new-style equal? true
+```
+
+Fixed by capturing the timestamp in `setup` and asserting against it. Three further combined runs
+after the fix: **1107 runs, 4389 assertions, 3F 1E, identical, the four known only.**
 
 ### In a browser, against the development server
 
@@ -317,8 +376,9 @@ the document with Nokogiri was honest.
 - **§4 (journey geometry), §5 (landing), §6 (the words on the screen) are not started.** So are
   the two remaining sweeps the brief asks for: the geometry module's no-overlap tests, and the
   landing test that a signed-in student's nodes are modules with no unlabelled satellite.
-- **The combined-with-engines suite has not been re-run**, and none of the three suites has been
-  run three times as the brief requires. The before column above is a single run at `85d6f00`.
+- **I did not fix the four known engine failures**, including the `RouteGeneratorTest`
+  strict-loading one that is the same family as this package's — it is a test defect and belongs
+  with the other sites listed above.
 - **I did not sweep the codebase for other `html_safe` uses.** One instance is fixed; a real
   review of that class is its own piece of work, and audit §4.7 (`MarkdownRenderer`'s permissive
   allow-list) is the other half of it.
