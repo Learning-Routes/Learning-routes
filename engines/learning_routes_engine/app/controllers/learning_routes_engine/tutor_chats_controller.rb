@@ -48,6 +48,10 @@ module LearningRoutesEngine
     # Without this, any authenticated user could POST against another user's
     # step id, read their lesson content back via the reply, and run billable
     # AI jobs on arbitrary steps (IDOR).
+    # The IDOR gate: this user does not own this step, or the module is locked.
+    # Stays a HARD, EMPTY 403 — `module_lock_authorization_test` asserts the empty
+    # body, and a forged step id must learn nothing from the answer, not even a
+    # friendly sentence.
     def authorize_module_access!
       return if ModuleAccessPolicy.allowed?(user: current_user, route_id: params[:route_id], step_id: params[:step_id])
 
@@ -59,7 +63,17 @@ module LearningRoutesEngine
         user: current_user, route_id: params[:route_id], step_id: params[:step_id]
       )
 
-      head :forbidden
+      refuse(:send_forbidden)
+    end
+
+    # A refusal the student can read, for the gate they can legitimately hit:
+    # they OWN this step and the route was refunded, so no new paid reply may be
+    # commissioned. `head :forbidden` sent an empty body and `send()` had no
+    # `else`, so the skeleton pulsed forever and said nothing. Same shape as
+    # `Assessments::AnswersController#refuse` — the reason is in the body so the
+    # widget can say it. The access gate above stays empty on purpose.
+    def refuse(reason)
+      render json: { error: reason, message: t("tutor.#{reason}") }, status: :forbidden
     end
   end
 end

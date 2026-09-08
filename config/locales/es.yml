@@ -972,6 +972,10 @@ es:
     close: "Cerrar"
     open: "Abrir chat del tutor"
     proactive_hint: "¿Necesitas ayuda?"
+    unavailable: "No he podido responderte ahora mismo. Inténtalo de nuevo en un momento."
+    send_forbidden: "No puedes hacer preguntas en este paso."
+    send_rate_limited: "Demasiadas preguntas seguidas. Espera un momento e inténtalo otra vez."
+    send_failed: "Tu pregunta no llegó. Inténtalo de nuevo."
   # ── Learning Engine ──
   learning_engine:
     reinforcement:

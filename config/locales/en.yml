@@ -973,6 +973,10 @@ en:
     close: "Close"
     open: "Open tutor chat"
     proactive_hint: "Need help?"
+    unavailable: "I could not answer that right now. Please try again in a moment."
+    send_forbidden: "You cannot ask questions on this step."
+    send_rate_limited: "Too many questions at once. Wait a moment and try again."
+    send_failed: "Your question did not reach me. Try again."
   learning_engine:
     reinforcement:
       review:
