@@ -90,7 +90,14 @@ namespace :wp33 do
       new_sections = reparse.call(step, content, step.metadata)
 
       unless compatible.call(old_sections, new_sections)
-        incompatible << [step.id, old_sections.size, new_sections.size]
+        # The two SHAPES, not just the two sizes: a step can have the same
+        # number of sections and a different type at one index, and
+        # "15 sections -> 15" tells the owner nothing about why it was skipped.
+        incompatible << [
+          step.id,
+          old_sections.map { |x| x["type"] }.join(","),
+          new_sections.map { |x| x["type"] }.join(",")
+        ]
         next
       end
 
@@ -133,7 +140,11 @@ namespace :wp33 do
     if incompatible.any?
       puts
       puts "incompatible steps — rewriting these would re-point recorded block_attempts:"
-      incompatible.each { |id, was, now| puts "  #{id}  #{was} sections -> #{now}" }
+      incompatible.each do |id, was, now|
+        puts "  #{id}"
+        puts "    persisted: #{was}"
+        puts "    reparsed:  #{now}"
+      end
     end
 
     if unparseable.any?
