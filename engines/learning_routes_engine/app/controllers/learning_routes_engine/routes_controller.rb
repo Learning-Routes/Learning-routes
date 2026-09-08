@@ -18,11 +18,28 @@ module LearningRoutesEngine
     end
 
     def journey
-      @steps = @route.route_steps.joins(:route_module)
-        .where(learning_routes_engine_route_modules: { access_state: :preview }).order(:position)
+      # Stages are MODULES, not levels (WP-35 §4). A module is the product's real
+      # structure — the thing the student buys and the thing the list view already
+      # groups by — while `level` is nv1/nv2/nv3 and a route whose modules all sit
+      # at nv1 collapsed into a single ring holding every step it had.
+      # ALL modules, not just the preview one. A generated route has exactly one
+      # preview module (RouteModule validates uniqueness on it) and the rest are
+      # `locked`, so filtering to preview would make "stages are modules" mean
+      # "one stage" — fewer than grouping by level, which is not the point of the
+      # change. A locked module is precisely the thing the student has not bought
+      # yet, and the view already had a locked-stage branch that nothing could
+      # reach.
+      #
+      # Locked stages show their SHAPE, never their content: `journey_topic`
+      # masks the title and drops the link for a module the student has no
+      # access to, so the paywall holds.
+      @journey_modules = @route.route_modules
+        .includes(:route_steps)
+        .order(:position, :id)
+      @steps = @journey_modules.select(&:access_preview?).flat_map { |m| m.route_steps.sort_by(&:position) }
       @progress = RouteProgressTracker.new(@route).progress_summary
       @due_reviews = SpacedRepetition.new.due_reviews(@route)
-      @stages = build_journey_stages(@steps)
+      @stages = build_journey_stages(@journey_modules)
       render layout: "journey"
     end
 
@@ -69,44 +86,77 @@ module LearningRoutesEngine
 
     LEVEL_COLORS = { "nv1" => "#5BA880", "nv2" => "#6E9BC8", "nv3" => "#8B80C4" }.freeze
 
-    def build_journey_stages(steps)
-      grouped = steps.group_by(&:level)
-      %w[nv1 nv2 nv3].filter_map do |level|
-        level_steps = grouped[level]
-        next unless level_steps&.any?
+    # One stage per MODULE. `level` survives as a tag on the stage rather than as
+    # the grouping.
+    #
+    # Steps keep their route order inside a stage, which is what makes
+    # reinforcement cluster: `AdaptiveDifficulty#insert_reinforcement!` shifts the
+    # positions of everything after the triggering step and inserts its
+    # reinforcement immediately behind it, in the SAME module
+    # (`triggering_module_id`). Ordering by position is therefore already
+    # clustering; the flag below lets the view say so.
+    def build_journey_stages(modules)
+      modules.filter_map do |route_module|
+        steps = route_module.route_steps.sort_by(&:position)
+        next if steps.empty?
 
-        statuses = level_steps.map(&:status)
-        stage_status = if statuses.all? { |s| s == "completed" }
-                         "completed"
-        elsif statuses.any? { |s| %w[in_progress available].include?(s) }
-                         "current"
-        else
-                         "locked"
-        end
+        # The stage's level is whatever its steps are; mixed modules take the
+        # lowest, which is what a student is being asked to start at.
+        level = steps.map(&:level).compact.min || "nv1"
+
+        readable = route_module.access_preview?
 
         {
+          module_id: route_module.id,
+          access_state: route_module.access_state,
           level: level,
-          label: t("learning_engine.journey.#{level}_label"),
+          label: route_module.localized_title.presence || t("learning_engine.journey.#{level}_label"),
           tag: level.upcase,
-          color: LEVEL_COLORS[level],
-          status: stage_status,
-          topics: level_steps.map { |step|
-            prog = case step.status
-            when "completed" then 100
-            when "in_progress" then 50
-            else 0
-            end
-            {
-              id: step.id,
-              name: step.localized_title,
-              content_type: step.content_type,
-              progress: prog,
-              status: step.status,
-              path: route_step_path(@route, step)
-            }
-          }
+          color: LEVEL_COLORS[level] || LEVEL_COLORS["nv1"],
+          status: readable ? stage_status_for(steps) : "locked",
+          topics: steps.map { |step| journey_topic(step, readable: readable) }
         }
       end
+    end
+
+    def stage_status_for(steps)
+      statuses = steps.map(&:status)
+      return "completed" if statuses.all? { |s| s == "completed" }
+      return "current" if statuses.any? { |s| %w[in_progress available].include?(s) }
+
+      "locked"
+    end
+
+    def journey_topic(step, readable: true)
+      # A locked module contributes its shape and nothing else: the student can
+      # see how much is behind the paywall without reading what they have not
+      # bought.
+      unless readable
+        return {
+          id: step.id, name: t("learning_engine.journey.locked_topic"),
+          content_type: nil, progress: 0, status: "locked",
+          reinforcement: false, path: nil
+        }
+      end
+
+      progress = case step.status
+      when "completed" then 100
+      when "in_progress" then 50
+      else 0
+      end
+
+      {
+        id: step.id,
+        name: step.localized_title,
+        content_type: step.content_type,
+        progress: progress,
+        status: step.status,
+        # Rendered as a class on the satellite so a reinforcement step reads as
+        # belonging to the step above it rather than as an independent topic.
+        reinforcement: step.metadata&.dig("reinforcement").present? ||
+                       step.metadata&.dig("triggering_module_id").present?,
+        path: route_step_path(@route, step)
+      }
     end
   end
 end

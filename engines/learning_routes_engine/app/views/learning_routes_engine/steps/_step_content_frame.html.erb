@@ -18,10 +18,14 @@
   <% else %>
     <%# Text lesson fallback (also used when audio is generating/failed) %>
     <% case @step.content_type %>
-    <% when "lesson" %>
+    <%# An exercise renders through the lesson machinery: same parser, same
+        blocks, same gate. `_exercise.html.erb` drew `@rendered_html` flat and
+        then an Ace editor whose language was hardcoded to JavaScript, so every
+        exercise in every subject was a JavaScript editor and none of its real
+        blocks were ever drawn (WP-35 §3). The badge in `_lesson` distinguishes
+        the two. %>
+    <% when "lesson", "exercise" %>
       <%= render "lesson" %>
-    <% when "exercise" %>
-      <%= render "exercise" %>
     <% when "assessment" %>
       <%= render "assessment" %>
     <% when "review" %>

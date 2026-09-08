@@ -101,9 +101,18 @@ module LearningRoutesEngine
 
     private
 
+    # Eager-loads the `step_quiz` that `set_quiz` reads on every action here.
+    # Same shape, one controller over, as the lazy load WP-32 fixed in
+    # `StepsController#set_route_and_step` — and now squarely on the path WP-35
+    # §3 opened, because an exercise gates on its step quiz and sends the
+    # student here to take it. The step is loaded THROUGH an association
+    # (`@route.route_steps.find`), and `:all` does not mark such records — so
+    # neither the suite nor production (both `:all`) ever sees this one, and
+    # production does not even log it. Only development's `:n_plus_one_only`
+    # refuses it. See StepQuizEagerLoadingTest for the measured table.
     def set_route_and_step
       @route = LearningRoute.find(params[:route_id])
-      @step = @route.route_steps.find(params[:step_id])
+      @step = @route.route_steps.includes(:step_quiz).find(params[:step_id])
     end
 
     def authorize_module_access!

@@ -56,60 +56,15 @@ export default class extends Controller {
     return ""
   }
 
-  async submit() {
-    const code = this.getCode()
-    if (!code.trim()) return
-
-    const token = document.querySelector('meta[name="csrf-token"]')?.content
-    const stepId = this.stepIdValue
-
-    try {
-      const formData = new FormData()
-      formData.append("answer", code)
-
-      const response = await fetch(`/content/exercises/${stepId}/submit_answer`, {
-        method: "POST",
-        headers: {
-          "X-CSRF-Token": token,
-          "Accept": "text/vnd.turbo-stream.html"
-        },
-        body: formData,
-        credentials: "same-origin",
-        signal: this._abortController.signal
-      })
-
-      if (response.ok) {
-        const html = await response.text()
-        Turbo.renderStreamMessage(html)
-      }
-    } catch (error) {
-      if (error.name !== "AbortError") console.error("Submit failed:", error)
-    }
-  }
-
-  async requestHint() {
-    const token = document.querySelector('meta[name="csrf-token"]')?.content
-    const stepId = this.stepIdValue
-
-    try {
-      const response = await fetch(`/content/exercises/${stepId}/get_hint`, {
-        method: "POST",
-        headers: {
-          "X-CSRF-Token": token,
-          "Accept": "text/vnd.turbo-stream.html"
-        },
-        credentials: "same-origin",
-        signal: this._abortController.signal
-      })
-
-      if (response.ok) {
-        const html = await response.text()
-        Turbo.renderStreamMessage(html)
-      }
-    } catch (error) {
-      if (error.name !== "AbortError") console.error("Hint request failed:", error)
-    }
-  }
+  // `submit()` and `requestHint()` lived here and POSTed to
+  // /content/exercises/:id/submit_answer and /get_hint. Both retired with the
+  // exercise code editor (WP-35 §3): an exercise renders through the lesson
+  // machinery now, and its practice is graded per block by BlockGrader,
+  // server-side and gated, rather than by a paid quick_grading call over the
+  // contents of this editor that completed nothing.
+  //
+  // This controller stays because the EXAM's `code` question type mounts it
+  // (steps/_question_code.html.erb) for the editor and its hidden input.
 
   reset() {
     if (this.editor) {

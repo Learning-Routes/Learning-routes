@@ -1,15 +1,8 @@
 import { Controller } from "@hotwired/stimulus"
-// Do NOT import these by name. The bundled turbo-rails module does not export
-// connectStreamSource, and a named import that does not exist is a SyntaxError at
-// load time, which kills the whole controller — the tutor chat has been dead in
-// production for exactly this reason. turbo-rails installs Turbo on window, so read
-// them from there and degrade to a no-op rather than taking the chat down.
-const connectStreamSource = (el) => window.Turbo?.connectStreamSource?.(el)
-const disconnectStreamSource = (el) => window.Turbo?.disconnectStreamSource?.(el)
 
 export default class extends Controller {
-  static targets = ["panel", "messages", "input", "fab", "badge", "backdrop", "sendBtn"]
-  static values = { stepId: String, url: String }
+  static targets = ["panel", "messages", "input", "fab", "badge", "backdrop", "sendBtn", "error"]
+  static values = { stepId: String, url: String, i18n: Object }
 
   connect() {
     this.open = false
@@ -19,19 +12,25 @@ export default class extends Controller {
     // Auto-scroll on new messages
     this.setupAutoScroll()
 
-    // Subscribe to Turbo Stream channel for this step
-    this.subscribeToChannel()
+    // No subscription code here any more. The panel renders
+    // `turbo_stream_from "tutor_chat_step_<id>"`, so turbo-rails owns the
+    // subscription and tears it down with the element. What used to be here was
+    // `new EventSource("/turbo-stream?stream=…")` against a route this app does
+    // not have: a 404 every few seconds per open lesson, delivering nothing.
 
     // Proactive suggestion after 45s of no scroll
     this.setupProactiveSuggestion()
   }
 
   disconnect() {
-    if (this.streamSource) {
-      disconnectStreamSource(this.streamSource)
-    }
     if (this.proactiveTimer) {
       clearTimeout(this.proactiveTimer)
+    }
+    if (this._scrollHandler) {
+      document.removeEventListener("scroll", this._scrollHandler)
+    }
+    if (this.scrollObserver) {
+      this.scrollObserver.disconnect()
     }
   }
 
@@ -72,15 +71,22 @@ export default class extends Controller {
         body: "message=" + encodeURIComponent(message)
       })
 
-      if (response.ok) {
-        const html = await response.text()
-        Turbo.renderStreamMessage(html)
+      if (!response.ok) {
+        // The server said no and the student was told nothing: the skeleton
+        // pulsed forever. A 403 is the generation gate on a refunded route, a
+        // 429 is the rate limiter, and anything else is worth saying plainly.
+        await this._showSendError(response)
+        return
       }
+
+      this._clearError()
+      Turbo.renderStreamMessage(await response.text())
 
       // Show loading skeleton for AI response
       this.showSkeleton()
     } catch (e) {
       console.error("[TutorChat] Send failed:", e)
+      this._showError(this._t("send_failed"))
     } finally {
       this.inputTarget.disabled = false
       if (this.hasSendBtnTarget) this.sendBtnTarget.style.opacity = "1"
@@ -88,14 +94,18 @@ export default class extends Controller {
     }
   }
 
+  // Tokens, not hex. The skeleton used #887F72 and two rgba() literals while the
+  // panel it sits in used three different ones.
   showSkeleton() {
     const skeleton = document.createElement("div")
     skeleton.className = "flex gap-2 tutor-skeleton"
-    skeleton.innerHTML = '<div class="w-7 h-7 rounded-full flex items-center justify-center text-xs shrink-0" style="background: rgba(44, 38, 30, 0.08);">🤖</div>' +
-      '<div class="px-3 py-2 rounded-2xl rounded-tl-sm" style="background: rgba(44, 38, 30, 0.05); max-width: 85%;">' +
-      '<div class="flex gap-1"><span class="w-2 h-2 rounded-full animate-pulse" style="background: #887F72;"></span>' +
-      '<span class="w-2 h-2 rounded-full animate-pulse" style="background: #887F72; animation-delay: 0.2s;"></span>' +
-      '<span class="w-2 h-2 rounded-full animate-pulse" style="background: #887F72; animation-delay: 0.4s;"></span></div></div>'
+    const dot = (delay) =>
+      `<span class="w-2 h-2 rounded-full animate-pulse" style="background: var(--color-muted);${delay}"></span>`
+    skeleton.innerHTML =
+      '<div class="w-7 h-7 rounded-full flex items-center justify-center text-xs shrink-0" style="background: var(--color-tint-strong);">🤖</div>' +
+      '<div class="px-3 py-2 rounded-2xl rounded-tl-sm" style="background: var(--color-tint); max-width: 85%;">' +
+      '<div class="flex gap-1">' + dot("") + dot(" animation-delay: 0.2s;") + dot(" animation-delay: 0.4s;") +
+      "</div></div>"
     if (this.hasMessagesTarget) {
       this.messagesTarget.appendChild(skeleton)
       this.scrollToBottom()
@@ -123,12 +133,41 @@ export default class extends Controller {
     }
   }
 
-  subscribeToChannel() {
-    // Connect to ActionCable Turbo Stream for real-time updates
-    const streamName = "tutor_chat_step_" + this.stepIdValue
-    const source = new EventSource("/turbo-stream?stream=" + encodeURIComponent(streamName))
-    // Turbo Stream via ActionCable is handled automatically if cable is set up
-    // For polling fallback, the MutationObserver handles scroll
+  // ── Refusals the student can read ──────────────────────────────────────
+
+  async _showSendError(response) {
+    this.removeSkeleton()
+
+    // Prefer the server's own sentence when it sends one, the way
+    // answers_controller#refuse does.
+    let message = null
+    try {
+      const body = await response.clone().json()
+      message = body?.message
+    } catch (_) { /* not JSON; fall through to the status map */ }
+
+    if (!message) {
+      if (response.status === 403) message = this._t("send_forbidden")
+      else if (response.status === 429) message = this._t("send_rate_limited")
+      else message = this._t("send_failed")
+    }
+    this._showError(message)
+  }
+
+  _showError(message) {
+    if (!this.hasErrorTarget) return
+    this.errorTarget.textContent = message
+    this.errorTarget.classList.remove("hidden")
+  }
+
+  _clearError() {
+    if (!this.hasErrorTarget) return
+    this.errorTarget.textContent = ""
+    this.errorTarget.classList.add("hidden")
+  }
+
+  _t(key) {
+    return this.i18nValue?.[key] || ""
   }
 
   setupProactiveSuggestion() {

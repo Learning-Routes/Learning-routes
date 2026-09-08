@@ -158,9 +158,13 @@ module LearningRoutesEngine
     # in the app.
     #
     # The suite did not catch it and still would not without
-    # StepQuizEagerLoadingTest, which pins the `:n_plus_one_only` mode
-    # development and production actually run — `test.rb`'s `:all` is the LOOSER
-    # setting for this association, not the stricter one its comment assumes.
+    # StepQuizEagerLoadingTest. The reason is the LOAD PATH, not the association:
+    # `:all` marks records loaded directly from the model, while a record fetched
+    # through an association — which is what `@route.route_steps.find` returns —
+    # is marked only under `:n_plus_one_only`. Test and PRODUCTION both run
+    # `:all` (production.rb sets only the `:log` action and Rails defaults the
+    # mode), so neither sees this; DEVELOPMENT sets `:n_plus_one_only` and
+    # raises, which is how it was found.
     def set_route_and_step
       @route = LearningRoute.includes(:learning_profile).find(params[:route_id])
       @step = @route.route_steps.includes(:step_quiz).find(params[:id])
@@ -383,11 +387,22 @@ module LearningRoutesEngine
           @rendered_html = ContentEngine::MarkdownRenderer.render(@content.body)
         end
       when "exercise"
+        # An exercise IS a lesson whose blocks are practice (WP-35 §3). Its body
+        # comes from the same `lesson_content` prompt, with the same `## Match`,
+        # `## Complete` and `## Scenario` blocks; `stage_section_parsing!`
+        # persists them and `outstanding_blocks_for` counts them. This branch
+        # resolved no sections and the view drew none, so the gate refused
+        # `complete` naming section indices that were not on the page — and the
+        # student saw raw `term ==> definition` lines under a JavaScript editor
+        # nothing had asked for.
         @content = ContentEngine::AiContent.where(route_step: @step).by_type(:exercise).first
         unless @content
           request_content_generation!
         end
-        @rendered_html = ContentEngine::MarkdownRenderer.render(@content.body) if @content
+        if @content
+          @sections = ContentEngine::SectionResolver.call(@step).map(&:deep_symbolize_keys)
+          @rendered_html = ContentEngine::MarkdownRenderer.render(@content.body)
+        end
       when "assessment"
         @assessment = Assessments::Assessment.find_by(route_step: @step)
         if @assessment.nil? && generation_authorized?

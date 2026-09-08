@@ -112,7 +112,15 @@
 
     <%# ── Step title ── %>
     <div style="padding:1rem 1rem 0;">
-      <h1 style="font-size:1.75rem; font-weight:800; color:var(--color-txt); margin:0; letter-spacing:-0.5px; line-height:1.25;"><%= @step.localized_title %></h1>
+      <%# An exercise renders through this partial (WP-35 §3) and must still read
+          as an exercise. A lesson keeps its unbadged title. %>
+      <% if @step.content_type_exercise? %>
+        <span class="lesson-section-badge" style="background:var(--color-badge-exercise-bg); color:var(--color-badge-exercise-text); border:1px solid var(--color-border-subtle);">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+          <span><%= t('learning_engine.exercise.badge') %></span>
+        </span>
+      <% end %>
+      <h1 style="font-size:1.75rem; font-weight:800; color:var(--color-txt); margin:<%= @step.content_type_exercise? ? '0.75rem 0 0' : '0' %>; letter-spacing:-0.5px; line-height:1.25;"><%= @step.localized_title %></h1>
       <% if @step.localized_description.present? %>
         <p style="font-size:0.9375rem; color:var(--color-sub); margin:0.5rem 0 0; line-height:1.5;"><%= @step.localized_description %></p>
       <% end %>
@@ -252,8 +260,9 @@
   <%# ── Fallback: monolithic render if parser returned no sections ── %>
   <div class="space-y-6">
     <div>
-      <span style="display:inline-flex; align-items:center; border-radius:9999px; padding:0.125rem 0.625rem; font-size:0.75rem; font-weight:500; background:var(--color-badge-lesson-bg); color:var(--color-badge-lesson-text); margin-bottom:0.5rem;">
-        <%= t('learning_engine.lesson.badge') %>
+      <% badge_kind = @step.content_type_exercise? ? "exercise" : "lesson" %>
+      <span style="display:inline-flex; align-items:center; border-radius:9999px; padding:0.125rem 0.625rem; font-size:0.75rem; font-weight:500; background:var(--color-badge-<%= badge_kind %>-bg); color:var(--color-badge-<%= badge_kind %>-text); margin-bottom:0.5rem;">
+        <%= t("learning_engine.#{badge_kind}.badge") %>
       </span>
       <h1 style="font-size:1.5rem; font-weight:700; color:var(--color-txt); margin:0;"><%= @step.localized_title %></h1>
     </div>

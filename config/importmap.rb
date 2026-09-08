@@ -6,6 +6,10 @@ pin "@hotwired/stimulus", to: "stimulus.min.js"
 pin "@hotwired/stimulus-loading", to: "stimulus-loading.js"
 pin_all_from "app/javascript/controllers", under: "controllers"
 
+# Pure journey geometry (no DOM), shared by route_journey_controller and tested
+# under node by test/javascript/journey_layout_test.rb.
+pin "journey_layout", to: "lib/journey_layout.js"
+
 # === Content Delivery ===
 
 # KaTeX - math formula rendering

@@ -1,0 +1,11 @@
+<%# The one place an AI-tool failure is drawn.
+    It used to be built as a String inside the controller and handed to
+    `turbo_stream.update(target, html: "<p …>")`, which renders through
+    ActionView::Template::HTML and ESCAPES a plain String — so the student read
+    `<p style='color:var(--color-error); padding:0.75rem;'>…</p>` as text.
+    Markup belongs in a template. %>
+<div role="status" aria-live="polite"
+     style="background:var(--color-tint); border:1px solid var(--color-border-subtle);
+            border-radius:12px; padding:1rem; font-size:0.875rem; color:var(--color-sub);">
+  <%= message %>
+</div>

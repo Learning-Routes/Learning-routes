@@ -972,6 +972,10 @@ es:
     close: "Cerrar"
     open: "Abrir chat del tutor"
     proactive_hint: "¿Necesitas ayuda?"
+    unavailable: "No he podido responderte ahora mismo. Inténtalo de nuevo en un momento."
+    send_forbidden: "No puedes hacer preguntas en este paso."
+    send_rate_limited: "Demasiadas preguntas seguidas. Espera un momento e inténtalo otra vez."
+    send_failed: "Tu pregunta no llegó. Inténtalo de nuevo."
   # ── Learning Engine ──
   learning_engine:
     reinforcement:
@@ -1029,6 +1033,7 @@ es:
       exhausted: "Lo hemos intentado varias veces sin éxito. Nuestro equipo puede ver el error y lo revisará."
       back: "Volver a la ruta"
     journey:
+      locked_topic: "Bloqueado"
       route_label: "RUTA"
       scroll_to_explore: "Desplaza para explorar"
       back_to_profile: "Perfil"
@@ -1067,6 +1072,8 @@ es:
       block_example: "Ejemplo del mundo real"
       block_summary: "Puntos clave"
       diagram_label: "DIAGRAMA"
+      diagram_unavailable: "Este diagrama no se ha podido dibujar."
+      diagram_source: "Ver el código del diagrama"
       continue: "Continuar"
       back: "Anterior"
       level_up_title: "¡Subiste de nivel!"
@@ -1108,11 +1115,6 @@ es:
         tip: ["Pro tip", "Recuerda esto"]
     exercise:
       badge: "Ejercicio"
-      reset: "Reiniciar"
-      submit: "Enviar respuesta"
-      hint: "Pista"
-      previous_submissions: "Envíos anteriores"
-      score: "Puntaje:"
       no_content: "Aún no hay contenido de ejercicio disponible."
     assessment:
       badge: "Evaluación"
@@ -1132,6 +1134,11 @@ es:
       gate:
         assessment_required: "Haz esta evaluación antes de terminar el paso."
         assessment_not_passed: "Todavía no has superado esta evaluación, así que el paso no puede terminarse desde aquí."
+    check:
+      challenge_badge: "DESAFÍO RÁPIDO"
+      speed_bonus: "⚡ +5 XP BONUS si respondes en menos de %{seconds}s"
+      speed_bonus_earned: "⚡ ¡+5 XP BONUS conseguido!"
+      explanation_label: "Explicación:"
     review:
       badge: "Repaso"
       memory_strength: "Fortaleza de memoria"
@@ -1435,6 +1442,8 @@ es:
     practical_example: "Ejemplo práctico"
     simplified: "Simplificado"
     example_illustration: "Ilustración del ejemplo"
+    agent_failed: "Esa herramienta no ha podido responder ahora mismo. Inténtalo de nuevo en un momento."
+    agent_rate_limited: "Estás usando las herramientas de IA muy seguido. Espera un momento e inténtalo otra vez."
     score: "Puntuación"
 
   # ── Paso completado ──

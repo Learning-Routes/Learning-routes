@@ -7,51 +7,38 @@ class LandingController < ApplicationController
     # Use fresh_when to leverage ETags and avoid rendering if client has cache
     fresh_when(etag: landing_cache_key, public: true) if stale_check_enabled?
 
-    if current_user
-      load_personalized_route_data
-    else
-      @route_nodes = default_translated_nodes
-    end
+    # A signed-in student with a route goes to their route (WP-35 §5).
+    #
+    # The landing used to render a "personalized" version of the visitor page:
+    # `build_route_nodes` gave each node `sats: satellite_pattern(i)` — GEOMETRY
+    # ONLY — while the marketing version gave each satellite a `topic` and a
+    # `desc`. So the real version drew circles with `undefined` labels: three
+    # empty rings attached to "Vocabulario de … / LEC / 01 / Completado". It also
+    # took the first six steps by position, which today is two lessons and four
+    # reinforcement steps.
+    #
+    # Rather than invent data for a decorative layout, the landing stays what it
+    # is — a visitor page — and a student who has somewhere to be is sent there.
+    return redirect_to(destination_for(current_user)) if current_user
+
+    @route_nodes = default_translated_nodes
   end
 
   private
 
-  def load_personalized_route_data
-    profile = LearningRoutesEngine::LearningProfile.find_by(user: current_user)
-    unless profile
-      @route_nodes = default_translated_nodes
-      return
-    end
+  # Where a signed-in student belongs instead of the landing: their most
+  # recently touched route, or the dashboard when they have none yet.
+  def destination_for(user)
+    profile = LearningRoutesEngine::LearningProfile.find_by(user: user)
+    return main_app.dashboard_path if profile.nil?
 
-    @active_route = LearningRoutesEngine::LearningRoute
+    route = LearningRoutesEngine::LearningRoute
       .where(learning_profile: profile)
       .where.not(status: [:draft])
-      .includes(:route_steps)
       .order(updated_at: :desc)
       .first
 
-    if @active_route && @active_route.route_steps.any?
-      @route_nodes = build_route_nodes(@active_route)
-    else
-      @active_route = nil # reset so views show default content
-      @route_nodes = default_translated_nodes
-    end
-  end
-
-  def build_route_nodes(route)
-    steps = route.route_steps.order(:position).limit(6)
-    steps.each_with_index.map do |step, i|
-      {
-        id: "s#{i}",
-        label: step.localized_title.truncate(18),
-        tag: content_type_tag(step.content_type),
-        color: status_color(step.status),
-        side: i.even? ? "left" : "right",
-        note: status_note(step.status),
-        goal: i == steps.size - 1,
-        sats: satellite_pattern(i)
-      }
-    end
+    route ? learning_routes_engine.route_path(route) : main_app.dashboard_path
   end
 
   # Build translated default nodes from I18n YAML + satellite geometry
@@ -89,47 +76,6 @@ class LandingController < ApplicationController
       { sats: [{ a: -52, d: 1.06, r: 40 }, { a: 0, d: 1.24, r: 42 }, { a: 52, d: 1.1, r: 38 }] },
       { sats: [{ a: -48, d: 1.1, r: 42 }, { a: 0, d: 1.28, r: 40 }, { a: 48, d: 1.1, r: 42 }] }
     ]
-  end
-
-  def content_type_tag(type)
-    case type
-    when "lesson" then "LEC"
-    when "exercise" then "EJR"
-    when "assessment" then "EXM"
-    when "review" then "REP"
-    else type&.first(3)&.upcase
-    end
-  end
-
-  def status_color(status)
-    case status
-    when "completed" then "#5BA880"
-    when "in_progress" then "#6E9BC8"
-    when "available" then "#B09848"
-    else "#B0A898"
-    end
-  end
-
-  def status_note(status)
-    case status
-    when "completed" then I18n.t("landing.status.completed")
-    when "in_progress" then I18n.t("landing.status.in_progress")
-    when "available" then I18n.t("landing.status.available")
-    when "locked" then I18n.t("landing.status.locked")
-    else nil
-    end
-  end
-
-  def satellite_pattern(index)
-    patterns = [
-      [{ a: -52, d: 1.06, r: 40, topic: "", desc: "" }, { a: 0, d: 1.24, r: 38, topic: "", desc: "" }, { a: 52, d: 1.06, r: 40, topic: "", desc: "" }],
-      [{ a: -48, d: 1.1, r: 40, topic: "", desc: "" }, { a: 48, d: 1.1, r: 42, topic: "", desc: "" }],
-      [{ a: -52, d: 1.1, r: 40, topic: "", desc: "" }, { a: 0, d: 1.28, r: 42, topic: "", desc: "" }, { a: 52, d: 1.06, r: 38, topic: "", desc: "" }],
-      [{ a: -48, d: 1.14, r: 40, topic: "", desc: "" }, { a: 48, d: 1.14, r: 40, topic: "", desc: "" }],
-      [{ a: -52, d: 1.06, r: 40, topic: "", desc: "" }, { a: 0, d: 1.24, r: 42, topic: "", desc: "" }, { a: 52, d: 1.1, r: 38, topic: "", desc: "" }],
-      [{ a: -48, d: 1.1, r: 42, topic: "", desc: "" }, { a: 0, d: 1.28, r: 40, topic: "", desc: "" }, { a: 48, d: 1.1, r: 42, topic: "", desc: "" }]
-    ]
-    patterns[index % patterns.size]
   end
 
   # === PERFORMANCE HELPERS ===

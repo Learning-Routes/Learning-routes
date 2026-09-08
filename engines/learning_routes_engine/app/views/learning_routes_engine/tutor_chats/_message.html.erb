@@ -1,10 +1,18 @@
+<%# `message.content.html_safe` used to render EVERY message raw, including the
+    student's own text straight back out of the database — stored XSS on a field
+    the student controls. The assistant's markdown still renders, but through
+    MarkdownRenderer, which sanitizes; the student's own words are escaped. %>
 <% is_user = message.role == "user" %>
 <div class="flex gap-2 <%= is_user ? 'flex-row-reverse' : '' %>" id="tutor-msg-<%= message.id %>">
   <% unless is_user %>
-    <div class="w-7 h-7 rounded-full flex items-center justify-center text-xs shrink-0" style="background: rgba(44, 38, 30, 0.08);">🤖</div>
+    <div class="w-7 h-7 rounded-full flex items-center justify-center text-xs shrink-0" style="background: var(--color-tint-strong);">🤖</div>
   <% end %>
   <div class="px-3 py-2 rounded-2xl text-sm <%= is_user ? 'rounded-tr-sm' : 'rounded-tl-sm' %>"
-       style="<%= is_user ? 'background: #2C261E; color: #E8E4DC;' : 'background: rgba(44, 38, 30, 0.05); color: #1C1812;' %> max-width: 85%;">
-    <%= message.content.html_safe %>
+       style="<%= is_user ? 'background: var(--color-txt); color: var(--color-bg);' : 'background: var(--color-tint); color: var(--color-txt);' %> max-width: 85%;">
+    <% if is_user %>
+      <%= message.content %>
+    <% else %>
+      <%= ContentEngine::MarkdownRenderer.render(message.content.to_s) %>
+    <% end %>
   </div>
 </div>

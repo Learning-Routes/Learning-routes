@@ -973,6 +973,10 @@ en:
     close: "Close"
     open: "Open tutor chat"
     proactive_hint: "Need help?"
+    unavailable: "I could not answer that right now. Please try again in a moment."
+    send_forbidden: "You cannot ask questions on this step."
+    send_rate_limited: "Too many questions at once. Wait a moment and try again."
+    send_failed: "Your question did not reach me. Try again."
   learning_engine:
     reinforcement:
       review:
@@ -1029,6 +1033,7 @@ en:
       exhausted: "We've tried a few times without success. Our team can see the error and will look into it."
       back: "Back to the route"
     journey:
+      locked_topic: "Locked"
       route_label: "ROUTE"
       scroll_to_explore: "Scroll to explore"
       back_to_profile: "Profile"
@@ -1067,6 +1072,8 @@ en:
       block_example: "Real-World Example"
       block_summary: "Key Takeaways"
       diagram_label: "DIAGRAM"
+      diagram_unavailable: "This diagram could not be drawn."
+      diagram_source: "Show the diagram source"
       continue: "Continue"
       back: "Back"
       level_up_title: "Level Up!"
@@ -1108,11 +1115,6 @@ en:
         tip: ["Pro tip", "Remember this"]
     exercise:
       badge: "Exercise"
-      reset: "Reset"
-      submit: "Submit Answer"
-      hint: "Get Hint"
-      previous_submissions: "Previous Submissions"
-      score: "Score:"
       no_content: "No exercise content available yet."
     assessment:
       badge: "Assessment"
@@ -1132,6 +1134,11 @@ en:
       gate:
         assessment_required: "Take this exam before finishing the step."
         assessment_not_passed: "You have not passed this exam yet, so the step cannot be finished from here."
+    check:
+      challenge_badge: "QUICK CHALLENGE"
+      speed_bonus: "⚡ +5 XP BONUS if you answer in under %{seconds}s"
+      speed_bonus_earned: "⚡ +5 XP BONUS earned!"
+      explanation_label: "Explanation:"
     review:
       badge: "Review"
       memory_strength: "Memory Strength"
@@ -1495,6 +1502,8 @@ en:
     practical_example: "Practical Example"
     simplified: "Simplified"
     example_illustration: "Example illustration"
+    agent_failed: "That tool could not answer just now. Try again in a moment."
+    agent_rate_limited: "You are using the AI tools quickly. Wait a moment and try again."
     score: "Score"
 
   step_complete:

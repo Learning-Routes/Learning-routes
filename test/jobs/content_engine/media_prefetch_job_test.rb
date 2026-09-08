@@ -112,45 +112,34 @@ class ContentEngine::MediaPrefetchJobTest < ActiveSupport::TestCase
     Rails.cache = original_cache
   end
 
-  # ── 4. Mermaid validation ─────────────────────────────────────────
-  test "mermaid validation detects valid flowchart syntax" do
+  # ── 4. Mermaid is NOT validated here, and that is the decision ────
+  #
+  # `validate_mermaid` checked only that the first word of a block was a known
+  # diagram type. That cannot catch the syntax errors that actually fail — a
+  # block beginning `flowchart` with a malformed body passed — and it wrote
+  # `mermaid_invalid` into parsed_sections, a flag NOTHING has ever read. Three
+  # tests covered it and all three passed while the owner's page showed two
+  # "Syntax error in text / mermaid version 11.16.0" graphics.
+  #
+  # Removed in WP-35 §7. Mermaid parses in the browser at render time, where the
+  # failure is now suppressed, localized and collapsed. This test exists so the
+  # removal reads as a decision rather than an omission.
+  test "no mermaid task is scheduled and no mermaid flag is written" do
     job = ContentEngine::MediaPrefetchJob.new
+    sections = [{
+      "type" => "visual",
+      "body" => "Intro\n\n```mermaid\nflowchart TD\n  A-->B\n```"
+    }]
 
-    result = job.send(:validate_mermaid, {
-      key: "mermaid_0",
-      type: :mermaid,
-      index: 0,
-      body: "```mermaid\nflowchart TD\n  A-->B\n```"
-    })
+    job.instance_variable_set(:@route, @route)
+    job.instance_variable_set(:@user, @user)
+    job.instance_variable_set(:@step, @step)
+    tasks = job.send(:build_media_tasks, sections)
 
-    assert_equal "ready", result[:status]
-    assert_equal 1, result[:mermaid_count]
-  end
-
-  test "mermaid validation detects invalid syntax" do
-    job = ContentEngine::MediaPrefetchJob.new
-
-    result = job.send(:validate_mermaid, {
-      key: "mermaid_0",
-      type: :mermaid,
-      index: 0,
-      body: "```mermaid\ninvalid diagram stuff\n```"
-    })
-
-    assert_equal "invalid", result[:status]
-  end
-
-  test "mermaid validation accepts sequenceDiagram" do
-    job = ContentEngine::MediaPrefetchJob.new
-
-    result = job.send(:validate_mermaid, {
-      key: "mermaid_0",
-      type: :mermaid,
-      index: 0,
-      body: "```mermaid\nsequenceDiagram\n  Alice->>Bob: Hello\n```"
-    })
-
-    assert_equal "ready", result[:status]
+    assert_equal [], tasks.select { |t| t[:type] == :mermaid },
+      "a mermaid task was scheduled again; the validation it ran validated nothing"
+    assert_not job.respond_to?(:validate_mermaid, true),
+      "validate_mermaid is back — it cannot catch a syntax error and nothing reads its flag"
   end
 
   # ── 5. Fallback SVG for failed images ─────────────────────────────

@@ -9,10 +9,13 @@ ContentEngine::Engine.routes.draw do
     end
   end
 
+  # `submit_answer` and `get_hint` retired with the exercise code editor
+  # (WP-35 §3). `run_code` is a placeholder with no caller — the `## Playground`
+  # block runs Pyodide in the browser — but it costs nothing and
+  # `module_lock_authorization_test` asserts a locked module cannot reach it, so
+  # it stays rather than being quietly deleted along with the two that had to go.
   resources :exercises, only: [] do
     member do
-      post :submit_answer
-      post :get_hint
       post :run_code
     end
   end
