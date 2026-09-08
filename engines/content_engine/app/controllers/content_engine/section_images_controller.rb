@@ -96,12 +96,20 @@ module ContentEngine
       return unless parsed.is_a?(Array) && parsed[section_index]
 
       parsed[section_index]["image_url"] = image_url
-      @step.update!(metadata: metadata.merge("parsed_sections" => parsed))
+      # merge_metadata!, not update!(metadata: ...merge): the second writes the
+      # whole jsonb blob from the copy this request is holding. Same one-line
+      # defect WP-33 §1 fixed in SectionResolver and the reparse task.
+      @step.merge_metadata!("parsed_sections" => parsed)
     end
 
     def render_image_html(image_url, section)
-      alt_text = section["alt_text"].presence || section["title"]
-      caption = section["title"]
+      # `section["title"]` is nil for an untitled block now that the parser no
+      # longer bakes a translated default into parsed_sections (WP-33 §4), so
+      # both of these fall back to the same key the view's `block_title` uses.
+      # Without it an untitled visual loses its accessible name.
+      default_title = t("learning_engine.blocks.default_title.visual")
+      alt_text = section["alt_text"].presence || section["title"].presence || default_title
+      caption = section["title"].presence || default_title
 
       <<~HTML
         <div style="border-radius:14px; overflow:hidden; border:1px solid var(--color-border-subtle); box-shadow:0 2px 8px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.02);">

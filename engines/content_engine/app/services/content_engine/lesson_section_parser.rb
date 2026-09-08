@@ -125,7 +125,7 @@ module ContentEngine
 
       {
         type: "check",
-        title: "Comprueba tu conocimiento",
+        title: nil,
         question: question,
         options: options,
         explanation: nil
@@ -140,12 +140,12 @@ module ContentEngine
 
     def parse_example_block(title_line, body)
       full_body = title_line.present? ? "#{title_line}\n#{body}" : body
-      { type: "example", title: "Ejemplo", body: full_body.strip }
+      { type: "example", title: nil, body: full_body.strip }
     end
 
     def parse_tip_block(title_line, body)
       full_body = title_line.present? ? "#{title_line}\n#{body}" : body
-      { type: "tip", title: "Consejo", body: full_body.strip }
+      { type: "tip", title: nil, body: full_body.strip }
     end
 
     def parse_summary_block(title_line, body)
@@ -160,7 +160,7 @@ module ContentEngine
 
       {
         type: "summary",
-        title: "Resumen",
+        title: nil,
         key_points: key_points,
         body: remaining.presence
       }
@@ -214,13 +214,13 @@ module ContentEngine
           when :visual
             sections << parse_heading_visual(title, body)
           when :example
-            sections << { type: "example", title: title.presence || "Ejemplo", body: body }
+            sections << { type: "example", title: title.presence, body: body }
           when :tip
-            sections << { type: "tip", title: title.presence || "Consejo", body: body }
+            sections << { type: "tip", title: title.presence, body: body }
           when :summary
             sections << parse_heading_summary(title, body)
           when :concept
-            sections << build_concept_or_visual(title.presence || "Concepto", body)
+            sections << build_concept_or_visual(title.presence, body)
           when :drag_drop
             sections << parse_heading_drag_drop(title, body)
           when :fill_blank
@@ -339,7 +339,7 @@ module ContentEngine
 
       {
         type: "visual",
-        title: title_from_heading.presence || "Visual",
+        title: title_from_heading.presence,
         alt_text: title_from_heading.to_s.strip,
         body: body,
         image_description: image_description.presence,
@@ -365,7 +365,7 @@ module ContentEngine
 
       {
         type: "summary",
-        title: title_from_heading.presence || "Resumen",
+        title: title_from_heading.presence,
         key_points: key_points,
         body: remaining.presence
       }
@@ -447,7 +447,7 @@ module ContentEngine
       sentence = text.gsub(/BLANK--(.+?)--BLANK/, "___")
 
       {
-        type: "fill_blank", title: title.presence || "Complete",
+        type: "fill_blank", title: title.presence,
         sentence: sentence, blanks: blanks, aftermath: aftermath, body: body
       }
     end
@@ -466,7 +466,7 @@ module ContentEngine
       expected = expected_text.strip.presence
 
       {
-        type: "code_playground", title: title.presence || "Playground",
+        type: "code_playground", title: title.presence,
         language: language, code: code, expected_output: expected,
         aftermath: aftermath, body: body
       }
@@ -492,7 +492,7 @@ module ContentEngine
       end
 
       {
-        type: "simulation", title: title.presence || "Simulation",
+        type: "simulation", title: title.presence,
         variables: variables, formula: formula, aftermath: aftermath, body: body
       }
     end
@@ -525,7 +525,7 @@ module ContentEngine
       end
 
       {
-        type: "scenario", title: title.presence || "Scenario",
+        type: "scenario", title: title.presence,
         situation: situation.join(" ").strip, options: options,
         aftermath: aftermath, body: body
       }
@@ -569,7 +569,7 @@ module ContentEngine
       end
 
       {
-        type: "flashcards", title: title.presence || "Flashcards",
+        type: "flashcards", title: title.presence,
         cards: cards, aftermath: aftermath, body: body
       }
     end
@@ -611,11 +611,11 @@ module ContentEngine
     end
 
     def blank_concept_section
-      { type: "concept", title: "Lección", body: "" }
+      { type: "concept", title: nil, body: "" }
     end
 
     def empty_summary_section
-      { type: "summary", title: "Resumen", key_points: [], body: nil }
+      { type: "summary", title: nil, key_points: [], body: nil }
     end
 
     # ── Injection helpers ─────────────────────────────────────────────
@@ -651,7 +651,7 @@ module ContentEngine
 
             result << {
               type: "check",
-              title: "Comprueba tu conocimiento",
+              title: nil,
               question: kc["question"] || kc[:question],
               options: options,
               explanation: kc["explanation"] || kc[:explanation]
@@ -672,7 +672,7 @@ module ContentEngine
 
         result << {
           type: "check",
-          title: "Comprueba tu conocimiento",
+          title: nil,
           question: kc["question"] || kc[:question],
           options: options,
           explanation: kc["explanation"] || kc[:explanation]
@@ -691,7 +691,7 @@ module ContentEngine
 
       audio = {
         type: "audio",
-        title: "Audio explicación",
+        title: nil,
         audio_url: @audio_url,
         transcript: nil
       }
@@ -710,7 +710,7 @@ module ContentEngine
 
       sections << {
         type: "summary",
-        title: "Resumen",
+        title: nil,
         key_points: key_points,
         body: nil
       }

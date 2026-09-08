@@ -25,7 +25,7 @@
     <%= t('learning_engine.blocks.badge_match') %>
   </div>
 
-  <h2 class="text-2xl font-bold" style="color: var(--color-txt);"><%= section[:title] %></h2>
+  <h2 class="text-2xl font-bold" style="color: var(--color-txt);"><%= block_title(section) %></h2>
 
   <%# The prose the author wrote above the pairs. `parse_heading_drag_drop`
       selected only the `==>` lines and discarded everything else, so an

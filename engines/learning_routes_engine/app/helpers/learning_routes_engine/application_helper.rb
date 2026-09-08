@@ -2,6 +2,28 @@
 
 module LearningRoutesEngine
   module ApplicationHelper
+    # The title a block shows, resolved AT RENDER TIME.
+    #
+    # The parser used to bake a literal into `parsed_sections` when a heading had
+    # no title — Spanish for prose blocks ("Concepto", "Resumen", "Comprueba tu
+    # conocimiento"), English for interactive ones ("Match", "Playground"). It
+    # runs inside `ContentPipelineJob`, whose `I18n.locale` is whatever the
+    # worker happens to have and not the route's, so a default persisted from a
+    # job was in the wrong language about half the time — and stayed wrong,
+    # because the array is a cache the page renders from.
+    #
+    # NEVER PERSIST A TRANSLATION. The parser emits nil; this fills it in the
+    # reader's language, from the same persisted section, on every request.
+    def block_title(section)
+      explicit = section[:title].presence || section["title"].presence
+      return explicit if explicit
+
+      type = (section[:type] || section["type"]).to_s
+      return nil unless ContentEngine::LessonBlocks.known?(type)
+
+      t("learning_engine.blocks.default_title.#{type}")
+    end
+
     # The procedural order for one lesson block, for this student, on this attempt.
     #
     # `@block_attempt_counts` is loaded once per render by StepsController; a section
