@@ -38,10 +38,10 @@ module ContentEngine
     # record — the third instance of that family found in this branch, after the
     # step quiz in WP-32 and the tutor message in §1.
     #
-    # Production sets the violation to `:log`, so there it was an N+1 rather than
-    # a failure; in the test environment it RAISES, was caught by the same
-    # `rescue` that mislabelled the UnknownFormat, and turned every one of these
-    # tests into a 502.
+    # The step is loaded DIRECTLY here, which `:all` does mark — so production
+    # (which runs `:all` and logs) did record this one, and the suite (`:all` and
+    # raises) caught it: it was swallowed by the same `rescue` that mislabelled
+    # the UnknownFormat and turned every one of these tests into a 502.
     def set_step_and_authorize!
       return unless authorize_route_step_access!(params[:id])
 

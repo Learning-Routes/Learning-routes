@@ -158,9 +158,13 @@ module LearningRoutesEngine
     # in the app.
     #
     # The suite did not catch it and still would not without
-    # StepQuizEagerLoadingTest, which pins the `:n_plus_one_only` mode
-    # development and production actually run — `test.rb`'s `:all` is the LOOSER
-    # setting for this association, not the stricter one its comment assumes.
+    # StepQuizEagerLoadingTest. The reason is the LOAD PATH, not the association:
+    # `:all` marks records loaded directly from the model, while a record fetched
+    # through an association — which is what `@route.route_steps.find` returns —
+    # is marked only under `:n_plus_one_only`. Test and PRODUCTION both run
+    # `:all` (production.rb sets only the `:log` action and Rails defaults the
+    # mode), so neither sees this; DEVELOPMENT sets `:n_plus_one_only` and
+    # raises, which is how it was found.
     def set_route_and_step
       @route = LearningRoute.includes(:learning_profile).find(params[:route_id])
       @step = @route.route_steps.includes(:step_quiz).find(params[:id])

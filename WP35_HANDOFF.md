@@ -236,12 +236,42 @@ Every other job already eager-loads. `step_quizzes_controller` is fixed because 
 there to take it. It is the same shape WP-32 fixed one controller over. The other four are listed
 rather than fixed — none is on a path this package touches, and each needs its own test.
 
-**Why the suite keeps missing these.** `config/environments/test.rb` sets
-`strict_loading_mode = :all` believing it stricter; for a scoped `has_one` it is **looser** than
-the `:n_plus_one_only` development and production both run. Production sets the violation to
-`:log`, so there they are silent N+1s. Every test in this family therefore pins
-`:n_plus_one_only` for the duration of the request. **Revisiting `test.rb`'s mode is its own
-package** — changing it would light up unrelated call sites across the suite.
+**Why the suite keeps missing these — corrected, and it is the LOAD PATH.** An earlier draft of
+this document said development and production both run `:n_plus_one_only`. That is wrong.
+`config/environments/production.rb` sets only `action_on_strict_loading_violation = :log` and no
+mode, and Rails defaults `strict_loading_mode` to `:all`
+(`activerecord-8.1.3.1/lib/active_record/core.rb:91`). So:
+
+| environment | mode | on violation |
+|---|---|---|
+| production | `:all` (Rails default, unset) | `:log` |
+| test | `:all` (explicit) | `:raise` |
+| development | `:n_plus_one_only` (explicit) | `:raise` |
+
+Measured in one process, toggling only the mode and holding the load path constant:
+
+| the step was loaded by | `:all` | `:n_plus_one_only` |
+|---|---|---|
+| `RouteStep.find(id)` | **RAISES** | allowed |
+| `route.route_steps.find(id)` | allowed | **RAISES** |
+
+`:all` marks records loaded directly from the model; a record fetched through an association is
+marked only under `:n_plus_one_only`. That single fact explains all five instances:
+
+- **Loaded directly** — the tutor job (`TutorMessage.find`) and the lessons controller
+  (`RouteStep.find`). Production runs `:all`, so it **did** log these: they are the owner's
+  `[StrictLoading] Class#step was lazily loaded` lines. The suite caught them too, once a test
+  reached them.
+- **Loaded through an association** — `steps_controller` and `step_quizzes_controller`, both
+  `@route.route_steps.find(...)`. `:all` does not mark those records, so **production never even
+  logged them** and the suite could not see them. Only development's `:n_plus_one_only` refuses
+  them, which is how WP-32 found the first one — by driving the dev server, not by reading.
+
+So the tests in this family pin `:n_plus_one_only`, and that is **development's** mode, not a
+"deployed" one. The conclusion the earlier draft drew still stands and is worth its own package:
+the suite's `:all` is not a superset of `:n_plus_one_only`, the two are complementary, and this
+app runs a different one in each of its three environments — so no single suite run can see every
+violation.
 
 ---
 

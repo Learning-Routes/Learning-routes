@@ -12,9 +12,15 @@ require "turbo/broadcastable/test_helper"
 # skeleton pulsing forever. `SpendGuard::LimitExceeded` is the likeliest way in.
 #
 # The same log carries two [StrictLoading] warnings for `TutorMessage#step` and
-# `TutorMessage#user` at lines 8-11 — logged rather than raised because
-# production sets `action_on_strict_loading_violation` to `:log`, which is the
-# same reason WP-32 found a lazily-loaded step quiz nobody had noticed.
+# `TutorMessage#user` at lines 8-11. Production DOES see these: the message is
+# loaded directly (`TutorMessage.find`), and `:all` — which is what production
+# runs, since production.rb sets only `action_on_strict_loading_violation =
+# :log` and Rails defaults the mode to `:all` — refuses a direct load. It logs
+# rather than raises, which is why they sat in the log unread.
+#
+# (The step-quiz family in WP-32 is the opposite case: loaded THROUGH an
+# association, which `:all` does not mark, so production never even logged it.
+# See StepQuizEagerLoadingTest for the measured table.)
 module LearningRoutesEngine
   class TutorReplyJobTest < ActiveSupport::TestCase
     include ActiveJob::TestHelper
@@ -75,7 +81,7 @@ module LearningRoutesEngine
     # path rather than a crash — invisible unless something asserts it.
     test "the message is loaded with its step and user, not lazily" do
       with_reply("ok") do
-        in_deployed_strict_loading_mode do
+        in_development_strict_loading_mode do
           assert_nothing_raised { TutorReplyJob.perform_now(@question.id) }
         end
       end
@@ -110,7 +116,10 @@ module LearningRoutesEngine
       with_orchestrate(->(**) { raise error }, &outer)
     end
 
-    def in_deployed_strict_loading_mode
+    # DEVELOPMENT's mode. This job loads directly, so the suite's own `:all`
+    # already refuses it; pinning `:n_plus_one_only` too keeps the assertion true
+    # under either.
+    def in_development_strict_loading_mode
       previous = ActiveRecord::Base.strict_loading_mode
       ActiveRecord::Base.strict_loading_mode = :n_plus_one_only
       yield

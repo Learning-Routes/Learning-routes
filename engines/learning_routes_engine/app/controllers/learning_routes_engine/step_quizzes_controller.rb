@@ -105,10 +105,11 @@ module LearningRoutesEngine
     # Same shape, one controller over, as the lazy load WP-32 fixed in
     # `StepsController#set_route_and_step` — and now squarely on the path WP-35
     # §3 opened, because an exercise gates on its step quiz and sends the
-    # student here to take it. Production logs the violation and carries on, so
-    # it was an N+1 rather than a failure; the suite could not see it because
-    # test.rb's `:all` mode allows this association where the deployed
-    # `:n_plus_one_only` refuses it.
+    # student here to take it. The step is loaded THROUGH an association
+    # (`@route.route_steps.find`), and `:all` does not mark such records — so
+    # neither the suite nor production (both `:all`) ever sees this one, and
+    # production does not even log it. Only development's `:n_plus_one_only`
+    # refuses it. See StepQuizEagerLoadingTest for the measured table.
     def set_route_and_step
       @route = LearningRoute.find(params[:route_id])
       @step = @route.route_steps.includes(:step_quiz).find(params[:step_id])
