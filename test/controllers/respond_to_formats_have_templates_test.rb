@@ -73,6 +73,63 @@ class RespondToFormatsHaveTemplatesTest < ActiveSupport::TestCase
       unrenderable.join("\n  ")
   end
 
+  # THE REGRESSION THIS SWEEP CAUSED ONCE, pinned by name.
+  #
+  # `LessonsController#agent_interact` is private and shared by five actions:
+  # explain_differently, give_example, simplify and deepen each have a
+  # turbo_stream template; `interact` has none. It therefore declares
+  # `format.turbo_stream if turbo_stream_template?`.
+  #
+  # Two ways this sweep can get that wrong, and both have happened:
+  #
+  #   1. Judging the helper by its own name. There is no
+  #      `agent_interact.turbo_stream.erb`, so the sweep flagged it, and
+  #      a115721 (WP-25) deleted the `format.turbo_stream` line to satisfy it.
+  #      That deletion IS the WP-35 §2 defect: the four buttons ask for a
+  #      turbo stream, got UnknownFormat after a successful paid call, and the
+  #      student read escaped markup.
+  #   2. Reading the guarded line as an unconditional promise, which flags
+  #      `interact` — the one action that genuinely has no template — and invites
+  #      the same deletion a second time.
+  #
+  # If this test ever fails, the answer is NOT to delete the line.
+  test "a guarded format in a shared private helper is not reported for any of its callers" do
+    path = Rails.root.join("engines/content_engine/app/controllers/content_engine/lessons_controller.rb")
+    source = File.read(path)
+
+    assert_match(/format\.turbo_stream if turbo_stream_template\?/, source,
+      "agent_interact must keep its guarded turbo_stream declaration — deleting it is WP-35 §2")
+
+    reported = []
+    each_respond_to_block(source) do |method, formats|
+      callers_of(source, method).each do |action|
+        formats.each do |format, inline|
+          next if inline
+          next if template_for?(path, action, format)
+
+          reported << "#{action} (via #{method}) format.#{format}"
+        end
+      end
+    end
+
+    assert_equal [], reported,
+      "the sweep reported a guarded declaration. `interact` has no turbo_stream " \
+      "template BY DESIGN and the runtime guard is what keeps it from being " \
+      "offered one; flagging it is how this line got deleted in WP-25."
+  end
+
+  # The four siblings must keep their templates, or the guard silently stops
+  # offering the format and §2 returns without a single test going red.
+  test "each legacy AI action still has the turbo_stream template the guard looks for" do
+    prefix = "engines/content_engine/app/views/content_engine/lessons"
+
+    %w[explain_differently give_example simplify deepen].each do |action|
+      assert File.exist?(Rails.root.join(prefix, "#{action}.turbo_stream.erb")),
+        "#{action}.turbo_stream.erb is gone: `turbo_stream_template?` will answer false " \
+        "and the button will silently stop receiving a stream"
+    end
+  end
+
   # A sweep that matches nothing passes vacuously, which is worse than no sweep.
   test "the sweep is looking at the controllers it thinks it is" do
     controllers = Dir[Rails.root.join(CONTROLLER_GLOB)]

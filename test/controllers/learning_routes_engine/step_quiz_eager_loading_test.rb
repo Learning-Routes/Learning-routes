@@ -79,6 +79,45 @@ module LearningRoutesEngine
       assert_response :success
     end
 
+    # The SAME shape one controller over, and squarely on the path WP-35 §3
+    # opened: an exercise now gates on its step quiz, so the student who cannot
+    # continue is sent here to take it.
+    test "submitting a step quiz does not lazily load it" do
+      step = build_step(:lesson)
+      quiz = Assessments::Assessment.create!(
+        route_step: step, assessment_type: :step_quiz, passing_score: 80
+      )
+      question = Assessments::Question.create!(
+        assessment: quiz, body: "¿Y bien?", question_type: :multiple_choice,
+        options: ["A) si", "B) no"], correct_answer: "A", difficulty: 1, bloom_level: 1
+      )
+
+      in_deployed_strict_loading_mode do
+        post learning_routes_engine.submit_route_step_step_quiz_path(@route, step),
+             params: { answers: { question.id => "A) si" } },
+             headers: { "Accept" => "text/vnd.turbo-stream.html" }
+      end
+
+      assert_response :success,
+        "the step quiz was lazily loaded on a strict_loading record"
+      assert_equal "completed", step.reload.status, "a passed quiz completes the step"
+    end
+
+    test "polling a step quiz's status does not lazily load it" do
+      step = build_step(:lesson)
+      Assessments::Assessment.create!(
+        route_step: step, assessment_type: :step_quiz, passing_score: 80
+      )
+
+      in_deployed_strict_loading_mode do
+        get learning_routes_engine.check_status_route_step_step_quiz_path(@route, step),
+            headers: { "Accept" => "text/vnd.turbo-stream.html" }
+      end
+
+      assert_response :success,
+        "the step quiz was lazily loaded on a strict_loading record"
+    end
+
     private
 
     def build_step(content_type)
