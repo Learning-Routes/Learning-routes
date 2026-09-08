@@ -103,11 +103,14 @@ module ContentEngine
           end
         end
 
-        # Mermaid validation for sections containing mermaid code blocks
-        body = section["body"].to_s
-        if body.include?("```mermaid")
-          tasks << { key: "mermaid_#{index}", type: :mermaid, index: index, body: body }
-        end
+        # NO mermaid task, deliberately (WP-35 §7). `validate_mermaid` checked
+        # only that the first word of a block was a known diagram type, which
+        # cannot catch the syntax errors that actually fail, and wrote
+        # `mermaid_invalid` into parsed_sections — a flag NOTHING has ever read.
+        # A validation that validates nothing is worse than none, because it
+        # reads as a guarantee. Mermaid parses in the browser at render time;
+        # §7 makes that failure quiet and localized, which is where the check
+        # belongs.
       end
 
       tasks
@@ -121,8 +124,6 @@ module ContentEngine
         with_retry(task[:key]) { generate_image(task) }
       when :audio
         with_retry(task[:key]) { generate_audio(task) }
-      when :mermaid
-        validate_mermaid(task)
       end
     end
 
@@ -172,19 +173,6 @@ module ContentEngine
       { status: "ready", url: result[:audio_url], duration: result[:duration] }
     end
 
-    def validate_mermaid(task)
-      # Extract mermaid code blocks and validate syntax
-      mermaid_blocks = task[:body].scan(/```mermaid\n(.*?)```/m).flatten
-      valid_starts = %w[flowchart graph sequenceDiagram classDiagram stateDiagram erDiagram mindmap pie gitGraph timeline journey gantt]
-
-      all_valid = mermaid_blocks.all? do |block|
-        first_word = block.strip.lines.first.to_s.strip.split(/\s+/).first.to_s
-        valid_starts.any? { |s| first_word.start_with?(s) }
-      end
-
-      { status: all_valid ? "ready" : "invalid", mermaid_count: mermaid_blocks.size }
-    end
-
     def apply_results!(sections, results)
       # RE-READ. `@step` was loaded before minutes of image and TTS generation
       # across six threads. Anything written in between — an `image_url` from a
@@ -218,10 +206,6 @@ module ContentEngine
           elsif result[:status] == "failed"
             # Fallback: mark as failed, UI will hide player
             audio_sections[index.to_s] = { "status" => "failed" }
-          end
-        when "mermaid"
-          if parsed[index] && result[:status] == "invalid"
-            parsed[index]["mermaid_invalid"] = true
           end
         end
       end

@@ -855,6 +855,24 @@ html[data-theme="dark"] .learning-nav {
     color: var(--color-muted);
     margin-bottom: 0.75rem;
   }
+  /* The source lives behind a disclosure (WP-35 §7): a student who cannot see
+     a diagram is not helped by a wall of Mermaid, and someone debugging one
+     still has it a click away. `content-visibility` is what actually keeps a
+     closed <details> from laying its content out in every engine. */
+  .mermaid-fallback__details {
+    margin-top: 0.5rem;
+  }
+  .mermaid-fallback__details > summary {
+    cursor: pointer;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.6875rem;
+    color: var(--color-muted);
+    list-style: none;
+  }
+  .mermaid-fallback__details:not([open]) > .mermaid-fallback__code {
+    display: none;
+  }
+
   .mermaid-fallback__code {
     background: var(--color-tint);
     border-radius: 8px;

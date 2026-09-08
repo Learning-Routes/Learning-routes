@@ -1072,6 +1072,8 @@ es:
       block_example: "Ejemplo del mundo real"
       block_summary: "Puntos clave"
       diagram_label: "DIAGRAMA"
+      diagram_unavailable: "Este diagrama no se ha podido dibujar."
+      diagram_source: "Ver el código del diagrama"
       continue: "Continuar"
       back: "Anterior"
       level_up_title: "¡Subiste de nivel!"

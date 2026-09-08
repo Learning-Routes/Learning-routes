@@ -57,8 +57,11 @@
   </div>
 
   <% if section[:mermaid].present? || section[:diagram].present? %>
-    <div class="mermaid-container" data-controller="mermaid-diagram" style="margin-bottom:1.25rem;">
-      <span class="mermaid-label"><%= t('learning_engine.lesson.diagram_label', default: 'DIAGRAM') %></span>
+    <div class="mermaid-container" data-controller="mermaid-diagram"
+         data-mermaid-diagram-fallback-label-value="<%= t('learning_engine.lesson.diagram_unavailable') %>"
+         data-mermaid-diagram-source-label-value="<%= t('learning_engine.lesson.diagram_source') %>"
+         style="margin-bottom:1.25rem;">
+      <span class="mermaid-label"><%= t("learning_engine.lesson.diagram_label") %></span>
       <div data-mermaid-diagram-target="chart" class="mermaid"><%= section[:mermaid] || section[:diagram] %></div>
     </div>
   <% end %>

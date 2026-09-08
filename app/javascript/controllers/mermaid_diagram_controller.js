@@ -5,6 +5,7 @@ let mermaidInitialized = false
 let mermaidModule = null
 
 export default class extends Controller {
+  static values = { fallbackLabel: String, sourceLabel: String }
   static targets = ["chart"]
 
   async connect() {
@@ -23,7 +24,14 @@ export default class extends Controller {
         flowchart: { curve: "basis", padding: 15, htmlLabels: true },
         sequence: { mirrorActors: false, bottomMarginAdj: 1 },
         fontFamily: "'DM Sans', sans-serif",
-        securityLevel: "strict"
+        securityLevel: "strict",
+        // Mermaid 11 renders its OWN error graphic into document.body when a
+        // diagram will not parse — an orphan SVG reading "Syntax error in text /
+        // mermaid version 11.16.0" that appears at the END of the page, below
+        // the comments, with nothing to say which diagram it belongs to. The
+        // owner's screenshot has two of them. This controller already has a
+        // fallback of its own (`_showFallback`), so Mermaid's is pure noise.
+        suppressErrorRendering: true
       })
       mermaidInitialized = true
     }
@@ -108,15 +116,31 @@ export default class extends Controller {
 
   _showFallback(el, code) {
     el.classList.add("mermaid--error")
+
+    // Localized, tokenised, and the raw source COLLAPSED. A student who cannot
+    // see a diagram is not helped by a wall of Mermaid; someone debugging one
+    // is, so it stays reachable behind a disclosure rather than being dumped on
+    // the page. The label used to be the English literal "Diagram could not be
+    // rendered", shown to every Spanish student.
+    const label = this.hasFallbackLabelValue
+      ? this.fallbackLabelValue
+      : (el.dataset.mermaidFallbackLabel || "")
+    const sourceLabel = this.hasSourceLabelValue
+      ? this.sourceLabelValue
+      : (el.dataset.mermaidSourceLabel || "")
+
     el.innerHTML = `
-      <div class="mermaid-fallback">
+      <div class="mermaid-fallback" role="status">
         <div class="mermaid-fallback__header">
-          <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
           </svg>
-          <span>Diagram could not be rendered</span>
+          <span>${this._escapeHtml(label)}</span>
         </div>
-        <pre class="mermaid-fallback__code"><code>${this._escapeHtml(code)}</code></pre>
+        ${sourceLabel ? `<details class="mermaid-fallback__details">
+          <summary>${this._escapeHtml(sourceLabel)}</summary>
+          <pre class="mermaid-fallback__code"><code>${this._escapeHtml(code)}</code></pre>
+        </details>` : ""}
       </div>
     `
   }
