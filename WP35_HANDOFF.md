@@ -3,8 +3,8 @@
 **Written:** 2026-09-08 · **Branch:** `wp35-what-the-student-sees`, base `main` @ `85d6f00`
 (WP-32 merged). **Tree clean. Not deployed. Nothing run against production.**
 
-**Status: §3, §1 and §2 are done. §4, §5 and §6 are not started.** This document covers what
-landed; the closing section says exactly what is left and why.
+**Status: all of §1–§7 are done.** §7 arrived as an addendum after §1–§2 were reviewed. The
+closing section says what I deliberately did not do.
 
 ---
 
@@ -217,6 +217,108 @@ That last line is the owner's screenshot, reproduced in a test.
 
 ---
 
+## §4 — the journey collapsed above about six topics
+
+`getSatPositions` put every topic of a stage on ONE arc of `Math.PI * 0.9` at radius 185. That arc
+is ~523px long and a satellite ~90px wide, so it holds about six, and there was no rule for what
+happens after. Production has a module with 43 steps: forty-three overlapping circles, labels
+stacked into a knot.
+
+The geometry is now `app/javascript/lib/journey_layout.js` — pure, no DOM, no Stimulus — so it can
+be asserted at 1, 7, 8, 20 and 43 without a browser. Capacity is **measured** (arc length ÷
+satellite diameter, never a magic seven), satellites shrink to a floor before overflowing, and the
+remainder goes to a spine below the ring, wrapped to the stage's own width so it stays compact
+rather than becoming a 3000px column. The stage element is sized from the box the layout reports,
+so "every satellite is inside the stage" holds by construction.
+
+| topics | ring | spine | satellite r | box |
+|---|---|---|---|---|
+| 1 | 1 | 0 | 40 | 80×80 |
+| 7 | 7 | 0 | 30 | 425×216 |
+| 8 | 8 | 0 | 25 | 415×202 |
+| 20 | 9 | 11 | 22 | 624×258 |
+| 43 | 9 | 34 | 22 | 682×374 |
+
+Shown load-bearing by restoring the single-arc version: **collisions at 7, 8, 20 AND 43** — the old
+layout failed at seven, not eight.
+
+### Stages are modules, and what that forced
+
+Decision (a) has a consequence worth stating plainly. A route has exactly one `preview` module
+(`RouteModule` validates uniqueness on it) and the rest are `locked`, so filtering the journey to
+preview would have made "stages are modules" mean **one stage** — fewer than grouping by level, and
+not the point of the change.
+
+So the journey now shows **all** modules, which is also what makes the view's locked-stage branch
+reachable for the first time. A locked module contributes its SHAPE and nothing else:
+`journey_topic` masks the title and drops the link, so the paywall holds. There is a test that a
+locked module's step titles never reach the page. **This is a judgement inside the settled
+decision, not a re-litigation of it — flagging it because it changes what the page shows.**
+
+Reinforcement clusters because `AdaptiveDifficulty#insert_reinforcement!` already inserts behind
+the triggering step in the same module; ordering by position IS the clustering, and satellites
+carry `data-reinforcement` so the view can say so. Every satellite is a tab stop in route order
+with the full title in both `aria-label` and `title`, and the layout's order is asserted so that
+stays true. `prefers-reduced-motion` was already honoured and still is.
+
+## §5 — the landing drew circles with nothing in them
+
+`build_route_nodes` gave each node `sats: satellite_pattern(i)` — geometry only — while the
+marketing version gave each satellite a `topic` and a `desc`. So `path_viz_controller.js:250` read
+`undefined` and drew empty rings. The six nodes were the first six steps by position, today two
+lessons and four reinforcement steps.
+
+Taking the settled default: the landing stays a visitor page, and a signed-in student is redirected
+to their route, or the dashboard when they have none. `build_route_nodes`, `satellite_pattern`,
+`status_color`, `status_note` and the hardcoded-Spanish `content_type_tag` retire with it. A test
+asserts no satellite on the visitor page lacks a label, so the defect cannot return in the half
+that remains.
+
+**Left behind on purpose:** `_hero`, `_cta` and `_path_section` still carry
+`if current_user && @active_route` branches. They are now unreachable (no signed-in user renders
+this page) and they degrade correctly to the visitor copy. I did not delete them because they span
+four view files I could not fully re-verify in the time left; the redirect test proves they are
+dead. Listed below.
+
+## §6 — the words on the screen
+
+"DESAFÍO RÁPIDO", "+5 XP BONUS si respondes en <10s" and "Explicación:" were hardcoded Spanish
+shown to every English student; two are in the screenshots. Locale keys in both languages, and the
+two strings the JS writes at runtime arrive through `data-lesson-quiz-i18n-value`, the way
+`_lesson.html.erb` already passes `lesson_i18n`. Tested in BOTH locales, plus a sweep that no
+Spanish literal remains in the three controllers this package touched. Red without the fix on all
+four.
+
+Scope held to what the screenshots showed plus what §1–§5 touched. **The parser's persisted default
+titles stay for WP-33**, because fixing those means re-parsing.
+
+## §7 — Mermaid's own error graphic leaked into the page body
+
+Mermaid 11 renders its error SVG into `document.body` when a diagram will not parse, unless
+`initialize()` sets `suppressErrorRendering: true`. This controller already had a fallback, so BOTH
+appeared: one in place and one orphaned at the end of the page, below the comments, with nothing to
+say which diagram it belonged to. One line in the single `initialize()` call.
+
+The fallback is localized, tokenised and collapsed. It read "Diagram could not be rendered" — an
+English literal — and dumped the raw Mermaid source under it. The label now comes through a data
+attribute and the source sits in a `<details>`.
+`.mermaid-fallback__details:not([open]) > .mermaid-fallback__code { display: none }` is what
+actually keeps the closed disclosure from laying its content out — my first version trusted the
+browser default and the source was 78px tall on screen.
+
+**The fake validation is deleted, not wired up.** `validate_mermaid` checked only that the first
+word of a block was a known diagram type — a block beginning `flowchart` with a malformed body
+passed — and wrote `mermaid_invalid` into `parsed_sections`, a flag **nothing has ever read**.
+Three tests covered it and all three passed while the owner's page showed two error graphics. A
+validation that validates nothing is worse than none, because it reads as a guarantee. Those three
+tests are replaced by one that pins the removal as a decision.
+
+**Note for WP-33:** `mermaid_invalid` can come off the enrichment-key list in audit §2.5 — nothing
+writes it any more.
+
+Shown load-bearing by flipping `suppressErrorRendering` back to `false`: both assertions fire,
+reproducing the screenshot.
+
 ## The lazy-load family — swept, not stumbled on
 
 Three instances turned up in two days (WP-32's `step_quiz`, §1's tutor job, §2's lessons
@@ -277,74 +379,44 @@ violation.
 
 ## Verification
 
-Three runs of each, one suite at a time. The **before** column is my own run on `main` at
-`85d6f00`, not copied.
+Three runs of each, one suite at a time. The **before** column is my own run on a clean checkout of
+`aae14b7`.
 
-| Suite | Before (`main` @ `85d6f00`) | After |
+| Suite | Before (`aae14b7`) | After |
 |---|---|---|
-| Main (`bin/rails test`) | 679 runs, 2698 assertions, 0F 0E | **708 runs, 2778 assertions, 0F 0E** |
-| Browser (`bin/rails test:system`) | 50 runs, 370 assertions, 0F 0E | **55 runs, 390 assertions, 0F 0E** |
-| Combined (`bin/rails test test engines/*/test`) | 1073 runs, 4289 assertions, **3F 1E** | **1107 runs, 4389 assertions, 3F 1E** |
-| RuboCop | clean, 572 files | **clean, 578 files** |
+| Main (`bin/rails test`) | 708 runs, 2778 assertions, 0F 0E | **739 runs, 3524 assertions, 0F 0E** |
+| Browser (`bin/rails test:system`) | 55 runs, 390 assertions, 0F 0E | **64 runs, 469 assertions, 0F 0E** |
+| Combined (`bin/rails test test engines/*/test`) | 1107 runs, 4389 assertions, **3F 1E** | **1147 runs, 5214 assertions, 3F 1E** |
+| RuboCop | clean, 578 files | **clean, 583 files** |
 
-All three runs of each were identical. The combined failures are the four known engine ones, the
-same four as the baseline, in every run — pasted verbatim:
+All nine runs of each column identical. The combined failures are the four known engine ones, the
+same four as every baseline in this repo since WP-24:
 
 ```
-Failure:
 LearningRoutesEngine::RouteGenerationJobTest#test_generates_route_and_creates_steps
-[engines/learning_routes_engine/test/jobs/learning_routes_engine/route_generation_job_test.rb:38]:
-Expected false to be truthy.
-
-Error:
-LearningRoutesEngine::RouteGeneratorTest#test_route_has_level-up_exams_and_final_exam:
-ActiveRecord::StrictLoadingViolationError: `LearningRoutesEngine::LearningRoute` is marked for
-strict_loading. The LearningRoutesEngine::RouteStep association named `:route_steps` cannot be
-lazily loaded.
-    engines/learning_routes_engine/test/services/learning_routes_engine/route_generator_test.rb:56
-
-Failure:
+  Expected false to be truthy.
+LearningRoutesEngine::RouteGeneratorTest#test_route_has_level-up_exams_and_final_exam
+  ActiveRecord::StrictLoadingViolationError: `LearningRoute` is marked for strict_loading.
+  The RouteStep association named `:route_steps` cannot be lazily loaded.
 LearningRoutesEngine::GapAnalysisJobTest#test_enqueues_reinforcement_job_when_gaps_found
-[engines/learning_routes_engine/test/jobs/learning_routes_engine/gap_analysis_job_test.rb:42]:
-No enqueued job found with {:job=>LearningRoutesEngine::ReinforcementJob}
-No jobs of class LearningRoutesEngine::ReinforcementJob were enqueued, job classes enqueued:
-LearningRoutesEngine::GapAnalysisJob
-
-Failure:
+  No enqueued job found with {:job=>LearningRoutesEngine::ReinforcementJob}
 LearningRoutesEngine::ReinforcementJobTest#test_generates_reinforcement_routes_for_unresolved_gaps
-[engines/learning_routes_engine/test/jobs/learning_routes_engine/reinforcement_job_test.rb:44]:
-Expected false to be truthy.
+  Expected false to be truthy.
 ```
 
-**I did not touch them.** Worth noting for whoever does: the second one is the same
-strict-loading family this package has been chasing — `RouteGeneratorTest` walking
-`route.route_steps` on a strict_loading record — but it is a defect in the TEST, not the app, and
-it belongs with the other four sites listed above.
+**I did not touch them.** New tests: **40** (24 geometry, 5 journey system, 5 landing, 4 locale,
+4 mermaid system, minus the 3 mermaid-validation tests removed with the validation itself).
 
-### One red that was not one of the four, found and fixed
+### The before column was wrong twice before it was right
 
-The first pass through this verification produced a FIFTH failure, in one combined run of three:
+My first attempt reported 1131/1136 combined runs at `aae14b7`, which produces 1107. I had launched
+the baseline in the background and then written new test files while it ran — the runner re-globs
+`test/` on each invocation, so later runs picked up tests that did not exist at the commit being
+measured. **This is the second time in two packages** (WP-32's baseline inflated the same way).
 
-```
-AdminUserIndexQueryTest#test_returns_bounded_searched_user_metrics_and_exact_billable_cost
-[test/queries/admin/user_index_query_test.rb:28]
-```
-
-It is not §1-§3's. `setup` writes `last_active_at: 2.hours.ago` and line 28 asserted
-`2.hours.ago.to_i` — **two separate wall-clock reads**, and the combined suite is long enough that
-they occasionally land either side of a second boundary. Pre-existing: the line is byte-identical
-on `main` and on `0b72e98` (before WP-32), and the file's last commit is unrelated. It was the
-only assertion of that shape in the suite.
-
-Demonstrated rather than assumed, by advancing the clock one second between the two reads:
-
-```
-DEMO old-style equal? false
-DEMO new-style equal? true
-```
-
-Fixed by capturing the timestamp in `setup` and asserting against it. Three further combined runs
-after the fix: **1107 runs, 4389 assertions, 3F 1E, identical, the four known only.**
+The fix is not subtle: the clean baseline was taken from `git checkout aae14b7` with the working
+tree committed and nothing else running. If a before column's run count does not equal what that
+commit alone produces, it is contaminated and the only remedy is to re-run it.
 
 ### In a browser, against the development server
 
@@ -361,6 +433,17 @@ the orphaned `tutor_messages` my first purge script missed).
   and no "Enviar respuesta"/"Pista"; both blocks answered through the page by keyboard, the
   footer went from "Responde para continuar" to "Continuar", and `POST complete` returned 200 and
   unlocked the next step.
+- **§4 at 43** (the owner's screenshot): 47 satellites across 2 stages — 13 on the ring, 34 in the
+  spine — **no overlapping pair** by measured `getBoundingClientRect`, every one a tab stop with
+  its full title, 4 marked as reinforcement, and the locked module's step titles nowhere on the
+  page (`Bloqueado` in their place).
+- **§4 at 7**: 8 topics, all on the ring, evenly spaced and readable. No spine.
+- **§5**: signing in and visiting `/` lands on `/learning/routes/<id>` — the route, not a page of
+  empty circles. Zero unlabelled satellites on the visitor page.
+- **§6**: the check modal reads "DESAFÍO RÁPIDO" / "+5 XP BONUS si respondes en menos de 10s" for a
+  Spanish student and "QUICK CHALLENGE" / "+5 XP BONUS if you answer in under 10s" for an English
+  one, with no Spanish anywhere in the English page. The English screenshot caught the modal
+  mid-fade, so the DOM read is the evidence there, not the image.
 
 **A trap worth knowing about:** the running dev server does **not** reload views under
 `engines/*/app/views`. An edited partial kept serving old markup across several fresh,
@@ -373,20 +456,34 @@ the document with Nokogiri was honest.
 
 ## What I did not do
 
-- **§4 (journey geometry), §5 (landing), §6 (the words on the screen) are not started.** So are
-  the two remaining sweeps the brief asks for: the geometry module's no-overlap tests, and the
-  landing test that a signed-in student's nodes are modules with no unlabelled satellite.
-- **I did not fix the four known engine failures**, including the `RouteGeneratorTest`
-  strict-loading one that is the same family as this package's — it is a test defect and belongs
-  with the other sites listed above.
-- **I did not sweep the codebase for other `html_safe` uses.** One instance is fixed; a real
-  review of that class is its own piece of work, and audit §4.7 (`MarkdownRenderer`'s permissive
-  allow-list) is the other half of it.
-- **I did not touch `config/environments/test.rb`'s strict_loading mode**, and did not fix the
-  four remaining lazy-load sites — see the table above.
-- **I did not add `SpendGuard` to `LessonAssistantAgent`** (WP-34), and did not change what the
+- **The dead `@active_route` branches in `_hero`, `_cta` and `_path_section`.** They are
+  unreachable now that a signed-in student is redirected, and they degrade correctly to the visitor
+  copy. Four view files I could not fully re-verify; the redirect test proves they are dead. Small,
+  and worth a follow-up.
+- **The four known engine failures**, including the `RouteGeneratorTest` strict-loading one, which
+  is the same family this package has been chasing — a TEST walking `route.route_steps` on a
+  strict_loading record. It belongs with the four app-side sites listed above.
+- **The four remaining lazy-load sites** (`reviews_controller`, `likes_controller`,
+  `shared_routes_controller`, `voice_evaluation_job`). None is on a path this package touches and
+  each needs its own test. WP-34.
+- **`config/environments/test.rb`'s strict_loading mode.** `:all` is not a superset of
+  `:n_plus_one_only`; the two are complementary and this app runs a different one in each of its
+  three environments, so no single suite run can see every violation. Its own package.
+- **The rest of the `html_safe` sweep.** One instance is fixed (see the security heading); a real
+  review of that class is its own work, and audit §4.7 (`MarkdownRenderer`'s permissive allow-list:
+  `data-controller`, `data-action`, `id`, `style`, `<button>`, `<input>`) is the other half of it.
+- **The `ai_interaction_` broadcast still has no subscriber.** Recorded in `KNOWN_UNSUBSCRIBED`
+  with a test that fails if it ever gains one and stays on the list. Roadmap.
+- **The parser's persisted default titles** ("Match", "Concepto", …) stay for WP-33: fixing them
+  means re-parsing.
+- **`SpendGuard` on `LessonAssistantAgent`** stays for WP-34, and I did not change what the
   generator produces.
-- **The `ai_interaction_` broadcast has no subscriber** and is recorded rather than fixed.
+- **A full design-token sweep.** For the roadmap, counted while working: the panel and message
+  bubble had 5 hex literals and 4 `rgba()` (all now tokens); `_visual.html.erb`,
+  `_code_playground.html.erb`, `_simulation.html.erb` and `steps/_navigation.html.erb` still carry
+  inline hex in the tens; `lesson_sections/*` collectively is the largest remaining pocket. The
+  journey controller reads its colours from CSS vars already, but `LEVEL_COLORS` in
+  `routes_controller.rb` is three hex literals in Ruby.
 - **Nothing was run against production**, and nothing was deployed.
 - **CI is still red** since WP-17 from `scan_ruby` (brakeman exits 5 on the known `permit!`
   warning) and `scan_js` (6 DOMPurify/Mermaid warnings).
