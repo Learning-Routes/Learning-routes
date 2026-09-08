@@ -87,7 +87,9 @@ module ContentEngine
 
       parsed[section_index]["image_status"] = "generating"
       parsed[section_index]["image_error"] = nil
-      @step.update!(metadata: metadata.merge("parsed_sections" => parsed))
+      # Same reason as update_section_image! below: the whole-blob write erases
+      # an `audio_sections` entry a concurrent narration request just stored.
+      @step.merge_metadata!("parsed_sections" => parsed)
     end
 
     def update_section_image!(section_index, image_url)

@@ -15,7 +15,12 @@ module ContentEngine
   #
   # Ten call sites had the same shape. Fixing one would have left nine.
   class StepMetadataWriteIsolationTest < ActiveSupport::TestCase
-    JOB_GLOB = "{app/jobs,engines/*/app/jobs}/**/*.rb".freeze
+    # Jobs are not the only writers. `SectionImagesController#mark_generating!`
+    # and `SectionAudioController#update_audio_status!` write the same blob from
+    # a request, and `SectionAudioGenerator` writes it from a service — the
+    # jobs-only glob is why they survived the first sweep while the file around
+    # them was being edited for WP-33 §1.
+    WRITER_GLOB = "{app,engines/*/app}/{jobs,controllers,services}/**/*.rb".freeze
 
     def setup
       @user = create_test_user
@@ -84,9 +89,9 @@ module ContentEngine
 
     # ── the class ───────────────────────────────────────────────────────────
 
-    test "no job writes step metadata with a whole-blob merge" do
-      offenders = Dir[Rails.root.join(JOB_GLOB)].select do |path|
-        File.read(path).match?(/update!\(\s*metadata:/)
+    test "nothing writes step metadata with a whole-blob merge" do
+      offenders = Dir[Rails.root.join(WRITER_GLOB)].select do |path|
+        strip_comments(File.read(path)).match?(/update!\(\s*metadata:/)
       end
 
       assert_empty offenders.map { |path| Pathname.new(path).relative_path_from(Rails.root).to_s },
@@ -94,9 +99,16 @@ module ContentEngine
         "use RouteStep#merge_metadata! so the database keeps the keys you do not name"
     end
 
-    test "the sweep is looking at the jobs it thinks it is" do
-      assert_operator Dir[Rails.root.join(JOB_GLOB)].size, :>=, 15,
-        "the glob stopped matching the job tree; the class test above would pass vacuously"
+    test "the sweep is looking at the writers it thinks it is" do
+      assert_operator Dir[Rails.root.join(WRITER_GLOB)].size, :>=, 40,
+        "the glob stopped matching the tree; the class test above would pass vacuously"
+    end
+
+    # Two of the five files the widened glob matches only MENTION the whole-blob
+    # write, in the comment explaining why they do not do it. Matching that
+    # comment would have made the fix look like the defect.
+    def strip_comments(source)
+      source.lines.reject { |line| line.strip.start_with?("#") }.join
     end
   end
 end

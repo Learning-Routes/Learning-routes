@@ -104,14 +104,21 @@ module ContentEngine
       @step = LearningRoutesEngine::RouteStep.find(params[:step_id])
     end
 
+    # SectionAudioGenerator writes this same key under `with_lock`; this took no
+    # lock and rewrote the whole jsonb blob from a copy read before the request
+    # did its work, so it erased both a sibling narration entry and whatever
+    # image URL the student had generated in another tab. Lock, re-read, and
+    # merge only the key we name.
     def update_audio_section_status!(section_index, status, url = nil, duration = nil)
-      metadata = @step.metadata || {}
-      audio_sections = metadata["audio_sections"] || {}
-      entry = { "status" => status }
-      entry["url"] = url if url
-      entry["duration"] = duration if duration
-      audio_sections[section_index.to_s] = entry
-      @step.update!(metadata: metadata.merge("audio_sections" => audio_sections))
+      @step.with_lock do
+        metadata = @step.metadata || {}
+        audio_sections = metadata["audio_sections"] || {}
+        entry = { "status" => status }
+        entry["url"] = url if url
+        entry["duration"] = duration if duration
+        audio_sections[section_index.to_s] = entry
+        @step.merge_metadata!("audio_sections" => audio_sections)
+      end
     rescue => e
       Rails.logger.warn("[SectionAudioController] Status update failed: #{e.message}")
     end
