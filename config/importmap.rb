@@ -10,6 +10,13 @@ pin_all_from "app/javascript/controllers", under: "controllers"
 # under node by test/javascript/journey_layout_test.rb.
 pin "journey_layout", to: "lib/journey_layout.js"
 
+# Motion Canvas runtime — built by bin/motion-build, committed because the image
+# has no node. Lazy-imported (the mermaid_diagram_controller.js:13 idiom,
+# `await import(...)`) by whichever controller mounts a narrated scene, so a
+# lesson with no scene never fetches the ~186 KB. `vendor/javascript` is :self
+# under CSP.
+pin "mc", to: "mc.js"
+
 # === Content Delivery ===
 
 # KaTeX - math formula rendering

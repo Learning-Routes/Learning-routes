@@ -1,3 +1,4 @@
+// motion-schemas-sha256: 2b5ae120dee6873229f83957bd7ed3477262aea9e400536e87f3edc91ccfe1b9
 /* eslint-disable */
 /**
  * This file was automatically generated from src/scenes/*.schema.json
@@ -45,4 +46,3 @@ export interface Transform {
     }[]
   ];
 }
-
