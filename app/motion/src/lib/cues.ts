@@ -13,11 +13,17 @@ let missed = 0;
 // Searches FORWARD from `from` so a word the narration repeats resolves in the
 // order it is spoken, not always to the first occurrence. Returns null on a
 // miss, and the caller falls back to that beat's fixed duration.
+//
+// A punctuation-only token (e.g. "?" or ".") normalises to an empty needle —
+// that is not a word a voice could ever say, so it is not a cue at all, and
+// is returned as null WITHOUT touching asked/missed. A real token that is
+// simply absent from `words` (or `words` is empty/missing) IS a genuine miss
+// and still counts, so `cueStats()` reports the true fallback rate.
 export function cueFor(text: string, words: Word[] | null | undefined, from = 0): number | null {
+  const needle = norm(text);
+  if (!needle) return null;
   asked++;
   if (!words || words.length === 0) { missed++; return null; }
-  const needle = norm(text);
-  if (!needle) { missed++; return null; }
   for (let i = Math.max(0, from); i < words.length; i++) {
     if (norm(words[i].text) === needle) return words[i].start;
   }

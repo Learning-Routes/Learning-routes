@@ -11,6 +11,10 @@ import type {Agreement} from '../generated/schemas';
 // Palette — matches Learning Routes' tokens so it reads as in-product.
 const INK = '#1C1812', SUB = '#5B554C', MUTED = '#887F72';
 const HI = '#F2D66B', HI2 = '#9AD1F0', OK = '#2F8F5B', BAD = '#C0453A', CARD = '#FFFDFA';
+// Translucent washes of OK/BAD for the chip background behind the verb as it
+// flips from wrong to right — named so nothing depends on string-concatenating
+// an alpha suffix onto a colour at the call site.
+const BAD_WASH = '#C0453A22', OK_WASH = '#2F8F5B1E';
 
 // The exact font stack every fontFamily in this scene must use (global constraint).
 const FONT = "'DM Sans', 'Hiragino Sans GB', 'PingFang SC', 'Microsoft YaHei', 'Noto Sans CJK SC', system-ui, sans-serif";
@@ -90,7 +94,7 @@ export default makeScene2D(function* (view) {
 
   // 4 · camera snaps to the verb; it turns red and shakes — a visible no.
   yield* all(cam().centerOn(chips[d.verb](), 0.5, easeInOutCubic), cam().zoom(1.7, 0.5, easeInOutCubic));
-  yield* all(chips[d.verb]().fill(BAD + '22', 0.25), wordRefs[d.verb]().fill(BAD, 0.25));
+  yield* all(chips[d.verb]().fill(BAD_WASH, 0.25), wordRefs[d.verb]().fill(BAD, 0.25));
   const x0 = chips[d.verb]().position.x();
   for (const dx of [-9, 9, -6, 6, 0]) yield* chips[d.verb]().position.x(x0 + dx, 0.06);
   yield* waitFor(0.35);
@@ -102,7 +106,7 @@ export default makeScene2D(function* (view) {
   );
   wordRefs[d.verb]().text(d.correct);
   wordRefs[d.verb]().fill(OK);
-  chips[d.verb]().fill(OK + '1E');
+  chips[d.verb]().fill(OK_WASH);
   chips[d.verb]().position.y(-60);
   yield* all(
     chips[d.verb]().position.y(0, 0.5, easeOutBack),
