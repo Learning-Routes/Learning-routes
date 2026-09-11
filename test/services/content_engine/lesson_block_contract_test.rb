@@ -146,9 +146,14 @@ class ContentEngine::LessonBlockContractTest < ActiveSupport::TestCase
 
       File.read(partial).scan(/data-action="([^"]+)"/).flatten.each do |spec|
         spec.split(/\s+/).each do |binding|
-          next unless binding.include?("->")
+          # Stimulus accepts both the explicit "event->controller#method" form and
+          # the shorthand "controller#method" (implied default event, e.g. "click"
+          # on a button). Only the explicit form was parsed here, so a shorthand
+          # binding naming a nonexistent method passed this test silently.
+          target = binding.include?("->") ? binding.split("->").last : binding
+          next unless target.include?("#")
 
-          controller, method = binding.split("->").last.split("#")
+          controller, method = target.split("#")
           next if controller.nil? || method.nil?
 
           file = CONTROLLERS_DIR.join("#{controller.tr('-', '_')}_controller.js")
