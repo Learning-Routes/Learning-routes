@@ -39,6 +39,28 @@ class MotionBuildFreshnessTest < ActiveSupport::TestCase
     assert files.none? { |f| f.include?("/node_modules/") || f.include?("/dist/") }
   end
 
+  # A bare "*" glob does not match dotfiles by default, so a file like
+  # ".eslintrc" or ".npmrc" added under app/motion later would change what the
+  # build consumes while moving nothing in the digest — the exact silent
+  # drift this whole task exists to prevent. FNM_DOTMATCH closes that.
+  test "a dotfile under app/motion is an input, not invisible to the glob" do
+    path = Rails.root.join("app/motion/.motion_build_dotfile_test")
+    original_digest = ContentEngine::MotionBuild.digest_for(:artifact)
+
+    begin
+      File.write(path, "dotfile content\n")
+
+      assert_includes ContentEngine::MotionBuild.input_files(:artifact), path.to_s,
+        "a dotfile under app/motion must be swept as an input"
+      assert_not_equal original_digest, ContentEngine::MotionBuild.digest_for(:artifact),
+        "adding a dotfile under app/motion must change the digest"
+    ensure
+      File.delete(path) if File.exist?(path)
+    end
+
+    assert_equal original_digest, ContentEngine::MotionBuild.digest_for(:artifact)
+  end
+
   test "a changed input changes the digest" do
     before = ContentEngine::MotionBuild.digest_for(:artifact)
     path = Rails.root.join("app/motion/src/main.ts")

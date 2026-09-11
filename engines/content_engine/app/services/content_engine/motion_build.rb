@@ -16,7 +16,13 @@ module ContentEngine
 
     def self.input_files(kind)
       pattern = kind == :schemas ? "#{ROOT}/src/scenes/*.schema.json" : "#{ROOT}/**/*"
-      Dir[Rails.root.join(pattern)]
+      # FNM_DOTMATCH: a bare "*" does not match dotfiles by default, so
+      # ".eslintrc", ".npmrc" etc. under app/motion would otherwise be
+      # invisible to the digest — silently excluded from a sweep that is
+      # supposed to cover "every file that can change the artifact's bytes".
+      # It also makes "*" match the "." and ".." entries at each directory
+      # level; File.file? rejects both since neither is a regular file.
+      Dir.glob(Rails.root.join(pattern), File::FNM_DOTMATCH)
         .select { |p| File.file?(p) }
         .reject { |p| EXCLUDED.any? { |d| p.include?("/#{d}/") } }
         .sort
