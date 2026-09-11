@@ -77,6 +77,28 @@ module LearningRoutesEngine
         "the aftermath was rendered inside the modal, which closes"
     end
 
+    # The controller cannot see the aftermath from JavaScript without reading
+    # the DOM for content, so the server says whether there is something to
+    # show: `data-has-aftermath` decides whether the lesson lands on the check's
+    # section after the modal or skips past it, as it always did.
+    test "the check's section says whether it has an aftermath to show" do
+      get learning_routes_engine.route_step_path(@route, @step)
+
+      doc = Nokogiri::HTML(response.body)
+      section = doc.at_css(".lesson-section[data-section-index='#{check_index}']")
+      assert_equal "true", section["data-has-aftermath"],
+        "the controller has no way to know it should land on this section"
+
+      bare = @step.metadata["parsed_sections"].map { |s| s["type"] == "check" ? s.except("aftermath") : s }
+      @step.update!(metadata: @step.metadata.merge("parsed_sections" => bare))
+      get learning_routes_engine.route_step_path(@route, @step)
+
+      doc = Nokogiri::HTML(response.body)
+      section = doc.at_css(".lesson-section[data-section-index='#{check_index}']")
+      assert_equal "false", section["data-has-aftermath"],
+        "a check with nothing after it must still be skipped"
+    end
+
     # The question of a programming check is a code fence. Printed as plain text
     # the student read backticks.
     test "the question reaches the modal as sanitized HTML, not as backticks" do

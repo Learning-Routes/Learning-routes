@@ -344,6 +344,99 @@ module ContentEngine
       assert_includes section[:aftermath].to_s, "graph TD"
     end
 
+    # ── The question ends at the FIRST structural line, whatever kind ─────────
+    #
+    # `1) 4 / 2) 22 / CORRECTA: A` has no `A)`-`D)` line, so the option-less
+    # branch ran and the body up to the first terminator — `CORRECTA: A`
+    # included — became the `question`. `_check.html.erb` renders `question`
+    # now, so the modal showed the student the answer key. A regression of the
+    # first review round: before it, every unrecognised line was discarded and
+    # the leak was invisible for the wrong reason.
+    test "a check with numbered options does not leak CORRECTA into the question" do
+      body = <<~MARKDOWN
+        1) 4
+        2) 22
+        CORRECTA: A
+        EXPLICACION: Two plus two.
+
+        Now look at the diagram.
+      MARKDOWN
+      section = parse_one_of("## Pregunta: What does 2 + 2 print?", body, "check")
+
+      assert_equal "What does 2 + 2 print?", section[:question].to_s.strip,
+        "the answer key reached the question: the modal shows the student CORRECTA"
+      assert_not_includes section[:question].to_s, "CORRECTA"
+      assert_not_includes section[:question].to_s, "EXPLICACION"
+      assert_equal "Two plus two.", section[:explanation]
+      assert_includes section[:aftermath].to_s, "Now look at the diagram.",
+        "after the last marker everything is still aftermath"
+    end
+
+    test "a check whose only structure is an explanation keeps the answer out of the question" do
+      body = <<~MARKDOWN
+        Think about it.
+        EXPLICACION: The answer is the second one.
+      MARKDOWN
+      section = parse_one_of("## Pregunta: Which one?", body, "check")
+
+      assert_not_includes section[:question].to_s, "EXPLICACION"
+      assert_not_includes section[:question].to_s, "second one"
+      assert_equal "The answer is the second one.", section[:explanation]
+    end
+
+    # ── `==>` inside a fence is mermaid's thick arrow, not a pair ─────────────
+    #
+    # A `## Match:` followed by a diagram read the arrows of the diagram as
+    # pairs (pre-existing), and — once the aftermath started after the "last
+    # pair" — an aftermath consisting of the dangling closing fence. The scanner
+    # has to know when it is inside a fenced block, and so does the check's.
+    test "a match does not read a mermaid arrow inside a fence as a pair" do
+      body = <<~MARKDOWN
+        Dog ==> Perro
+        Cat ==> Gato
+
+        ```mermaid
+        graph LR
+          A[Dog] ==> B[Perro]
+          C[Cat] ==> D[Gato]
+        ```
+
+        That is the whole idea.
+      MARKDOWN
+      section = parse_one_of("## Match: Spanish animals", body, "drag_drop")
+
+      assert_equal 2, section[:pairs].size,
+        "the arrows inside the mermaid fence were read as pairs"
+      assert_equal %w[Dog Cat], section[:pairs].map { |p| p[:term] }
+      assert_includes section[:aftermath].to_s, "```mermaid",
+        "the fence must reach the aftermath whole, not as a dangling ```"
+      assert_includes section[:aftermath].to_s, "A[Dog] ==> B[Perro]"
+      assert_includes section[:aftermath].to_s, "That is the whole idea."
+      # `document` appends TRAILING, which carries one more fence: two fences,
+      # four markers. An odd count means a fence was cut in half.
+      assert_equal 4, section[:aftermath].to_s.scan("```").size,
+        "an odd number of fence markers means the fence was cut"
+    end
+
+    test "a check does not read an option-shaped line inside its question fence as an option" do
+      body = <<~MARKDOWN
+        ```text
+        A) this is sample output, not an option
+        B) neither is this
+        ```
+        A) One
+        B) Two
+        CORRECTA: B
+      MARKDOWN
+      section = parse_one_of("## Pregunta: Which line is printed?", body, "check")
+
+      assert_equal %w[One Two], section[:options].map { |o| o[:label] },
+        "lines inside the question's fence were read as options"
+      assert_includes section[:question].to_s, "sample output, not an option",
+        "the fence is the question and must stay whole"
+      assert section[:options][1][:correct], "CORRECTA: B must still resolve to the real second option"
+    end
+
     # The prose blocks are NOT part of this class and must not be "fixed".
     # Their whole body IS their content — it is handed to MarkdownRenderer and
     # displayed. Trailing prose after a concept legitimately belongs to that
