@@ -268,6 +268,61 @@ class Wp33ReparseTest < ActiveSupport::TestCase
       "the controller that writes image_status is outside the glob again"
   end
 
+  # ── The census counts what rule (a) would cost, before anyone adopts it ───
+  #
+  # `parse_heading_drag_drop` still has the variant of finding 3 the check just
+  # lost: `Cat ==> Gato`, a blank line, then `The arrow ==> means "maps to".`
+  # yields a third pair. Unlike a check it cannot be fixed with a grammar —
+  # every pair looks identical, so nothing distinguishes prose about the arrow
+  # from a pair using it. The honest fix is to end the board at the first blank
+  # line, which is the shape `lesson_content.yml` shows, and it is only safe if
+  # no board in production is written with its pairs spaced out.
+  #
+  # So the census counts them and the board rule stays as it is. A number the
+  # owner can read BEFORE the change, rather than a change justified by a guess.
+  test "the census counts persisted boards whose pairs are separated by blank lines" do
+    @step.update!(metadata: { "parsed_sections" => [spaced_board, tight_board] })
+
+    out = run_task("wp33:reparse_census")
+
+    assert_match(/match boards persisted:\s+2/, out)
+    assert_match(/with pairs separated by blank lines:\s+1/, out,
+      "exactly one of the two fixtures has a blank line between its pairs")
+  end
+
+  test "the census counts no blank-separated board when every board is tight" do
+    @step.update!(metadata: { "parsed_sections" => [tight_board] })
+
+    out = run_task("wp33:reparse_census")
+
+    assert_match(/match boards persisted:\s+1/, out)
+    assert_match(/with pairs separated by blank lines:\s+0/, out,
+      "a tight board must not be counted; rule (a) would not touch it")
+  end
+
+  test "a blank line inside the aftermath does not count as a spaced board" do
+    # The blank that matters is one BETWEEN pairs. A board whose pairs are tight
+    # and whose trailing prose is separated from them by a blank is the ordinary
+    # shape, and counting it would tell the owner rule (a) is unsafe when it is
+    # not.
+    @step.update!(metadata: { "parsed_sections" => [tight_board_with_aftermath] })
+
+    out = run_task("wp33:reparse_census")
+
+    assert_match(/with pairs separated by blank lines:\s+0/, out)
+  end
+
+  test "a mermaid arrow inside a fence does not make a board look spaced" do
+    @step.update!(metadata: { "parsed_sections" => [tight_board_with_fenced_arrow] })
+
+    out = run_task("wp33:reparse_census")
+
+    assert_match(/with pairs separated by blank lines:\s+0/, out,
+      "the `==>` inside the fence is not a pair, so the blank line above the " \
+      "fence is not a blank line between pairs"
+    )
+  end
+
   # ── Finding 7: the safety invariant is checked, not narrated ──────────────
   #
   # `reparse_census` tells the operator the two image counts "must be EQUAL. If
@@ -310,6 +365,27 @@ class Wp33ReparseTest < ActiveSupport::TestCase
   end
 
   private
+
+  def board(body)
+    ContentEngine::LessonSectionParser.call("## Match: Board\n#{body}")
+      .find { |x| x[:type] == "drag_drop" }.as_json
+  end
+
+  def spaced_board
+    board("Dog ==> Perro\n\nCat ==> Gato\n")
+  end
+
+  def tight_board
+    board("Dog ==> Perro\nCat ==> Gato\n")
+  end
+
+  def tight_board_with_aftermath
+    board("Dog ==> Perro\nCat ==> Gato\n\nSay each one out loud.\n")
+  end
+
+  def tight_board_with_fenced_arrow
+    board("Dog ==> Perro\nCat ==> Gato\n\n```mermaid\ngraph LR\n  A ==> B\n```\n")
+  end
 
   def persist_with_enrichment!
     sections = ContentEngine::LessonSectionParser.call(BODY).map(&:as_json)

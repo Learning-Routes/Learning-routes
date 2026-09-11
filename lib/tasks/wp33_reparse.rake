@@ -69,6 +69,49 @@ namespace :wp33 do
     end
   end
 
+  # Would rule (a) — "a board ends at the first blank line" — truncate a board
+  # that already exists?
+  #
+  # `parse_heading_drag_drop` still has the variant of finding 3 that the check
+  # lost in round three: `Cat ==> Gato`, a blank line, then
+  # `The arrow ==> means "maps to".` yields a third pair and moves the aftermath
+  # boundary past everything above it. The check was fixable with a GRAMMAR —
+  # options, one CORRECTA, one EXPLICACIÓN, and a marker the grammar no longer
+  # expects ends the run. A board has no grammar to use: every pair looks
+  # identical, so nothing distinguishes prose about the arrow from a pair using
+  # it.
+  #
+  # That leaves ending the board at the first blank line, which is the shape
+  # `lesson_content.yml` actually shows — and it is only safe if no board in
+  # production is written with its pairs spaced out. THIS COUNTS THEM. The board
+  # rule is deliberately unchanged until the number is known: a fix justified by
+  # a guess about production content is how WP-24 §2 shipped a task nobody could
+  # run.
+  #
+  # The blank that matters is one BETWEEN pairs. A blank between the last pair and
+  # the trailing prose is the ordinary shape and must not be counted, or the
+  # census reports rule (a) as unsafe when it is not.
+  blank_separated_board = lambda do |section|
+    body = section["body"].to_s
+    next false if body.empty?
+
+    lines = body.lines
+    in_fence = false
+    pair_lines = []
+    lines.each_with_index do |line, i|
+      if line.strip.match?(/\A(?:```|~~~)/)
+        in_fence = !in_fence
+        next
+      end
+      # `==>` inside a fence is mermaid's thick arrow, not a pair — so a blank
+      # line above such a fence is not a blank line between pairs.
+      pair_lines << i if !in_fence && line.include?("==>")
+    end
+    next false if pair_lines.size < 2
+
+    lines[pair_lines.first..pair_lines.last].any? { |l| l.strip.empty? }
+  end
+
   desc "Report what a reparse would change, and what it cannot safely touch (read only)"
   task reparse_census: :environment do
     tally = {
@@ -80,9 +123,23 @@ namespace :wp33 do
     unparseable = []
     images_now = 0
     images_after = 0
+    boards = 0
+    boards_spaced = 0
 
     parsed_steps.call.find_each(batch_size: 100) do |step|
       scanned += 1
+
+      # Counted from what is PERSISTED, and before the AiContent check below: a
+      # board in the cache is a board a student sees whether or not its step still
+      # has parseable content behind it, and whether or not the step is
+      # position-compatible.
+      Array(step.metadata["parsed_sections"]).each do |section|
+        next unless section.is_a?(Hash) && section["type"] == "drag_drop"
+
+        boards += 1
+        boards_spaced += 1 if blank_separated_board.call(section)
+      end
+
       content = resolve_content.call(step)
       next unparseable << step.id if content.nil? || content.body.blank?
 
@@ -136,6 +193,17 @@ namespace :wp33 do
     puts "image urls now:            #{images_now}"
     puts "image urls after reparse:  #{images_after}"
     puts "  ^ these must be EQUAL. If not, STOP and do not run wp33:reparse." if images_now != images_after
+    puts
+    puts "match boards persisted:                 #{boards}"
+    puts "  with pairs separated by blank lines:  #{boards_spaced}"
+    if boards_spaced.zero?
+      puts "  ^ 0, so ending a board at the first blank line would truncate nothing"
+      puts "    that exists, and parse_heading_drag_drop can take the fix the check"
+      puts "    took in round three. The board rule is UNCHANGED until you decide."
+    else
+      puts "  ^ NOT 0. Those boards would lose pairs if a board ended at the first"
+      puts "    blank line. Leave the board rule alone and document the variant."
+    end
 
     if incompatible.any?
       puts
