@@ -97,6 +97,47 @@ module LearningRoutesEngine
       assert_not_includes html, "<script>"
     end
 
+    # AN OPTION-LESS `## Pregunta` IS THE OTHER WAY INTO THE MODAL.
+    #
+    # With no `A)`-`D)` line the parser had no `first_option_index`, so the whole
+    # body — the mermaid fence included — became the `question`. The question is
+    # now rendered through MarkdownRenderer, so the diagram drew inside the
+    # modal: the one place this file exists to keep it out of.
+    test "an option-less check keeps its diagram out of the modal" do
+      body = <<~MARKDOWN
+        ## Pregunta: What do you observe?
+        Think about it for a moment before you go on.
+
+        ```mermaid
+        graph TD
+          A[Start] --> B[Finish]
+        ```
+      MARKDOWN
+      sections = ContentEngine::LessonSectionParser.call(body).map(&:as_json)
+      step = @route.route_steps.create!(
+        route_module: @step.route_module, title: "Sin opciones", position: 1,
+        status: :in_progress, content_type: :lesson, level: :nv1, bloom_level: 1,
+        metadata: { "parsed_sections" => sections, "content_ready" => true }
+      )
+      ContentEngine::AiContent.create!(route_step: step, content_type: :text, body: body)
+      index = sections.index { |s| s["type"] == "check" }
+
+      get learning_routes_engine.route_step_path(@route, step)
+
+      assert_response :success
+      doc = Nokogiri::HTML(response.body)
+
+      modal = doc.at_css(".quiz-modal-backdrop[data-section-index='#{index}']")
+      assert modal, "the check modal is missing"
+      assert_nil modal.at_css(".mermaid-container"),
+        "the diagram was folded into `question` and now draws inside the modal, " \
+        "which the controller closes"
+
+      section = doc.at_css(".lesson-section[data-section-index='#{index}']")
+      assert section.at_css(".mermaid-container"),
+        "the diagram belongs in the check's own section, in the lesson flow"
+    end
+
     # The rule that governs everything in this package.
     test "adding fields does not change how many sections the body produces" do
       sections = ContentEngine::LessonSectionParser.call(BODY)

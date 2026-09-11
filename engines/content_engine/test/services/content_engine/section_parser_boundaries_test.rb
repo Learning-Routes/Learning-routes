@@ -210,6 +210,140 @@ module ContentEngine
         "there is nothing after the last marker line, so there is no aftermath"
     end
 
+    # ── After the last marker, EVERYTHING is aftermath ──────────────────────
+    #
+    # The first version of this fix read `split_aftermath` at both sites and
+    # threw its first return value away:
+    #
+    #   _kept, aftermath = split_aftermath(lines[(last_marker_index + 1)..].join)
+    #
+    # `split_aftermath` exists for a parser that does NOT know where its
+    # accumulation ends — it hunts for a heading, a fence or a rule. These two
+    # parsers already know: the last option / CORRECTA / EXPLICACIÓN line, and
+    # the last `==>` line. Everything after that is trailing content BY
+    # CONSTRUCTION, so hunting for a terminator inside it only creates a second
+    # place for content to fall out of — `_kept`, discarded.
+    #
+    # The sweep above could not see it, because TRAILING opens with a `###`:
+    # the terminator is on line one, `_kept` is always empty, and the two cases
+    # below never happened in a test.
+    test "a check keeps plain prose sitting between its last marker and the fence" do
+      body = <<~MARKDOWN
+        A) The first one
+        B) The second one
+        CORRECTA: A
+        EXPLICACIÓN: The first statement runs first.
+
+        Look carefully at the diagram below before you go on.
+
+        ### What actually happened
+      MARKDOWN
+      section = parse_one_of("## Pregunta: Which one runs first?", body, "check")
+
+      assert_includes section[:aftermath].to_s, "Look carefully at the diagram below",
+        "the prose between EXPLICACION and the first terminator was discarded: " \
+        "split_aftermath returned it as `_kept` and the caller threw it away"
+      assert_includes section[:aftermath].to_s, "### What actually happened",
+        "the terminated half must still be there too"
+    end
+
+    test "a check keeps trailing prose when there is no terminator at all" do
+      body = <<~MARKDOWN
+        A) Lima
+        B) Quito
+        CORRECTA: A
+        EXPLICACION: Lima is the capital of Peru.
+
+        Remember this, we use it in the next block.
+        It comes back in the summary.
+      MARKDOWN
+      section = parse_one_of("## Pregunta: What is the capital?", body, "check")
+
+      assert_includes section[:aftermath].to_s, "Remember this, we use it in the next block.",
+        "with no heading, fence or rule after the markers there is no terminator, " \
+        "so split_aftermath returned the whole tail as `_kept` and it was deleted"
+      assert_includes section[:aftermath].to_s, "It comes back in the summary."
+      assert_operator section[:aftermath].to_s.lines.size, :>, 1,
+        "the trailing prose must keep its newlines"
+    end
+
+    test "a check does not leak its trailing prose into the answerable fields" do
+      body = <<~MARKDOWN
+        A) Lima
+        B) Quito
+        CORRECTA: A
+        EXPLICACION: Lima is the capital of Peru.
+
+        Remember this, we use it in the next block.
+      MARKDOWN
+      section = parse_one_of("## Pregunta: What is the capital?", body, "check")
+
+      assert_equal 2, section[:options].size
+      assert_equal "Lima is the capital of Peru.", section[:explanation]
+      assert_not_includes section[:question].to_s, "Remember this"
+      assert_not_includes section[:options].to_s, "Remember this"
+    end
+
+    test "a match keeps plain prose sitting between its last pair and the fence" do
+      body = <<~MARKDOWN
+        Dog ==> Perro
+        Cat ==> Gato
+
+        Say each word out loud when you match it.
+
+        ### Why this works
+      MARKDOWN
+      section = parse_one_of("## Match: Spanish animals", body, "drag_drop")
+
+      assert_equal 2, section[:pairs].size, "the board must be untouched"
+      assert_includes section[:aftermath].to_s, "Say each word out loud when you match it.",
+        "the prose between the last pair and the first terminator was discarded"
+      assert_includes section[:aftermath].to_s, "### Why this works"
+    end
+
+    test "a match keeps trailing prose when there is no terminator at all" do
+      body = <<~MARKDOWN
+        Dog ==> Perro
+        Cat ==> Gato
+
+        Say each word out loud when you match it.
+      MARKDOWN
+      section = parse_one_of("## Match: Spanish animals", body, "drag_drop")
+
+      assert_equal 2, section[:pairs].size
+      assert_includes section[:aftermath].to_s, "Say each word out loud when you match it.",
+        "with no terminator after the last pair, the whole tail was deleted"
+    end
+
+    # ── An option-less check is not a licence to swallow the section ─────────
+    #
+    # With no `A)`-`D)` line there is no `first_option_index`, and the whole body
+    # became the `question`. `_check.html.erb` now renders `question` through
+    # MarkdownRenderer, so a mermaid fence after an option-less `## Pregunta`
+    # drew INSIDE THE MODAL — the one place `_lesson.html.erb` says an aftermath
+    # must never be. With nothing structural to protect, the ordinary terminator
+    # rule is the right one.
+    test "an option-less check puts the fence in the aftermath, not in the question" do
+      body = <<~MARKDOWN
+        Think about it for a moment before you go on.
+
+        ```mermaid
+        graph TD
+          A[Start] --> B[Finish]
+        ```
+      MARKDOWN
+      section = parse_one_of("## Pregunta: What do you observe?", body, "check")
+
+      assert_empty section[:options], "this check has no options; that is the case under test"
+      assert_includes section[:question].to_s, "Think about it for a moment",
+        "the prose before the terminator is still the question"
+      assert_not_includes section[:question].to_s, "```mermaid",
+        "the fence was folded into the question and now draws inside the modal"
+      assert_includes section[:aftermath].to_s, "```mermaid",
+        "the fence belongs in the aftermath, which renders in the lesson flow"
+      assert_includes section[:aftermath].to_s, "graph TD"
+    end
+
     # The prose blocks are NOT part of this class and must not be "fixed".
     # Their whole body IS their content — it is handed to MarkdownRenderer and
     # displayed. Trailing prose after a concept legitimately belongs to that

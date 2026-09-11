@@ -226,15 +226,42 @@ class Wp33ReparseTest < ActiveSupport::TestCase
 
   # ── The sweep that stops the next job reopening it ──────────────────────
 
-  test "every key a job writes into parsed_sections is declared as enrichment" do
-    written = Dir[Rails.root.join("engines/*/app/jobs/**/*.rb")].flat_map do |path|
-      File.read(path).scan(/parsed(?:_sections)?\[[^\]]+\]\["([a-z_]+)"\]\s*=/).flatten
+  # JOBS ARE NOT THE ONLY WRITERS, which is the whole lesson of this branch:
+  # the first version of this sweep globbed `app/jobs` only, and
+  # `SectionImagesController` was reaching into the same entries the whole time.
+  # A glob narrower than the set of writers is a sweep that certifies what it
+  # has not looked at.
+  WRITER_GLOB = "engines/*/app/{jobs,controllers,services}/**/*.rb".freeze
+
+  # UNBOUND FROM THE LOCAL NAME. This was `parsed(?:_sections)?\[...`, so a
+  # writer that happened to call its local `sections` or `entries` was invisible.
+  # What identifies an enrichment write is its SHAPE — index, then a string key,
+  # then assignment — not what the caller named its variable.
+  #
+  # The double bracket is what keeps `audio_sections[index] = entry` out: that
+  # is a single-bracket write of a whole entry, a different key at the top level
+  # of the blob, and not enrichment. Verified: this pattern and the old one
+  # return the same four keys today, over 116 files instead of 60-odd.
+  ENRICHMENT_WRITE = /\w+\[[^\]]+\]\["([a-z_]+)"\]\s*=/
+
+  test "every key written into parsed_sections is declared as enrichment" do
+    written = Dir[Rails.root.join(WRITER_GLOB)].flat_map do |path|
+      File.read(path).scan(ENRICHMENT_WRITE).flatten
     end.uniq
 
     assert_not_empty written, "the sweep found no writes at all; it has stopped looking"
     assert_equal [], written - ContentEngine::SectionEnrichment::KEYS,
-      "a job writes a key into parsed_sections that the reparse does not carry over, " \
-      "so the next reparse will delete it. Add it to SectionEnrichment::KEYS."
+      "something writes a key into parsed_sections that the reparse does not carry " \
+      "over, so the next reparse will delete it. Add it to SectionEnrichment::KEYS."
+  end
+
+  test "the sweep is looking at the writers it thinks it is" do
+    files = Dir[Rails.root.join(WRITER_GLOB)]
+
+    assert_operator files.size, :>=, 100,
+      "the glob stopped matching the tree; the class test above would pass vacuously"
+    assert files.any? { |f| f.end_with?("section_images_controller.rb") },
+      "the controller that writes image_status is outside the glob again"
   end
 
   private

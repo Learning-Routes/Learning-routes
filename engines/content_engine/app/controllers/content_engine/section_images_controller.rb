@@ -80,28 +80,29 @@ module ContentEngine
       sections[section_index]
     end
 
+    # UNDER THE LOCK, AND RE-READ. `merge_metadata!` alone is not enough here:
+    # it keeps the top-level keys this caller does not name, but this caller
+    # rebuilds the WHOLE `parsed_sections` array and names it. `RouteStep`
+    # says so itself — "`||` is shallow, exactly like Hash#merge. A caller
+    # mutating a NESTED structure must still re-read that structure immediately
+    # before writing."
+    #
+    # The array read at the top of the request is minutes old by web standards:
+    # a `SectionImageJob` committing another section's `image_url` in between
+    # was written straight back out as nil, and `MediaPrefetchJob` then bought
+    # that image again. Both jobs already re-read (`SectionImageJob#write_state!`
+    # reloads, `MediaPrefetchJob#apply_results!` uses `fresh_metadata`); this
+    # was the writer still holding a stale copy. Same three lines as
+    # `SectionAudioController#update_audio_section_status!`.
     def mark_generating!(section_index)
-      metadata = @step.metadata || {}
-      parsed = metadata["parsed_sections"]
-      return unless parsed.is_a?(Array) && parsed[section_index]
+      @step.with_lock do
+        parsed = @step.fresh_metadata["parsed_sections"]
+        next unless parsed.is_a?(Array) && parsed[section_index]
 
-      parsed[section_index]["image_status"] = "generating"
-      parsed[section_index]["image_error"] = nil
-      # Same reason as update_section_image! below: the whole-blob write erases
-      # an `audio_sections` entry a concurrent narration request just stored.
-      @step.merge_metadata!("parsed_sections" => parsed)
-    end
-
-    def update_section_image!(section_index, image_url)
-      metadata = @step.metadata || {}
-      parsed = metadata["parsed_sections"]
-      return unless parsed.is_a?(Array) && parsed[section_index]
-
-      parsed[section_index]["image_url"] = image_url
-      # merge_metadata!, not update!(metadata: ...merge): the second writes the
-      # whole jsonb blob from the copy this request is holding. Same one-line
-      # defect WP-33 §1 fixed in SectionResolver and the reparse task.
-      @step.merge_metadata!("parsed_sections" => parsed)
+        parsed[section_index]["image_status"] = "generating"
+        parsed[section_index]["image_error"] = nil
+        @step.merge_metadata!("parsed_sections" => parsed)
+      end
     end
 
     def render_image_html(image_url, section)

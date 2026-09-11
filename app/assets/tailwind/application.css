@@ -1972,6 +1972,24 @@ html[data-theme="dark"] .lesson-section-badge--challenge {
   opacity: 0;
 }
 
+/* The check's question is rendered through MarkdownRenderer (WP-33 §2), so a
+   "what does this print?" question shows real code instead of backticks. That
+   put it inside `.lesson-content`, whose `p` rule is body copy: muted
+   `--color-sub` and a 1rem bottom margin. The question is a heading, not body
+   copy, and it sits in a flex row that supplies its own spacing — measured in
+   the browser, the paragraph came back rgb(109,102,91) with margin-bottom 16px
+   where the old plain-text `<p style="margin:0">` was rgb(28,24,18) with none.
+   Restore both; the code, list and emphasis rules underneath are what we came
+   for and stay. */
+.quiz-question > p {
+  color: var(--color-txt);
+  margin-bottom: 0;
+}
+
+.quiz-question > p + p {
+  margin-top: 0.625rem;
+}
+
 .quiz-modal-continue {
   display: flex;
   align-items: center;

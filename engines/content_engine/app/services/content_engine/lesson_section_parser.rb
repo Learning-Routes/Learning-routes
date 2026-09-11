@@ -260,13 +260,19 @@ module ContentEngine
     # Parse ## Pregunta: heading format with A)-D) options, CORRECTA:, EXPLICACIÓN:
     # ## Pregunta / ## Question
     #
-    # THE TERMINATOR APPLIES ONLY AFTER THE STRUCTURAL LINES ARE COMPLETE, and
-    # that is the whole difficulty. A programming check is
-    # `## Pregunta ("what does this print?")` followed by a code fence and THEN
-    # its options: a fence before the first option is part of the question, not
-    # an aftermath. So the question is everything before the first option line,
-    # markdown and fences included, and the aftermath starts at the first
-    # terminator AFTER the last recognised marker line.
+    # THE STRUCTURAL LINES COME FIRST, AND AFTER THEM EVERYTHING IS AFTERMATH.
+    # A programming check is `## Pregunta ("what does this print?")` followed by
+    # a code fence and THEN its options: a fence before the first option is part
+    # of the question, not an aftermath. So the question is everything before
+    # the first option line, markdown and fences included.
+    #
+    # After the LAST option / CORRECTA / EXPLICACION line there is nothing
+    # structural left to protect, so there is nothing to hunt for either. The
+    # first version of this fix ran `split_aftermath` over that tail and dropped
+    # its first return value — `_kept` — which deleted any prose sitting between
+    # the last marker and the first heading/fence/rule, and deleted the whole
+    # tail when there was no terminator at all. That is the same class of loss
+    # this method exists to close, reopened one line lower down.
     #
     # Every line that was neither an option, CORRECTA, EXPLICACIÓN nor the first
     # prose line used to be DISCARDED. `lesson_content.yml:127-128` tells the
@@ -301,17 +307,22 @@ module ContentEngine
         end
       end
 
-      # Everything before the first option, kept as markdown. With no options at
-      # all there is nothing structural to protect, so the whole body is the
-      # question — which is still better than throwing it away.
-      body_question = lines[0...(first_option_index || lines.size)].join.strip
-
-      question = [question_from_heading.presence, body_question.presence].compact.join("\n\n")
-
-      aftermath = nil
-      if last_marker_index && last_marker_index + 1 < lines.size
-        _kept, aftermath = split_aftermath(lines[(last_marker_index + 1)..].join)
+      if options.empty?
+        # NO OPTIONS, so no structural lines to protect and no reason to treat
+        # this body differently from any other accumulating block: the ordinary
+        # terminator rule applies from the top. Folding the whole body into
+        # `question` put a mermaid fence inside the modal, which is the one
+        # place `_lesson.html.erb` says an aftermath must never render.
+        body_question, aftermath = split_aftermath(lines.join)
+      else
+        body_question = lines[0...first_option_index].join
+        # Everything after the last marker, verbatim. No terminator hunt: the
+        # boundary is already known, and hunting inside a tail that is trailing
+        # content by construction only creates a second place to lose it.
+        aftermath = lines[(last_marker_index + 1)..].join.strip.presence
       end
+
+      question = [question_from_heading.presence, body_question.to_s.strip.presence].compact.join("\n\n")
 
       if correct_letter && correct_letter.match?(/\A[A-D]\z/)
         correct_index = correct_letter.ord - "A".ord
@@ -415,8 +426,12 @@ module ContentEngine
     #
     # Selecting the `==>` lines kept the trailing content out of `pairs`, which
     # is what the old boundaries "control" asserted — but it also threw that
-    # content away. The prose before the first pair is the board's `intro`; the
-    # aftermath starts at the first terminator after the LAST pair.
+    # content away. The prose before the first pair is the board's `intro`;
+    # everything after the LAST pair is the aftermath, verbatim.
+    #
+    # Not `split_aftermath` here either — see `parse_heading_check`. The last
+    # `==>` line IS the boundary, so looking for a second one only lost the
+    # prose that sat before it.
     def parse_heading_drag_drop(title, body)
       lines = body.to_s.lines
       pair_indexes = lines.each_index.select { |i| lines[i].include?("==>") }
@@ -430,7 +445,7 @@ module ContentEngine
 
       aftermath = nil
       if pair_indexes.any? && pair_indexes.last + 1 < lines.size
-        _kept, aftermath = split_aftermath(lines[(pair_indexes.last + 1)..].join)
+        aftermath = lines[(pair_indexes.last + 1)..].join.strip.presence
       end
 
       {

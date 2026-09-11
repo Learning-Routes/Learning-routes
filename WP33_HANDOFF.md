@@ -1,7 +1,11 @@
 # WP-33 — What the re-parse would destroy, and what the parser still drops
 
-**Written:** 2026-09-08 · **Branch:** `wp33-reparse-keeps-what-it-did-not-make`, base `main` @
-`d5bdaaa`. **Tree clean. Not merged, not deployed. Nothing run against production.**
+**Written:** 2026-09-08 · **Revised:** 2026-09-10 after code review · **Branch:**
+`wp33-reparse-keeps-what-it-did-not-make`, base `main` @ `d5bdaaa`. **Tree clean. Not merged, not
+deployed. Nothing run against production.**
+
+**A review of `7036973` found five defects and all five are fixed on this branch — one of them a
+hole in §2 big enough that §2 was not actually closed.** See *What the review found* below.
 
 `wp24:reparse_scenarios` is deleted. The task the owner runs is `wp33:reparse`, and the exact
 sequence is at the end of this document. **Read the census output before running anything.**
@@ -249,24 +253,132 @@ and confirmed on the row itself: the image URL and status kept, the check's afte
 with its ```` ```mermaid ```` fence, the match's intro recovered, both titles now `nil`, and the
 section types unchanged.
 
+## What the review found
+
+Five defects in `7036973`, all confirmed against the branch, all fixed here, each with its test red
+first. **The first two mean §2 was not closed** — the aftermath field made it look closed while the
+same class of loss continued one line lower down.
+
+### 1. `split_aftermath` discarded `_kept`, so §2 still deleted prose
+
+`parse_heading_check` and `parse_heading_drag_drop` both did:
+
+```ruby
+_kept, aftermath = split_aftermath(lines[(last_marker_index + 1)..].join)
+```
+
+`split_aftermath` returns `[everything before the first terminator, everything from it]`. The
+first half was thrown away. So prose between the last structural line and the first
+heading/fence/rule was deleted — and with **no** terminator at all, which is the ordinary shape,
+the entire tail was deleted:
+
+```
+## Pregunta: ¿Cuál es la capital?
+A) Lima
+B) Quito
+CORRECTA: A
+EXPLICACIÓN: Lima es la capital del Perú.
+
+Recuerda este dato, lo usaremos en el siguiente bloque.   ← gone, and `check` has no `body`
+```
+
+**The brief's wording caused this.** It says the aftermath runs "from its first terminator", and
+that is what I implemented. The rule is simpler than the brief made it: `split_aftermath` exists
+for a parser that does *not* know where its accumulation ends. These two know — the last option /
+`CORRECTA` / `EXPLICACIÓN` line, and the last `==>` line. After that, everything is aftermath **by
+construction**, so hunting for a terminator inside it only created a second place to lose content.
+Both sites are now `lines[(boundary + 1)..].join.strip.presence`.
+
+**Why the sweep did not catch it:** `TRAILING` opens with `### What actually happened`. The
+terminator is on line one, so `_kept` was always empty in every generated case, and the two §2
+cases put the fence directly after the last marker. The sweep never put plain prose in the gap.
+It does now — two cases per parser, one with a terminator after the prose and one without.
+
+### 2. An option-less `## Pregunta` drew its diagram inside the modal
+
+With no `A)`–`D)` line there was no `first_option_index`, so the whole body became the `question` —
+and §2 had just started rendering `question` through `MarkdownRenderer`. A mermaid fence after an
+option-less question therefore drew **inside the modal**, the one place `_lesson.html.erb` says an
+aftermath must never be. Verified in the rendered DOM, not just in the parse.
+
+When `options.empty?` there is nothing structural to protect, so the ordinary terminator rule
+applies from the top: `body_question, aftermath = split_aftermath(lines.join)`.
+
+### 3. `mark_generating!` wrote a nested array from a stale copy
+
+`SectionImagesController#mark_generating!` got `merge_metadata!` in `7036973` but not the lock and
+re-read its sibling `update_audio_section_status!` got in the same commit. `merge_metadata!` is
+shallow — `RouteStep` says so itself: *"A caller mutating a NESTED structure must still re-read
+that structure immediately before writing."* This caller rebuilds the **whole** `parsed_sections`
+array and names it, from the copy `set_step_and_authorize!` loaded at the top of the request.
+
+A `SectionImageJob` committing another section's `image_url` in between was written straight back
+out as nil, and `MediaPrefetchJob#build_media_tasks` then bought that image again — §1's own
+failure mode, through the door §1 did not close. Both jobs already re-read; this was the last
+writer holding a stale copy. Now `with_lock` + `fresh_metadata`.
+
+### 4. `update_section_image!` was dead code
+
+No callers anywhere. `7036973` edited its write and added a comment to it; `mark_generating!` then
+pointed at it for the rationale. Deleted, comment moved onto `mark_generating!`.
+
+### 5. The enrichment sweep globbed only `engines/*/app/jobs`
+
+The commit message of `7036973` is *"three non-job writers were outside the whole-blob sweep"* —
+so the branch already knew jobs are not the only writers, and the §1 sweep was still looking only
+at jobs. Widened to `{jobs,controllers,services}`: 116 files instead of 60-odd, and it picks up
+`SectionImagesController`'s two writes (both already in `KEYS`, so it passes today).
+
+**The regex is unbound from the local name too.** It was `parsed(?:_sections)?\[...`, so a writer
+that called its local `sections` was invisible. It is now `\w+\[[^\]]+\]\["([a-z_]+)"\]\s*=` —
+the *shape* of an enrichment write, not the variable name. The double bracket is what keeps
+`audio_sections[index] = entry` out: that is a single-bracket write of a whole entry at the top
+level of the blob, not enrichment. Verified both patterns return the same four keys today, so the
+widening changed coverage without changing the answer.
+
+### The browser check on the modal header
+
+`7036973` replaced `<p style="margin:0">` with `<div class="lesson-content">`, and
+`MarkdownRenderer` emits its own `<p>` inside it. Measured in Chrome against the compiled
+stylesheet, on the real rendered modal markup:
+
+| | old `<p>` | after `7036973` | now |
+|---|---|---|---|
+| `margin-top` | 0px | **0px** | 0px |
+| `margin-bottom` | 0px | **16px** | 0px |
+| `color` | `rgb(28, 24, 18)` | **`rgb(109, 102, 91)`** | `rgb(28, 24, 18)` |
+
+**No stray top margin** — that specific worry was unfounded. But `.lesson-content p` is body copy
+(`@apply ... mb-4; color: var(--color-sub)`), so the question had picked up a 1rem trailing gap and
+turned muted grey: the inline `color:var(--color-txt)` sits on the wrapper `div`, and the rule
+targets the `p` inside it. Fixed with a `.quiz-question` scope next to the other `.quiz-*` rules —
+a heading is not body copy — keeping the `code`, list and emphasis rules that were the point of
+rendering markdown at all. **`app/assets/tailwind/application.css` changed, so this needs
+`bin/rails tailwindcss:build`;** the dev server serves the compiled build, not the source.
+
 ## Verification
 
 Three runs of each, one suite at a time. The **before** column is from a clean checkout of
 `d5bdaaa` with nothing else running and no test files written during the run — the discipline the
 last two packages got wrong.
 
-| Suite | Before (`d5bdaaa`) | After |
-|---|---|---|
-| Main (`bin/rails test`) | 751 runs, 3559 assertions, 0F 0E | **768 runs, 3608 assertions, 0F 0E** |
-| Browser (`bin/rails test:system`) | 66 runs, 483 assertions, 0F 0E | **66 runs, 483 assertions, 0F 0E** |
-| Combined (`bin/rails test test engines/*/test`) | 1161 runs, 5263 assertions, **3F 1E** | **1184 runs, 5437 assertions, 3F 1E** |
-| RuboCop | clean, 585 files | **clean, 588 files** |
+| Suite | Before (`d5bdaaa`) | At `7036973` | After the review fixes |
+|---|---|---|---|
+| Main (`bin/rails test`) | 751 runs, 3559 assertions, 0F 0E | 768 runs, 3608 assertions, 0F 0E | **771 runs, 3618 assertions, 0F 0E** |
+| Browser (`bin/rails test:system`) | 66 runs, 483 assertions, 0F 0E | 66 runs, 483 assertions, 0F 0E | **66 runs, 483 assertions, 0F 0E** |
+| Combined (`bin/rails test test engines/*/test`) | 1161 runs, 5263 assertions, **3F 1E** | 1184 runs, 5437 assertions, 3F 1E | **1193 runs, 5481 assertions, 3F 1E** |
+| RuboCop | clean, 585 files | clean, 588 files | **clean, 588 files** |
 
-All nine runs of each column identical. The combined failures are the four known engine ones,
+All nine runs of each column identical. The final column was re-run in full *after* the view and
+CSS changes, not carried over from before them. The combined failures are the four known engine ones,
 unchanged: `RouteGenerationJobTest`, `RouteGeneratorTest`, `GapAnalysisJobTest`,
 `ReinforcementJobTest`. **I did not touch them.**
 
-New tests: **23** — 9 reparse (including the concurrency case and the §1–§4 integration), 4 check
+New tests since the review: **9** — 5 boundaries cases (prose-in-the-gap and
+no-terminator-at-all, for both `check` and `drag_drop`, plus the option-less check), 1 modal render
+case, 1 `mark_generating!` isolation case, 1 sweep-coverage case, and the widened sweep itself.
+
+New tests in the package overall: **32** — 9 reparse (including the concurrency case and the §1–§4 integration), 4 check
 aftermath and question rendering, 4 playground/`&quot;` sweep, 6 titles — plus `check` and
 `drag_drop` joining the boundaries sweep and two new cases there. The metadata-write sweep gained
 no test; it was **widened**, which is why the run count is unchanged by the three writers it caught.
@@ -286,6 +398,25 @@ A lesson with all four fixes in one body, verified in the DOM and then deleted:
 ## What I did not do
 
 - **I did not run anything against production.** The census goes first and the owner reads it.
+- **Two findings from the same review are still open, because they were scoped out of the fix
+  list.** Both are real; I reproduced both. Neither is a regression from this branch except where
+  noted, and neither is touched here:
+  - **A check whose options are not `A)`–`D)` leaks its answer into the modal.** With `1) 4 / 2) 22
+    / CORRECTA: A / EXPLICACIÓN: …` the parser matches no options, so `question` becomes the whole
+    body — `CORRECTA: A` included — and the modal now renders it. The fix in §2 above covers the
+    option-less case, not this one; slicing at the first marker line *of any kind* would close both.
+    **This one IS a regression from `7036973`:** the old code took only the first non-empty line.
+  - **`==>` is mermaid's thick-link arrow.** A `## Match:` followed by a diagram that uses
+    `A[Start] ==> B[Middle]` gets two junk pairs (pre-existing) *and*, new on this branch, an
+    aftermath of the dangling `` ``` `` because `pair_indexes.last` now points inside the fence.
+    Restricting the pair scan to lines outside fenced regions would close it.
+- **A third finding I reported is not fixed and is the one I would look at next:** the check's
+  aftermath renders into a `.lesson-section` that `interactive_lesson_controller.js` never sets to
+  `display: ""` on the forward path — `_showQuizModal` does not reveal the section, and
+  `_handleQuizModalClose` transitions straight past it. So §2's recovered diagram is in the DOM and
+  invisible unless the check is section 0 or the student presses Back. The integration tests assert
+  server-rendered HTML, so they are green. **This is a JS change, not a parser one**, and it is why
+  I would not call §2 delivered to the student yet even with the fixes above.
 - **The generator prompt is untouched** — moving the diagram out of the check is a content decision,
   and the parser has to cope with the bodies that already exist regardless.
 - **A bare `## Match` with no colon is still parsed as a concept titled "Match".** The parser treats
