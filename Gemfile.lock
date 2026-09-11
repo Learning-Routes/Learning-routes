@@ -620,6 +620,7 @@ DEPENDENCIES
   httparty (~> 0.22)
   image_processing (~> 2.0)
   importmap-rails
+  json_schemer (~> 2.5)
   kamal
   learning_routes_engine!
   listen
