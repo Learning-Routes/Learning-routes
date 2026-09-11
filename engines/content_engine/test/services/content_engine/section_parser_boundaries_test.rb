@@ -437,6 +437,98 @@ module ContentEngine
       assert section[:options][1][:correct], "CORRECTA: B must still resolve to the real second option"
     end
 
+    # ── The marker run is CONTIGUOUS, and a wrapped value belongs to its marker ──
+    #
+    # Two defects the second round's patch left open, both from one cause: the
+    # marker scan runs over the WHOLE body, including the trailing content this
+    # parser exists to preserve.
+    #
+    # `last_marker_index` therefore answers "the last line anywhere that looked
+    # structural", not "the end of the structure", and everything between the
+    # real last marker and that line is deleted as if it were inside the block.
+    test "a check keeps its aftermath when trailing prose opens like a marker" do
+      body = <<~MARKDOWN
+        A) Yes
+        B) No
+        CORRECTA: A
+        EXPLICACIÓN: Because yes.
+
+        Here is the diagram you need:
+
+        ```mermaid
+        graph TD
+          A --> B
+        ```
+
+        Answer: think about it before moving on.
+      MARKDOWN
+      section = parse_one_of("## Pregunta: Does it?", body, "check")
+
+      assert section[:options].any? { |o| o[:correct] },
+        "the trailing `Answer:` line overwrote CORRECTA, so no option is correct " \
+        "and BlockGrader turns the check into an unanswerable, non-gating block"
+      assert_equal "Yes", section[:options].find { |o| o[:correct] }[:label]
+      assert_includes section[:aftermath].to_s, "graph TD",
+        "the diagram was deleted: the trailing line moved the aftermath boundary " \
+        "past it, which is the exact loss this parser exists to close"
+      assert_includes section[:aftermath].to_s, "Answer: think about it before moving on."
+    end
+
+    test "a check keeps a wrapped EXPLICACION in the explanation, not in the lesson" do
+      body = <<~MARKDOWN
+        A) Lima
+        B) Quito
+        CORRECTA: A
+        EXPLICACIÓN: Lima is the capital of Peru, and it was
+        founded in 1535 by Francisco Pizarro.
+      MARKDOWN
+      section = parse_one_of("## Pregunta: What is the capital?", body, "check")
+
+      assert_includes section[:explanation].to_s, "founded in 1535",
+        "only the first line of a wrapped EXPLICACION was captured"
+      # `_aftermath.html.erb` renders ALWAYS and ungated, under the check, so the
+      # tail of the explanation printed in the lesson before the student answered.
+      assert_not_includes section[:aftermath].to_s, "founded in 1535",
+        "the rest of the explanation leaked into the ungated aftermath: the " \
+        "student reads the answer before opening the modal"
+    end
+
+    # Guard rails for the contiguity rule, so it cannot be "simplified" into
+    # "the marker run ends at the first blank line".
+    test "a check still collects options separated by blank lines" do
+      body = <<~MARKDOWN
+        A) Uno
+
+        B) Dos
+
+        CORRECTA: B
+      MARKDOWN
+      section = parse_one_of("## Pregunta: Cuál?", body, "check")
+
+      assert_equal %w[Uno Dos], section[:options].map { |o| o[:label] },
+        "a blank line between options must not end the marker run"
+      assert section[:options][1][:correct]
+    end
+
+    test "a fence directly after the last marker starts the aftermath, not a continuation" do
+      body = <<~MARKDOWN
+        A) Uno
+        B) Dos
+        CORRECTA: A
+        ```mermaid
+        graph TD
+          A --> B
+        ```
+      MARKDOWN
+      section = parse_one_of("## Pregunta: Cuál?", body, "check")
+
+      assert_equal "A", section[:options].find { |o| o[:correct] } && "A"
+      assert_includes section[:aftermath].to_s, "graph TD",
+        "a fence is structural: it ends the marker run instead of being swallowed " \
+        "as a continuation of CORRECTA"
+      assert_not_includes section[:explanation].to_s, "graph TD"
+    end
+
     # The prose blocks are NOT part of this class and must not be "fixed".
     # Their whole body IS their content — it is handed to MarkdownRenderer and
     # displayed. Trailing prose after a concept legitimately belongs to that

@@ -302,19 +302,88 @@ module ContentEngine
       # Markers are only recognised OUTSIDE fenced code: a "what does this
       # print?" question carries its sample output in a fence, and a line of
       # that output that happens to start with `A) ` is not an option.
-      each_line_outside_fences(lines) do |stripped, index|
-        if stripped.match?(/\A[A-Da-d]\)\s/)
-          options << { label: stripped.sub(/\A[A-Da-d]\)\s*/, ""), correct: false }
-        elsif stripped.match?(/\A(?:CORRECTA|CORRECT|ANSWER):\s*/i)
-          correct_letter = stripped.sub(/\A(?:CORRECTA|CORRECT|ANSWER):\s*/i, "").strip.upcase
-        elsif stripped.match?(/\A(?:EXPLICACI[OÓ]N|EXPLANATION):\s*/i)
-          explanation = stripped.sub(/\A(?:EXPLICACI[OÓ]N|EXPLANATION):\s*/i, "").strip
-        elsif !stripped.match?(/\A\d+\)\s/)
+      #
+      # THE RUN IS CONTIGUOUS, and that is the part the second round still got
+      # wrong. Scanning the whole body made `last_marker_index` mean "the last
+      # line ANYWHERE that looked structural", so trailing prose that merely
+      # opens like a marker — `Answer: think about it before moving on.` — moved
+      # the aftermath boundary past everything above it. A real diagram was
+      # deleted and `correct_letter` was overwritten with prose, which leaves no
+      # option marked correct and makes `BlockGrader` treat the check as
+      # unanswerable. So the run stops at the first line that is neither a
+      # marker, a blank, nor the wrapped rest of the marker above it.
+      #
+      # A wrapped value belongs to ITS MARKER, not to the lesson. Only the first
+      # line of `EXPLICACIÓN:` was captured; the rest fell past the last marker
+      # into the aftermath, which `_aftermath.html.erb` renders always and
+      # ungated under the check — so the tail of the explanation printed in the
+      # lesson before the student had answered.
+      in_fence = false
+      prev_structural = false
+      last_kind = nil
+
+      lines.each_with_index do |line, index|
+        stripped = line.strip
+
+        if stripped.match?(FENCE)
+          # Before the first marker a fence is part of the question. After it, a
+          # fence is structural content and opens the aftermath — never a
+          # continuation of the marker above it.
+          break if first_marker_index
+
+          in_fence = !in_fence
+          prev_structural = false
           next
         end
 
+        if in_fence
+          prev_structural = false
+          next
+        end
+
+        if stripped.empty?
+          # A blank line does not end the run — options arrive blank-separated —
+          # but it does end a wrapped value: the next line starts something new.
+          prev_structural = false
+          next
+        end
+
+        kind =
+          if stripped.match?(/\A[A-Da-d]\)\s/) then :option
+          elsif stripped.match?(/\A(?:CORRECTA|CORRECT|ANSWER):\s*/i) then :correct
+          elsif stripped.match?(/\A(?:EXPLICACI[OÓ]N|EXPLANATION):\s*/i) then :explanation
+          elsif stripped.match?(/\A\d+\)\s/) then :numbered
+          end
+
+        if kind.nil?
+          # Still before the first marker: this is the question.
+          next if first_marker_index.nil?
+          # Directly under a marker, this is that marker's wrapped value.
+          # Anywhere else the run is over and the aftermath starts here.
+          break unless prev_structural
+          break if aftermath_boundary?(stripped, %i[heading rule])
+
+          case last_kind
+          when :option      then options.last[:label] = "#{options.last[:label]} #{stripped}".strip
+          when :explanation then explanation = "#{explanation} #{stripped}".strip
+          end
+          last_marker_index = index
+          next
+        end
+
+        case kind
+        when :option
+          options << { label: stripped.sub(/\A[A-Da-d]\)\s*/, ""), correct: false }
+        when :correct
+          correct_letter = stripped.sub(/\A(?:CORRECTA|CORRECT|ANSWER):\s*/i, "").strip.upcase
+        when :explanation
+          explanation = stripped.sub(/\A(?:EXPLICACI[OÓ]N|EXPLANATION):\s*/i, "").strip
+        end
+
+        last_kind = kind
         first_marker_index ||= index
         last_marker_index = index
+        prev_structural = true
       end
 
       if first_marker_index.nil?
