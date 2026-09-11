@@ -235,13 +235,19 @@ Add to the voice evaluator's test file:
 
 ```ruby
   test "a refused ceiling stops the STT call before any HTTP" do
-    AiOrchestrator::SpendGuard.stub(:call, ->(**) { raise AiOrchestrator::SpendGuard::Refused, "ceiling" }) do
-      assert_raises(AiOrchestrator::SpendGuard::Refused) { subject.transcribe!(blob_key) }
+    request = stub_request(:post, "https://api.elevenlabs.io/v1/speech-to-text")
+    with_refused_guard do
+      assert_raises(AiOrchestrator::SpendGuard::LimitExceeded) { @evaluator.send(:transcribe_audio) }
     end
+    assert_not_requested request
   end
 ```
 
-Then **break the fix** — comment out the `SpendGuard.call` line in `stt` — and confirm *this test* goes red. Restore it. (Use the actual `Refused` class name from `spend_guard.rb`; read it before writing this step.)
+**As executed:** the guard error is `SpendGuard::LimitExceeded.new(message, kind:)`, and
+`minitest/mock` is not in this bundle — `with_refused_guard` swaps the singleton method and restores
+it in an `ensure`, the technique `test/tasks/wp33_reparse_test.rb` already uses. Then **break the
+fix**: comment out `SpendGuard.call` in `stt` (it landed at `ai_client.rb:59`) and confirm *this
+test* goes red. Restore.
 
 - [ ] **Step 6: Commit**
 
