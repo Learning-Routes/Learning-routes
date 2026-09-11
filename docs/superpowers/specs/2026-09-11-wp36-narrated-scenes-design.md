@@ -25,7 +25,7 @@ repositories.
 | Scene schemas | `app/motion/src/scenes/*.schema.json` | **the only copy** of a scene's data shape | nothing |
 | Generated types | `app/motion/src/generated/schemas.d.ts` | TS types derived from the schemas | the schemas |
 | Cue helper | `app/motion/src/lib/cues.ts` | pure `cueFor` / `waitUntilTime`, no MC imports | nothing |
-| Runtime entry | `app/motion/src/main.ts` | `window.mc.mount(el, scene, {data, words})` | the above |
+| Runtime entry | `app/motion/src/main.ts` | `window.mc.mount(el, scene, {data, words, onToken})` | the above |
 | Artifact | `vendor/javascript/mc.js` | one committed IIFE, `:self` under CSP | built by `bin/motion-build` |
 | `MotionScenes` | `engines/content_engine/app/services/content_engine/motion_scenes.rb` | discovers schemas, validates `data` | `json_schemer` |
 | Parser branch | `lesson_section_parser.rb` | `## Motion:` → a `motion` section or a `concept` | `MotionScenes` |
@@ -94,10 +94,24 @@ Authoring shape, from the appendix — **nested, not the flat example in the bod
 
 ```
 ## Motion: agreement
-{ "narration": "Mira o sujeito. «Ele» é terceira pessoa, então o verbo leva -s.",
-  "data": { "tokens": ["He","have","coffee","."], "subject": 0, "verb": 1,
-            "wrong": "have", "correct": "has", "why": "«He» é terceira pessoa: has, não have." } }
+{ "narration": "Mira el sujeto. «Ele» es tercera persona, así que el verbo es «tem», no «tenho».",
+  "data": { "tokens": ["Ele","tenho","café","."], "subject": 0, "verb": 1,
+            "wrong": "tenho", "correct": "tem",
+            "why": "«Ele» es tercera persona: tem, no tenho.",
+            "labels": { "subject": "SUJETO", "verb": "VERBO" } } }
 ```
+
+**Which language goes where, and the prompt example must show it, because the model imitates it.**
+For a route "Portuguese for Spanish speakers" (`locale: es`, `target_locale: pt`):
+
+| Field | Language | Why |
+|---|---|---|
+| `data.tokens`, `data.wrong`, `data.correct` | **target** (`pt`) | they are the language being taught; the scene shows them |
+| `data.why`, `data.labels.*` | **student's** (`es`) | explanation and chrome the student reads |
+| `narration` | **student's** (`es`) | the voice explains, in the language the student already has |
+
+An earlier draft of this spec had these inverted — an English sentence in `tokens` with Portuguese
+narration — which would have taught the model exactly the wrong habit.
 
 Ruby owns `narration`; the scene's schema owns `data`. The heading's title is the scene name.
 
@@ -123,14 +137,40 @@ the scene shows). **Module 1 carries one or at most two motion blocks, other mod
 Task 8** — learned from `curriculum_design.yml` or a pipeline option, whichever the contract test can
 pin, and never hardcoded in the parser.
 
-**Language-neutral by contract.** No schema constrains a string to Latin script or English. The
-prompt's example uses a non-English target (the live route is Portuguese for Spanish speakers). The
-system test's fixture renders one non-Latin token with no missing-glyph box.
+**Language-neutral by contract, and that includes the scene's own chrome.** No schema constrains a
+string to Latin script or English. The prompt's example uses a non-English target (the live route is
+Portuguese for Spanish speakers). The system test's fixture renders one non-Latin token with no
+missing-glyph box.
+
+The demo's `agreement.tsx` hardcodes `'SUJETO'` and `'VERBO'`, which is a Spanish lesson baked into
+a TypeScript file that every route renders. **Every displayed string reaches a scene through `data`**
+— the way `transform` already takes its `tag` — or through an i18n bag passed at mount. **Never a
+literal in a `.tsx`.** Hence `data.labels` in the example above, declared in the schema like any
+other field.
+
+**Contract test:** no scene file contains a quoted string longer than one character that is not a
+colour, a font name, or a scene/variable name. Two things make this implementable rather than
+noisy, and both are part of the test's contract:
+
+- **Comments are stripped before scanning.** `agreement.tsx` today contains `"in product"` and
+  `"no"` inside `//` comments; scanning raw source would flag prose about the code.
+- **An explicit allowlist**, because the rule as stated would also flag Motion Canvas's layout enums.
+  Measured against the demo scene, the quoted strings that must stay legal are: module specifiers in
+  `import` statements (`'@motion-canvas/2d'`), hex colours including the alpha fragments the scenes
+  append (`'#1C1812'`, `'1E'`, `'22'`), font stacks (`'DM Sans, system-ui, sans-serif'`), layout enum
+  values (`"row"`, `"column"`, `"center"`, `"start"`, `"end"`), and the scene's own name and variable
+  keys (`'agreement'`). Everything else is red. Adding to that allowlist is a change to the contract
+  and needs a reason in the commit, not a quiet append.
+
+The demo's `FALLBACK` literals disappear on their own: `FALLBACK` becomes `schema.examples[0]` via
+vite's JSON import, so the sentence `'«He» es tercera persona: has, no have.'` stops being in the
+`.tsx` at all.
 
 **[new] The font decision I was asked to make and state: CJK, not Arabic.** Arabic needs contextual
 shaping and RTL, and Motion Canvas lays tokens out in an LTR flex `Layout` — a bidi bug would be
 indistinguishable from a font bug and would make the test lie. The scene font stack becomes
-`'DM Sans', 'Hiragino Sans GB', 'PingFang SC', 'Noto Sans CJK SC', system-ui, sans-serif`; Hiragino
+`'DM Sans', 'Hiragino Sans GB', 'PingFang SC', 'Microsoft YaHei', 'Noto Sans CJK SC', system-ui,
+sans-serif` — 'Microsoft YaHei' for Windows; Hiragino
 Sans GB is present on this machine and is what supplies the glyph. The assertion is a measurement,
 not a screenshot: in-canvas `measureText(token).width` must differ from that of U+FFFF (a permanently
 unassigned noncharacter)
@@ -192,7 +232,14 @@ A scene calls `cueFor` for each beat that names a word and falls back to that be
 on `null` or when `words` is absent. Beats that name nothing keep their durations. The helper counts
 misses; the scene reports `cueStats`; the controller logs the fallback rate the handoff asks for.
 
-`mc.mount(el, scene, {data, words})`. The controller owns **sync only**: on `timeupdate` it compares
+**Observability, so the sync can be asserted rather than eyeballed.** A canvas has no DOM a test can
+read, so the scene reports its **active token index** through a callback passed at mount, and the
+controller mirrors it to `data-motion-active-token` on the mount element. That attribute is the only
+thing test 3 needs in order to ask "was this token lit at 1.2 s and not before"; without it the
+system test could only assert that *something* was drawn. It is a test seam with a product use too —
+it is what a future caption track would read.
+
+`mc.mount(el, scene, {data, words, onToken})`. The controller owns **sync only**: on `timeupdate` it compares
 `audio.currentTime` with the player's time and seeks when drift exceeds 120 ms (using whichever of
 `player.requestSeek` / `playback.seek(frame)` the demo's Player version exposes — to be confirmed
 against the pinned 3.17.2 during the runtime work, not guessed here); pause pauses both; ended shows the final
@@ -202,22 +249,38 @@ frame; replay resets both.
 frame from the start and the narration still plays.
 
 **Failure is visible and local** (WP-35's rule): TTS refused by the guard → the block shows the
-narration text and the scene plays on its fixed timings, with the localized sentence already in both locales —
-**[new]** `learning_engine.spend_guard.{daily_budget,user_budget,rate_limit}`, verified present in
-`en.yml:1692` and `es.yml`; the brief's `refuse_agent` partial does not exist under that name; `mc.js` fails to load → the narration text and a play button for audio alone. Never a
+narration text and the scene plays on its fixed timings, with
+`learning_engine.spend_guard.{daily_budget,user_budget,rate_limit}` (present in `en.yml:1692` and in
+`es.yml`); `mc.js` fails to load → the narration text and a play button for audio alone. Never a
 blank block, never an English literal.
+
+**Correction.** An earlier draft of this spec asserted that the brief's `refuse_agent` "does not
+exist under that name". **It does** — `ContentEngine::LessonsController#refuse_agent`,
+`lessons_controller.rb:111`, added by WP-35, rendering the `content_engine/lessons/agent_error`
+partial with the right status in every format. The claim came from a `find` over *filenames*, which
+is no evidence at all about a method, and a spec may not carry an unverified negative. The choice of
+the `spend_guard` keys over `refuse_agent` stands on its merits and not on that mistake: `refuse_agent`
+is an agent-interaction refusal path bound to the AI-tools turbo frame, while these keys name the
+condition actually being reported — a spend ceiling or a rate limit — and already exist in both
+locales.
 
 ## 9. Tests — the classes they prevent
 
 1. **A declared block type is missing one of its five parts** — the existing contract test. Plus:
    invalid `## Motion:` JSON renders as a concept with the narration; an unknown scene does the same.
-2. **A provider is called outside the guard** — the provider sweep of §4 *The fence, first* above,
-   red first on exactly two files.
+2. **A provider is called outside the guard** — the provider sweep of §4 *The fence, first* above.
+   Shaped like WP-33's enrichment sweep, which is the shape that survives its own fix: the sweep
+   asserts **zero offenders**, and a companion test asserts the sweep is looking at what it thinks —
+   `files.size >= 100` and the list includes `ai_client.rb`. Not "exactly two offenders": that
+   number is an artifact of today's red and would have to be inverted by the very commit that fixes
+   it, and a sweep whose glob silently stopped matching would pass with a green count of nothing.
 3. **The picture does not follow the voice** — node unit tests on `cueFor` (exact match,
    normalisation, forward search with a repeated word, the miss, the no-words case); and a system
    test whose narration is a **committed fixture** (`test/fixtures/files/`, words + mp3, **no paid
    call in the suite**): press play, the canvas has a box, the audio element is playing, and the
-   token the fixture says is spoken at 1.2 s is highlighted after 1.2 s and not before.
+   token the fixture says is spoken at 1.2 s is highlighted after 1.2 s and not before — read off
+   `data-motion-active-token` on the mount element, sampled just before 1.2 s and after it, because
+   a canvas exposes nothing else a test can assert on.
 4. **The artifact drifted from its source** — the two hash tests of §5 *The runtime and the two
    hashes* above.
 5. **Preview prefetches narration** — `narration_prefetch_types(:preview)` excludes `motion`;
@@ -242,6 +305,7 @@ mechanism it named; every guard test here is proven reachable that way.
 | CI image lacks a CJK face | The measurement test fails loudly with the font stack in the message; it cannot pass on tofu |
 | node absent or < 23.6 | `cues.ts` node test skips with an explicit message, never silently |
 | 186 KB on every lesson | Lazy import, asserted: a lesson with no motion block must not request `mc.js` |
+| Headless Chrome refuses `audio.play()` | Capybara's click IS a user gesture, so it should be allowed. If it is refused, add `--autoplay-policy=no-user-gesture-required` to the driver options in `test/application_system_test_case.rb` — which already takes an options block for exactly this kind of browser-fights-the-test problem — and say in the handoff that the test needed it |
 
 ## 11. Production-path evidence
 
