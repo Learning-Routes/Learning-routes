@@ -474,6 +474,78 @@ module ContentEngine
       assert_includes section[:aftermath].to_s, "Answer: think about it before moving on."
     end
 
+    # The variant the contiguous run did NOT stop: a blank line, then a line that
+    # opens like a marker, with no plain prose in between. A blank does not end
+    # the run and a marker-shaped line was always accepted, so `Answer:` after
+    # the explanation still overwrote CORRECTA and still moved the boundary.
+    # The run follows the template's grammar — options, one CORRECTA, one
+    # EXPLICACIÓN — and a marker the grammar no longer expects is prose.
+    test "a marker-shaped line straight after a blank does not rejoin a finished run" do
+      body = <<~MARKDOWN
+        A) Yes
+        B) No
+        CORRECTA: A
+        EXPLICACIÓN: Because yes.
+
+        Answer: think about it before moving on.
+
+        ```mermaid
+        graph TD
+          A --> B
+        ```
+      MARKDOWN
+      section = parse_one_of("## Pregunta: Does it?", body, "check")
+
+      assert_equal "Yes", section[:options].find { |o| o[:correct] }&.fetch(:label),
+        "the trailing `Answer:` line overwrote CORRECTA: no option is correct and " \
+        "BlockGrader turns the check into an unanswerable, non-gating block"
+      assert_equal "Because yes.", section[:explanation]
+      assert_includes section[:aftermath].to_s, "Answer: think about it before moving on.",
+        "the trailing line was consumed as a marker and deleted from the lesson"
+      assert_includes section[:aftermath].to_s, "graph TD"
+    end
+
+    test "a second CORRECTA or a late option never overwrites the first" do
+      body = <<~MARKDOWN
+        A) Yes
+        B) No
+        CORRECTA: A
+        EXPLICACIÓN: Because yes.
+        CORRECTA: B
+        C) A third option that arrived after the answer
+      MARKDOWN
+      section = parse_one_of("## Pregunta: Does it?", body, "check")
+
+      assert_equal 2, section[:options].size
+      assert_equal "Yes", section[:options].find { |o| o[:correct] }&.fetch(:label)
+      assert_includes section[:aftermath].to_s, "CORRECTA: B"
+      assert_includes section[:aftermath].to_s, "C) A third option"
+    end
+
+    # CORRECTA is a single letter; nothing wraps under it. A prose line directly
+    # beneath it (no blank, no EXPLICACIÓN) used to be consumed as a wrapped
+    # value with nowhere to put it — and disappeared.
+    test "prose directly under CORRECTA is aftermath, not a wrapped value" do
+      body = <<~MARKDOWN
+        A) Lima
+        B) Quito
+        CORRECTA: A
+        Remember this fact, it comes back in the next block.
+
+        ```mermaid
+        graph TD
+          A --> B
+        ```
+      MARKDOWN
+      section = parse_one_of("## Pregunta: What is the capital?", body, "check")
+
+      assert_equal "Lima", section[:options].find { |o| o[:correct] }&.fetch(:label)
+      assert_nil section[:explanation]
+      assert_includes section[:aftermath].to_s, "Remember this fact, it comes back in the next block.",
+        "the line under CORRECTA was consumed and deleted"
+      assert_includes section[:aftermath].to_s, "graph TD"
+    end
+
     test "a check keeps a wrapped EXPLICACION in the explanation, not in the lesson" do
       body = <<~MARKDOWN
         A) Lima
