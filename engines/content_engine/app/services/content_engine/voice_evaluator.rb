@@ -41,38 +41,39 @@ module ContentEngine
       audio_path = Rails.root.join("storage", "voice_responses", blob_key)
       raise "Audio file not found: #{blob_key}" unless File.exist?(audio_path)
 
-      api_key = Rails.application.credentials.dig(:elevenlabs, :api_key)
-
-      uri = URI("https://api.elevenlabs.io/v1/speech-to-text")
-
-      request = Net::HTTP::Post.new(uri)
-      request["xi-api-key"] = api_key
-
       duration = audio_duration_seconds(audio_path)
-      form_data = [
-        ["file", File.open(audio_path, "rb")],
-        ["model_id", STT_MODEL]
-      ]
-      request.set_form(form_data, "multipart/form-data")
 
-      http = Net::HTTP.new(uri.hostname, uri.port)
-      http.use_ssl = true
-      http.open_timeout = 10
-      http.read_timeout = 60
-      response = http.request(request)
-
-      unless response.is_a?(Net::HTTPSuccess)
-        record_failed_transcription!
-        failure_recorded = true
-        raise TranscriptionError, "Scribe request failed with HTTP #{response.code}"
-      end
+      # THROUGH AiClient, not our own Net::HTTP. This posted straight to
+      # api.elevenlabs.io, which put it outside SpendGuard's ceilings and outside
+      # the per-model rate limit (WP-34 §3.2). The request itself is unchanged —
+      # AiClient#stt sends the same multipart body to the same endpoint — but the
+      # guard now runs before it, and a refusal costs nothing.
+      result =
+        begin
+          AiOrchestrator::AiClient
+            .new(model: STT_MODEL, task_type: :transcription, user: @response.user)
+            .stt(file_path: audio_path, params: { model_id: STT_MODEL })
+        rescue AiOrchestrator::AiClient::RequestError => e
+          # Same shape as the old non-2xx branch: record the failed provider call
+          # and surface it as this class's own error, so every caller sees what
+          # it saw before.
+          record_failed_transcription!
+          failure_recorded = true
+          # The status, never the provider's message: the old non-2xx branch said
+          # only the HTTP code, and VoiceEvaluatorMeteringTest pins that this does
+          # not disclose the response body.
+          raise TranscriptionError, "Scribe request failed with HTTP #{e.status}"
+        end
 
       provider_completed = true
       AiOrchestrator::SpeechCostRecorder.record_stt!(
         user: @response.user, duration_seconds: duration
       )
-      transcription = parse_transcription(response.body)
-      transcription
+      parse_transcription(result[:content])
+    rescue AiOrchestrator::SpendGuard::LimitExceeded
+      # A refusal is not a failed transcription: the guard raises BEFORE the
+      # request, so nothing was spent and there is no provider call to record.
+      raise
     rescue => e
       record_failed_transcription! unless provider_completed || failure_recorded
       raise
