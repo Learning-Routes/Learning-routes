@@ -451,6 +451,7 @@ the README specifies, on top of the five first-round fixes.
     3f7b7ae  fix(images): mark_generating! is a claim, so one section is bought once
     4ff1b4c  fix(wp33): findings 7, 9 and 10, and correct finding 8's comment
     4d66f98  style(test): rubocop autocorrect on the new sweep assertions
+    6fd75ec  fix(parser): a match's board is a contiguous run too   <- outside the ten; see below
 
 Nothing is pushed. The owner pushes.
 
@@ -586,13 +587,13 @@ claimed this action reads `route.locale` off that chain. It does not; nothing in
 
 ## Verification — three runs per column, from a clean base, one suite at a time
 
-`before` = `fe06b73`. `after` = `4d66f98`. Suites run **sequentially, never in parallel** — this
+`before` = `fe06b73`. `after` = `6fd75ec`. Suites run **sequentially, never in parallel** — this
 runner shares one test DB and concurrent runs manufacture a flaky suite. All test writing finished
 before the first baseline, because the runner re-globs and an inflated `before` column is silent.
 
 | suite | before | after |
 |---|---|---|
-| `section_parser_boundaries_test.rb` | 26 runs, 417 assertions | 34 runs, 460 assertions |
+| `section_parser_boundaries_test.rb` | 26 runs, 417 assertions | 35 runs, 465 assertions |
 | `lesson_section_parser_test.rb` | 34 runs, 107 assertions | 34 runs, 107 assertions |
 | `check_aftermath_rendering_test.rb` | 5 runs, 22 assertions | 6 runs, 24 assertions |
 | `block_titles_have_no_language_test.rb` | 6 runs, 10 assertions | 7 runs, 17 assertions |
@@ -601,7 +602,7 @@ before the first baseline, because the runner re-globs and an inflated `before` 
 | `step_metadata_write_isolation_test.rb` | 6 runs, 14 assertions | 6 runs, 14 assertions |
 | `wp33_reparse_test.rb` | 10 runs, 37 assertions | 12 runs, 48 assertions |
 | `check_aftermath_is_shown_test.rb` | *absent* | 3 runs, 30 assertions |
-| **total** | **91 runs, 625 assertions** | **110 runs, 729 assertions** |
+| **total** | **91 runs, 625 assertions** | **111 runs, 734 assertions** |
 
 **0 failures, 0 errors, 0 skips in every cell, and all three runs of each column were byte-identical
 — including the system suite, which is the one I de-raced.** Raw per-run output is in the session
@@ -618,11 +619,20 @@ scratchpad (`before.txt`, `after.txt`).
   section after the modal, costing one extra Continue, rather than being prepended to the next
   section. The README's reasons hold up — it keeps the aftermath under the check's own
   `section_index`, and it works when the check is the last section before the auto-appended summary.
-- **A sibling of finding 3 is unfixed in `parse_heading_drag_drop`.** Its boundary is
-  `pair_indexes.last`, and that scan still runs over the whole body, so trailing prose containing a
-  literal `==>` outside a fence would move the boundary the same way a trailing `Answer:` did for a
-  check. Narrower than the check case (prose rarely contains `==>`) and it was not among the ten, so
-  I left it rather than widen scope. It is the next thing I would fix in this file.
+- **A sibling of finding 3 was found in `parse_heading_drag_drop`, and I fixed it — outside the ten
+  this round was scoped to.** Flagging it as a scope call rather than burying it: revert `6fd75ec`
+  alone if you disagree. I had written this up as a hedge ("*would* move the boundary") and then
+  measured it before shipping the claim, which was the right order, because it is worse than the
+  hedge. Trailing prose that merely mentions the arrow — `write it as term ==> meaning when you
+  practise`, a natural thing for a Match block's own prose to say — produced:
+
+      pairs: ["Dog", "Cat", "Write it as term"]     # a junk pair on the board
+      aftermath: nil                                # the mermaid diagram, deleted
+
+  I fixed it because it is the same defect as finding 3, one function lower in a file this round was
+  already editing, and it destroys author content. `0002` bounded both scanners against fences;
+  neither was bounded against the end of its own structure, and that second half is what findings 3
+  and 4 were really about.
 - **A bare `## Match` with no colon is still parsed as a concept titled "Match"** — unchanged from
   round one, still pre-existing, still out of scope.
 - **The four known engine failures, the red CI** (`scan_ruby` brakeman exit 5, `scan_js` DOMPurify
