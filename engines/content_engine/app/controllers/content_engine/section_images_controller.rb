@@ -26,7 +26,14 @@ module ContentEngine
         return render json: { image_url: section["image_url"], success: true, already_exists: true }
       end
 
-      mark_generating!(section_index)
+      # The claim, not the read at the top of this action, is what decides whether
+      # we spend. `section["image_url"].present?` above was read through
+      # SectionResolver before any lock was taken, so two clicks arriving while
+      # the first job is still running both see it blank and both get here.
+      if mark_generating!(section_index) == :already_generating
+        return render json: { success: true, status: "generating" }, status: :accepted
+      end
+
       SectionImageJob.perform_later(@step.id, section_index, current_user.id)
 
       render json: { success: true, status: "generating" }, status: :accepted
@@ -94,15 +101,42 @@ module ContentEngine
     # reloads, `MediaPrefetchJob#apply_results!` uses `fresh_metadata`); this
     # was the writer still holding a stale copy. Same three lines as
     # `SectionAudioController#update_audio_section_status!`.
+    # Returns :claimed, :already_generating, or :no_metadata.
+    #
+    # AND IT IS A CLAIM, not just a status write. WP-33 §1 put this under the
+    # lock, which closed the write race; the decision race stayed open, and the
+    # decision is the one that costs money. `generate` resolved the section and
+    # checked `image_url` OUTSIDE this lock, so two clicks before either job
+    # lands both pass that check and both enqueue a paid job.
+    # `SectionImageJob:28` only rejects a job enqueued after the first has
+    # committed a URL, which is exactly the case that was never the problem.
+    #
+    # `image_status == "generating"` was already being written here atomically
+    # and read by nobody — the poll endpoint only ever looked for "failed". This
+    # is that missing reader.
+    #
+    # :no_metadata is NOT a refusal. A step whose `parsed_sections` has not been
+    # written yet renders from AiContent through SectionResolver
+    # (SectionImagesFallbackTest), and there is nowhere to record a claim; the
+    # caller enqueues anyway rather than making that student's button dead. Such
+    # a step can still be double-clicked into two jobs.
     def mark_generating!(section_index)
+      outcome = :no_metadata
       @step.with_lock do
         parsed = @step.fresh_metadata["parsed_sections"]
         next unless parsed.is_a?(Array) && parsed[section_index]
 
+        if parsed[section_index]["image_status"] == "generating"
+          outcome = :already_generating
+          next
+        end
+
         parsed[section_index]["image_status"] = "generating"
         parsed[section_index]["image_error"] = nil
         @step.merge_metadata!("parsed_sections" => parsed)
+        outcome = :claimed
       end
+      outcome
     end
 
     def render_image_html(image_url, section)
