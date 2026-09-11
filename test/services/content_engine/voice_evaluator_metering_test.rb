@@ -16,6 +16,31 @@ class ContentEngine::VoiceEvaluatorMeteringTest < ActiveSupport::TestCase
     FileUtils.rm_f(@audio_dir.join("metering.mp3"))
   end
 
+  # WP-34 §3.2. This class used to post to the provider with its own Net::HTTP,
+  # so no ceiling and no rate limit stood in front of a paid call. The guard now
+  # runs BEFORE the request; these two pin that it is genuinely in front and not
+  # merely alongside.
+  test "a refused ceiling stops the STT call before any HTTP" do
+    request = stub_request(:post, "https://api.elevenlabs.io/v1/speech-to-text")
+
+    with_refused_guard do
+      assert_raises(AiOrchestrator::SpendGuard::LimitExceeded) { @evaluator.send(:transcribe_audio) }
+    end
+
+    assert_not_requested request
+  end
+
+  test "a refused ceiling is not recorded as a failed transcription" do
+    stub_request(:post, "https://api.elevenlabs.io/v1/speech-to-text")
+
+    with_refused_guard do
+      assert_raises(AiOrchestrator::SpendGuard::LimitExceeded) { @evaluator.send(:transcribe_audio) }
+    end
+
+    assert_equal 0, scribe_rows.count,
+      "nothing was spent, so there is no provider call to put in the ledger"
+  end
+
   test "requests scribe v2 and records a separate exact transcription cost" do
     request = stub_request(:post, "https://api.elevenlabs.io/v1/speech-to-text")
       .to_return(status: 200, body: { text: "transcribed" }.to_json)
@@ -130,5 +155,17 @@ class ContentEngine::VoiceEvaluatorMeteringTest < ActiveSupport::TestCase
     def update!(attributes)
       attributes.each { |key, value| public_send("#{key}=", value) if respond_to?("#{key}=") }
     end
+  end
+
+  # minitest/mock is not available in this bundle, so the ceiling is swapped the
+  # same dependency-free way test/tasks/wp33_reparse_test.rb swaps carry_over.
+  def with_refused_guard
+    original = AiOrchestrator::SpendGuard.method(:call)
+    AiOrchestrator::SpendGuard.define_singleton_method(:call) do |**|
+      raise AiOrchestrator::SpendGuard::LimitExceeded.new("no budget", kind: :daily_budget)
+    end
+    yield
+  ensure
+    AiOrchestrator::SpendGuard.define_singleton_method(:call, original)
   end
 end

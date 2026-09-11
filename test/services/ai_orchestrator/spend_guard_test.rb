@@ -56,10 +56,29 @@ module AiOrchestrator
 
     # ── the class ───────────────────────────────────────────────────────────
 
-    test "chat is the only public entry point on AiClient" do
-      assert_equal [:chat], AiClient.public_instance_methods(false).sort,
-        "a second public method that reaches a provider would bypass the guard; " \
-        "route it through chat or give it the same guard"
+    # WAS "chat is the only public entry point", asserting `[:chat]`.
+    #
+    # That was a whitelist of one name, and its own failure message said the real
+    # rule: "route it through chat OR GIVE IT THE SAME GUARD". WP-36 added two
+    # entry points that do have the same guard — `stt`, because a multipart upload
+    # cannot be expressed as `chat(prompt:)`, and `chat_session`, because a caller
+    # driving its own tool loop needs the session object rather than one
+    # completion. Appending two names to the list would have kept the weaker
+    # assertion; this asserts what actually matters instead, and covers the next
+    # method nobody has written yet.
+    test "every public entry point on AiClient checks the guard before anything else" do
+      entry_points = AiClient.public_instance_methods(false).sort
+      assert_operator entry_points.size, :>=, 1, "AiClient has no public entry points; the reflection broke"
+
+      entry_points.each do |name|
+        file, line = AiClient.instance_method(name).source_location
+        body = File.readlines(file)[line..].reject { |l| l.strip.empty? || l.strip.start_with?("#") }
+
+        assert_match(/SpendGuard\.call\(/, body.first.to_s,
+          "AiClient##{name} is public but its first statement is not SpendGuard.call — " \
+          "it can reach a provider with no ceiling checked. Every public entry point " \
+          "runs the guard FIRST, before any request and before any AiInteraction row.")
+      end
     end
 
     test "every AiClient construction site in the codebase reaches a provider only through chat" do
@@ -71,11 +90,16 @@ module AiOrchestrator
 
       sites.each do |path|
         source = File.read(path)
-        # Every construction is immediately followed by a `.chat` call on the
-        # client — nothing reaches a provider any other way.
-        assert_match(/\.chat\(/, source,
-          "#{Pathname.new(path).relative_path_from(Rails.root)} builds an AiClient but never calls chat; " \
-          "if it reaches a provider another way it is unguarded")
+        # Every construction reaches a provider through one of AiClient's public
+        # entry points — and the test above proves every one of those checks the
+        # guard first, so the two compose. Derived from AiClient rather than
+        # hardcoded to `.chat(`, which passed incidentally for files that happened
+        # to call chat elsewhere.
+        entry_points = AiClient.public_instance_methods(false).map { |m| Regexp.escape(m.to_s) }
+        assert_match(/\.(?:#{entry_points.join('|')})\(/, source,
+          "#{Pathname.new(path).relative_path_from(Rails.root)} builds an AiClient but calls " \
+          "none of its public entry points (#{entry_points.join(', ')}); if it reaches a " \
+          "provider another way it is unguarded")
       end
     end
 

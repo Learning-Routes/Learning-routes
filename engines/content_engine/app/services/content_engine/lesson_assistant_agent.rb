@@ -4,6 +4,8 @@ module ContentEngine
   class LessonAssistantAgent
     MAX_INTERACTIONS_PER_LESSON = 10
 
+    MODEL = "gpt-4.1-mini"
+
     TOOLS = [
       Tools::GenerateDiagram,
       Tools::GenerateImage,
@@ -54,11 +56,15 @@ module ContentEngine
 
     private
 
+    # Through AiClient, never RubyLLM directly: ai_client.rb runs SpendGuard.call
+    # before handing the session over, so this agent can no longer spend outside a
+    # ceiling (WP-34 §3.1). `chat_session` and not `chat` because this class drives
+    # the tool loop itself — it calls `ask` and reads `messages` — so it needs the
+    # session object rather than a single completion.
     def build_chat
-      chat = RubyLLM.chat(model: "gpt-4.1-mini")
-      chat.with_instructions(system_prompt)
-      chat.with_tools(*TOOLS)
-      chat
+      AiOrchestrator::AiClient
+        .new(model: MODEL, task_type: :lesson_assistant, user: @user)
+        .chat_session(system_prompt: system_prompt, tools: TOOLS)
     end
 
     def system_prompt

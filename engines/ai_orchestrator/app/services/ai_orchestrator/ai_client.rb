@@ -9,7 +9,17 @@ module AiOrchestrator
 
     GPT_IMAGE_MODELS = %w[gpt-image-1].freeze
 
-    class RequestError < StandardError; end
+    # `status` is carried structurally so a caller can report WHICH failure it was
+    # without interpolating the provider's response body into a message that may
+    # reach a student. VoiceEvaluatorMeteringTest pins that boundary.
+    class RequestError < StandardError
+      attr_reader :status
+
+      def initialize(message = nil, status: nil)
+        super(message)
+        @status = status
+      end
+    end
     class TimeoutError < RequestError; end
 
     def initialize(model:, task_type: nil, user: nil)
@@ -37,7 +47,78 @@ module AiOrchestrator
       end
     end
 
+    # Speech-to-text, through the same front door as everything else.
+    #
+    # This transport used to live in ContentEngine::VoiceEvaluator with its own
+    # Net::HTTP, which meant no SpendGuard ceiling, no rate limit, and a paid
+    # call the ledger only saw because that class remembered to record it
+    # (WP-34 §3.2). The multipart request below is the same one it sent; what is
+    # new is the guard in front of it, which raises BEFORE the request exactly
+    # as `chat` does.
+    def stt(file_path:, params: {})
+      SpendGuard.call(model: @model, task_type: @task_type, user: @user)
+      request_elevenlabs_stt(file_path: file_path, params: params)
+    end
+
+    # A multi-turn, tool-using session, for a caller that drives the loop itself
+    # and therefore cannot hand us a single prompt.
+    #
+    # ContentEngine::LessonAssistantAgent called RubyLLM.chat directly, so no
+    # ceiling stood in front of it (WP-34 §3.1). It needs the chat OBJECT — it
+    # calls `ask` and reads `messages` to aggregate usage — so `chat` cannot serve
+    # it. The guard runs here, once, before the session is handed over; the
+    # caller's own `ask` calls are turns within the budget this check approved.
+    #
+    # A session is therefore a coarser grant than a single `chat` call. That is the
+    # honest trade for letting the caller own the tool loop, and it is why the
+    # session is built here rather than the guard being exported to the caller.
+    def chat_session(system_prompt: nil, tools: [], timeout: nil)
+      SpendGuard.call(model: @model, task_type: @task_type, user: @user)
+
+      session = build_chat(timeout)
+      session.with_instructions(system_prompt) if system_prompt.present?
+      session.with_tools(*tools) if tools.present?
+      session
+    end
+
     private
+
+    def request_elevenlabs_stt(file_path:, params: {})
+      api_key = Rails.application.credentials.dig(:elevenlabs, :api_key)
+      uri = URI("https://api.elevenlabs.io/v1/speech-to-text")
+
+      start_time = monotonic_now
+
+      request = Net::HTTP::Post.new(uri)
+      request["xi-api-key"] = api_key
+      request.set_form(
+        [["file", File.open(file_path, "rb")], ["model_id", params[:model_id] || "scribe_v2"]],
+        "multipart/form-data"
+      )
+
+      http = Net::HTTP.new(uri.hostname, uri.port)
+      http.use_ssl = true
+      http.open_timeout = 10
+      http.read_timeout = 60
+      response = http.request(request)
+      elapsed_ms = ((monotonic_now - start_time) * 1000).round
+
+      unless response.is_a?(Net::HTTPSuccess)
+        # The body goes to the server log, never into the exception: this error
+        # is rendered to a student by ContentEngine::VoiceEvaluator.
+        Rails.logger.warn("[AiClient] ElevenLabs STT #{response.code}: #{response.body&.first(500)}")
+        raise RequestError.new("ElevenLabs STT error: #{response.code}", status: response.code)
+      end
+
+      {
+        content: response.body,
+        model: @model,
+        model_id: params[:model_id] || "scribe_v2",
+        latency_ms: elapsed_ms
+      }
+    rescue Net::ReadTimeout, Net::OpenTimeout => e
+      raise TimeoutError, "ElevenLabs STT request timed out: #{e.message}"
+    end
 
     def chat_via_ruby_llm(prompt:, system_prompt: nil, params: {})
       model_defaults = Rails.application.config.ai_model_defaults[@task_type&.to_sym] || {}
