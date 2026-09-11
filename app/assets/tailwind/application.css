@@ -1189,9 +1189,20 @@ html[data-theme="dark"] .learning-nav {
 /* WP-21 removed the `min-height: 12rem` that used to sit here.
    Its stated reason — "the only section whose in-flow height is zero: its
    content is a fixed modal" — stopped being true when the check modal moved out
-   of the section entirely. A check `.lesson-section` now renders nothing at all
-   and is never transitioned to, so the floor could only ever reserve 12rem of
-   blank space if a check happened to be the first section. */
+   of the section entirely.
+
+   WP-33 §2 changed it a second time, and the claim that used to close this
+   comment — "a check `.lesson-section` renders nothing at all and is never
+   transitioned to" — now holds for only half the checks. A check the author
+   wrote something AFTER renders that aftermath in its own section and IS
+   transitioned to: `_handleQuizModalClose` lands on it when the server marked
+   it `data-has-aftermath="true"`. A check with nothing after it renders
+   nothing and is still skipped, exactly as before.
+
+   The floor stays removed either way, for a reason that survives the change:
+   an empty check section is never landed on, so it cannot show 12rem of blank
+   space, and a check section that IS landed on has an aftermath in it and
+   measures well above the floor. */
 
 /* The AI supplementary slot is empty until a tool fills it. It used to carry an
    inline `margin-top:1rem` unconditionally, so an empty div contributed 16px of

@@ -138,6 +138,11 @@
              data-block-url-value="<%= learning_routes_engine.route_step_block_attempt_path(@route, @step, i) %>"
              <% if section[:type] == "check" %>
                data-lesson-check="true"
+               <%# Whether this check has something to SHOW after the modal —
+                   the aftermath rendered below (WP-33 §2). The controller
+                   lands on this section when it does, and skips past it, as it
+                   always has, when it does not. %>
+               data-has-aftermath="<%= section[:aftermath].present? %>"
              <% end %>
              <%# Whether this section gates navigation, and whether this student has
                  already satisfied it. Both come from the SERVER — BlockGrader::GATING_TYPES

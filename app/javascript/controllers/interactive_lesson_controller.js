@@ -601,23 +601,47 @@ export default class extends Controller {
     const section = this.sectionTargets[sectionIndex]
     if (section) section.dataset.lessonCheckAnswered = "true"
 
-    // Update the current section value to the quiz section
-    this.currentSectionValue = sectionIndex
+    // The modal overlaid whichever section was ON SCREEN — the content section
+    // before the check, never the check itself, which is display:none like
+    // every section that is not current. This used to set currentSectionValue
+    // to the check before transitioning, so `_transitionToSection` hid the
+    // check (a no-op) and the section the student had been reading stayed on
+    // the page underneath the incoming one. `from` has to be what is showing.
+    this.currentSectionValue = this._shownSectionIndex(sectionIndex)
     this._sectionStartTime = Date.now()
+    this._locked = false
+    this._updateContinueButton()
+
+    // A check the author wrote something AFTER — the diagram lesson_content.yml
+    // puts right behind a ## Pregunta — has a section of its own to show
+    // (WP-33 §2: the aftermath renders inside the check's .lesson-section).
+    // Land on it and let Continue move on from there. A check with nothing
+    // after it is skipped, exactly as before; the server says which is which.
+    if (section?.dataset.hasAftermath === "true") {
+      this._transitionToSection(sectionIndex, "forward")
+      return
+    }
 
     // Advance past the quiz to the next content section
     const nextIndex = sectionIndex + 1
     if (nextIndex >= this.totalSectionsValue) {
-      this._locked = false
       this.completeLesson()
     } else if (this._quizSectionIndices.has(nextIndex)) {
       // Consecutive quizzes: show next quiz modal after a beat
       const timer = setTimeout(() => this._showQuizModal(nextIndex), 400)
       this._timers.push(timer)
     } else {
-      this._locked = false
       this._transitionToSection(nextIndex, "forward")
     }
+  }
+
+  // The index of the section that is actually displayed. `currentSectionValue`
+  // is not always it: while a check's modal is open the value may point at the
+  // check, whose section is hidden, and the student is looking at the section
+  // before it. Falls back to `fallback` if nothing is displayed (mid-animation).
+  _shownSectionIndex(fallback) {
+    const shown = this.sectionTargets.findIndex((el) => el.style.display !== "none")
+    return shown === -1 ? fallback : shown
   }
 
   _updateProgressForQuizModal(quizIndex) {

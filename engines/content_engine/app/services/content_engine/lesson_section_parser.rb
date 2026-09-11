@@ -289,33 +289,43 @@ module ContentEngine
       options = []
       correct_letter = nil
       explanation = nil
-      first_option_index = nil
+      first_marker_index = nil
       last_marker_index = nil
 
-      lines.each_with_index do |line, index|
-        stripped = line.strip
+      # A MARKER is any structural line: an option (`A)`-`D)`, or a numbered
+      # `1)` the generator was never asked for but has produced), CORRECTA, or
+      # EXPLICACIÓN. The question ends at the FIRST of them, whatever its kind —
+      # the second review round found `1) 4 / 2) 22 / CORRECTA: A` with no
+      # `A)` line at all, so nothing ended the question and the modal rendered
+      # the answer key to the student.
+      #
+      # Markers are only recognised OUTSIDE fenced code: a "what does this
+      # print?" question carries its sample output in a fence, and a line of
+      # that output that happens to start with `A) ` is not an option.
+      each_line_outside_fences(lines) do |stripped, index|
         if stripped.match?(/\A[A-Da-d]\)\s/)
-          first_option_index ||= index
-          last_marker_index = index
           options << { label: stripped.sub(/\A[A-Da-d]\)\s*/, ""), correct: false }
         elsif stripped.match?(/\A(?:CORRECTA|CORRECT|ANSWER):\s*/i)
-          last_marker_index = index
           correct_letter = stripped.sub(/\A(?:CORRECTA|CORRECT|ANSWER):\s*/i, "").strip.upcase
         elsif stripped.match?(/\A(?:EXPLICACI[OÓ]N|EXPLANATION):\s*/i)
-          last_marker_index = index
           explanation = stripped.sub(/\A(?:EXPLICACI[OÓ]N|EXPLANATION):\s*/i, "").strip
+        elsif !stripped.match?(/\A\d+\)\s/)
+          next
         end
+
+        first_marker_index ||= index
+        last_marker_index = index
       end
 
-      if options.empty?
-        # NO OPTIONS, so no structural lines to protect and no reason to treat
-        # this body differently from any other accumulating block: the ordinary
+      if first_marker_index.nil?
+        # NO STRUCTURE AT ALL, so nothing to protect and no reason to treat this
+        # body differently from any other accumulating block: the ordinary
         # terminator rule applies from the top. Folding the whole body into
         # `question` put a mermaid fence inside the modal, which is the one
         # place `_lesson.html.erb` says an aftermath must never render.
         body_question, aftermath = split_aftermath(lines.join)
       else
-        body_question = lines[0...first_option_index].join
+        body_question = lines[0...first_marker_index].join
         # Everything after the last marker, verbatim. No terminator hunt: the
         # boundary is already known, and hunting inside a tail that is trailing
         # content by construction only creates a second place to lose it.
@@ -420,6 +430,25 @@ module ContentEngine
         (rules.include?(:rule) && stripped.match?(HORIZONTAL_RULE))
     end
 
+    # Yields `[stripped_line, index]` for every line that is NOT inside a
+    # fenced code block. The fence lines themselves are not yielded either.
+    #
+    # The structural scanners (`A)` options, CORRECTA, `==>` pairs) read line
+    # shapes, and a fence can contain any shape: `==>` is mermaid's thick arrow,
+    # and the sample output of a "what does this print?" question can start
+    # with `A) `. What is inside a fence is content, never structure.
+    def each_line_outside_fences(lines)
+      in_fence = false
+      lines.each_with_index do |line, index|
+        stripped = line.strip
+        if stripped.match?(FENCE)
+          in_fence = !in_fence
+          next
+        end
+        yield stripped, index unless in_fence
+      end
+    end
+
     # ── Interactive block parsers ────────────────────────────────────
 
     # ## Match: title / pairs separated by ==>
@@ -432,9 +461,14 @@ module ContentEngine
     # Not `split_aftermath` here either — see `parse_heading_check`. The last
     # `==>` line IS the boundary, so looking for a second one only lost the
     # prose that sat before it.
+    #
+    # `==>` is also mermaid's thick arrow. A `## Match:` followed by a diagram
+    # read the diagram's arrows as pairs and left an aftermath that began with
+    # the dangling closing fence, so pairs are only recognised outside fences.
     def parse_heading_drag_drop(title, body)
       lines = body.to_s.lines
-      pair_indexes = lines.each_index.select { |i| lines[i].include?("==>") }
+      pair_indexes = []
+      each_line_outside_fences(lines) { |_stripped, i| pair_indexes << i if lines[i].include?("==>") }
 
       pairs = pair_indexes.map do |i|
         parts = lines[i].strip.split("==>", 2)
