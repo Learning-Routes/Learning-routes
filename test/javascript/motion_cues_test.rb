@@ -21,6 +21,12 @@ class MotionCuesTest < ActiveSupport::TestCase
     out, err, status = Open3.capture3("node", "--input-type=module", stdin_data: script)
     skip("node >= 23.6 required for TypeScript type stripping; got: #{err.lines.first}") unless status.success?
     JSON.parse(out)
+  rescue Errno::ENOENT
+    # Open3 raises when "node" is not on PATH at all (as opposed to being
+    # present but too old, which surfaces as a non-zero exit above). Both
+    # cases must SKIP WITH A MESSAGE — never silently, and never as an ERROR,
+    # which would be indistinguishable from a real bug in CI output.
+    skip("node >= 23.6 required for TypeScript type stripping; node was not found on PATH")
   end
 
   def cue(text, words: WORDS, from: 0)
