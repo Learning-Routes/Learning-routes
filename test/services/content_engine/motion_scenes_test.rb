@@ -34,7 +34,9 @@ class MotionScenesTest < ActiveSupport::TestCase
 
   test "an unexpected key is rejected" do
     data = ContentEngine::MotionScenes.example("agreement").merge("colour" => "red")
-    assert_not_empty ContentEngine::MotionScenes.validate("agreement", data)
+    errors = ContentEngine::MotionScenes.validate("agreement", data)
+    assert_not_empty errors
+    assert errors.any? { |e| e.include?("colour") }, errors.inspect
   end
 
   # The constraint that keeps this product usable outside Spanish and English.

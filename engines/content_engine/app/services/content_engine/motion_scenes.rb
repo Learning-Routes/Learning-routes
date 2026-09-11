@@ -27,6 +27,15 @@ module ContentEngine
     # messages. Never raises on bad model output — the caller (Task 8) turns
     # a non-empty result into a plain concept block instead of crashing the
     # lesson render.
+    #
+    # This guarantee is structural, not a rescue: every value read out of
+    # `data` is `is_a?`-checked before it is indexed, sized, or compared, both
+    # here and in `index_errors`/`check_indices` below, so a malformed model
+    # payload (wrong type at any key, wrong shape at any depth) produces an
+    # error message rather than a NoMethodError — see
+    # motion_scenes_malformed_input_test.rb for the cases this was verified
+    # against. A bug in the walker itself is a different problem and is
+    # allowed to raise like any other Ruby bug.
     def self.validate(name, data)
       return ["unknown scene: #{name}"] unless known?(name)
       return ["data is not an object"] unless data.is_a?(Hash)
@@ -34,8 +43,6 @@ module ContentEngine
       schema = schemas.fetch(name.to_s)
       schema_errors = JSONSchemer.schema(schema).validate(data).map { |error| error["error"] }
       schema_errors + index_errors(schema, data)
-    rescue StandardError => e
-      ["#{name} failed validation: #{e.message}"]
     end
 
     # `x-index-into` is the one vendor keyword: JSON Schema cannot express
