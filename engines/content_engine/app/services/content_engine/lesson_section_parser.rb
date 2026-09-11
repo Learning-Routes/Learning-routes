@@ -478,6 +478,16 @@ module ContentEngine
       narration = payload.is_a?(Hash) ? payload["narration"].to_s.strip : ""
 
       reason =
+        # `payload.nil?` is deliberately redundant with `narration.blank?` for
+        # every malformed input: narration is unconditionally "" whenever
+        # payload isn't a Hash, so this branch never independently decides
+        # the fallback and cannot be pinned by a test in isolation — see
+        # section_parser_boundaries_test.rb's motion tests and the review
+        # history for task 8. It earns its place anyway for the distinct
+        # logged reason: "body is not JSON" describes a garbled generation,
+        # "no narration" a well-formed-but-empty one, and that difference is
+        # real diagnostic value even though no test can observe it. Do not
+        # delete this on the grounds that no test covers it independently.
         if payload.nil?             then "body is not JSON"
         elsif narration.blank?      then "no narration"
         elsif !MotionScenes.known?(scene) then "unknown scene #{scene.inspect}"

@@ -771,6 +771,51 @@ module ContentEngine
       assert_nil section[:aftermath], "an empty tail must be nil, not an empty string"
     end
 
+    # The prompt's own worked example shows a fenced ```json body, so the model
+    # emits this form routinely, not as an edge case. A fence must not defeat
+    # parsing.
+    test "a fenced motion body parses to a motion section like a bare one" do
+      body = <<~MARKDOWN
+        ```json
+        {"narration": "Mira el sujeto.",
+         "data": {"tokens": ["Ele","tenho","café","."], "subject": 0, "verb": 1,
+                  "wrong": "tenho", "correct": "tem", "why": "Tercera persona.",
+                  "labels": {"subject": "SUJETO", "verb": "VERBO"}}}
+        ```
+      MARKDOWN
+      section = parse_one_of("## Motion: agreement", body, "motion")
+
+      assert_equal "agreement", section[:scene]
+      assert_equal "Mira el sujeto.", section[:narration]
+      assert_equal %w[Ele tenho café .], section[:data]["tokens"]
+    end
+
+    # The specific thing `strip_closing_fence` exists for: the closing ``` sits
+    # between the JSON and the author's trailing prose, and it is not itself
+    # content — it must not leak into the aftermath the student's lesson
+    # renders.
+    test "a fenced motion body keeps its trailing prose in aftermath without the closing fence" do
+      body = <<~MARKDOWN
+        ```json
+        {"narration": "Mira el sujeto.",
+         "data": {"tokens": ["Ele","tenho","café","."], "subject": 0, "verb": 1,
+                  "wrong": "tenho", "correct": "tem", "why": "Tercera persona.",
+                  "labels": {"subject": "SUJETO", "verb": "VERBO"}}}
+        ```
+
+        Some trailing prose after the fence.
+        More prose on a second line.
+      MARKDOWN
+      sections = LessonSectionParser.call("## Motion: agreement\n\n#{body}")
+      section = sections.find { |s| s[:type] == "motion" }
+
+      assert section, "the fixture must parse to a motion section for this test to mean anything"
+      assert_includes section[:aftermath], "Some trailing prose after the fence."
+      assert_includes section[:aftermath], "More prose on a second line."
+      assert_not_includes section[:aftermath], "```",
+        "the closing fence marker leaked into the aftermath instead of being stripped"
+    end
+
     private
 
     def document(heading, canonical)
