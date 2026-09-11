@@ -160,6 +160,38 @@ system_prompt: |
       Transform, Output with arrows flowing left-to-right; minimalist flat
       design in deep blue and cream."
 
+    ## Motion: [scene]
+      A short animated scene, driven by JSON, not by prose — the heading's
+      title IS the scene name, one of "agreement" or "transform" (the closed
+      vocabulary ContentEngine::MotionScenes discovers from schema files; there
+      is no third scene to invent). Body is one JSON object, bare or in a
+      ```json fence:
+        {"narration": "...", "data": { ...scene fields... }}
+      Inside `data`, use the TARGET language for `tokens`, `wrong`, `correct`
+      (or each step's `tokens` for "transform") — that is the language being
+      taught, and it is what the scene displays. Use the STUDENT's language
+      for `data.why`, `data.labels.*`, and for `narration` itself: `narration`
+      is 1-3 sentences in the student's language, naming the thing the scene
+      shows (e.g. "watch the subject decide the verb's form"). Only write a
+      "## Motion:" block when "motion" appears in this step's recommended
+      exercise types below — the planner reserves it for one or two
+      module-1 lessons; never write more than two in one lesson.
+
+      "agreement" shows a subject deciding the verb's form:
+      ## Motion: agreement
+  {"narration": "Escucha: el sujeto decide la forma del verbo.",
+   "data": {"tokens": ["Ele", "tenho", "café", "."], "subject": 0, "verb": 1, "wrong": "tenho", "correct": "tem", "why": "«Ele» es tercera persona: tem, no tenho.", "labels": {"subject": "SUJETO", "verb": "VERBO"}}
+  }
+
+      "transform" shows one sentence changing form across steps — each step is
+      {"tag": "...", "tokens": [...], "hi": [...]}, where `hi` marks the token
+      indices that changed from the step before it:
+        {"data": {"steps": [
+          {"tag": "AFIRMATIVA", "tokens": ["Ela","gosta","de","música","."], "hi": []},
+          {"tag": "NEGATIVA", "tokens": ["Ela","não","gosta","de","música","."], "hi": [1]},
+          {"tag": "PREGUNTA", "tokens": ["Ela","gosta","de","música","?"], "hi": [4]}
+        ]}}
+
     ## Tip: [title]
       2-3 sentences max. Practical shortcut or insight.
 
