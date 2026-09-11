@@ -358,9 +358,12 @@ module ContentEngine
         if kind.nil?
           # Still before the first marker: this is the question.
           next if first_marker_index.nil?
-          # Directly under a marker, this is that marker's wrapped value.
-          # Anywhere else the run is over and the aftermath starts here.
-          break unless prev_structural
+          # Directly under an option or an EXPLICACIÓN, this is that marker's
+          # wrapped value. CORRECTA is a single letter and a numbered line is not
+          # collected, so a line under either of those is not a continuation of
+          # anything: the run is over and the aftermath starts here. (Consuming
+          # it as a wrapped value with nowhere to put it deleted the line.)
+          break unless prev_structural && %i[option explanation].include?(last_kind)
           break if aftermath_boundary?(stripped, %i[heading rule])
 
           case last_kind
@@ -370,6 +373,25 @@ module ContentEngine
           last_marker_index = index
           next
         end
+
+        # THE RUN FOLLOWS THE TEMPLATE'S GRAMMAR: options, then one CORRECTA,
+        # then one EXPLICACIÓN. A marker-shaped line the grammar no longer
+        # expects is prose that happens to open like a marker — `Answer: think
+        # about it before moving on.` after the explanation — and it ends the
+        # run instead of joining it. Without this, a blank line followed by such
+        # a line overwrote `correct_letter` with prose (no option correct, the
+        # check unanswerable and non-gating) and moved the aftermath boundary
+        # past everything above it; "contiguous" alone did not stop it, because
+        # a blank line does not end the run and a marker-shaped line was always
+        # accepted. The first CORRECTA and the first EXPLICACIÓN win; options
+        # are accepted only until either has been seen.
+        expected =
+          case kind
+          when :option, :numbered then correct_letter.nil? && explanation.nil?
+          when :correct           then correct_letter.nil?
+          when :explanation       then explanation.nil?
+          end
+        break unless expected
 
         case kind
         when :option
