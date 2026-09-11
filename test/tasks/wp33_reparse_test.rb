@@ -300,13 +300,13 @@ class Wp33ReparseTest < ActiveSupport::TestCase
 
   # ── Finding 9: the sweep matches writes, not comparisons ──────────────────
   test "the enrichment sweep matches writes and not comparisons" do
-    assert_match ENRICHMENT_WRITE, %q{parsed[i]["image_url"] = url},
+    assert_match ENRICHMENT_WRITE, %q(parsed[i]["image_url"] = url),
       "the sweep must still see a real enrichment write"
-    assert_no_match ENRICHMENT_WRITE, %q{if parsed[i]["type"] == "visual"},
+    assert_no_match ENRICHMENT_WRITE, %q(if parsed[i]["type"] == "visual"),
       "`==` is a comparison, not a write: one anywhere under the glob fails the " \
       "class test above with a message telling the reader to add a key to " \
       "SectionEnrichment::KEYS, which is not the problem"
-    assert_no_match ENRICHMENT_WRITE, %q{return unless h["a"]["b"] == x}
+    assert_no_match ENRICHMENT_WRITE, %q(return unless h["a"]["b"] == x)
   end
 
   private
