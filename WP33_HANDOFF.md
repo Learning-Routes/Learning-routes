@@ -362,12 +362,12 @@ Three runs of each, one suite at a time. The **before** column is from a clean c
 `d5bdaaa` with nothing else running and no test files written during the run — the discipline the
 last two packages got wrong.
 
-| Suite | Before (`d5bdaaa`) | At `7036973` | After the review fixes |
-|---|---|---|---|
-| Main (`bin/rails test`) | 751 runs, 3559 assertions, 0F 0E | 768 runs, 3608 assertions, 0F 0E | **771 runs, 3618 assertions, 0F 0E** |
-| Browser (`bin/rails test:system`) | 66 runs, 483 assertions, 0F 0E | 66 runs, 483 assertions, 0F 0E | **66 runs, 483 assertions, 0F 0E** |
-| Combined (`bin/rails test test engines/*/test`) | 1161 runs, 5263 assertions, **3F 1E** | 1184 runs, 5437 assertions, 3F 1E | **1193 runs, 5481 assertions, 3F 1E** |
-| RuboCop | clean, 585 files | clean, 588 files | **clean, 588 files** |
+| Suite | Before (`d5bdaaa`) | At `7036973` | After the review fixes | **Round 3 (`666f340`)** |
+|---|---|---|---|---|
+| Main (`bin/rails test`) | 751 runs, 3559 assertions, 0F 0E | 768 runs, 3608 assertions, 0F 0E | **771 runs, 3618 assertions, 0F 0E** | **783 runs, 3661 assertions, 0F 0E** |
+| Browser (`bin/rails test:system`) | 66 runs, 483 assertions, 0F 0E | 66 runs, 483 assertions, 0F 0E | **66 runs, 483 assertions, 0F 0E** | **69 runs, 513 assertions, 0F 0E** |
+| Combined (`bin/rails test test engines/*/test`) | 1161 runs, 5263 assertions, **3F 1E** | 1184 runs, 5437 assertions, 3F 1E | **1193 runs, 5481 assertions, 3F 1E** | **1220 runs, 5620 assertions, 3F 1E** |
+| RuboCop | clean, 585 files | clean, 588 files | **clean, 588 files** | **clean, 590 files** |
 
 All nine runs of each column identical. The final column was re-run in full *after* the view and
 CSS changes, not carried over from before them. The combined failures are the four known engine ones,
@@ -608,6 +608,10 @@ before the first baseline, because the runner re-globs and an inflated `before` 
 — including the system suite, which is the one I de-raced.** Raw per-run output is in the session
 scratchpad (`before.txt`, `after.txt`).
 
+This table covers only the files this round touched. The FULL three-suite verification that was
+still owed at the end of round two is now the **Round 3** column of the table under
+[§Verification](#verification) above.
+
 `bundle exec rubocop`: **590 files inspected, no offenses detected.**
 
 ## What this round did not do
@@ -637,3 +641,117 @@ scratchpad (`before.txt`, `after.txt`).
   round one, still pre-existing, still out of scope.
 - **The four known engine failures, the red CI** (`scan_ruby` brakeman exit 5, `scan_js` DOMPurify
   /Mermaid warnings) **and the owed prompt investigation** are all unchanged from round one.
+
+
+---
+
+# The third review round
+
+Two more patches, in `tmp/wp33-review-3/`, cut against `f86ad3e`. Applied as its README specifies.
+
+    b34989d  test(parser): the run follows the template's grammar, red first
+    469693c  fix(parser): a check's marker run follows the template's grammar
+    666f340  feat(census): count persisted boards whose pairs are separated by blank lines
+
+`0001` red against `f86ad3e`, **3 failures in the boundaries suite** exactly as the README said
+(38 runs, 471 assertions):
+
+- `a marker-shaped line straight after a blank does not rejoin a finished run` — `Expected: "Yes" / Actual: nil`
+- `a second CORRECTA or a late option never overwrites the first` — `Expected: 2 / Actual: 3`
+- `prose directly under CORRECTA is aftermath, not a wrapped value`
+
+`0002` green: **72 runs, 590 assertions, 0F 0E** across the boundaries and parser suites.
+
+## Finding 3 was still open, and my own guard test is why I did not know
+
+This is the part worth recording, because the failure was in the *test*, not the fix.
+
+Round two closed finding 3 with a contiguous marker run, and I pinned it with a guard test that I
+believed exercised the shape. It did not. The fixture was:
+
+    A) Yes / B) No / CORRECTA: A / EXPLICACIÓN: Because yes.
+    <blank>
+    Here is the diagram you need:        <- a plain prose line
+    <blank>
+    ```mermaid … ```
+    <blank>
+    Answer: think about it before moving on.
+
+The plain sentence ended the run three lines before the `Answer:` line was ever scanned. So the test
+passed for a reason unrelated to what it claimed to check, and the **actual** shape of finding 3 —
+`EXPLICACIÓN:`, blank, `Answer: …`, with nothing in between — still overwrote `correct_letter` with
+prose and still deleted the line. `Expected: "Yes" / Actual: nil` above is that defect, surviving a
+round that reported it fixed.
+
+The mechanism the contiguity rule missed: a blank line does not end the run (options arrive
+blank-separated, which round two pinned deliberately) and a marker-shaped line was accepted
+unconditionally. So blank-then-marker walked straight back into a run that was finished. "Contiguous"
+was necessary and not sufficient.
+
+`0002` replaces the positional rule with the template's **grammar** — options, then one `CORRECTA`,
+then one `EXPLICACIÓN`, which is what `lesson_content.yml` asks for. A marker-shaped line the grammar
+no longer expects is prose that happens to open like a marker, and it ends the run and becomes
+aftermath. The first `CORRECTA` and the first `EXPLICACIÓN` win. Separately, a line directly under
+`CORRECTA` (a single letter, which wraps nothing) was being consumed as a wrapped value with nowhere
+to put it and was therefore deleted; it is aftermath now too.
+
+The lesson I am taking from it: a guard test whose fixture contains an *earlier* sufficient cause
+proves nothing about the cause it names. Round two's fixture had a plain prose line doing the work
+the blank line was supposed to be tested against.
+
+## The board's sibling: counted, not changed
+
+`parse_heading_drag_drop` has the same variant — `Cat ==> Gato`, blank, `The arrow ==> means "maps
+to".` still yields a third pair — and **the board rule is deliberately unchanged in this round**
+(verified: the parser diff since `f86ad3e` touches neither `drag_drop` nor `pair_indexes`).
+
+It is not fixable the way the check was. A check has a grammar to appeal to; a board does not, because
+every pair looks identical and nothing distinguishes prose *about* the arrow from a pair *using* it.
+That leaves ending the board at the first blank line — the shape the template actually shows — and
+that is safe only if no board already in production is written with its pairs spaced out.
+
+So `wp33:reparse_census` now counts them and prints the number:
+
+    match boards persisted:                 N
+      with pairs separated by blank lines:  M
+
+`M == 0` means rule (a) would truncate nothing that exists and the board can take the same treatment
+the check took. `M > 0` means those boards would lose pairs, and the rule should stay. **The number
+decides it, before anyone changes the parser** — a parser change justified by a guess about
+production content is precisely how `wp24:reparse_scenarios` shipped as a task nobody could run.
+
+Counted from the persisted array and *before* the AiContent check, because a board in the cache is a
+board a student sees whether or not its step is still position-compatible. Two false positives are
+pinned shut: a blank between the last pair and trailing prose is the ordinary shape and is not
+counted, and `==>` inside a mermaid fence is not a pair, so a blank above such a fence is not a blank
+between pairs.
+
+## Verification — the full three suites, at last
+
+The full three suites, **three runs each from a clean base**, one suite at a time — added as the
+**Round 3** column of the round-one table under [§Verification](#verification) rather than replacing
+anything.
+All nine runs identical; the combined column's failure set was fingerprinted per run and is the same
+four every time.
+
+| | Round 3 (`666f340`) | vs. round 1's final column |
+|---|---|---|
+| Main | 783 runs, 3661 assertions, 0F 0E | +12 runs, +43 assertions |
+| Browser | 69 runs, 513 assertions, 0F 0E | +3 runs, +30 assertions |
+| Combined | 1220 runs, 5620 assertions, 3F 1E | +27 runs, +139 assertions |
+| RuboCop | clean, 590 files | +2 files |
+
+The combined 3F/1E are the four known engine failures, unchanged and untouched:
+`RouteGenerationJobTest`, `RouteGeneratorTest`, `GapAnalysisJobTest`, `ReinforcementJobTest`.
+
+## Open after this round
+
+- **The board variant**, above — the census will say whether rule (a) is safe. Nothing else in
+  `parse_heading_drag_drop` changed.
+- **The `:no_metadata` hole in the image claim** (round two) — a step with no persisted
+  `parsed_sections` can still be double-clicked into two paid jobs.
+- **`0002`'s one-extra-Continue design** for showing a check's aftermath, still unoverruled.
+- **A bare `## Match` with no colon** is still parsed as a concept titled "Match". Pre-existing.
+- **CI is still red** from `scan_ruby` (brakeman exit 5 on the known `permit!`) and `scan_js`
+  (6 DOMPurify/Mermaid warnings), and **the prompt investigation is still owed**.
+- **Nothing is pushed.** The owner pushes.
