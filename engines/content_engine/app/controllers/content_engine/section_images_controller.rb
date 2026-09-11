@@ -26,7 +26,14 @@ module ContentEngine
         return render json: { image_url: section["image_url"], success: true, already_exists: true }
       end
 
-      mark_generating!(section_index)
+      # The claim, not the read at the top of this action, is what decides whether
+      # we spend. `section["image_url"].present?` above was read through
+      # SectionResolver before any lock was taken, so two clicks arriving while
+      # the first job is still running both see it blank and both get here.
+      if mark_generating!(section_index) == :already_generating
+        return render json: { success: true, status: "generating" }, status: :accepted
+      end
+
       SectionImageJob.perform_later(@step.id, section_index, current_user.id)
 
       render json: { success: true, status: "generating" }, status: :accepted
@@ -60,8 +67,20 @@ module ContentEngine
 
     # Eager-load the route/profile/user chain. strict_loading_by_default is on, so
     # the lazy traversal below raised in dev/test and logged a violation on every
-    # click of the generate button in production. The action then reads
-    # route.locale and route.localized_topic off the same chain.
+    # click of the generate button in production.
+    #
+    # The claim that used to end this comment — "the action then reads route.locale
+    # and route.localized_topic off the same chain" — is not true of this file; no
+    # action here touches either. The chain is consumed by the authorization
+    # before_actions above.
+    #
+    # And it does not survive `mark_generating!`: `with_lock` calls
+    # `reload(lock: true)`, which clears the association cache (measured:
+    # `association(:learning_route).loaded?` goes true -> false across the block).
+    # Reading an association after that point does NOT raise — measured in
+    # development with `action_on_strict_loading_violation = :raise` — it silently
+    # issues a second query. So anything added after the lock pays for the
+    # eager-load twice rather than failing loudly about it.
     def set_step_and_authorize!
       return unless authorize_route_step_access!(params[:step_id])
 
@@ -80,28 +99,66 @@ module ContentEngine
       sections[section_index]
     end
 
+    # UNDER THE LOCK, AND RE-READ. `merge_metadata!` alone is not enough here:
+    # it keeps the top-level keys this caller does not name, but this caller
+    # rebuilds the WHOLE `parsed_sections` array and names it. `RouteStep`
+    # says so itself — "`||` is shallow, exactly like Hash#merge. A caller
+    # mutating a NESTED structure must still re-read that structure immediately
+    # before writing."
+    #
+    # The array read at the top of the request is minutes old by web standards:
+    # a `SectionImageJob` committing another section's `image_url` in between
+    # was written straight back out as nil, and `MediaPrefetchJob` then bought
+    # that image again. Both jobs already re-read (`SectionImageJob#write_state!`
+    # reloads, `MediaPrefetchJob#apply_results!` uses `fresh_metadata`); this
+    # was the writer still holding a stale copy. Same three lines as
+    # `SectionAudioController#update_audio_section_status!`.
+    # Returns :claimed, :already_generating, or :no_metadata.
+    #
+    # AND IT IS A CLAIM, not just a status write. WP-33 §1 put this under the
+    # lock, which closed the write race; the decision race stayed open, and the
+    # decision is the one that costs money. `generate` resolved the section and
+    # checked `image_url` OUTSIDE this lock, so two clicks before either job
+    # lands both pass that check and both enqueue a paid job.
+    # `SectionImageJob:28` only rejects a job enqueued after the first has
+    # committed a URL, which is exactly the case that was never the problem.
+    #
+    # `image_status == "generating"` was already being written here atomically
+    # and read by nobody — the poll endpoint only ever looked for "failed". This
+    # is that missing reader.
+    #
+    # :no_metadata is NOT a refusal. A step whose `parsed_sections` has not been
+    # written yet renders from AiContent through SectionResolver
+    # (SectionImagesFallbackTest), and there is nowhere to record a claim; the
+    # caller enqueues anyway rather than making that student's button dead. Such
+    # a step can still be double-clicked into two jobs.
     def mark_generating!(section_index)
-      metadata = @step.metadata || {}
-      parsed = metadata["parsed_sections"]
-      return unless parsed.is_a?(Array) && parsed[section_index]
+      outcome = :no_metadata
+      @step.with_lock do
+        parsed = @step.fresh_metadata["parsed_sections"]
+        next unless parsed.is_a?(Array) && parsed[section_index]
 
-      parsed[section_index]["image_status"] = "generating"
-      parsed[section_index]["image_error"] = nil
-      @step.update!(metadata: metadata.merge("parsed_sections" => parsed))
-    end
+        if parsed[section_index]["image_status"] == "generating"
+          outcome = :already_generating
+          next
+        end
 
-    def update_section_image!(section_index, image_url)
-      metadata = @step.metadata || {}
-      parsed = metadata["parsed_sections"]
-      return unless parsed.is_a?(Array) && parsed[section_index]
-
-      parsed[section_index]["image_url"] = image_url
-      @step.update!(metadata: metadata.merge("parsed_sections" => parsed))
+        parsed[section_index]["image_status"] = "generating"
+        parsed[section_index]["image_error"] = nil
+        @step.merge_metadata!("parsed_sections" => parsed)
+        outcome = :claimed
+      end
+      outcome
     end
 
     def render_image_html(image_url, section)
-      alt_text = section["alt_text"].presence || section["title"]
-      caption = section["title"]
+      # `section["title"]` is nil for an untitled block now that the parser no
+      # longer bakes a translated default into parsed_sections (WP-33 §4), so
+      # both of these fall back to the same key the view's `block_title` uses.
+      # Without it an untitled visual loses its accessible name.
+      default_title = t("learning_engine.blocks.default_title.visual")
+      alt_text = section["alt_text"].presence || section["title"].presence || default_title
+      caption = section["title"].presence || default_title
 
       <<~HTML
         <div style="border-radius:14px; overflow:hidden; border:1px solid var(--color-border-subtle); box-shadow:0 2px 8px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.02);">

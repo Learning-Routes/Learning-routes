@@ -125,7 +125,7 @@ module ContentEngine
 
       {
         type: "check",
-        title: "Comprueba tu conocimiento",
+        title: nil,
         question: question,
         options: options,
         explanation: nil
@@ -140,12 +140,12 @@ module ContentEngine
 
     def parse_example_block(title_line, body)
       full_body = title_line.present? ? "#{title_line}\n#{body}" : body
-      { type: "example", title: "Ejemplo", body: full_body.strip }
+      { type: "example", title: nil, body: full_body.strip }
     end
 
     def parse_tip_block(title_line, body)
       full_body = title_line.present? ? "#{title_line}\n#{body}" : body
-      { type: "tip", title: "Consejo", body: full_body.strip }
+      { type: "tip", title: nil, body: full_body.strip }
     end
 
     def parse_summary_block(title_line, body)
@@ -160,7 +160,7 @@ module ContentEngine
 
       {
         type: "summary",
-        title: "Resumen",
+        title: nil,
         key_points: key_points,
         body: remaining.presence
       }
@@ -214,13 +214,13 @@ module ContentEngine
           when :visual
             sections << parse_heading_visual(title, body)
           when :example
-            sections << { type: "example", title: title.presence || "Ejemplo", body: body }
+            sections << { type: "example", title: title.presence, body: body }
           when :tip
-            sections << { type: "tip", title: title.presence || "Consejo", body: body }
+            sections << { type: "tip", title: title.presence, body: body }
           when :summary
             sections << parse_heading_summary(title, body)
           when :concept
-            sections << build_concept_or_visual(title.presence || "Concepto", body)
+            sections << build_concept_or_visual(title.presence, body)
           when :drag_drop
             sections << parse_heading_drag_drop(title, body)
           when :fill_blank
@@ -258,29 +258,173 @@ module ContentEngine
     end
 
     # Parse ## Pregunta: heading format with A)-D) options, CORRECTA:, EXPLICACIÓN:
+    # ## Pregunta / ## Question
+    #
+    # THE STRUCTURAL LINES COME FIRST, AND AFTER THEM EVERYTHING IS AFTERMATH.
+    # A programming check is `## Pregunta ("what does this print?")` followed by
+    # a code fence and THEN its options: a fence before the first option is part
+    # of the question, not an aftermath. So the question is everything before
+    # the first option line, markdown and fences included.
+    #
+    # After the LAST option / CORRECTA / EXPLICACION line there is nothing
+    # structural left to protect, so there is nothing to hunt for either. The
+    # first version of this fix ran `split_aftermath` over that tail and dropped
+    # its first return value — `_kept` — which deleted any prose sitting between
+    # the last marker and the first heading/fence/rule, and deleted the whole
+    # tail when there was no terminator at all. That is the same class of loss
+    # this method exists to close, reopened one line lower down.
+    #
+    # Every line that was neither an option, CORRECTA, EXPLICACIÓN nor the first
+    # prose line used to be DISCARDED. `lesson_content.yml:127-128` tells the
+    # model to put its first mandatory mermaid diagram immediately after the
+    # CYCLE 2 block, whose preferred types include `## Pregunta` — so half the
+    # time the diagram landed here and was deleted. The section count never
+    # changed, which is why no test noticed.
     def parse_heading_check(question_from_heading, body)
-      lines = body.lines.map { |l| l.rstrip }
-      question = question_from_heading.presence
+      # RAW lines, newlines intact. The previous version mapped `rstrip` over
+      # them, which is harmless when you only ever inspect a line and fatal when
+      # you re-join a slice: the aftermath came back flattened, which is exactly
+      # what stopped a diagram drawing in WP-24 §2.
+      lines = body.to_s.lines
       options = []
       correct_letter = nil
       explanation = nil
+      first_marker_index = nil
+      last_marker_index = nil
 
-      lines.each do |line|
+      # A MARKER is any structural line: an option (`A)`-`D)`, or a numbered
+      # `1)` the generator was never asked for but has produced), CORRECTA, or
+      # EXPLICACIÓN. The question ends at the FIRST of them, whatever its kind —
+      # the second review round found `1) 4 / 2) 22 / CORRECTA: A` with no
+      # `A)` line at all, so nothing ended the question and the modal rendered
+      # the answer key to the student.
+      #
+      # Markers are only recognised OUTSIDE fenced code: a "what does this
+      # print?" question carries its sample output in a fence, and a line of
+      # that output that happens to start with `A) ` is not an option.
+      #
+      # THE RUN IS CONTIGUOUS, and that is the part the second round still got
+      # wrong. Scanning the whole body made `last_marker_index` mean "the last
+      # line ANYWHERE that looked structural", so trailing prose that merely
+      # opens like a marker — `Answer: think about it before moving on.` — moved
+      # the aftermath boundary past everything above it. A real diagram was
+      # deleted and `correct_letter` was overwritten with prose, which leaves no
+      # option marked correct and makes `BlockGrader` treat the check as
+      # unanswerable. So the run stops at the first line that is neither a
+      # marker, a blank, nor the wrapped rest of the marker above it.
+      #
+      # A wrapped value belongs to ITS MARKER, not to the lesson. Only the first
+      # line of `EXPLICACIÓN:` was captured; the rest fell past the last marker
+      # into the aftermath, which `_aftermath.html.erb` renders always and
+      # ungated under the check — so the tail of the explanation printed in the
+      # lesson before the student had answered.
+      in_fence = false
+      prev_structural = false
+      last_kind = nil
+
+      lines.each_with_index do |line, index|
         stripped = line.strip
-        if stripped.match?(/\A[A-Da-d]\)\s/)
-          label = stripped.sub(/\A[A-Da-d]\)\s*/, "")
-          options << { label: label, correct: false }
-        elsif stripped.match?(/\A(?:CORRECTA|CORRECT|ANSWER):\s*/i)
-          correct_letter = stripped.sub(/\A(?:CORRECTA|CORRECT|ANSWER):\s*/i, "").strip.upcase
-        elsif stripped.match?(/\A(?:EXPLICACI[OÓ]N|EXPLANATION):\s*/i)
-          explanation = stripped.sub(/\A(?:EXPLICACI[OÓ]N|EXPLANATION):\s*/i, "").strip
-        elsif question.blank? && stripped.present? && options.empty?
-          # If no question from heading, first non-empty line is the question
-          question = stripped
+
+        if stripped.match?(FENCE)
+          # Before the first marker a fence is part of the question. After it, a
+          # fence is structural content and opens the aftermath — never a
+          # continuation of the marker above it.
+          break if first_marker_index
+
+          in_fence = !in_fence
+          prev_structural = false
+          next
         end
+
+        if in_fence
+          prev_structural = false
+          next
+        end
+
+        if stripped.empty?
+          # A blank line does not end the run — options arrive blank-separated —
+          # but it does end a wrapped value: the next line starts something new.
+          prev_structural = false
+          next
+        end
+
+        kind =
+          if stripped.match?(/\A[A-Da-d]\)\s/) then :option
+          elsif stripped.match?(/\A(?:CORRECTA|CORRECT|ANSWER):\s*/i) then :correct
+          elsif stripped.match?(/\A(?:EXPLICACI[OÓ]N|EXPLANATION):\s*/i) then :explanation
+          elsif stripped.match?(/\A\d+\)\s/) then :numbered
+          end
+
+        if kind.nil?
+          # Still before the first marker: this is the question.
+          next if first_marker_index.nil?
+          # Directly under an option or an EXPLICACIÓN, this is that marker's
+          # wrapped value. CORRECTA is a single letter and a numbered line is not
+          # collected, so a line under either of those is not a continuation of
+          # anything: the run is over and the aftermath starts here. (Consuming
+          # it as a wrapped value with nowhere to put it deleted the line.)
+          break unless prev_structural && %i[option explanation].include?(last_kind)
+          break if aftermath_boundary?(stripped, %i[heading rule])
+
+          case last_kind
+          when :option      then options.last[:label] = "#{options.last[:label]} #{stripped}".strip
+          when :explanation then explanation = "#{explanation} #{stripped}".strip
+          end
+          last_marker_index = index
+          next
+        end
+
+        # THE RUN FOLLOWS THE TEMPLATE'S GRAMMAR: options, then one CORRECTA,
+        # then one EXPLICACIÓN. A marker-shaped line the grammar no longer
+        # expects is prose that happens to open like a marker — `Answer: think
+        # about it before moving on.` after the explanation — and it ends the
+        # run instead of joining it. Without this, a blank line followed by such
+        # a line overwrote `correct_letter` with prose (no option correct, the
+        # check unanswerable and non-gating) and moved the aftermath boundary
+        # past everything above it; "contiguous" alone did not stop it, because
+        # a blank line does not end the run and a marker-shaped line was always
+        # accepted. The first CORRECTA and the first EXPLICACIÓN win; options
+        # are accepted only until either has been seen.
+        expected =
+          case kind
+          when :option, :numbered then correct_letter.nil? && explanation.nil?
+          when :correct           then correct_letter.nil?
+          when :explanation       then explanation.nil?
+          end
+        break unless expected
+
+        case kind
+        when :option
+          options << { label: stripped.sub(/\A[A-Da-d]\)\s*/, ""), correct: false }
+        when :correct
+          correct_letter = stripped.sub(/\A(?:CORRECTA|CORRECT|ANSWER):\s*/i, "").strip.upcase
+        when :explanation
+          explanation = stripped.sub(/\A(?:EXPLICACI[OÓ]N|EXPLANATION):\s*/i, "").strip
+        end
+
+        last_kind = kind
+        first_marker_index ||= index
+        last_marker_index = index
+        prev_structural = true
       end
 
-      # Mark correct option
+      if first_marker_index.nil?
+        # NO STRUCTURE AT ALL, so nothing to protect and no reason to treat this
+        # body differently from any other accumulating block: the ordinary
+        # terminator rule applies from the top. Folding the whole body into
+        # `question` put a mermaid fence inside the modal, which is the one
+        # place `_lesson.html.erb` says an aftermath must never render.
+        body_question, aftermath = split_aftermath(lines.join)
+      else
+        body_question = lines[0...first_marker_index].join
+        # Everything after the last marker, verbatim. No terminator hunt: the
+        # boundary is already known, and hunting inside a tail that is trailing
+        # content by construction only creates a second place to lose it.
+        aftermath = lines[(last_marker_index + 1)..].join.strip.presence
+      end
+
+      question = [question_from_heading.presence, body_question.to_s.strip.presence].compact.join("\n\n")
+
       if correct_letter && correct_letter.match?(/\A[A-D]\z/)
         correct_index = correct_letter.ord - "A".ord
         options[correct_index][:correct] = true if options[correct_index]
@@ -288,10 +432,11 @@ module ContentEngine
 
       {
         type: "check",
-        title: "Comprueba tu conocimiento",
-        question: question || "",
+        title: nil,
+        question: question,
         options: options,
         explanation: explanation,
+        aftermath: aftermath,
         xp: 15
       }
     end
@@ -306,7 +451,7 @@ module ContentEngine
 
       {
         type: "visual",
-        title: title_from_heading.presence || "Visual",
+        title: title_from_heading.presence,
         alt_text: title_from_heading.to_s.strip,
         body: body,
         image_description: image_description.presence,
@@ -332,7 +477,7 @@ module ContentEngine
 
       {
         type: "summary",
-        title: title_from_heading.presence || "Resumen",
+        title: title_from_heading.presence,
         key_points: key_points,
         body: remaining.presence
       }
@@ -376,17 +521,77 @@ module ContentEngine
         (rules.include?(:rule) && stripped.match?(HORIZONTAL_RULE))
     end
 
+    # Yields `[stripped_line, index]` for every line that is NOT inside a
+    # fenced code block. The fence lines themselves are not yielded either.
+    #
+    # The structural scanners (`A)` options, CORRECTA, `==>` pairs) read line
+    # shapes, and a fence can contain any shape: `==>` is mermaid's thick arrow,
+    # and the sample output of a "what does this print?" question can start
+    # with `A) `. What is inside a fence is content, never structure.
+    def each_line_outside_fences(lines)
+      in_fence = false
+      lines.each_with_index do |line, index|
+        stripped = line.strip
+        if stripped.match?(FENCE)
+          in_fence = !in_fence
+          next
+        end
+        yield stripped, index unless in_fence
+      end
+    end
+
     # ── Interactive block parsers ────────────────────────────────────
 
     # ## Match: title / pairs separated by ==>
+    #
+    # Selecting the `==>` lines kept the trailing content out of `pairs`, which
+    # is what the old boundaries "control" asserted — but it also threw that
+    # content away. The prose before the first pair is the board's `intro`;
+    # everything after the LAST pair is the aftermath, verbatim.
+    #
+    # Not `split_aftermath` here either — see `parse_heading_check`. The last
+    # `==>` line IS the boundary, so looking for a second one only lost the
+    # prose that sat before it.
+    #
+    # `==>` is also mermaid's thick arrow. A `## Match:` followed by a diagram
+    # read the diagram's arrows as pairs and left an aftermath that began with
+    # the dangling closing fence, so pairs are only recognised outside fences.
     def parse_heading_drag_drop(title, body)
-      pairs = body.to_s.lines
-                  .map(&:strip)
-                  .reject(&:empty?)
-                  .select { |l| l.include?("==>") }
-                  .map { |l| parts = l.split("==>", 2); { term: parts[0].to_s.strip, definition: parts[1].to_s.strip } }
+      lines = body.to_s.lines
 
-      { type: "drag_drop", title: title.presence || "Match", pairs: pairs, body: body }
+      # THE BOARD IS A CONTIGUOUS RUN, for the same reason a check's markers are.
+      # `pair_indexes.last` is the aftermath boundary, and collecting `==>` from
+      # the whole body made trailing prose that merely MENTIONS the arrow — "write
+      # it as term ==> meaning", a natural thing for a Match block's own prose to
+      # say — into a pair on the board AND moved the boundary past everything
+      # above it, deleting the diagram. Same shape as `parse_heading_check`: once
+      # the pairs have started, the first line that is not a pair ends them.
+      # Blank lines do not, so a blank-separated board still parses.
+      pair_indexes = []
+      each_line_outside_fences(lines) do |stripped, i|
+        if lines[i].include?("==>")
+          pair_indexes << i
+        elsif stripped.present? && pair_indexes.any?
+          break
+        end
+      end
+
+      pairs = pair_indexes.map do |i|
+        parts = lines[i].strip.split("==>", 2)
+        { term: parts[0].to_s.strip, definition: parts[1].to_s.strip }
+      end
+
+      intro = lines[0...(pair_indexes.first || lines.size)].join.strip.presence
+
+      aftermath = nil
+      if pair_indexes.any? && pair_indexes.last + 1 < lines.size
+        aftermath = lines[(pair_indexes.last + 1)..].join.strip.presence
+      end
+
+      {
+        type: "drag_drop", title: title.presence, intro: intro,
+        pairs: pairs, aftermath: aftermath, body: body
+      }
     end
 
     # ## Complete: title / sentence with BLANK--word--BLANK tokens
@@ -397,7 +602,7 @@ module ContentEngine
       sentence = text.gsub(/BLANK--(.+?)--BLANK/, "___")
 
       {
-        type: "fill_blank", title: title.presence || "Complete",
+        type: "fill_blank", title: title.presence,
         sentence: sentence, blanks: blanks, aftermath: aftermath, body: body
       }
     end
@@ -416,7 +621,7 @@ module ContentEngine
       expected = expected_text.strip.presence
 
       {
-        type: "code_playground", title: title.presence || "Playground",
+        type: "code_playground", title: title.presence,
         language: language, code: code, expected_output: expected,
         aftermath: aftermath, body: body
       }
@@ -442,7 +647,7 @@ module ContentEngine
       end
 
       {
-        type: "simulation", title: title.presence || "Simulation",
+        type: "simulation", title: title.presence,
         variables: variables, formula: formula, aftermath: aftermath, body: body
       }
     end
@@ -475,7 +680,7 @@ module ContentEngine
       end
 
       {
-        type: "scenario", title: title.presence || "Scenario",
+        type: "scenario", title: title.presence,
         situation: situation.join(" ").strip, options: options,
         aftermath: aftermath, body: body
       }
@@ -519,7 +724,7 @@ module ContentEngine
       end
 
       {
-        type: "flashcards", title: title.presence || "Flashcards",
+        type: "flashcards", title: title.presence,
         cards: cards, aftermath: aftermath, body: body
       }
     end
@@ -561,11 +766,11 @@ module ContentEngine
     end
 
     def blank_concept_section
-      { type: "concept", title: "Lección", body: "" }
+      { type: "concept", title: nil, body: "" }
     end
 
     def empty_summary_section
-      { type: "summary", title: "Resumen", key_points: [], body: nil }
+      { type: "summary", title: nil, key_points: [], body: nil }
     end
 
     # ── Injection helpers ─────────────────────────────────────────────
@@ -601,7 +806,7 @@ module ContentEngine
 
             result << {
               type: "check",
-              title: "Comprueba tu conocimiento",
+              title: nil,
               question: kc["question"] || kc[:question],
               options: options,
               explanation: kc["explanation"] || kc[:explanation]
@@ -622,7 +827,7 @@ module ContentEngine
 
         result << {
           type: "check",
-          title: "Comprueba tu conocimiento",
+          title: nil,
           question: kc["question"] || kc[:question],
           options: options,
           explanation: kc["explanation"] || kc[:explanation]
@@ -641,7 +846,7 @@ module ContentEngine
 
       audio = {
         type: "audio",
-        title: "Audio explicación",
+        title: nil,
         audio_url: @audio_url,
         transcript: nil
       }
@@ -660,7 +865,7 @@ module ContentEngine
 
       sections << {
         type: "summary",
-        title: "Resumen",
+        title: nil,
         key_points: key_points,
         body: nil
       }

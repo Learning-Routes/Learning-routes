@@ -240,7 +240,10 @@ module ContentEngine
         entry["duration"] = duration if duration
         audio_sections[@section_index.to_s] = entry
 
-        step.update!(metadata: metadata.merge("audio_sections" => audio_sections))
+        # merge_metadata!, not a whole-blob write: with_lock serialises the two
+        # writers of `audio_sections`, but the blob this holds is still missing
+        # any OTHER key written since the reload.
+        step.merge_metadata!("audio_sections" => audio_sections)
       end
     rescue => e
       Rails.logger.warn("[SectionAudioGenerator] Status update failed: #{e.message}")

@@ -1,7 +1,12 @@
 <%# engines/learning_routes_engine/app/views/learning_routes_engine/steps/lesson_sections/_code_playground.html.erb %>
 <div data-controller="code-playground"
      data-code-playground-language-value="<%= section[:language] || 'python' %>"
-     data-code-playground-initial-code-value="<%= section[:code]&.gsub('"', '&quot;') %>"
+     <%# NO gsub. ERB escapes an attribute value on its own; a hand-written
+         `&quot;` has its ampersand escaped a second time, arrives as
+         `&amp;quot;`, and the browser decodes it to the six literal characters —
+         so Reset restored `print(&quot;hola&quot;)` and the next Run was a
+         SyntaxError. Same double escape WP-24 §2 removed from `_scenario`. %>
+     data-code-playground-initial-code-value="<%= section[:code] %>"
      class="space-y-4">
   <!-- Badge -->
   <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium tracking-wide uppercase" style="background: rgba(59, 130, 246, 0.1); color: #3b82f6; font-family: 'DM Mono', monospace;">
@@ -9,7 +14,7 @@
     <%= t('learning_engine.blocks.badge_playground') %>
   </div>
 
-  <h2 class="text-2xl font-bold" style="color: var(--color-txt);"><%= section[:title] %></h2>
+  <h2 class="text-2xl font-bold" style="color: var(--color-txt);"><%= block_title(section) %></h2>
 
   <div class="rounded-2xl overflow-hidden" style="border: 1px solid rgba(28, 24, 18, 0.1);">
     <!-- Editor toolbar -->
@@ -19,12 +24,12 @@
         <button class="px-3 py-1 rounded-lg text-xs font-medium transition-all duration-200"
                 style="background: rgba(255,255,255,0.1); color: var(--color-card);"
                 data-action="click->code-playground#reset"
-                aria-label="Reset code"><%= t('learning_engine.blocks.reset') %></button>
+                aria-label="<%= t("learning_engine.blocks.reset_code") %>"><%= t("learning_engine.blocks.reset") %></button>
         <button class="px-4 py-1 rounded-lg text-xs font-bold transition-all duration-200"
                 style="background: #10b981; color: white;"
                 data-action="click->code-playground#run"
                 data-code-playground-target="runBtn"
-                aria-label="Run code">Run ▶</button>
+                aria-label="<%= t("learning_engine.blocks.run_code") %>"><%= t("learning_engine.blocks.run") %></button>
       </div>
     </div>
 

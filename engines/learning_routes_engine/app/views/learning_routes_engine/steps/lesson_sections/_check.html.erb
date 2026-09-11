@@ -50,9 +50,12 @@
       <div style="background:var(--color-card); border:1px solid var(--color-border-subtle); border-left:4px solid #8b5cf6; border-radius:16px; padding:1.5rem 1.75rem; margin-top:0.875rem; box-shadow:0 1px 3px rgba(139,92,246,0.04), 0 4px 16px rgba(139,92,246,0.02);">
         <%# Question + timer header %>
         <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:1rem; margin-bottom:0.75rem;">
-          <p style="font-size:1.125rem; font-weight:700; color:var(--color-txt); line-height:1.5; flex:1; margin:0; letter-spacing:-0.2px;">
-            <%= section[:question] %>
-          </p>
+          <%# Through MarkdownRenderer (which sanitizes): the question of a
+              programming check is a code fence, and printing it as plain text
+              showed the student backticks. %>
+          <div class="lesson-content quiz-question" style="font-size:1.125rem; font-weight:700; color:var(--color-txt); line-height:1.5; flex:1; margin:0; letter-spacing:-0.2px;">
+            <%= ContentEngine::MarkdownRenderer.render(section[:question].to_s) %>
+          </div>
           <%# Timer %>
           <div class="quiz-timer" data-lesson-quiz-target="timerWrap">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>

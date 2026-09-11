@@ -15,7 +15,12 @@ module ContentEngine
   #
   # Ten call sites had the same shape. Fixing one would have left nine.
   class StepMetadataWriteIsolationTest < ActiveSupport::TestCase
-    JOB_GLOB = "{app/jobs,engines/*/app/jobs}/**/*.rb".freeze
+    # Jobs are not the only writers. `SectionImagesController#mark_generating!`
+    # and `SectionAudioController#update_audio_status!` write the same blob from
+    # a request, and `SectionAudioGenerator` writes it from a service — the
+    # jobs-only glob is why they survived the first sweep while the file around
+    # them was being edited for WP-33 §1.
+    WRITER_GLOB = "{app,engines/*/app}/{jobs,controllers,services}/**/*.rb".freeze
 
     def setup
       @user = create_test_user
@@ -82,11 +87,57 @@ module ContentEngine
       assert metadata["media_prefetch_completed_at"].present?, "the job still wrote its own keys"
     end
 
+    # ── the controller, which mutates a NESTED structure ────────────────────
+    #
+    # `merge_metadata!` is shallow, exactly like `Hash#merge` — `RouteStep`
+    # says so in its own comment. It keeps the top-level keys the caller does
+    # not name; it cannot help a caller that rebuilds the WHOLE
+    # `parsed_sections` array from a copy it read earlier and names that.
+    #
+    # `mark_generating!` did precisely that: it read `@step.metadata` from the
+    # instance `set_step_and_authorize!` loaded at the top of the request, set
+    # `image_status` on ONE entry, and wrote the whole array back. A
+    # `SectionImageJob` committing another section's `image_url` in between was
+    # erased — and `MediaPrefetchJob#build_media_tasks` re-queues every visual
+    # whose `image_url` is blank, so the lost image is bought a second time.
+    #
+    # Both jobs already re-read: `SectionImageJob#write_state!` reloads,
+    # `MediaPrefetchJob#apply_results!` uses `fresh_metadata`. The controller
+    # was the writer left holding a stale copy.
+    test "SectionImagesController#mark_generating! does not erase an image written meanwhile" do
+      visuals = [
+        { "type" => "visual", "image_description" => "A", "image_url" => nil },
+        { "type" => "visual", "image_description" => "B", "image_url" => nil }
+      ]
+      @step.merge_metadata!("parsed_sections" => visuals)
+
+      controller = ContentEngine::SectionImagesController.new
+      # The copy the request loaded, BEFORE the job below commits.
+      controller.instance_variable_set(:@step, LearningRoutesEngine::RouteStep.find(@step.id))
+
+      # SectionImageJob finishes visual B while the request is in flight.
+      fresh = @step.reload.metadata["parsed_sections"]
+      fresh[1]["image_url"] = "https://example.test/paid-for.png"
+      fresh[1]["image_status"] = "ready"
+      @step.merge_metadata!("parsed_sections" => fresh)
+
+      # The student clicks Generate on visual A.
+      controller.send(:mark_generating!, 0)
+
+      parsed = @step.reload.metadata["parsed_sections"]
+      assert_equal "generating", parsed[0]["image_status"],
+        "the controller must still do its own job"
+      assert_equal "https://example.test/paid-for.png", parsed[1]["image_url"],
+        "the image the student already paid for was erased by a whole-array write " \
+        "built from the copy the request loaded before the job committed"
+      assert_equal "ready", parsed[1]["image_status"]
+    end
+
     # ── the class ───────────────────────────────────────────────────────────
 
-    test "no job writes step metadata with a whole-blob merge" do
-      offenders = Dir[Rails.root.join(JOB_GLOB)].select do |path|
-        File.read(path).match?(/update!\(\s*metadata:/)
+    test "nothing writes step metadata with a whole-blob merge" do
+      offenders = Dir[Rails.root.join(WRITER_GLOB)].select do |path|
+        strip_comments(File.read(path)).match?(/update!\(\s*metadata:/)
       end
 
       assert_empty offenders.map { |path| Pathname.new(path).relative_path_from(Rails.root).to_s },
@@ -94,9 +145,16 @@ module ContentEngine
         "use RouteStep#merge_metadata! so the database keeps the keys you do not name"
     end
 
-    test "the sweep is looking at the jobs it thinks it is" do
-      assert_operator Dir[Rails.root.join(JOB_GLOB)].size, :>=, 15,
-        "the glob stopped matching the job tree; the class test above would pass vacuously"
+    test "the sweep is looking at the writers it thinks it is" do
+      assert_operator Dir[Rails.root.join(WRITER_GLOB)].size, :>=, 40,
+        "the glob stopped matching the tree; the class test above would pass vacuously"
+    end
+
+    # Two of the five files the widened glob matches only MENTION the whole-blob
+    # write, in the comment explaining why they do not do it. Matching that
+    # comment would have made the fix look like the defect.
+    def strip_comments(source)
+      source.lines.reject { |line| line.strip.start_with?("#") }.join
     end
   end
 end

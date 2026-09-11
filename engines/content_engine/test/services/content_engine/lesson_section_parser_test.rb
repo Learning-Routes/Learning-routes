@@ -55,13 +55,19 @@ module ContentEngine
       assert_equal "4", s[:options][1][:label]
     end
 
-    test ":::example and :::tip carry their body" do
+    # WP-33 §4 changed what this asserts, deliberately. It used to require the
+    # parser to persist "Ejemplo" and "Consejo" — Spanish literals baked into
+    # `parsed_sections` by a job whose I18n.locale is the worker's, not the
+    # route's. An untitled block now persists NO title and the view fills it in
+    # the reader's language through `block_title`, so the assertion is the
+    # opposite one: nothing about the language may reach the cache.
+    test ":::example and :::tip carry their body and persist no title" do
       ex = find_section(parse(":::example\nlike this\n:::"), "example")
-      assert_equal "Ejemplo", ex[:title]
+      assert_nil ex[:title], "a translated default was persisted into parsed_sections"
       assert_match(/like this/, ex[:body])
 
       tip = find_section(parse(":::tip\nremember\n:::"), "tip")
-      assert_equal "Consejo", tip[:title]
+      assert_nil tip[:title], "a translated default was persisted into parsed_sections"
       assert_match(/remember/, tip[:body])
     end
 

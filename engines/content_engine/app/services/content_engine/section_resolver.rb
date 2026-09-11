@@ -50,7 +50,11 @@ module ContentEngine
       ).map(&:as_json)
       return [] if sections.empty?
 
-      @step.update!(metadata: (@step.metadata || {}).merge("parsed_sections" => sections))
+      # merge_metadata!, not `update!(metadata: metadata.merge(...))`. The second
+      # writes the WHOLE jsonb blob from the copy this process is holding, so an
+      # `audio_sections` or `image_url` a job wrote between the read and this
+      # line is erased. Same class as the reparse task's write, one line.
+      @step.merge_metadata!("parsed_sections" => sections)
       sections
     rescue => e
       # A step whose content cannot be parsed must not take down the page or the

@@ -89,13 +89,30 @@ module ContentEngine
           velocity: 0 to 100
           formula: energy = 0.5 * mass * velocity
         MARKDOWN
+      ],
+      # `check` was not in this sweep at all, and `drag_drop` was its CONTROL —
+      # "selecting is already a terminator". Both were wrong in the same way:
+      # neither accumulates the trailing content, but neither KEEPS it either.
+      # A `## Pregunta` discards every line that is not an option, CORRECTA or
+      # EXPLICACIÓN; a `## Match` discards every line without `==>`. The section
+      # count never changes, so the count assertion below stayed green while the
+      # generator's own mandatory mermaid diagram was being deleted.
+      "check" => [
+        "## Pregunta: Which one runs first?",
+        <<~MARKDOWN
+          A) The first one
+          B) The second one
+          C) Neither
+          D) Both
+          CORRECTA: A
+          EXPLICACIÓN: The first statement runs first.
+        MARKDOWN
+      ],
+      "drag_drop" => [
+        "## Match: Spanish animals",
+        "Dog ==> Perro\nCat ==> Gato\n"
       ]
     }.freeze
-
-    # `drag_drop` SELECTS the lines it wants instead of accumulating, so it is
-    # already terminated by construction. It is here as the control: if this ever
-    # goes red, the fix broke the one parser that had the right shape.
-    CONTROL = ["## Match: Spanish animals", "Dog ==> Perro\nCat ==> Gato\n"].freeze
 
     ACCUMULATORS.each_key do |type|
       define_method(:"test_#{type}_does_not_swallow_the_rest_of_the_section") do
@@ -131,13 +148,485 @@ module ContentEngine
       end
     end
 
-    test "drag_drop is unaffected, because selecting is already a terminator" do
-      section = parse_one_of(*CONTROL, "drag_drop")
+    # Selecting keeps the trailing content OUT of `pairs`, which is what the old
+    # control asserted — but it also threw it away. Both halves now.
+    test "drag_drop keeps its pairs clean AND keeps the prose above the board" do
+      section = parse_one("drag_drop")
 
       assert_equal 2, section[:pairs].size
-      TRAILING_MARKERS.each do |marker|
-        assert_not_includes section[:pairs].to_s, marker
-      end
+      TRAILING_MARKERS.each { |marker| assert_not_includes section[:pairs].to_s, marker }
+    end
+
+    # THE CASE THE TEMPLATE ACTUALLY PRODUCES. `lesson_content.yml:127-128` tells
+    # the model to put its first mandatory mermaid diagram immediately after the
+    # CYCLE 2 interactive block, whose preferred types are `## Complete` and
+    # `## Pregunta`. Half the time it lands in the body of a check.
+    test "a check keeps the mermaid diagram the template puts after it" do
+      body = <<~MARKDOWN
+        A) The first one
+        B) The second one
+        C) Neither
+        D) Both
+        CORRECTA: A
+        EXPLICACIÓN: The first statement runs first.
+
+        ```mermaid
+        flowchart TD
+          A[Start] --> B[Finish]
+        ```
+      MARKDOWN
+      section = parse_one_of("## Pregunta: Which one runs first?", body, "check")
+
+      assert_equal 4, section[:options].size, "the options must be untouched"
+      assert_includes section[:aftermath].to_s, "```mermaid",
+        "the diagram the generator is told to emit was deleted by the check parser"
+      assert_includes section[:aftermath].to_s, "flowchart TD"
+      assert_operator section[:aftermath].to_s.lines.size, :>, 1,
+        "the fence must keep its newlines or the diagram cannot render"
+    end
+
+    # THE OTHER HALF, and the reason the terminator cannot simply be "the first
+    # fence": a programming question is a fence FOLLOWED by its options. A fence
+    # before the first option is part of the question, not an aftermath.
+    test "a fence before the first option belongs to the question" do
+      body = <<~MARKDOWN
+        ```python
+        print(2 + 2)
+        ```
+        A) 4
+        B) 22
+        C) An error
+        D) Nothing
+        CORRECTA: A
+      MARKDOWN
+      sections = LessonSectionParser.call("## Pregunta: What does this print?\n\n#{body}")
+      section = sections.find { |s| s[:type] == "check" }
+
+      assert_includes section[:question].to_s, "print(2 + 2)",
+        "the code the question is ABOUT was treated as trailing content"
+      assert_includes section[:question].to_s, "```python"
+      assert_equal 4, section[:options].size
+      assert_nil section[:aftermath].presence,
+        "there is nothing after the last marker line, so there is no aftermath"
+    end
+
+    # ── After the last marker, EVERYTHING is aftermath ──────────────────────
+    #
+    # The first version of this fix read `split_aftermath` at both sites and
+    # threw its first return value away:
+    #
+    #   _kept, aftermath = split_aftermath(lines[(last_marker_index + 1)..].join)
+    #
+    # `split_aftermath` exists for a parser that does NOT know where its
+    # accumulation ends — it hunts for a heading, a fence or a rule. These two
+    # parsers already know: the last option / CORRECTA / EXPLICACIÓN line, and
+    # the last `==>` line. Everything after that is trailing content BY
+    # CONSTRUCTION, so hunting for a terminator inside it only creates a second
+    # place for content to fall out of — `_kept`, discarded.
+    #
+    # The sweep above could not see it, because TRAILING opens with a `###`:
+    # the terminator is on line one, `_kept` is always empty, and the two cases
+    # below never happened in a test.
+    test "a check keeps plain prose sitting between its last marker and the fence" do
+      body = <<~MARKDOWN
+        A) The first one
+        B) The second one
+        CORRECTA: A
+        EXPLICACIÓN: The first statement runs first.
+
+        Look carefully at the diagram below before you go on.
+
+        ### What actually happened
+      MARKDOWN
+      section = parse_one_of("## Pregunta: Which one runs first?", body, "check")
+
+      assert_includes section[:aftermath].to_s, "Look carefully at the diagram below",
+        "the prose between EXPLICACION and the first terminator was discarded: " \
+        "split_aftermath returned it as `_kept` and the caller threw it away"
+      assert_includes section[:aftermath].to_s, "### What actually happened",
+        "the terminated half must still be there too"
+    end
+
+    test "a check keeps trailing prose when there is no terminator at all" do
+      body = <<~MARKDOWN
+        A) Lima
+        B) Quito
+        CORRECTA: A
+        EXPLICACION: Lima is the capital of Peru.
+
+        Remember this, we use it in the next block.
+        It comes back in the summary.
+      MARKDOWN
+      section = parse_one_of("## Pregunta: What is the capital?", body, "check")
+
+      assert_includes section[:aftermath].to_s, "Remember this, we use it in the next block.",
+        "with no heading, fence or rule after the markers there is no terminator, " \
+        "so split_aftermath returned the whole tail as `_kept` and it was deleted"
+      assert_includes section[:aftermath].to_s, "It comes back in the summary."
+      assert_operator section[:aftermath].to_s.lines.size, :>, 1,
+        "the trailing prose must keep its newlines"
+    end
+
+    test "a check does not leak its trailing prose into the answerable fields" do
+      body = <<~MARKDOWN
+        A) Lima
+        B) Quito
+        CORRECTA: A
+        EXPLICACION: Lima is the capital of Peru.
+
+        Remember this, we use it in the next block.
+      MARKDOWN
+      section = parse_one_of("## Pregunta: What is the capital?", body, "check")
+
+      assert_equal 2, section[:options].size
+      assert_equal "Lima is the capital of Peru.", section[:explanation]
+      assert_not_includes section[:question].to_s, "Remember this"
+      assert_not_includes section[:options].to_s, "Remember this"
+    end
+
+    test "a match keeps plain prose sitting between its last pair and the fence" do
+      body = <<~MARKDOWN
+        Dog ==> Perro
+        Cat ==> Gato
+
+        Say each word out loud when you match it.
+
+        ### Why this works
+      MARKDOWN
+      section = parse_one_of("## Match: Spanish animals", body, "drag_drop")
+
+      assert_equal 2, section[:pairs].size, "the board must be untouched"
+      assert_includes section[:aftermath].to_s, "Say each word out loud when you match it.",
+        "the prose between the last pair and the first terminator was discarded"
+      assert_includes section[:aftermath].to_s, "### Why this works"
+    end
+
+    test "a match keeps trailing prose when there is no terminator at all" do
+      body = <<~MARKDOWN
+        Dog ==> Perro
+        Cat ==> Gato
+
+        Say each word out loud when you match it.
+      MARKDOWN
+      section = parse_one_of("## Match: Spanish animals", body, "drag_drop")
+
+      assert_equal 2, section[:pairs].size
+      assert_includes section[:aftermath].to_s, "Say each word out loud when you match it.",
+        "with no terminator after the last pair, the whole tail was deleted"
+    end
+
+    # ── An option-less check is not a licence to swallow the section ─────────
+    #
+    # With no `A)`-`D)` line there is no `first_option_index`, and the whole body
+    # became the `question`. `_check.html.erb` now renders `question` through
+    # MarkdownRenderer, so a mermaid fence after an option-less `## Pregunta`
+    # drew INSIDE THE MODAL — the one place `_lesson.html.erb` says an aftermath
+    # must never be. With nothing structural to protect, the ordinary terminator
+    # rule is the right one.
+    test "an option-less check puts the fence in the aftermath, not in the question" do
+      body = <<~MARKDOWN
+        Think about it for a moment before you go on.
+
+        ```mermaid
+        graph TD
+          A[Start] --> B[Finish]
+        ```
+      MARKDOWN
+      section = parse_one_of("## Pregunta: What do you observe?", body, "check")
+
+      assert_empty section[:options], "this check has no options; that is the case under test"
+      assert_includes section[:question].to_s, "Think about it for a moment",
+        "the prose before the terminator is still the question"
+      assert_not_includes section[:question].to_s, "```mermaid",
+        "the fence was folded into the question and now draws inside the modal"
+      assert_includes section[:aftermath].to_s, "```mermaid",
+        "the fence belongs in the aftermath, which renders in the lesson flow"
+      assert_includes section[:aftermath].to_s, "graph TD"
+    end
+
+    # ── The question ends at the FIRST structural line, whatever kind ─────────
+    #
+    # `1) 4 / 2) 22 / CORRECTA: A` has no `A)`-`D)` line, so the option-less
+    # branch ran and the body up to the first terminator — `CORRECTA: A`
+    # included — became the `question`. `_check.html.erb` renders `question`
+    # now, so the modal showed the student the answer key. A regression of the
+    # first review round: before it, every unrecognised line was discarded and
+    # the leak was invisible for the wrong reason.
+    test "a check with numbered options does not leak CORRECTA into the question" do
+      body = <<~MARKDOWN
+        1) 4
+        2) 22
+        CORRECTA: A
+        EXPLICACION: Two plus two.
+
+        Now look at the diagram.
+      MARKDOWN
+      section = parse_one_of("## Pregunta: What does 2 + 2 print?", body, "check")
+
+      assert_equal "What does 2 + 2 print?", section[:question].to_s.strip,
+        "the answer key reached the question: the modal shows the student CORRECTA"
+      assert_not_includes section[:question].to_s, "CORRECTA"
+      assert_not_includes section[:question].to_s, "EXPLICACION"
+      assert_equal "Two plus two.", section[:explanation]
+      assert_includes section[:aftermath].to_s, "Now look at the diagram.",
+        "after the last marker everything is still aftermath"
+    end
+
+    test "a check whose only structure is an explanation keeps the answer out of the question" do
+      body = <<~MARKDOWN
+        Think about it.
+        EXPLICACION: The answer is the second one.
+      MARKDOWN
+      section = parse_one_of("## Pregunta: Which one?", body, "check")
+
+      assert_not_includes section[:question].to_s, "EXPLICACION"
+      assert_not_includes section[:question].to_s, "second one"
+      assert_equal "The answer is the second one.", section[:explanation]
+    end
+
+    # ── `==>` inside a fence is mermaid's thick arrow, not a pair ─────────────
+    #
+    # A `## Match:` followed by a diagram read the arrows of the diagram as
+    # pairs (pre-existing), and — once the aftermath started after the "last
+    # pair" — an aftermath consisting of the dangling closing fence. The scanner
+    # has to know when it is inside a fenced block, and so does the check's.
+    test "a match does not read a mermaid arrow inside a fence as a pair" do
+      body = <<~MARKDOWN
+        Dog ==> Perro
+        Cat ==> Gato
+
+        ```mermaid
+        graph LR
+          A[Dog] ==> B[Perro]
+          C[Cat] ==> D[Gato]
+        ```
+
+        That is the whole idea.
+      MARKDOWN
+      section = parse_one_of("## Match: Spanish animals", body, "drag_drop")
+
+      assert_equal 2, section[:pairs].size,
+        "the arrows inside the mermaid fence were read as pairs"
+      assert_equal %w[Dog Cat], section[:pairs].map { |p| p[:term] }
+      assert_includes section[:aftermath].to_s, "```mermaid",
+        "the fence must reach the aftermath whole, not as a dangling ```"
+      assert_includes section[:aftermath].to_s, "A[Dog] ==> B[Perro]"
+      assert_includes section[:aftermath].to_s, "That is the whole idea."
+      # `document` appends TRAILING, which carries one more fence: two fences,
+      # four markers. An odd count means a fence was cut in half.
+      assert_equal 4, section[:aftermath].to_s.scan("```").size,
+        "an odd number of fence markers means the fence was cut"
+    end
+
+    test "a check does not read an option-shaped line inside its question fence as an option" do
+      body = <<~MARKDOWN
+        ```text
+        A) this is sample output, not an option
+        B) neither is this
+        ```
+        A) One
+        B) Two
+        CORRECTA: B
+      MARKDOWN
+      section = parse_one_of("## Pregunta: Which line is printed?", body, "check")
+
+      assert_equal %w[One Two], section[:options].map { |o| o[:label] },
+        "lines inside the question's fence were read as options"
+      assert_includes section[:question].to_s, "sample output, not an option",
+        "the fence is the question and must stay whole"
+      assert section[:options][1][:correct], "CORRECTA: B must still resolve to the real second option"
+    end
+
+    # ── The marker run is CONTIGUOUS, and a wrapped value belongs to its marker ──
+    #
+    # Two defects the second round's patch left open, both from one cause: the
+    # marker scan runs over the WHOLE body, including the trailing content this
+    # parser exists to preserve.
+    #
+    # `last_marker_index` therefore answers "the last line anywhere that looked
+    # structural", not "the end of the structure", and everything between the
+    # real last marker and that line is deleted as if it were inside the block.
+    test "a check keeps its aftermath when trailing prose opens like a marker" do
+      body = <<~MARKDOWN
+        A) Yes
+        B) No
+        CORRECTA: A
+        EXPLICACIÓN: Because yes.
+
+        Here is the diagram you need:
+
+        ```mermaid
+        graph TD
+          A --> B
+        ```
+
+        Answer: think about it before moving on.
+      MARKDOWN
+      section = parse_one_of("## Pregunta: Does it?", body, "check")
+
+      assert section[:options].any? { |o| o[:correct] },
+        "the trailing `Answer:` line overwrote CORRECTA, so no option is correct " \
+        "and BlockGrader turns the check into an unanswerable, non-gating block"
+      assert_equal "Yes", section[:options].find { |o| o[:correct] }[:label]
+      assert_includes section[:aftermath].to_s, "graph TD",
+        "the diagram was deleted: the trailing line moved the aftermath boundary " \
+        "past it, which is the exact loss this parser exists to close"
+      assert_includes section[:aftermath].to_s, "Answer: think about it before moving on."
+    end
+
+    # The variant the contiguous run did NOT stop: a blank line, then a line that
+    # opens like a marker, with no plain prose in between. A blank does not end
+    # the run and a marker-shaped line was always accepted, so `Answer:` after
+    # the explanation still overwrote CORRECTA and still moved the boundary.
+    # The run follows the template's grammar — options, one CORRECTA, one
+    # EXPLICACIÓN — and a marker the grammar no longer expects is prose.
+    test "a marker-shaped line straight after a blank does not rejoin a finished run" do
+      body = <<~MARKDOWN
+        A) Yes
+        B) No
+        CORRECTA: A
+        EXPLICACIÓN: Because yes.
+
+        Answer: think about it before moving on.
+
+        ```mermaid
+        graph TD
+          A --> B
+        ```
+      MARKDOWN
+      section = parse_one_of("## Pregunta: Does it?", body, "check")
+
+      assert_equal "Yes", section[:options].find { |o| o[:correct] }&.fetch(:label),
+        "the trailing `Answer:` line overwrote CORRECTA: no option is correct and " \
+        "BlockGrader turns the check into an unanswerable, non-gating block"
+      assert_equal "Because yes.", section[:explanation]
+      assert_includes section[:aftermath].to_s, "Answer: think about it before moving on.",
+        "the trailing line was consumed as a marker and deleted from the lesson"
+      assert_includes section[:aftermath].to_s, "graph TD"
+    end
+
+    test "a second CORRECTA or a late option never overwrites the first" do
+      body = <<~MARKDOWN
+        A) Yes
+        B) No
+        CORRECTA: A
+        EXPLICACIÓN: Because yes.
+        CORRECTA: B
+        C) A third option that arrived after the answer
+      MARKDOWN
+      section = parse_one_of("## Pregunta: Does it?", body, "check")
+
+      assert_equal 2, section[:options].size
+      assert_equal "Yes", section[:options].find { |o| o[:correct] }&.fetch(:label)
+      assert_includes section[:aftermath].to_s, "CORRECTA: B"
+      assert_includes section[:aftermath].to_s, "C) A third option"
+    end
+
+    # CORRECTA is a single letter; nothing wraps under it. A prose line directly
+    # beneath it (no blank, no EXPLICACIÓN) used to be consumed as a wrapped
+    # value with nowhere to put it — and disappeared.
+    test "prose directly under CORRECTA is aftermath, not a wrapped value" do
+      body = <<~MARKDOWN
+        A) Lima
+        B) Quito
+        CORRECTA: A
+        Remember this fact, it comes back in the next block.
+
+        ```mermaid
+        graph TD
+          A --> B
+        ```
+      MARKDOWN
+      section = parse_one_of("## Pregunta: What is the capital?", body, "check")
+
+      assert_equal "Lima", section[:options].find { |o| o[:correct] }&.fetch(:label)
+      assert_nil section[:explanation]
+      assert_includes section[:aftermath].to_s, "Remember this fact, it comes back in the next block.",
+        "the line under CORRECTA was consumed and deleted"
+      assert_includes section[:aftermath].to_s, "graph TD"
+    end
+
+    test "a check keeps a wrapped EXPLICACION in the explanation, not in the lesson" do
+      body = <<~MARKDOWN
+        A) Lima
+        B) Quito
+        CORRECTA: A
+        EXPLICACIÓN: Lima is the capital of Peru, and it was
+        founded in 1535 by Francisco Pizarro.
+      MARKDOWN
+      section = parse_one_of("## Pregunta: What is the capital?", body, "check")
+
+      assert_includes section[:explanation].to_s, "founded in 1535",
+        "only the first line of a wrapped EXPLICACION was captured"
+      # `_aftermath.html.erb` renders ALWAYS and ungated, under the check, so the
+      # tail of the explanation printed in the lesson before the student answered.
+      assert_not_includes section[:aftermath].to_s, "founded in 1535",
+        "the rest of the explanation leaked into the ungated aftermath: the " \
+        "student reads the answer before opening the modal"
+    end
+
+    # Guard rails for the contiguity rule, so it cannot be "simplified" into
+    # "the marker run ends at the first blank line".
+    test "a check still collects options separated by blank lines" do
+      body = <<~MARKDOWN
+        A) Uno
+
+        B) Dos
+
+        CORRECTA: B
+      MARKDOWN
+      section = parse_one_of("## Pregunta: Cuál?", body, "check")
+
+      assert_equal %w[Uno Dos], section[:options].map { |o| o[:label] },
+        "a blank line between options must not end the marker run"
+      assert section[:options][1][:correct]
+    end
+
+    test "a fence directly after the last marker starts the aftermath, not a continuation" do
+      body = <<~MARKDOWN
+        A) Uno
+        B) Dos
+        CORRECTA: A
+        ```mermaid
+        graph TD
+          A --> B
+        ```
+      MARKDOWN
+      section = parse_one_of("## Pregunta: Cuál?", body, "check")
+
+      assert_equal "A", section[:options].find { |o| o[:correct] } && "A"
+      assert_includes section[:aftermath].to_s, "graph TD",
+        "a fence is structural: it ends the marker run instead of being swallowed " \
+        "as a continuation of CORRECTA"
+      assert_not_includes section[:explanation].to_s, "graph TD"
+    end
+
+    # The same defect as the two above, in the sibling scanner. `pair_indexes.last`
+    # is the board's boundary and the scan that produces it still ran over the
+    # whole body, so trailing prose that merely CONTAINS `==>` — telling the
+    # student the notation, which is a natural thing for a Match block's own prose
+    # to do — became a pair and moved the boundary past the diagram.
+    test "a match keeps its aftermath when trailing prose mentions the arrow" do
+      body = <<~MARKDOWN
+        Dog ==> Perro
+        Cat ==> Gato
+
+        Here is the diagram:
+
+        ```mermaid
+        graph TD
+          A --> B
+        ```
+
+        Write it as term ==> meaning when you practise.
+      MARKDOWN
+      section = parse_one_of("## Match: Spanish animals", body, "drag_drop")
+
+      assert_equal %w[Dog Cat], section[:pairs].map { |p| p[:term] },
+        "the trailing sentence became a third pair on the board"
+      assert_includes section[:aftermath].to_s, "graph TD",
+        "the diagram was deleted: the trailing `==>` moved the boundary past it"
+      assert_includes section[:aftermath].to_s, "Write it as term ==> meaning"
     end
 
     # The prose blocks are NOT part of this class and must not be "fixed".
