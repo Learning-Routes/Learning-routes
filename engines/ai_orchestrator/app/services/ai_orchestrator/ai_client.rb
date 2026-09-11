@@ -60,6 +60,27 @@ module AiOrchestrator
       request_elevenlabs_stt(file_path: file_path, params: params)
     end
 
+    # A multi-turn, tool-using session, for a caller that drives the loop itself
+    # and therefore cannot hand us a single prompt.
+    #
+    # ContentEngine::LessonAssistantAgent called RubyLLM.chat directly, so no
+    # ceiling stood in front of it (WP-34 §3.1). It needs the chat OBJECT — it
+    # calls `ask` and reads `messages` to aggregate usage — so `chat` cannot serve
+    # it. The guard runs here, once, before the session is handed over; the
+    # caller's own `ask` calls are turns within the budget this check approved.
+    #
+    # A session is therefore a coarser grant than a single `chat` call. That is the
+    # honest trade for letting the caller own the tool loop, and it is why the
+    # session is built here rather than the guard being exported to the caller.
+    def chat_session(system_prompt: nil, tools: [], timeout: nil)
+      SpendGuard.call(model: @model, task_type: @task_type, user: @user)
+
+      session = build_chat(timeout)
+      session.with_instructions(system_prompt) if system_prompt.present?
+      session.with_tools(*tools) if tools.present?
+      session
+    end
+
     private
 
     def request_elevenlabs_stt(file_path:, params: {})
