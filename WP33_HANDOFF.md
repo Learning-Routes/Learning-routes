@@ -410,13 +410,11 @@ A lesson with all four fixes in one body, verified in the DOM and then deleted:
     `A[Start] ==> B[Middle]` gets two junk pairs (pre-existing) *and*, new on this branch, an
     aftermath of the dangling `` ``` `` because `pair_indexes.last` now points inside the fence.
     Restricting the pair scan to lines outside fenced regions would close it.
-- **A third finding I reported is not fixed and is the one I would look at next:** the check's
-  aftermath renders into a `.lesson-section` that `interactive_lesson_controller.js` never sets to
-  `display: ""` on the forward path — `_showQuizModal` does not reveal the section, and
-  `_handleQuizModalClose` transitions straight past it. So §2's recovered diagram is in the DOM and
-  invisible unless the check is section 0 or the student presses Back. The integration tests assert
-  server-rendered HTML, so they are green. **This is a JS change, not a parser one**, and it is why
-  I would not call §2 delivered to the student yet even with the fixes above.
+- ~~**A third finding I reported is not fixed and is the one I would look at next:**~~ **FIXED in
+  the second round below.** The check's aftermath rendered into a `.lesson-section` that
+  `interactive_lesson_controller.js` never set to `display: ""` on the forward path, so §2's
+  recovered diagram was in the DOM and invisible. `_handleQuizModalClose` now lands on the check's
+  own section when the server marks it `data-has-aftermath`. See "The second review round".
 - **The generator prompt is untouched** — moving the diagram out of the check is a content decision,
   and the parser has to cope with the bodies that already exist regardless.
 - **A bare `## Match` with no colon is still parsed as a concept titled "Match".** The parser treats
@@ -435,3 +433,197 @@ A lesson with all four fixes in one body, verified in the DOM and then deleted:
 - **CI is still red** since WP-17 from `scan_ruby` (brakeman exits 5 on the known `permit!` warning)
   and `scan_js` (6 DOMPurify/Mermaid warnings).
 - **I still owe the prompt investigation** from several packages ago.
+
+
+---
+
+# The second review round
+
+Two patches arrived from a cloud session in `tmp/wp33-review-2/` (tests first, then the fix), and
+this round also re-verified the ten findings the first round's audit reported. Applied in the order
+the README specifies, on top of the five first-round fixes.
+
+    fe06b73  fix(wp33): the five findings of the first review     <- the base. `git am` needs a clean index
+    7eae555  test(wp33): the second review round, red first       <- 0001, applied unmodified
+    3063d3c  fix(wp33): bounded scanners, and the check's aftermath is shown   <- 0002 + the CSS comment
+    ba332f3  test(wp33): wait for the crossfade before measuring which sections show
+    34a0b3b  fix(parser): the marker run is contiguous, and a wrapped value keeps its marker
+    3f7b7ae  fix(images): mark_generating! is a claim, so one section is bought once
+    4ff1b4c  fix(wp33): findings 7, 9 and 10, and correct finding 8's comment
+    4d66f98  style(test): rubocop autocorrect on the new sweep assertions
+
+Nothing is pushed. The owner pushes.
+
+## 0001 was red, and 0002 did not by itself make it green
+
+`0001` red against `fe06b73`, as promised: **5 failures** across the parser and integration suites
+(36 runs, 445 assertions) and **3 failures** in `test/system/check_aftermath_is_shown_test.rb`.
+
+`0002` turned the parser and integration suites green (36 runs, 467 assertions). **It did not turn
+the system suite green** — 3 runs, 3 failures. The README predicted green, so this is the one place
+the delivered patch set did not do what its own notes claimed, and it took a probe to establish
+why rather than a reading of the diff.
+
+## The third assertion IS red against the base, and the defect IS pre-existing
+
+As instructed, recorded explicitly. The assertion the README names —
+`shown_section_indexes == [CHECK_INDEX]`, at `check_aftermath_is_shown_test.rb:67` and `:101` —
+is red against the base commit, and the defect behind it predates this branch.
+
+Two independent pieces of evidence:
+
+1. `git log main..fe06b73 -- app/javascript/controllers/interactive_lesson_controller.js` returns
+   **zero commits**. The branch never touched the file the defect lives in.
+2. The second test, `"a check without an aftermath is skipped, exactly as before"`, asserts only
+   pre-WP-33 behaviour and is red on the base at `:83` with `Expected: [2] / Actual: [0, 2]`. The
+   section the student had been reading was never hidden.
+
+The mechanism: `_handleQuizModalClose` set `currentSectionValue` to the check — a section that is
+`display:none`, because the modal overlays whichever section was already on screen — and then called
+`_transitionToSection`. So `from` was the hidden check, `_transitionToSection` dutifully hid it
+again (a no-op), and the section actually on screen was never touched. `0002`'s `_shownSectionIndex`
+fixes exactly this, and it is a fair thing for it to carry: the same line had to change anyway.
+
+I measured permanence rather than inferring it, sampling every 150ms after the modal closes:
+
+    base fe06b73   [0,2] [0,2] [0,2] [0,2] ... [0,2]   12/12 samples over 1.8s — PERMANENT
+    with 0002      [0,2] [0,2] [0,2] [2]   ... [2]     ~450ms — just the crossfade
+
+## Why the suite was still red after 0002, and what I changed
+
+Not the fix. The test.
+
+`_transitionToSection` reveals the incoming section **synchronously** and hides the outgoing one in
+a **400ms `setTimeout`**. So two sections are legitimately on screen for the length of the
+crossfade — and "two sections on screen" is also the exact symptom the test was written to catch.
+The delivered test read `shown_section_indexes` the instant the incoming section appeared, which
+raced that window, so the correct code and the broken code were **observationally identical** and
+the failure message argued for the wrong conclusion.
+
+`ba332f3` replaces the point measurement with `assert_settled_sections`, which polls for the
+condition. A section animating out clears within the crossfade; a section that was never hidden
+never does. **Verified in both directions:** that file is still red against the base JS (3 failures)
+and green with `0002`. It did not become permissive.
+
+The same race, second form: two clicks in the third test fired mid-crossfade, and `nextSection` /
+`previousSection` early-return while `_animating` — cleared only in that same 400ms timeout — so the
+click was swallowed and the lesson never moved. They settle before clicking now.
+
+`application.css:1192` is updated in `3063d3c`, the same commit as the JS, as instructed. It carried
+the invariant the JS breaks: "a check `.lesson-section` renders nothing at all and is never
+transitioned to." That now holds for only half the checks.
+
+## The ten findings of the first round, re-verified
+
+`file:line`, the verdict after this round, and what was actually run for each. The four I had
+marked PLAUSIBLE were verified before anything was touched.
+
+| # | file:line | verdict | what I ran |
+|---|---|---|---|
+| 1 | `_lesson.html.erb:174` | **fixed by 0002**, green | `check_aftermath_is_shown_test.rb`; 150ms time-series probe, base vs fixed |
+| 2 | `lesson_section_parser.rb:316` | **fixed by 0002** | parser probe: `question` no longer carries CORRECTA/EXPLICACIÓN |
+| 3 | `lesson_section_parser.rb:322` | **survived 0002 — fixed in `34a0b3b`** | probe: trailing `Answer:` → `aftermath` nil, answer unmarked |
+| 4 | `lesson_section_parser.rb:322` | **survived 0002 — fixed in `34a0b3b`** | probe: wrapped `EXPLICACIÓN` → continuation leaked to aftermath |
+| 5 | `lesson_section_parser.rb:437` | **fixed by 0002** | drag_drop probe: 2 pairs kept, diagram intact in aftermath |
+| 6 | `section_images_controller.rb:25` | **CONFIRMED — fixed in `3f7b7ae`** | code trace + grep of every reader of `image_status`; then a red test |
+| 7 | `wp33_reparse.rake:213` | **CONFIRMED — fixed in `4ff1b4c`** | read `:175-220`: accumulates inside the lock, prints at the end, no compare, no abort |
+| 8 | `section_images_controller.rb:98` | **mechanism yes, consequence NO — comment only** | runner probe: `loaded?` true→false across `with_lock`; a read afterwards issues a SELECT and does **not** raise |
+| 9 | `wp33_reparse_test.rb:245` | **CONFIRMED — fixed in `4ff1b4c`** | `ruby -e` on the regex: matched `== "visual"` as a write |
+| 10 | `lesson_assistant_agent.rb:88` | **CONFIRMED — fixed in `4ff1b4c`** | parser probe: prompt rendered literally `- Title: ` |
+
+### 3 and 4 — one cause the second round left open
+
+`0002` bounded the scanner against *fences*. It did not bound it against *the end of the structure*.
+`last_marker_index` still meant "the last line anywhere that looked structural", so:
+
+    A) Yes / B) No / CORRECTA: A / EXPLICACIÓN: Because yes.
+    <a mermaid diagram>
+    Answer: think about it before moving on.
+
+the trailing `Answer:` line overwrote `correct_letter` with prose — which leaves no option marked
+correct, so `BlockGrader` turns the check into an unanswerable, non-gating block — **and** moved the
+aftermath boundary past the diagram, deleting it. The same loss WP-33 §2 exists to close, arriving
+through the scanner instead of the slice.
+
+And a wrapped value belonged to nobody. Only the first line of `EXPLICACIÓN:` was captured; the rest
+fell past the last marker into the aftermath, which `_aftermath.html.erb` renders **always and
+ungated** under the check — so the tail of the answer explanation printed in the lesson before the
+student had answered.
+
+The run is now contiguous: it stops at the first line that is neither a marker, a blank, nor the
+wrapped rest of the marker above it. A blank line does **not** end it (options arrive
+blank-separated); a fence or heading does. Two guard tests pin both halves so it cannot be
+"simplified" into "ends at the first blank line".
+
+### 6 — the lock closed the write, not the decision
+
+`generate` resolves the section and checks `image_url` **outside** the lock, then calls
+`mark_generating!`. Two clicks before either job lands both see it blank, both pass, both enqueue a
+paid job; `SectionImageJob:28` only rejects a job enqueued after the first has already committed a
+URL, which is the case that was never the problem.
+
+The guard needed already existed and had no reader: `image_status = "generating"` was written here
+atomically under the lock, and the only code that ever read `image_status` was the poll endpoint,
+looking for `"failed"`. `mark_generating!` now reports whether it won the claim.
+
+**One hole left open on purpose.** It returns `:no_metadata` for a step whose `parsed_sections` has
+not been written yet — that step renders from `AiContent` through `SectionResolver`
+(`SectionImagesFallbackTest`) and there is nowhere to record a claim. The caller enqueues anyway,
+because a dead Generate button is worse; such a step can still be double-clicked into two paid jobs.
+Closing it means persisting a claim for a step that has no array yet, which is a WP-34 spend-guard
+decision, not this package's.
+
+### 8 — the one finding that did not survive verification
+
+I reported that a line added after `mark_generating!` would raise `StrictLoadingViolationError`.
+**It would not.** `with_lock` does clear the association cache — measured,
+`association(:learning_route).loaded?` goes `true → false` across the block — but reading an
+association afterwards silently issues a second query, even in development with
+`action_on_strict_loading_violation = :raise` and no `strict_loading: false` on the association.
+So there is no code change: the real cost is a wasted eager-load, and today `generate` reads no
+associations after the lock at all, so the cost is zero. What I fixed is the comment, which also
+claimed this action reads `route.locale` off that chain. It does not; nothing in the file does.
+
+## Verification — three runs per column, from a clean base, one suite at a time
+
+`before` = `fe06b73`. `after` = `4d66f98`. Suites run **sequentially, never in parallel** — this
+runner shares one test DB and concurrent runs manufacture a flaky suite. All test writing finished
+before the first baseline, because the runner re-globs and an inflated `before` column is silent.
+
+| suite | before | after |
+|---|---|---|
+| `section_parser_boundaries_test.rb` | 26 runs, 417 assertions | 34 runs, 460 assertions |
+| `lesson_section_parser_test.rb` | 34 runs, 107 assertions | 34 runs, 107 assertions |
+| `check_aftermath_rendering_test.rb` | 5 runs, 22 assertions | 6 runs, 24 assertions |
+| `block_titles_have_no_language_test.rb` | 6 runs, 10 assertions | 7 runs, 17 assertions |
+| `section_images_double_spend_test.rb` | *absent* | 4 runs, 11 assertions |
+| `section_images_fallback_test.rb` | 4 runs, 18 assertions | 4 runs, 18 assertions |
+| `step_metadata_write_isolation_test.rb` | 6 runs, 14 assertions | 6 runs, 14 assertions |
+| `wp33_reparse_test.rb` | 10 runs, 37 assertions | 12 runs, 48 assertions |
+| `check_aftermath_is_shown_test.rb` | *absent* | 3 runs, 30 assertions |
+| **total** | **91 runs, 625 assertions** | **110 runs, 729 assertions** |
+
+**0 failures, 0 errors, 0 skips in every cell, and all three runs of each column were byte-identical
+— including the system suite, which is the one I de-raced.** Raw per-run output is in the session
+scratchpad (`before.txt`, `after.txt`).
+
+`bundle exec rubocop`: **590 files inspected, no offenses detected.**
+
+## What this round did not do
+
+- **Did not push.** The owner pushes.
+- **Did not re-generate any lesson.** That costs money.
+- **Did not touch the generator prompt.** Still a content decision, as in round one.
+- **`0002`'s design decision stands, unoverruled:** the aftermath shows on the check's **own**
+  section after the modal, costing one extra Continue, rather than being prepended to the next
+  section. The README's reasons hold up — it keeps the aftermath under the check's own
+  `section_index`, and it works when the check is the last section before the auto-appended summary.
+- **A sibling of finding 3 is unfixed in `parse_heading_drag_drop`.** Its boundary is
+  `pair_indexes.last`, and that scan still runs over the whole body, so trailing prose containing a
+  literal `==>` outside a fence would move the boundary the same way a trailing `Answer:` did for a
+  check. Narrower than the check case (prose rarely contains `==>`) and it was not among the ten, so
+  I left it rather than widen scope. It is the next thing I would fix in this file.
+- **A bare `## Match` with no colon is still parsed as a concept titled "Match"** — unchanged from
+  round one, still pre-existing, still out of scope.
+- **The four known engine failures, the red CI** (`scan_ruby` brakeman exit 5, `scan_js` DOMPurify
+  /Mermaid warnings) **and the owed prompt investigation** are all unchanged from round one.

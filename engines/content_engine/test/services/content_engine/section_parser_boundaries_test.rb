@@ -529,6 +529,34 @@ module ContentEngine
       assert_not_includes section[:explanation].to_s, "graph TD"
     end
 
+    # The same defect as the two above, in the sibling scanner. `pair_indexes.last`
+    # is the board's boundary and the scan that produces it still ran over the
+    # whole body, so trailing prose that merely CONTAINS `==>` — telling the
+    # student the notation, which is a natural thing for a Match block's own prose
+    # to do — became a pair and moved the boundary past the diagram.
+    test "a match keeps its aftermath when trailing prose mentions the arrow" do
+      body = <<~MARKDOWN
+        Dog ==> Perro
+        Cat ==> Gato
+
+        Here is the diagram:
+
+        ```mermaid
+        graph TD
+          A --> B
+        ```
+
+        Write it as term ==> meaning when you practise.
+      MARKDOWN
+      section = parse_one_of("## Match: Spanish animals", body, "drag_drop")
+
+      assert_equal %w[Dog Cat], section[:pairs].map { |p| p[:term] },
+        "the trailing sentence became a third pair on the board"
+      assert_includes section[:aftermath].to_s, "graph TD",
+        "the diagram was deleted: the trailing `==>` moved the boundary past it"
+      assert_includes section[:aftermath].to_s, "Write it as term ==> meaning"
+    end
+
     # The prose blocks are NOT part of this class and must not be "fixed".
     # Their whole body IS their content — it is handed to MarkdownRenderer and
     # displayed. Trailing prose after a concept legitimately belongs to that

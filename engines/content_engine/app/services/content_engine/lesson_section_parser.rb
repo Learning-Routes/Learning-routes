@@ -536,8 +536,23 @@ module ContentEngine
     # the dangling closing fence, so pairs are only recognised outside fences.
     def parse_heading_drag_drop(title, body)
       lines = body.to_s.lines
+
+      # THE BOARD IS A CONTIGUOUS RUN, for the same reason a check's markers are.
+      # `pair_indexes.last` is the aftermath boundary, and collecting `==>` from
+      # the whole body made trailing prose that merely MENTIONS the arrow — "write
+      # it as term ==> meaning", a natural thing for a Match block's own prose to
+      # say — into a pair on the board AND moved the boundary past everything
+      # above it, deleting the diagram. Same shape as `parse_heading_check`: once
+      # the pairs have started, the first line that is not a pair ends them.
+      # Blank lines do not, so a blank-separated board still parses.
       pair_indexes = []
-      each_line_outside_fences(lines) { |_stripped, i| pair_indexes << i if lines[i].include?("==>") }
+      each_line_outside_fences(lines) do |stripped, i|
+        if lines[i].include?("==>")
+          pair_indexes << i
+        elsif stripped.present? && pair_indexes.any?
+          break
+        end
+      end
 
       pairs = pair_indexes.map do |i|
         parts = lines[i].strip.split("==>", 2)
