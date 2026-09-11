@@ -473,7 +473,8 @@ module ContentEngine
     # render something false.
     def parse_heading_motion(scene_from_heading, body)
       scene = scene_from_heading.to_s.strip
-      payload = safe_parse_json(extract_json_object(body))
+      json_text, remainder = split_json_object(body)
+      payload = safe_parse_json(json_text)
       narration = payload.is_a?(Hash) ? payload["narration"].to_s.strip : ""
 
       reason =
@@ -487,11 +488,14 @@ module ContentEngine
 
       if reason
         Rails.logger.warn("[LessonSectionParser] motion block fell back to concept — #{reason}")
+        # The whole body already becomes the concept's content, so there is no
+        # separate aftermath to carry here — unlike the "motion" branch below,
+        # a concept has nothing else that would render it.
         return { type: "concept", title: nil, body: narration.presence || body.to_s.strip }
       end
 
-      { type: "motion", scene: scene, data: payload["data"],
-        narration: narration, body: body.to_s.strip }
+      { type: "motion", scene: scene, data: payload["data"], narration: narration,
+        aftermath: strip_closing_fence(remainder).strip.presence, body: body.to_s.strip }
     end
 
     # A `## Motion:` body is a fenced-or-bare JSON object followed by whatever
@@ -499,11 +503,17 @@ module ContentEngine
     # heading parser survives — a sub-heading, a diagram, prose. Rather than
     # require the whole remaining body to be valid JSON (it never is once
     # trailing content is present), find the first balanced top-level `{...}`
-    # and ignore everything else, fence markers included.
-    def extract_json_object(body)
+    # and treat everything after its matching `}` as the aftermath, the same
+    # boundary every sibling heading parser in this file establishes.
+    #
+    # Returns [json_text, remainder] — `json_text` is nil when no balanced
+    # object was found at all (malformed JSON), in which case `remainder` is
+    # the whole body: there is no JSON boundary to split on, so nothing here
+    # is "after" it.
+    def split_json_object(body)
       text = body.to_s
       start = text.index("{")
-      return nil unless start
+      return [nil, text] unless start
 
       depth = 0
       in_string = false
@@ -528,11 +538,17 @@ module ContentEngine
         when "{" then depth += 1
         when "}"
           depth -= 1
-          return text[start..i] if depth.zero?
+          return [text[start..i], text[(i + 1)..].to_s] if depth.zero?
         end
       end
 
-      nil
+      [nil, text]
+    end
+
+    # The fenced form's closing ``` immediately follows the JSON object and is
+    # not itself content — strip it before what remains becomes the aftermath.
+    def strip_closing_fence(remainder)
+      remainder.to_s.sub(/\A[ \t]*\n?```[ \t]*\n?/, "")
     end
 
     def safe_parse_json(text)

@@ -731,6 +731,46 @@ module ContentEngine
         "a blank block is the one outcome that is worse than rendering less"
     end
 
+    # A motion body is JSON, but the JSON is not the whole body: an author can
+    # still write prose and a diagram after it, exactly like every other
+    # heading-authored block this file sweeps. `parse_one_of` -> `document`
+    # appends the standard trailing sub-heading, mermaid fence, rule and prose
+    # after the canonical JSON — everything past the JSON object's matching `}`
+    # must survive as `aftermath`, in order, with its newlines intact.
+    test "a motion block keeps its aftermath, in order, after the JSON" do
+      body = <<~MARKDOWN
+        {"narration": "Mira el sujeto.",
+         "data": {"tokens": ["Ele","tenho","café","."], "subject": 0, "verb": 1,
+                  "wrong": "tenho", "correct": "tem", "why": "Tercera persona.",
+                  "labels": {"subject": "SUJETO", "verb": "VERBO"}}}
+      MARKDOWN
+      section = parse_one_of("## Motion: agreement", body, "motion")
+      aftermath = section[:aftermath].to_s
+
+      TRAILING_MARKERS.each do |marker|
+        assert_includes aftermath, marker,
+          "motion dropped #{marker.inspect}: trailing content is real lesson material " \
+          "the author placed after the block; it must be preserved, not deleted"
+      end
+
+      assert_equal TRAILING_MARKERS, TRAILING_MARKERS.sort_by { |m| aftermath.index(m) },
+        "the aftermath must keep the author's order"
+      assert_includes aftermath, "```mermaid",
+        "the fence must survive intact or the diagram cannot render"
+      assert aftermath.lines.size > 1, "the blank lines between trailing paragraphs must survive"
+    end
+
+    test "a motion block whose body is JSON alone has a nil aftermath" do
+      body = '{"narration": "Mira el sujeto.", "data": {"tokens": ["Ele","tenho"], ' \
+             '"subject": 0, "verb": 1, "wrong": "tenho", "correct": "tem", "why": "x", ' \
+             '"labels": {"subject": "SUJETO", "verb": "VERBO"}}}'
+      section = LessonSectionParser.call("## Motion: agreement\n\n#{body}\n")
+                                    .find { |s| s[:type] == "motion" }
+
+      assert section, "the fixture must parse to a motion section for this test to mean anything"
+      assert_nil section[:aftermath], "an empty tail must be nil, not an empty string"
+    end
+
     private
 
     def document(heading, canonical)
