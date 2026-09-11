@@ -15,7 +15,7 @@ pin "journey_layout", to: "lib/journey_layout.js"
 # `await import(...)`) by whichever controller mounts a narrated scene, so a
 # lesson with no scene never fetches the ~186 KB. `vendor/javascript` is :self
 # under CSP.
-pin "mc", to: "mc.js"
+pin "mc", to: "mc.js", preload: false
 
 # === Content Delivery ===
 
