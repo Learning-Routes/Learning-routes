@@ -213,6 +213,8 @@ module ContentEngine
             sections << parse_heading_check(title, body)
           when :visual
             sections << parse_heading_visual(title, body)
+          when :motion
+            sections << parse_heading_motion(title, body)
           when :example
             sections << { type: "example", title: title.presence, body: body }
           when :tip
@@ -459,6 +461,86 @@ module ContentEngine
         caption: nil,
         contains_diagram: has_diagram
       }
+    end
+
+    # `## Motion: <scene>` with a JSON body. The heading's title IS the scene
+    # name, from the closed vocabulary the schema files define.
+    #
+    # Ruby owns `narration`; the scene's schema owns `data`. Anything the schema
+    # refuses — a bad index, a missing key, an unknown scene, unparseable JSON —
+    # becomes a CONCEPT carrying the narration text, and says why in the log, the
+    # way a dropped ::: block does. A default may render less; it may never
+    # render something false.
+    def parse_heading_motion(scene_from_heading, body)
+      scene = scene_from_heading.to_s.strip
+      payload = safe_parse_json(extract_json_object(body))
+      narration = payload.is_a?(Hash) ? payload["narration"].to_s.strip : ""
+
+      reason =
+        if payload.nil?             then "body is not JSON"
+        elsif narration.blank?      then "no narration"
+        elsif !MotionScenes.known?(scene) then "unknown scene #{scene.inspect}"
+        else
+          errors = MotionScenes.validate(scene, payload["data"])
+          errors.any? ? "invalid data: #{errors.join('; ')}" : nil
+        end
+
+      if reason
+        Rails.logger.warn("[LessonSectionParser] motion block fell back to concept — #{reason}")
+        return { type: "concept", title: nil, body: narration.presence || body.to_s.strip }
+      end
+
+      { type: "motion", scene: scene, data: payload["data"],
+        narration: narration, body: body.to_s.strip }
+    end
+
+    # A `## Motion:` body is a fenced-or-bare JSON object followed by whatever
+    # trailing markdown the rest of this file's sweep exists to prove every
+    # heading parser survives — a sub-heading, a diagram, prose. Rather than
+    # require the whole remaining body to be valid JSON (it never is once
+    # trailing content is present), find the first balanced top-level `{...}`
+    # and ignore everything else, fence markers included.
+    def extract_json_object(body)
+      text = body.to_s
+      start = text.index("{")
+      return nil unless start
+
+      depth = 0
+      in_string = false
+      escaped = false
+
+      (start...text.length).each do |i|
+        char = text[i]
+
+        if in_string
+          if escaped
+            escaped = false
+          elsif char == "\\"
+            escaped = true
+          elsif char == '"'
+            in_string = false
+          end
+          next
+        end
+
+        case char
+        when '"' then in_string = true
+        when "{" then depth += 1
+        when "}"
+          depth -= 1
+          return text[start..i] if depth.zero?
+        end
+      end
+
+      nil
+    end
+
+    def safe_parse_json(text)
+      return nil if text.nil?
+
+      JSON.parse(text)
+    rescue JSON::ParserError
+      nil
     end
 
     # Parse ## Resumen: heading format with PUNTOS CLAVE: bullet list

@@ -686,6 +686,51 @@ module ContentEngine
       assert_not_includes html, "&amp;quot;", "the double-escaping that showed `&quot;` to students"
     end
 
+    # ── `## Motion:` — a scene, or a concept, never a blank ───────────────────
+    #
+    # The model writes a few lines of JSON; it never writes animation code. That
+    # makes a bad generation a rendering question, and the answer is fixed:
+    # a default may render LESS, it may never render something FALSE.
+    test "a valid motion block parses to a scene with its data and narration" do
+      body = <<~MARKDOWN
+        {"narration": "Mira el sujeto.",
+         "data": {"tokens": ["Ele","tenho","café","."], "subject": 0, "verb": 1,
+                  "wrong": "tenho", "correct": "tem", "why": "Tercera persona.",
+                  "labels": {"subject": "SUJETO", "verb": "VERBO"}}}
+      MARKDOWN
+      section = parse_one_of("## Motion: agreement", body, "motion")
+
+      assert_equal "agreement", section[:scene]
+      assert_equal "Mira el sujeto.", section[:narration]
+      assert_equal %w[Ele tenho café .], section[:data]["tokens"]
+    end
+
+    test "an unknown scene name renders the narration as a concept" do
+      body = '{"narration": "Mira el sujeto.", "data": {}}'
+      sections = LessonSectionParser.call(document("## Motion: nosuchscene", body))
+      motion = sections.find { |s| s[:type] == "motion" }
+      concept = sections.find { |s| s[:type] == "concept" && s[:body].to_s.include?("Mira el sujeto.") }
+
+      assert_nil motion, "an unknown scene must not reach the student as a motion block"
+      assert concept, "the narration is the content; it must survive as a concept"
+    end
+
+    test "data that fails the scene schema renders the narration as a concept" do
+      body = '{"narration": "Mira el sujeto.", "data": {"tokens": ["Ele"], "subject": 9}}'
+      sections = LessonSectionParser.call(document("## Motion: agreement", body))
+
+      assert_nil sections.find { |s| s[:type] == "motion" }
+      assert sections.any? { |s| s[:type] == "concept" && s[:body].to_s.include?("Mira el sujeto.") }
+    end
+
+    test "malformed JSON renders as a concept and is never blank" do
+      sections = LessonSectionParser.call(document("## Motion: agreement", "{not json"))
+
+      assert_nil sections.find { |s| s[:type] == "motion" }
+      assert sections.any? { |s| s[:type] == "concept" },
+        "a blank block is the one outcome that is worse than rendering less"
+    end
+
     private
 
     def document(heading, canonical)

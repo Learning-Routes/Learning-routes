@@ -1021,6 +1021,7 @@ en:
         scenario: "Scenario"
         flashcards: "Flashcards"
         visual: "Visual"
+        motion: "Motion"
         audio: "Audio"
         audio_explainer: "Audio explanation"
       run: "Run ▶"

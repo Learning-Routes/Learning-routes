@@ -1021,6 +1021,7 @@ es:
         scenario: "Escenario"
         flashcards: "Tarjetas"
         visual: "Visual"
+        motion: "Movimiento"
         audio: "Audio"
         audio_explainer: "Audio explicación"
       run: "Ejecutar ▶"

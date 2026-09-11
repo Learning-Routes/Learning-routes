@@ -75,6 +75,13 @@ module ContentEngine
       "visual" => {
         fence: nil, headings: %w[Visual], partial: "visual", chrome: nil
       },
+      # Heading-authored only, JSON body: "## Motion: <scene>" — the scene name IS
+      # the title. Ruby owns `narration`; the scene's own schema (MotionScenes)
+      # owns `data`. See LessonSectionParser#parse_heading_motion for the fallback
+      # that keeps a schema-rejected generation from ever reaching a student.
+      "motion" => {
+        fence: nil, headings: %w[Motion], partial: "motion", chrome: nil
+      },
       # Injected by LessonSectionParser#inject_audio_section when TTS produced a file —
       # the model never writes these, so they have no authoring surface at all.
       "audio" => {
