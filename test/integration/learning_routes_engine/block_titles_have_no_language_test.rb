@@ -111,6 +111,30 @@ module LearningRoutesEngine
     # `SectionImagesController` uses the title as alt text and caption. With the
     # literal gone it must fall back to the same default, or an untitled visual
     # loses its accessible name.
+    # Finding 10. The comment at the top of this file claims LessonAssistantAgent
+    # is "covered below" and it never was — so the one consumer of a block title
+    # that is NOT a view went unnoticed when §4 moved the default out of the
+    # parser. `block_title` resolves it, but that lives in
+    # LearningRoutesEngine::ApplicationHelper and the agent is a ContentEngine
+    # service with no access to it, so `- Title: #{@section[:title]}` interpolated
+    # nil and the model was handed an empty field.
+    test "the assistant prompt names an untitled section instead of sending a blank" do
+      section = ContentEngine::LessonSectionParser.call(UNTITLED)
+        .find { |s| s[:type] == "check" } || flunk("the fixture has no check section")
+      assert_nil section[:title], "the premise: the parser persists nothing"
+
+      agent = ContentEngine::LessonAssistantAgent.new(
+        step: assistant_step, user: @assistant_user, section: section
+      )
+      prompt = agent.send(:system_prompt)
+
+      assert_no_match(/^\s*- Title:\s*$/, prompt,
+        "the model was handed an empty Title field for an untitled block")
+      assert_match(/- Title: .*\S/, prompt)
+      assert_includes prompt, I18n.t("learning_engine.blocks.default_title.check", locale: :es),
+        "the agent must resolve the same default the view does, in the route's language"
+    end
+
     test "an untitled visual still has an accessible name" do
       section = { "type" => "visual", "body" => "A diagram." }
 
@@ -119,6 +143,26 @@ module LearningRoutesEngine
     end
 
     private
+
+    # Only the assistant test needs a persisted route; the rest of this file runs
+    # against the parser and the helper directly, so this stays out of `setup`.
+    def assistant_step
+      @assistant_user = Core::User.create!(
+        name: "Assistant", email: "assist-#{SecureRandom.hex(4)}@example.com",
+        password: "password123", password_confirmation: "password123",
+        email_verified_at: Time.current, locale: "es"
+      )
+      profile = LearningRoutesEngine::LearningProfile.create!(
+        user: @assistant_user, current_level: "beginner"
+      )
+      route = LearningRoutesEngine::LearningRoute.create!(
+        learning_profile: profile, topic: "Portugués", locale: "es", status: :active
+      )
+      route.route_steps.create!(
+        title: "Paso", position: 0, status: :available, content_type: "lesson",
+        delivery_format: "text", level: :nv1, bloom_level: 1
+      )
+    end
 
     def helper_title(section)
       view = ActionView::Base.empty.tap { |v| v.extend(LearningRoutesEngine::ApplicationHelper) }

@@ -67,8 +67,20 @@ module ContentEngine
 
     # Eager-load the route/profile/user chain. strict_loading_by_default is on, so
     # the lazy traversal below raised in dev/test and logged a violation on every
-    # click of the generate button in production. The action then reads
-    # route.locale and route.localized_topic off the same chain.
+    # click of the generate button in production.
+    #
+    # The claim that used to end this comment — "the action then reads route.locale
+    # and route.localized_topic off the same chain" — is not true of this file; no
+    # action here touches either. The chain is consumed by the authorization
+    # before_actions above.
+    #
+    # And it does not survive `mark_generating!`: `with_lock` calls
+    # `reload(lock: true)`, which clears the association cache (measured:
+    # `association(:learning_route).loaded?` goes true -> false across the block).
+    # Reading an association after that point does NOT raise — measured in
+    # development with `action_on_strict_loading_violation = :raise` — it silently
+    # issues a second query. So anything added after the lock pays for the
+    # eager-load twice rather than failing loudly about it.
     def set_step_and_authorize!
       return unless authorize_route_step_access!(params[:step_id])
 

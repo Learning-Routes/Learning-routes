@@ -162,6 +162,7 @@ namespace :wp33 do
     rewritten = 0
     unchanged = 0
     skipped = []
+    lost = []
     images_now = 0
     images_after = 0
 
@@ -187,8 +188,25 @@ namespace :wp33 do
         end
 
         carried = ContentEngine::SectionEnrichment.carry_over(old_sections, new_sections)
-        images_now += ContentEngine::SectionEnrichment.image_url_count(old_sections)
-        images_after += ContentEngine::SectionEnrichment.image_url_count(carried)
+
+        # THE INVARIANT IS CHECKED HERE, per row, inside the lock.
+        #
+        # `reparse_census` tells the operator these two numbers "must be EQUAL. If
+        # not, STOP and do not run wp33:reparse" — and this task used to only
+        # accumulate them and print them at the very end, with no comparison and no
+        # abort. So if `SectionEnrichment::KEYS` ever stops covering what the jobs
+        # write, every row is rewritten and the images are gone by the time the
+        # number the operator was told to check appears on screen. A number printed
+        # after the writes is a post-mortem, not a safety check.
+        before_urls = ContentEngine::SectionEnrichment.image_url_count(old_sections)
+        after_urls = ContentEngine::SectionEnrichment.image_url_count(carried)
+        images_now += before_urls
+        images_after += after_urls
+
+        if after_urls < before_urls
+          lost << [step.id, before_urls, after_urls]
+          next
+        end
 
         # Idempotent: re-running changes nothing once the cache is current.
         if old_sections == carried
@@ -211,5 +229,18 @@ namespace :wp33 do
     puts
     puts "image urls now:            #{images_now}"
     puts "image urls after reparse:  #{images_after}"
+
+    if lost.any?
+      puts
+      puts "REFUSED — these steps would lose an image url, so they were NOT rewritten:"
+      lost.each { |id, was, now| puts "  #{id}  #{was} -> #{now}" }
+      puts
+      puts "SectionEnrichment::KEYS no longer covers everything the jobs write into"
+      puts "parsed_sections. Add the missing key and run this again; nothing above"
+      puts "was lost, and these rows are untouched."
+      # Non-zero exit: this task gets run from a deploy script, where a refusal
+      # that only prints is a refusal nobody sees.
+      abort "wp33:reparse refused #{lost.size} step(s)"
+    end
   end
 end

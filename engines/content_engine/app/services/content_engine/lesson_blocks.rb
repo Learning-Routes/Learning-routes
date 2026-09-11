@@ -133,5 +133,25 @@ module ContentEngine
     def self.known?(type)
       BLOCKS.key?(type.to_s)
     end
+
+    # The title for a block whose author gave it none, resolved at READ time.
+    #
+    # WP-33 §4 stopped persisting a literal into `parsed_sections`: the parser
+    # runs inside ContentPipelineJob, whose `I18n.locale` is whatever the worker
+    # happens to have rather than the route's, so a baked-in default was in the
+    # wrong language for about half the routes — and stayed wrong, because that
+    # array is the cache the page renders from.
+    #
+    # Resolving at read time means EVERY reader needs this, not just the views.
+    # It lived only in `LearningRoutesEngine::ApplicationHelper#block_title`, a
+    # helper that a ContentEngine service cannot reach, so `LessonAssistantAgent`
+    # interpolated nil and handed the model an empty `Title:` field. It belongs
+    # here, with the rest of the vocabulary.
+    def self.default_title(type)
+      key = type.to_s
+      return nil unless known?(key)
+
+      I18n.t("learning_engine.blocks.default_title.#{key}")
+    end
   end
 end

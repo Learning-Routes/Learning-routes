@@ -18,10 +18,10 @@ module LearningRoutesEngine
       explicit = section[:title].presence || section["title"].presence
       return explicit if explicit
 
-      type = (section[:type] || section["type"]).to_s
-      return nil unless ContentEngine::LessonBlocks.known?(type)
-
-      t("learning_engine.blocks.default_title.#{type}")
+      # One resolver, shared with LessonAssistantAgent — a service cannot reach a
+      # view helper, and when this logic lived only here the agent sent the model
+      # a blank title for every untitled block.
+      ContentEngine::LessonBlocks.default_title(section[:type] || section["type"])
     end
 
     # The procedural order for one lesson block, for this student, on this attempt.

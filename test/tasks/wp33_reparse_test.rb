@@ -242,7 +242,11 @@ class Wp33ReparseTest < ActiveSupport::TestCase
   # is a single-bracket write of a whole entry, a different key at the top level
   # of the blob, and not enrichment. Verified: this pattern and the old one
   # return the same four keys today, over 116 files instead of 60-odd.
-  ENRICHMENT_WRITE = /\w+\[[^\]]+\]\["([a-z_]+)"\]\s*=/
+  # `=(?!=)` and not `=`: `parsed[i]["type"] == "visual"` is a comparison, and
+  # matching it reports a READ as an undeclared enrichment write — failing the
+  # class test below with a message that sends the reader to SectionEnrichment::KEYS
+  # for a key nothing writes.
+  ENRICHMENT_WRITE = /\w+\[[^\]]+\]\["([a-z_]+)"\]\s*=(?!=)/
 
   test "every key written into parsed_sections is declared as enrichment" do
     written = Dir[Rails.root.join(WRITER_GLOB)].flat_map do |path|
@@ -262,6 +266,47 @@ class Wp33ReparseTest < ActiveSupport::TestCase
       "the glob stopped matching the tree; the class test above would pass vacuously"
     assert files.any? { |f| f.end_with?("section_images_controller.rb") },
       "the controller that writes image_status is outside the glob again"
+  end
+
+  # ── Finding 7: the safety invariant is checked, not narrated ──────────────
+  #
+  # `reparse_census` tells the operator the two image counts "must be EQUAL. If
+  # not, STOP and do not run wp33:reparse". `wp33:reparse` only accumulated them
+  # and printed them at the very end, with no comparison and no abort — so if
+  # `SectionEnrichment::KEYS` ever misses a key, every row is rewritten and the
+  # images are already gone by the time the number is visible.
+  test "a reparse that would lose an image url skips the row instead of reporting it afterwards" do
+    persist_with_enrichment!
+    kept = @step.reload.metadata["parsed_sections"].map { |s| s["image_url"] }.compact
+    assert_not_empty kept, "the fixture must start with images to lose"
+
+    # KEYS missing a key, simulated at the one seam that decides it.
+    original = ContentEngine::SectionEnrichment.method(:carry_over)
+    ContentEngine::SectionEnrichment.define_singleton_method(:carry_over) { |_old, fresh| fresh }
+    begin
+      out = capture_task_allowing_exit("wp33:reparse")
+    ensure
+      ContentEngine::SectionEnrichment.define_singleton_method(:carry_over, original)
+    end
+
+    after = @step.reload.metadata["parsed_sections"].map { |s| s["image_url"] }.compact
+    assert_equal kept, after,
+      "the task rewrote the row and the images are gone. The invariant the census " \
+      "tells the operator to check was only printed after every write had landed."
+    assert_match(/would lose/i, out,
+      "the run has to say which rows it refused, or the operator cannot tell a " \
+      "clean run from a skipped one")
+  end
+
+  # ── Finding 9: the sweep matches writes, not comparisons ──────────────────
+  test "the enrichment sweep matches writes and not comparisons" do
+    assert_match ENRICHMENT_WRITE, %q{parsed[i]["image_url"] = url},
+      "the sweep must still see a real enrichment write"
+    assert_no_match ENRICHMENT_WRITE, %q{if parsed[i]["type"] == "visual"},
+      "`==` is a comparison, not a write: one anywhere under the glob fails the " \
+      "class test above with a message telling the reader to add a key to " \
+      "SectionEnrichment::KEYS, which is not the problem"
+    assert_no_match ENRICHMENT_WRITE, %q{return unless h["a"]["b"] == x}
   end
 
   private
@@ -287,6 +332,24 @@ class Wp33ReparseTest < ActiveSupport::TestCase
     original = $stdout
     $stdout = out
     task.invoke
+    out.string
+  ensure
+    $stdout = original
+  end
+
+  # `wp33:reparse` aborts when it refused a row, so the operator gets a non-zero
+  # exit in a deploy script. The output is still what the test asserts on.
+  def capture_task_allowing_exit(name)
+    task = Rake::Task[name]
+    task.reenable
+    out = StringIO.new
+    original = $stdout
+    $stdout = out
+    begin
+      task.invoke
+    rescue SystemExit
+      # the abort under test
+    end
     out.string
   ensure
     $stdout = original

@@ -85,7 +85,7 @@ module ContentEngine
 
         Current section:
         - Type: #{@section[:type]}
-        - Title: #{@section[:title]}
+        - Title: #{section_title}
         - Content: #{@section[:body].to_s.truncate(1500)}
         #{history_context}
         You have tools available. Use them when appropriate:
@@ -102,6 +102,14 @@ module ContentEngine
         - Match your explanation level to the student's level
         - Use markdown formatting (bold, lists, etc.)
       PROMPT
+    end
+
+    # An untitled block still has a name — the same one the lesson shows. Resolved
+    # in the ROUTE's language, not the worker's: this runs in a job as often as a
+    # request. See ContentEngine::LessonBlocks.default_title.
+    def section_title
+      @section[:title].presence ||
+        I18n.with_locale(@locale) { LessonBlocks.default_title(@section[:type]) }
     end
 
     def build_user_prompt(action, message)
