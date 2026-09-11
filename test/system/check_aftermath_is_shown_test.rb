@@ -64,14 +64,14 @@ class CheckAftermathIsShownTest < ApplicationSystemTestCase
       assert_selector ".mermaid-container", visible: true
     end
     assert_no_selector modal_selector(CHECK_INDEX), visible: true
-    assert_equal [CHECK_INDEX], shown_section_indexes,
+    assert_settled_sections [CHECK_INDEX],
       "exactly one section may be on screen; the section the student was " \
       "reading before the modal stayed visible underneath"
 
     find("[data-interactive-lesson-target='continueBtn']").click
 
     assert_selector section_selector(2), visible: true, wait: 8
-    assert_equal [2], shown_section_indexes
+    assert_settled_sections [2]
   end
 
   test "a check without an aftermath is skipped, exactly as before" do
@@ -80,7 +80,7 @@ class CheckAftermathIsShownTest < ApplicationSystemTestCase
     answer_the_check
 
     assert_selector section_selector(2), visible: true, wait: 8
-    assert_equal [2], shown_section_indexes,
+    assert_settled_sections [2],
       "a check with nothing to show must not become a blank page the student " \
       "has to click through, and the section before it must not linger"
   end
@@ -89,16 +89,20 @@ class CheckAftermathIsShownTest < ApplicationSystemTestCase
     open_lesson_with(CHECK.merge("aftermath" => AFTERMATH))
 
     answer_the_check
-    assert_selector section_selector(CHECK_INDEX), visible: true, wait: 8
+    # Settle before every click: `nextSection`/`previousSection` early-return
+    # while `_animating`, which is only cleared in _transitionToSection's 400ms
+    # timeout, so a click fired the instant the incoming section appears is
+    # silently swallowed and the lesson never moves.
+    assert_settled_sections [CHECK_INDEX]
     find("[data-interactive-lesson-target='continueBtn']").click
-    assert_selector section_selector(2), visible: true, wait: 8
+    assert_settled_sections [2]
 
     find("[data-interactive-lesson-target='backBtn']").click
 
     assert_selector section_selector(CHECK_INDEX), visible: true, wait: 8
     within(section_selector(CHECK_INDEX)) { assert_text "Mira el diagrama antes de seguir." }
     assert_no_selector modal_selector(CHECK_INDEX), visible: true
-    assert_equal [CHECK_INDEX], shown_section_indexes
+    assert_settled_sections [CHECK_INDEX]
   end
 
   private
@@ -129,6 +133,27 @@ class CheckAftermathIsShownTest < ApplicationSystemTestCase
 
   def section_selector(index) = ".lesson-section[data-section-index='#{index}']"
   def modal_selector(index) = ".quiz-modal-backdrop[data-section-index='#{index}']"
+
+  # `_transitionToSection` reveals the incoming section SYNCHRONOUSLY and hides
+  # the outgoing one in a 400ms setTimeout, so the set is legitimately
+  # two-valued for the length of the crossfade. Measuring the instant the
+  # incoming section appears raced that window and reported the section the
+  # student had just left as still shown — which is also the exact symptom of
+  # the defect this test exists to catch, so the two were indistinguishable.
+  #
+  # Poll for the condition instead. A section that is merely animating out
+  # clears within the crossfade; a section that was never hidden never does.
+  # Measured against fe06b73 (the base, before the fix): the unfixed case
+  # stayed two-valued for all 12 samples over 1.8s, so the two are separable.
+  def assert_settled_sections(expected, message = nil)
+    deadline = Time.now + Capybara.default_max_wait_time
+    actual = shown_section_indexes
+    while actual != expected && Time.now < deadline
+      sleep 0.05
+      actual = shown_section_indexes
+    end
+    assert_equal expected, actual, message
+  end
 
   # Measured, not inferred from `style`: a section is "shown" when it has a box.
   def shown_section_indexes
