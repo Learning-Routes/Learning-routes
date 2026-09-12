@@ -11,7 +11,7 @@ module ContentEngine
     retry_on AiOrchestrator::AiClient::RequestError,
              wait: :polynomially_longer, attempts: 2
 
-    def perform(step_id, section_index, section_text, locale, target_locale = nil)
+    def perform(step_id, section_index, section_text, locale, target_locale = nil, timestamps = false)
       step = LearningRoutesEngine::RouteStep.find(step_id)
       return unless step.preview_access?
 
@@ -19,7 +19,7 @@ module ContentEngine
 
       result = SectionAudioGenerator.generate!(
         step_id, section_index, section_text,
-        locale: locale, target_locale: tl
+        locale: locale, target_locale: tl, timestamps: timestamps
       )
 
       if result

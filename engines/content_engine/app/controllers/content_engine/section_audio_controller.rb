@@ -33,8 +33,11 @@ module ContentEngine
       locale = @step.learning_route&.locale || "en"
       target_locale = @step.learning_route&.target_locale
 
+      # A motion scene's narration drives mc.js's caption/emphasis timing
+      # (WP-36 §16), which needs ElevenLabs' word-level alignment. Every other
+      # section type has nothing that reads timings, so it stays plain audio.
       SectionAudioGenerationJob.perform_later(
-        @step.id, section_index, section_text, locale, target_locale.to_s
+        @step.id, section_index, section_text, locale, target_locale.to_s, motion_section?(section_index)
       )
 
       render json: { status: "generating" }
@@ -48,11 +51,9 @@ module ContentEngine
       audio_status = @step.metadata&.dig("audio_sections", section_index.to_s)
       if audio_status && audio_status["status"] == "ready" && audio_status["url"]
         show_url = "/content/section_audio/#{@step.id}/#{section_index}/show"
-        render json: {
-          status: "ready",
-          audio_url: show_url,
-          duration: audio_status["duration"]
-        }
+        payload = { status: "ready", audio_url: show_url, duration: audio_status["duration"] }
+        payload[:words] = audio_status["words"] if audio_status["words"].present?
+        render json: payload
         return
       end
 
@@ -60,7 +61,9 @@ module ContentEngine
       cached = SectionAudioGenerator.cached(@step.id, section_index)
       if cached
         show_url = "/content/section_audio/#{@step.id}/#{section_index}/show"
-        render json: { status: "ready", audio_url: show_url, duration: cached[:duration] }
+        payload = { status: "ready", audio_url: show_url, duration: cached[:duration] }
+        payload[:words] = cached[:words] if cached[:words].present?
+        render json: payload
       elsif audio_status && audio_status["status"] == "failed"
         render json: { status: "failed" }
       elsif audio_status && audio_status["status"] == "generating"
@@ -98,10 +101,18 @@ module ContentEngine
 
     private
 
+    def motion_section?(section_index)
+      section = @step.metadata&.dig("parsed_sections", section_index)
+      section.is_a?(Hash) && section["type"] == "motion"
+    end
+
     def set_step_and_authorize!
       return unless authorize_route_step_access!(params[:step_id])
 
-      @step = LearningRoutesEngine::RouteStep.find(params[:step_id])
+      # `generate` reads @step.learning_route (locale, target_locale) with
+      # strict_loading_by_default on; eager-load it here rather than let that
+      # be the first request ever to exercise the lazy-load path.
+      @step = LearningRoutesEngine::RouteStep.includes(:learning_route).find(params[:step_id])
     end
 
     # SectionAudioGenerator writes this same key under `with_lock`; this took no
