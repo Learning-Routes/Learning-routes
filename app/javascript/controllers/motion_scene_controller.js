@@ -64,6 +64,12 @@ export default class extends Controller {
     this._ended = false
     this._degraded = false
     this._loggedCueStats = false
+    // null while on fixed timings because narration is merely PENDING (not a
+    // failure — WP-20 §C: preview narration generates on demand, so the very
+    // first click is always before it exists); a string ("generic" or a
+    // spend-guard kind) once it is a genuine, settled FAILURE. The distinction
+    // is what a replay click uses to decide whether it is worth asking again.
+    this._narrationKind = undefined
   }
 
   disconnect() {
@@ -89,7 +95,18 @@ export default class extends Controller {
       return
     }
 
-    // Fixed-timing path (no narration to sync to): replay the scene itself.
+    // Fixed-timing path (no <audio> to sync to). Two different reasons land
+    // here, and only one of them is worth asking about again:
+    //   - narrationKind is null: narration was merely PENDING, not refused —
+    //     the background generate() this same session kicked off on the
+    //     first click may have finished by now, so ONE more status check is
+    //     cheap and worth it before replaying (WP-20 §C: on-demand preview
+    //     narration means the first click is ALWAYS before it exists).
+    //   - narrationKind is set: a settled failure (guard refusal or other) —
+    //     that answer is not going to change this session, so replaying here
+    //     never re-checks; doing so on every click would turn a refusal into
+    //     a request loop, which is exactly what this must not become.
+    if (this._narrationKind === null) return this._retryNarrationThenReplay()
     this._handle.play()
   }
 
@@ -148,7 +165,38 @@ export default class extends Controller {
     this._audio.play().catch(() => {})
   }
 
+  // Re-checks narration status ONCE (never a poll — this only ever runs off
+  // an explicit replay click) and either upgrades to the synced, audio-backed
+  // mount, or replays the existing fixed-timing scene unchanged. Only reached
+  // when `_narrationKind` is null (pending, not a settled failure) — see
+  // `play()`.
+  async _retryNarrationThenReplay() {
+    if (this.hasPlayTarget) this.playTarget.disabled = true
+    const narration = await this._prepareNarration()
+    if (this.hasPlayTarget) this.playTarget.disabled = false
+
+    if (narration.status === "ready" && narration.audioUrl) {
+      // The scene generator reads `words` once, at the top of its function —
+      // Motion Canvas has no supported way to rebind scene variables
+      // mid-run, so upgrading to the synced path means a fresh mount, not a
+      // hot-swap of the one already showing.
+      this._handle.destroy()
+      this._handle = null
+      this._mountWithAudio(this._mc, narration.audioUrl, narration.words)
+      return
+    }
+
+    if (narration.status === "failed") {
+      this._narrationKind = narration.kind || "generic"
+      this._showNote(this._narrationKind === "generic" ? null : this._narrationKind)
+    }
+    // else still pending: _narrationKind stays null, so the NEXT replay
+    // click asks again too — still not a poll, just another explicit click.
+    this._handle.play()
+  }
+
   _mountFixedTiming(mc, kind) {
+    this._narrationKind = kind
     if (kind) this._showNote(kind === "generic" ? null : kind)
     this._handle = mc.mount(this.stageTarget, this.sceneValue, {
       data: this.dataValue,
