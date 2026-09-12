@@ -9,6 +9,22 @@ module ContentEngine
     # Max retry attempts per media item
     MAX_RETRIES = 3
 
+    # WP-20 §C: a preview module generates narration on demand — the student may
+    # never open a motion scene, so its narration is never pre-generated. A
+    # purchased module would pre-generate motion narration too.
+    #
+    # Dormant by design. MediaPrefetchJob:24 returns unless preview_access?, so
+    # the :purchased branch cannot be reached today: purchased modules generate
+    # nothing until Task 8 wires paid-module generation. It is written and tested
+    # now so that Task 8 is a gate change and not a spend decision made in a hurry.
+    def self.narration_prefetch_types(access_state)
+      case access_state.to_sym
+      when :preview   then %w[concept summary]
+      when :purchased then %w[concept summary motion]
+      else []
+      end
+    end
+
     def perform(route_step_id, options = {})
       # Eager-load the route/profile/user chain in one query. strict_loading_by_default
       # is on, so traversing these lazily is a violation — it raised here as soon as the
@@ -93,7 +109,7 @@ module ContentEngine
         end
 
         # Audio tasks for audio-eligible sections (first 2 concepts + summary)
-        if %w[concept summary].include?(type) && section["body"].present?
+        if self.class.narration_prefetch_types(access_state).include?(type) && section["body"].present?
           cached_audio = SectionAudioGenerator.cached(@step.id, index)
           unless cached_audio
             tasks << {
@@ -258,6 +274,11 @@ module ContentEngine
     def content_hash(type, index, content)
       digest = Digest::SHA256.hexdigest("#{type}:#{index}:#{content}")
       "media_prefetch:#{@step.id}:#{digest}"
+    end
+
+    def access_state
+      @access_state ||= LearningRoutesEngine::RouteModule
+                          .where(id: @step.route_module_id).pick(:access_state) || "locked"
     end
 
     def first_visual_index
