@@ -158,6 +158,8 @@ module ContentEngine
       @target_locale.present?
     end
 
+    # Returns [audio_path, words], the same tuple synthesize_with_voice
+    # returns — see its comment below.
     def synthesize_audio(text)
       primary_voice = select_voice
       synthesize_with_voice(text, primary_voice)
@@ -171,6 +173,11 @@ module ContentEngine
       end
     end
 
+    # Returns [audio_path, words]: audio_path is the stored file's URL,
+    # words is the array from AiClient#chat's `words:` key — nil unless this
+    # generator was constructed with timestamps: true. A caller after only
+    # the path must destructure (`path, _words = synthesize_with_voice(...)`)
+    # rather than treat the return value as a bare String.
     def synthesize_with_voice(text, voice_id)
       step = LearningRoutesEngine::RouteStep.find(@step_id)
       user = step.learning_route.learning_profile&.user
