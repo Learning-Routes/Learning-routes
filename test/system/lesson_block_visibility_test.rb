@@ -63,7 +63,13 @@ class LessonBlockVisibilityTest < ApplicationSystemTestCase
     "audio" => { "title" => "Audio", "body" => "Narración de la lección.",
                  "audio_url" => "/audio/example.mp3" },
     "audio_explainer" => { "title" => "Explicación", "body" => "Narración larga.",
-                           "audio_url" => "/audio/example.mp3" }
+                           "audio_url" => "/audio/example.mp3" },
+    # The scene name must be one MotionScenes knows, and the data must satisfy
+    # that scene's own schema — both pulled from the vocabulary itself so this
+    # sample can never drift from app/motion/src/scenes/*.schema.json.
+    "motion" => { "scene" => "agreement",
+                  "data" => ContentEngine::MotionScenes.example("agreement"),
+                  "narration" => "Observa cómo el verbo debe coincidir con el sujeto." }
   }.freeze
 
   def setup
