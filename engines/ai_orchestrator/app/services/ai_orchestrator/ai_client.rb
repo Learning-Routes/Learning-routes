@@ -81,6 +81,41 @@ module AiOrchestrator
       session
     end
 
+    # ElevenLabs' character alignment times each CHARACTER individually; a word
+    # is a run of non-space characters, timed from its first character's start
+    # to its last character's end. Pure and class-level (no instance state
+    # involved) so it is directly testable, and so Tasks 13/16 — and `cues.ts`
+    # on the frontend — get one implementation of "what counts as a word"
+    # rather than each re-deriving the run-of-non-space rule differently.
+    def self.words_from_alignment(alignment)
+      characters = alignment["characters"]
+      return [] if characters.blank?
+
+      starts = alignment["character_start_times_seconds"]
+      ends = alignment["character_end_times_seconds"]
+
+      words = []
+      current = nil
+
+      characters.each_with_index do |char, index|
+        if char == " "
+          words << current if current
+          current = nil
+          next
+        end
+
+        if current
+          current["text"] += char
+          current["end"] = ends[index]
+        else
+          current = { "text" => char, "start" => starts[index], "end" => ends[index] }
+        end
+      end
+      words << current if current
+
+      words
+    end
+
     private
 
     def request_elevenlabs_stt(file_path:, params: {})
@@ -173,13 +208,21 @@ module AiOrchestrator
 
       defaults = Rails.application.config.ai_model_defaults[:voice_narration] || {}
       merged = defaults.merge(params)
+      timestamps = merged[:timestamps] == true
 
       start_time = monotonic_now
 
       # Use Net::HTTP directly instead of HTTParty to avoid binary response
       # auto-parsing. HTTParty tries to parse audio/mpeg as XML/JSON which
       # corrupts the binary audio data.
-      uri = URI("https://api.elevenlabs.io/v1/text-to-speech/#{voice_id}")
+      #
+      # /with-timestamps returns a JSON envelope (audio_base64 plus a
+      # character alignment) instead of raw audio/mpeg bytes, so the words the
+      # animation follows can be derived from the SAME response that carries
+      # the audio, rather than a second call.
+      path = "/v1/text-to-speech/#{voice_id}"
+      path += "/with-timestamps" if timestamps
+      uri = URI("https://api.elevenlabs.io#{path}")
       http = Net::HTTP.new(uri.host, uri.port)
       http.use_ssl = true
       http.read_timeout = 60
@@ -188,7 +231,7 @@ module AiOrchestrator
       request = Net::HTTP::Post.new(uri.path)
       request["xi-api-key"] = api_key
       request["Content-Type"] = "application/json"
-      request["Accept"] = "audio/mpeg"
+      request["Accept"] = timestamps ? "application/json" : "audio/mpeg"
       request.body = {
         text: text,
         model_id: merged[:model_id] || "eleven_multilingual_v2",
@@ -205,16 +248,43 @@ module AiOrchestrator
         raise RequestError, "ElevenLabs API error: #{response.code} - #{response.body&.first(500)}"
       end
 
-      {
-        content: response.body,
+      result = {
         model: "elevenlabs",
         model_id: merged[:model_id] || "eleven_multilingual_v2",
-        billed_characters: Integer(response["character-cost"], exception: false),
         input_tokens: text.length,
         output_tokens: 0,
         latency_ms: elapsed_ms,
         content_type: "audio/mpeg"
       }
+
+      if timestamps
+        payload = JSON.parse(response.body)
+        alignment = payload["alignment"]
+        billed_characters = Integer(response["character-cost"], exception: false)
+        if billed_characters.nil?
+          # The ledger must never show $0.00 for a paid call. `openai_chat`
+          # already has this defect (recorded roadmap debt); this must not
+          # become the second instance of it.
+          Rails.logger.warn(
+            "[AiClient] /with-timestamps returned no character-cost header; billing text.length=#{text.length}"
+          )
+          billed_characters = text.length
+        end
+
+        result.merge!(
+          content: Base64.decode64(payload["audio_base64"]),
+          billed_characters: billed_characters,
+          alignment: alignment,
+          words: self.class.words_from_alignment(alignment)
+        )
+      else
+        result.merge!(
+          content: response.body,
+          billed_characters: Integer(response["character-cost"], exception: false)
+        )
+      end
+
+      result
     rescue Net::ReadTimeout, Net::OpenTimeout => e
       raise TimeoutError, "ElevenLabs request timed out: #{e.message}"
     end
