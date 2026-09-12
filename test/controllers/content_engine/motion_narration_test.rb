@@ -83,4 +83,50 @@ class ContentEngine::MotionNarrationTest < ActionDispatch::IntegrationTest
     assert_equal "ready", body["status"]
     assert_not body.key?("words"), "words must be omitted entirely, not sent as null"
   end
+
+  # Review round 1: the two tests above only pin what `generate` ENQUEUES. They
+  # would stay green even if SectionAudioGenerationJob#perform dropped the
+  # `timestamps` argument on the floor instead of forwarding it — the exact
+  # inert-feature failure this whole task exists to avoid, one layer further
+  # down the chain. This test actually PERFORMS the job and proves the value
+  # reaches `SectionAudioGenerator.generate!`.
+  #
+  # `SectionAudioGenerator.generate!` is swapped for a recorder for the
+  # duration of the block, the same dependency-free singleton-swap-in-an-ensure
+  # pattern as `with_refused_guard` in voice_evaluator_metering_test.rb. The
+  # swap replaces `generate!` itself, so the real method — and therefore
+  # AiOrchestrator::AiClient and any ElevenLabs HTTP call — is never reached.
+  test "perform forwards timestamps to the generator: true for motion, false for a concept" do
+    calls = []
+
+    with_recorded_generate(calls) do
+      perform_enqueued_jobs do
+        post generate_url(0), params: { section_text: MOTION_SECTION["body"] }
+        post generate_url(1), params: { section_text: CONCEPT_SECTION["body"] }
+      end
+    end
+
+    motion_call = calls.find { |c| c[:section_index] == 0 }
+    concept_call = calls.find { |c| c[:section_index] == 1 }
+
+    assert motion_call, "the motion section's job never called the generator"
+    assert concept_call, "the concept section's job never called the generator"
+    assert_equal true, motion_call[:timestamps],
+      "the job must forward timestamps: true through to the generator for a motion section"
+    assert_equal false, concept_call[:timestamps],
+      "a non-motion section must not ask ElevenLabs for word timings"
+  end
+
+  private
+
+  def with_recorded_generate(calls)
+    original = ContentEngine::SectionAudioGenerator.method(:generate!)
+    ContentEngine::SectionAudioGenerator.define_singleton_method(:generate!) do |step_id, section_index, _section_text, locale: "en", target_locale: nil, timestamps: false|
+      calls << { step_id: step_id, section_index: section_index, locale: locale, target_locale: target_locale, timestamps: timestamps }
+      nil
+    end
+    yield
+  ensure
+    ContentEngine::SectionAudioGenerator.define_singleton_method(:generate!, original)
+  end
 end
