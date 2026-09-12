@@ -929,6 +929,31 @@ html[data-theme="dark"] .learning-nav {
     .mermaid--rendered svg { max-width: 100% !important; }
   }
 
+  /* ── Motion scene stage (WP-36) ───────────────────────────────────────
+     A narrated scene had no surface of its own. Every other lesson block sits
+     on a card (.lesson-block, .mermaid-container) and this one sat on nothing,
+     which made the Checkpoint 2 premise — "the card behind the canvas is the
+     page's --color-card" — false in the rendered page: `main.ts` keeps the
+     project background transparent on purpose, so whatever the stage does NOT
+     paint is what the student reads the ink against, and with no rule here that
+     was `body`, --color-bg. Measured on the canvas bitmap: ink on --color-bg was
+     15.70:1 light / 14.11:1 dark, and on --color-card it is 17.38:1 / 12.97:1 —
+     both comfortably past WCAG AA, and now the ground is the one the ruling and
+     the token choices were reasoned against.
+
+     Deliberately the same surface as .mermaid-container, the closest neighbour
+     (a rendered graphic, not prose): same radius, same subtle border, same
+     shadow pair, same 1.25rem inset. `overflow-hidden` is what makes the canvas
+     — width:100%, set inline by main.ts — take the rounded corners. */
+  .lesson-motion__stage {
+    @apply my-6 overflow-hidden;
+    padding: 1.25rem;
+    border-radius: 14px;
+    border: 1px solid var(--color-border-subtle);
+    background: var(--color-card);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.02), 0 4px 12px rgba(0,0,0,0.01);
+  }
+
   /* Interactive lesson blocks (:::concept, :::check, :::tip, :::example, :::summary) */
   .lesson-block {
     @apply rounded-2xl my-6 overflow-hidden;
