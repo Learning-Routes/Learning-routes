@@ -133,6 +133,31 @@ module ContentEngine
       assert_equal "ready", parsed[1]["image_status"]
     end
 
+    # ── the narration generator, WP-36 §13 ──────────────────────────────────
+    #
+    # SectionAudioGenerator#update_step_audio_status! already has the lock and
+    # the merge_metadata! discipline; this pins that adding the words array
+    # does not regress it. A words array is written while ANOTHER section's
+    # audio lands. Both survive, or a narration the student paid for is
+    # erased by an unrelated write.
+    test "writing words for one section does not erase another section's audio" do
+      @step.merge_metadata!("audio_sections" => { "1" => { "status" => "ready", "url" => "/a/1.mp3" } })
+
+      gen = ContentEngine::SectionAudioGenerator.new(@step.id, 0, "Mira el sujeto.", locale: "es")
+      gen.send(:update_step_audio_status!, "ready", "/a/0.mp3", 2.5, words: [{ "text" => "Mira", "start" => 0.0, "end" => 0.3 }])
+
+      sections = @step.reload.metadata["audio_sections"]
+      assert_equal "/a/1.mp3", sections["1"]["url"], "the sibling entry was erased"
+      assert_equal "Mira", sections["0"]["words"].first["text"]
+      assert_nil sections["1"]["words"], "words must not leak into a section that has none"
+    end
+
+    # parsed_sections belongs to the parser. SectionEnrichment::KEYS is the list
+    # of exceptions and it does not grow for this.
+    test "words are never written into parsed_sections" do
+      assert_not_includes ContentEngine::SectionEnrichment::KEYS, "words"
+    end
+
     # ── the class ───────────────────────────────────────────────────────────
 
     test "nothing writes step metadata with a whole-blob merge" do
