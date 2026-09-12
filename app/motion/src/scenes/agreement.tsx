@@ -5,16 +5,10 @@ import {
 } from '@motion-canvas/core';
 import {cueFor, remainingUntil} from '../lib/cues';
 import type {Word} from '../lib/cues';
+import {FALLBACK_THEME} from '../lib/theme';
+import type {Theme} from '../lib/theme';
 import schema from './agreement.schema.json';
 import type {Agreement} from '../generated/schemas';
-
-// Palette — matches Learning Routes' tokens so it reads as in-product.
-const INK = '#1C1812', SUB = '#5B554C', MUTED = '#887F72';
-const HI = '#F2D66B', HI2 = '#9AD1F0', OK = '#2F8F5B', BAD = '#C0453A', CARD = '#FFFDFA';
-// Translucent washes of OK/BAD for the chip background behind the verb as it
-// flips from wrong to right — named so nothing depends on string-concatenating
-// an alpha suffix onto a colour at the call site.
-const BAD_WASH = '#C0453A22', OK_WASH = '#2F8F5B1E';
 
 // The exact font stack every fontFamily in this scene must use (global constraint).
 const FONT = "'DM Sans', 'Hiragino Sans GB', 'PingFang SC', 'Microsoft YaHei', 'Noto Sans CJK SC', system-ui, sans-serif";
@@ -32,6 +26,10 @@ function fireToken(onToken: ((index: number | null) => void) | null, index: numb
 export default makeScene2D(function* (view) {
   const scene = useScene();
   const d = scene.variables.get<Agreement>('agreement', FALLBACK)();
+  // Not a palette, a reading: the page's own tokens, handed over by
+  // motion_scene_controller.js. FALLBACK_THEME (light) covers the one caller
+  // that mounts without them, the editorless preview page.
+  const theme = scene.variables.get<Theme>('theme', FALLBACK_THEME)();
   const words = scene.variables.get<Word[] | null>('words', null)();
   const onToken = scene.variables.get<((index: number | null) => void) | null>('onToken', null);
 
@@ -55,15 +53,21 @@ export default makeScene2D(function* (view) {
         <Layout ref={row} direction="row" alignItems="start" gap={18} layout>
           {d.tokens.map((t, i) => (
             <Layout direction="column" alignItems="center" gap={14} layout>
-              <Rect ref={chips[i]} radius={16} padding={[10, 22]} fill={'#00000000'} scale={0} layout>
-                <Txt ref={wordRefs[i]} text={t} fontFamily={FONT} fontWeight={700} fontSize={84} fill={INK} />
+              {/* No `fill`, which is Rect's own default of null — an unfilled chip.
+                  It used to say fill={'#00000000'} and that was both a colour
+                  literal and the worse animation: Color.lerp reads a null `from`
+                  as the DESTINATION at alpha 0, so the highlight now fades in as
+                  pure alpha on its own hue instead of taking an LCH path out of
+                  transparent black. */}
+              <Rect ref={chips[i]} radius={16} padding={[10, 22]} scale={0} layout>
+                <Txt ref={wordRefs[i]} text={t} fontFamily={FONT} fontWeight={700} fontSize={84} fill={theme.ink} />
               </Rect>
               <Txt ref={labels[i]} text={i === d.subject ? d.labels.subject : i === d.verb ? d.labels.verb : ''}
-                   fontFamily={FONT} fontSize={20} letterSpacing={4} fill={MUTED} opacity={0} />
+                   fontFamily={FONT} fontSize={20} letterSpacing={4} fill={theme.muted} opacity={0} />
             </Layout>
           ))}
         </Layout>
-        <Txt ref={caption} text={d.why} fontFamily={FONT} fontSize={34} fill={SUB} opacity={0} textWrap width={1400} textAlign="center" />
+        <Txt ref={caption} text={d.why} fontFamily={FONT} fontSize={34} fill={theme.sub} opacity={0} textWrap width={1400} textAlign="center" />
       </Layout>
     </Camera>,
   );
@@ -77,7 +81,7 @@ export default makeScene2D(function* (view) {
   // when there is no `words` alignment, or the word is not found in it).
   yield* all(
     cam().zoom(1.18, 0.7, easeInOutCubic),
-    chips[d.subject]().fill(HI, 0.4),
+    chips[d.subject]().fill(theme.hi, 0.4),
     labels[d.subject]().opacity(1, 0.4),
   );
   fireToken(onToken(), d.subject);
@@ -86,7 +90,7 @@ export default makeScene2D(function* (view) {
   else { yield* waitFor(0.55); }
 
   // 3 · the verb lights up in the second colour, same narration-timed beat.
-  yield* all(chips[d.verb]().fill(HI2, 0.4), labels[d.verb]().opacity(1, 0.4));
+  yield* all(chips[d.verb]().fill(theme.hi2, 0.4), labels[d.verb]().opacity(1, 0.4));
   fireToken(onToken(), d.verb);
   const verbCue = cueFor(d.tokens[d.verb], words, cueCursor);
   if (verbCue !== null) { cueCursor += 1; yield* waitUntilTime(verbCue); }
@@ -94,7 +98,7 @@ export default makeScene2D(function* (view) {
 
   // 4 · camera snaps to the verb; it turns red and shakes — a visible no.
   yield* all(cam().centerOn(chips[d.verb](), 0.5, easeInOutCubic), cam().zoom(1.7, 0.5, easeInOutCubic));
-  yield* all(chips[d.verb]().fill(BAD_WASH, 0.25), wordRefs[d.verb]().fill(BAD, 0.25));
+  yield* all(chips[d.verb]().fill(theme.badWash, 0.25), wordRefs[d.verb]().fill(theme.bad, 0.25));
   const x0 = chips[d.verb]().position.x();
   for (const dx of [-9, 9, -6, 6, 0]) yield* chips[d.verb]().position.x(x0 + dx, 0.06);
   yield* waitFor(0.35);
@@ -105,8 +109,8 @@ export default makeScene2D(function* (view) {
     chips[d.verb]().opacity(0, 0.3),
   );
   wordRefs[d.verb]().text(d.correct);
-  wordRefs[d.verb]().fill(OK);
-  chips[d.verb]().fill(OK_WASH);
+  wordRefs[d.verb]().fill(theme.ok);
+  chips[d.verb]().fill(theme.okWash);
   chips[d.verb]().position.y(-60);
   yield* all(
     chips[d.verb]().position.y(0, 0.5, easeOutBack),

@@ -142,6 +142,22 @@
   --color-info-bg: rgba(37, 99, 235, 0.08);
   --color-info-border: rgba(37, 99, 235, 0.18);
 
+  /* Motion scene highlights (WP-36 Checkpoint 2). The two chip colours a
+     narrated scene lights a token up with. They are tokens, not scene
+     constants, because the scene has no colours of its own:
+     motion_scene_controller.js reads these off the page at mount and passes
+     them in the `theme` bag, so one compiled artifact is legible on both
+     themes. They sit here beside --color-positive/--color-negative because the
+     same bag carries those two to the same scene.
+
+     A chip is a FILL with --color-txt drawn on top of it, and that is what sets
+     both values: it has to separate from the card AND keep the ink on it
+     readable. Measured: the chip separates at 1.41:1 / 1.62:1 and the ink on it
+     reads at 12.29:1 / 10.73:1. See the dark block for why the dark pair is
+     darker rather than lighter. */
+  --color-motion-hi: #F2D66B;
+  --color-motion-hi2: #9AD1F0;
+
   /* ── Step page geometry (WP-15 §C/§D) ──────────────────────────────────
      Four numbers were spread across two templates and one stylesheet, and they
      disagreed: the lesson body was capped at 48rem while the likes bar, the
@@ -226,6 +242,20 @@ html[data-theme="dark"] {
   --color-info: #60A5FA;
   --color-info-bg: rgba(96, 165, 250, 0.12);
   --color-info-border: rgba(96, 165, 250, 0.22);
+
+  /* Motion scene highlights. DARKER than the light pair, which inverts the
+     house rule for a dark token (--color-positive #16A34A -> #4ADE80: lighter,
+     more saturated) — and deliberately so. These two are not text colours, they
+     are FILLS with --color-txt painted on top, and in dark --color-txt is
+     #E8E4DC. A lighter, more saturated amber would put light ink on a light
+     chip and make the highlighted word the one word the student cannot read.
+     Measured against --color-card #221F18: the chip separates from the card at
+     2.28:1 / 2.37:1 (light manages 1.41:1 / 1.62:1) and the ink on it clears
+     WCAG AA at 5.70:1 / 5.46:1 (light: 12.29:1 / 10.73:1). Hue separates hi
+     from hi2, not luminance — exactly as in light, where the pair is 1.15:1
+     apart. */
+  --color-motion-hi: #6B5418;
+  --color-motion-hi2: #2A5F7D;
 }
 
 html[data-theme="dark"] ::selection {
