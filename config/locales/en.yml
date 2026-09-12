@@ -1010,6 +1010,8 @@ en:
       reset: "Reset"
       motion:
         play: "Play"
+        pause: "Pause"
+        replay: "Replay"
       default_title:
         concept: "Concept"
         check: "Check your understanding"

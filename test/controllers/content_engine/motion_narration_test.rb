@@ -117,7 +117,53 @@ class ContentEngine::MotionNarrationTest < ActionDispatch::IntegrationTest
       "a non-motion section must not ask ElevenLabs for word timings"
   end
 
+  # WP-36 §16: the front end cannot tell a spend-guard refusal apart from any
+  # other TTS failure unless the job records WHICH ceiling refused, and
+  # `status` hands that back — motion_scene_controller.js needs it to show
+  # the right one of the three `ai_orchestrator.spend_guard.*` sentences
+  # rather than a generic "something broke". Mirrors the existing
+  # `content_error_kind` distinction in ContentPipelineJob, one layer down.
+  test "perform records which ceiling refused, and status surfaces it" do
+    with_raising_generate(AiOrchestrator::SpendGuard::LimitExceeded.new("nope", kind: :daily_budget)) do
+      perform_enqueued_jobs do
+        post generate_url(0), params: { section_text: MOTION_SECTION["body"] }
+      end
+    end
+
+    get status_url(0)
+
+    assert_response :success
+    body = JSON.parse(response.body)
+    assert_equal "failed", body["status"]
+    assert_equal "daily_budget", body["kind"]
+  end
+
+  test "a non-guard failure surfaces no kind at all" do
+    with_raising_generate(StandardError.new("elevenlabs is down")) do
+      perform_enqueued_jobs do
+        post generate_url(0), params: { section_text: MOTION_SECTION["body"] }
+      end
+    end
+
+    get status_url(0)
+
+    assert_response :success
+    body = JSON.parse(response.body)
+    assert_equal "failed", body["status"]
+    assert_not body.key?("kind"), "an ordinary failure is not a spend-guard refusal and must not claim to be one"
+  end
+
   private
+
+  def with_raising_generate(error)
+    original = ContentEngine::SectionAudioGenerator.method(:generate!)
+    ContentEngine::SectionAudioGenerator.define_singleton_method(:generate!) do |*_args, **_kwargs|
+      raise error
+    end
+    yield
+  ensure
+    ContentEngine::SectionAudioGenerator.define_singleton_method(:generate!, original)
+  end
 
   def with_recorded_generate(calls)
     original = ContentEngine::SectionAudioGenerator.method(:generate!)

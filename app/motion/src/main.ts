@@ -13,6 +13,7 @@ import transform from './scenes/transform';
 import {resetCueStats, cueStats} from './lib/cues';
 import type {Word} from './lib/cues';
 import type {Theme} from './lib/theme';
+import {driftSeek} from './lib/sync';
 
 // What the vite plugin's `?scene` transform does, by hand.
 function describe(desc: any, name: string): FullSceneDescription {
@@ -106,4 +107,10 @@ function mount(el: HTMLElement, sceneName: string, opts: MountOpts = {}): Handle
   };
 }
 
-(window as any).mc = {mount};
+// `driftSeek` rides alongside `mount` rather than being duplicated in
+// motion_scene_controller.js: this bundle is the one place app/motion's
+// TypeScript is reachable from Rails' own JS, and the controller has no other
+// way to call the SAME pure decision test/javascript/motion_sync_test.rb
+// pins (see lib/sync.ts) — the same reasoning that already put `cueStats` on
+// the mount `Handle` rather than reimplementing the counters in the controller.
+(window as any).mc = {mount, driftSeek};

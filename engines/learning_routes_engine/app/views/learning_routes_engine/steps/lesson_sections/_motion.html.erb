@@ -5,14 +5,32 @@
     The narration text is rendered ALWAYS, not only on failure: it is the content,
     and the two failure states (guard refusal, mc.js unavailable) are then a
     missing canvas rather than an empty block. WP-35's rule — failure is visible
-    and local. %>
+    and local.
+
+    WP-36 §16: the picture follows the voice, which means the controller now
+    has to fetch that voice itself — the same generate/status endpoints
+    `_section_audio_player` polls, not a new pair. `guardMessagesValue` carries
+    all THREE `ai_orchestrator.spend_guard.*` sentences pre-translated in the
+    request's own locale (the controller only ever picks one by `kind`; it
+    never renders English, and never guesses a translation client-side). %>
 <div class="lesson-motion"
      data-controller="motion-scene"
      data-motion-scene-scene-value="<%= section[:scene] %>"
      data-motion-scene-data-value="<%= section[:data].to_json %>"
      data-motion-scene-narration-value="<%= section[:narration] %>"
      data-motion-scene-step-id-value="<%= step.id %>"
-     data-motion-scene-section-index-value="<%= index %>">
+     data-motion-scene-section-index-value="<%= index %>"
+     data-motion-scene-generate-url-value="<%= content_engine.section_audio_generate_path(step_id: step.id, section_index: index) %>"
+     data-motion-scene-status-url-value="<%= content_engine.section_audio_status_path(step_id: step.id, section_index: index) %>"
+     data-motion-scene-guard-messages-value="<%= {
+       daily_budget: t("ai_orchestrator.spend_guard.daily_budget"),
+       user_budget: t("ai_orchestrator.spend_guard.user_budget"),
+       rate_limit: t("ai_orchestrator.spend_guard.rate_limit", model: "elevenlabs")
+     }.to_json %>"
+     data-motion-scene-generic-error-value="<%= t("content_engine.audio.error") %>"
+     data-motion-scene-play-label-value="<%= t("learning_engine.blocks.motion.play") %>"
+     data-motion-scene-pause-label-value="<%= t("learning_engine.blocks.motion.pause") %>"
+     data-motion-scene-replay-label-value="<%= t("learning_engine.blocks.motion.replay") %>">
   <div class="lesson-motion__stage" data-motion-scene-target="stage"></div>
   <button type="button" class="lesson-btn lesson-btn--primary"
           data-motion-scene-target="play" data-action="click->motion-scene#play">
@@ -22,5 +40,14 @@
     <%= ContentEngine::MarkdownRenderer.render(section[:narration].to_s) %>
   </div>
   <p class="lesson-motion__note" data-motion-scene-target="note" hidden></p>
+  <%# mc.js-unavailable fallback (Task 16 Step 5): the SAME audio the canvas
+      would have synced to, offered as a plain play button, with no canvas at
+      all. Hidden until the controller confirms the runtime failed to load —
+      most lessons never show this, so it costs nothing on the happy path. %>
+  <div class="lesson-motion__audio-fallback" data-motion-scene-target="audioFallback" hidden>
+    <%= render "learning_routes_engine/steps/lesson_sections/section_audio_player",
+                step_id: step.id, section_index: index, section_text: section[:narration].to_s,
+                mode: "mini" %>
+  </div>
 </div>
 <%= render "learning_routes_engine/steps/lesson_sections/aftermath", section: section %>

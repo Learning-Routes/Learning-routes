@@ -954,6 +954,13 @@ html[data-theme="dark"] .learning-nav {
     box-shadow: 0 1px 3px rgba(0,0,0,0.02), 0 4px 12px rgba(0,0,0,0.01);
   }
 
+  /* WP-36 §16 failure state 2: mc.js failed to load. motion_scene_controller.js
+     unhides this in place of the stage+play button; the narration text keeps
+     rendering underneath either way. */
+  .lesson-motion__audio-fallback {
+    @apply my-6;
+  }
+
   /* Interactive lesson blocks (:::concept, :::check, :::tip, :::example, :::summary) */
   .lesson-block {
     @apply rounded-2xl my-6 overflow-hidden;

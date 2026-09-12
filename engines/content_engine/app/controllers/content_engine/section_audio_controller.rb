@@ -65,7 +65,12 @@ module ContentEngine
         payload[:words] = cached[:words] if cached[:words].present?
         render json: payload
       elsif audio_status && audio_status["status"] == "failed"
-        render json: { status: "failed" }
+        payload = { status: "failed" }
+        # Only present for a spend-guard refusal (see SectionAudioGenerationJob);
+        # an ordinary failure carries no kind, and the motion-scene controller
+        # must not guess one.
+        payload[:kind] = audio_status["error_kind"] if audio_status["error_kind"].present?
+        render json: payload
       elsif audio_status && audio_status["status"] == "generating"
         render json: { status: "generating" }
       else
