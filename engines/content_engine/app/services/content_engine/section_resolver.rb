@@ -25,6 +25,15 @@ module ContentEngine
   class SectionResolver
     def self.call(step) = new(step).call
 
+    # The AiContent row whose `body` these sections are parsed from.
+    #
+    # Public because LessonVideoPublisher edits that body and has to edit the SAME
+    # row this class parses. A second copy of the selection rule would be a second
+    # answer to "where does the lesson body live", and the publisher's `:replace`
+    # branch (it looks for an existing `## Video:` heading in the body) only works
+    # if the row it wrote is the row this reads.
+    def self.lesson_content_for(step) = new(step).lesson_content
+
     def initialize(step)
       @step = step
     end
@@ -35,6 +44,12 @@ module ContentEngine
       return persisted if persisted.is_a?(Array) && persisted.any?
 
       parse_and_persist!
+    end
+
+    def lesson_content
+      target = @step.content_type_exercise? ? :exercise : :text
+      scope = AiContent.where(route_step: @step)
+      scope.by_type(target).first || scope.first
     end
 
     private
@@ -62,12 +77,6 @@ module ContentEngine
       # already handled before this class existed.
       Rails.logger.error("[SectionResolver] step=#{@step.id} #{e.class}: #{e.message}")
       []
-    end
-
-    def lesson_content
-      target = @step.content_type_exercise? ? :exercise : :text
-      scope = AiContent.where(route_step: @step)
-      scope.by_type(target).first || scope.first
     end
   end
 end
