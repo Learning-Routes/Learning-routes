@@ -46,6 +46,13 @@ Rails.application.configure do
   # Set host to be used by links generated in mailer templates.
   config.action_mailer.default_url_options = { host: "example.com" }
 
+  # Active Storage's proxy/redirect URL helpers (rails_storage_proxy_path, etc.) build
+  # a signed blob URL through a `direct` route that needs a host even for the "_path"
+  # variant, once called outside an actual request/view context — exactly what a test
+  # calling `Rails.application.routes.url_helpers.rails_storage_proxy_path` does. Mirrors
+  # the equivalent line already in config/environments/development.rb.
+  Rails.application.routes.default_url_options = { host: "example.com" }
+
   # Print deprecation notices to the stderr.
   config.active_support.deprecation = :stderr
 
