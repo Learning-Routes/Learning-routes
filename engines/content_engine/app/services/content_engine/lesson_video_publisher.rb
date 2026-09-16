@@ -2,55 +2,115 @@
 
 module ContentEngine
   # Puts the studio's finished film into a lesson, and takes it out again: it edits
-  # the `## Video:` section of the AiContent body AND rebuilds the `parsed_sections`
-  # cache, in one transaction, without re-pointing recorded student work and without
-  # dropping the image enrichment the media jobs already paid for.
+  # the `## Video:` section of the AiContent body AND rebuilds the positional
+  # structures that index into `parsed_sections`, in one transaction, without
+  # re-pointing recorded student work and without dropping media the jobs paid for.
   #
   # WHY THIS SERVICE EXISTS AT ALL
   #
   # `SectionResolver.call` returns the persisted `parsed_sections` and only parses
   # when there are none, so it cannot refresh a generated step. `parse_and_persist!`
-  # is private AND writes a fresh parse with no `carry_over`, so calling it would
-  # delete the `image_url`s the media jobs paid for — after which
-  # `MediaPrefetchJob#build_media_tasks` queues a paid regeneration for every visual
-  # whose `image_url` is blank. Verified: `parse_and_persist!`'s only callers are
-  # `wp33_reparse.rake:161,258`, and both wrap it in carry-over themselves.
+  # is private (its one caller is `section_resolver.rb:46`) AND writes a fresh parse
+  # with no `carry_over`, so calling it would delete the `image_url`s the media jobs
+  # paid for — after which `MediaPrefetchJob#build_media_tasks` queues a paid
+  # regeneration for every visual whose `image_url` is blank. `wp33:reparse` reaches
+  # the same parse through its own lambda (`wp33_reparse.rake:39`) and wraps every
+  # write in `carry_over` (rake:161,258) for exactly that reason.
   #
-  # THE CARRY-OVER OFFSET, PER PLACEMENT — this is the whole safety argument
+  # WHAT IS POSITIONAL, AND THEREFORE WHAT MOVES
   #
-  # | Operation            | `fresh` vs `old`          | Carry                  | Why                                                             |
-  # |----------------------|---------------------------|------------------------|-----------------------------------------------------------------|
-  # | `:prepend`           | video inserted at 0       | `old[i]` -> `fresh[i + 1]` | every old section moved down one; the video receives nothing |
-  # | `:append`            | video added at the end    | `old[i]` -> `fresh[i]`     | nothing moved; the video receives nothing                   |
-  # | `:replace`           | video edited in place     | `old[i]` -> `fresh[i]`     | same length, same indices; the old video held no enrichment anyway |
-  # | `unpublish`, video at 0 | video removed from 0   | `old[i]` -> `fresh[i - 1]` | every section moved up one                                  |
-  # | `unpublish`, video last | last element removed   | `old[i]` -> `fresh[i]`     | nothing moved                                               |
-  # | `unpublish`, refused | —                         | **nothing is written at all** | a refusal that rewrites metadata is not a refusal        |
+  # `block_attempts.section_index` indexes into `parsed_sections` positionally, and
+  # so do two things this service has to move with it:
   #
-  # `SectionEnrichment.carry_over` takes no offset — it is strictly positional
-  # because `block_attempts.section_index` is positional, and `wp33_reparse.rake`
-  # relies on that contract. So the offsets above are produced by aligning the two
-  # arrays at the call site (a `nil` in front of `old`, or a `drop(1)`), never by
-  # teaching `carry_over` about them.
+  #   - the enrichment keys inside each section (`SectionEnrichment::KEYS`), which
+  #     travel with their own section because the section hash travels;
+  #   - `metadata["audio_sections"]`, a Hash keyed by the section index AS A STRING.
+  #     Written by media_prefetch_job.rb:201,208,221,227,
+  #     section_audio_generation_job.rb:49, section_audio_controller.rb:119 and
+  #     section_audio_generator.rb:241; read by section_audio_controller.rb:48 as
+  #     `metadata.dig("audio_sections", section_index.to_s)`, with the index
+  #     `_lesson.html.erb:182` passes into each partial from its `each_with_index`.
+  #     Leaving that map alone is the same money-and-position defect as `image_url`,
+  #     one key over: the paid TTS clip plays under whatever section moved into its
+  #     index, and the section it belongs to has none and is generated again.
+  #
+  # THE ONE OFFSET RULE
+  #
+  # Every placement is one insertion, one replacement or one removal at a single
+  # index `at`, and the whole safety argument is the offset that follows from it:
+  #
+  #   insertion at `at`:   old[i] -> fresh[i]      for i < at
+  #                        old[i] -> fresh[i + 1]  for i >= at
+  #   removal   at `at`:   old[i] -> fresh[i]      for i < at
+  #                        old[i] -> fresh[i - 1]  for i > at
+  #   replacement at `at`: old[i] -> fresh[i]      for every i, and `at` itself
+  #                        receives NOTHING — see below
+  #
+  # and the same offsets reindex the keys of `audio_sections`. The rows the brief
+  # tabulated are consequences of that one rule, not separate cases:
+  #
+  # | Operation               | `at`          | Carry                      | Why                                          |
+  # |-------------------------|---------------|----------------------------|----------------------------------------------|
+  # | `:prepend`              | 0             | `old[i]` -> `fresh[i + 1]`  | every old section moved down one             |
+  # | `:append`               | end of a parse| `old[i]` -> `fresh[i]`      | nothing before it moved                      |
+  # | `:replace`              | the cache's video | `old[i]` -> `fresh[i]`  | same length, same indices                    |
+  # | `unpublish`, video at 0 | 0             | `old[i]` -> `fresh[i - 1]`  | every section moved up one                   |
+  # | `unpublish`, video last | end           | `old[i]` -> `fresh[i]`      | nothing moved                                |
+  # | `unpublish`, refused    | —             | nothing is written at all   | a refusal that rewrites metadata is not one  |
+  #
+  # In every case the video's own index receives nothing: the aligned source array
+  # holds `nil` there, which `carry_over` skips (`next section unless old.is_a?(Hash)`),
+  # and `audio_sections` drops that key.
+  #
+  # WHAT `carry_over` DOES HERE, PLAINLY
+  #
+  # Today it copies NOTHING. This service splices the persisted section hashes
+  # across untouched (see below), so the enrichment is already on the sections it
+  # belongs to; deleting the two `carry_over` calls leaves every test in
+  # `lesson_video_publisher_test.rb` green (measured). What the ALIGNMENT enforces
+  # is the other half: that nothing is ever carried ACROSS the insertion point onto
+  # the video. Replace the aligned source with a plain positional `old` and the
+  # prepend test goes red because the paid-for image lands on the video at index 0.
+  # The call stays because spec §4 names it and because it becomes load-bearing the
+  # moment anyone rebuilds the surrounding sections from a parse again.
+  #
+  # The census test that guards this is one-sided, and its message overstates it:
+  # with a splice an image cannot be lost, only duplicated, so an unequal count
+  # means a carry ACROSS the video, never a dropped `image_url`.
   #
   # ONE SECTION CHANGES, AND ONLY ONE
   #
   # The sections around the video are the PERSISTED ones, copied across untouched;
   # only the video section itself comes from the parser. A fresh parse of the whole
   # body can return a different array than the cache it would replace — that is why
-  # `wp33_reparse.rake` refuses to write a step whose shapes differ
-  # (`compatible.call`, rake:148 and :253) — and an upload that silently rewrote
-  # every other section would re-point attempts for a reason that has nothing to do
-  # with the video. So the array changes by exactly one element, and the indices an
-  # attempt can name are the ones the table above accounts for.
+  # `wp33:reparse` refuses to write a step whose shapes differ (`compatible`,
+  # rake:47, checked at rake:149,253) — and an upload that silently rewrote every
+  # other section would re-point attempts for a reason that has nothing to do with
+  # the video.
   #
-  # The body edit is persisted, not in-memory: `:replace` is decided by finding an
-  # existing `## Video:` section in the body, and a body without the video would
-  # silently drop it the next time `parse_and_persist!` fires on an empty cache.
+  # WHERE THE VIDEO GOES: THE PARSER DECIDES, NOT `placement`
+  #
+  # `ensure_summary` (parser:913) SYNTHESIZES a trailing summary that appears in no
+  # markdown, so "the end of the body" and "the end of the array" are different
+  # places. Measured: a body whose cache is `["concept", "concept", "summary"]`
+  # parses, after the video is appended to the markdown, to
+  # `["concept", "concept", "video", "summary"]`. Writing the video last would leave
+  # the cache claiming the video is last while the body says second-to-last, which
+  # makes the step permanently shape-incompatible for `wp33:reparse`, makes
+  # `unpublish!`'s "the video is last" allowance a decision taken against an array
+  # the body contradicts, and shifts the video's index the moment anything rebuilds
+  # `parsed_sections` from the body. So `at` is read off the parse of the edited
+  # body — for every placement, with no case for the summary.
+  #
+  # The parser's index is a fact about THIS cache only while the cache is what a
+  # parse of this body produces. When the two already disagree — reachable, see
+  # `unpublish!` — that index is not about this array at all, so the video goes to
+  # the end `placement` names and the cache changes by exactly one element either
+  # way. Same guard, and the same definition of "compatible", as rake:47.
   #
   # NOT DONE HERE: the Active Storage attachment. The caller attaches the blobs and
-  # passes their proxy URLs in; on `:ok` from `unpublish!` the caller purges them.
-  # Storage IO does not belong inside this transaction.
+  # passes their proxy URLs in; on `:ok` from `unpublish!` the caller purges them,
+  # and on `:conflict` it must not. Storage IO does not belong in this transaction.
   class LessonVideoPublisher
     # The step has no AiContent row, so there is no body to put a section into.
     class MissingLessonBody < StandardError; end
@@ -84,7 +144,13 @@ module ContentEngine
       outcome = nil
 
       @step.with_lock do
-        old = persisted_sections
+        # Both sources re-read inside the lock: `content_engine_ai_contents` has no
+        # `lock_version`, so a body read before the lock would let the loser of two
+        # concurrent publishes overwrite the winner's markdown from a stale copy.
+        content.reload
+        metadata = @step.fresh_metadata
+        old = sections_in(metadata)
+
         existing = old.index { |section| video?(section) }
         placement = if existing then :replace
         elsif attempts? then :append
@@ -92,71 +158,65 @@ module ContentEngine
         end
 
         body = edited_body(content.body, markdown, at_end: placement == :append)
-        section = parsed_video_section(body)
+        parse = reparse(body, content, metadata)
+        section = video_section!(parse)
+        at = placement == :replace ? existing : insertion_index(parse, old, content, metadata, placement)
 
-        fresh, aligned_old, index =
-          case placement
-          when :replace
-            # old[i] -> fresh[i]: same length, same indices, so the aligned copy
-            # of `old` is `old`.
-            [old.dup.tap { |sections| sections[existing] = section }, old, existing]
-          when :prepend
-            # old[i] -> fresh[i + 1]: one nil in front of `old` shifts every
-            # source index down one. `carry_over` skips a non-Hash source
-            # (`next section unless old.is_a?(Hash)`), so the video at 0 reads
-            # from that nil and receives nothing.
-            [[section] + old, [nil] + old, 0]
-          when :append
-            # old[i] -> fresh[i]: nothing moved. The video sits past the end of
-            # `old`, where `carry_over` reads nil and again carries nothing.
-            [old + [section], old, old.length]
-          end
+        if placement == :replace
+          # Replacement at `at`: same length, same indices, and `nil` at `at` so the
+          # new video inherits nothing the old one was carrying there.
+          fresh = old.dup.tap { |sections| sections[at] = section }
+          aligned = old.dup.tap { |sections| sections[at] = nil }
+          shift = 0
+        else
+          # Insertion at `at`: old[i] -> fresh[i] below it, old[i] -> fresh[i + 1]
+          # from it on. The `nil` spliced into the source array at the same index
+          # is what produces both halves, and is what the video reads from.
+          fresh = old.dup.tap { |sections| sections.insert(at, section) }
+          aligned = old[0...at] + [nil] + old[at..]
+          shift = 1
+        end
 
-        carried = SectionEnrichment.carry_over(aligned_old, fresh)
-
-        content.update!(body: body)
-        @step.merge_metadata!("parsed_sections" => carried)
-        outcome = { section_index: index, placement: placement }
+        write!(content, body, SectionEnrichment.carry_over(aligned, fresh),
+               reindexed_audio(metadata["audio_sections"], at: at, shift: shift))
+        outcome = { section_index: at, placement: placement }
       end
 
       outcome
     end
 
-    # Returns `:ok` when the video was removed (or there was none), `:conflict`
-    # when removing it would re-point recorded student work — in which case
-    # nothing at all is written.
+    # Returns `:ok` when the video is gone from both the cache and the body, and
+    # `:conflict` when removing it would re-point recorded student work — in which
+    # case nothing at all is written.
     def unpublish!
       content = lesson_content!
       outcome = nil
 
       @step.with_lock do
-        old = persisted_sections
-        index = old.index { |section| video?(section) }
-        last = old.length - 1
+        content.reload
+        metadata = @step.fresh_metadata
+        old = sections_in(metadata)
+        at = old.index { |section| video?(section) }
 
-        if index.nil?
-          outcome = :ok
-        elsif attempts? && index != last
+        if at && attempts? && at != old.length - 1
           # A refusal that rewrites metadata is not a refusal. No body edit, no
-          # merge_metadata!, nothing: the caller answers 409 and the student's
-          # `section_index` values keep meaning what they meant.
+          # merge_metadata!, nothing: the caller answers 409, does NOT purge the
+          # blob, and the student's `section_index` values keep meaning what they
+          # meant. (`at.nil?` cannot re-point anything, so it is not refused.)
           outcome = :conflict
         else
-          fresh = old.dup.tap { |sections| sections.delete_at(index) }
-          aligned_old =
-            if index.zero?
-              # Video removed from 0: old[i] -> fresh[i - 1]. Dropping the first
-              # element of `old` shifts every source index up one.
-              old.drop(1)
-            else
-              # Video removed from the end: old[i] -> fresh[i]. Nothing moved.
-              old
-            end
+          if at
+            # Removal at `at`: old[i] -> fresh[i] below it, old[i] -> fresh[i - 1]
+            # above it. Dropping `old[at]` from the source array is what produces
+            # the second half — which makes the aligned source equal `fresh`
+            # itself here, so this carry is an identity.
+            fresh = old.dup.tap { |sections| sections.delete_at(at) }
+            aligned = old[0...at] + old[(at + 1)..]
+            carried = SectionEnrichment.carry_over(aligned, fresh)
+            audio = reindexed_audio(metadata["audio_sections"], at: at, shift: -1)
+          end
 
-          carried = SectionEnrichment.carry_over(aligned_old, fresh)
-
-          content.update!(body: content.body.to_s.sub(VIDEO_SECTION, "").lstrip)
-          @step.merge_metadata!("parsed_sections" => carried)
+          write!(content, stripped_body(content.body), carried, audio)
           outcome = :ok
         end
       end
@@ -165,6 +225,43 @@ module ContentEngine
     end
 
     private
+
+    # One write path, so the body and the positional structures are always written
+    # together or not at all. `merge_metadata!` (never `update!(metadata:)`) merges
+    # inside the database at the top level, so keys nobody here names are read and
+    # written by nobody.
+    def write!(content, body, sections, audio)
+      content.update!(body: body) unless body == content.body
+      patch = {}
+      patch["parsed_sections"] = sections if sections
+      patch["audio_sections"] = audio if audio
+      @step.merge_metadata!(patch) if patch.any?
+    end
+
+    # The index a reparse of the edited body puts the video at — the same parse a
+    # rebuild would run — unless the cache is not what a parse of the CURRENT body
+    # produces, in which case that index says nothing about this array and the end
+    # `placement` names is used instead. Clamped, because a cache the body
+    # contradicts can be shorter than the parse.
+    def insertion_index(parse, old, content, metadata, placement)
+      at = parse.index { |section| video?(section) }
+      return placement == :append ? old.length : 0 unless same_shape?(old, reparse(content.body, content, metadata))
+
+      at.clamp(0, old.length)
+    end
+
+    # `wp33_reparse.rake:47`'s rule, to the letter: same length, and the same type
+    # at every index. Titles and contents may differ; nothing may move.
+    def same_shape?(old, parse)
+      old.size == parse.size && old.each_with_index.all? { |section, i| section["type"] == parse[i]["type"] }
+    end
+
+    # The same parse `wp33_reparse.rake:39` performs, metadata and audio_url
+    # included, because those add sections too (`inject_metadata_checks`,
+    # `inject_audio_section`) and a rebuild would add them at the same places.
+    def reparse(body, content, metadata)
+      LessonSectionParser.call(body, metadata: metadata, audio_url: content.audio_url).map(&:as_json)
+    end
 
     # The heading carries the title for a human reading the markdown; the JSON
     # body is what the parser reads. One line, so no line of it can look like the
@@ -190,15 +287,36 @@ module ContentEngine
       "#{markdown}\n#{body.lstrip}"
     end
 
+    # Stripped whenever the BODY carries the heading, whatever the cache says. The
+    # two disagree in reachable ways — a `## Video:` whose JSON is followed by
+    # prose with no sub-heading / fence / rule terminator parses as a concept
+    # (measured), and content_generation_job.rb:36 / content_pipeline_job.rb:152
+    # each `create!` a second AiContent row without deleting the first — and a
+    # heading left behind after the caller purges the blob is resurrected as a dead
+    # player the next time `parse_and_persist!` fires on an empty cache. Nothing
+    # positional moves: the cache is written from the cache's own video index, or
+    # not written at all.
+    #
+    # Both this and the `:replace` `sub` discard the section's trailing `aftermath`
+    # prose, which `parse_heading_video` deliberately keeps (2624d00). Unreachable
+    # through the studio, which writes the heading and one line of JSON and nothing
+    # after it; a future author of this heading by hand would lose that tail.
+    def stripped_body(body)
+      body = body.to_s
+      return body unless body.match?(VIDEO_SECTION)
+
+      body.sub(VIDEO_SECTION, "").lstrip
+    end
+
     # The video section as the parser reads it back out of the body we just built,
     # rather than a hash assembled here: the parser is the author of that key set
     # (it gained `aftermath` in 2624d00, nil on this path because the section ends
     # at the next `##`), and a section built by hand would drift from it.
     #
-    # The rest of this parse is discarded — the surrounding sections come from the
-    # persisted array, see the class comment.
-    def parsed_video_section(body)
-      section = LessonSectionParser.call(body).map(&:as_json).find { |parsed| video?(parsed) }
+    # The rest of the parse is used for `at` only — the surrounding sections come
+    # from the persisted array, see the class comment.
+    def video_section!(parse)
+      section = parse.find { |parsed| video?(parsed) }
       return section if section
 
       # `parse_heading_video` degrades to a concept when the body is not a Hash
@@ -206,11 +324,29 @@ module ContentEngine
       raise UnparsableSection, "step #{@step.id}: the video section did not parse back as a video"
     end
 
+    # `audio_sections` under the same offsets as the array. The video's own index
+    # holds no clip afterwards: an insertion leaves it free, a replacement drops
+    # what the OLD video had there, and a removal drops the clip of the section
+    # that went away. A key that is not an index is left exactly where it is
+    # rather than guessed at.
+    def reindexed_audio(audio, at:, shift:)
+      return nil unless audio.is_a?(Hash) && audio.any?
+
+      audio.each_with_object({}) do |(key, entry), out|
+        index = Integer(key.to_s, exception: false)
+        if index.nil? || index < at
+          out[key] = entry
+        elsif index > at || shift.positive?
+          out[(index + shift).to_s] = entry
+        end
+      end
+    end
+
     # Read inside the lock and straight from the row: `merge_metadata!` merges at
     # the top level, so a caller mutating a NESTED structure must re-read it
     # immediately before writing (route_step.rb:66).
-    def persisted_sections
-      sections = @step.fresh_metadata["parsed_sections"]
+    def sections_in(metadata)
+      sections = metadata["parsed_sections"]
       sections.is_a?(Array) ? sections : []
     end
 
