@@ -654,10 +654,26 @@ This is the heart of the package. Read spec §4 before writing a line.
 **Interfaces:**
 - Consumes: `SectionEnrichment::KEYS` and `.carry_over`, `LessonSectionParser`, `RouteStep#merge_metadata!`.
 - Produces: `LessonVideoPublisher.publish!(step:, payload:) -> {section_index:, placement:}` and
-  `.unpublish!(step:) -> :ok | :conflict`. Tasks 6 and 7 call exactly these. **`placement` is a
-  Symbol (`:prepend` / `:append`) in Ruby and therefore a String (`"prepend"` / `"append"`) once
-  it has been through JSON** — Task 5's service tests assert the Symbol, Task 6's request tests
-  assert the String. Both are in this plan and they are not in conflict.
+  `.unpublish!(step:) -> :ok | :conflict`. Tasks 6 and 7 call exactly these.
+- **`placement` has THREE values: `:prepend`, `:append`, `:replace`.** A re-upload onto a step that
+  already carries a `## Video:` section edits it **in place**, so it is neither a prepend nor an
+  append and the response must not claim to be one. It is a Symbol in Ruby and a String
+  (`"prepend"` / `"append"` / `"replace"`) once through JSON — Task 5's service tests assert the
+  Symbol, Tasks 6 and 7's request tests assert the String. They do not conflict.
+
+### The carry-over offset, per placement — this is the whole safety argument
+
+Write this table into the service as a comment. Every row is a different offset, and getting one
+wrong either drops a paid-for image or moves it onto the wrong section.
+
+| Operation | `fresh` vs `old` | Carry | Why |
+|---|---|---|---|
+| `:prepend` | video inserted at 0 | `old[i]` → `fresh[i + 1]` | every old section moved down one; the video receives nothing |
+| `:append` | video added at the end | `old[i]` → `fresh[i]` | nothing moved; the video receives nothing |
+| `:replace` | video edited in place | `old[i]` → `fresh[i]` | same length, same indices; the old video held no enrichment anyway |
+| `unpublish`, video at 0 | video removed from 0 | `old[i]` → `fresh[i - 1]` | every section moved up one |
+| `unpublish`, video last | last element removed | `old[i]` → `fresh[i]` | nothing moved |
+| `unpublish`, refused | — | **nothing is written at all** | a refusal that rewrites metadata is not a refusal |
 
 **Why this service exists at all** (put this at the top of the file): `SectionResolver.call` returns the persisted `parsed_sections` and only parses when there are none, so it cannot refresh a generated step; `parse_and_persist!` is private **and** writes a fresh parse with no `carry_over`, so calling it would delete the `image_url`s the media jobs paid for. Verified: its only callers are `wp33_reparse.rake:161,258`, and both wrap it in carry-over themselves.
 
@@ -716,6 +732,26 @@ This is the heart of the package. Read spec §4 before writing a line.
     assert_equal frozen, step.reload.metadata["parsed_sections"], "nothing may change on a refusal"
   end
 
+  test "a re-upload edits in place and reports replace, not prepend or append" do
+    step = step_with_sections([{ "type" => "check" }, { "type" => "visual", "image_url" => "/p.png" }])
+    first = ContentEngine::LessonVideoPublisher.publish!(step: step, payload: payload)  # prepend
+    record_attempt!(step, section_index: 1)                                             # on the check
+
+    second = ContentEngine::LessonVideoPublisher.publish!(
+      step: step, payload: payload.merge(video_url: "/rails/active_storage/blobs/proxy/zzz/new.mp4")
+    )
+    sections = step.reload.metadata["parsed_sections"]
+
+    assert_equal :prepend, first[:placement]
+    assert_equal :replace, second[:placement],
+      "a re-upload edits the existing section in place; calling it a prepend or an append " \\
+      "would be a lie about whether anything moved"
+    assert_equal first[:section_index], second[:section_index], "nothing moved, so the index is the same"
+    assert_equal "/rails/active_storage/blobs/proxy/zzz/new.mp4", sections[second[:section_index]]["video_url"]
+    assert_equal "check", sections[1]["type"], "the attempt at index 1 must still name its own block"
+    assert_equal "/p.png", sections[2]["image_url"], "enrichment carried positionally, offset 0"
+  end
+
   test "unpublish is allowed when the video is last, even with attempts" do
     step = step_with_sections([{ "type" => "check" }])
     record_attempt!(step, section_index: 0)
@@ -732,16 +768,27 @@ The shape, in words, because the exact code depends on how the body edit lands:
 
 1. Edit the lesson body: replace an existing `## Video:` section's JSON in place, or insert one at the chosen end.
 2. Parse the edited body → `fresh`.
-3. `placement = step.block_attempts.none? ? :prepend : :append` (check the real association name first).
-4. Carry enrichment with an offset: `prepend` → `old[i]` onto `fresh[i + 1]`; `append` → `old[i]` onto `fresh[i]`. The video receives nothing either way.
+3. Decide `placement`: an existing `## Video:` section in the body → `:replace`; else no
+   `block_attempts` on the step → `:prepend`; else → `:append`. (Check the real association name for
+   the attempts count before writing it.)
+4. Carry enrichment with the offset for that placement, from the table above. The video's own index
+   receives nothing in every case.
 5. Write inside `with_lock` via `merge_metadata!` — never `update!(metadata:)`.
 
-`unpublish!` mirrors it, and returns `:conflict` without writing anything when the step has attempts **and** the video is not the last section.
+`unpublish!` uses the same table's last three rows, and **"mirrors" must appear as those offsets in
+the code, not as the word in a comment**. It returns `:conflict` **without writing anything** when the
+step has attempts and the video is not the last section.
 
 - [ ] **Step 4: GREEN. Step 5: prove two guards**
 
 - Replace the offset-aware carry with a plain positional `SectionEnrichment.carry_over(old, fresh)` and confirm the **prepend** enrichment test goes red (the image lands on the video). Restore.
-- Make `unpublish!` always proceed and confirm the refusal test goes red. Restore.
+- Make `unpublish!` always proceed and confirm the refusal test goes red, including its "nothing
+  changed" assertions. Restore.
+- Make the re-upload branch fall through to `:prepend` instead of `:replace` and confirm the replace
+  test goes red on BOTH the placement and the "attempt still names its own block" assertion. Restore.
+
+**Paste the failing assertion lines themselves in the report, not a summary count.** A "3 failures"
+line does not show that the right assertion failed for the right reason.
 
 - [ ] **Step 6: Commit**
 
@@ -755,7 +802,9 @@ The shape, in words, because the exact code depends on how the body edit lands:
 
 **Interfaces:**
 - Consumes: Task 1's attachments, Task 3's base controller, Task 5's `LessonVideoPublisher.publish!`.
-- Produces: `201 {step_id, section_index, video_url, subtitles_url, placement}`; `200` with the same body when the bytes are identical.
+- Produces: `201 {step_id, section_index, video_url, subtitles_url, placement}`; `200` with the same
+  body when the bytes are identical. **`placement` over JSON is one of exactly three strings —
+  `"prepend"`, `"append"`, `"replace"`** — and the request tests assert the string, never the Symbol.
 
 - [ ] **Step 1: Write the failing tests — test 2 ("Not a video") and test 8 ("Recorded work re-pointed")**
 
