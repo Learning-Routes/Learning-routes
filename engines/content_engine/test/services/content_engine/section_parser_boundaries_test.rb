@@ -686,6 +686,40 @@ module ContentEngine
       assert_not_includes html, "&amp;quot;", "the double-escaping that showed `&quot;` to students"
     end
 
+    # ── `## Video:` — a film, or a concept, never a blank player ──────────────
+    #
+    # Only the studio writes this heading; the model never does. A broken upload
+    # must not reach a student as an empty <video> box.
+    test "a video block parses to a video section with its urls" do
+      body = <<~JSON
+        {"title": "La ese de la tercera persona",
+         "video_url": "/rails/active_storage/blobs/proxy/abc/l.mp4",
+         "subtitles_url": "/rails/active_storage/blobs/proxy/def/l.srt",
+         "duration_seconds": 477, "source": "manim-studio",
+         "lesson_id": "third-person-s", "voice": "english-teacher",
+         "published_at": "2026-09-16T13:00:04Z"}
+      JSON
+      section = parse_one_of("## Video: La ese de la tercera persona", body, "video")
+
+      assert_equal "/rails/active_storage/blobs/proxy/abc/l.mp4", section[:video_url]
+      assert_equal 477, section[:duration_seconds]
+      assert_equal "manim-studio", section[:source]
+    end
+
+    test "an unparsable video body renders as a concept, never a blank player" do
+      sections = LessonSectionParser.call(document("## Video: Roto", "{not json"))
+
+      assert_nil sections.find { |s| s[:type] == "video" },
+        "a broken upload must not reach the student as an empty <video>"
+      assert sections.any? { |s| s[:type] == "concept" && s[:title].to_s.include?("Roto") },
+        "the title survives as a concept so the student sees something"
+    end
+
+    test "the Spanish heading parses too" do
+      body = '{"title":"T","video_url":"/x.mp4","duration_seconds":10}'
+      assert parse_one_of("## Vídeo: T", body, "video")
+    end
+
     private
 
     def document(heading, canonical)

@@ -82,6 +82,15 @@ module ContentEngine
       },
       "audio_explainer" => {
         fence: nil, headings: [], partial: "audio_explainer", chrome: nil, authored: false
+      },
+      # Heading-authored by the STUDIO, not by the model. `authored: false` says the
+      # app injects this section; what actually keeps `## Video:` out of generation is
+      # that lesson_content.yml never mentions it (verified: nothing derives the
+      # prompts from LessonBlocks, and authored_types has no caller outside this file).
+      # The reverse assertion added to lesson_block_contract_test.rb in this package is
+      # what makes the declaration load-bearing.
+      "video" => {
+        fence: nil, headings: %w[Video Vídeo], partial: "video", chrome: nil, authored: false
       }
     }.freeze
 

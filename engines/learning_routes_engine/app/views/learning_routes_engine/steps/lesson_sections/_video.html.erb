@@ -1,0 +1,25 @@
+<%# A finished film, published by the studio. No Stimulus controller: the brief
+    specified one setting data-watched="true" and nothing in the app reads that —
+    interactive_lesson_controller.js gates on dataset.gating / dataset.blockSatisfied
+    and video is not a gating type. Inert DOM is the failure class WP-33 and WP-36
+    each hit, so it is not built until a consumer exists. %>
+<%# Symbol keys: StepsController#show hands the view
+    `ContentEngine::SectionResolver.call(@step).map(&:deep_symbolize_keys)`, the same
+    shape `_summary`/`_tip`/`_example` read from — a string-keyed lookup here would
+    silently render an empty <source src="">, which is exactly the blank player this
+    partial exists to prevent. %>
+<div class="lesson-video">
+  <span class="lesson-section-badge lesson-section-badge--video"><%= t("learning_engine.blocks.badge.video") %></span>
+  <h3 class="lesson-video__title"><%= block_title(section) %></h3>
+
+  <video controls preload="metadata" playsinline class="lesson-video__player">
+    <source src="<%= section[:video_url] %>" type="video/mp4">
+    <% if section[:subtitles_url].present? %>
+      <track kind="subtitles" srclang="es" label="Español" src="<%= section[:subtitles_url] %>" default>
+    <% end %>
+  </video>
+
+  <% if section[:duration_seconds].to_i.positive? %>
+    <p class="lesson-video__duration"><%= format("%d:%02d", section[:duration_seconds].to_i / 60, section[:duration_seconds].to_i % 60) %></p>
+  <% end %>
+</div>

@@ -233,6 +233,8 @@ module ContentEngine
             sections << parse_heading_scenario(title, body)
           when :flashcards
             sections << parse_heading_flashcards(title, body)
+          when :video
+            sections << parse_heading_video(title, body)
           else
             # Unknown or untyped heading — use existing logic
             sections << build_concept_or_visual(raw_title, body)
@@ -727,6 +729,50 @@ module ContentEngine
         type: "flashcards", title: title.presence,
         cards: cards, aftermath: aftermath, body: body
       }
+    end
+
+    # `## Video: <title>` with a JSON body written by the studio's upload.
+    # Mirrors parse_heading_visual in shape; mirrors WP-36's motion block in its
+    # failure rule — anything unparsable degrades to a concept carrying the title,
+    # never a blank player.
+    #
+    # `split_aftermath` trims a trailing sub-heading/fence/rule before the JSON
+    # is parsed — the same boundary every other heading parser in this file
+    # respects (see the SWEEP at the top of section_parser_boundaries_test.rb).
+    # Without it, prose the author put after the studio's upload would land
+    # inside the string handed to JSON.parse and a well-formed payload would
+    # fail to parse for a reason that has nothing to do with the payload.
+    def parse_heading_video(title_from_heading, body)
+      json_source, = split_aftermath(body.to_s)
+      payload = safe_parse_json(json_source.to_s.strip)
+
+      unless payload.is_a?(Hash) && payload["video_url"].present?
+        Rails.logger.warn("[LessonSectionParser] video block fell back to concept — bad body")
+        return { type: "concept", title: title_from_heading.presence, body: body.to_s.strip }
+      end
+
+      {
+        type: "video",
+        title: (payload["title"].presence || title_from_heading.presence),
+        video_url: payload["video_url"],
+        subtitles_url: payload["subtitles_url"].presence,
+        duration_seconds: payload["duration_seconds"],
+        source: payload["source"],
+        lesson_id: payload["lesson_id"],
+        voice: payload["voice"],
+        published_at: payload["published_at"],
+        body: body.to_s.strip
+      }
+    end
+
+    # Deliberately identical to WP-36's helper of the same name, so that whichever of
+    # the two packages merges second resolves the conflict by deleting one copy.
+    def safe_parse_json(text)
+      return nil if text.nil?
+
+      JSON.parse(text)
+    rescue JSON::ParserError
+      nil
     end
 
     def split_by_paragraphs(text)

@@ -1023,6 +1023,9 @@ en:
         visual: "Visual"
         audio: "Audio"
         audio_explainer: "Audio explanation"
+        video: "Video"
+      badge:
+        video: "Video"
       run: "Run ▶"
       run_code: "Run code"
       reset_code: "Reset code"
