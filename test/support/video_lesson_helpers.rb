@@ -3,6 +3,32 @@ module VideoLessonHelpers
 
   def auth(token) = { "Authorization" => "Bearer #{token}" }
 
+  # A stand-in for Rails.application.credentials, used only by with_token below.
+  # `dig` is the only method Admin::Api::BaseController calls on the real object.
+  StudioCredentialsDouble = Struct.new(:token) do
+    def dig(*keys)
+      return nil if token.nil?
+      { studio: { api_token: token } }.dig(*keys)
+    end
+  end
+
+  # VERIFIED before this was written: `Rails.application.credentials.config[:studio] = ...`
+  # does NOT work in Rails 8.1. `EncryptedConfiguration#dig` is delegated to `#options`
+  # (an `ActiveSupport::OrderedOptions` tree built from `#config` and memoised
+  # separately in `@options`), not to `#config` itself — so mutating `config` leaves
+  # `dig` reading the stale, already-memoised `@options` and the credential never
+  # changes. `minitest/mock` is not in this bundle, so `Object#stub` is unavailable
+  # either way. This is the house idiom instead: a singleton swap on
+  # `Rails.application.credentials` itself, restored in an `ensure` (see
+  # `with_refused_guard` in test/services/content_engine/voice_evaluator_metering_test.rb).
+  def with_token(value)
+    original = Rails.application.method(:credentials)
+    Rails.application.define_singleton_method(:credentials) { StudioCredentialsDouble.new(value) }
+    yield
+  ensure
+    Rails.application.define_singleton_method(:credentials, original)
+  end
+
   # A real minimal mp4 header, not random bytes: Task 6 validates `ftyp` at offset 4,
   # so a fixture of zeroes would make that validation untestable.
   def mp4_bytes = "\x00\x00\x00\x20ftypisom".b + ("\x00".b * 256)

@@ -79,6 +79,14 @@ class Rack::Attack
     end
   end
 
+  # Per TOKEN, not per IP: the studio is one script on one machine, and an IP
+  # throttle would be useless against a leaked token and annoying for the owner.
+  throttle("studio_api/token", limit: 30, period: 60) do |req|
+    next unless req.path.start_with?("/admin/api/")
+
+    req.get_header("HTTP_AUTHORIZATION").to_s.presence
+  end
+
   ### Safelist: never interfere with the health check ###
   safelist("allow-health-check") do |req|
     req.path == "/up"
