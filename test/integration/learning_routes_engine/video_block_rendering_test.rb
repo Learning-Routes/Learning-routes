@@ -65,6 +65,25 @@ module LearningRoutesEngine
         "the title survives as a concept so the student sees something"
     end
 
+    # The tail the author left after the studio's upload is real lesson material.
+    # Every other partial that can carry one renders it below the card; this one
+    # measures it where it matters — on the page the student loads.
+    test "prose the author left after the video is shown below the player" do
+      section = VIDEO_SECTION.merge(
+        "aftermath" => "### Lo que pasa realmente\n\nPrimera línea de la cola."
+      )
+      step = step_with_sections([section])
+      sign_in_as(@video_user)
+
+      get learning_routes_engine.route_step_path(step.learning_route, step)
+
+      assert_response :success
+      assert_includes response.body, "Primera línea de la cola",
+        "the aftermath was parsed and persisted, and the student never sees it"
+      assert_includes response.body, "Lo que pasa realmente",
+        "the sub-heading the author wrote after the video is lesson content too"
+    end
+
     private
 
     def sign_in_as(user)

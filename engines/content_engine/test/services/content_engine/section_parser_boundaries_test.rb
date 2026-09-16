@@ -111,6 +111,22 @@ module ContentEngine
       "drag_drop" => [
         "## Match: Spanish animals",
         "Dog ==> Perro\nCat ==> Gato\n"
+      ],
+      # `video` does not accumulate either — its body is one JSON object and
+      # `split_aftermath` already kept the trailing content out of the payload.
+      # It is here for the OTHER half of this sweep: the first version of
+      # `parse_heading_video` dropped `split_aftermath`'s second return value, so
+      # the tail was kept out of the fields and out of the section entirely. That
+      # is the `check` / `drag_drop` defect again, in a parser written after the
+      # three rounds that closed it. Only the studio writes this heading today,
+      # which is why it is a defence in depth rather than a live loss.
+      "video" => [
+        "## Video: La ese de la tercera persona",
+        <<~JSON
+          {"title": "La ese de la tercera persona",
+           "video_url": "/rails/active_storage/blobs/proxy/abc/l.mp4",
+           "duration_seconds": 477, "source": "manim-studio"}
+        JSON
       ]
     }.freeze
 

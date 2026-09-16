@@ -743,7 +743,7 @@ module ContentEngine
     # inside the string handed to JSON.parse and a well-formed payload would
     # fail to parse for a reason that has nothing to do with the payload.
     def parse_heading_video(title_from_heading, body)
-      json_source, = split_aftermath(body.to_s)
+      json_source, aftermath = split_aftermath(body.to_s)
       payload = safe_parse_json(json_source.to_s.strip)
 
       unless payload.is_a?(Hash) && payload["video_url"].present?
@@ -761,6 +761,15 @@ module ContentEngine
         lesson_id: payload["lesson_id"],
         voice: payload["voice"],
         published_at: payload["published_at"],
+        # Kept, not only excluded from the payload. Dropping this second return
+        # value is the `check` / `drag_drop` defect — the tail stays out of the
+        # parsed fields either way, so the swallow half of the boundaries sweep
+        # stays green while the author's prose is deleted. `_video.html.erb`
+        # renders it below the player, like every other partial that can carry
+        # one. Unreachable through the studio (it writes JSON only, and the
+        # publisher terminates the section at the next `##`), so this is defence
+        # in depth against the next writer of this heading, not a live loss.
+        aftermath: aftermath,
         body: body.to_s.strip
       }
     end
