@@ -16,8 +16,23 @@ module Admin
       def authenticate_studio!
         expected = Rails.application.credentials.dig(:studio, :api_token).to_s
 
-        # A missing credential means the API is OFF. Without this line an unset
-        # credential is "" and a caller sending "" would compare equal.
+        # A missing credential means the API is OFF, and this line is the only thing
+        # in this file that says so. It is worth being exact about what it defends,
+        # because the first version of this comment claimed a bypass that Rails
+        # already blocks, and a comment in this repo may not carry an unverified
+        # claim.
+        #
+        # Measured: `secure_compare("", "")` is TRUE. An unset credential really
+        # would admit an empty token. What stops that today is one level further
+        # out — `ActionController::HttpAuthentication::Token.authenticate` wraps
+        # `login_procedure.call` in `unless token.blank?`, so an empty token never
+        # reaches the comparison at all (actionpack 8.1.3.1). `secure_compare` then
+        # refuses everything else by bytesize.
+        #
+        # So this line is unreachable through the method below, and deliberately
+        # kept: it is what holds if anyone reads `request.headers["Authorization"]`
+        # by hand instead. `base_controller_test.rb` pins that with an empty-token
+        # request, proven against exactly that refactor.
         return head(:unauthorized) if expected.blank?
 
         authenticate_or_request_with_http_token do |token, _options|

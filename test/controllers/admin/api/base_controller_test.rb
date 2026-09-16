@@ -21,11 +21,38 @@ class Admin::Api::BaseControllerTest < ActionDispatch::IntegrationTest
     assert_response :unauthorized
   end
 
+  # An OUTCOME test, and it is labelled as one on purpose. It passes with
+  # `authenticate_studio!`'s `expected.blank?` line DELETED — measured — because a
+  # 48-byte token can never equal a 0-byte credential: `secure_compare` opens with
+  # `a.bytesize == b.bytesize`. So this pins the behaviour the spec requires and
+  # attributes it to nothing in particular. The test below is the one that
+  # discriminates.
   test "a missing credential means the API is OFF, not open" do
     with_token(nil) { get "/admin/api/routes", headers: auth(TOKEN) }
     assert_response :unauthorized,
-      "with no studio.api_token configured the API must refuse everything; " \
-      "an unset credential that compares equal to a supplied token is an open door"
+      "with no studio.api_token configured the API must refuse everything"
+  end
+
+  # THIS is the guard test, and it took a measurement to find the right shape.
+  #
+  # `ActiveSupport::SecurityUtils.secure_compare("", "")` is **true** (measured, not
+  # assumed). So an unset credential really would let an empty token in — the only
+  # reason it does not today is that `ActionController::HttpAuthentication::Token
+  # .authenticate` wraps `login_procedure.call` in `unless token.blank?` and never
+  # reaches our comparison. Two mechanisms deep, and both of them belong to Rails.
+  #
+  # `expected.blank?` is what holds if either one goes away: someone reading
+  # `request.headers["Authorization"]` by hand, or a Rails version that stops
+  # pre-filtering. That refactor is the mutation this test was proven against —
+  # `Bearer token=""` parses to a real empty string, not nil (also measured).
+  test "an empty token against an unset credential is 401, not a match" do
+    with_token(nil) do
+      get "/admin/api/routes", headers: { "Authorization" => 'Bearer token=""' }
+    end
+
+    assert_response :unauthorized,
+      "an empty submitted token compares EQUAL to an unset credential " \
+      "(secure_compare(\"\", \"\") is true); only `expected.blank?` refuses it"
   end
 
   test "the right token is accepted and audited" do
@@ -58,6 +85,17 @@ class Admin::Api::BaseControllerTest < ActionDispatch::IntegrationTest
       get "/admin/api/routes", headers: auth(TOKEN)
       assert_response :too_many_requests
       assert response.headers["Retry-After"].present?
+
+      # And it is keyed on the TOKEN, not on the IP. Every request above came from
+      # one test client, so a per-IP throttle would have produced the same 429s.
+      # A SECOND token from the same client must still be served — that is the
+      # difference between the two keying strategies, and the same way
+      # rack_attack_test.rb proves its own per-email rule.
+      get "/admin/api/routes", headers: auth("y" * 48)
+      assert_not_equal 429, response.status,
+        "a different token from the same IP was throttled, so this rule is keyed " \
+        "on the address and not on the token the spec names"
+      assert_response :unauthorized, "test premise: the second token is a wrong one"
     end
   ensure
     Rack::Attack.enabled = false

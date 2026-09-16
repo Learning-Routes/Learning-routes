@@ -81,6 +81,12 @@ class Rack::Attack
 
   # Per TOKEN, not per IP: the studio is one script on one machine, and an IP
   # throttle would be useless against a leaked token and annoying for the owner.
+  #
+  # A request carrying NO Authorization header discriminates to nil, and Rack::Attack
+  # does not throttle a nil discriminator — so a headerless flood on /admin/api/ is
+  # caught by the general per-IP backstop above, not by this rule. That is the
+  # boundary as specified ("30 requests/minute per token"); it is written down here
+  # rather than left to be discovered, and the handoff names it as the owner's call.
   throttle("studio_api/token", limit: 30, period: 60) do |req|
     next unless req.path.start_with?("/admin/api/")
 
