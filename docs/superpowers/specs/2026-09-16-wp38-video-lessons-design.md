@@ -136,8 +136,28 @@ Storage is the `Disk` service already configured: `Rails.root/storage` in develo
 | `DELETE /admin/api/steps/:id/video` | purge, remove section, rebuild → `204` |
 
 Re-upload of the same bytes is idempotent: compare the Active Storage blob checksum and return
-`200` with the existing URLs. A different file replaces the attachment and the section; the old blob
-is purged later, not inline.
+`200` with the existing URLs. A different file replaces the attachment and the section **in place, at
+the same index**; the old blob is purged later, not inline. Replacing in place shifts nothing, so
+re-upload stays allowed even on a step with recorded work.
+
+### DELETE carries the same re-pointing hazard, and is guarded
+
+**[owner, checkpoint]** §4 closes the hazard for upload and the first draft of this spec left it open
+for unpublish. If the video was prepended (zero attempts at the time) and students recorded work
+afterwards, their `section_index` values already include the `+1`. Removing the section would shift
+every index back and re-point that work — the same class, in the opposite direction.
+
+Unpublish is allowed when **either**:
+
+- the step has zero `block_attempts`, or
+- the video section is the **last** one — removing the final index shifts nothing, and no attempt can
+  reference the video itself because `video` is not in `GATING_TYPES` and is not gradable.
+
+Otherwise `409` and **nothing changes**:
+
+```json
+{ "error": "students have recorded work on this step; re-upload replaces the video, unpublish would re-point their attempts" }
+```
 
 **Validation is from the bytes, not the filename.** mp4: `ftyp` at offset 4 of the first 12 bytes,
 else `422`. Subtitles: decodes as UTF-8 and starts with `1` or `WEBVTT`, else `422` — **[new]** with
@@ -151,8 +171,22 @@ a wrong `m:ss` caption, and nothing detects it.
 ## 7. The block
 
 `LessonBlocks::BLOCKS` gains `"video" => {fence: nil, headings: %w[Video Vídeo], partial: "video",
-chrome: nil, authored: false}`. `authored: false` is what keeps it out of the generation prompt: the
-model never writes `## Video:`; only the studio's upload does.
+chrome: nil, authored: false}`.
+
+**[owner, checkpoint] What actually keeps `## Video:` out of generation — and it is not
+`authored: false`.** Verified: nothing derives the prompts from `LessonBlocks`, and `authored_types`
+has **no caller anywhere outside `lesson_blocks.rb`**. The flag is a declaration, not a mechanism.
+What keeps the model from writing `## Video:` is simply that `lesson_content.yml` never mentions it,
+and the contract test only checks prompt → known type.
+
+So `authored: false` stays — as the honest declaration that the app injects this section rather than
+the model — and this package **makes it load-bearing** by adding the missing reverse assertion
+(test 10): every authored type with headings must be requested by the prompt. Verified it passes
+today, and it would go red if `video` were ever declared authored.
+
+**Also verified:** `heading_map` iterates every entry in `BLOCKS` and maps `cfg[:headings]`
+regardless of `authored`, so `## Video:` and `## Vídeo:` parse. (`audio` is absent from the map only
+because its `headings` are `[]`, not because of its flag.)
 
 `LessonSectionParser#parse_heading_video(title, body)` mirrors `parse_heading_visual`: the body is a
 JSON object, `safe_parse_json` protects it, and **an unparsable body degrades to a `concept` carrying
@@ -184,9 +218,14 @@ Every one red first; every guard proven by breaking the fix.
 6. **A blank box** — an unparsable `## Video:` body renders as a concept with its title.
 7. **The route tree leaks** — `GET /admin/api/routes` exposes only the listed fields; asserted on the
    JSON keys, never on a sample value.
-8. **[new] Recorded work re-pointed** — upload to a step that HAS `block_attempts`: every attempt's
-   `section_index` still names the same block type afterwards, and the placement was `append`.
-   Without this, §4's whole argument is untested.
+8. **[new] Recorded work re-pointed (upload)** — upload to a step that HAS `block_attempts`: every
+   attempt's `section_index` still names the same block type afterwards, and the placement was
+   `append`. Without this, §4's whole argument is untested.
+9. **[owner] Unpublish re-points recorded work** — a prepended video, then attempts, then `DELETE` →
+   `409`; the section, both attachments and `parsed_sections` are all untouched. The mirror of 8.
+10. **[owner] `authored: false` is load-bearing** — every authored type with headings is requested by
+   `lesson_content.yml`. Green today (verified: nothing missing); red if `video` were declared
+   authored. Proven by removing `authored: false` from the video entry and watching it fail.
 
 ## 9. Order
 
@@ -206,6 +245,7 @@ Every one red first; every guard proven by breaking the fix.
 |---|---|
 | A naive rebuild deletes paid-for images | §4's offset-aware carry-over; test 3's census equality is the proof |
 | Prepending re-points recorded work | Prepend only at zero attempts; test 8 |
+| Unpublishing re-points recorded work | 409 unless zero attempts or the video is last; test 9 |
 | `ffmpeg` missing on the machine running the system test | Detect and **skip with an explicit message**, never silently — the WP-36 node-version precedent |
 | 301 MB test is slow or is cut by Rack/Puma before the controller | Assert on `request.content_length` handling rather than streaming 301 MB; if Rack cuts first, say so in the handoff rather than claiming a controller behaviour |
 | `duration_seconds` unverified | Stated in the handoff; no ffprobe is being added |
