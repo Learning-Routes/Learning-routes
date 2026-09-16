@@ -40,4 +40,27 @@ class Admin::Api::BaseControllerTest < ActionDispatch::IntegrationTest
     with_token(TOKEN) { get "/admin/api/routes", headers: auth(TOKEN) }
     assert_equal "application/json", response.media_type
   end
+
+  # Rack::Attack is disabled globally in test/test_helper.rb (a real cache store
+  # would let its counters leak between unrelated tests), so this test enables it
+  # locally with an in-memory store, mirroring test/integration/rack_attack_test.rb.
+  test "the 31st request in a minute from the same token is throttled" do
+    original_store = Rack::Attack.cache.store
+    Rack::Attack.cache.store = ActiveSupport::Cache::MemoryStore.new
+    Rack::Attack.enabled = true
+    Rack::Attack.reset!
+
+    with_token(TOKEN) do
+      30.times do
+        get "/admin/api/routes", headers: auth(TOKEN)
+        assert_not_equal 429, response.status
+      end
+      get "/admin/api/routes", headers: auth(TOKEN)
+      assert_response :too_many_requests
+      assert response.headers["Retry-After"].present?
+    end
+  ensure
+    Rack::Attack.enabled = false
+    Rack::Attack.cache.store = original_store
+  end
 end
