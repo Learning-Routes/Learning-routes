@@ -222,6 +222,43 @@ class ContentEngine::LessonVideoPublisherTest < ActiveSupport::TestCase
       "the cache held no video, so nothing positional may move"
   end
 
+  # ─── Fix round 2 ─────────────────────────────────────────────────────
+  #
+  # The refusal exists to stop recorded work from being re-pointed, and work at an
+  # index BELOW the removal point cannot move. Now that `at` is the index a reparse
+  # produces, an appended video sits before the synthesized summary, so the literal
+  # "the video is the last section" reading refuses forever on any step with work —
+  # the opposite of what the allowance was for. This is the shape that has no test
+  # in the six: a step whose cache IS a parse of its own body, so the parse-derived
+  # index is the one used.
+  test "unpublish is allowed when the recorded work all sits above the video" do
+    step = consistent_step("## Concepto: A\nUno.\n\n## Pregunta: ¿Cuál es la capital?\nA) Lisboa\nB) Madrid\nCORRECTA: A\n")
+    assert_equal %w[concept check summary], cached_types(step)
+    step.merge_metadata!("audio_sections" => {
+      "0" => { "status" => "ready", "url" => "/paid/concept.mp3" },
+      "2" => { "status" => "ready", "url" => "/paid/summary.mp3" }
+    })
+    record_attempt!(step, section_index: 1)                                      # on the check
+
+    published = ContentEngine::LessonVideoPublisher.publish!(step: step, payload: payload)
+    assert_equal :append, published[:placement]
+    assert_equal 2, published[:section_index], "the parse puts the video before the synthesized summary"
+
+    assert_equal :ok, ContentEngine::LessonVideoPublisher.unpublish!(step: step),
+      "the only attempt sits at index 1, below the video at 2, so removing the video moves nothing " \
+      "that any attempt names"
+
+    metadata = step.reload.metadata
+    assert_equal %w[concept check summary], metadata["parsed_sections"].map { |s| s["type"] }
+    assert_equal "check", metadata["parsed_sections"][1]["type"],
+      "the attempt at index 1 must still name its own block"
+    assert_equal({ "0" => { "status" => "ready", "url" => "/paid/concept.mp3" },
+                   "2" => { "status" => "ready", "url" => "/paid/summary.mp3" } },
+      metadata["audio_sections"],
+      "the summary's clip moved down with it on the publish and back up on the unpublish; " \
+      "the concept's, below the video, never moved")
+  end
+
   private
 
   # A step whose cache is exactly what a parse of its body produces — the state a

@@ -58,6 +58,10 @@ module ContentEngine
   # | `unpublish`, video last | end           | `old[i]` -> `fresh[i]`      | nothing moved                                |
   # | `unpublish`, refused    | —             | nothing is written at all   | a refusal that rewrites metadata is not one  |
   #
+  # Those two unpublish rows are the extremes, not the only cases: a removal from the
+  # middle is allowed whenever no recorded work sits above it, and it carries
+  # `old[i] -> fresh[i - 1]` for that part of the array. See `unpublish!`.
+  #
   # In every case the video's own index receives nothing: the aligned source array
   # holds `nil` there, which `carry_over` skips (`next section unless old.is_a?(Hash)`),
   # and `audio_sections` drops that key.
@@ -97,8 +101,8 @@ module ContentEngine
   # `["concept", "concept", "video", "summary"]`. Writing the video last would leave
   # the cache claiming the video is last while the body says second-to-last, which
   # makes the step permanently shape-incompatible for `wp33:reparse`, makes
-  # `unpublish!`'s "the video is last" allowance a decision taken against an array
-  # the body contradicts, and shifts the video's index the moment anything rebuilds
+  # `unpublish!`'s decision about what sits above the video a decision taken against
+  # an array the body contradicts, and shifts the video's index the moment anything rebuilds
   # `parsed_sections` from the body. So `at` is read off the parse of the edited
   # body — for every placement, with no case for the summary.
   #
@@ -198,11 +202,27 @@ module ContentEngine
         old = sections_in(metadata)
         at = old.index { |section| video?(section) }
 
-        if at && attempts? && at != old.length - 1
+        if at && attempts_after?(at)
+          # THE REFUSAL, and why it is this condition rather than "the video is the
+          # last section". What the refusal protects is recorded work from being
+          # re-pointed, and work at an index BELOW the removal point cannot move.
+          # The owner's rule was "zero attempts, or the video is last", with its
+          # reason given in the same breath: removing the final index shifts
+          # nothing, and no attempt can name the video itself because `video` is not
+          # in `BlockGrader::GATING_TYPES`. "No recorded work after the video" is
+          # that reason applied faithfully; "the video is last" is the special case
+          # of it where the set above the video is empty by construction.
+          #
+          # The literal reading stopped BEING that rule when `at` became the index a
+          # reparse produces: an appended video sits before the synthesized summary,
+          # so it is never the last element, so the allowance would never fire on any
+          # step with recorded work. A rule that never fires is not that rule.
+          #
           # A refusal that rewrites metadata is not a refusal. No body edit, no
-          # merge_metadata!, nothing: the caller answers 409, does NOT purge the
-          # blob, and the student's `section_index` values keep meaning what they
-          # meant. (`at.nil?` cannot re-point anything, so it is not refused.)
+          # merge_metadata!, nothing: the caller answers 409 with the spec's wording,
+          # does NOT purge the blob, and the student's `section_index` values keep
+          # meaning what they meant. `at.nil?` falls through to the branch below
+          # because there is no removal point, so nothing can sit after one.
           outcome = :conflict
         else
           if at
@@ -355,6 +375,15 @@ module ContentEngine
     # RouteStep declares no `has_many :block_attempts`; attempts are read through
     # the model, as `RouteStep#outstanding_blocks_for` does.
     def attempts? = LearningRoutesEngine::BlockAttempt.where(route_step: @step).exists?
+
+    # The recorded work a removal at `index` would move: everything strictly above
+    # it. `index` itself is excluded because the section being removed is the video,
+    # which `BlockGrader::GATING_TYPES` (`check drag_drop fill_blank flashcards
+    # scenario`) does not include, so no attempt names it.
+    def attempts_after?(index)
+      LearningRoutesEngine::BlockAttempt.where(route_step: @step)
+                                        .where("section_index > ?", index).exists?
+    end
 
     def lesson_content!
       SectionResolver.lesson_content_for(@step) ||
