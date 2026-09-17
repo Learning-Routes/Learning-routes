@@ -63,7 +63,15 @@ class LessonBlockVisibilityTest < ApplicationSystemTestCase
     "audio" => { "title" => "Audio", "body" => "Narración de la lección.",
                  "audio_url" => "/audio/example.mp3" },
     "audio_explainer" => { "title" => "Explicación", "body" => "Narración larga.",
-                           "audio_url" => "/audio/example.mp3" }
+                           "audio_url" => "/audio/example.mp3" },
+    # WP-38. The URLs are static paths rather than Active Storage proxy paths on
+    # purpose: this test measures whether the BLOCK occupies pixels, and a <video>
+    # box is laid out from its CSS (`.lesson-video__player` is `display:block;
+    # width:100%`) before any byte of media is fetched. Pointing it at storage would
+    # make the assertion depend on a blob fixture and on whether headless Chromium
+    # can decode it — neither of which is what this file is asking.
+    "video" => { "title" => "Vídeo", "video_url" => "/icon.png",
+                 "subtitles_url" => "/icon.png", "duration_seconds" => 120 }
   }.freeze
 
   def setup
