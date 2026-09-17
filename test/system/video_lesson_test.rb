@@ -293,13 +293,17 @@ class VideoLessonTest < ApplicationSystemTestCase
     @viewport_overridden = false
   end
 
-  # What each theme must have SETTLED to before a single colour is read. The badge
-  # pins the `html[data-theme="dark"]` override at application.css:1356 against its
-  # unthemed rule at :1313; the body pins the dark token block at :163 against the
-  # `@theme` light defaults at :15.
-  SETTLED = {
-    "dark" => { badge: "rgb(252, 165, 165)", body: "rgb(26, 23, 16)" },
-    "light" => { badge: "rgb(220, 38, 38)", body: "rgb(245, 241, 235)" }
+  # The body background each theme resolves to, and the ONLY colour literal in this
+  # file. It is here because it is the signal that the theme has actually been applied
+  # rather than merely requested — the dark token block at application.css:163 against
+  # the light defaults at :15, which is a switch, not a judgement about any palette.
+  #
+  # Deliberately NOT a table of expected badge or title colours. Those are the values
+  # under test; pinning them here would fail a palette change in the wrong place, with
+  # a message about themes not settling instead of about contrast.
+  BODY_BACKGROUND = {
+    "dark" => "rgb(26, 23, 16)",
+    "light" => "rgb(245, 241, 235)"
   }.freeze
 
   # The theme is normally stamped by the inline script in layouts/learning.html.erb
@@ -319,21 +323,38 @@ class VideoLessonTest < ApplicationSystemTestCase
   # produced plausible-looking ratios against a background that was never on
   # screen. The badge alone is not enough of a signal: `color` on the badge is not
   # transitioned, so it snaps while the page behind it is still moving.
+  # Waits for the theme to STOP CHANGING, not for it to equal particular colours.
+  #
+  # The first version compared against a literal table of expected rgb() values, and
+  # that is a trap this file must not set: any palette change then fails here with
+  # "never settled" and sends whoever made it hunting a theme bug, when the honest
+  # answer is one assertion further down. Worse, this is the file that expects the
+  # palette to change one day — the badge pin above says so in as many words.
+  #
+  # So the condition is stability: two consecutive reads agreeing, plus the body
+  # actually carrying the theme's own background token. `<body>` has
+  # `transition: background-color 0.3s` (learning.html.erb:37), and measuring mid-fade
+  # is what corrupted the first light reading — the badge scored against rgb(34,30,24),
+  # two frames into a cream that ends at rgb(245,241,235).
   def force_theme!(theme)
-    expected = SETTLED.fetch(theme)
     page.execute_script("document.documentElement.setAttribute('data-theme', arguments[0])", theme)
 
     deadline = Time.now + Capybara.default_max_wait_time
-    actual = settled_colors
-    while actual != expected && Time.now < deadline
+    previous = nil
+    current = settled_colors
+    stable = false
+    until stable || Time.now >= deadline
       sleep 0.05
-      actual = settled_colors
+      previous = current
+      current = settled_colors
+      stable = previous == current && current[:body] == BODY_BACKGROUND.fetch(theme)
     end
 
-    assert_equal expected, actual,
-      "data-theme=#{theme} never settled: expected #{expected}, still #{actual}. Either the " \
-      "compiled build at app/assets/builds/tailwind.css predates these rules, the theme Stimulus " \
-      "controller overwrote the attribute, or the body crossfade never finished."
+    assert_equal BODY_BACKGROUND.fetch(theme), current[:body],
+      "data-theme=#{theme} never reached its own background: the body is #{current[:body]}. " \
+      "Either the compiled build at app/assets/builds/tailwind.css predates these rules, the " \
+      "theme Stimulus controller overwrote the attribute, or the crossfade never finished."
+    assert stable, "the palette was still moving when measuring stopped: #{previous} -> #{current}"
     assert_equal theme, page.evaluate_script("document.documentElement.getAttribute('data-theme')")
   end
 
