@@ -31,6 +31,13 @@ module Admin
       # is read.
       MAX_BODY_BYTES = 300.megabytes
 
+      # Spec §5, which annotates the attachment itself:
+      # `has_one_attached :lesson_subtitles  # text/vtt or application/x-subrip, <= 1 MB`
+      # (design doc :106). A SEPARATE limit, and it has to be: the whole-body number
+      # above is dominated by the film, so a 900 KB body tells you nothing about
+      # whether the .srt inside it is 900 KB or 300 bytes.
+      MAX_SUBTITLES_BYTES = 1.megabyte
+
       # Verbatim, because the studio displays this sentence unchanged.
       CONFLICT_MESSAGE = "students have recorded work on this step; re-upload replaces the video, " \
                          "unpublish would re-point their attempts".freeze
@@ -55,6 +62,12 @@ module Admin
         return refuse("the bytes are not an mp4") unless mp4?(video)
 
         subtitles = uploaded(:subtitles)
+        # Size before shape: refusing a file for being too big should not require
+        # reading it, and both refusals are before any attach.
+        if subtitles && subtitles.size > MAX_SUBTITLES_BYTES
+          return refuse_too_large("subtitles file", MAX_SUBTITLES_BYTES)
+        end
+
         subtitles_type = subtitles && subtitles_type(subtitles)
         return refuse("the subtitles are neither SRT nor VTT") if subtitles && subtitles_type.nil?
 
@@ -138,7 +151,23 @@ module Admin
         video.rewind
         @step.lesson_video.attach(io: video, filename: upload_name(video, "lesson.mp4"),
                                   content_type: "video/mp4")
-        return if subtitles.nil?
+
+        # [owner, fix round 1] A film arriving with no captions CLEARS the captions
+        # that are there, it does not inherit them. Subtitles are timed to one
+        # particular film: keep the previous .srt and the `<track>` still renders,
+        # still looks authoritative, and drifts further out of sync the longer the
+        # clip runs. `subtitles_url` is then nil for the section, because
+        # `proxy_path` reads the attachment after this.
+        #
+        # Reached on every non-idempotent publish that omits the file, which is a
+        # no-op unless something is attached — and only a previous publish of THIS
+        # step can have attached it (`destroy` purges both), so in practice this is
+        # the `:replace` path. `purge` is nil-safe: `Attached::Changes::PurgeOne#purge`
+        # is `attachment&.purge` (activestorage purge_one.rb:12).
+        if subtitles.nil?
+          @step.lesson_subtitles.purge
+          return
+        end
 
         subtitles.rewind
         @step.lesson_subtitles.attach(io: subtitles, filename: upload_name(subtitles, "lesson.srt"),
@@ -273,7 +302,13 @@ module Admin
       def refuse_oversized_body!
         return if request.content_length.to_i <= MAX_BODY_BYTES
 
-        render json: { "error" => "the request body is larger than #{MAX_BODY_BYTES / 1.megabyte} MB" },
+        refuse_too_large("request body", MAX_BODY_BYTES)
+      end
+
+      # `:content_too_large` and not `:payload_too_large`: same 413, but Rack 3.2
+      # deprecates that spelling and warns on every call.
+      def refuse_too_large(what, limit)
+        render json: { "error" => "the #{what} is larger than #{limit / 1.megabyte} MB" },
                status: :content_too_large
       end
 

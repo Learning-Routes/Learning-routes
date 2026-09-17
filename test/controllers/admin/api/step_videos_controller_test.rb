@@ -41,10 +41,16 @@ class Admin::Api::StepVideosControllerTest < ActionDispatch::IntegrationTest
       "the filename said mp4 and the bytes said PNG; the bytes decide"
   end
 
+  # The audit assertion is here rather than in its own test because this refusal is a
+  # `before_action` that RENDERS, which halts the callback chain: an `after_action`
+  # audit never runs for it (measured: 0 rows). It is the case that forced
+  # `Admin::Api::BaseController` to audit in an `around_action`.
   test "a body over 300 MB is refused with 413" do
-    with_token(TOKEN) do
-      post video_path(@step), headers: auth(TOKEN).merge("CONTENT_LENGTH" => 301.megabytes.to_s),
-           params: base_params.merge(video: fixture_upload(mp4_bytes, "l.mp4", "video/mp4"))
+    assert_difference -> { OwnerAuditEvent.where(action: "owner.studio_api").count }, 1 do
+      with_token(TOKEN) do
+        post video_path(@step), headers: auth(TOKEN).merge("CONTENT_LENGTH" => 301.megabytes.to_s),
+             params: base_params.merge(video: fixture_upload(mp4_bytes, "l.mp4", "video/mp4"))
+      end
     end
 
     # `:content_too_large`, not the brief's `:payload_too_large`: same 413, but Rack
@@ -81,6 +87,26 @@ class Admin::Api::StepVideosControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :created
     assert @step.reload.lesson_subtitles.attached?, "a BOM and a CRLF do not make an .srt invalid"
+  end
+
+  # Spec §5 annotates the attachment `# text/vtt or application/x-subrip, <= 1 MB`
+  # (design doc :106). The whole-body CONTENT_LENGTH number cannot answer this
+  # question — the body carries the film too — so this is the uploaded file's own
+  # size. The head of this fixture is a perfectly good SRT, so nothing but the size
+  # can be refusing it.
+  test "a subtitles file over 1 MB is refused with 413 and nothing is attached" do
+    with_token(TOKEN) do
+      post video_path(@step), headers: auth(TOKEN), params: base_params.merge(
+        video: fixture_upload(mp4_bytes, "l.mp4", "video/mp4"),
+        subtitles: fixture_upload(srt_bytes + ("x" * 1.megabyte), "l.srt", "application/x-subrip")
+      )
+    end
+
+    assert_response :content_too_large
+    assert_includes JSON.parse(response.body)["error"], "1 MB", "the message must name the limit"
+    assert_not @step.reload.lesson_video.attached?,
+      "the subtitle cap is answered before any attach, like every other refusal here"
+    assert_not @step.reload.lesson_subtitles.attached?
   end
 
   # A client mistake must be an answer, not a stack trace: `params[:video]` is nil
@@ -153,6 +179,57 @@ class Admin::Api::StepVideosControllerTest < ActionDispatch::IntegrationTest
       "audio_sections is keyed by section index; a reindex on a replacement plays a paid clip under the wrong section"
   end
 
+  # [owner, fix round 1] Captions are timed to ONE film. A different video with the
+  # previous .srt still attached is not "keeping data": the `<track>` renders, looks
+  # authoritative, and drifts further out of sync the longer the clip runs. So a
+  # replace that carries no subtitles clears them.
+  test "a replace with no subtitles clears the captions of the film it replaced" do
+    with_token(TOKEN) { post video_path(@step), headers: auth(TOKEN), params: full_params }
+    assert @step.reload.lesson_subtitles.attached?, "test premise: the first upload carried subtitles"
+
+    with_token(TOKEN) do
+      post video_path(@step), headers: auth(TOKEN), params: base_params.merge(
+        video: fixture_upload(mp4_bytes + ("\x01".b * 64), "l.mp4", "video/mp4")
+      )
+    end
+
+    assert_response :created
+    body = JSON.parse(response.body)
+    assert_equal "replace", body["placement"], "test premise: this is the replace path"
+    assert_nil body["subtitles_url"]
+    assert_not @step.reload.lesson_subtitles.attached?,
+      "the previous film's captions are still attached to the new one"
+    section = @step.reload.metadata["parsed_sections"].find { |s| s["type"] == "video" }
+    assert_nil section["subtitles_url"],
+      "the section still points at them, so the <track> renders and looks authoritative"
+  end
+
+  test "a replace with subtitles swaps them" do
+    with_token(TOKEN) { post video_path(@step), headers: auth(TOKEN), params: full_params }
+
+    with_token(TOKEN) do
+      post video_path(@step), headers: auth(TOKEN), params: base_params.merge(
+        video: fixture_upload(mp4_bytes + ("\x01".b * 64), "l.mp4", "video/mp4"),
+        subtitles: fixture_upload("1\r\n00:00:00,000 --> 00:00:03,000\r\nSegunda toma.\r\n",
+                                  "l.srt", "application/x-subrip")
+      )
+    end
+
+    assert_response :created
+    assert_equal "replace", JSON.parse(response.body)["placement"]
+    assert @step.reload.lesson_subtitles.attached?
+
+    # Fetched over the proxy URL the section now carries, which is what the student's
+    # `<track>` actually requests — a stronger claim than "a blob changed", and it
+    # avoids reading `.blob` off a strict-loaded attachment in the test itself.
+    subtitles_url = JSON.parse(response.body)["subtitles_url"]
+    get subtitles_url
+
+    assert_response :success
+    assert_includes response.body, "Segunda toma.",
+      "the captions of the film that was replaced are still the ones being served"
+  end
+
   # ─── Task 7: DELETE ──────────────────────────────────────────────────
 
   test "unpublishing a prepended video that students have worked past is refused" do
@@ -171,6 +248,26 @@ class Admin::Api::StepVideosControllerTest < ActionDispatch::IntegrationTest
     )
     assert step.reload.lesson_video.attached?, "a refusal must change nothing"
     assert_equal frozen, step.reload.metadata["parsed_sections"]
+  end
+
+  # [owner, fix round 1] Spec §6 says the base controller records an OwnerAuditEvent
+  # "for every call", and a refused unpublish is the most interesting row the studio
+  # can produce: it is the studio trying to re-point recorded student work. A 2xx-only
+  # audit is exactly blind to it.
+  test "a refused unpublish is audited, with its status" do
+    step = step_with_sections([{ "type" => "check" }])
+    with_token(TOKEN) { post video_path(step), headers: auth(TOKEN), params: full_params }
+    record_attempt!(step, section_index: 1)
+
+    assert_difference -> { OwnerAuditEvent.where(action: "owner.studio_api").count }, 1 do
+      with_token(TOKEN) { delete video_path(step), headers: auth(TOKEN) }
+    end
+
+    assert_response :conflict
+    event = OwnerAuditEvent.where(action: "owner.studio_api").order(:created_at).last
+    assert_equal 409, event.metadata["status"]
+    assert_equal "destroy", event.metadata["action"]
+    assert_equal "admin/api/step_videos", event.metadata["controller"]
   end
 
   test "unpublishing is allowed when the video is last" do

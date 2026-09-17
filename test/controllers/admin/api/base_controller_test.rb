@@ -63,6 +63,19 @@ class Admin::Api::BaseControllerTest < ActionDispatch::IntegrationTest
     assert_equal "private, no-store", response.headers["Cache-Control"]
   end
 
+  # The mirror of the test above, and the reason the audit is gated on a FLAG set on
+  # the authentication path rather than on the status code. An unauthenticated caller
+  # must not be able to write rows into `owner_audit_events`, and the per-token
+  # throttle cannot stop that particular flood: a request carrying no Authorization
+  # header discriminates to nil and Rack::Attack does not throttle a nil
+  # discriminator (rack_attack.rb:85-87).
+  test "a call that never authenticated is audited not at all" do
+    assert_no_difference -> { OwnerAuditEvent.where(action: "owner.studio_api").count } do
+      with_token(TOKEN) { get "/admin/api/routes", headers: auth("x" * 48) }
+    end
+    assert_response :unauthorized
+  end
+
   test "it never answers with a session or a redirect" do
     with_token(TOKEN) { get "/admin/api/routes", headers: auth(TOKEN) }
     assert_equal "application/json", response.media_type
