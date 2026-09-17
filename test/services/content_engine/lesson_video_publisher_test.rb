@@ -87,6 +87,29 @@ class ContentEngine::LessonVideoPublisherTest < ActiveSupport::TestCase
     assert_equal "/p.png", sections[2]["image_url"], "enrichment carried positionally, offset 0"
   end
 
+  # THE VIDEO'S OWN INDEX IS NOT SAFE TO IGNORE, and the first version of this
+  # refusal ignored it. `BlockAttemptsController#create` records an attempt for ANY
+  # index that exists in `parsed_sections` — it checks `section.blank?` and nothing
+  # else — and `BlockAttemptRecorder#record_submission!` sets `completed_at`
+  # UNCONDITIONALLY on its non-gradable branch (:86), so a submission at a video's
+  # index is a SATISFIED attempt. `RouteStep#outstanding_blocks_for` then matches
+  # satisfied attempts to gating sections by `section_index` alone, ignoring
+  # `block_type` (:169). So removing the video slides the next section into that
+  # index and the student is credited for a gating block they never answered.
+  # `GATING_TYPES` gates progression, not row creation; that is why the condition is
+  # `>=` and not `>`.
+  test "unpublish refuses when work is recorded at the video's own index" do
+    step = step_with_sections([{ "type" => "check" }])
+    ContentEngine::LessonVideoPublisher.publish!(step: step, payload: payload)   # prepended
+    record_attempt!(step, section_index: 0, block_type: "video")                 # ON the video
+    frozen = step.reload.metadata["parsed_sections"]
+
+    assert_equal :conflict, ContentEngine::LessonVideoPublisher.unpublish!(step: step),
+      "a satisfied attempt at the video's index would credit whatever section slid " \
+      "into that index; outstanding_blocks_for matches on the index alone"
+    assert_equal frozen, step.reload.metadata["parsed_sections"], "nothing may change on a refusal"
+  end
+
   test "unpublish is allowed when the video is last, even with attempts" do
     step = step_with_sections([{ "type" => "check" }])
     record_attempt!(step, section_index: 0)

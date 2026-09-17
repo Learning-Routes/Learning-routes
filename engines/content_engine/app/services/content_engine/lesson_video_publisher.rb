@@ -202,16 +202,27 @@ module ContentEngine
         old = sections_in(metadata)
         at = old.index { |section| video?(section) }
 
-        if at && attempts_after?(at)
+        if at && attempts_at_or_after?(at)
           # THE REFUSAL, and why it is this condition rather than "the video is the
           # last section". What the refusal protects is recorded work from being
           # re-pointed, and work at an index BELOW the removal point cannot move.
           # The owner's rule was "zero attempts, or the video is last", with its
-          # reason given in the same breath: removing the final index shifts
-          # nothing, and no attempt can name the video itself because `video` is not
-          # in `BlockGrader::GATING_TYPES`. "No recorded work after the video" is
-          # that reason applied faithfully; "the video is last" is the special case
-          # of it where the set above the video is empty by construction.
+          # reason given in the same breath: removing the final index shifts nothing.
+          # "No recorded work at or after the video" is that reason applied
+          # faithfully; "the video is last" is the special case of it where the set
+          # from the video upward is empty by construction.
+          #
+          # AT, not merely after — and the first version of this condition got that
+          # wrong by resting on `BlockGrader::GATING_TYPES`, which gates PROGRESSION
+          # and not row creation. `BlockAttemptsController#create` (:13-21) records an
+          # attempt for any index present in `parsed_sections`, and
+          # `BlockAttemptRecorder#record_submission!` sets `completed_at`
+          # unconditionally on its non-gradable branch (:86), so a submission at a
+          # video's index IS a satisfied attempt. `RouteStep#outstanding_blocks_for`
+          # (:169) then matches satisfied attempts to gating sections by
+          # `section_index` alone, ignoring `block_type`. Slide the next section into
+          # that index and the student is credited for a gating block they never
+          # answered.
           #
           # The literal reading stopped BEING that rule when `at` became the index a
           # reparse produces: an appended video sits before the synthesized summary,
@@ -376,13 +387,14 @@ module ContentEngine
     # the model, as `RouteStep#outstanding_blocks_for` does.
     def attempts? = LearningRoutesEngine::BlockAttempt.where(route_step: @step).exists?
 
-    # The recorded work a removal at `index` would move: everything strictly above
-    # it. `index` itself is excluded because the section being removed is the video,
-    # which `BlockGrader::GATING_TYPES` (`check drag_drop fill_blank flashcards
-    # scenario`) does not include, so no attempt names it.
-    def attempts_after?(index)
+    # The recorded work a removal at `index` invalidates: everything from `index`
+    # upward. Above it moves down one; AT it is left pointing at whatever slides in,
+    # which `outstanding_blocks_for` reads as satisfying that section — see the
+    # refusal branch for the three lines that make an attempt at a video's index
+    # both possible and satisfied.
+    def attempts_at_or_after?(index)
       LearningRoutesEngine::BlockAttempt.where(route_step: @step)
-                                        .where("section_index > ?", index).exists?
+                                        .where("section_index >= ?", index).exists?
     end
 
     def lesson_content!
