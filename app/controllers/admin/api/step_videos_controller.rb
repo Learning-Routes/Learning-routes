@@ -180,8 +180,29 @@ module Admin
       # points at. Both are recoverable by uploading again; only the second is
       # invisible.
       def purge_new_attachments!(subtitles:)
-        @step.lesson_video.purge
-        @step.lesson_subtitles.purge if subtitles
+        purge!(@step.lesson_video)
+        purge!(@step.lesson_subtitles) if subtitles
+      end
+
+      # `strict_loading!(false)` ON THE BLOB, because this is the one place where the
+      # step-level opt-out does not reach. A blob BUILT IN THIS REQUEST carries the
+      # default strict flag (`strict_loading_by_default`, application.rb:48), and
+      # `Blob#purge` runs `before_destroy { variant_records.destroy_all }`
+      # (activestorage blob/representable.rb:10, guarded by
+      # `ActiveStorage.track_variants`, which is true here) — a lazy load, so the
+      # purge raised `StrictLoadingViolationError`.
+      #
+      # That turned the ONLY failure path into a 500 that left exactly the
+      # half-published step this controller exists to forbid: the attachment row gone
+      # but its blob orphaned in storage, the SUBTITLES still attached because the
+      # second purge never ran, and no audit row because an exception skips the
+      # around callback's post-yield code. Measured, on a step with no AiContent.
+      #
+      # Purging a video has no variants to track — nothing in this app ever asks a
+      # video blob for a representation — so there is nothing this opt-out can hide.
+      def purge!(attached)
+        attached.attachment&.blob&.strict_loading!(false)
+        attached.purge
       end
 
       # The index of the video section when BOTH uploads are byte-identical to what
@@ -241,21 +262,31 @@ module Admin
       #   - only the first line is decoded and validated. `read(64)` can stop in the
       #     middle of a multi-byte character, and a chopped tail is not evidence that
       #     the file is not UTF-8; everything this method looks at is on line one.
-      #     No line break in the first 64 bytes is neither an SRT nor a VTT.
+      #
+      # WEBVTT IS TESTED BEFORE THE LINE BREAK IS REQUIRED. The signature line may
+      # carry a description — `WEBVTT - Spanish subtitles for lesson three` is legal —
+      # and one longer than this window has no `\n` inside it, so requiring the break
+      # first refused a valid file. The prefix is pure ASCII, so it is compared as
+      # BYTES: a window that cuts a multi-byte character in half cannot affect it.
+      #
+      # A leading blank line is tolerated for the same reason it always was: real
+      # files have them, and stripping is not interpreting.
       def subtitles_type(io)
         window = io.read(64).to_s
         io.rewind
         window = window.byteslice(3..).to_s if window.b.start_with?(BOM)
+        window = window.b.sub(/\A[[:space:]]+/n, "")
+        return "text/vtt" if window.start_with?("WEBVTT")
+
+        # An SRT's first line is a cue NUMBER, so it is only evidence once the line
+        # has ended — an unterminated run of digits could be anything.
         line = window[/\A[^\n]*\n/]
         return nil if line.nil?
 
         head = line.dup.force_encoding(Encoding::UTF_8)
         return nil unless head.valid_encoding?
 
-        head = head.lstrip
-        return "text/vtt" if head.start_with?("WEBVTT")
-
-        "application/x-subrip" if head.match?(/\A\d+\s*\z/)
+        "application/x-subrip" if head.strip.match?(/\A\d+\z/)
       end
 
       # `PAYLOAD_KEYS` on the publisher is what the section is built from; the
@@ -263,9 +294,16 @@ module Admin
       # Hash and an ActionController::Parameters would raise there.
       #
       # `duration_seconds` is passed through EXACTLY as it arrived, coerced only when
-      # the string really is an integer. Nothing here verifies it against the film
-      # (there is no ffprobe in the image), so a wrong number must stay visible as
-      # the wrong number rather than become a nil that hides it.
+      # the string really is an integer. Nothing here verifies it against the film —
+      # there is no ffprobe in the image and this package is not adding one — so a
+      # wrong number is stored as the wrong number rather than becoming a nil this
+      # endpoint invented.
+      #
+      # It does NOT follow that a student sees it: `_video.html.erb:22` gates the
+      # caption on `section[:duration_seconds].to_i.positive?`, so a non-numeric value
+      # renders no caption at all, exactly as nil would. The value stays visible in
+      # the stored section and in this endpoint's response, which is where the owner
+      # can compare it against the film; the page is not a check on the studio.
       def video_payload
         permitted = params.permit(:title, :duration_seconds, :lesson_id, :voice).to_h
         permitted.merge(

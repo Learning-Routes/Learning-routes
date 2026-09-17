@@ -270,6 +270,60 @@ class Admin::Api::StepVideosControllerTest < ActionDispatch::IntegrationTest
     assert_equal "admin/api/step_videos", event.metadata["controller"]
   end
 
+  # THE ONLY FAILURE PATH, and nothing exercised it. `publish!` raises after the
+  # attach — it has to, because the payload carries proxy URLs and those need blobs —
+  # so the rescue is what stands between a raise and a half-published step. A blob
+  # BUILT IN THIS REQUEST carries `strict_loading` (strict_loading_by_default is on
+  # for every environment), and `strict_loading(false)` on the STEP does not reach it;
+  # `Blob#purge` then runs `before_destroy { variant_records.destroy_all }`, which
+  # lazily loads that association and raises. The refusal became a 500, the video's
+  # blob was orphaned in storage, the SUBTITLES stayed attached because the second
+  # purge never ran, and the exception path wrote no audit row.
+  test "a publish that raises purges what it attached and answers 422, not 500" do
+    step = step_with_sections([{ "type" => "concept" }])
+    ContentEngine::AiContent.where(route_step: step).destroy_all   # no body to hold a section
+
+    with_token(TOKEN) { post video_path(step), headers: auth(TOKEN), params: full_params }
+
+    assert_response :unprocessable_entity,
+      "the rescue must answer, not raise on its own way out"
+    step.reload
+    assert_not step.lesson_video.attached?, "the video this request attached must be purged"
+    assert_not step.lesson_subtitles.attached?,
+      "the SECOND purge is the one a raise in the first one skips"
+  end
+
+  test "a publish that raises is still audited" do
+    step = step_with_sections([{ "type" => "concept" }])
+    ContentEngine::AiContent.where(route_step: step).destroy_all
+
+    assert_difference -> { OwnerAuditEvent.where(action: "owner.studio_api").count }, 1 do
+      with_token(TOKEN) { post video_path(step), headers: auth(TOKEN), params: full_params }
+    end
+  end
+
+  # A VTT signature line may carry a description, and a legal one can be longer than
+  # the 64-byte window the validator reads. Requiring a line break before looking for
+  # WEBVTT refused it — a valid file, rejected for being descriptive.
+  test "a VTT whose signature line is longer than the read window is accepted" do
+    header = "WEBVTT - Subtítulos en español para la lección de la tercera persona"
+    assert_operator header.bytesize, :>, 64, "test premise: the signature line must exceed the window"
+    step = step_with_sections([{ "type" => "concept" }])
+
+    with_token(TOKEN) do
+      post video_path(step), headers: auth(TOKEN), params: base_params.merge(
+        video: fixture_upload(mp4_bytes, "l.mp4", "video/mp4"),
+        subtitles: fixture_upload("#{header}\r\n\r\n00:00.000 --> 00:02.000\r\nHola.\r\n",
+                                  "l.vtt", "text/vtt")
+      )
+    end
+
+    assert_response :created
+    assert step.reload.lesson_subtitles.attached?, "a legal VTT was refused for having a description"
+    assert_equal "text/vtt", step.lesson_subtitles.blob.content_type,
+      "the type comes from the bytes, not from what the client declared"
+  end
+
   test "unpublishing is allowed when the video is last" do
     step = step_with_sections([{ "type" => "check" }])
     record_attempt!(step, section_index: 0)
