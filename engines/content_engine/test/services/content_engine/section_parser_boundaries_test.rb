@@ -722,6 +722,42 @@ module ContentEngine
       assert_equal "manim-studio", section[:source]
     end
 
+    # FOUND BY THE REGRESSION SWEEP, ON REAL DATA. 8 of the 10 lesson bodies in the
+    # development database BEGIN with prose before their first `##` heading — the
+    # parser has a branch for exactly that shape (`build_concept_or_visual`, called for
+    # content before the first heading). Prepending `## Video:` to such a body makes
+    # that intro paragraph part of the video's section, and it carries no sub-heading,
+    # no fence and no horizontal rule, so `split_aftermath` finds no terminator and
+    # hands the whole thing — JSON and prose together — to JSON.parse.
+    #
+    # The block then degraded to a concept whose body was raw JSON. `publish!` raised
+    # rather than persisting that, which is the right instinct, but it meant the studio
+    # got a 422 for four out of five real lessons.
+    test "a video body followed by prose with no terminator still parses as a video" do
+      body = <<~MARKDOWN
+        {"title": "La ese", "video_url": "/x.mp4", "duration_seconds": 12}
+
+        ¿Sabías que la evaluación final es la llave para certificar tu nivel?
+      MARKDOWN
+      sections = LessonSectionParser.call("## Video: La ese\n\n#{body}")
+      section = sections.find { |s| s[:type] == "video" }
+
+      assert section, "unterminated prose after the JSON must not stop the video parsing"
+      assert_equal "/x.mp4", section[:video_url]
+      assert_includes section[:aftermath].to_s, "¿Sabías que la evaluación final",
+        "the prose is real lesson content: it belongs in the aftermath, not in the JSON"
+    end
+
+    test "a brace inside a JSON string does not end the payload early" do
+      body = '{"title": "Un {reto} difícil", "video_url": "/y.mp4", "duration_seconds": 3}' \
+             "\n\nProsa que sigue."
+      section = LessonSectionParser.call("## Video: T\n\n#{body}").find { |s| s[:type] == "video" }
+
+      assert section, "a brace inside a quoted string is data, not structure"
+      assert_equal "Un {reto} difícil", section[:title]
+      assert_includes section[:aftermath].to_s, "Prosa que sigue"
+    end
+
     test "an unparsable video body renders as a concept, never a blank player" do
       sections = LessonSectionParser.call(document("## Video: Roto", "{not json"))
 

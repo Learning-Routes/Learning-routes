@@ -743,7 +743,7 @@ module ContentEngine
     # inside the string handed to JSON.parse and a well-formed payload would
     # fail to parse for a reason that has nothing to do with the payload.
     def parse_heading_video(title_from_heading, body)
-      json_source, aftermath = split_aftermath(body.to_s)
+      json_source, aftermath = split_json_object(body.to_s)
       payload = safe_parse_json(json_source.to_s.strip)
 
       unless payload.is_a?(Hash) && payload["video_url"].present?
@@ -772,6 +772,62 @@ module ContentEngine
         aftermath: aftermath,
         body: body.to_s.strip
       }
+    end
+
+    # The JSON object at the head of the body, and everything after it.
+    #
+    # `split_aftermath` CANNOT do this job, and using it here was a real defect: it cuts
+    # at a sub-heading, a fence or a horizontal rule, and prose has none of those. 8 of
+    # the 10 lesson bodies in the development database begin with a paragraph before
+    # their first `##` heading — the parser has a whole branch for that shape — so
+    # prepending a `## Video:` heading put that paragraph inside the video's section,
+    # where it was handed to JSON.parse along with the payload. The block degraded to a
+    # concept whose body was raw JSON, and the publisher raised rather than persist it,
+    # which turned four out of five real lessons into a 422.
+    #
+    # The payload's own closing brace is the boundary, so that is what is scanned for:
+    # depth counting, with strings and escapes respected, because `{"title": "Un {reto}
+    # difícil"}` is one object and not two. Anything before the opening brace or after
+    # the closing one is the aftermath, which is rendered below the player.
+    #
+    # Returns [nil, body] when there is no balanced object to find, which is how a
+    # malformed payload still degrades to a concept.
+    #
+    # MERGE NOTE: WP-36 carries a helper of this name too, and that branch is not
+    # merged. Whichever package lands second resolves the conflict by keeping ONE copy
+    # and checking that both callers still pass — the same arrangement `safe_parse_json`
+    # below already has. Compare the return contracts before deleting either: this one
+    # answers [json, aftermath] and treats a missing object as [nil, whole body].
+    def split_json_object(body)
+      text = body.to_s
+      start = text.index("{")
+      return [nil, text.strip.presence] if start.nil?
+
+      depth = 0
+      in_string = false
+      escaped = false
+      text[start..].each_char.with_index do |char, offset|
+        if escaped
+          escaped = false
+          next
+        end
+
+        case char
+        when "\\" then escaped = true if in_string
+        when '"' then in_string = !in_string
+        when "{" then depth += 1 unless in_string
+        when "}"
+          next if in_string
+
+          depth -= 1
+          next unless depth.zero?
+
+          finish = start + offset
+          return [text[start..finish], text[(finish + 1)..].to_s.strip.presence]
+        end
+      end
+
+      [nil, text.strip.presence]
     end
 
     # Deliberately identical to WP-36's helper of the same name, so that whichever of
