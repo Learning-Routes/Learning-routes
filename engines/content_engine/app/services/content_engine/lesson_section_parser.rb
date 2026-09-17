@@ -798,6 +798,11 @@ module ContentEngine
     # and checking that both callers still pass — the same arrangement `safe_parse_json`
     # below already has. Compare the return contracts before deleting either: this one
     # answers [json, aftermath] and treats a missing object as [nil, whole body].
+    # Public on the class as well: `LessonVideoPublisher` has to remove exactly the
+    # payload this decides to read, and two different answers to "where does the JSON
+    # end" is how the unpublish strip came to delete the author's prose.
+    def self.split_json_object(body) = new("").send(:split_json_object, body)
+
     def split_json_object(body)
       text = body.to_s
       start = text.index("{")

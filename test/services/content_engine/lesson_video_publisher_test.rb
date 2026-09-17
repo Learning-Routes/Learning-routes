@@ -110,6 +110,32 @@ class ContentEngine::LessonVideoPublisherTest < ActiveSupport::TestCase
     assert_equal frozen, step.reload.metadata["parsed_sections"], "nothing may change on a refusal"
   end
 
+  # FOUND BY THE REGRESSION SWEEP, ON A REAL STEP, AND I CAUSED IT. Once
+  # `parse_heading_video` learned to keep prose that follows the payload (it has to —
+  # 8 of 10 real lesson bodies begin with a paragraph, and prepending a video heading
+  # puts that paragraph in the video's section), the unpublish strip started deleting
+  # it: `VIDEO_SECTION` runs to the next `##`, so removing "the section" removed the
+  # author's intro along with it. Measured on dev step 07e88fda — a 14-section lesson
+  # came back as a 13-section body, permanently incompatible with its own cache.
+  #
+  # Unpublish removes the heading and the payload. It does not remove the lesson.
+  test "unpublish keeps the prose that followed the video's payload" do
+    intro = "¿Sabías que la evaluación final es la llave para certificar tu nivel?"
+    step = step_with_sections([{ "type" => "concept" }],
+                              body: "#{intro}\n\n## Concepto: Uno\nCuerpo.\n")
+    ContentEngine::LessonVideoPublisher.publish!(step: step, payload: payload)
+    content = ContentEngine::SectionResolver.lesson_content_for(step)
+    assert_includes content.reload.body, intro, "test premise: the prose is in the body after a publish"
+
+    ContentEngine::LessonVideoPublisher.unpublish!(step: step)
+
+    assert_includes content.reload.body, intro,
+      "unpublish deleted the author's paragraph along with the video's payload"
+    assert_not_includes content.body, "video_url",
+      "the payload itself must be gone"
+    assert_not_includes content.body, "## Video:", "the heading must be gone"
+  end
+
   test "unpublish is allowed when the video is last, even with attempts" do
     step = step_with_sections([{ "type" => "check" }])
     record_attempt!(step, section_index: 0)

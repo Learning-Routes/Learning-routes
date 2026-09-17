@@ -332,11 +332,30 @@ module ContentEngine
     # prose, which `parse_heading_video` deliberately keeps (2624d00). Unreachable
     # through the studio, which writes the heading and one line of JSON and nothing
     # after it; a future author of this heading by hand would lose that tail.
+    # Removes the heading and the payload, and NOTHING ELSE.
+    #
+    # `sub(VIDEO_SECTION, "")` was wrong and the regression sweep caught it on a real
+    # step: that pattern runs to the next `##`, so it also deleted whatever the author
+    # had written after the payload. Since `parse_heading_video` keeps that text as the
+    # section's `aftermath` — it has to, because 8 of 10 real lesson bodies begin with a
+    # paragraph and prepending a video heading puts that paragraph in the video's
+    # section — the strip was deleting real lesson content. Dev step 07e88fda came back
+    # from an unpublish as a 13-section body under a 14-section cache.
+    #
+    # The payload's end comes from `LessonSectionParser.split_json_object`, the same
+    # method that decides where the parser stops reading. Two answers to that question
+    # is what caused this.
     def stripped_body(body)
       body = body.to_s
-      return body unless body.match?(VIDEO_SECTION)
+      section = body[VIDEO_SECTION]
+      return body if section.nil?
 
-      body.sub(VIDEO_SECTION, "").lstrip
+      _heading, rest = section.split("\n", 2)
+      _payload, aftermath = LessonSectionParser.split_json_object(rest.to_s)
+      kept = aftermath.to_s.strip
+      replacement = kept.empty? ? "" : "#{kept}\n"
+
+      body.sub(section) { replacement }.lstrip
     end
 
     # The video section as the parser reads it back out of the body we just built,
