@@ -54,6 +54,11 @@
 
 # Node modules (if any)
 /node_modules
+# ANYWHERE, not just at the root. `/node_modules` is root-anchored, so
+# `app/motion/node_modules` was never ignored and 8749 of its files were swept into
+# a commit by a `git add -A`. WP-36 introduced that second package; any future one
+# is covered now.
+node_modules/
 
 # Coverage reports
 /coverage/
