@@ -240,6 +240,15 @@ class VideoLessonTest < ApplicationSystemTestCase
               "AA #{MIN_CONTRAST}:1. The palette was fixed — raise LIGHT_BADGE_PINNED to " \
               "#{MIN_CONTRAST} and delete the pin, so this stops being a known gap."
       end
+      # `SCREENSHOT=1 bin/rails test test/system/video_lesson_test.rb` writes the
+      # handoff's artefact from the same page the assertions above measured, so the
+      # picture and the numbers can never describe two different renders.
+      if ENV["SCREENSHOT"]
+        path = Rails.root.join("tmp", "wp38-video-#{theme}.png")
+        page.save_screenshot(path.to_s)
+        puts "[#{theme}] screenshot -> #{path}"
+      end
+
       assert_operator title["worst"], :>=, MIN_CONTRAST,
         "the video title measures #{format('%.2f', title['worst'])}:1 on the #{theme} theme " \
         "(#{title['color']} over #{title['backings'].first}); WCAG AA needs #{MIN_CONTRAST}:1"
