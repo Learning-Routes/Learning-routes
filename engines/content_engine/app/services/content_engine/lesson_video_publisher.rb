@@ -94,7 +94,7 @@ module ContentEngine
   #
   # WHERE THE VIDEO GOES: THE PARSER DECIDES, NOT `placement`
   #
-  # `ensure_summary` (parser:913) SYNTHESIZES a trailing summary that appears in no
+  # `ensure_summary` (parser:974) SYNTHESIZES a trailing summary that appears in no
   # markdown, so "the end of the body" and "the end of the array" are different
   # places. Measured: a body whose cache is `["concept", "concept", "summary"]`
   # parses, after the video is appended to the markdown, to
@@ -274,9 +274,29 @@ module ContentEngine
     # produces, in which case that index says nothing about this array and the end
     # `placement` names is used instead. Clamped, because a cache the body
     # contradicts can be shorter than the parse.
+    # AN APPEND GOES AT THE END OF THE ARRAY, FULL STOP — never at the index a reparse
+    # would produce. `append` is chosen exactly when the step HAS recorded work, so it
+    # is the one placement where nothing may move, and the parse index moves things: the
+    # parser synthesises trailing sections that are not in the markdown (the summary
+    # always, plus any leftover `knowledge_checks`, lesson_section_parser.rb:935), so a
+    # video appended to the BODY parses in front of them.
+    #
+    # That means an append deliberately leaves the cache and the body disagreeing about
+    # where the video sits, and the disagreement is UNAVOIDABLE rather than a shortcut:
+    # `old.length` is past every section the parser synthesises, so no edit to the
+    # markdown can put the heading there. The two properties are in real conflict and
+    # this is the ranking — re-pointing a student's recorded work is a live hazard the
+    # moment it happens, while a body the cache disagrees with only bites on a rebuild
+    # from an emptied cache, and it makes the step position-incompatible so
+    # `wp33:reparse` SKIPS it instead of rewriting it (`compatible`, rake:47).
+    #
+    # A prepend has no such conflict: it only happens at zero attempts, so there is
+    # nothing to re-point, and the parse index keeps the two in agreement.
     def insertion_index(parse, old, content, metadata, placement)
+      return old.length if placement == :append
+
       at = parse.index { |section| video?(section) }
-      return placement == :append ? old.length : 0 unless same_shape?(old, reparse(content.body, content, metadata))
+      return 0 unless same_shape?(old, reparse(content.body, content, metadata))
 
       at.clamp(0, old.length)
     end
@@ -312,6 +332,12 @@ module ContentEngine
       body = body.to_s
       # A re-upload replaces the section it finds, wherever it is; only a first
       # upload chooses an end.
+      #
+      # If the CACHE holds a video section but the BODY has no heading — reachable only
+      # through the duplicate-AiContent nondeterminism named in WP38_HANDOFF.md — the
+      # markdown is prepended while the cache updates in place, widening that drift
+      # rather than closing it. Left as is: guessing which of two disagreeing sources is
+      # right is how the drift got there.
       return body.sub(VIDEO_SECTION) { "#{markdown}\n" } if body.match?(VIDEO_SECTION)
       return "#{body.rstrip}\n\n#{markdown}" if at_end
 
@@ -332,7 +358,14 @@ module ContentEngine
     # prose, which `parse_heading_video` deliberately keeps (2624d00). Unreachable
     # through the studio, which writes the heading and one line of JSON and nothing
     # after it; a future author of this heading by hand would lose that tail.
-    # Removes the heading and the payload, and NOTHING ELSE.
+    # Removes the heading and the payload, and keeps what follows the payload.
+    #
+    # Two shapes it does NOT handle, both unreachable through the studio, which writes
+    # the heading and one JSON object with nothing between them: prose sitting BETWEEN
+    # the heading and the opening brace is dropped with them (`split_json_object`
+    # returns only what follows the closing brace), and a payload whose braces never
+    # balance is left in the body, where it would render to the student as prose. Said
+    # here rather than claimed away, because "and nothing else" was not true.
     #
     # `sub(VIDEO_SECTION, "")` was wrong and the regression sweep caught it on a real
     # step: that pattern runs to the next `##`, so it also deleted whatever the author

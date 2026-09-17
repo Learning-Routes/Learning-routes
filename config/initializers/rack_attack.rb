@@ -90,7 +90,11 @@ class Rack::Attack
   throttle("studio_api/token", limit: 30, period: 60) do |req|
     next unless req.path.start_with?("/admin/api/")
 
-    req.get_header("HTTP_AUTHORIZATION").to_s.presence
+    # HASHED, because the discriminator becomes part of a Rails.cache key — a Solid
+    # Cache row in production — and the raw header is the bearer token itself. The
+    # hash buckets identically and stores nothing worth stealing.
+    header = req.get_header("HTTP_AUTHORIZATION").to_s.presence
+    header && OpenSSL::Digest::SHA256.hexdigest(header)
   end
 
   ### Safelist: never interfere with the health check ###

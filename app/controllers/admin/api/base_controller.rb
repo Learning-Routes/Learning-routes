@@ -15,8 +15,13 @@ module Admin
       # post-yield code runs even when an inner before_action halts, which is what
       # "every call" requires.
       around_action :audit_studio_access!
-      before_action :authenticate_studio!
+      # BEFORE the authentication, not after it. A `before_action` that renders halts
+      # the chain, so with these the other way round a 401 went out with no
+      # `Cache-Control: private, no-store` — the one response a shared cache has the
+      # most reason to keep and the least right to. Setting headers cannot fail and
+      # reveals nothing, so there is no reason to earn them by authenticating first.
       before_action :secure_api_response!
+      before_action :authenticate_studio!
 
       private
 

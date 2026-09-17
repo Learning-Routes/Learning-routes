@@ -59,6 +59,9 @@
 # a commit by a `git add -A`. WP-36 introduced that second package; any future one
 # is covered now.
 node_modules/
+# WP-36's build output, for the same reason. The source under app/motion/ is NOT
+# ignored — that branch tracks it, and ignoring it here would make it vanish on merge.
+/app/motion/dist/
 
 # Coverage reports
 /coverage/

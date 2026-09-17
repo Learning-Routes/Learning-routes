@@ -229,7 +229,7 @@ class ContentEngine::LessonVideoPublisherTest < ActiveSupport::TestCase
 
   # Not one of the six tests above looks at the body, which is how a cache that
   # claims the video is last while the markdown puts it second-to-last got
-  # written: `ensure_summary` SYNTHESIZES the trailing summary (parser:913-929),
+  # written: `ensure_summary` SYNTHESIZES the trailing summary (parser:974),
   # so "the end of the body" and "the end of the array" are different places.
   # A cache the body contradicts is permanently skipped by wp33:reparse
   # (rake:149,253) and makes `unpublish!`'s "the video is last" allowance a
