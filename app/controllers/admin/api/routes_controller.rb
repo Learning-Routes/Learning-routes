@@ -18,6 +18,14 @@ module Admin
 
       private
 
+      # THE TWO MAPPINGS THAT ARE NOT COLUMNS, so the next reader does not go
+      # looking for them. `learning_routes` has `topic NOT NULL` and no `title` at
+      # all, so `topic` is the only honest answer to the contract's `title` — it is
+      # what `localized_topic` and `Admin::RouteDetailQuery` treat as the route's
+      # name. And there is no route-level `level` either: `RouteStep#level` is a
+      # separate `nv1`/`nv2`/`nv3` axis, so this is the profile's `current_level`,
+      # passed to the studio as a FREE STRING. The studio hands it to its script
+      # writer verbatim and does not validate it against A1-B2 (owner, checkpoint 1).
       def serialize_route(route)
         {
           "id" => route.id,
