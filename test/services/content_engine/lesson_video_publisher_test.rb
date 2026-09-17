@@ -45,6 +45,37 @@ class ContentEngine::LessonVideoPublisherTest < ActiveSupport::TestCase
     assert_equal "video", sections.last["type"]
   end
 
+  # THE MIRROR OF THE UNPUBLISH RULE, AND IT WAS MISSING. Once `at` became the index a
+  # reparse produces, an appended video stopped landing at the end of the array: the
+  # parser SYNTHESISES trailing sections that are not in the markdown — the summary
+  # always, and any leftover `knowledge_checks` (lesson_section_parser.rb:935) — so the
+  # video parses in FRONT of them and everything from that index up moves down one.
+  #
+  # `append` is the placement chosen precisely because the step HAS recorded work, so
+  # that is the one path where nothing may move. An attempt can sit at any index that
+  # exists in `parsed_sections` (`BlockAttemptsController#create` checks only that the
+  # section is there), and `RouteStep#outstanding_blocks_for` matches satisfied attempts
+  # to gating blocks by `section_index` alone, ignoring `block_type` — the same
+  # reasoning that produced f6ac17c5 for unpublish, applied here.
+  test "appending never moves an index a student's attempt already points at" do
+    step = step_with_sections(
+      [{ "type" => "concept" }, { "type" => "check" }, { "type" => "summary" }],
+      body: "## Concepto: Uno\nCuerpo uno.\n\n## Pregunta: Q1\nA) a\nB) b\nCORRECTA: A\nEXPLICACIÓN: e\n"
+    )
+    record_attempt!(step, section_index: 2, block_type: "summary")
+
+    result = ContentEngine::LessonVideoPublisher.publish!(step: step, payload: payload)
+    sections = step.reload.metadata["parsed_sections"]
+
+    assert_equal :append, result[:placement]
+    assert_equal "summary", sections[2]["type"],
+      "index 2 is what the attempt names; an append must not slide the video under it"
+    assert_equal "video", sections.last["type"],
+      "the video belongs after everything that already existed, because everything that " \
+      "already existed may be pointed at"
+    assert_equal sections.length - 1, result[:section_index]
+  end
+
   test "the census image count is unchanged by a publish" do
     step = step_with_sections([{ "type" => "visual", "image_url" => "/a.png" },
                                { "type" => "visual", "image_url" => "/b.png" }])
@@ -216,10 +247,21 @@ class ContentEngine::LessonVideoPublisherTest < ActiveSupport::TestCase
     assert_equal :ok, ContentEngine::LessonVideoPublisher.unpublish!(step: step)
     assert_equal reparsed_types(step), cached_types(step), "unpublish, video at 0"
 
+    # AN APPEND IS THE ONE PLACEMENT THAT DELIBERATELY DIVERGES, so the divergence is
+    # asserted rather than quietly excluded. `old.length` is past every section the
+    # parser synthesises, so no edit to the markdown can put the heading there — and
+    # an append happens only when the step HAS recorded work, where not moving an
+    # existing index outranks agreeing with the body. See `insertion_index`.
     appended = consistent_step(body)
     record_attempt!(appended, section_index: 0)
     assert_equal :append, ContentEngine::LessonVideoPublisher.publish!(step: appended, payload: payload)[:placement]
-    assert_equal reparsed_types(appended), cached_types(appended), "append"
+    assert_equal "video", cached_types(appended).last,
+      "an append puts the video after everything that already existed"
+    assert_not_equal reparsed_types(appended), cached_types(appended),
+      "if these now agree, `insertion_index` stopped forcing an append to the end of the " \
+      "array — check that it did not start moving indices a student's attempt names"
+    assert_equal reparsed_types(appended).sort, cached_types(appended).sort,
+      "the two may disagree about WHERE the video is and about nothing else"
 
     # An authored `## Resumen:` means `ensure_summary` synthesizes nothing, so an
     # appended video really is the last section — the one shape in which the
@@ -291,7 +333,9 @@ class ContentEngine::LessonVideoPublisherTest < ActiveSupport::TestCase
 
     published = ContentEngine::LessonVideoPublisher.publish!(step: step, payload: payload)
     assert_equal :append, published[:placement]
-    assert_equal 2, published[:section_index], "the parse puts the video before the synthesized summary"
+    assert_equal 3, published[:section_index],
+      "an append lands at the end of the ARRAY, past the synthesized summary, so that no " \
+      "index an attempt already names can move"
 
     assert_equal :ok, ContentEngine::LessonVideoPublisher.unpublish!(step: step),
       "the only attempt sits at index 1, below the video at 2, so removing the video moves nothing " \
