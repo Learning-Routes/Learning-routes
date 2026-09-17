@@ -59,9 +59,17 @@ module Admin
         return refuse("the subtitles are neither SRT nor VTT") if subtitles && subtitles_type.nil?
 
         index = unchanged_upload_index(video, subtitles)
-        # Spec §6: identical bytes answer 200 with the EXISTING URLs. Not a
-        # re-publish: `attach` never reuses a blob, so re-running it would hand the
-        # student's `<video>` a new proxy URL for a file that did not change.
+        # Spec §6: identical bytes answer 200 with the EXISTING URLs, and this
+        # returns before attaching or publishing anything. `attach` never reuses a
+        # blob by checksum — a Hash attachable always goes through
+        # `Blob.build_after_unfurling` (activestorage create_one.rb:88) — so
+        # re-running it would hand the student's `<video>` a new proxy URL for a
+        # file that did not change, and rewrite the lesson body to match.
+        #
+        # `:replace` is the honest one of the three for this answer: the video was
+        # already at this index and is still at this index, which is exactly what a
+        # replacement means positionally (same length, same indices). `:prepend` and
+        # `:append` both claim something moved.
         return respond_with(section_index: index, placement: :replace, status: :ok) if index
 
         attach!(video, subtitles, subtitles_type)
