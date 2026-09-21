@@ -219,10 +219,22 @@ class Admin::Api::StepVideosControllerTest < ActionDispatch::IntegrationTest
     assert_equal "replace", JSON.parse(response.body)["placement"]
     assert @step.reload.lesson_subtitles.attached?
 
-    # Fetched over the proxy URL the section now carries, which is what the student's
+    # Fetched over the URL the section now carries, which is what the student's
     # `<track>` actually requests — a stronger claim than "a blob changed", and it
     # avoids reading `.blob` off a strict-loaded attachment in the test itself.
+    #
+    # That URL is the engine's gated path now, not an Active Storage proxy URL, so
+    # the fetch needs a session. Both halves are asserted: anonymous gets the door,
+    # the owner gets the captions. Before F1 the anonymous fetch SUCCEEDED, and that
+    # was the bug.
     subtitles_url = JSON.parse(response.body)["subtitles_url"]
+    assert_match %r{\A/learning/routes/.+/steps/.+/subtitles\z}, subtitles_url,
+      "the studio was handed an Active Storage proxy URL, which answers to anyone"
+
+    get subtitles_url
+    assert_redirected_to Core::Engine.routes.url_helpers.sign_in_path
+
+    sign_in_as(@video_user)
     get subtitles_url
 
     assert_response :success

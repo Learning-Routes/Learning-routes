@@ -132,8 +132,8 @@ module Admin
         render json: {
           "step_id" => @step.id,
           "section_index" => section_index,
-          "video_url" => proxy_path(@step.lesson_video),
-          "subtitles_url" => proxy_path(@step.lesson_subtitles),
+          "video_url" => video_path_for,
+          "subtitles_url" => subtitles_path_for,
           "placement" => placement.to_s
         }, status: status
       end
@@ -308,8 +308,8 @@ module Admin
         permitted = params.permit(:title, :duration_seconds, :lesson_id, :voice).to_h
         permitted.merge(
           "duration_seconds" => duration_seconds(permitted["duration_seconds"]),
-          "video_url" => proxy_path(@step.lesson_video),
-          "subtitles_url" => proxy_path(@step.lesson_subtitles),
+          "video_url" => video_path_for,
+          "subtitles_url" => subtitles_path_for,
           "source" => SOURCE,
           "published_at" => Time.current.utc.iso8601
         )
@@ -320,9 +320,32 @@ module Admin
         Integer(raw.to_s, exception: false) || raw
       end
 
-      def proxy_path(attached)
-        rails_storage_proxy_path(attached) if attached.attached?
+      # THE PATH THE STUDENT FETCHES, which is no longer an Active Storage proxy URL.
+      #
+      # `rails_storage_proxy_path` answers to anyone holding the URL — permanently,
+      # with no session and no purchase (Active Storage says so itself, in the warning
+      # above its own ProxyController). The lesson page is entitlement-gated, so a
+      # film addressed that way was the one part of a paid lesson that was not.
+      # `LearningRoutesEngine::StepMediaController` now serves both blobs behind the
+      # same before_action chain as `steps#show`, and this is the address of that
+      # door. It goes into the section body and into this endpoint's response, so the
+      # studio, the stored payload and the `<video>` element all name the same URL.
+      #
+      # Through the `learning_routes_engine` ROUTES PROXY rather than
+      # `Engine.routes.url_helpers`, because the engine is mounted at "/learning"
+      # (config/routes.rb:4) and only the proxy prepends that script_name; the bare
+      # engine helpers answer a path that is missing the mount point.
+      def media_path(kind, attached)
+        return nil unless attached.attached?
+
+        learning_routes_engine.public_send(
+          :"#{kind}_route_step_path", @step.learning_route_id, @step.id
+        )
       end
+
+      def video_path_for = media_path(:video, @step.lesson_video)
+
+      def subtitles_path_for = media_path(:subtitles, @step.lesson_subtitles)
 
       def uploaded(name)
         file = params[name]
