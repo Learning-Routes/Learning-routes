@@ -346,4 +346,99 @@ class Admin::Api::StepVideosControllerTest < ActionDispatch::IntegrationTest
     assert_response :no_content
     assert_not step.reload.lesson_video.attached?
   end
+
+  # ─── Task 10 / F2: the failure path that was not covered ─────────────
+
+  # The class comment promises "Publish, and if it raises, purge what step 2
+  # attached". It kept that promise for exactly two named exceptions. Anything else
+  # — a parser raise inside `reparse` (SectionResolver wraps its own parse in
+  # `rescue => e` at section_resolver.rb:72, so they are expected in practice), a
+  # lock timeout, a validation failure on the AiContent body — left the blob
+  # attached with no section pointing at it, the subtitles attached too, and no
+  # audit row at all, because an exception skips the around callback's post-yield
+  # code. Exactly the half-published step the ordering exists to forbid.
+  test "an unexpected failure purges what it attached, audits, and still raises" do
+    original = ContentEngine::LessonVideoPublisher.method(:publish!)
+    ContentEngine::LessonVideoPublisher.define_singleton_method(:publish!) do |**_args|
+      raise "the publisher fell over"
+    end
+
+    assert_raises(RuntimeError) do
+      with_token(TOKEN) { post video_path(@step), headers: auth(TOKEN), params: full_params }
+    end
+
+    @step.reload
+    assert_not @step.lesson_video.attached?, "the film was left attached with no section pointing at it"
+    assert_not @step.lesson_subtitles.attached?, "the captions were left behind"
+
+    event = OwnerAuditEvent.where(action: "owner.studio_api").order(:created_at).last
+    assert event, "a 500 on the studio's door left no audit row"
+    assert_equal 500, event.metadata["status"]
+    assert_equal "RuntimeError", event.metadata["error"]
+  ensure
+    ContentEngine::LessonVideoPublisher.define_singleton_method(:publish!, original)
+  end
+
+  # A publish that fails must not take the PREVIOUS publish's row with it, and must
+  # not report success either.
+  test "the raise is the original error, not whatever the cleanup hit" do
+    original = ContentEngine::LessonVideoPublisher.method(:publish!)
+    ContentEngine::LessonVideoPublisher.define_singleton_method(:publish!) do |**_args|
+      raise ArgumentError, "the original"
+    end
+
+    error = assert_raises(ArgumentError) do
+      with_token(TOKEN) { post video_path(@step), headers: auth(TOKEN), params: full_params }
+    end
+
+    assert_equal "the original", error.message
+  ensure
+    ContentEngine::LessonVideoPublisher.define_singleton_method(:publish!, original)
+  end
+
+  # ─── Task 10 / F7a: the cap that the header check cannot enforce ─────
+
+  # `refuse_oversized_body!` reads CONTENT_LENGTH, and a chunked request does not
+  # send one: `request.content_length.to_i` is 0 and the 300 MB gate opens. The film
+  # is then buffered to disk and attached regardless of size. This is the same
+  # ceiling applied to the bytes that actually arrived, which is the only number
+  # that cannot be lied about.
+  #
+  # The cap is swapped rather than exercised at 300 MB, using the singleton-swap
+  # idiom this suite already uses for credentials — writing a third of a gigabyte to
+  # a tempfile to assert a comparison is not a better test.
+  def with_max_video_bytes(bytes)
+    klass = Admin::Api::StepVideosController
+    original = klass.method(:max_video_bytes)
+    klass.define_singleton_method(:max_video_bytes) { bytes }
+    yield
+  ensure
+    klass.define_singleton_method(:max_video_bytes, original)
+  end
+
+  test "a film larger than the cap is refused on its actual size, not its header" do
+    with_max_video_bytes(64) do
+      with_token(TOKEN) do
+        post video_path(@step), headers: auth(TOKEN), params: base_params.merge(
+          video: fixture_upload(mp4_bytes, "l.mp4", "video/mp4")
+        )
+      end
+    end
+
+    assert_response :content_too_large
+    assert_not @step.reload.lesson_video.attached?,
+      "an oversized film was attached before it was refused"
+  end
+
+  test "a film inside the cap is still accepted" do
+    with_max_video_bytes(mp4_bytes.bytesize) do
+      with_token(TOKEN) do
+        post video_path(@step), headers: auth(TOKEN), params: base_params.merge(
+          video: fixture_upload(mp4_bytes, "l.mp4", "video/mp4")
+        )
+      end
+    end
+
+    assert_response :created
+  end
 end

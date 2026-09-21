@@ -31,6 +31,21 @@ module Admin
       # is read.
       MAX_BODY_BYTES = 300.megabytes
 
+      # THE SAME CEILING, APPLIED TO THE BYTES THAT ACTUALLY ARRIVED.
+      #
+      # `refuse_oversized_body!` answers from CONTENT_LENGTH before the body is read,
+      # which is the right thing to do when the header is there — it refuses without
+      # buffering 300 MB. It just cannot be the only check: a chunked request sends
+      # no Content-Length at all, `request.content_length.to_i` is 0, the gate opens,
+      # and the film is buffered and attached whatever its size. This is the number
+      # nobody can lie about, read after the multipart parse.
+      MAX_VIDEO_BYTES = 300.megabytes
+
+      # Read through a method so a test can lower the ceiling with the singleton-swap
+      # idiom instead of writing a third of a gigabyte to a tempfile to assert a
+      # comparison.
+      def self.max_video_bytes = MAX_VIDEO_BYTES
+
       # Spec §5, which annotates the attachment itself:
       # `has_one_attached :lesson_subtitles  # text/vtt or application/x-subrip, <= 1 MB`
       # (design doc :106). A SEPARATE limit, and it has to be: the whole-body number
@@ -59,6 +74,12 @@ module Admin
       def create
         video = uploaded(:video)
         return refuse("a video file is required") if video.nil?
+        # Size before shape, and before any attach — the same order the subtitles
+        # below are checked in. Refusing a file for being too big should not require
+        # reading it.
+        if video.size > self.class.max_video_bytes
+          return refuse_too_large("video file", self.class.max_video_bytes)
+        end
         return refuse("the bytes are not an mp4") unless mp4?(video)
 
         subtitles = uploaded(:subtitles)
@@ -116,6 +137,34 @@ module Admin
       rescue ContentEngine::LessonVideoPublisher::UnparsableSection
         purge_new_attachments!(subtitles: subtitles)
         refuse("the video section did not parse back as a video")
+      rescue StandardError => e
+        # THE PROMISE AT THE TOP OF THIS CLASS, KEPT FOR EVERY EXCEPTION AND NOT JUST
+        # THE TWO NAMED ONES. "Publish, and if it raises, purge what step 2 attached"
+        # was implemented for `MissingLessonBody` and `UnparsableSection`; anything
+        # else — a parser raise inside `reparse` (SectionResolver wraps its own parse
+        # in `rescue => e`, section_resolver.rb:72, so they happen), a lock timeout, a
+        # validation failure on the AiContent body — left the blob attached with no
+        # section pointing at it, the SUBTITLES attached as well, and no audit row,
+        # because an exception skips the around callback's post-yield code. That is
+        # precisely the half-published step the three-step ordering exists to forbid.
+        #
+        # Not a `refuse`: this is not a refusal, it is a fault, and the studio has to
+        # see a 500 rather than a 422 that invites it to fix its payload. So the
+        # error is re-raised after the two things that must happen first.
+        #
+        # BOTH of those are guarded, and the original error is what leaves this
+        # method. A cleanup that raises its own exception replaces the one the owner
+        # needs to see — the reason `audit_studio_access!` deliberately has no
+        # `ensure` — so neither the purge nor the audit may become the story.
+        attempt("purge after a failed publish") { purge_new_attachments!(subtitles: subtitles) }
+        attempt("audit a failed publish") { audit_failure!(e) }
+        raise
+      end
+
+      def attempt(what)
+        yield
+      rescue StandardError => e
+        Rails.logger.error("[Admin::Api] could not #{what}: #{e.class}: #{e.message}")
       end
 
       def unpublish
