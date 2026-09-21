@@ -86,9 +86,29 @@ module Admin
 
         return unless @studio_authenticated
 
+        record_studio_event!(status: response.status)
+      end
+
+      # The row the callback above CANNOT write, because the exception that makes it
+      # interesting is the same exception that skips the post-yield code. A caller
+      # that is about to re-raise records the fault itself, naming the error class:
+      # "a 500 happened here" is the one answer the status-code version could never
+      # give, and without it a half-published step left no trace at all.
+      #
+      # `status: 500` is asserted, not read off `response.status`: nothing has been
+      # rendered at this point, so the response still carries its default 200.
+      def audit_failure!(error)
+        return unless @studio_authenticated
+
+        record_studio_event!(status: 500, error: error.class.name)
+      end
+
+      def record_studio_event!(status:, error: nil)
+        metadata = { controller: controller_path, action: action_name, status: status }
+        metadata[:error] = error if error
+
         OwnerAuditEvent.record!(
-          action: "owner.studio_api", actor: nil, request: request,
-          metadata: { controller: controller_path, action: action_name, status: response.status }
+          action: "owner.studio_api", actor: nil, request: request, metadata: metadata
         )
       end
     end
