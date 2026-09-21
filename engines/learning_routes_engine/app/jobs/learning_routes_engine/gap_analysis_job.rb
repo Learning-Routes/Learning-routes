@@ -4,7 +4,13 @@ module LearningRoutesEngine
     retry_on StandardError, wait: :polynomially_longer, attempts: 3
 
     def perform(route_id, assessment_result_id: nil, user_feedback: nil)
-      route = LearningRoute.find(route_id)
+      # `GapAnalyzer#initialize` reads `route.learning_profile&.user`
+      # (gap_analyzer.rb:9), two associations deep. The per-environment picture is the
+      # one spelled out in route_generation_job.rb: a WARN line in production and the
+      # analysis still runs, nothing at all in development, and in test a raise that
+      # `retry_on StandardError` swallowed — so no ReinforcementJob was enqueued and
+      # gap_analysis_job_test.rb has been red.
+      route = LearningRoute.includes(learning_profile: :user).find(route_id)
 
       # Idempotency: skip if gaps already analyzed for this assessment
       if assessment_result_id
