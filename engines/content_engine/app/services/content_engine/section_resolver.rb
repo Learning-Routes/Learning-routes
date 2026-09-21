@@ -46,9 +46,25 @@ module ContentEngine
       parse_and_persist!
     end
 
+    # ORDERED, because `.first` on an unordered scope is not a rule — it is whatever
+    # PostgreSQL returns, which is physical order today and something else after a
+    # VACUUM or a plan change. A step really can carry more than one row:
+    # content_generation_job.rb:36 and content_pipeline_job.rb:152 each `create!`
+    # one without deleting an earlier one (count them with `rake
+    # wp38:ai_content_census`).
+    #
+    # Oldest first. The first row generated for a step is the lesson; a second is the
+    # duplicate, and promoting a duplicate would change what the student reads.
+    #
+    # This is what makes the comment on `lesson_content_for` above true rather than
+    # merely intended. LessonVideoPublisher edits the row this returns — its
+    # `:replace` branch looks for a `## Video:` heading in that body and
+    # `stripped_body` removes a payload from it — so if the publisher's write and
+    # this read can land on different rows, an unpublish deletes nothing while the
+    # cache records that the video is gone.
     def lesson_content
       target = @step.content_type_exercise? ? :exercise : :text
-      scope = AiContent.where(route_step: @step)
+      scope = AiContent.where(route_step: @step).order(:created_at, :id)
       scope.by_type(target).first || scope.first
     end
 

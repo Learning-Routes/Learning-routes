@@ -51,11 +51,23 @@ module ContentEngine
 
     private
 
+    # THE SAME ROW THE LESSON IS PARSED FROM, asked for through the one method that
+    # decides it. The previous version had its own `.first` and a comment that had
+    # already spotted the problem — "`.first` was returning whichever the DB ordered
+    # first, which isn't deterministic" — but narrowed it to a content type instead
+    # of ordering it, so two `text` rows brought it straight back.
+    #
+    # It mattered more than a tie-break: this writes `audio_url` onto the row it
+    # picks, while the page renders the body of the row SectionResolver picks. Two
+    # rules meant the narration could be attached to a body the student never sees,
+    # and the body they do see would be generated again, at cost.
+    #
+    # ONE BEHAVIOUR CHANGE, DELIBERATE: on an exercise step this now returns the
+    # exercise row rather than creating an empty text row out of `step.description`.
+    # That is the row the page reads for such a step, so the narration and the text
+    # finally describe the same thing.
     def find_or_create_content!
-      # Scope to the text content type — a step can have multiple AiContent rows
-      # (text + exercise variants) and `.first` was returning whichever the DB
-      # ordered first, which isn't deterministic.
-      @step.ai_contents.by_type(:text).first || ContentEngine::AiContent.create!(
+      SectionResolver.lesson_content_for(@step) || ContentEngine::AiContent.create!(
         route_step_id: @step.id,
         content_type: "text",
         body: @step.description.presence || @step.title,
