@@ -626,7 +626,150 @@ present in the deployed image — strong, but not a production stack trace. Item
 
 ---
 
-## 11. Sources
+## 11. 2026-09-22 — WP-38 Task 10: branch audit, and what it closed
+
+**Scope.** An audit of `wp38-video-lessons` (video lessons from the Manim studio), not a re-audit of
+the repo. Where it touched findings from §1–§10 those are marked. Two branches came out of it, both
+**unmerged**, merge order with the owner:
+
+| branch | commits | head | base |
+|---|---|---|---|
+| `ci-engine-tests` | 3 | `a32230fa` | `39f7fa24` |
+| `wp38-video-lessons` | 34 (30 prior + 4) | `535bb751` | `39f7fa24` |
+
+### 11.1 Corrections to this document
+
+**P2-1 (`production.key` published to a public registry) is CLOSED.** `.dockerignore:16-17` excludes
+`config/master.key` and `config/credentials/*.key`, with the reason written above them. The
+deploy-blocker recorded in §1.7 and §5 no longer applies.
+
+**§3's strict-loading premise was half right, and this audit repeated the error before correcting
+it.** `action_on_strict_loading_violation` is *not* unset. Each environment sets it:
+
+| environment | `action_on_strict_loading_violation` | `strict_loading_mode` | what a violation does |
+|---|---|---|---|
+| production | `:log` (production.rb:102) | `:all` (default) | one WARN line via `strict_loading_notification.rb`; the request continues |
+| development | `:raise` (development.rb:124) | `:n_plus_one_only` | a single-record `belongs_to`/`has_one` does **not** fire at all |
+| test | `:raise` (test.rb:85) | `:all` | raises |
+
+So §3's "101 of 102 associations would raise" describes the *default* Rails would apply, not this
+app's configuration. Under `:log` the failures in §3 are WARN lines and degraded queries, not 500s.
+The distinction is the difference between an outage and a log to grep, and it is the one thing in
+this audit that must not be overstated.
+
+### 11.2 The two CI facts, measured
+
+1. **`bin/rails test` collects `test/` only.** The **57 test files under `engines/`** have never run
+   in CI, and CI green auto-deploys (`deploy.yml`). Three real defects were sitting behind that gap
+   (11.3 below). Closed on `ci-engine-tests` by a second step, `bin/rails test engines/*/test`.
+2. **Naming `test` explicitly is not equivalent to the bare form.** `bin/rails test test` makes the
+   runner collect `test/system` as well — Capybara boots Puma, measured — which is the `system-test`
+   job's work and needs a browser the `test` job does not have. Counts on `ci-engine-tests`: bare
+   `bin/rails test` 789 runs, `bin/rails test test` 858, `bin/rails test engines/*/test` 368. Hence
+   two steps rather than one invocation.
+
+### 11.3 Closed on `ci-engine-tests`
+
+Four engine tests had been failing on `main`. Verified pre-existing by re-running them against
+`main`'s own `config/environments/test.rb`; they fail there identically.
+
+| finding | disposition |
+|---|---|
+| `RouteGenerationJob` → `learning_profile.user` (route_generator.rb:16) | preloaded |
+| `GapAnalysisJob` → `route.learning_profile&.user` (gap_analyzer.rb:9) | preloaded |
+| `ReinforcementJob` → `route.learning_profile.user` (reinforcement_generator.rb:10) | preloaded |
+| `RouteGeneratorTest:51` traverses `route_steps` with `select`/`find` blocks | test reads a query |
+
+The first three are the same defect: a bare `find` handed to a service that reads an association off
+the record. In **production** each is a WARN line and the job completes — routes are generated. In
+**test** it raises, and `retry_on StandardError` on all three jobs swallowed it into three retries
+and a no-op, which is why the tests were red. In **development** nothing fires, because
+`:n_plus_one_only` does not consider a single-record `belongs_to` an N+1 (measured, by running the
+unfixed job under that mode).
+
+### 11.4 Closed on `wp38-video-lessons`
+
+| id | finding | how it was closed |
+|---|---|---|
+| F1 | Paid video served by a permanent, unauthenticated Active Storage proxy URL | `LearningRoutesEngine::StepMediaController`, subclassing `StepsController` so the four entitlement callbacks are the parent's own methods; 9 tests |
+| F2 | Any exception outside two named classes left an orphaned blob and **no audit row** | `rescue StandardError` purges, audits status 500 with the error class, re-raises the original |
+| F3 | `lesson_content_for` picked a row with `.first` and **no `ORDER BY`** | `.order(:created_at, :id)`; `audio_generator.rb:58` now delegates; `rake wp38:ai_content_census` |
+| F7a | The 300 MB cap read `CONTENT_LENGTH`, which a chunked request does not send | `MAX_VIDEO_BYTES` checked against the parsed upload's actual size |
+
+Three things were silently defeating F1, each measured and each worth knowing outside this package:
+
+- `ActiveStorage::Blob#forced_disposition_for_serving` overrides the controller and answers
+  `attachment` unless the type is in `content_types_allowed_inline`. Fixed through the **config**,
+  because Active Storage assigns the module attribute from it inside its own `after_initialize`
+  (engine.rb:148) and setting the attribute from an app initializer loses the ordering race.
+- ActionDispatch re-composes `Cache-Control` on commit, and its `no_store` branch **never concats
+  `extras`** (actionpack `cache.rb:331-334`). A hand-written `no-transform` was dropped — and
+  `Rack::Deflater`, mounted app-wide with no type filter (`application.rb:45`), would then have
+  gzipped the mp4 and dropped `Content-Length`, breaking byte-range seeking.
+- Active Storage's own proxy sets `Cache-Control: public` for blobs. For entitled content that hands
+  the film to whoever a shared cache serves next.
+
+Two test-infrastructure defects were fixed on the way, both of the class where a test passes for the
+wrong reason:
+
+- `sign_in_as` used the `core` routes proxy, which resolves against the **last request's**
+  `script_name`. In any test that had already visited a mounted engine it POSTed to
+  `/learning/sign_in`, got a 404, created no session, and the next assertion failed as a redirect to
+  sign-in rather than as a broken helper.
+- `"a replace with subtitles swaps them"` fetched the captions URL **anonymously and asserted
+  success**. That it passed was the bug; it now asserts the gate and the content.
+
+### 11.5 Open, with evidence
+
+**WP-39 — lesson images are served exactly as the film was.** `image_generation_service.rb:158-166`
+creates bare `ActiveStorage::Blob`s for generated lesson images and addresses them with
+`rails_blob_url(blob, only_path: true)`. Those URLs are persisted into `parsed_sections["image_url"]`.
+So `config.active_storage.draw_routes = false` — the belt-and-braces half of F1 — is **not
+deliverable without a data migration**: it would 404 every already-generated image, and silently
+degrade new ones to base64 data URIs through the `rescue => e` at line 170. Images of **paid** modules
+are therefore still behind an unauthenticated, permanent URL. Own package.
+
+**Seven answers to "which `AiContent` row is the lesson body".** F3 made one of them deterministic;
+the others still disagree. With one row per step — the normal case — all seven agree, so nothing
+regresses; with duplicates the audio generator now writes to the *oldest* row while three readers read
+the *newest*.
+
+| site | rule today |
+|---|---|
+| `section_resolver.rb` `lesson_content_for` | oldest — `order(:created_at, :id)` |
+| `audio_generator.rb:58` | delegates to the above |
+| `route_step.rb:192` `audio_content` | **newest** — `order(created_at: :desc).first` |
+| `audio_controller.rb:31` | **newest** — `order(created_at: :desc).first` |
+| `voice_evaluator.rb:114` | **newest** — `order(created_at: :desc).first` |
+| `audio_controller.rb:10` | unordered — `with_audio_ready.first` |
+| `tutor_reply_job.rb:37` | unordered — `ai_contents&.first` |
+
+`rake wp38:ai_content_census` counts the duplicates in production and decides whether this is urgent.
+
+**The lazy-traversal sweep.** `routes_controller.rb:39,100`, `steps_controller.rb:101`,
+`route_progress_tracker.rb:65`, `adaptive_difficulty.rb:115`, `_route_card.html.erb:8` and
+`routes/show.html.erb:69` all force-load `route_steps`. Not audited here. Under `:log` each is a WARN
+line and a lazy query, **not** a 500 — grade them on that basis, not on §3's premise.
+
+**Not fixed, deferred by ruling:** the light-theme badge contrast ratchet, `RoutesController#index`
+returning every route unpaginated, and the studio's single-script throttle boundary. See
+`WP38_HANDOFF.md` §6 and §9.
+
+### 11.6 Suites at the time of writing
+
+| suite | branch | result |
+|---|---|---|
+| `bin/rails test` | `ci-engine-tests` | 789 runs, 0 failures |
+| `bin/rails test engines/*/test` | `ci-engine-tests` | 368 runs, 0 failures |
+| `bin/rails test` | `wp38-video-lessons` | 859 runs, 3947 assertions, 0 failures |
+| `bin/rails test engines/*/test` | `wp38-video-lessons` | 375 runs, 3 failures + 1 error |
+
+The four on `wp38` are the same four `ci-engine-tests` fixes; that branch merges first.
+`bin/rubocop` clean on every file touched.
+
+---
+
+## 12. Sources
 
 Repository evidence is cited inline as `file:line`; commands are quoted in place. External sources:
 
