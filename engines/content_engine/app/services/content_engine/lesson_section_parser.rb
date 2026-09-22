@@ -518,10 +518,33 @@ module ContentEngine
     # and treat everything after its matching `}` as the aftermath, the same
     # boundary every sibling heading parser in this file establishes.
     #
-    # Returns [json_text, remainder] — `json_text` is nil when no balanced
-    # object was found at all (malformed JSON), in which case `remainder` is
-    # the whole body: there is no JSON boundary to split on, so nothing here
-    # is "after" it.
+    # THE CONTRACT, AND IT LIVES HERE, ONCE.
+    #
+    # Returns [json_text, remainder].
+    #
+    #   * `json_text` is nil when no balanced object was found at all (malformed
+    #     JSON), in which case `remainder` is the whole body: there is no JSON
+    #     boundary to split on, so nothing here is "after" it.
+    #   * `remainder` is RAW. It is not stripped and it is never nil-for-blank.
+    #     **THE CALLER STRIPS.** The two callers want different tails and a helper
+    #     that stripped could only serve one of them: `parse_heading_motion` needs to
+    #     see the newline in front of a closing fence so `strip_closing_fence` can
+    #     remove it, while `parse_heading_video` wants a tidy `.presence`. Each does
+    #     its own tidying at the call site.
+    #
+    # WP-36 and WP-38 each shipped a copy of this method, and they disagreed on
+    # precisely that point — one stripped and `.presence`d, this one does not. When
+    # WP-38 merged on top of WP-36, git reported `Auto-merging` with **no conflict**,
+    # Ruby did not warn, every suite stayed green, and the later definition silently
+    # won: the motion parser was quietly repointed at a contract it was never written
+    # against. `test/services/no_duplicate_method_definitions_test.rb` exists so that
+    # cannot merge quietly again.
+    #
+    # Public on the class as well, because `LessonVideoPublisher` has to remove
+    # exactly the payload the parser decides to read; two answers to "where does the
+    # JSON end" is how the unpublish strip came to delete the author's prose.
+    def self.split_json_object(body) = new("").send(:split_json_object, body)
+
     def split_json_object(body)
       text = body.to_s
       start = text.index("{")
@@ -877,80 +900,12 @@ module ContentEngine
         # one. Unreachable through the studio (it writes JSON only, and the
         # publisher terminates the section at the next `##`), so this is defence
         # in depth against the next writer of this heading, not a live loss.
-        aftermath: aftermath,
+        # STRIPPED HERE, not by the helper: `split_json_object` answers a raw
+        # remainder so `parse_heading_motion` can find the newline before a closing
+        # fence. See the contract on that method.
+        aftermath: aftermath.to_s.strip.presence,
         body: body.to_s.strip
       }
-    end
-
-    # The JSON object at the head of the body, and everything after it.
-    #
-    # `split_aftermath` CANNOT do this job, and using it here was a real defect: it cuts
-    # at a sub-heading, a fence or a horizontal rule, and prose has none of those. 8 of
-    # the 10 lesson bodies in the development database begin with a paragraph before
-    # their first `##` heading — the parser has a whole branch for that shape — so
-    # prepending a `## Video:` heading put that paragraph inside the video's section,
-    # where it was handed to JSON.parse along with the payload. The block degraded to a
-    # concept whose body was raw JSON, and the publisher raised rather than persist it,
-    # which turned four out of five real lessons into a 422.
-    #
-    # The payload's own closing brace is the boundary, so that is what is scanned for:
-    # depth counting, with strings and escapes respected, because `{"title": "Un {reto}
-    # difícil"}` is one object and not two. Anything before the opening brace or after
-    # the closing one is the aftermath, which is rendered below the player.
-    #
-    # Returns [nil, body] when there is no balanced object to find, which is how a
-    # malformed payload still degrades to a concept.
-    #
-    # MERGE NOTE: WP-36 carries a helper of this name too, and that branch is not
-    # merged. Whichever package lands second resolves the conflict by keeping ONE copy
-    # and checking that both callers still pass — the same arrangement `safe_parse_json`
-    # below already has. Compare the return contracts before deleting either: this one
-    # answers [json, aftermath] and treats a missing object as [nil, whole body].
-    # Public on the class as well: `LessonVideoPublisher` has to remove exactly the
-    # payload this decides to read, and two different answers to "where does the JSON
-    # end" is how the unpublish strip came to delete the author's prose.
-    def self.split_json_object(body) = new("").send(:split_json_object, body)
-
-    def split_json_object(body)
-      text = body.to_s
-      start = text.index("{")
-      return [nil, text.strip.presence] if start.nil?
-
-      depth = 0
-      in_string = false
-      escaped = false
-      text[start..].each_char.with_index do |char, offset|
-        if escaped
-          escaped = false
-          next
-        end
-
-        case char
-        when "\\" then escaped = true if in_string
-        when '"' then in_string = !in_string
-        when "{" then depth += 1 unless in_string
-        when "}"
-          next if in_string
-
-          depth -= 1
-          next unless depth.zero?
-
-          finish = start + offset
-          return [text[start..finish], text[(finish + 1)..].to_s.strip.presence]
-        end
-      end
-
-      [nil, text.strip.presence]
-    end
-
-    # Deliberately identical to WP-36's helper of the same name, so that whichever of
-    # the two packages merges second resolves the conflict by deleting one copy.
-    def safe_parse_json(text)
-      return nil if text.nil?
-
-      JSON.parse(text)
-    rescue JSON::ParserError
-      nil
     end
 
     def split_by_paragraphs(text)
