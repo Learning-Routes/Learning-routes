@@ -65,6 +65,68 @@ class ContentEngine::LessonBlockContractTest < ActiveSupport::TestCase
       "the type should be declared authored: false."
   end
 
+  # ── Link 1c: the ## Motion: example → MotionScenes ──────────────────────
+  #
+  # The prompt's worked example is the FOURTH copy of a scene's shape (the other
+  # three are the JSON schema, the generated TS type, and the scene's own
+  # FALLBACK) — and the one nobody else would check. If it drifts from the
+  # schema, the prompt teaches the model a shape the parser rejects.
+  #
+  # NOTE: the brief for this test used `YAML.load_file(...).to_s` to build
+  # `body`. That calls Hash#to_s, which is Hash#inspect under the hood — it
+  # ESCAPES every real newline in the YAML values into the two literal
+  # characters "\" "n", so a regex `\n` (an actual newline) can never match
+  # inside it. Verified: `{"a" => "x\ny"}.to_s` => '{"a"=>"x\ny"}' (backslash-n,
+  # not a newline). Used `prompt_text`, this file's own helper, instead — it
+  # joins the real string values, newlines intact, exactly like every other
+  # test in this file already does.
+  test "the ## Motion: example in the prompt validates against the schema its heading names" do
+    body = prompt_text(LESSON_PROMPT)
+
+    example = body[/## Motion:\s*(\w+)\s*\n(\{.*?\n\})/m]
+    assert example, "the prompt has no ## Motion: example, so the model has nothing to imitate"
+    scene = Regexp.last_match(1)
+    payload = JSON.parse(Regexp.last_match(2))
+
+    assert ContentEngine::MotionScenes.known?(scene), "the example names an unknown scene: #{scene}"
+    assert_equal [], ContentEngine::MotionScenes.validate(scene, payload["data"]),
+      "the prompt teaches the model a shape the parser will reject"
+    assert payload["narration"].present?, "the example must show narration"
+  end
+
+  # The languages are the whole point of the example: the model imitates it.
+  test "the prompt's motion example puts the target language in tokens and the student's in narration" do
+    body = prompt_text(LESSON_PROMPT)
+    payload = JSON.parse(body[/## Motion:\s*\w+\s*\n(\{.*?\n\})/m, 1])
+
+    assert_includes payload["data"]["tokens"], "tenho",
+      "tokens must be the TARGET language (pt); an English token here teaches the model to invert them"
+    assert_match(/sujeto|persona/i, payload["narration"],
+      "narration must be the STUDENT's language (es)")
+  end
+
+  # ── Link 1d: the cycle placement, pinned as text ─────────────────────────
+  #
+  # "Module 1 carries one, at most two motion blocks; other modules none" is a
+  # content decision, not a structural one — nothing short of simulating the
+  # model can prove it is OBEYED. What a test CAN pin, in the same spirit as
+  # every other assertion in this file, is that the INSTRUCTION ITSELF is
+  # still there, still names module 1, and still caps it at one or two: a
+  # future edit that quietly drops the constraint (e.g. while rewording the
+  # vocabulary entry) fails this test instead of silently going unnoticed.
+  test "the curriculum prompt confines motion to module 1, one or two lessons" do
+    text = prompt_text(CURRICULUM_PROMPT)
+    section = text[/EXERCISE TYPE VOCABULARY.*?\n\s*={10,}\n(.*?)(?=\n\s*={10,})/m, 1].to_s
+
+    motion_entry = section[/^motion\s+—.*(?:\n(?!\s*\w+\s+—)(?!\n).*)*/]
+    assert motion_entry, "curriculum_design.yml's exercise vocabulary has no entry for motion"
+
+    assert_match(/module 1/i, motion_entry,
+      "the motion entry must confine it to module 1 — that placement decision is what this pins")
+    assert_match(/one or two|one,? at most two/i, motion_entry,
+      "the motion entry must cap it at one or two lessons")
+  end
+
   test "the curriculum prompt's exercise vocabulary is renderable" do
     # The vocabulary block lists the exercise_types CurriculumBrain may plan. Each must
     # correspond to something the lesson writer can actually produce, or the plan
@@ -160,9 +222,14 @@ class ContentEngine::LessonBlockContractTest < ActiveSupport::TestCase
 
       File.read(partial).scan(/data-action="([^"]+)"/).flatten.each do |spec|
         spec.split(/\s+/).each do |binding|
-          next unless binding.include?("->")
+          # Stimulus accepts both the explicit "event->controller#method" form and
+          # the shorthand "controller#method" (implied default event, e.g. "click"
+          # on a button). Only the explicit form was parsed here, so a shorthand
+          # binding naming a nonexistent method passed this test silently.
+          target = binding.include?("->") ? binding.split("->").last : binding
+          next unless target.include?("#")
 
-          controller, method = binding.split("->").last.split("#")
+          controller, method = target.split("#")
           next if controller.nil? || method.nil?
 
           file = CONTROLLERS_DIR.join("#{controller.tr('-', '_')}_controller.js")

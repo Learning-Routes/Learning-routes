@@ -213,6 +213,8 @@ module ContentEngine
             sections << parse_heading_check(title, body)
           when :visual
             sections << parse_heading_visual(title, body)
+          when :motion
+            sections << parse_heading_motion(title, body)
           when :example
             sections << { type: "example", title: title.presence, body: body }
           when :tip
@@ -461,6 +463,112 @@ module ContentEngine
         caption: nil,
         contains_diagram: has_diagram
       }
+    end
+
+    # `## Motion: <scene>` with a JSON body. The heading's title IS the scene
+    # name, from the closed vocabulary the schema files define.
+    #
+    # Ruby owns `narration`; the scene's schema owns `data`. Anything the schema
+    # refuses — a bad index, a missing key, an unknown scene, unparseable JSON —
+    # becomes a CONCEPT carrying the narration text, and says why in the log, the
+    # way a dropped ::: block does. A default may render less; it may never
+    # render something false.
+    def parse_heading_motion(scene_from_heading, body)
+      scene = scene_from_heading.to_s.strip
+      json_text, remainder = split_json_object(body)
+      payload = safe_parse_json(json_text)
+      narration = payload.is_a?(Hash) ? payload["narration"].to_s.strip : ""
+
+      reason =
+        # `payload.nil?` is deliberately redundant with `narration.blank?` for
+        # every malformed input: narration is unconditionally "" whenever
+        # payload isn't a Hash, so this branch never independently decides
+        # the fallback and cannot be pinned by a test in isolation — see
+        # section_parser_boundaries_test.rb's motion tests and the review
+        # history for task 8. It earns its place anyway for the distinct
+        # logged reason: "body is not JSON" describes a garbled generation,
+        # "no narration" a well-formed-but-empty one, and that difference is
+        # real diagnostic value even though no test can observe it. Do not
+        # delete this on the grounds that no test covers it independently.
+        if payload.nil?             then "body is not JSON"
+        elsif narration.blank?      then "no narration"
+        elsif !MotionScenes.known?(scene) then "unknown scene #{scene.inspect}"
+        else
+          errors = MotionScenes.validate(scene, payload["data"])
+          errors.any? ? "invalid data: #{errors.join('; ')}" : nil
+        end
+
+      if reason
+        Rails.logger.warn("[LessonSectionParser] motion block fell back to concept — #{reason}")
+        # The whole body already becomes the concept's content, so there is no
+        # separate aftermath to carry here — unlike the "motion" branch below,
+        # a concept has nothing else that would render it.
+        return { type: "concept", title: nil, body: narration.presence || body.to_s.strip }
+      end
+
+      { type: "motion", scene: scene, data: payload["data"], narration: narration,
+        aftermath: strip_closing_fence(remainder).strip.presence, body: body.to_s.strip }
+    end
+
+    # A `## Motion:` body is a fenced-or-bare JSON object followed by whatever
+    # trailing markdown the rest of this file's sweep exists to prove every
+    # heading parser survives — a sub-heading, a diagram, prose. Rather than
+    # require the whole remaining body to be valid JSON (it never is once
+    # trailing content is present), find the first balanced top-level `{...}`
+    # and treat everything after its matching `}` as the aftermath, the same
+    # boundary every sibling heading parser in this file establishes.
+    #
+    # Returns [json_text, remainder] — `json_text` is nil when no balanced
+    # object was found at all (malformed JSON), in which case `remainder` is
+    # the whole body: there is no JSON boundary to split on, so nothing here
+    # is "after" it.
+    def split_json_object(body)
+      text = body.to_s
+      start = text.index("{")
+      return [nil, text] unless start
+
+      depth = 0
+      in_string = false
+      escaped = false
+
+      (start...text.length).each do |i|
+        char = text[i]
+
+        if in_string
+          if escaped
+            escaped = false
+          elsif char == "\\"
+            escaped = true
+          elsif char == '"'
+            in_string = false
+          end
+          next
+        end
+
+        case char
+        when '"' then in_string = true
+        when "{" then depth += 1
+        when "}"
+          depth -= 1
+          return [text[start..i], text[(i + 1)..].to_s] if depth.zero?
+        end
+      end
+
+      [nil, text]
+    end
+
+    # The fenced form's closing ``` immediately follows the JSON object and is
+    # not itself content — strip it before what remains becomes the aftermath.
+    def strip_closing_fence(remainder)
+      remainder.to_s.sub(/\A[ \t]*\n?```[ \t]*\n?/, "")
+    end
+
+    def safe_parse_json(text)
+      return nil if text.nil?
+
+      JSON.parse(text)
+    rescue JSON::ParserError
+      nil
     end
 
     # Parse ## Resumen: heading format with PUNTOS CLAVE: bullet list

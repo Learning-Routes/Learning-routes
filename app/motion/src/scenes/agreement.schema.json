@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "agreement",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["tokens", "subject", "verb", "wrong", "correct", "why", "labels"],
+  "properties": {
+    "tokens":  { "type": "array", "minItems": 2, "items": { "type": "string", "minLength": 1 } },
+    "subject": { "type": "integer", "minimum": 0, "x-index-into": "tokens" },
+    "verb":    { "type": "integer", "minimum": 0, "x-index-into": "tokens" },
+    "wrong":   { "type": "string", "minLength": 1 },
+    "correct": { "type": "string", "minLength": 1 },
+    "why":     { "type": "string", "minLength": 1 },
+    "labels": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["subject", "verb"],
+      "properties": {
+        "subject": { "type": "string", "minLength": 1 },
+        "verb":    { "type": "string", "minLength": 1 }
+      }
+    }
+  },
+  "examples": [
+    {
+      "tokens": ["Ele", "tenho", "café", "."],
+      "subject": 0, "verb": 1,
+      "wrong": "tenho", "correct": "tem",
+      "why": "«Ele» es tercera persona: tem, no tenho.",
+      "labels": { "subject": "SUJETO", "verb": "VERBO" }
+    }
+  ]
+}

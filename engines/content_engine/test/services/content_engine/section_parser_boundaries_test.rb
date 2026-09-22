@@ -772,6 +772,136 @@ module ContentEngine
       assert parse_one_of("## Vídeo: T", body, "video")
     end
 
+    # ── `## Motion:` — a scene, or a concept, never a blank ───────────────────
+    #
+    # The model writes a few lines of JSON; it never writes animation code. That
+    # makes a bad generation a rendering question, and the answer is fixed:
+    # a default may render LESS, it may never render something FALSE.
+    test "a valid motion block parses to a scene with its data and narration" do
+      body = <<~MARKDOWN
+        {"narration": "Mira el sujeto.",
+         "data": {"tokens": ["Ele","tenho","café","."], "subject": 0, "verb": 1,
+                  "wrong": "tenho", "correct": "tem", "why": "Tercera persona.",
+                  "labels": {"subject": "SUJETO", "verb": "VERBO"}}}
+      MARKDOWN
+      section = parse_one_of("## Motion: agreement", body, "motion")
+
+      assert_equal "agreement", section[:scene]
+      assert_equal "Mira el sujeto.", section[:narration]
+      assert_equal %w[Ele tenho café .], section[:data]["tokens"]
+    end
+
+    test "an unknown scene name renders the narration as a concept" do
+      body = '{"narration": "Mira el sujeto.", "data": {}}'
+      sections = LessonSectionParser.call(document("## Motion: nosuchscene", body))
+      motion = sections.find { |s| s[:type] == "motion" }
+      concept = sections.find { |s| s[:type] == "concept" && s[:body].to_s.include?("Mira el sujeto.") }
+
+      assert_nil motion, "an unknown scene must not reach the student as a motion block"
+      assert concept, "the narration is the content; it must survive as a concept"
+    end
+
+    test "data that fails the scene schema renders the narration as a concept" do
+      body = '{"narration": "Mira el sujeto.", "data": {"tokens": ["Ele"], "subject": 9}}'
+      sections = LessonSectionParser.call(document("## Motion: agreement", body))
+
+      assert_nil sections.find { |s| s[:type] == "motion" }
+      assert sections.any? { |s| s[:type] == "concept" && s[:body].to_s.include?("Mira el sujeto.") }
+    end
+
+    test "malformed JSON renders as a concept and is never blank" do
+      sections = LessonSectionParser.call(document("## Motion: agreement", "{not json"))
+
+      assert_nil sections.find { |s| s[:type] == "motion" }
+      assert sections.any? { |s| s[:type] == "concept" },
+        "a blank block is the one outcome that is worse than rendering less"
+    end
+
+    # A motion body is JSON, but the JSON is not the whole body: an author can
+    # still write prose and a diagram after it, exactly like every other
+    # heading-authored block this file sweeps. `parse_one_of` -> `document`
+    # appends the standard trailing sub-heading, mermaid fence, rule and prose
+    # after the canonical JSON — everything past the JSON object's matching `}`
+    # must survive as `aftermath`, in order, with its newlines intact.
+    test "a motion block keeps its aftermath, in order, after the JSON" do
+      body = <<~MARKDOWN
+        {"narration": "Mira el sujeto.",
+         "data": {"tokens": ["Ele","tenho","café","."], "subject": 0, "verb": 1,
+                  "wrong": "tenho", "correct": "tem", "why": "Tercera persona.",
+                  "labels": {"subject": "SUJETO", "verb": "VERBO"}}}
+      MARKDOWN
+      section = parse_one_of("## Motion: agreement", body, "motion")
+      aftermath = section[:aftermath].to_s
+
+      TRAILING_MARKERS.each do |marker|
+        assert_includes aftermath, marker,
+          "motion dropped #{marker.inspect}: trailing content is real lesson material " \
+          "the author placed after the block; it must be preserved, not deleted"
+      end
+
+      assert_equal TRAILING_MARKERS, TRAILING_MARKERS.sort_by { |m| aftermath.index(m) },
+        "the aftermath must keep the author's order"
+      assert_includes aftermath, "```mermaid",
+        "the fence must survive intact or the diagram cannot render"
+      assert aftermath.lines.size > 1, "the blank lines between trailing paragraphs must survive"
+    end
+
+    test "a motion block whose body is JSON alone has a nil aftermath" do
+      body = '{"narration": "Mira el sujeto.", "data": {"tokens": ["Ele","tenho"], ' \
+             '"subject": 0, "verb": 1, "wrong": "tenho", "correct": "tem", "why": "x", ' \
+             '"labels": {"subject": "SUJETO", "verb": "VERBO"}}}'
+      section = LessonSectionParser.call("## Motion: agreement\n\n#{body}\n")
+                                    .find { |s| s[:type] == "motion" }
+
+      assert section, "the fixture must parse to a motion section for this test to mean anything"
+      assert_nil section[:aftermath], "an empty tail must be nil, not an empty string"
+    end
+
+    # The prompt's own worked example shows a fenced ```json body, so the model
+    # emits this form routinely, not as an edge case. A fence must not defeat
+    # parsing.
+    test "a fenced motion body parses to a motion section like a bare one" do
+      body = <<~MARKDOWN
+        ```json
+        {"narration": "Mira el sujeto.",
+         "data": {"tokens": ["Ele","tenho","café","."], "subject": 0, "verb": 1,
+                  "wrong": "tenho", "correct": "tem", "why": "Tercera persona.",
+                  "labels": {"subject": "SUJETO", "verb": "VERBO"}}}
+        ```
+      MARKDOWN
+      section = parse_one_of("## Motion: agreement", body, "motion")
+
+      assert_equal "agreement", section[:scene]
+      assert_equal "Mira el sujeto.", section[:narration]
+      assert_equal %w[Ele tenho café .], section[:data]["tokens"]
+    end
+
+    # The specific thing `strip_closing_fence` exists for: the closing ``` sits
+    # between the JSON and the author's trailing prose, and it is not itself
+    # content — it must not leak into the aftermath the student's lesson
+    # renders.
+    test "a fenced motion body keeps its trailing prose in aftermath without the closing fence" do
+      body = <<~MARKDOWN
+        ```json
+        {"narration": "Mira el sujeto.",
+         "data": {"tokens": ["Ele","tenho","café","."], "subject": 0, "verb": 1,
+                  "wrong": "tenho", "correct": "tem", "why": "Tercera persona.",
+                  "labels": {"subject": "SUJETO", "verb": "VERBO"}}}
+        ```
+
+        Some trailing prose after the fence.
+        More prose on a second line.
+      MARKDOWN
+      sections = LessonSectionParser.call("## Motion: agreement\n\n#{body}")
+      section = sections.find { |s| s[:type] == "motion" }
+
+      assert section, "the fixture must parse to a motion section for this test to mean anything"
+      assert_includes section[:aftermath], "Some trailing prose after the fence."
+      assert_includes section[:aftermath], "More prose on a second line."
+      assert_not_includes section[:aftermath], "```",
+        "the closing fence marker leaked into the aftermath instead of being stripped"
+    end
+
     private
 
     def document(heading, canonical)

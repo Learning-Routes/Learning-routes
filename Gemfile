@@ -60,6 +60,9 @@ gem "ruby_llm", "~> 1.1"
 # HTTP client for ElevenLabs TTS API
 gem "httparty", "~> 0.22"
 
+# JSON Schema validation for Motion Canvas scene payloads
+gem "json_schemer", "~> 2.5"
+
 # === Engines (modular monolith) ===
 gem "core", path: "engines/core"
 gem "learning_routes_engine", path: "engines/learning_routes_engine"

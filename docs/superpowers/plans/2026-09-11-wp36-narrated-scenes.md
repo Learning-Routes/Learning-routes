@@ -62,7 +62,7 @@ Every task's requirements implicitly include these.
 | `Gemfile` | declare `json_schemer` explicitly (already in the lock via `mcp`) |
 | `.../ai_orchestrator/ai_client.rb` | `timestamps:` on `request_elevenlabs`; new `request_elevenlabs_stt` |
 | `.../content_engine/lesson_assistant_agent.rb:58` | `RubyLLM.chat` → `AiClient` |
-| `engines/assessments/.../voice_evaluator.rb` | own `Net::HTTP` → `AiClient` |
+| `engines/content_engine/.../voice_evaluator.rb` | own `Net::HTTP` → `AiClient` |
 | `.../content_engine/lesson_blocks.rb` | `"motion"` entry |
 | `.../content_engine/lesson_section_parser.rb` | `## Motion:` branch |
 | `.../content_engine/section_audio_generator.rb` | `timestamps:` option, `words` storage |
@@ -166,7 +166,7 @@ Net::HTTP. Both spend money no ceiling saw. Tasks 2 and 3 make it green."
 
 **Files:**
 - Modify: `engines/ai_orchestrator/app/services/ai_orchestrator/ai_client.rb`
-- Modify: `engines/assessments/app/services/assessments/voice_evaluator.rb`
+- Modify: `engines/content_engine/app/services/content_engine/voice_evaluator.rb`
 - Test: `test/services/content_engine/provider_guard_sweep_test.rb` (existing)
 
 **Interfaces:**
@@ -226,8 +226,8 @@ Keep `record_failed_transcription!` on the error path: rescue `AiClient::Request
 Run: `bin/rails test test/services/content_engine/provider_guard_sweep_test.rb`
 Expected: still 1 failure, now naming **one** file (`lesson_assistant_agent.rb`).
 
-Run: `bin/rails test engines/assessments/test`
-Expected: PASS. If a test stubbed `Net::HTTP` directly it now stubs the wrong seam — restub on `AiClient#stt` and say so in the commit.
+Run: `bin/rails test test/services/content_engine/voice_evaluator_metering_test.rb`
+Expected: PASS. **As executed** this went red once: `RequestError` carried `response.body`, and re-raising it verbatim leaked the provider payload into a student-visible message, caught by the existing `without response body disclosure` test. The status now travels on `RequestError#status` and the body goes to the log only.
 
 - [ ] **Step 5: Prove the guard is actually in front**
 
@@ -235,13 +235,19 @@ Add to the voice evaluator's test file:
 
 ```ruby
   test "a refused ceiling stops the STT call before any HTTP" do
-    AiOrchestrator::SpendGuard.stub(:call, ->(**) { raise AiOrchestrator::SpendGuard::Refused, "ceiling" }) do
-      assert_raises(AiOrchestrator::SpendGuard::Refused) { subject.transcribe!(blob_key) }
+    request = stub_request(:post, "https://api.elevenlabs.io/v1/speech-to-text")
+    with_refused_guard do
+      assert_raises(AiOrchestrator::SpendGuard::LimitExceeded) { @evaluator.send(:transcribe_audio) }
     end
+    assert_not_requested request
   end
 ```
 
-Then **break the fix** — comment out the `SpendGuard.call` line in `stt` — and confirm *this test* goes red. Restore it. (Use the actual `Refused` class name from `spend_guard.rb`; read it before writing this step.)
+**As executed:** the guard error is `SpendGuard::LimitExceeded.new(message, kind:)`, and
+`minitest/mock` is not in this bundle — `with_refused_guard` swaps the singleton method and restores
+it in an `ensure`, the technique `test/tasks/wp33_reparse_test.rb` already uses. Then **break the
+fix**: comment out `SpendGuard.call` in `stt` (it landed at `ai_client.rb:59`) and confirm *this
+test* goes red. Restore.
 
 - [ ] **Step 6: Commit**
 

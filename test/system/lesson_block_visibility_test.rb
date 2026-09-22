@@ -71,7 +71,13 @@ class LessonBlockVisibilityTest < ApplicationSystemTestCase
     # make the assertion depend on a blob fixture and on whether headless Chromium
     # can decode it — neither of which is what this file is asking.
     "video" => { "title" => "Vídeo", "video_url" => "/icon.png",
-                 "subtitles_url" => "/icon.png", "duration_seconds" => 120 }
+                 "subtitles_url" => "/icon.png", "duration_seconds" => 120 },
+    # The scene name must be one MotionScenes knows, and the data must satisfy
+    # that scene's own schema — both pulled from the vocabulary itself so this
+    # sample can never drift from app/motion/src/scenes/*.schema.json.
+    "motion" => { "scene" => "agreement",
+                  "data" => ContentEngine::MotionScenes.example("agreement"),
+                  "narration" => "Observa cómo el verbo debe coincidir con el sujeto." }
   }.freeze
 
   def setup

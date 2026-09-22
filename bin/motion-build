@@ -1,0 +1,102 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# The one documented command that produces app/motion's two committed
+# artifacts. The deploy image has no node; this runs on a developer machine
+# and its outputs (vendor/javascript/mc.js, app/motion/src/generated/schemas.d.ts)
+# are committed to the repo. This is the ONLY writer of either freshness
+# header (motion-schemas-sha256 / motion-src-sha256). See
+# engines/content_engine/app/services/content_engine/motion_build.rb for what
+# the headers are checked against.
+#
+# NOTE on --prefix: `npx --prefix app/motion vite build` fails with
+# UNRESOLVED_ENTRY index.html because --prefix only changes npm's package
+# directory, not vite's cwd-based root resolution. A subshell that actually
+# cd's into app/motion is required for every node step.
+#
+# NOTE on json-schema-to-typescript: its CLI does not support a glob input
+# compiled to a single file output ("You have specified a single file ...
+# output for a multi file input ... This feature is not yet supported",
+# https://github.com/bcherny/json-schema-to-typescript/issues/272). We use
+# its programmatic `compileFromFile` API instead, once per schema file,
+# and concatenate — the same approach Task 4 used to generate the file this
+# script now regenerates and stamps.
+
+cd "$(dirname "$0")/.."
+REPO_ROOT="$(pwd)"
+
+( cd app/motion && npm ci )
+
+TYPES_FILE="app/motion/src/generated/schemas.d.ts"
+
+# The generator script must live under app/motion so node resolves
+# json-schema-to-typescript from app/motion/node_modules.
+GEN_SCRIPT="app/motion/.motion-build-generate-types.mjs"
+cat > "${GEN_SCRIPT}" <<'NODE'
+import { compileFromFile } from "json-schema-to-typescript";
+import { readdirSync, writeFileSync } from "node:fs";
+import { join } from "node:path";
+
+const scenesDir = join(process.cwd(), "src/scenes");
+const files = readdirSync(scenesDir)
+  .filter((f) => f.endsWith(".schema.json"))
+  .sort();
+
+const banner = [
+  "/* eslint-disable */",
+  "/**",
+  " * This file was automatically generated from src/scenes/*.schema.json",
+  " * using json-schema-to-typescript.",
+  " * Do not manually edit this file — edit the .schema.json files instead,",
+  " * then regenerate.",
+  " */",
+  "",
+].join("\n");
+
+let out = `${banner}\n`;
+for (const file of files) {
+  const ts = await compileFromFile(join(scenesDir, file), {
+    bannerComment: "",
+    cwd: scenesDir,
+  });
+  out += `${ts.trim()}\n\n`;
+}
+
+writeFileSync(join(process.cwd(), "src/generated/schemas.d.ts"), out.trimEnd() + "\n");
+NODE
+
+( cd app/motion && node .motion-build-generate-types.mjs )
+rm -f "${GEN_SCRIPT}"
+
+# schemas.d.ts header FIRST: it is itself an input to the artifact digest
+# below, so it must be in its final, header-stamped state before mc.js is
+# built and hashed.
+SCHEMAS_DIGEST="$(bin/rails runner 'puts ContentEngine::MotionBuild.digest_for(:schemas)')"
+{
+  echo "// motion-schemas-sha256: ${SCHEMAS_DIGEST}"
+  cat "${TYPES_FILE}"
+} > "${TYPES_FILE}.tmp"
+mv "${TYPES_FILE}.tmp" "${TYPES_FILE}"
+
+( cd app/motion && npx vite build )
+
+# Artifact digest computed AFTER schemas.d.ts is in its final state, since
+# schemas.d.ts is one of the files the digest covers.
+ARTIFACT_DIGEST="$(bin/rails runner 'puts ContentEngine::MotionBuild.digest_for(:artifact)')"
+
+# Motion Canvas versions, for human eyes only — NEVER part of the freshness
+# check (that would let a dependency bump silently redefine what "fresh"
+# means without changing the digest it is compared to).
+CORE_VERSION="$(node -p "require('./app/motion/package.json').dependencies['@motion-canvas/core']")"
+TWO_D_VERSION="$(node -p "require('./app/motion/package.json').dependencies['@motion-canvas/2d']")"
+
+mkdir -p vendor/javascript
+{
+  echo "// motion-src-sha256: ${ARTIFACT_DIGEST}"
+  echo "// built from @motion-canvas/core ${CORE_VERSION}, @motion-canvas/2d ${TWO_D_VERSION}"
+  cat "app/motion/dist/mc.js"
+} > vendor/javascript/mc.js
+
+cd "${REPO_ROOT}"
+echo "Wrote vendor/javascript/mc.js (motion-src-sha256: ${ARTIFACT_DIGEST})"
+echo "Wrote ${TYPES_FILE} (motion-schemas-sha256: ${SCHEMAS_DIGEST})"

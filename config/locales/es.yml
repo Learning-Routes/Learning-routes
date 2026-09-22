@@ -1008,6 +1008,8 @@ es:
       rating_normal: "Normal"
       rating_easy: "Fácil"
       reset: "Reiniciar"
+      motion:
+        play: "Reproducir"
       default_title:
         concept: "Concepto"
         check: "Comprueba tu conocimiento"
@@ -1021,6 +1023,7 @@ es:
         scenario: "Escenario"
         flashcards: "Tarjetas"
         visual: "Visual"
+        motion: "Movimiento"
         audio: "Audio"
         audio_explainer: "Audio explicación"
         video: "Vídeo"

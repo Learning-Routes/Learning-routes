@@ -1,0 +1,26 @@
+<%# A motion block is a canvas the student presses play on. Everything it needs
+    is a data value; the controller lazy-loads mc.js only when the block exists,
+    so a lesson without one never fetches the bundle.
+
+    The narration text is rendered ALWAYS, not only on failure: it is the content,
+    and the two failure states (guard refusal, mc.js unavailable) are then a
+    missing canvas rather than an empty block. WP-35's rule — failure is visible
+    and local. %>
+<div class="lesson-motion"
+     data-controller="motion-scene"
+     data-motion-scene-scene-value="<%= section[:scene] %>"
+     data-motion-scene-data-value="<%= section[:data].to_json %>"
+     data-motion-scene-narration-value="<%= section[:narration] %>"
+     data-motion-scene-step-id-value="<%= step.id %>"
+     data-motion-scene-section-index-value="<%= index %>">
+  <div class="lesson-motion__stage" data-motion-scene-target="stage"></div>
+  <button type="button" class="lesson-btn lesson-btn--primary"
+          data-motion-scene-target="play" data-action="click->motion-scene#play">
+    <%= t("learning_engine.blocks.motion.play") %>
+  </button>
+  <div class="lesson-content lesson-motion__narration">
+    <%= ContentEngine::MarkdownRenderer.render(section[:narration].to_s) %>
+  </div>
+  <p class="lesson-motion__note" data-motion-scene-target="note" hidden></p>
+</div>
+<%= render "learning_routes_engine/steps/lesson_sections/aftermath", section: section %>

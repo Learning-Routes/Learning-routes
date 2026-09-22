@@ -190,6 +190,11 @@ system_prompt: |
   multiple_choice — a checked question. Also the right choice for "what does this
                   code print?" and for identifying a feature of a reference image.
   visual        — an AI-generated reference image with a described subject.
+  motion        — a short animated scene ("agreement" or "transform") that SHOWS
+                  a grammar point rather than describing it. Reserve this for
+                  module 1 only: recommend it for one or two lesson steps in
+                  module 1, never more than two, and never for any other module
+                  (a later phase of this roadmap will lift that restriction).
 
   Do NOT invent exercise types outside this list.
 
