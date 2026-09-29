@@ -106,8 +106,7 @@ module Admin
         # `:append` both claim something moved.
         return respond_with(section_index: index, placement: :replace, status: :ok) if index
 
-        attach!(video, subtitles, subtitles_type)
-        publish(subtitles: subtitles.present?)
+        publish(video, subtitles, subtitles_type)
       end
 
       def destroy
@@ -128,37 +127,68 @@ module Admin
 
       private
 
-      def publish(subtitles:)
-        outcome = ContentEngine::LessonVideoPublisher.publish!(step: @step, payload: video_payload)
+      # THE OLD FILES SURVIVE UNTIL `publish!` RETURNS.
+      #
+      # The new bytes are uploaded as blobs FIRST, outside any transaction; the
+      # attachments are swapped and the section published INSIDE one. A raise rolls
+      # the swap back — the replaced attachment row returns, and its
+      # `purge_dependent_blob_later` never fires because it is an after-commit
+      # callback — so the step still holds the film its section already names. Only
+      # after the commit are the replaced captions deleted.
+      #
+      # Not `transaction { attach(io) ; publish! }`, which was measured and serves a
+      # 404 on SUCCESS: `attach` with an IO uploads in `after_commit`
+      # (activestorage attached/model.rb:144), and `publish!` opens with
+      # `@step.with_lock`, whose reload clears the pending upload (model.rb:295). The
+      # blob row commits and its file never reaches the service. Attaching a blob
+      # that already exists uploads nothing, so the reload has nothing to lose.
+      def publish(video, subtitles, subtitles_type)
+        new_blobs = []
+        replaced_captions = nil
+
+        outcome = begin
+          new_blobs << upload!(video, "lesson.mp4", "video/mp4")
+          new_blobs << upload!(subtitles, "lesson.srt", subtitles_type) if subtitles
+
+          @step.transaction do
+            replaced_captions = attach!(*new_blobs)
+            ContentEngine::LessonVideoPublisher.publish!(step: @step, payload: video_payload)
+          end
+        rescue ContentEngine::LessonVideoPublisher::MissingLessonBody
+          discard!(new_blobs)
+          return refuse("this step has no lesson body to carry a video section")
+        rescue ContentEngine::LessonVideoPublisher::UnparsableSection
+          discard!(new_blobs)
+          return refuse("the video section did not parse back as a video")
+        rescue StandardError => e
+          # THE PROMISE AT THE TOP OF THIS CLASS, KEPT FOR EVERY EXCEPTION AND NOT JUST
+          # THE TWO NAMED ONES. "Publish, and if it raises, purge what step 2 attached"
+          # was implemented for `MissingLessonBody` and `UnparsableSection`; anything
+          # else — a parser raise inside `reparse` (SectionResolver wraps its own parse
+          # in `rescue => e`, section_resolver.rb:72, so they happen), a lock timeout, a
+          # validation failure on the AiContent body — left the blob attached with no
+          # section pointing at it, the SUBTITLES attached as well, and no audit row,
+          # because an exception skips the around callback's post-yield code. That is
+          # precisely the half-published step the three-step ordering exists to forbid.
+          #
+          # Not a `refuse`: this is not a refusal, it is a fault, and the studio has to
+          # see a 500 rather than a 422 that invites it to fix its payload. So the
+          # error is re-raised after the two things that must happen first.
+          #
+          # BOTH of those are guarded, and the original error is what leaves this
+          # method. A cleanup that raises its own exception replaces the one the owner
+          # needs to see — the reason `audit_studio_access!` deliberately has no
+          # `ensure` — so neither the purge nor the audit may become the story.
+          attempt("purge after a failed publish") { discard!(new_blobs) }
+          attempt("audit a failed publish") { audit_failure!(e) }
+          raise
+        end
+
+        # After the commit, and guarded: the section already points at the new film,
+        # so a storage hiccup deleting the previous captions' file is a leftover to
+        # log, not a reason to answer 500 for a publish that happened.
+        attempt("purge the replaced captions") { purge_blob!(replaced_captions) } if replaced_captions
         respond_with(section_index: outcome[:section_index], placement: outcome[:placement], status: :created)
-      rescue ContentEngine::LessonVideoPublisher::MissingLessonBody
-        purge_new_attachments!(subtitles: subtitles)
-        refuse("this step has no lesson body to carry a video section")
-      rescue ContentEngine::LessonVideoPublisher::UnparsableSection
-        purge_new_attachments!(subtitles: subtitles)
-        refuse("the video section did not parse back as a video")
-      rescue StandardError => e
-        # THE PROMISE AT THE TOP OF THIS CLASS, KEPT FOR EVERY EXCEPTION AND NOT JUST
-        # THE TWO NAMED ONES. "Publish, and if it raises, purge what step 2 attached"
-        # was implemented for `MissingLessonBody` and `UnparsableSection`; anything
-        # else — a parser raise inside `reparse` (SectionResolver wraps its own parse
-        # in `rescue => e`, section_resolver.rb:72, so they happen), a lock timeout, a
-        # validation failure on the AiContent body — left the blob attached with no
-        # section pointing at it, the SUBTITLES attached as well, and no audit row,
-        # because an exception skips the around callback's post-yield code. That is
-        # precisely the half-published step the three-step ordering exists to forbid.
-        #
-        # Not a `refuse`: this is not a refusal, it is a fault, and the studio has to
-        # see a 500 rather than a 422 that invites it to fix its payload. So the
-        # error is re-raised after the two things that must happen first.
-        #
-        # BOTH of those are guarded, and the original error is what leaves this
-        # method. A cleanup that raises its own exception replaces the one the owner
-        # needs to see — the reason `audit_studio_access!` deliberately has no
-        # `ensure` — so neither the purge nor the audit may become the story.
-        attempt("purge after a failed publish") { purge_new_attachments!(subtitles: subtitles) }
-        attempt("audit a failed publish") { audit_failure!(e) }
-        raise
       end
 
       def attempt(what)
@@ -187,50 +217,59 @@ module Admin
         }, status: status
       end
 
-      # `has_one_attached` + `attach` replaces the previous attachment and its blob is
-      # purged in a job afterwards (`ActiveStorage::Attachment` declares
-      # `after_destroy_commit :purge_dependent_blob_later`, attachment.rb:37) — which
-      # is what spec §6 asks for, "the old blob is purged later, not inline". So there
-      # is deliberately no explicit purge of the old blob here.
+      # The bytes become blobs HERE, outside the publish transaction — see `publish`
+      # for why an IO attached inside it never reaches the service.
       #
       # The content types are the ones this request read out of the BYTES, never the
       # client's multipart headers: the filename and the declared type are both just
       # what the uploader typed.
-      def attach!(video, subtitles, subtitles_type)
-        video.rewind
-        @step.lesson_video.attach(io: video, filename: upload_name(video, "lesson.mp4"),
-                                  content_type: "video/mp4")
+      def upload!(file, fallback_name, content_type)
+        file.rewind
+        ActiveStorage::Blob.create_and_upload!(
+          io: file, filename: upload_name(file, fallback_name), content_type: content_type
+        )
+      end
+
+      # `has_one_attached` + `attach` replaces the previous attachment and its blob is
+      # purged in a job afterwards (`ActiveStorage::Attachment` declares
+      # `after_destroy_commit :purge_dependent_blob_later`, attachment.rb:37) — which
+      # is what spec §6 asks for, "the old blob is purged later, not inline". So there
+      # is deliberately no explicit purge of the old blob here. Being an after-COMMIT
+      # callback is also what lets `publish` roll a replacement back.
+      #
+      # Returns the replaced captions' blob when this film arrived without captions,
+      # for `publish` to delete once the section no longer names them; nil otherwise.
+      def attach!(video_blob, subtitles_blob = nil)
+        @step.lesson_video.attach(video_blob)
+
+        if subtitles_blob
+          @step.lesson_subtitles.attach(subtitles_blob)
+          return nil
+        end
 
         # [owner, fix round 1] A film arriving with no captions CLEARS the captions
         # that are there, it does not inherit them. Subtitles are timed to one
         # particular film: keep the previous .srt and the `<track>` still renders,
         # still looks authoritative, and drifts further out of sync the longer the
         # clip runs. `subtitles_url` is then nil for the section, because
-        # `proxy_path` reads the attachment after this.
+        # `media_path` reads the attachment after this.
         #
-        # Reached on every non-idempotent publish that omits the file, which is a
-        # no-op unless something is attached — and only a previous publish of THIS
-        # step can have attached it (`destroy` purges both), so in practice this is
-        # the `:replace` path. `purge` is nil-safe: `Attached::Changes::PurgeOne#purge`
-        # is `attachment&.purge` (activestorage purge_one.rb:12).
-        if subtitles.nil?
-          @step.lesson_subtitles.purge
-          return
-        end
+        # `detach` and not `purge`: it deletes the attachment ROW only, inside the
+        # transaction, so a failed publish rolls it back and the old captions are
+        # still attached; the file goes in `publish`, after the commit.
+        return nil unless @step.lesson_subtitles.attached?
 
-        subtitles.rewind
-        @step.lesson_subtitles.attach(io: subtitles, filename: upload_name(subtitles, "lesson.srt"),
-                                      content_type: subtitles_type)
+        replaced = @step.lesson_subtitles.blob
+        @step.lesson_subtitles.detach
+        replaced
       end
 
-      # Only what THIS request attached. `attach` has already purged the blob it
-      # replaced, so this is not a restore of the previous state: a re-upload whose
-      # publish fails leaves the step with no video rather than with a blob no section
-      # points at. Both are recoverable by uploading again; only the second is
-      # invisible.
-      def purge_new_attachments!(subtitles:)
-        purge!(@step.lesson_video)
-        purge!(@step.lesson_subtitles) if subtitles
+      # The blobs THIS request uploaded, after the transaction that attached them
+      # rolled back. Nothing refers to them any more — the rollback restored the
+      # attachments they replaced, and the previous film and captions are still
+      # attached and still named by the section — so they are deleted, row and file.
+      def discard!(blobs)
+        blobs.each { |blob| purge_blob!(blob) }
       end
 
       # `strict_loading!(false)` ON THE BLOB, because this is the one place where the
@@ -249,9 +288,9 @@ module Admin
       #
       # Purging a video has no variants to track — nothing in this app ever asks a
       # video blob for a representation — so there is nothing this opt-out can hide.
-      def purge!(attached)
-        attached.attachment&.blob&.strict_loading!(false)
-        attached.purge
+      def purge_blob!(blob)
+        blob.strict_loading!(false)
+        blob.purge
       end
 
       # The index of the video section when BOTH uploads are byte-identical to what

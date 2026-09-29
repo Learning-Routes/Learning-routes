@@ -35,6 +35,19 @@ proxy:
   # does and let the Turbo broadcast swap the image in. Lower this back to 30 once
   # that lands.
   response_timeout: 180
+  # The first line on request size, and the only one that holds before the bytes
+  # land on this host's disk. Rack writes a multipart body to a tempfile before any
+  # controller callback runs — token or not — and a chunked request sends no
+  # Content-Length for the studio controller's header check to read. kamal-proxy
+  # buffers the request and answers 413 once it passes this, before Rails sees a
+  # byte. The default is 1 GB (kamal 2.12 configuration/docs/proxy.yml).
+  #
+  # 320 MB = the studio's 300 MB film ceiling plus multipart overhead and the
+  # subtitles. It caps EVERY route, and no other upload in this app comes near it.
+  # Admin::Api::StepVideosController keeps both of its checks as the second line.
+  buffering:
+    requests: true
+    max_request_body: 320_000_000
   healthcheck:
     interval: 3
     path: /up

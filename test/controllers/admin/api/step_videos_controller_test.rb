@@ -396,6 +396,59 @@ class Admin::Api::StepVideosControllerTest < ActionDispatch::IntegrationTest
     ContentEngine::LessonVideoPublisher.define_singleton_method(:publish!, original)
   end
 
+  # ─── Task 11: a failed RE-upload keeps the film that was already there ─
+
+  # Every raise test above starts from a step with no video, so none of them could
+  # see this: `attach!` replaced the old film and purged the old captions BEFORE
+  # `publish!` ran, and the rescue then purged the new ones. The section kept its
+  # URL — the engine path is stable, it names the step and not the blob — so the
+  # student got a player whose source answered 404.
+  test "a re-upload whose publish raises leaves the previous film and captions in place" do
+    uploaded_keys = []
+    subscriber = ActiveSupport::Notifications.subscribe("service_upload.active_storage") do |*, payload|
+      uploaded_keys << payload[:key]
+    end
+
+    with_token(TOKEN) { post video_path(@step), headers: auth(TOKEN), params: full_params }
+    assert_response :created
+    video_url = JSON.parse(response.body)["video_url"]
+    assert_equal 2, uploaded_keys.size,
+      "test premise: the subscriber sees uploads, or the key assertion below proves nothing"
+    uploaded_keys.clear
+
+    original = ContentEngine::LessonVideoPublisher.method(:publish!)
+    ContentEngine::LessonVideoPublisher.define_singleton_method(:publish!) do |**_args|
+      raise "the publisher fell over"
+    end
+
+    assert_raises(RuntimeError) do
+      with_token(TOKEN) do
+        post video_path(@step), headers: auth(TOKEN), params: base_params.merge(
+          video: fixture_upload(mp4_bytes + ("\x01".b * 64), "l.mp4", "video/mp4")
+        )
+      end
+    end
+
+    @step.reload
+    assert @step.lesson_subtitles.attached?,
+      "a re-upload with no captions cleared the old ones before its publish had succeeded"
+    assert_equal srt_bytes, @step.lesson_subtitles.download
+
+    uploaded_keys.each do |key|
+      assert_not ActiveStorage::Blob.service.exist?(key), "the failed upload's file #{key} is still in the service"
+      assert_not ActiveStorage::Blob.exists?(key: key), "the failed upload's blob row #{key} survived"
+    end
+
+    sign_in_as(@video_user)
+    get video_url
+
+    assert_response :success, "the section still names the film, and the film is gone"
+    assert_equal mp4_bytes, response.body.b, "the student is served the new film, which was never published"
+  ensure
+    ActiveSupport::Notifications.unsubscribe(subscriber) if subscriber
+    ContentEngine::LessonVideoPublisher.define_singleton_method(:publish!, original) if original
+  end
+
   # ─── Task 10 / F7a: the cap that the header check cannot enforce ─────
 
   # `refuse_oversized_body!` reads CONTENT_LENGTH, and a chunked request does not

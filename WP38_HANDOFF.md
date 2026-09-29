@@ -324,6 +324,26 @@ the error class name, and re-raises. The original concern stands and is why **bo
 guarded and the **original** error is what leaves the method: a cleanup that raises its own exception
 replaces the error you need to see. That is also still why `audit_studio_access!` has no `ensure`.
 
+**~~A failed re-upload leaves a broken player~~ — FIXED (Task 11).** `attach!` replaced the old film
+and purged the old captions *before* `publish!`; on a raise the rescue purged the new ones, and the
+section kept its URL (the engine path names the step, not the blob), so the student got a player that
+answered 404. The new bytes are now uploaded as blobs first, and the attachment swap plus `publish!`
+run in one `@step.transaction`: a raise rolls the swap back, the replaced row's
+`purge_dependent_blob_later` never fires, and the new blobs are deleted by key. A re-upload without
+captions `detach`es the old ones inside the transaction and deletes their file only after the commit.
+Not a plain `transaction { attach(io); publish! }`: measured, that serves a 404 on *success*, because
+Active Storage uploads an IO in `after_commit` and `publish!`'s `with_lock` reload drops the pending
+upload.
+
+**The request-body cap is at the proxy now.** `config/deploy.yml` sets `proxy.buffering.max_request_body:
+320_000_000` (300 MB film + multipart overhead). kamal-proxy buffers the request and answers **413
+before Rails sees a byte** — the only check that holds before a chunked upload lands on disk, since
+Rack writes a multipart body to a tempfile before any controller callback, token or not. It caps every
+route (kamal's default was 1 GB). The controller's two checks — `CONTENT_LENGTH` before the parse, the
+film's real size after it — stay as the second line. Takes effect on the next `kamal deploy`, which
+passes it to `kamal-proxy deploy` as `--max-request-body 320000000` (read back through
+`Kamal::Configuration` for the web role).
+
 ---
 
 ## 7. Merging

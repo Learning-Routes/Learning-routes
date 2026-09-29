@@ -92,11 +92,6 @@ module LearningRoutesEngine
     # and the film was gzipped anyway. Measured. The branch below (cache.rb:339-352)
     # is the one that keeps extras, so the directives are handed over structured and
     # Rails composes them: `max-age=0, private, must-revalidate, no-transform`.
-    #
-    # `private` is the load-bearing word — a shared cache or CDN must never hold
-    # entitled content and hand it to the next person who asks for the URL, which
-    # would re-open one layer out exactly the hole this controller closes. Active
-    # Storage'''s own proxy says `public` here.
     def secure_media_response!
       response.cache_control.merge!(
         public: false, max_age: 0, must_revalidate: true, extras: ["no-transform"]

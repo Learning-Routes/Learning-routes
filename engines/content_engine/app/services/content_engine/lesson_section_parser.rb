@@ -543,9 +543,7 @@ module ContentEngine
     # Public on the class as well, because `LessonVideoPublisher` has to remove
     # exactly the payload the parser decides to read; two answers to "where does the
     # JSON end" is how the unpublish strip came to delete the author's prose.
-    def self.split_json_object(body) = new("").send(:split_json_object, body)
-
-    def split_json_object(body)
+    def self.split_json_object(body)
       text = body.to_s
       start = text.index("{")
       return [nil, text] unless start
@@ -579,6 +577,8 @@ module ContentEngine
 
       [nil, text]
     end
+
+    def split_json_object(body) = self.class.split_json_object(body)
 
     # The fenced form's closing ``` immediately follows the JSON object and is
     # not itself content — strip it before what remains becomes the aftermath.
