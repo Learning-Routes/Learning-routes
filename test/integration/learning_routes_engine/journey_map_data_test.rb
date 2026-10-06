@@ -78,7 +78,118 @@ class LearningRoutesEngine::JourneyMapDataTest < ActionDispatch::IntegrationTest
     assert_select "section[data-module-access='locked']", text: /Comprado/
   end
 
+  # ─── parent_id ─────────────────────────────────────────────────────
+
+  test "a stored triggering_step_id names the parent" do
+    first = step!(@preview, 0, "First")
+    second = step!(@preview, 1, "Second")
+    child = step!(@preview, 2, "Reinforcement",
+                  metadata: { "reinforcement" => true, "triggering_step_id" => first.id })
+
+    topics = preview_topics
+    assert_nil topics[first.id]["parent_id"]
+    assert_nil topics[second.id]["parent_id"]
+    assert_equal first.id, topics[child.id]["parent_id"],
+      "the stored trigger wins over the nearest preceding step (#{second.id})"
+  end
+
+  test "a legacy reinforcement without a stored id resolves by position" do
+    step!(@preview, 0, "First")
+    second = step!(@preview, 1, "Second")
+    children = (2..4).map do |pos|
+      step!(@preview, pos, "Legacy #{pos}", metadata: { "reinforcement" => true, "trigger_score" => 40 })
+    end
+
+    topics = preview_topics
+    children.each { |c| assert_equal second.id, topics[c.id]["parent_id"] }
+  end
+
+  test "a stored id that is not a primary step in this module falls back to position" do
+    primary = step!(@preview, 0, "Primary")
+    other_module_step = step!(@paid, 10, "Elsewhere")
+    child = step!(@preview, 1, "Reinforcement",
+                  metadata: { "reinforcement" => true, "triggering_step_id" => other_module_step.id })
+
+    assert_equal primary.id, preview_topics[child.id]["parent_id"]
+  end
+
+  test "a purchased module carries parent ids" do
+    step!(@preview, 0, "Free lesson")
+    primary = step!(@paid, 10, "Paid lesson")
+    child = step!(@paid, 11, "Paid reinforcement",
+                  metadata: { "reinforcement" => true, "triggering_step_id" => primary.id })
+    pay_for_route!(@route)
+
+    topics = journey_stages.find { |s| s["module_id"] == @paid.id }["topics"].index_by { |t| t["id"] }
+    assert_equal primary.id, topics[child.id]["parent_id"]
+  end
+
+  test "a reinforcement with no preceding primary step is an orphan" do
+    orphan = step!(@preview, 0, "Orphan", metadata: { "reinforcement" => true })
+    step!(@preview, 1, "Primary")
+
+    topics = preview_topics
+    assert_equal true, topics[orphan.id]["reinforcement"]
+    assert topics[orphan.id].key?("parent_id"), "parent_id must be emitted, nil for an orphan"
+    assert_nil topics[orphan.id]["parent_id"]
+  end
+
+  test "only boolean true makes a step reinforcement" do
+    legacy = step!(@preview, 0, "Old flag", metadata: { "triggering_module_id" => @preview.id })
+    stringy = step!(@preview, 1, "String flag", metadata: { "reinforcement" => "true" })
+
+    topics = preview_topics
+    assert_equal false, topics[legacy.id]["reinforcement"], "triggering_module_id has no writer"
+    assert_equal false, topics[stringy.id]["reinforcement"]
+  end
+
+  # ─── current ───────────────────────────────────────────────────────
+
+  test "exactly one topic is current: the step at route.current_step" do
+    step!(@preview, 0, "Done", status: :completed)
+    at_current = step!(@preview, 1, "Here")
+    step!(@preview, 2, "Next", status: :locked)
+
+    current = all_topics.select { |t| t["current"] }
+    assert_equal [at_current.id], current.map { |t| t["id"] }
+  end
+
+  test "when current_step is not a readable step, the first available one is current" do
+    @route.update!(current_step: 10)
+    step!(@preview, 0, "Done", status: :completed)
+    available = step!(@preview, 1, "Open")
+    step!(@paid, 10, "Behind the paywall")
+
+    current = all_topics.select { |t| t["current"] }
+    assert_equal [available.id], current.map { |t| t["id"] }
+  end
+
+  test "a route with nothing readable marks no step current" do
+    @route.update!(current_step: 10)
+    step!(@paid, 10, "Behind the paywall")
+
+    topics = all_topics
+    assert topics.all? { |t| t.key?("current") }, "every topic says whether it is current"
+    assert_equal [], topics.select { |t| t["current"] }
+  end
+
+  # ─── root ──────────────────────────────────────────────────────────
+
+  test "the route root is its own value" do
+    step!(@preview, 0, "First")
+    get learning_routes_engine.journey_route_path(@route)
+
+    node = css_select("[data-controller='route-journey']").first
+    assert_equal({ "title" => "Map" }, JSON.parse(node["data-route-journey-root-value"]))
+  end
+
   private
+
+  def all_topics = journey_stages.flat_map { |s| s["topics"] }
+
+  def preview_topics
+    journey_stages.find { |s| s["module_id"] == @preview.id }["topics"].index_by { |t| t["id"] }
+  end
 
   def step!(route_module, position, title, status: :available, metadata: {})
     @route.route_steps.create!(

@@ -9,6 +9,7 @@
 <div id="journey-container"
      data-controller="route-journey"
      data-route-journey-stages-value="<%= ERB::Util.html_escape(@stages.to_json) %>"
+     data-route-journey-root-value="<%= ERB::Util.html_escape(@journey_root.to_json) %>"
      style="height:100vh; overflow:auto; position:relative;">
 
   <%# Ambient background glow %>
