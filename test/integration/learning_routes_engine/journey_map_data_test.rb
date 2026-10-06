@@ -1,15 +1,18 @@
 require "test_helper"
+require "support/route_purchase_helpers"
 
 # WP-37 §1. The journey's JSON is what the map draws, so its shape is asserted
 # here, against the server, before any pixel exists.
 class LearningRoutesEngine::JourneyMapDataTest < ActionDispatch::IntegrationTest
+  include RoutePurchaseHelpers
+
   def setup
     # The UI locale is current_user.locale (core/application_controller.rb:54-60);
     # the fixture user is Spanish, so the assertions below are Spanish.
     @user = create_test_user(email_verified_at: Time.current, locale: "es")
-    profile = LearningRoutesEngine::LearningProfile.create!(user: @user, current_level: "beginner")
+    @profile = LearningRoutesEngine::LearningProfile.create!(user: @user, current_level: "beginner")
     @route = LearningRoutesEngine::LearningRoute.create!(
-      learning_profile: profile, topic: "Map", locale: "es", status: :active, current_step: 1
+      learning_profile: @profile, topic: "Map", locale: "es", status: :active, current_step: 1
     )
     @preview = LearningRoutesEngine::RouteModule.find_by!(learning_route_id: @route.id, access_state: :preview)
     @paid = @route.route_modules.create!(
@@ -35,11 +38,13 @@ class LearningRoutesEngine::JourneyMapDataTest < ActionDispatch::IntegrationTest
 
     stage = journey_stages.find { |s| s["module_id"] == @paid.id }
     assert_equal false, stage["readable"]
-    stage["topics"].each do |topic|
-      assert_nil topic["path"]
-      assert_nil topic["parent_id"], "a locked module must not reveal which step a triplet hangs from"
-      assert_equal false, topic["reinforcement"]
-    end
+    # The EXACT masked shape: any key added to the locked branch later is a
+    # potential leak and must be decided here, not slip through.
+    masked = {
+      "content_type" => nil, "current" => false, "name" => "Bloqueado", "parent_id" => nil,
+      "path" => nil, "progress" => 0, "reinforcement" => false, "status" => "locked"
+    }
+    stage["topics"].each { |topic| assert_equal masked, topic.except("id") }
     assert_not_includes response.body, "Paid lesson"
   end
 
@@ -175,6 +180,61 @@ class LearningRoutesEngine::JourneyMapDataTest < ActionDispatch::IntegrationTest
     assert_equal [], topics.select { |t| t["current"] }
   end
 
+  test "fallback: an in_progress step beats an earlier available one" do
+    @route.update!(current_step: 10)
+    step!(@preview, 0, "Open", status: :available)
+    started = step!(@preview, 1, "Started", status: :in_progress)
+    step!(@paid, 10, "Behind the paywall")
+
+    assert_equal [started.id], all_topics.select { |t| t["current"] }.map { |t| t["id"] }
+  end
+
+  test "fallback: the last readable step when none is in progress or available" do
+    @route.update!(current_step: 10)
+    step!(@preview, 0, "Done", status: :completed)
+    last = step!(@preview, 1, "Done too", status: :completed)
+    step!(@paid, 10, "Behind the paywall")
+
+    assert_equal [last.id], all_topics.select { |t| t["current"] }.map { |t| t["id"] }
+  end
+
+  # Production's 7 + 13 shape: legacy triplets (no stored id) behind DIFFERENT
+  # primary steps of one module each resolve to their own nearest primary.
+  test "two legacy triplets under two primary steps resolve to two parents" do
+    first = step!(@preview, 0, "First")
+    first_triplet = (1..3).map { |pos| step!(@preview, pos, "R1-#{pos}", metadata: { "reinforcement" => true }) }
+    second = step!(@preview, 4, "Second")
+    second_triplet = (5..7).map { |pos| step!(@preview, pos, "R2-#{pos}", metadata: { "reinforcement" => true }) }
+
+    topics = preview_topics
+    first_triplet.each { |c| assert_equal first.id, topics[c.id]["parent_id"] }
+    second_triplet.each { |c| assert_equal second.id, topics[c.id]["parent_id"] }
+  end
+
+  # A failed re-assessment inside a triplet stores a REINFORCEMENT step's id.
+  test "a stored id naming a reinforcement step falls back to position" do
+    primary = step!(@preview, 0, "Primary")
+    reinforcement = step!(@preview, 1, "Reinforcement", metadata: { "reinforcement" => true })
+    nested = step!(@preview, 2, "Nested",
+                   metadata: { "reinforcement" => true, "triggering_step_id" => reinforcement.id })
+
+    assert_equal primary.id, preview_topics[nested.id]["parent_id"]
+  end
+
+  # "No new queries": the journey's query count does not grow with the route.
+  test "the journey makes the same number of queries at 7 steps and at 43" do
+    seven = route_with_steps(primaries: 7)
+    forty_three = route_with_steps(primaries: 7, reinforcement_after_third: 36)
+    # Warm per-process caches on a THIRD route: a repeat request for the same
+    # route is served from per-route caches with almost no SQL, so both measured
+    # requests must be first requests.
+    get learning_routes_engine.journey_route_path(route_with_steps(primaries: 1))
+
+    baseline = journey_query_count(seven)
+    assert_queries_count(baseline) { get learning_routes_engine.journey_route_path(forty_three) }
+    assert_response :success
+  end
+
   # ─── root ──────────────────────────────────────────────────────────
 
   test "the route root is its own value" do
@@ -188,6 +248,39 @@ class LearningRoutesEngine::JourneyMapDataTest < ActionDispatch::IntegrationTest
   private
 
   def all_topics = journey_stages.flat_map { |s| s["topics"] }
+
+  def route_with_steps(primaries:, reinforcement_after_third: 0)
+    route = LearningRoutesEngine::LearningRoute.create!(
+      learning_profile: @profile, topic: "Count", locale: "es", status: :active, current_step: 0
+    )
+    preview = LearningRoutesEngine::RouteModule.find_by!(learning_route_id: route.id, access_state: :preview)
+    position = 0
+    primaries.times do |i|
+      route.route_steps.create!(route_module: preview, position: position, title: "P#{i}", status: :available,
+                                content_type: :lesson, level: :nv1, bloom_level: 1)
+      position += 1
+      next unless i == 2
+
+      reinforcement_after_third.times do |j|
+        route.route_steps.create!(route_module: preview, position: position, title: "R#{j}", status: :locked,
+                                  content_type: :lesson, level: :nv1, bloom_level: 1,
+                                  metadata: { "reinforcement" => true })
+        position += 1
+      end
+    end
+    route
+  end
+
+  # The same counter assert_queries_count uses, so the two numbers compare.
+  def journey_query_count(route)
+    ActiveRecord::Base.lease_connection.materialize_transactions
+    counter = ActiveRecord::Assertions::QueryAssertions::SQLCounter.new
+    ActiveSupport::Notifications.subscribed(counter, "sql.active_record") do
+      get learning_routes_engine.journey_route_path(route)
+    end
+    assert_response :success
+    counter.log.size
+  end
 
   def preview_topics
     journey_stages.find { |s| s["module_id"] == @preview.id }["topics"].index_by { |t| t["id"] }
@@ -207,24 +300,5 @@ class LearningRoutesEngine::JourneyMapDataTest < ActionDispatch::IntegrationTest
     JSON.parse(node["data-route-journey-stages-value"])
   end
 
-  # The same purchase the paywall tests build (module_lock_authorization_test.rb:182).
-  def pay_for_route!(route)
-    quote = Commerce::RouteQuote.create_snapshot!(
-      user: @user, learning_route: route, currency: "USD",
-      total_module_count: 2, paid_module_count: 1,
-      estimated_ai_cost_microcents: 1_000_000, estimated_fee_cents: 40,
-      markup_basis_points: Commerce::PricingConstants::MARKUP_BASIS_POINTS,
-      minimum_price_per_paid_module_cents: Commerce::PricingConstants::MINIMUM_PRICE_PER_PAID_MODULE_CENTS,
-      cost_based_price_cents: 210, minimum_price_cents: 299, final_price_cents: 299,
-      estimator_version: "wp18-v1", provider_rate_versions: { "gpt-5.2" => "2026-08-31" },
-      fee_version: "ls-test-v1", image_quality: "medium",
-      route_shape_assumptions: { "outline" => [] }, provider_rate_assumptions: { "gpt-5.2" => {} },
-      fee_assumptions: { "version" => "ls-test-v1" }, expires_at: 24.hours.from_now
-    )
-    Commerce::RoutePurchase.create!(
-      user: @user, learning_route: route, route_quote: quote, state: "pending",
-      provider: "lemon_squeezy", test_mode: true, amount_cents: 299, currency: "USD",
-      estimated_ai_cost_microcents: 1_000_000, estimated_fee_cents: 40
-    ).mark_paid!(order_id: "ord_#{SecureRandom.hex(3)}", actual_fee_cents: 45, paid_at: Time.current)
-  end
+  def pay_for_route!(route) = purchase_route!(route, user: @user)
 end

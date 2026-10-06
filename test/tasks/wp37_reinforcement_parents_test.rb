@@ -34,7 +34,10 @@ class Wp37ReinforcementParentsTest < ActiveSupport::TestCase
   test "counts stored, position, orphan and non-boolean flags, and changes nothing" do
     before = LearningRoutesEngine::RouteStep.where(learning_route_id: @route.id).pluck(:id, :metadata, :position)
 
-    out, = capture_io { @task.invoke }
+    out = nil
+    assert_no_difference [-> { LearningRoutesEngine::RouteStep.count }, -> { LearningRoutesEngine::RouteModule.count }] do
+      out, = capture_io { @task.invoke }
+    end
 
     assert_match(/4 reinforcement step\(s\) in 1 route\(s\): stored=1 position=2 \(stored id rejected: 1\) orphan=1/, out)
     assert_match(/1 step\(s\) carry a reinforcement value that is not boolean true/, out)
