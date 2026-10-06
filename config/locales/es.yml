@@ -1059,7 +1059,15 @@ es:
     journey:
       locked_topic: "Bloqueado"
       route_label: "RUTA"
-      scroll_to_explore: "Desplaza para explorar"
+      drag_to_explore: "Arrastra para explorar"
+      map_keys: "Mapa de la ruta. Las flechas desplazan, más y menos acercan o alejan, 0 muestra toda la ruta."
+      fit: "Encajar"
+      fit_label: "Ver toda la ruta"
+      zoom_in: "Acercar"
+      zoom_out: "Alejar"
+      status_current: "Estás aquí"
+      status_available: "Disponible"
+      status_reinforcement: "Refuerzo"
       back_to_profile: "Perfil"
       end_of_route: "Fin de la ruta"
       stages_topics:

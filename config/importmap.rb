@@ -9,6 +9,10 @@ pin_all_from "app/javascript/controllers", under: "controllers"
 # Pure journey geometry (no DOM), shared by route_journey_controller and tested
 # under node by test/javascript/journey_layout_test.rb.
 pin "journey_layout", to: "lib/journey_layout.js"
+# WP-37: the journey map's pure geometry and camera (no DOM), tested under node
+# by test/javascript/journey_map_layout_test.rb and journey_camera_test.rb.
+pin "journey_map_layout", to: "lib/journey_map_layout.js"
+pin "journey_camera", to: "lib/journey_camera.js"
 
 # Motion Canvas runtime — built by bin/motion-build, committed because the image
 # has no node. Lazy-imported (the mermaid_diagram_controller.js:13 idiom,

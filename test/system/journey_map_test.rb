@@ -123,7 +123,9 @@ class JourneyMapTest < ApplicationSystemTestCase
 
     first = node_boxes
     sleep 1
-    assert_equal 0, page.evaluate_script("document.getAnimations().length")
+    # The MAP's animations: the layout's own body colour transition belongs to
+    # the theme switch, not to the map's first paint.
+    assert_equal 0, page.evaluate_script("document.querySelector('.jm').getAnimations({ subtree: true }).length")
     assert_equal first, node_boxes
   end
 

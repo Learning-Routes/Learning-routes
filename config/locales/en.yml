@@ -1059,7 +1059,15 @@ en:
     journey:
       locked_topic: "Locked"
       route_label: "ROUTE"
-      scroll_to_explore: "Scroll to explore"
+      drag_to_explore: "Drag to explore"
+      map_keys: "Route map. Arrow keys pan, plus and minus zoom, 0 shows the whole route."
+      fit: "Fit"
+      fit_label: "Show the whole route"
+      zoom_in: "Zoom in"
+      zoom_out: "Zoom out"
+      status_current: "You are here"
+      status_available: "Available"
+      status_reinforcement: "Reinforcement"
       back_to_profile: "Profile"
       end_of_route: "End of route"
       stages_topics:

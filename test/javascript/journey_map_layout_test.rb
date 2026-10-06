@@ -188,6 +188,23 @@ class JourneyMapLayoutTest < ActiveSupport::TestCase
     assert_equal 12, kids.map { |k| k["y"] }.uniq.size
   end
 
+  # Owner's ruling (CP2): a bad option must THROW. A browser hang (rowSize 0
+  # loops forever in chunk) or a NaN map is worse than an exception.
+  [{ rowSize: 0 }, { fanRowSize: 0 }, { rowSize: 2.5 }, { labelWidth: nil }, { gutter: "wide" }].each do |bad|
+    test "a bad option is refused: #{bad.inspect}" do
+      script = <<~JS
+        import(#{MODULE_PATH.to_s.to_json}).then((m) => {
+          const tree = m.buildTree({ title: "R" }, #{[self.class.stage("m0", primaries: 2)].to_json})
+          try { m.layoutJourney(tree, #{bad.to_json}); process.stdout.write("no-throw") }
+          catch (e) { process.stdout.write("threw: " + e.message) }
+        })
+      JS
+      stdout, stderr, status = Open3.capture3("node", "--input-type=module", "-e", script)
+      assert status.success?, stderr
+      assert_match(/\Athrew: /, stdout, "#{bad.inspect} was accepted")
+    end
+  end
+
   test "a label width is an option, and the box the layout spaces by includes it" do
     wide = layout([self.class.stage("m0", primaries: 2)], { labelWidth: 240 })
     assert wide["nodes"].select { |n| n["kind"] == "step" }.all? { |n| n["w"] == 240 }

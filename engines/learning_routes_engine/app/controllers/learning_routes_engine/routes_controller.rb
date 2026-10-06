@@ -88,8 +88,6 @@ module LearningRoutesEngine
       end
     end
 
-    LEVEL_COLORS = { "nv1" => "#5BA880", "nv2" => "#6E9BC8", "nv3" => "#8B80C4" }.freeze
-
     # One stage per MODULE. `level` survives as a tag on the stage rather than as
     # the grouping.
     #
@@ -120,7 +118,6 @@ module LearningRoutesEngine
           level: level,
           label: route_module.localized_title.presence || t("learning_engine.journey.#{level}_label"),
           tag: level.upcase,
-          color: LEVEL_COLORS[level] || LEVEL_COLORS["nv1"],
           status: readable ? stage_status_for(steps) : "locked",
           topics: steps.map { |step| journey_topic(step, readable: readable, parent_id: parents[step.id]&.parent_id) }
         }

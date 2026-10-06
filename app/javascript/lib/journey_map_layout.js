@@ -144,8 +144,22 @@ function placeCell(measured, left, top, mod, o, out) {
   return head;
 }
 
-export function layoutJourney(tree, overrides = {}) {
+// Owner's ruling (CP2): a bad option THROWS. Every option is a finite number,
+// and the two row sizes are whole numbers >= 1 — rowSize 0 would loop forever in
+// `chunk`, which hangs a browser tab; an exception is the better failure.
+function validated(overrides) {
   const o = { ...DEFAULTS, ...overrides };
+  for (const [key, value] of Object.entries(o)) {
+    if (!Number.isFinite(value)) throw new Error(`journey layout option ${key} must be a finite number, got ${value}`);
+  }
+  for (const key of ["rowSize", "fanRowSize"]) {
+    if (!Number.isInteger(o[key]) || o[key] < 1) throw new Error(`journey layout option ${key} must be an integer >= 1, got ${o[key]}`);
+  }
+  return o;
+}
+
+export function layoutJourney(tree, overrides = {}) {
+  const o = validated(overrides);
   const out = { nodes: [], edges: [], cells: [], modules: [] };
   const moduleSize = nodeSize("module", o);
   const step = nodeSize("step", o);
