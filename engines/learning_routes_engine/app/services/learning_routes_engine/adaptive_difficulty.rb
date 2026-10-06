@@ -176,6 +176,7 @@ module LearningRoutesEngine
       return if reinforcement_steps.empty?
 
       shift = reinforcement_steps.size
+      trigger_id = triggering_step_id
 
       ActiveRecord::Base.transaction do
         steps_to_shift = RouteStep.where(learning_route_id: @route.id)
@@ -204,7 +205,7 @@ module LearningRoutesEngine
             estimated_minutes: attrs[:estimated_minutes],
             bloom_level: attrs[:bloom_level],
             prerequisites: [],
-            metadata: { reinforcement: true, trigger_score: @score }
+            metadata: { reinforcement: true, trigger_score: @score, triggering_step_id: trigger_id }
           )
         end
 
@@ -253,6 +254,30 @@ module LearningRoutesEngine
     def current_step_module_id
       RouteStep.where(learning_route_id: @route.id, position: @route.current_step)
                .pick(:route_module_id)
+    end
+
+    # WP-37 §1.1. The step that TRIGGERED this reinforcement — the same two
+    # sources, in the same order, that `triggering_module_id` takes the module
+    # from, so the id and the module always agree. The journey map hangs the
+    # triplet under this step; positions are only the fallback for rows written
+    # before this key existed.
+    def triggering_step_id
+      return @triggering_step_id if defined?(@triggering_step_id)
+
+      @triggering_step_id = assessment_step_id || current_step_id
+    end
+
+    def assessment_step_id
+      assessment_id = @result.respond_to?(:assessment_id) ? @result.assessment_id : nil
+      return nil if assessment_id.nil?
+
+      RouteStep.where(id: Assessments::Assessment.where(id: assessment_id).select(:route_step_id))
+               .where(learning_route_id: @route.id)
+               .pick(:id)
+    end
+
+    def current_step_id
+      RouteStep.where(learning_route_id: @route.id, position: @route.current_step).pick(:id)
     end
 
     # Does this route already carry reinforcement the student has not worked
