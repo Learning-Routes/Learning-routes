@@ -11,8 +11,9 @@ module LearningRoutesEngine
     layout "learning"
 
     def show
+      @readable_module = ModuleAccessPolicy.module_reader(@route)
       @modules = @route.route_modules.includes(:route_steps).order(:position, :id)
-      @steps = @modules.select(&:access_preview?).flat_map(&:route_steps)
+      @steps = @modules.select(&@readable_module).flat_map(&:route_steps)
       @progress = RouteProgressTracker.new(@route).progress_summary
       @due_reviews = SpacedRepetition.new.due_reviews(@route)
     end
@@ -33,13 +34,14 @@ module LearningRoutesEngine
       # Locked stages show their SHAPE, never their content: `journey_topic`
       # masks the title and drops the link for a module the student has no
       # access to, so the paywall holds.
+      readable_module = ModuleAccessPolicy.module_reader(@route)
       @journey_modules = @route.route_modules
         .includes(:route_steps)
         .order(:position, :id)
-      @steps = @journey_modules.select(&:access_preview?).flat_map { |m| m.route_steps.sort_by(&:position) }
+      @steps = @journey_modules.select(&readable_module).flat_map { |m| m.route_steps.sort_by(&:position) }
       @progress = RouteProgressTracker.new(@route).progress_summary
       @due_reviews = SpacedRepetition.new.due_reviews(@route)
-      @stages = build_journey_stages(@journey_modules)
+      @stages = build_journey_stages(@journey_modules, readable_module)
       render layout: "journey"
     end
 
@@ -95,7 +97,7 @@ module LearningRoutesEngine
     # reinforcement immediately behind it, in the SAME module
     # (`triggering_module_id`). Ordering by position is therefore already
     # clustering; the flag below lets the view say so.
-    def build_journey_stages(modules)
+    def build_journey_stages(modules, readable_module)
       modules.filter_map do |route_module|
         steps = route_module.route_steps.sort_by(&:position)
         next if steps.empty?
@@ -104,11 +106,14 @@ module LearningRoutesEngine
         # lowest, which is what a student is being asked to start at.
         level = steps.map(&:level).compact.min || "nv1"
 
-        readable = route_module.access_preview?
+        # From the policy, not `access_preview?`: a PURCHASED module is readable to
+        # the student who paid (WP-37 §1.2).
+        readable = readable_module.call(route_module)
 
         {
           module_id: route_module.id,
           access_state: route_module.access_state,
+          readable: readable,
           level: level,
           label: route_module.localized_title.presence || t("learning_engine.journey.#{level}_label"),
           tag: level.upcase,

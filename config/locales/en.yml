@@ -988,7 +988,7 @@ en:
       reassessment:
         title: "Reinforcement: Re-Assessment"
         description: "Quick check to verify understanding"
-    modules: { free_preview: "Free preview", locked: "Locked until purchase" }
+    modules: { free_preview: "Free preview", locked: "Locked until purchase", purchased: "Purchased" }
     blocks:
       required:
         one: "Complete the exercise above to finish this lesson."

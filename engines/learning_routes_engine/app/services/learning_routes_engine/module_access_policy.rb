@@ -25,6 +25,16 @@ module LearningRoutesEngine
       allowed?(user: user, route_id: nil, step_id: step_id)
     end
 
+    # WP-37 §1.2. Readability for a whole route in ONE entitlement query: a module
+    # is readable when it is the free preview, or when the route has an entitling
+    # purchase (`reachable?` below, asked once instead of once per module).
+    # Ownership is the caller's job — RoutesController has already scoped the
+    # route to the signed-in user.
+    def self.module_reader(route)
+      entitled = Commerce::RoutePurchase.entitled?(route_id: route.id)
+      ->(route_module) { route_module.access_preview? || entitled }
+    end
+
     # May this user cause NEW paid AI generation on this step?
     #
     # Strictly narrower than `allowed?`. Reading is entitled by a purchase that
