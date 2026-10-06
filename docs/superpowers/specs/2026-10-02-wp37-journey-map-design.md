@@ -150,7 +150,8 @@ Pure: no DOM, no Stimulus, no CSS. Next to it, replacing it, `journey_layout.js`
 - `buildTree(root, stages)` → the tree route → modules → steps → reinforcement, from the
   controller's JSON (`parent_id`, `reinforcement`, `current`).
 - `layoutJourney(tree, options)` → `{ nodes, edges, bounds }` in world pixels:
-  - `nodes`: `[{ id, kind, x, y, w, h }]` — `kind` ∈ `root | module | step | reinforcement`;
+  - `nodes`: `[{ id, kind, x, y, w, h }]` — `kind` ∈ `root | module | step | reinforcement | anchor`;
+    **`anchor` is VIRTUAL** (owner's ruling at Checkpoint 2): the zero-size branch point a module's orphans hang from — never emitted to the DOM, never in the Tab order; module → anchor → orphans is drawn as one fork;
     `w`/`h` is the node's **whole box, label included**;
   - `edges`: `[{ from, to, kind, points: [[x, y], …] }]` — polylines, drawn as one `<path>`;
   - `bounds`: the world rect.
