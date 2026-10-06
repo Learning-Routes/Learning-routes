@@ -3358,6 +3358,9 @@ html[data-theme="dark"] .wizard-footer { background: var(--color-bg, #1A1710); }
 .jm-node__label { width: 168px; max-height: 36px; font-family: 'DM Sans', sans-serif; font-size: 13px; line-height: 18px;
                   text-align: center; color: var(--color-txt); display: -webkit-box; -webkit-line-clamp: 2;
                   -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: anywhere; }
+/* Opaque backing: an edge may pass through its own endpoint's box (the spine
+   through its module's label), and a line must never run through text. */
+.jm-node__label, .jm-root { background: var(--color-bg); border-radius: 4px; }
 .jm-node__tag { font-family: 'DM Mono', monospace; font-size: 13px; letter-spacing: 1px; color: var(--jm-level); margin-right: 4px; }
 .jm-root { position: absolute; margin: 0; font-family: 'DM Sans', sans-serif; font-size: 24px; line-height: 30px;
            font-style: italic; font-weight: 400; text-align: center; color: var(--color-txt);

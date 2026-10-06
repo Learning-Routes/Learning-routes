@@ -53,6 +53,15 @@ class JourneyMapTest < ApplicationSystemTestCase
           assert_operator l["contrast"], :>=, MIN_CONTRAST,
             "#{l['text'].inspect} (#{l['cls']}) measures #{format('%.2f', l['contrast'])}:1 on #{theme}"
         end
+        # An edge may pass through its OWN endpoint's box (the spine through its
+        # module's label). Every label therefore carries its own opaque backing,
+        # so no line is ever drawn through text.
+        transparent = page.evaluate_script(<<~JS)
+          [...document.querySelectorAll(".jm-node__label")]
+            .filter((el) => { const c = getComputedStyle(el).backgroundColor
+              return c === "transparent" || /rgba\\(.*,\\s*0\\)$/.test(c) }).length
+        JS
+        assert_equal 0, transparent, "labels without a backing let edges run through their text"
         assert_current_clear(route)
         assert_no_page_scroll
         report_ellipsis(size, theme, labels)
