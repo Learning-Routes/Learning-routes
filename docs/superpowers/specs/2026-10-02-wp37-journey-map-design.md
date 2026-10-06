@@ -432,7 +432,7 @@ fixture, both themes, reduced motion on and off; pan, zoom, Fit, rail click; the
 |---|---|
 | 1 | Parent census via a read-only rake, `wp37:reinforcement_parents` (+ non-boolean `reinforcement` count). |
 | 2 | Layout approach A: tidy-tree rules at fixed depth, not literal Buchheim; stated in the module. |
-| 3 | `triggering_step_id` = the actual trigger (assessment step → current step → nil); position is legacy fallback; stored wins. |
+| 3 | `triggering_step_id` = the actual trigger (assessment step → current step → nil). The stored id wins only when it names a primary step in the same module; otherwise, and for legacy rows, the position rule (§1.3). |
 | 4 | Readability from `ModuleAccessPolicy`, one `entitled?` per route; journey stages, journey `@steps`, list view `:15` and `show.html.erb:65/67`. |
 | 5 | List-view readability is in this package (correctness, not design). |
 | 6 | Reserved spine column; reserved row gutters; edges are polylines; edge-segment-vs-box test. |
