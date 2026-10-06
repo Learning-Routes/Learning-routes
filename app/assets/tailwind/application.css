@@ -31,10 +31,12 @@
   --color-link: #8B6D28;
 
   /* --- Colors: Node/route types --- */
-  --color-node-nv1: #B0A898;
-  --color-node-nv2: #B0A898;
+  /* Journey level colours (WP-37 §3.6). Text-safe on --color-bg: each is
+     >= 4.5:1, measured by test/system/journey_map_test.rb. */
+  --color-node-nv1: #2E6B4B;
+  --color-node-nv2: #2C5F8E;
   --color-node-mm: #B0A898;
-  --color-node-nv3: #B0A898;
+  --color-node-nv3: #5A4C9E;
   --color-node-exam: #B0A898;
   --color-node-goal: #B0A898;
 
@@ -161,6 +163,10 @@
 }
 
 html[data-theme="dark"] {
+  /* Journey level colours, dark theme (WP-37 §3.6). */
+  --color-node-nv1: #7CC4A0;
+  --color-node-nv2: #8DB6E0;
+  --color-node-nv3: #B2A8E6;
   --color-bg: #1A1710;
   --color-card: #221F18;
   --color-txt: #E8E4DC;
