@@ -194,10 +194,12 @@ require "test_helper"
 # here, against the server, before any pixel exists.
 class LearningRoutesEngine::JourneyMapDataTest < ActionDispatch::IntegrationTest
   def setup
-    @user = create_test_user(email_verified_at: Time.current, locale: "en")
+    # The UI locale is current_user.locale (core/application_controller.rb:54-60);
+    # the fixture user is Spanish, so the assertions below are Spanish.
+    @user = create_test_user(email_verified_at: Time.current, locale: "es")
     profile = LearningRoutesEngine::LearningProfile.create!(user: @user, current_level: "beginner")
     @route = LearningRoutesEngine::LearningRoute.create!(
-      learning_profile: profile, topic: "Map", locale: "en", status: :active, current_step: 1
+      learning_profile: profile, topic: "Map", locale: "es", status: :active, current_step: 1
     )
     @preview = LearningRoutesEngine::RouteModule.find_by!(learning_route_id: @route.id, access_state: :preview)
     @paid = @route.route_modules.create!(
@@ -243,7 +245,6 @@ class LearningRoutesEngine::JourneyMapDataTest < ActionDispatch::IntegrationTest
     assert topic["path"].present?
   end
 
-  # Locale-agnostic: the UI locale is resolved per request (en "topics" / es "temas").
   test "the journey header counts the purchased module's steps" do
     step!(@preview, 0, "Free lesson")
     step!(@paid, 10, "Paid lesson")
@@ -251,7 +252,7 @@ class LearningRoutesEngine::JourneyMapDataTest < ActionDispatch::IntegrationTest
 
     get learning_routes_engine.journey_route_path(@route)
 
-    assert_match(/\b2 (topics|temas)\b/, response.body, "@steps must come from the policy, not from access_preview?")
+    assert_match(/· 2 temas ·/, response.body, "@steps must come from the policy, not from access_preview?")
   end
 
   test "the list view lists a purchased module's steps without the lock" do
@@ -264,7 +265,7 @@ class LearningRoutesEngine::JourneyMapDataTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_includes response.body, "Paid lesson"
     assert_select "section[data-module-access='locked'] span[aria-label]", count: 0
-    assert_select "section[data-module-access='locked']", text: /Purchased|Comprado/
+    assert_select "section[data-module-access='locked']", text: /Comprado/
   end
 
   private

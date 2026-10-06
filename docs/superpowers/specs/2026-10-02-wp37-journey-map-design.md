@@ -325,8 +325,15 @@ contrast is measured against the computed background of its first opaque ancesto
 | done | filled with the level token + the existing check |
 | current | double ring (+ pulse, off under reduced motion) |
 | available | outline ring |
-| locked | dashed outline + lock glyph, no title, not focusable |
+| masked (paywall — a module the student cannot read) | dashed outline + lock glyph, no title, not focusable |
+| locked (not yet reached, in a readable module) | dashed outline, **no** glyph; keeps its title and its link |
 | reinforcement | smaller circle, **same** label size |
+
+**Amendment (owner's ruling, after plan review).** "Locked" is two things, and they are drawn
+differently. The **paywall mask** hides content: glyph, no title, no focus. A **not-yet-reached
+step of a readable module** hides nothing: it keeps its title and link and is only outlined.
+Without the split, a purchased module whose steps are not yet reached would carry lock glyphs —
+the opposite of what the student bought. The system test's purchased run asserts no glyph.
 
 Each node's `aria-label` is "title, status". **New locale keys** in `en` and `es` for
 `current`, `available` and `reinforcement` status text, the drag hint, and the viewport's key
