@@ -145,9 +145,11 @@ class LearningRoutesEngine::JourneyMapDataTest < ActionDispatch::IntegrationTest
 
   # ─── current ───────────────────────────────────────────────────────
 
+  # The step at current_step is one the fallback would NEVER pick (completed, after
+  # an available step), so this fails if the position rule is dropped.
   test "exactly one topic is current: the step at route.current_step" do
-    step!(@preview, 0, "Done", status: :completed)
-    at_current = step!(@preview, 1, "Here")
+    step!(@preview, 0, "Open earlier")
+    at_current = step!(@preview, 1, "Just finished", status: :completed)
     step!(@preview, 2, "Next", status: :locked)
 
     current = all_topics.select { |t| t["current"] }

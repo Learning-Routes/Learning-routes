@@ -23,9 +23,12 @@ class Wp37ReinforcementParentsTest < ActiveSupport::TestCase
     end
     @orphan = make.call(0, { "reinforcement" => true })
     first = make.call(1)
-    make.call(2, { "reinforcement" => true, "triggering_step_id" => first.id })
+    nested = make.call(2, { "reinforcement" => true, "triggering_step_id" => first.id })
     make.call(3, { "reinforcement" => true })
     make.call(4, { "reinforcement" => "true" })
+    # Written after WP-37 but rejected: its stored trigger is itself reinforcement
+    # (a failed re-assessment inside a triplet), so it resolves by position.
+    make.call(5, { "reinforcement" => true, "triggering_step_id" => nested.id })
   end
 
   test "counts stored, position, orphan and non-boolean flags, and changes nothing" do
@@ -33,9 +36,9 @@ class Wp37ReinforcementParentsTest < ActiveSupport::TestCase
 
     out, = capture_io { @task.invoke }
 
-    assert_match(/3 reinforcement step\(s\) in 1 route\(s\): stored=1 position=1 orphan=1/, out)
+    assert_match(/4 reinforcement step\(s\) in 1 route\(s\): stored=1 position=2 \(stored id rejected: 1\) orphan=1/, out)
     assert_match(/1 step\(s\) carry a reinforcement value that is not boolean true/, out)
-    assert_match(/route=#{@route.id} stored=1 position=1 orphan=1/, out)
+    assert_match(/route=#{@route.id} stored=1 position=2 \(stored id rejected: 1\) orphan=1/, out)
     assert_equal before,
                  LearningRoutesEngine::RouteStep.where(learning_route_id: @route.id).pluck(:id, :metadata, :position)
   end
