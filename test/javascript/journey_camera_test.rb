@@ -58,8 +58,18 @@ class JourneyCameraTest < ActiveSupport::TestCase
     mod = { x: -84, y: 132, w: 900, h: 300 }
     node = { x: 400, y: 150, w: 168, h: 88 }
     cam = call("initialCamera", { moduleBox: mod, node: node, safe: safe, minScale: 12 / 13.0 })
-    assert_operator cam["k"], :<=, 1
+    assert_equal 1, cam["k"], "a module that fits at 1x is shown at 1x"
     assert_inside call("screenBox", cam, mod), safe
+    assert_centred mod, cam, safe
+  end
+
+  test "initial camera: a module that fits between the legible floor and 1x is fitted exactly" do
+    safe = call("safeRect", DESKTOP, [TOPBAR])
+    mod = { x: -84, y: 132, w: 1500, h: 400 } # fit = (1440 - 48) / 1500 = 0.928, inside [12/13, 1]
+    node = { x: 1200, y: 150, w: 168, h: 88 }
+    cam = call("initialCamera", { moduleBox: mod, node: node, safe: safe, minScale: 12 / 13.0 })
+    assert_in_delta (1440 - 48) / 1500.0, cam["k"], 1e-9
+    assert_centred mod, cam, safe
   end
 
   test "initial camera: a module too big at the legible floor centres the current step instead" do
@@ -97,6 +107,12 @@ class JourneyCameraTest < ActiveSupport::TestCase
     stdout, stderr, status = Open3.capture3("node", "--input-type=module", "-e", script)
     assert status.success?, "node failed: #{stderr}"
     JSON.parse(stdout)
+  end
+
+  def assert_centred(box, cam, safe)
+    s = call("screenBox", cam, box)
+    assert_in_delta safe["left"] + safe["width"] / 2.0, s["left"] + s["width"] / 2.0, 0.01
+    assert_in_delta safe["top"] + safe["height"] / 2.0, s["top"] + s["height"] / 2.0, 0.01
   end
 
   def assert_inside(screen, safe)

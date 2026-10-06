@@ -39,6 +39,10 @@ class JourneyMapLayoutTest < ActiveSupport::TestCase
     shapes["production 7 + 13"] = [stage("m0", primaries: 7, fans: { 1 => 3, 2 => 3, 4 => 7 })]
     shapes["orphans then fans"] = [stage("m0", primaries: 5, orphans: 2, fans: { 0 => 2, 3 => 4 })]
     shapes["two fans in one row"] = [stage("m0", primaries: 4, fans: { 0 => 3, 3 => 3 })]
+    # A fan hangs directly under the step a row-to-row hop leaves from: the hop
+    # must take the gutter, not drop through the fan (ltr row end, then rtl).
+    shapes["fan under an ltr row end"] = [stage("m0", primaries: 5, fans: { 3 => 3 })]
+    shapes["fan under an rtl row end"] = [stage("m0", primaries: 9, fans: { 7 => 3 })]
     shapes["preview + locked"] = [stage("m0", primaries: 7, fans: { 2 => 3 }), stage("m1", primaries: 9, readable: false)]
   end.freeze
 
@@ -96,6 +100,21 @@ class JourneyMapLayoutTest < ActiveSupport::TestCase
             refute overlapping, "#{node['id']} sits in a reserved lane [#{x0}, #{x1}]"
           end
         end
+      end
+    end
+
+    # Computed from node boxes only: a hop between rows runs its vertical segment
+    # outside the x-range of every step and reinforcement box of its module.
+    test "#{name}: a row-to-row hop runs in a gutter, beside every box" do
+      result = layout(stages)
+      nodes = result["nodes"].index_by { |n| n["id"] }
+      result["edges"].select { |e| e["kind"] == "route" && e["points"].size > 2 }.each do |edge|
+        x = edge["points"][1][0]
+        boxes = result["nodes"].select do |n|
+          n["moduleId"] == nodes[edge["from"]]["moduleId"] && %w[step reinforcement].include?(n["kind"])
+        end
+        inside = boxes.find { |b| x > b["x"] - EPS && x < b["x"] + b["w"] + EPS }
+        assert_nil inside, "hop #{edge['from']}->#{edge['to']} at x=#{x} runs through the column of #{inside&.dig('id')}"
       end
     end
 

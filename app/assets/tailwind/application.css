@@ -31,12 +31,7 @@
   --color-link: #8B6D28;
 
   /* --- Colors: Node/route types --- */
-  /* Journey level colours (WP-37 §3.6). Text-safe on --color-bg: each is
-     >= 4.5:1, measured by test/system/journey_map_test.rb. */
-  --color-node-nv1: #2E6B4B;
-  --color-node-nv2: #2C5F8E;
   --color-node-mm: #B0A898;
-  --color-node-nv3: #5A4C9E;
   --color-node-exam: #B0A898;
   --color-node-goal: #B0A898;
 
@@ -78,6 +73,17 @@
    DARK THEME — Override CSS custom properties when [data-theme="dark"]
    Triggered by theme toggle or system preference (via Stimulus controller)
    ========================================================================== */
+
+/* Journey level colours (WP-37 §3.6). In a PLAIN :root block, not @theme:
+   Tailwind 4 drops @theme variables whose names it never sees written, and the
+   journey builds these at runtime (var(--color-node-${level})). Text-safe on
+   --color-bg (>= 4.5:1), measured by test/system/journey_map_test.rb; the dark
+   values are in the dark-theme variable block below. */
+:root {
+  --color-node-nv1: #2E6B4B;
+  --color-node-nv2: #2C5F8E;
+  --color-node-nv3: #5A4C9E;
+}
 
 /* Semi-transparent theme tokens (glassmorphic cards, subtle borders, tints) */
 :root {
