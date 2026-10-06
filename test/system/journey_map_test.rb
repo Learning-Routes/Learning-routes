@@ -46,7 +46,9 @@ class JourneyMapTest < ApplicationSystemTestCase
         open_journey(route, theme: theme, reduced_motion: size == 43)
 
         labels = measure_labels
-        assert_operator labels.size, :>=, size, "every step must carry a label"
+        topics = route.route_steps.count # every step, readable or masked, has exactly one node label
+        drawn = page.evaluate_script("document.querySelectorAll('.jm-node--step .jm-node__label, .jm-node--reinforcement .jm-node__label').length")
+        assert_equal topics, drawn, "every step must carry exactly one label"
         assert_nil first_overlap(label_boxes(labels)), "two labels overlap on screen"
         labels.each do |l|
           assert_operator l["px"], :>=, MIN_LABEL_PX - 0.01, "#{l['text'].inspect} renders at #{l['px']}px"
@@ -172,10 +174,15 @@ class JourneyMapTest < ApplicationSystemTestCase
     assert_in_delta before[0] + 120, after[0], 1
     assert_in_delta before[1] + 80, after[1], 1
 
-    url = page.current_url
+    # Turbo changes the URL only after its fetch returns, so comparing the URL
+    # right after the gesture proves nothing. Count visits STARTED instead, and
+    # give any late navigation time to surface.
+    page.execute_script("window.__visits = 0; document.addEventListener('turbo:before-visit', () => window.__visits++)")
     node = find(".jm-node--current").native
     page.driver.browser.action.move_to(node).click_and_hold.move_by(60, 0).release.perform
-    assert_equal url, page.current_url, "a drag that starts on a node navigated"
+    sleep 0.5
+    assert_equal 0, page.evaluate_script("window.__visits"), "a drag that starts on a node started a visit"
+    assert_no_current_path %r{/steps/}
   end
 
   test "a plain click on a node still navigates" do
@@ -202,6 +209,45 @@ class JourneyMapTest < ApplicationSystemTestCase
     last_id = page.evaluate_script("[...document.querySelectorAll('a.jm-node')].pop().dataset.nodeId")
     page.execute_script("document.querySelector(`[data-node-id='#{last_id}']`).focus()")
     assert_clear box_of(last_id)
+  end
+
+  # Turbo restores a cached copy of the page on Back; connecting again must not
+  # draw the map a second time.
+  test "going Back to the map draws it once" do
+    route = build_route(7)
+    open_journey(route, reduced_motion: true)
+    nodes = page.evaluate_script("document.querySelectorAll('.jm-node').length")
+    edges = page.evaluate_script("document.querySelectorAll('.jm-edges path').length")
+    find(".jm-node--current").click
+    assert_current_path %r{/steps/}
+    page.go_back
+    # The cached snapshot already carries data-journey-ready, so it cannot tell
+    # us Stimulus reconnected; give the reconnect time before counting.
+    assert_selector "[data-journey-ready='true']", wait: 10
+    sleep 0.5
+    assert_equal nodes, page.evaluate_script("document.querySelectorAll('.jm-node').length")
+    assert_equal edges, page.evaluate_script("document.querySelectorAll('.jm-edges path').length")
+  end
+
+  # A phone rotates: Fit must fit the viewport it has NOW.
+  test "after a resize, Fit still shows every node clear of the overlays" do
+    route = build_route(7)
+    open_journey(route, reduced_motion: true)
+    page.current_window.resize_to(390, 844)
+    sleep 0.3
+    find("[data-action~='route-journey#fit']").click
+    node_boxes.each { |box| assert_clear box }
+  end
+
+  # Ctrl/Cmd with = - 0 is the BROWSER's page zoom; the map must not take it.
+  test "modifier keys are left to the browser" do
+    route = build_route(43)
+    open_journey(route, reduced_motion: true)
+    page.execute_script("document.querySelector('.jm-viewport').focus()")
+    before = matrix
+    page.driver.browser.action.key_down(:control).send_keys("0").key_up(:control).perform
+    page.driver.browser.action.key_down(:alt).send_keys(:arrow_left).key_up(:alt).perform
+    assert_equal before, matrix, "a modified key moved the map"
   end
 
   # ── Review Focus 4: resize after load ─────────────────────────────────

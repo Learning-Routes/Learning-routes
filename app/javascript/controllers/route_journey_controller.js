@@ -22,13 +22,17 @@ export default class extends Controller {
     this.reduced = window.matchMedia("(prefers-reduced-motion: reduce)")
     this.layout = layoutJourney(buildTree(this.rootValue, this.stagesValue), DEFAULTS)
     this.nodeById = new Map(this.layout.nodes.map((n) => [n.id, n]))
+    // Turbo restores a CACHED copy of this page on Back, with the nodes this
+    // controller built last time still in it. Clear before drawing, or the map
+    // is drawn twice (every node a Tab stop twice).
+    this.edgesTarget.replaceChildren()
+    this.nodesTarget.querySelectorAll(".jm-node").forEach((el) => el.remove())
     this._renderEdges()
     this._renderNodes()
 
     const safe = this._safe()
-    const fitAll = fitCamera(this.layout.bounds, safe, { padding: 32, min: 0.01, max: 1 })
     this.minScale = MIN_LABEL_PX / DEFAULTS.labelFontPx
-    this.zoomRange = { min: Math.min(fitAll.k, this.minScale), max: 2 }
+    this._updateZoomRange(safe)
     this.camera = this._initialCamera(safe)
     this._apply(false)
 
@@ -52,8 +56,12 @@ export default class extends Controller {
   }
 
   // ── Actions ──────────────────────────────────────────────────────────
+  // Fit means the WHOLE route in the viewport it has now — never clamped by a
+  // zoom floor computed for a different viewport.
   fit() {
-    this.camera = fitCamera(this.layout.bounds, this._safe(), { padding: 32, min: this.zoomRange.min, max: 1 })
+    const safe = this._safe()
+    this._updateZoomRange(safe)
+    this.camera = fitCamera(this.layout.bounds, safe, { padding: 32, min: 0.01, max: 1 })
     this._apply(true)
   }
 
@@ -191,6 +199,13 @@ export default class extends Controller {
                            minScale: this.minScale, padding: 24 })
   }
 
+  // The zoom-out floor is "fit-all or the legible floor, whichever is smaller",
+  // so it depends on the viewport: recomputed on every resize.
+  _updateZoomRange(safe) {
+    const fitAll = fitCamera(this.layout.bounds, safe, { padding: 32, min: 0.01, max: 1 })
+    this.zoomRange = { min: Math.min(fitAll.k, this.minScale), max: 2 }
+  }
+
   _apply(animate) {
     const { x, y, k } = this.camera
     this.worldTarget.classList.toggle("jm-world--animate", animate && !this.reduced.matches)
@@ -208,7 +223,9 @@ export default class extends Controller {
     const old = this.lastSafe
     const world = { x: (old.left + old.width / 2 - this.camera.x) / this.camera.k,
                     y: (old.top + old.height / 2 - this.camera.y) / this.camera.k }
-    this.camera = centerOn(world, this._safe(), this.camera.k)
+    const safe = this._safe()
+    this._updateZoomRange(safe)
+    this.camera = centerOn(world, safe, this.camera.k)
     this._keepCurrentVisible()
     this._apply(false)
   }
@@ -312,6 +329,9 @@ export default class extends Controller {
 
   _onKeyDown(e) {
     if (e.target !== this.viewportTarget) return
+    // Ctrl/Cmd with = - 0 is the browser's page zoom and Alt+Arrow is history:
+    // leave them to the browser, or low-vision users lose page zoom on the map.
+    if (e.ctrlKey || e.metaKey || e.altKey) return
     const pan = (dx, dy) => { this.camera = { ...this.camera, x: this.camera.x + dx, y: this.camera.y + dy }; this._apply(true) }
     switch (e.key) {
       case "ArrowLeft": pan(KEY_PAN, 0); break
