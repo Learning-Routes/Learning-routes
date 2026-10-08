@@ -34,6 +34,7 @@ export default class extends Controller {
     this.minScale = MIN_LABEL_PX / DEFAULTS.labelFontPx
     this._updateZoomRange(safe)
     this.camera = this._initialCamera(safe)
+    this.userMoved = false
     this._apply(false)
 
     this._bind()
@@ -61,8 +62,7 @@ export default class extends Controller {
   fit() {
     const safe = this._safe()
     this._updateZoomRange(safe)
-    this.camera = fitCamera(this.layout.bounds, safe, { padding: 32, min: 0.01, max: 1 })
-    this._apply(true)
+    this._userMove(fitCamera(this.layout.bounds, safe, { padding: 32, min: 0.01, max: 1 }), true)
   }
 
   zoomIn() { this._zoomCenter(KEY_ZOOM) }
@@ -72,8 +72,7 @@ export default class extends Controller {
     const stage = this.stagesValue[Number(event.currentTarget.dataset.stageIndex)]
     const mod = stage && this.layout.modules.find((m) => m.moduleId === stage.module_id)
     if (!mod) return
-    this.camera = fitCamera(mod.box, this._safe(), { padding: 32, min: this.zoomRange.min, max: 1 })
-    this._apply(true)
+    this._userMove(fitCamera(mod.box, this._safe(), { padding: 32, min: this.zoomRange.min, max: 1 }), true)
   }
 
   // ── Rendering ────────────────────────────────────────────────────────
@@ -126,8 +125,9 @@ export default class extends Controller {
   _topicNode(node) {
     const topic = node.topic
     const masked = !node.readable
-    const status = topic.current ? "current" : (topic.status === "completed" ? "completed"
-      : (topic.status === "locked" ? "locked" : "available"))
+    // Done wins: a finished preview leaves the current step on one already done.
+    const status = topic.status === "completed" ? "completed"
+      : (topic.current ? "current" : (topic.status === "locked" ? "locked" : "available"))
     const el = document.createElement(topic.path ? "a" : "div")
     if (topic.path) {
       el.href = topic.path
@@ -135,7 +135,8 @@ export default class extends Controller {
       el.draggable = false
     }
     el.className = [
-      "jm-node", `jm-node--${node.kind}`, `jm-node--${status}`, masked ? "jm-node--masked" : ""
+      "jm-node", `jm-node--${node.kind}`, `jm-node--${status}`,
+      topic.current && status !== "current" ? "jm-node--current" : "", masked ? "jm-node--masked" : ""
     ].filter(Boolean).join(" ")
     el.dataset.nodeId = node.id
     const statusText = this.labelsValue[status] || ""
@@ -222,8 +223,7 @@ export default class extends Controller {
 
   _zoomCenter(factor) {
     const s = this._safe()
-    this.camera = zoomAbout(this.camera, { x: s.left + s.width / 2, y: s.top + s.height / 2 }, factor, this.zoomRange)
-    this._apply(true)
+    this._userMove(zoomAbout(this.camera, { x: s.left + s.width / 2, y: s.top + s.height / 2 }, factor, this.zoomRange), true)
   }
 
   _onResize() {
@@ -234,8 +234,16 @@ export default class extends Controller {
     const safe = this._safe()
     this._updateZoomRange(safe)
     this.camera = centerOn(world, safe, this.camera.k)
-    this._keepCurrentVisible()
+    // Until the student moves the map, the current step stays in view; after,
+    // what they chose to look at stays put (§3.3).
+    if (!this.userMoved) this._keepCurrentVisible()
     this._apply(false)
+  }
+
+  _userMove(camera, animate) {
+    this.userMoved = true
+    this.camera = camera
+    this._apply(animate)
   }
 
   _keepCurrentVisible() {
@@ -290,9 +298,8 @@ export default class extends Controller {
       const mid = { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 }
       const zoomed = zoomAbout(this.pinch.camera, this.pinch.mid, Math.hypot(a.x - b.x, a.y - b.y) / this.pinch.dist,
                                this.zoomRange)
-      this.camera = { ...zoomed, x: zoomed.x + mid.x - this.pinch.mid.x, y: zoomed.y + mid.y - this.pinch.mid.y }
       this.dragged = true
-      this._apply(false)
+      this._userMove({ ...zoomed, x: zoomed.x + mid.x - this.pinch.mid.x, y: zoomed.y + mid.y - this.pinch.mid.y }, false)
       return
     }
     const dx = p.x - this.dragStart.point.x
@@ -302,8 +309,7 @@ export default class extends Controller {
       this.dragged = true
       this.viewportTarget.setPointerCapture(e.pointerId)
     }
-    this.camera = { ...this.dragStart.camera, x: this.dragStart.camera.x + dx, y: this.dragStart.camera.y + dy }
-    this._apply(false)
+    this._userMove({ ...this.dragStart.camera, x: this.dragStart.camera.x + dx, y: this.dragStart.camera.y + dy }, false)
   }
 
   _onPointerUp(e) {
@@ -327,12 +333,11 @@ export default class extends Controller {
     e.preventDefault()
     const unit = e.deltaMode === 1 ? 16 : (e.deltaMode === 2 ? this.viewportTarget.clientHeight : 1)
     if (e.ctrlKey) {
-      this.camera = zoomAbout(this.camera, this._local(e), Math.exp(-e.deltaY * unit * 0.01), this.zoomRange)
+      this._userMove(zoomAbout(this.camera, this._local(e), Math.exp(-e.deltaY * unit * 0.01), this.zoomRange), false)
     } else {
       // A plain wheel PANS: a page that does not scroll must not trap a mouse user.
-      this.camera = { ...this.camera, x: this.camera.x - e.deltaX * unit, y: this.camera.y - e.deltaY * unit }
+      this._userMove({ ...this.camera, x: this.camera.x - e.deltaX * unit, y: this.camera.y - e.deltaY * unit }, false)
     }
-    this._apply(false)
   }
 
   _onKeyDown(e) {
@@ -340,7 +345,7 @@ export default class extends Controller {
     // Ctrl/Cmd with = - 0 is the browser's page zoom and Alt+Arrow is history:
     // leave them to the browser, or low-vision users lose page zoom on the map.
     if (e.ctrlKey || e.metaKey || e.altKey) return
-    const pan = (dx, dy) => { this.camera = { ...this.camera, x: this.camera.x + dx, y: this.camera.y + dy }; this._apply(true) }
+    const pan = (dx, dy) => this._userMove({ ...this.camera, x: this.camera.x + dx, y: this.camera.y + dy }, true)
     switch (e.key) {
       case "ArrowLeft": pan(KEY_PAN, 0); break
       case "ArrowRight": pan(-KEY_PAN, 0); break
@@ -359,7 +364,6 @@ export default class extends Controller {
     const el = e.target.closest?.(".jm-node")
     const node = el && this.nodeById.get(el.dataset.nodeId)
     if (!node) return
-    this.camera = ensureVisible(this.camera, node, this._safe(), 24)
-    this._apply(true)
+    this._userMove(ensureVisible(this.camera, node, this._safe(), 24), true)
   }
 }

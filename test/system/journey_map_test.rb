@@ -126,6 +126,23 @@ class JourneyMapTest < ApplicationSystemTestCase
     assert_equal expected_numbers(route), drawn_numbers
   end
 
+  # The current step can be one already done: the preview finished, the next
+  # step behind the paywall. It is drawn done — check, no number — and says so.
+  test "a finished free preview draws its last step as done, not as one still to do" do
+    route = build_route(7, all_done: true)
+    open_journey(route)
+
+    last = LearningRoutesEngine::RouteStep.where(learning_route_id: route.id).where.not(position: 100..).order(:position).last
+    current = find(".jm-node--current")
+    assert_equal "s:#{last.id}", current["data-node-id"]
+    assert_includes current[:class].split, "jm-node--completed"
+    assert current.has_css?(".jm-node__dot svg path", visible: :all), "the done step lost its check"
+    assert_empty drawn_numbers
+    aria = current["aria-label"]
+    assert_includes aria, I18n.t("learning_engine.journey.completed", locale: :es)
+    refute_includes aria, I18n.t("learning_engine.journey.status_current", locale: :es)
+  end
+
   # ── (d) Tab order ─────────────────────────────────────────────────────
   test "Tab walks the readable steps in route order, each step then its reinforcement" do
     route = build_route(43)
@@ -238,6 +255,26 @@ class JourneyMapTest < ApplicationSystemTestCase
     assert_in_delta before["f"] - 200, after["f"], 1
   end
 
+  # §3.3: a resize keeps the camera's centre. Once the student has moved the
+  # map, the current step does not pull the camera back to it.
+  test "a resize after panning away keeps the view and does not jump back to the current step" do
+    route = build_route(43)
+    open_journey(route, reduced_motion: true)
+    page.execute_script(<<~JS)
+      document.querySelector(".jm-viewport").dispatchEvent(new WheelEvent("wheel", { deltaY: 1500, bubbles: true, cancelable: true }))
+    JS
+    sleep 0.2
+    current_id = page.evaluate_script("document.querySelector('.jm-node--current').dataset.nodeId")
+    assert_operator box_of(current_id)["bottom"], :<, 0, "the wheel should have panned the current step off the top"
+    before = translate
+
+    page.current_window.resize_to(1200, 900)
+    sleep 0.5
+    assert_operator box_of(current_id)["bottom"], :<, 0, "the resize pulled the camera back to the current step"
+    after = translate
+    assert_operator (after[1] - before[1]).abs, :<, 100, "the resize moved the view by #{after[1] - before[1]}px"
+  end
+
   test "Tab onto an off-screen node brings it into view" do
     route = build_route(43)
     open_journey(route, reduced_motion: true)
@@ -296,16 +333,19 @@ class JourneyMapTest < ApplicationSystemTestCase
 
   private
 
-  def build_route(size)
+  # all_done: every preview step completed, current_step past the paywall —
+  # where advance_current_step! leaves a student who finished the free preview.
+  def build_route(size, all_done: false)
     route = LearningRoutesEngine::LearningRoute.create!(
-      learning_profile: @profile, topic: "Portugués para viajar", locale: "es", status: :active, current_step: 2
+      learning_profile: @profile, topic: "Portugués para viajar", locale: "es", status: :active,
+      current_step: all_done ? 100 : 2
     )
     preview = preview_of(route)
     position = 0
     7.times do |i|
       step = route.route_steps.create!(
         route_module: preview, title: TITLES[i], position: position,
-        status: i < 2 ? :completed : (i == 2 ? :available : :locked),
+        status: all_done || i < 2 ? :completed : (i == 2 ? :available : :locked),
         content_type: :lesson, level: :nv1, bloom_level: 1
       )
       position += 1
