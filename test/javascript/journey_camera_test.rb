@@ -89,6 +89,40 @@ class JourneyCameraTest < ActiveSupport::TestCase
     assert_inside call("screenBox", cam, root), safe
   end
 
+  # WP-37b §2.3 / §5.4: the title beside the spine's origin is kept in view with the
+  # first module when both fit at a legible scale.
+  test "initial camera: module and title together, when their union fits at the legible floor" do
+    safe = call("safeRect", DESKTOP, [TOPBAR])
+    mod = { x: -98, y: 98, w: 1200, h: 520 }
+    title = { x: 18, y: 0, w: 420, h: 64 }
+    node = { x: 400, y: 150, w: 124, h: 100 }
+    cam = call("initialCamera", { moduleBox: mod, alsoBox: title, node: node, safe: safe, minScale: 12 / 13.0 })
+    union = { x: -98, y: 0, w: 1200, h: 618 }
+    assert_in_delta [(1440 - 48) / 1200.0, 1].min, cam["k"], 1e-9
+    assert_inside call("screenBox", cam, mod), safe
+    assert_inside call("screenBox", cam, title), safe
+    assert_centred union, cam, safe
+  end
+
+  test "initial camera: a union too big at the floor falls back to today's rule exactly" do
+    safe = call("safeRect", PHONE, [{ left: 0, top: 0, width: 390, height: 72 }])
+    mod = { x: -98, y: 98, w: 900, h: 3000 }
+    title = { x: 18, y: 0, w: 420, h: 64 }
+    node = { x: 600, y: 2000, w: 124, h: 100 }
+    base = { moduleBox: mod, node: node, safe: safe, minScale: 12 / 13.0 }
+    assert_equal call("initialCamera", base), call("initialCamera", base.merge(alsoBox: title))
+  end
+
+  test "initial camera: alsoBox null changes nothing" do
+    safe = call("safeRect", DESKTOP, [TOPBAR])
+    [[{ x: -84, y: 132, w: 900, h: 300 }, { x: 400, y: 150, w: 168, h: 88 }],
+     [{ x: -84, y: 132, w: 1500, h: 400 }, { x: 1200, y: 150, w: 168, h: 88 }],
+     [nil, { x: -180, y: 0, w: 360, h: 76 }]].each do |mod, node|
+      base = { moduleBox: mod, node: node, safe: safe, minScale: 12 / 13.0 }
+      assert_equal call("initialCamera", base), call("initialCamera", base.merge(alsoBox: nil))
+    end
+  end
+
   test "ensureVisible moves an off-screen box just inside the safe rect" do
     safe = call("safeRect", DESKTOP, [TOPBAR])
     box = { x: 3000, y: 2000, w: 168, h: 88 }

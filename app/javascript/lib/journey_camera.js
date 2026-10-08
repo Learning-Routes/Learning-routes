@@ -83,11 +83,24 @@ export function ensureVisible(camera, box, safe, margin = 24) {
   return { ...camera, x: camera.x + dx, y: camera.y + dy };
 }
 
+const unionOf = (a, b) => {
+  const x = Math.min(a.x, b.x);
+  const y = Math.min(a.y, b.y);
+  return { x, y, w: Math.max(a.x + a.w, b.x + b.w) - x, h: Math.max(a.y + a.h, b.y + b.h) - y };
+};
+
 // §3.4. Fit the current module, never zoomed past 1x and never below the scale
 // that keeps labels legible. If the whole module fits at that scale, centre it;
 // otherwise centre the current node. With no module (nothing readable), centre
 // the given node — the root — at 1x.
-export function initialCamera({ moduleBox, node, safe, minScale, padding = 24 }) {
+// WP-37b: `alsoBox` (the route's title) joins the module when their union still
+// fits at the legible floor; otherwise the rule above applies unchanged.
+export function initialCamera({ moduleBox, alsoBox = null, node, safe, minScale, padding = 24 }) {
+  if (moduleBox && alsoBox) {
+    const union = unionOf(moduleBox, alsoBox);
+    const fit = Math.min((safe.width - 2 * padding) / union.w, (safe.height - 2 * padding) / union.h);
+    if (fit >= minScale) return centerOn(centerOf(union), safe, Math.min(1, fit));
+  }
   if (!moduleBox) return centerOn(centerOf(node), safe, 1);
   const fit = Math.min((safe.width - 2 * padding) / moduleBox.w, (safe.height - 2 * padding) / moduleBox.h);
   const k = clampScale(fit, { min: minScale, max: 1 });
