@@ -13,6 +13,7 @@ pin "journey_camera", to: "lib/journey_camera.js"
 # WP-37b: what the map draws (paths) and the terrain behind it, tested the same way
 # by test/javascript/journey_map_paths_test.rb and journey_terrain_test.rb.
 pin "journey_map_paths", to: "lib/journey_map_paths.js"
+pin "journey_terrain", to: "lib/journey_terrain.js"
 
 # Motion Canvas runtime — built by bin/motion-build, committed because the image
 # has no node. Lazy-imported (the mermaid_diagram_controller.js:13 idiom,
