@@ -144,7 +144,15 @@ export default class extends Controller {
     if (!masked) el.title = topic.name
     if (masked) el.setAttribute("role", "img")
 
-    el.appendChild(this._dot(masked ? "lock" : (status === "completed" ? "check" : null), topic.progress))
+    const dot = this._dot(masked ? "lock" : (status === "completed" ? "check" : null), topic.progress)
+    // The direction cue: a right-to-left row still counts forward.
+    if (node.kind === "step" && !masked && status !== "completed") {
+      const num = document.createElement("span")
+      num.className = "jm-node__num"
+      num.textContent = node.ordinal
+      dot.appendChild(num)
+    }
+    el.appendChild(dot)
     const label = document.createElement("span")
     label.className = "jm-node__label"
     label.textContent = topic.name

@@ -76,6 +76,15 @@ class JourneyMapLayoutTest < ActiveSupport::TestCase
       assert_equal expected, ids
     end
 
+    # The direction cue: a row read right-to-left still says which way is forward.
+    test "#{name}: each primary step carries its 1-based place among its module's primary steps" do
+      ordinals = layout(stages)["nodes"].select { |n| n.key?("ordinal") }.to_h { |n| [n["id"], n["ordinal"]] }
+      expected = stages.flat_map do |s|
+        s["topics"].reject { |t| t["reinforcement"] }.each_with_index.map { |t, i| ["s:#{t['id']}", i + 1] }
+      end.to_h
+      assert_equal expected, ordinals
+    end
+
     test "#{name}: one edge per connection, and every endpoint exists" do
       result = layout(stages)
       ids = result["nodes"].map { |n| n["id"] }.to_set

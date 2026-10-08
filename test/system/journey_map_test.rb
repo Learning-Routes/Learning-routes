@@ -97,6 +97,35 @@ class JourneyMapTest < ApplicationSystemTestCase
     end
   end
 
+  # ── Direction cue: the route position inside every step not yet done ──
+  [7, 43].each do |size|
+    %w[light dark].each do |theme|
+      test "#{size} steps, #{theme}: each step not done shows its place among its module's primary steps" do
+        route = build_route(size)
+        open_journey(route, theme: theme)
+
+        assert_equal expected_numbers(route), drawn_numbers
+        numbers = measure_text(".jm-node__num")
+        refute_empty numbers
+        numbers.each do |n|
+          assert_operator n["px"], :>=, MIN_LABEL_PX - 0.01, "number #{n['text']} renders at #{n['px']}px"
+          assert_operator n["contrast"], :>=, MIN_CONTRAST,
+            "number #{n['text']} measures #{format('%.2f', n['contrast'])}:1 on #{theme}"
+        end
+      end
+    end
+  end
+
+  test "a purchased module counts its own primary steps from 1" do
+    route = build_route(7)
+    pay_for_route!(route)
+    open_journey(route)
+
+    first_bought = route.route_modules.find_by!(title: "Módulo avanzado").route_steps.order(:position).first
+    assert_equal "1", drawn_numbers["s:#{first_bought.id}"]
+    assert_equal expected_numbers(route), drawn_numbers
+  end
+
   # ── (d) Tab order ─────────────────────────────────────────────────────
   test "Tab walks the readable steps in route order, each step then its reinforcement" do
     route = build_route(43)
@@ -324,8 +353,8 @@ class JourneyMapTest < ApplicationSystemTestCase
     assert_no_current_path core.sign_in_path, wait: 5
   end
 
-  MEASURE_LABELS = <<~JS.freeze
-    (() => {
+  MEASURE_TEXT = <<~JS.freeze
+    ((selector) => {
       const parse = (c) => { const m = c.match(/rgba?\\(([^)]+)\\)/); if (!m) return null
         const p = m[1].split(",").map(Number); return { r: p[0], g: p[1], b: p[2], a: p.length > 3 ? p[3] : 1 } }
       const lum = ({ r, g, b }) => { const f = (v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4) }
@@ -333,7 +362,7 @@ class JourneyMapTest < ApplicationSystemTestCase
       const backing = (el) => { for (let n = el; n; n = n.parentElement) { const c = parse(getComputedStyle(n).backgroundColor)
         if (c && c.a > 0.99) return c } return parse(getComputedStyle(document.body).backgroundColor) }
       const scale = new DOMMatrixReadOnly(getComputedStyle(document.querySelector(".jm-world")).transform).a
-      return [...document.querySelectorAll(".jm-node__label, .jm-node__tag, .jm-root")].map((el) => {
+      return [...document.querySelectorAll(selector)].map((el) => {
         const L1 = lum(parse(getComputedStyle(el).color)), L2 = lum(backing(el)), b = el.getBoundingClientRect()
         return { text: el.textContent.trim(), cls: el.className, node: el.closest(".jm-node")?.className || "",
                  px: parseFloat(getComputedStyle(el).fontSize) * scale,
@@ -341,10 +370,11 @@ class JourneyMapTest < ApplicationSystemTestCase
                  box: { left: b.left, right: b.right, top: b.top, bottom: b.bottom },
                  clipped: el.scrollHeight > el.clientHeight + 1 }
       })
-    })()
+    })
   JS
 
-  def measure_labels = page.evaluate_script(MEASURE_LABELS)
+  def measure_text(selector) = page.evaluate_script("#{MEASURE_TEXT}(#{selector.to_json})")
+  def measure_labels = measure_text(".jm-node__label, .jm-node__tag, .jm-root")
 
   # Tags sit INSIDE their module's label, so they are measured for contrast and
   # size but excluded from the overlap check.
@@ -442,4 +472,25 @@ class JourneyMapTest < ApplicationSystemTestCase
   end
 
   def pay_for_route!(route) = purchase_route!(route, user: @user)
+
+  # Computed from the database, not the page: per module, its primary steps in
+  # position order, 1-based; only steps not done, on a readable module, show one.
+  def expected_numbers(route)
+    readable = page.evaluate_script(<<~JS)
+      [...document.querySelectorAll(".jm-node--step:not(.jm-node--masked)")].map((el) => el.dataset.nodeId)
+    JS
+    LearningRoutesEngine::RouteStep.where(learning_route_id: route.id).reject { |s| s.metadata["reinforcement"] }
+                                   .group_by(&:route_module_id).flat_map do |_, steps|
+      steps.sort_by(&:position).each_with_index.filter_map do |step, i|
+        id = "s:#{step.id}"
+        [id, (i + 1).to_s] if readable.include?(id) && !step.completed?
+      end
+    end.to_h
+  end
+
+  def drawn_numbers
+    page.evaluate_script(<<~JS).to_h
+      [...document.querySelectorAll(".jm-node__num")].map((el) => [el.closest(".jm-node").dataset.nodeId, el.textContent])
+    JS
+  end
 end

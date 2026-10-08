@@ -57,7 +57,8 @@ export function buildTree(root, stages) {
       const byId = new Map();
       for (const topic of topics) {
         if (isReinforcement(topic)) continue;
-        const cell = { kind: "step", topic, children: [] };
+        // The direction cue: its 1-based place among the module's primary steps.
+        const cell = { kind: "step", topic, ordinal: cells.length + 1, children: [] };
         cells.push(cell);
         byId.set(topic.id, cell);
       }
@@ -119,7 +120,7 @@ function placeCell(measured, left, top, mod, o, out) {
   const head = cell.kind === "anchor"
     ? { id: `a:${mod.moduleId}`, kind: "anchor", x: cx, y: cy, w: 0, h: 0, cx, cy, ...shared }
     : { id: `s:${cell.topic.id}`, kind: "step", x: cx - step.w / 2, y: top, w: step.w, h: step.h, cx, cy,
-        topic: cell.topic, ...shared };
+        topic: cell.topic, ordinal: cell.ordinal, ...shared };
   out.nodes.push(head);
 
   const headBottom = top + step.h;

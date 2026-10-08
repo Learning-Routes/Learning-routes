@@ -3354,6 +3354,8 @@ html[data-theme="dark"] .wizard-footer { background: var(--color-bg, #1A1710); }
                                           border: 2px solid var(--jm-level); animation: jm-pulse 2.4s ease-in-out infinite; }
 .jm-node--locked .jm-node__dot, .jm-node--masked .jm-node__dot { border-style: dashed; border-color: var(--color-muted); }
 .jm-node__ring { position: absolute; inset: -2px; transform: rotate(-90deg); }
+.jm-node__num { font-family: 'DM Sans', sans-serif; font-size: 13px; line-height: 1; font-weight: 600;
+                font-variant-numeric: tabular-nums; color: var(--color-txt); }
 .jm-node__ring circle { fill: none; stroke: var(--jm-level); stroke-width: 3; }
 .jm-node__label { width: 168px; max-height: 36px; font-family: 'DM Sans', sans-serif; font-size: 13px; line-height: 18px;
                   text-align: center; color: var(--color-txt); display: -webkit-box; -webkit-line-clamp: 2;

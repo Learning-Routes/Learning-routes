@@ -319,6 +319,13 @@ full title in `title` and `aria-label`. The label is inside the box the layout s
 no edge passes under a node box (§2.5), so a label's backing is the canvas background;
 contrast is measured against the computed background of its first opaque ancestor.
 
+**Direction cue (Task 10a, owner's call, 8 October).** A right-to-left row reads backwards
+to a left-to-right reader, and the drawn edge alone does not fix that. Every primary step
+that is not done shows its 1-based place among its module's primary steps inside its
+circle, at 13 px. The done step keeps its check; the current step keeps its ring and also
+shows its number. Reinforcement and masked steps show none. The layout computes the number
+(`ordinal` on step nodes); the controller only draws it.
+
 ### 4.2 Status — form and colour, never colour alone
 
 | status | form |
