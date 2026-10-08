@@ -98,6 +98,25 @@ jobs:
       - name: Run tests
         run: bin/rails db:test:prepare test
 
+      # The engines are a SEPARATE step, and the glob is the whole point: `bin/rails
+      # test` only collects `test/`, so until now the 57 test files under `engines/`
+      # never ran in CI — and CI green auto-deploys (deploy.yml). Three strict-loading
+      # violations in the route-generation, gap-analysis and reinforcement jobs sat
+      # behind that gap: a WARN line each in production, where the setting is :log,
+      # but hard failures under the suite's :raise.
+      #
+      # NOT folded into the line above as `bin/rails test test engines/*/test`:
+      # naming `test` explicitly makes the runner collect `test/system` too (measured
+      # — Capybara boots Puma), which is the `system-test` job's work and needs a
+      # browser this job does not have. The bare form excludes system tests; this
+      # form adds only the engines.
+      #
+      # `engines/*/test` and not a hardcoded list, so a new engine is covered the day
+      # it gets its first test. community_engine has no test directory yet and the
+      # glob simply does not match it.
+      - name: Run engine tests
+        run: bin/rails test engines/*/test
+
   system-test:
     runs-on: ubuntu-latest
 
