@@ -61,7 +61,7 @@ For comparison, the satellite label on the old page measured **11.2 px** (Task 8
 
 ## 2. Suites
 
-At `234138c1`, from a clean tree (`git status --short` empty before and after), one suite at a
+At `1fca4a8e` (after the final review's two fixes, §5a), from a clean tree (`git status --short` empty before and after), one suite at a
 time:
 
 ```
@@ -71,9 +71,9 @@ app 3:    1123 runs, 11608 assertions, 0 failures, 0 errors, 0 skips
 engine 1:  385 runs,  1599 assertions, 0 failures, 0 errors, 0 skips
 engine 2:  385 runs,  1599 assertions, 0 failures, 0 errors, 0 skips
 engine 3:  385 runs,  1599 assertions, 0 failures, 0 errors, 0 skips
-system 1:   98 runs,  2129 assertions, 0 failures, 0 errors, 0 skips
-system 2:   98 runs,  2129 assertions, 0 failures, 0 errors, 0 skips
-system 3:   98 runs,  2129 assertions, 0 failures, 0 errors, 0 skips
+system 1:  100 runs,  2151 assertions, 0 failures, 0 errors, 0 skips
+system 2:  100 runs,  2151 assertions, 0 failures, 0 errors, 0 skips
+system 3:  100 runs,  2151 assertions, 0 failures, 0 errors, 0 skips
 ```
 
 `bundle exec rubocop`: 625 files inspected, no offenses detected.
@@ -164,10 +164,61 @@ and a 43-step route, created for the pass and deleted after it):
 
 ---
 
+## 5a. Final review (`55725b74..2798bacf`, one diff, fresh reviewer)
+
+Verdict: **with fixes**. No Critical findings. The reviewer found the paywall sound: no step
+title, path or parent of a locked module reaches the JSON or the DOM, and every node is built
+with `textContent`. It also ran a 3,000-shape random test of the layout under node and found no
+overlaps.
+
+**Important — both fixed red-first in `1fca4a8e`:**
+
+1. **A step both done and current was drawn as not done.** `status` put `current` ahead of
+   `completed`. A student who finishes the free preview has `current_step` behind the paywall,
+   and the journey falls back to the last readable step, which is done. That step pulsed with
+   "7" in it and announced *Estás aquí*. Done now wins: check, no number, *Completado*, and the
+   ring kept as a second class. New system case: a finished preview.
+2. **A resize yanked the camera back to the current step** after the student had panned away
+   (spec §3.3: the centre stays). User camera moves now go through one `_userMove`, and the
+   current step is kept in view only until the student has moved the map. New system case: pan
+   away, resize, and the view stays.
+
+**Minor — not done, listed for the next package:**
+
+1. **Dragging from a node can make the map jump.** Chrome focuses an `<a>` on mousedown, and
+   `focusin` → `ensureVisible` animates before the drag's first move snaps back. Ignore
+   `focusin` while a pointer is down, or require `:focus-visible`.
+2. **Arrows, + / − and 0 only work while the viewport itself has focus**, so once Tab is on a
+   node they do nothing. This is what the spec says, but not what a keyboard user expects.
+3. **Masked nodes announce "Bloqueado, Bloqueado".** The masked name and the status label are
+   both `journey.locked_topic` (checked). Drop the status text when masked.
+4. **Safari trackpad pinch** sends `gesture*` events, not ctrl+wheel, so §3.2 "pinch zooms" does
+   not hold in Safari.
+5. **Text may get selected while dragging** (not checked in a browser): `.jm-viewport` has no
+   `user-select: none`.
+6. **Four locale keys are unused** in en/es: `journey.end_of_route`, `stages_topics`,
+   `route_label` and `locked` (checked by grep: no callers).
+7. **An orphan anchor takes a row cell**, so 4 primary steps plus orphans wrap instead of
+   sitting in one row (§2.3 says "≤ 4 → one row"). Harmless.
+
+**Set aside by the reviewer, for the owner's ruling:**
+- A locked module's own title shows in its node and its rail label. It did before, and the list
+  view shows it too; the spec's leak test covers step titles only.
+- Locked steps' UUIDs are in the JSON and `data-node-id`. That was already so, and an id is not
+  content.
+- After a touch drag or pinch, `dragged` can stay true and swallow the next keyboard Enter
+  once. A rare mix of inputs.
+- The zoom floor is `min(fitAll, 12/13)`, as the code comment intends.
+
+---
+
 ## 6. Merge context
 
 - Forked from `main` at `5e07c80f`. `main` at `55725b74` is merged in (`a3e06a57`) with no
-  conflicts, so the branch is a fast-forward of `main`.
+  conflicts.
+- `main` has since been fast-forwarded to `b907fea9` (the first handoff). The branch carries
+  three more commits on top (§0 outputs, the review fixes, this handoff update), so `main` can
+  fast-forward again.
 - `.github/workflows/deploy.yml` deploys on green CI on `main`.
 - After deploy, run the `wp37:reinforcement_parents` command in §0.
 - Acceptance is the owner's, in production: his own screenshot at 7 primary steps (the real
