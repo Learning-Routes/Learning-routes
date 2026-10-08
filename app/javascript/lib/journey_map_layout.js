@@ -40,7 +40,14 @@ export const DEFAULTS = Object.freeze({
   fanGap: 16,
   fanRowGap: 20,
   rowSize: 4,
-  fanRowSize: 3
+  fanRowSize: 3,
+  // WP-37b. Each default reproduces WP-37's picture byte for byte (pinned by digest).
+  // Consecutive cells in a row alternate between the row's top and 2·wave below it.
+  wave: 0,
+  // The module label's width; the spine column reserves it.
+  moduleLabelWidth: 168,
+  // The root box's left edge (WP-37 centred it on the spine: −rootWidth / 2).
+  rootX: -180
 });
 
 const isReinforcement = (topic) => topic.reinforcement === true;
@@ -85,7 +92,8 @@ function nodeSize(kind, o) {
   const d = kind === "module" ? o.moduleDiameter
     : kind === "reinforcement" ? o.reinforcementDiameter
     : o.stepDiameter;
-  return { d, w: Math.max(o.labelWidth, d), h: d + o.labelGap + o.labelLines * o.labelLineHeight };
+  const labelWidth = kind === "module" ? o.moduleLabelWidth : o.labelWidth;
+  return { d, w: Math.max(labelWidth, d), h: d + o.labelGap + o.labelLines * o.labelLineHeight };
 }
 
 function measureCell(cell, o) {
@@ -164,11 +172,11 @@ export function layoutJourney(tree, overrides = {}) {
   const out = { nodes: [], edges: [], cells: [], modules: [] };
   const moduleSize = nodeSize("module", o);
   const step = nodeSize("step", o);
-  const spineHalf = Math.max(o.labelWidth, o.moduleDiameter) / 2;
+  const spineHalf = moduleSize.w / 2;
   const rowLeft = spineHalf + o.gutter;
 
-  const root = { id: "root", kind: "root", x: -o.rootWidth / 2, y: 0, w: o.rootWidth, h: o.rootHeight,
-                 cx: 0, cy: o.rootHeight / 2 };
+  const root = { id: "root", kind: "root", x: o.rootX, y: 0, w: o.rootWidth, h: o.rootHeight,
+                 cx: o.rootX + o.rootWidth / 2, cy: o.rootHeight / 2 };
   out.nodes.push(root);
 
   let top = o.rootHeight + o.rootGap;
@@ -193,11 +201,13 @@ export function layoutJourney(tree, overrides = {}) {
     rows.forEach((row, r) => {
       const ltr = r % 2 === 0;
       let cursor = ltr ? rowLeft : blockRight;
-      const height = Math.max(...row.map((c) => c.h));
-      const heads = row.map((c) => {
+      // The row reserves 2·wave more height and odd cells sit 2·wave lower, so the
+      // route undulates while every box keeps its reserved space.
+      const height = Math.max(...row.map((c) => c.h)) + 2 * o.wave;
+      const heads = row.map((c, i) => {
         const left = ltr ? cursor : cursor - c.w;
         cursor = ltr ? cursor + c.w + o.cellGap : cursor - c.w - o.cellGap;
-        return placeCell(c, left, rowTop, mod, o, out);
+        return placeCell(c, left, rowTop + (i % 2 ? 2 * o.wave : 0), mod, o, out);
       });
       placedRows.push({ top: rowTop, bottom: rowTop + height, direction: ltr ? "ltr" : "rtl", heads });
       blockBottom = Math.max(blockBottom, rowTop + height);

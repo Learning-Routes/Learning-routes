@@ -46,98 +46,147 @@ class JourneyMapLayoutTest < ActiveSupport::TestCase
     shapes["preview + locked"] = [stage("m0", primaries: 7, fans: { 2 => 3 }), stage("m1", primaries: 9, readable: false)]
   end.freeze
 
-  # ── Per-shape invariants ────────────────────────────────────────────
+  # WP-37b §2.4: the options the page passes. The invariants run under these too,
+  # since this is the layout that ships.
+  VIEW = { labelWidth: 124, labelLineHeight: 16, labelLines: 3, labelGap: 8, moduleLabelWidth: 160,
+           rootWidth: 420, rootHeight: 64, rootGap: 52, rootX: 18, moduleDiameter: 52, stepDiameter: 44,
+           reinforcementDiameter: 28, cellGap: 16, rowGap: 36, gutter: 84, moduleGap: 76, fanGutter: 20,
+           fanGap: 8, fanRowGap: 20, rowSize: 4, fanRowSize: 3, wave: 16 }.freeze
+
+  OPTION_SETS = { "defaults" => {}, "wave 16" => { wave: 16 }, "view" => VIEW }.freeze
+
+  # WP-37b §2: with every default the output is WP-37's, BYTE FOR BYTE. SHA-256 of
+  # JSON.stringify(layoutJourney(buildTree({ title: "Ruta" }, stages), {})) as produced
+  # by b907fea9's module. To regenerate (only if WP-37's picture itself is meant to
+  # change): `git show b907fea9:app/javascript/lib/journey_map_layout.js > /tmp/old.mjs`
+  # and hash its output over SHAPES the same way `digest` below does.
+  WP37_DIGESTS = {
+    "1 steps x 1 modules" => "2b97e43a24b230a9988c289189fa253bf1d147223a4220906ce12dbe61d0661b",
+    "1 steps x 2 modules" => "89afb3e3ef547f6d289a63e156b32970b1c6a95f904dd89c807bbb52edb54dfd",
+    "1 steps x 5 modules" => "6496896decc426f2014776f9fac34d10c8306be1ec0b8a419408ce4b5d3f5a3d",
+    "7 steps x 1 modules" => "9ebc502d89729b7100c57c15e8191f074525e48cbc19cdd52713c34687fb8253",
+    "7 steps x 2 modules" => "90afb4fe8334df0d93e30883ec23f4c1df4957d09181bc0e5e8e87c14eb55fc6",
+    "7 steps x 5 modules" => "cc5bec5644dffb19f11645250649ca39916d9777070f8d9e29cbb1c91ed577c5",
+    "8 steps x 1 modules" => "bee1c16290c395e5ca43f37532c59ae3dc3ccd4bfbb09c589d6fb92003a3802d",
+    "8 steps x 2 modules" => "48293ba984db87dec7e20434697a9cc068586f3d824a4dd9dd0966431a7fa864",
+    "8 steps x 5 modules" => "67e135a6f909b606491c0bdf2733e102695be4e758039648d8205bfb3b59538b",
+    "20 steps x 1 modules" => "0f14a4160a70f79ccc450bf8e2bb724a72022402cca2e8bcd41b2ba94a0c2ba7",
+    "20 steps x 2 modules" => "cc75c57ad8c73dc2fa5073b0ba80f9a0089ecaa1fa512bb620b6187c37e78038",
+    "20 steps x 5 modules" => "55b68baed91680d69c6cba2b3abb8aa76b461822bf64c8d6cdaba40810ed585b",
+    "43 steps x 1 modules" => "469f237c3cf81f425554f7d50b72c23127783b3d3bb8e3a79617dee57b516c8f",
+    "43 steps x 2 modules" => "b66677f5da2b8a49dfedda1890034f6b1803b83f4ac6e94870f3ccf7657367a5",
+    "43 steps x 5 modules" => "09ff37861987636df5d4ceba10f19d0eb000884d736d35f4d7c0bb7397d0b916",
+    "43 peers" => "469f237c3cf81f425554f7d50b72c23127783b3d3bb8e3a79617dee57b516c8f",
+    "7 + 36 behind one step" => "9625e87b08adf8b0e1f43da325b613dad608efabe724a92bdb60df28cd32e2de",
+    "production 7 + 13" => "00ef8e0599818ca8ea88d0d158bef68e94d087566888d329491aac97b3161368",
+    "orphans then fans" => "95949679a6449f3531598be862471ae349b5181d0163df54ba4a8c97f9d3290d",
+    "two fans in one row" => "b36e88bc21bdbb317078c8fa439b9b1066bdbc7db998b3dd2b7f2e0a6d13359b",
+    "fan under an ltr row end" => "b26c390e7c321d73e3af5aaa54b1b8548fc3b1c8407e6a9f04c4963c44440028",
+    "fan under an rtl row end" => "73e8bd594fad9e55da4761c2b8d26f41068603ecebd8103ef3ce2cb8e4e91628",
+    "preview + locked" => "2737fd5b1652a806da4a66456ff42ed4899e55c023526e167deec0d9df2623f9"
+  }.freeze
+
   SHAPES.each do |name, stages|
-    test "#{name}: no two node boxes intersect" do
-      boxes = solid_nodes(layout(stages))
-      pair = first_pair(boxes) { |a, b| intersect?(a, b) }
-      assert_nil pair, "nodes #{pair&.map { |n| n['id'] }.inspect} overlap"
+    test "#{name}: with every default the output is WP-37's, byte for byte" do
+      assert_equal WP37_DIGESTS.fetch(name), digest(stages)
     end
+  end
 
-    test "#{name}: no two subtree boxes intersect" do
-      pair = first_pair(layout(stages)["cells"]) { |a, b| intersect?(a, b) }
-      assert_nil pair, "subtrees #{pair&.map { |c| c['id'] }.inspect} overlap"
-    end
-
-    test "#{name}: no edge crosses a node box except its own two endpoints" do
-      result = layout(stages)
-      boxes = solid_nodes(result)
-      result["edges"].each do |edge|
-        edge["points"].each_cons(2) do |p, q|
-          hit = boxes.find { |b| b["id"] != edge["from"] && b["id"] != edge["to"] && segment_hits?(p, q, b) }
-          assert_nil hit, "#{edge['kind']} edge #{edge['from']}->#{edge['to']} crosses #{hit&.dig('id')}"
-        end
+  # ── Per-shape invariants, under every option set ────────────────────
+  OPTION_SETS.each do |set, opts|
+    SHAPES.each do |shape, stages|
+      name = "#{shape} [#{set}]"
+      test "#{name}: no two node boxes intersect" do
+        boxes = solid_nodes(layout(stages, opts))
+        pair = first_pair(boxes) { |a, b| intersect?(a, b) }
+        assert_nil pair, "nodes #{pair&.map { |n| n['id'] }.inspect} overlap"
       end
-    end
 
-    test "#{name}: nodes come back in route order" do
-      ids = layout(stages)["nodes"].select { |n| %w[step reinforcement].include?(n["kind"]) }.map { |n| n["id"] }
-      expected = stages.flat_map { |s| s["topics"].map { |t| "s:#{t['id']}" } }
-      assert_equal expected, ids
-    end
-
-    # The direction cue: a row read right-to-left still says which way is forward.
-    test "#{name}: each primary step carries its 1-based place among its module's primary steps" do
-      ordinals = layout(stages)["nodes"].select { |n| n.key?("ordinal") }.to_h { |n| [n["id"], n["ordinal"]] }
-      expected = stages.flat_map do |s|
-        s["topics"].reject { |t| t["reinforcement"] }.each_with_index.map { |t, i| ["s:#{t['id']}", i + 1] }
-      end.to_h
-      assert_equal expected, ordinals
-    end
-
-    test "#{name}: one edge per connection, and every endpoint exists" do
-      result = layout(stages)
-      ids = result["nodes"].map { |n| n["id"] }.to_set
-      result["edges"].each do |e|
-        assert_includes ids, e["from"]
-        assert_includes ids, e["to"]
+      test "#{name}: no two subtree boxes intersect" do
+        pair = first_pair(layout(stages, opts)["cells"]) { |a, b| intersect?(a, b) }
+        assert_nil pair, "subtrees #{pair&.map { |c| c['id'] }.inspect} overlap"
       end
-      assert_equal expected_edge_count(stages), result["edges"].size
-    end
 
-    test "#{name}: the spine column and the row gutters hold no step" do
-      result = layout(stages)
-      steps = result["nodes"].select { |n| %w[step reinforcement].include?(n["kind"]) }
-      result["modules"].each do |mod|
-        half = mod["spineHalf"]
-        lanes = [[-half, half], mod["gutters"]["left"], mod["gutters"]["right"]]
-        # The spine column is every module's; a module's gutters are its own (a
-        # wider module below may legitimately put cells at that x).
-        steps.select { |n| n["moduleId"] == mod["id"] }.each do |node|
-          lanes.each do |x0, x1|
-            overlapping = node["x"] < x1 - EPS && x0 < node["x"] + node["w"] - EPS
-            refute overlapping, "#{node['id']} sits in a reserved lane [#{x0}, #{x1}]"
+      test "#{name}: no edge crosses a node box except its own two endpoints" do
+        result = layout(stages, opts)
+        boxes = solid_nodes(result)
+        result["edges"].each do |edge|
+          edge["points"].each_cons(2) do |p, q|
+            hit = boxes.find { |b| b["id"] != edge["from"] && b["id"] != edge["to"] && segment_hits?(p, q, b) }
+            assert_nil hit, "#{edge['kind']} edge #{edge['from']}->#{edge['to']} crosses #{hit&.dig('id')}"
           end
         end
       end
-    end
 
-    # Computed from node boxes only: a hop between rows runs its vertical segment
-    # outside the x-range of every step and reinforcement box of its module.
-    test "#{name}: a row-to-row hop runs in a gutter, beside every box" do
-      result = layout(stages)
-      nodes = result["nodes"].index_by { |n| n["id"] }
-      result["edges"].select { |e| e["kind"] == "route" && e["points"].size > 2 }.each do |edge|
-        x = edge["points"][1][0]
-        boxes = result["nodes"].select do |n|
-          n["moduleId"] == nodes[edge["from"]]["moduleId"] && %w[step reinforcement].include?(n["kind"])
-        end
-        inside = boxes.find { |b| x > b["x"] - EPS && x < b["x"] + b["w"] + EPS }
-        assert_nil inside, "hop #{edge['from']}->#{edge['to']} at x=#{x} runs through the column of #{inside&.dig('id')}"
+      test "#{name}: nodes come back in route order" do
+        ids = layout(stages, opts)["nodes"].select { |n| %w[step reinforcement].include?(n["kind"]) }.map { |n| n["id"] }
+        expected = stages.flat_map { |s| s["topics"].map { |t| "s:#{t['id']}" } }
+        assert_equal expected, ids
       end
-    end
 
-    test "#{name}: rows stack below the tallest subtree; modules below the lowest box" do
-      result = layout(stages)
-      cells = result["cells"].index_by { |c| c["id"] }
-      result["modules"].each do |mod|
-        mod["rows"].each_cons(2) do |above, below|
-          lowest = above["heads"].map { |id| cells[id]["y"] + cells[id]["h"] }.max
-          assert_operator below["top"], :>=, lowest - EPS
+      # The direction cue: a row read right-to-left still says which way is forward.
+      test "#{name}: each primary step carries its 1-based place among its module's primary steps" do
+        ordinals = layout(stages, opts)["nodes"].select { |n| n.key?("ordinal") }.to_h { |n| [n["id"], n["ordinal"]] }
+        expected = stages.flat_map do |s|
+          s["topics"].reject { |t| t["reinforcement"] }.each_with_index.map { |t, i| ["s:#{t['id']}", i + 1] }
+        end.to_h
+        assert_equal expected, ordinals
+      end
+
+      test "#{name}: one edge per connection, and every endpoint exists" do
+        result = layout(stages, opts)
+        ids = result["nodes"].map { |n| n["id"] }.to_set
+        result["edges"].each do |e|
+          assert_includes ids, e["from"]
+          assert_includes ids, e["to"]
+        end
+        assert_equal expected_edge_count(stages), result["edges"].size
+      end
+
+      test "#{name}: the spine column and the row gutters hold no step" do
+        result = layout(stages, opts)
+        steps = result["nodes"].select { |n| %w[step reinforcement].include?(n["kind"]) }
+        result["modules"].each do |mod|
+          half = mod["spineHalf"]
+          lanes = [[-half, half], mod["gutters"]["left"], mod["gutters"]["right"]]
+          # The spine column is every module's; a module's gutters are its own (a
+          # wider module below may legitimately put cells at that x).
+          steps.select { |n| n["moduleId"] == mod["id"] }.each do |node|
+            lanes.each do |x0, x1|
+              overlapping = node["x"] < x1 - EPS && x0 < node["x"] + node["w"] - EPS
+              refute overlapping, "#{node['id']} sits in a reserved lane [#{x0}, #{x1}]"
+            end
+          end
         end
       end
-      result["modules"].each_cons(2) do |a, b|
-        assert_operator b["box"]["y"], :>=, a["box"]["y"] + a["box"]["h"] - EPS
+
+      # Computed from node boxes only: a hop between rows runs its vertical segment
+      # outside the x-range of every step and reinforcement box of its module.
+      test "#{name}: a row-to-row hop runs in a gutter, beside every box" do
+        result = layout(stages, opts)
+        nodes = result["nodes"].index_by { |n| n["id"] }
+        result["edges"].select { |e| e["kind"] == "route" && e["points"].size > 2 }.each do |edge|
+          x = edge["points"][1][0]
+          boxes = result["nodes"].select do |n|
+            n["moduleId"] == nodes[edge["from"]]["moduleId"] && %w[step reinforcement].include?(n["kind"])
+          end
+          inside = boxes.find { |b| x > b["x"] - EPS && x < b["x"] + b["w"] + EPS }
+          assert_nil inside, "hop #{edge['from']}->#{edge['to']} at x=#{x} runs through the column of #{inside&.dig('id')}"
+        end
+      end
+
+      test "#{name}: rows stack below the tallest subtree; modules below the lowest box" do
+        result = layout(stages, opts)
+        cells = result["cells"].index_by { |c| c["id"] }
+        result["modules"].each do |mod|
+          mod["rows"].each_cons(2) do |above, below|
+            lowest = above["heads"].map { |id| cells[id]["y"] + cells[id]["h"] }.max
+            assert_operator below["top"], :>=, lowest - EPS
+          end
+        end
+        result["modules"].each_cons(2) do |a, b|
+          assert_operator b["box"]["y"], :>=, a["box"]["y"] + a["box"]["h"] - EPS
+        end
       end
     end
   end
@@ -215,8 +264,57 @@ class JourneyMapLayoutTest < ActiveSupport::TestCase
   end
 
   test "a label width is an option, and the box the layout spaces by includes it" do
-    wide = layout([self.class.stage("m0", primaries: 2)], { labelWidth: 240 })
+    wide = layout([self.class.stage("m0", primaries: 2)], { labelWidth: 240, moduleLabelWidth: 200 })
     assert wide["nodes"].select { |n| n["kind"] == "step" }.all? { |n| n["w"] == 240 }
+    assert_equal [200], wide["nodes"].select { |n| n["kind"] == "module" }.map { |n| n["w"] }
+  end
+
+  # WP-37b §2.2: a module label wider than a step label is RESERVED in the spine
+  # column, not painted over the gutter.
+  test "a module label width is reserved in the spine column" do
+    stages = [self.class.stage("m0", primaries: 9, fans: { 2 => 3 }), self.class.stage("m1", primaries: 3)]
+    result = layout(stages, { moduleLabelWidth: 160, labelWidth: 124 })
+    result["modules"].each { |mod| assert_equal 80, mod["spineHalf"] }
+    result["nodes"].select { |n| n["kind"] == "module" }.each do |mod|
+      assert_equal 160, mod["w"]
+      assert_equal(-80, mod["x"])
+    end
+    result["nodes"].select { |n| %w[step reinforcement].include?(n["kind"]) }.each do |n|
+      assert_operator n["x"], :>=, 80 - EPS, "#{n['id']} reaches into the spine column"
+    end
+  end
+
+  # WP-37b §2.1: the route undulates — and every box keeps its reserved space.
+  SHAPES.each do |name, stages|
+    test "#{name}: wave — consecutive heads in a row differ by 2·wave, and each row grew by 2·wave" do
+      flat = layout(stages, {})
+      wavy = layout(stages, { wave: 16 })
+      flat_nodes = flat["nodes"].index_by { |n| n["id"] }
+      wavy_nodes = wavy["nodes"].index_by { |n| n["id"] }
+      flat["modules"].zip(wavy["modules"]).each do |fm, wm|
+        fm["rows"].zip(wm["rows"]).each do |frow, wrow|
+          assert_in_delta frow["bottom"] - frow["top"] + 32, wrow["bottom"] - wrow["top"], 1e-9
+          wrow["heads"].each_cons(2) do |a, b|
+            assert_in_delta 32, (wavy_nodes[a]["cy"] - wavy_nodes[b]["cy"]).abs, 1e-9, "#{a} -> #{b}"
+          end
+          # Even cells sit on the row's top, exactly where wave 0 puts them.
+          wrow["heads"].each_with_index do |id, i|
+            next unless i.even?
+            assert_in_delta flat_nodes[id]["cy"] - frow["top"], wavy_nodes[id]["cy"] - wrow["top"], 1e-9
+          end
+        end
+      end
+    end
+  end
+
+  # WP-37b §2.3: the title sits beside the spine's origin, not centred on it.
+  test "rootX places the root's left edge; the spine still starts at x = 0" do
+    result = layout([self.class.stage("m0", primaries: 3)], { rootX: 18, rootWidth: 420 })
+    root = result["nodes"].find { |n| n["kind"] == "root" }
+    assert_equal 18, root["x"]
+    assert_equal 18 + 210, root["cx"]
+    spine = result["edges"].find { |e| e["kind"] == "spine" }
+    assert_equal [0, 0], spine["points"].map(&:first)
   end
 
   # The prompt's test 5: one layout module, not two.
@@ -228,7 +326,28 @@ class JourneyMapLayoutTest < ActiveSupport::TestCase
 
   private
 
+  # Each (stages, options) pair is laid out once per process: the invariants run
+  # under three option sets, and node spawns are the cost.
+  LAYOUTS = {} # rubocop:disable Style/MutableConstant
+
   def layout(stages, overrides = {})
+    LAYOUTS[[stages, overrides].to_json] ||= run_layout(stages, overrides).freeze
+  end
+
+  def digest(stages)
+    script = <<~JS
+      import { createHash } from "node:crypto"
+      import(#{MODULE_PATH.to_s.to_json}).then((m) => {
+        const tree = m.buildTree({ title: "Ruta" }, #{stages.to_json})
+        process.stdout.write(createHash("sha256").update(JSON.stringify(m.layoutJourney(tree, {}))).digest("hex"))
+      })
+    JS
+    stdout, stderr, status = Open3.capture3("node", "--input-type=module", "-e", script)
+    assert status.success?, "node failed: #{stderr}"
+    stdout
+  end
+
+  def run_layout(stages, overrides)
     script = <<~JS
       import(#{MODULE_PATH.to_s.to_json}).then((m) => {
         const tree = m.buildTree({ title: "Ruta" }, #{stages.to_json})
