@@ -13,10 +13,22 @@ fast-forwards `main`.
 ## §0 — The data the map is judged on
 
 - **`wp29:census` / `wp29:cleanup`** ran in production on **21 September** (the owner's run):
-  reinforcement **36 → 13**; the real route has **20 steps — 7 primary, 13 reinforcement**. That
-  summary is what the spec recorded (spec, opening paragraph). **The verbatim outputs of both
-  commands are not in this repository or in any session I can read**. The owner should paste
-  them here.
+  reinforcement **36 → 13**; the real route has **20 steps — 7 primary, 13 reinforcement**. The
+  outputs, as the owner supplied them from his terminal:
+
+  > **wp29:census, before** — reinforcement steps, total: 36 · untouched (locked/available): 23
+  > · touched (in progress/completed): 13 · routes carrying any: 1 · worst routes:
+  > 60452d4b-bda4-4934-9228-9aaa91e22ed7 36 steps · routes whose steps are ALL untouched: 0.
+  >
+  > **wp29:cleanup** — "deleting 23 untouched reinforcement steps..." followed by 24
+  > [StrictLoading] WARN lines (Assessments::Assessment#questions / #assessment_results,
+  > lazily loaded during the destroy cascade, production is :log), then "deleted 23;
+  > recounted total_steps on 1 routes. There is no undo for this. The touched steps were
+  > left alone." Note: it ran twice concurrently (kamal app exec without -r job runs once
+  > per role); idempotent by construction, same result both times.
+  >
+  > **wp29:census, after** (with -r job) — total: 13 · untouched: 0 · touched: 13 · routes
+  > carrying any: 1 · worst: 60452d4b… 13 steps.
 - **Owner's post-deploy step** (read-only census of map parents; its numbers belong to that run,
   not to this handoff):
 
