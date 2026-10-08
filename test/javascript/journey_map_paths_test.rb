@@ -294,11 +294,12 @@ class JourneyMapPathsTest < ActiveSupport::TestCase
   # Brief §3: x ∈ [cx − lw/2, cx + lw/2], y ∈ [cy + d/2 + labelGap − 1, … + lines·lineHeight + 1].
   def label_boxes(run)
     run["layout"]["nodes"].filter_map do |n|
-      lw, d = case n["kind"]
-              when "module" then [VIEW[:moduleLabelWidth], VIEW[:moduleDiameter]]
-              when "step" then [VIEW[:labelWidth], VIEW[:stepDiameter]]
-              when "reinforcement" then [VIEW[:labelWidth], VIEW[:reinforcementDiameter]]
-              end
+      lw, d =
+        case n["kind"]
+        when "module" then [VIEW[:moduleLabelWidth], VIEW[:moduleDiameter]]
+        when "step" then [VIEW[:labelWidth], VIEW[:stepDiameter]]
+        when "reinforcement" then [VIEW[:labelWidth], VIEW[:reinforcementDiameter]]
+        end
       next unless lw
 
       y0 = n["cy"] + (d / 2.0) + VIEW[:labelGap] - 1

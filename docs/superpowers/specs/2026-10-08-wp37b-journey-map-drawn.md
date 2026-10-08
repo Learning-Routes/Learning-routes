@@ -40,8 +40,10 @@ const paths = buildPaths(layout, tree, currentTopicId, opts)
 ```
 
 - **`opts`** is the layout's options (the same object passed to `layoutJourney`) plus
-  `panelPad = 18`, `bendRadius = gutter / 2 − 4`, `traceRadius = 9` and `tension = 0.55`. Missing
-  layout options fall back to the layout's `DEFAULTS`.
+  `panelPad = 18`, `bendRadius = gutter / 2 − 4`, `traceRadius = 9` and `tension = 0.55`. `gutter`
+  and `reinforcementDiameter` are required; a non-finite value throws. The module imports
+  nothing, because importmap's digested assets do not resolve a relative import between two
+  pinned files.
 - **`currentTopicId`** is the id of the topic with `current: true`, or `null`.
 - **Return shape.** Every path entry is an object rather than a bare string, so the view and the
   tests can tell which module it belongs to and colour it. This deviates from brief §3's
