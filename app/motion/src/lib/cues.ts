@@ -1,7 +1,7 @@
 // The voice leads and the picture follows, and this is the only place that
 // decides when. Pure on purpose: no Motion Canvas imports, so node can run it
 // directly (see test/javascript/motion_cues_test.rb), the same way
-// app/javascript/lib/journey_map_layout.js is tested.
+// app/javascript/lib/journey_layout.js is tested.
 export type Word = {text: string; start: number; end: number};
 
 const norm = (s: string): string =>
