@@ -210,6 +210,13 @@ class JourneyMapLayoutTest < ActiveSupport::TestCase
     assert wide["nodes"].select { |n| n["kind"] == "step" }.all? { |n| n["w"] == 240 }
   end
 
+  # The prompt's test 5: one layout module, not two.
+  test "the old satellite layout is gone" do
+    refute File.exist?(Rails.root.join("app/javascript/lib/journey_layout.js")),
+      "journey_layout.js still exists beside journey_map_layout.js"
+    refute_match(/pin "journey_layout"/, Rails.root.join("config/importmap.rb").read)
+  end
+
   private
 
   def layout(stages, overrides = {})
