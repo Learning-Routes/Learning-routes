@@ -24,6 +24,12 @@ class JourneyMapTest < ApplicationSystemTestCase
     "El pretérito perfecto para contar lo que hiciste hoy"
   ].freeze
 
+  # Production's reinforcement titles are these three locale strings, never a
+  # primary step's 40–70 characters; the route is in Spanish.
+  REINFORCEMENT_TITLES = %w[review practice reassessment].map do |kind|
+    I18n.t("learning_engine.reinforcement.#{kind}.title", locale: :es)
+  end.freeze
+
   def setup
     @user = Core::User.create!(
       name: "Mapa", email: "map-#{SecureRandom.hex(4)}@example.com",
@@ -278,7 +284,7 @@ class JourneyMapTest < ApplicationSystemTestCase
 
       36.times do |j|
         route.route_steps.create!(
-          route_module: preview, title: "Refuerzo #{j + 1}: #{TITLES[j % TITLES.size]}", position: position,
+          route_module: preview, title: REINFORCEMENT_TITLES[j % REINFORCEMENT_TITLES.size], position: position,
           status: :locked, content_type: :lesson, level: :nv1, bloom_level: 1,
           metadata: { "reinforcement" => true, "triggering_step_id" => step.id }
         )
@@ -329,7 +335,7 @@ class JourneyMapTest < ApplicationSystemTestCase
       const scale = new DOMMatrixReadOnly(getComputedStyle(document.querySelector(".jm-world")).transform).a
       return [...document.querySelectorAll(".jm-node__label, .jm-node__tag, .jm-root")].map((el) => {
         const L1 = lum(parse(getComputedStyle(el).color)), L2 = lum(backing(el)), b = el.getBoundingClientRect()
-        return { text: el.textContent.trim(), cls: el.className,
+        return { text: el.textContent.trim(), cls: el.className, node: el.closest(".jm-node")?.className || "",
                  px: parseFloat(getComputedStyle(el).fontSize) * scale,
                  contrast: (Math.max(L1, L2) + 0.05) / (Math.min(L1, L2) + 0.05),
                  box: { left: b.left, right: b.right, top: b.top, bottom: b.bottom },
@@ -419,8 +425,12 @@ class JourneyMapTest < ApplicationSystemTestCase
 
   def report_ellipsis(size, theme, labels)
     steps = labels.select { |l| l["cls"].include?("jm-node__label") }
-    puts "[wp37] #{size} steps #{theme}: #{steps.count { |l| l['clipped'] }}/#{steps.size} labels ellipsized " \
-         "(labelWidth 168px, 13px)"
+    count = lambda do |kind|
+      of_kind = steps.select { |l| l["node"].split.include?("jm-node--#{kind}") }
+      "#{kind} #{of_kind.count { |l| l['clipped'] }}/#{of_kind.size}"
+    end
+    puts "[wp37] #{size} steps #{theme}: #{steps.count { |l| l['clipped'] }}/#{steps.size} labels ellipsized — " \
+         "#{%w[step reinforcement module].map(&count).join(', ')} (labelWidth 168px, 13px)"
   end
 
   def screenshot(name)
