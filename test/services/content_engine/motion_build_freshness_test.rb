@@ -44,33 +44,63 @@ class MotionBuildFreshnessTest < ActiveSupport::TestCase
   # build consumes while moving nothing in the digest — the exact silent
   # drift this whole task exists to prevent. FNM_DOTMATCH closes that.
   test "a dotfile under app/motion is an input, not invisible to the glob" do
-    path = Rails.root.join("app/motion/.motion_build_dotfile_test")
-    original_digest = ContentEngine::MotionBuild.digest_for(:artifact)
+    with_private_motion_tree do |root|
+      path = root.join("app/motion/.motion_build_dotfile_test")
+      original_digest = ContentEngine::MotionBuild.digest_for(:artifact)
 
-    begin
       File.write(path, "dotfile content\n")
 
       assert_includes ContentEngine::MotionBuild.input_files(:artifact), path.to_s,
         "a dotfile under app/motion must be swept as an input"
       assert_not_equal original_digest, ContentEngine::MotionBuild.digest_for(:artifact),
         "adding a dotfile under app/motion must change the digest"
-    ensure
-      File.delete(path) if File.exist?(path)
-    end
 
-    assert_equal original_digest, ContentEngine::MotionBuild.digest_for(:artifact)
+      File.delete(path)
+      assert_equal original_digest, ContentEngine::MotionBuild.digest_for(:artifact)
+    end
   end
 
   test "a changed input changes the digest" do
-    before = ContentEngine::MotionBuild.digest_for(:artifact)
-    path = Rails.root.join("app/motion/src/main.ts")
-    original = File.read(path)
-    begin
+    with_private_motion_tree do |root|
+      before = ContentEngine::MotionBuild.digest_for(:artifact)
+      path = root.join("app/motion/src/main.ts")
+      original = File.read(path)
+
       File.write(path, original + "\n// touched by a test\n")
       assert_not_equal before, ContentEngine::MotionBuild.digest_for(:artifact)
-    ensure
+
       File.write(path, original)
+      assert_equal before, ContentEngine::MotionBuild.digest_for(:artifact)
     end
-    assert_equal before, ContentEngine::MotionBuild.digest_for(:artifact)
+  end
+
+  private
+
+  # The two tests above change an input on purpose. They used to change the real
+  # app/motion, so under parallel workers one test's edit was another's input: CI
+  # (PR #46) saw a digest that did not come back, and a concurrent run left
+  # main.ts committed-dirty with "// touched by a test". Each now edits a private
+  # copy of the inputs, with Rails.root pointed at it in this process only.
+  def with_private_motion_tree
+    real = ContentEngine::MotionBuild.digest_for(:artifact)
+    Dir.mktmpdir("motion-tree") do |dir|
+      root = Pathname.new(dir)
+      ContentEngine::MotionBuild.input_files(:artifact).each do |file|
+        next unless File.file?(file)
+
+        target = root.join(Pathname.new(file).relative_path_from(Rails.root))
+        FileUtils.mkdir_p(target.dirname)
+        FileUtils.cp(file, target)
+      end
+      original_root = Rails.method(:root)
+      Rails.define_singleton_method(:root) { root }
+      begin
+        assert_equal real, ContentEngine::MotionBuild.digest_for(:artifact),
+          "the private copy must hold every input, or the test proves nothing"
+        yield root
+      ensure
+        Rails.define_singleton_method(:root, original_root)
+      end
+    end
   end
 end
