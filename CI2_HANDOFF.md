@@ -27,6 +27,29 @@
 | `scan_ruby` | `bin/brakeman` | Exit 5: Rails' `bin/brakeman` passes `--ensure-latest`, and 8.0.4 was behind 8.1.0. **Behind that, a real warning:** exit 3 on both 8.0.4 and 8.1.0 for `permit!` in `BlockAttemptsController#block_payload`. The brief's "brakeman clean" does not hold on `main`. |
 | `lint` | (green) | |
 
+### Second round: what the PR's own CI found once the jobs could run
+
+| Job | Run | Root cause | Fix |
+|---|---|---|---|
+| `test` | `38307645012` | `VoiceEvaluatorMeteringTest`: every test wrote and deleted one fixed `storage/voice_responses/metering.mp3`. Under parallel workers, one teardown deleted the file another test was reading (3 failures: ENOENT, "Audio file not found"). | One file name per test. Red: 10 failing tests over 10 concurrent runs of the class. Green: 0. |
+| `test` | `38308553969` | `MotionBuildFreshnessTest`: two tests edited the real `app/motion` (a dotfile, `main.ts`) and compared digests. A parallel worker's edit was another test's input, so the digest did not come back. **A concurrent run also left `main.ts` dirty** with `// touched by a test`, one commit away from shipping. | Each edits a private copy of the build inputs, with `Rails.root` pointed at it in that process only. It also asserts the copy's digest equals the real one, so the copy is complete. Red: 9 of 10 concurrent runs failed. Green: 0, and `app/motion` stays clean. |
+| (no CI failure yet) | | `AudioNarrationTest`'s teardown `rm_rf`'d all of `storage/audio`. Under parallel workers that deletes other tests' files, and in a developer's checkout it deletes their real narration audio. | It now deletes only the files the tool returned to it. Red: a bystander file was deleted. Green: it survives. |
+| `scan_ruby` | `38307645012` | `bundler-audit`'s database updated on 2026-10-10, after the owner's local check. **rubyzip 3.2.2** has a High path traversal, fixed in 3.4.0. **ruby_llm 1.11.0** has three High ReDoS advisories, fixed only in 2.x. | rubyzip → 3.7.0 (released 2026-09-18; only `selenium-webdriver` uses it). ruby_llm: see §2a. |
+
+## 2a. The one exemption: ruby_llm, by the owner's ruling (12 October)
+
+The three advisories (GHSA-5m38-526f-3498, GHSA-57hg-jgw4-wcqw, GHSA-42r3-x6vx-x49x; CVE-2026-67987/67989/67991) are each scoped "on Ruby 3.1.x". The app runs **Ruby 3.3.8** everywhere: `.ruby-version`, the Dockerfile's `ARG RUBY_VERSION`, and CI's setup-ruby, which reads `.ruby-version`. Ruby ≥ 3.2 memoizes regexp matching, which bounds this kind of backtracking. The only listed fix is ruby_llm 2.x, a new major version used by 13 files, including `AiClient`, which every paid AI call goes through.
+
+The owner chose to record the three as not applicable rather than take the major upgrade inside a CI package:
+- They are listed in `config/bundler-audit.yml`, each with its reason.
+- `test/config/bundler_audit_exemptions_test.rb` holds the exemption to that reason. It fails if:
+  - the ignore list holds anything else;
+  - the running Ruby, `.ruby-version` or the Dockerfile's Ruby drops below 3.2;
+  - ruby_llm is on 2.x while the exemption is still there.
+- Red: the placeholder ignore list failed the test. Each guard was mutated and failed.
+
+**Follow-up package:** upgrade ruby_llm to 2.x with its own tests, then delete the exemption and the test.
+
 ## 2. What changed
 
 - **`.github/workflows/ci.yml`:**
@@ -67,12 +90,12 @@ Verification, run locally in a fresh worktree with CI's exact commands (`tmp/ci2
 
 | Check | Result |
 |---|---|
-| App suite | 1134 runs, 0 failures |
+| App suite | 1137 runs, 0 failures |
 | Engine suite | 385 runs, 0 failures |
 | System suite | 100 runs, 0 failures |
 | `bin/importmap audit` | no vulnerable packages |
 | `bin/brakeman` | exit 0, 0 warnings |
-| `bin/bundler-audit` | clean |
+| `bin/bundler-audit` | clean with a fresh advisory database (the ruby_llm exemption in §2a) |
 | RuboCop on the touched files | clean |
 
 The new pins were also exercised in a browser against `bin/rails server -p 9999`:
