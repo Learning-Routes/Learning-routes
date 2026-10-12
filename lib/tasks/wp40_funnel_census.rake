@@ -14,8 +14,13 @@ namespace :wp40 do
     connection = ActiveRecord::Base.connection
     count = ->(sql) { connection.select_value(sql).to_i }
     day = ->(sql) { connection.select_value(sql) || "none" }
-    # R4: every assessment type but step_quiz (4) and diagnostic (0) is an exam.
-    exam_types = "(1, 2, 3)"
+    # Enum values come from the models, never literals, so a renumbered enum cannot
+    # silently move a line.
+    owner, teacher = Core::User.roles.values_at("owner", "teacher")
+    opened_statuses = LearningRoutesEngine::RouteStep.statuses.values_at("in_progress", "completed").join(", ")
+    completed_step = LearningRoutesEngine::RouteStep.statuses.fetch("completed")
+    # R4: every assessment type but step_quiz and diagnostic is an exam.
+    exam_types = "(#{Assessments::Assessment.assessment_types.except('step_quiz', 'diagnostic').values.join(', ')})"
     live_paid = "state IN ('paid', 'refunded') AND test_mode = false AND paid_at IS NOT NULL"
     route_users = <<~SQL
       learning_routes_engine_learning_routes r
@@ -24,8 +29,8 @@ namespace :wp40 do
 
     puts "[wp40:funnel_census] read-only; counts only."
     puts "accounts: total=#{count.('SELECT COUNT(*) FROM core_users')} " \
-         "owner=#{count.('SELECT COUNT(*) FROM core_users WHERE role = 2')} " \
-         "teacher=#{count.('SELECT COUNT(*) FROM core_users WHERE role = 1')}"
+         "owner=#{count.("SELECT COUNT(*) FROM core_users WHERE role = #{owner}")} " \
+         "teacher=#{count.("SELECT COUNT(*) FROM core_users WHERE role = #{teacher}")}"
 
     puts "1 registered: users=#{count.('SELECT COUNT(*) FROM core_users')}"
     puts "  provider: google_oauth2=#{count.("SELECT COUNT(*) FROM core_users WHERE provider = 'google_oauth2'")} " \
@@ -42,7 +47,7 @@ namespace :wp40 do
     puts "  linked: #{linked} (provider set, verified more than 1 minute after signup or never)"
 
     puts "2 verified: users=#{count.('SELECT COUNT(*) FROM core_users WHERE email_verified_at IS NOT NULL')} " \
-         "google_unverified=#{count.('SELECT COUNT(*) FROM core_users WHERE provider IS NOT NULL AND email_verified_at IS NULL')}"
+         "google_unverified=#{count.("SELECT COUNT(*) FROM core_users WHERE provider = 'google_oauth2' AND email_verified_at IS NULL")}"
 
     profile = "EXISTS (SELECT 1 FROM learning_routes_engine_learning_profiles p WHERE p.user_id = u.id)"
     puts "3 onboarded: flag=#{count.('SELECT COUNT(*) FROM core_users WHERE onboarding_completed')} " \
@@ -51,16 +56,20 @@ namespace :wp40 do
          "profile_without_flag=#{count.("SELECT COUNT(*) FROM core_users u WHERE NOT onboarding_completed AND #{profile}")}"
 
     statuses = connection.select_rows("SELECT status, COUNT(*) FROM route_requests GROUP BY status").to_h
-    puts "4 route_requested: users=#{count.('SELECT COUNT(DISTINCT user_id) FROM route_requests')} " +
-         %w[pending generating completed failed].map { |status| "#{status}=#{statuses.fetch(status, 0)}" }.join(" ") +
+    # Every allowed status is printed, plus the total, so a bucket the list misses
+    # shows as a total that does not add up.
+    puts "4 route_requested: users=#{count.('SELECT COUNT(DISTINCT user_id) FROM route_requests')} " \
+         "requests=#{count.('SELECT COUNT(*) FROM route_requests')} " +
+         RouteRequest::STATUSES.map { |status| "#{status}=#{statuses.fetch(status, 0)}" }.join(" ") +
          " failed_without_message=#{count.("SELECT COUNT(*) FROM route_requests WHERE status = 'failed' AND error_message IS NULL")}"
 
     generation = connection.select_rows(
       "SELECT COALESCE(generation_status, 'null'), COUNT(*) FROM learning_routes_engine_learning_routes GROUP BY 1"
     ).to_h
     # R6: a clone keeps the original's generated_at and gets a new created_at.
-    puts "5 route_generated: users=#{count.("SELECT COUNT(DISTINCT p.user_id) FROM #{route_users} WHERE r.generation_status = 'completed'")} " +
-         %w[completed generating failed null].map { |status| "#{status}=#{generation.fetch(status, 0)}" }.join(" ") +
+    puts "5 route_generated: users=#{count.("SELECT COUNT(DISTINCT p.user_id) FROM #{route_users} WHERE r.generation_status = 'completed'")} " \
+         "routes=#{count.('SELECT COUNT(*) FROM learning_routes_engine_learning_routes')} " +
+         (LearningRoutesEngine::LearningRoute::GENERATION_STATUSES + ["null"]).map { |status| "#{status}=#{generation.fetch(status, 0)}" }.join(" ") +
          " completed_without_generated_at=#{count.("SELECT COUNT(*) FROM learning_routes_engine_learning_routes WHERE generation_status = 'completed' AND generated_at IS NULL")}" \
          " clones=#{count.("SELECT COUNT(*) FROM learning_routes_engine_learning_routes WHERE generation_status = 'completed' AND generated_at < created_at")}"
 
@@ -72,7 +81,7 @@ namespace :wp40 do
     opened = <<~SQL
       learning_routes_engine_route_steps s
       JOIN #{route_users} ON r.id = s.learning_route_id
-      WHERE s.status IN (2, 3)
+      WHERE s.status IN (#{opened_statuses})
     SQL
     unrecorded = "NOT EXISTS (SELECT 1 FROM analytics_study_sessions a WHERE a.route_step_id = s.id AND a.user_id = p.user_id)"
     puts "6 lesson_opened: users=#{count.('SELECT COUNT(DISTINCT user_id) FROM analytics_study_sessions')} " \
@@ -84,10 +93,10 @@ namespace :wp40 do
          "since_first_session=#{count.("SELECT COUNT(*) FROM #{opened} AND s.updated_at >= #{oldest_session} AND #{unrecorded}")} " \
          "of #{count.("SELECT COUNT(*) FROM #{opened} AND s.updated_at >= #{oldest_session}")}"
 
-    puts "7 step_completed: users=#{count.("SELECT COUNT(DISTINCT p.user_id) FROM learning_routes_engine_route_steps s JOIN #{route_users} ON r.id = s.learning_route_id WHERE s.status = 3 AND s.completed_at IS NOT NULL")} " \
-         "completed=#{count.('SELECT COUNT(*) FROM learning_routes_engine_route_steps WHERE status = 3')} " \
-         "completed_without_completed_at=#{count.('SELECT COUNT(*) FROM learning_routes_engine_route_steps WHERE status = 3 AND completed_at IS NULL')} " \
-         "completed_at_without_completed=#{count.('SELECT COUNT(*) FROM learning_routes_engine_route_steps WHERE status <> 3 AND completed_at IS NOT NULL')}"
+    puts "7 step_completed: users=#{count.("SELECT COUNT(DISTINCT p.user_id) FROM learning_routes_engine_route_steps s JOIN #{route_users} ON r.id = s.learning_route_id WHERE s.status = #{completed_step} AND s.completed_at IS NOT NULL")} " \
+         "completed=#{count.("SELECT COUNT(*) FROM learning_routes_engine_route_steps WHERE status = #{completed_step}")} " \
+         "completed_without_completed_at=#{count.("SELECT COUNT(*) FROM learning_routes_engine_route_steps WHERE status = #{completed_step} AND completed_at IS NULL")} " \
+         "completed_at_without_completed=#{count.("SELECT COUNT(*) FROM learning_routes_engine_route_steps WHERE status <> #{completed_step} AND completed_at IS NOT NULL")}"
 
     puts "8 exam_passed: users=#{count.("SELECT COUNT(DISTINCT res.user_id) FROM assessments_assessment_results res JOIN assessments_assessments a ON a.id = res.assessment_id WHERE res.passed AND a.assessment_type IN #{exam_types}")}"
     # R4: a NULL score is an open attempt, neither passed nor failed.

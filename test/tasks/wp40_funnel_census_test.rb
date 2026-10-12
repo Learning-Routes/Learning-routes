@@ -45,6 +45,8 @@ class Wp40FunnelCensusTest < ActiveSupport::TestCase
     @clone = generated_route(@cloner, created: @now - 2.days, generated: @now - 30.days)
     generated_route(@refunder, created: @now - 4.days, generated: nil)
     @cloner.learning_profile.learning_routes.create!(topic: "Still generating", generation_status: "generating")
+    # RouteGenerator creates every route as "pending": the census must show that bucket.
+    @cloner.learning_profile.learning_routes.create!(topic: "Not started", generation_status: "pending")
 
     first, second = steps(route, 2)
     first.update_columns(status: 3, completed_at: @now - 4.days)
@@ -87,8 +89,8 @@ class Wp40FunnelCensusTest < ActiveSupport::TestCase
     assert_match(/^  linked: 1 \(provider set, verified more than 1 minute after signup or never\)$/, out)
     assert_match(/^2 verified: users=4 google_unverified=0$/, out)
     assert_match(/^3 onboarded: flag=2 profile=5 flag_without_profile=1 profile_without_flag=4$/, out)
-    assert_match(/^4 route_requested: users=2 pending=0 generating=0 completed=1 failed=2 failed_without_message=1$/, out)
-    assert_match(/^5 route_generated: users=3 completed=4 generating=1 failed=0 null=0 completed_without_generated_at=1 clones=1$/, out)
+    assert_match(/^4 route_requested: users=2 requests=3 pending=0 generating=0 completed=1 failed=2 failed_without_message=1$/, out)
+    assert_match(/^5 route_generated: users=3 routes=6 pending=1 generating=1 completed=4 failed=0 null=0 completed_without_generated_at=1 clones=1$/, out)
     assert_match(/^6 lesson_opened: users=1 sessions=1 without_step=0 oldest_started_at=#{@opened_at.utc.to_date}$/, out)
     assert_match(/^  writer: steps_opened_without_session=2 of 3 since_first_session=2 of 3$/, out)
     assert_match(/^7 step_completed: users=1 completed=2 completed_without_completed_at=1 completed_at_without_completed=0$/, out)
