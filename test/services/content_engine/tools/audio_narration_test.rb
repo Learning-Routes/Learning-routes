@@ -6,12 +6,15 @@ class ContentEngine::Tools::AudioNarrationTest < ActiveSupport::TestCase
   setup do
     @tool = ContentEngine::Tools::AudioNarration.new
     @audio_dir = Rails.root.join("storage", "audio")
+    @written = []
   end
 
   teardown do
     restore_ai_client_new!
-    # Clean up any test-generated audio files
-    FileUtils.rm_rf(@audio_dir) if @audio_dir.exist?
+    # Only the files this test wrote. This used to `rm_rf` the whole storage/audio:
+    # under parallel workers that deleted other tests' files mid-run, and in a
+    # developer's checkout it deleted their real narration audio.
+    @written.each { |path| FileUtils.rm_f(path) }
   end
 
   test "returns audio file path on success" do
@@ -107,7 +110,9 @@ class ContentEngine::Tools::AudioNarrationTest < ActiveSupport::TestCase
 
   def execute_tool(**kwargs)
     result = @tool.execute(**kwargs)
-    result.is_a?(RubyLLM::Tool::Halt) ? result.content : result
+    result = result.is_a?(RubyLLM::Tool::Halt) ? result.content : result
+    @written << @audio_dir.join(File.basename(result)) if result.to_s.start_with?("/storage/audio/")
+    result
   end
 
   def build_mock_client(content: "fake-audio-binary-data")
