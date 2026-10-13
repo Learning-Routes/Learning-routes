@@ -67,7 +67,8 @@ class LearningRoutesEngine::JourneyMapDataTest < ActionDispatch::IntegrationTest
 
     get learning_routes_engine.journey_route_path(@route)
 
-    assert_match(/· 2 temas ·/, response.body, "@steps must come from the policy, not from access_preview?")
+    # WP-37b: the count lives in the root's meta line ("2 módulos · 2 temas").
+    assert_select ".jm-root__meta", text: /· 2 temas\z/, message: "@steps must come from the policy, not from access_preview?"
   end
 
   test "the list view lists a purchased module's steps without the lock" do
