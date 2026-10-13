@@ -7,7 +7,7 @@ module Core
 
       mail(to: user.email, subject: I18n.t("password_mailer.reset_password.subject"))
     rescue => e
-      Rails.logger.error("[EMAIL FAILURE] PasswordMailer#reset_password to=#{user.email} error=#{e.class}: #{e.message}")
+      Rails.logger.error("[EMAIL FAILURE] PasswordMailer#reset_password user_id=#{user.id} error=#{e.class}: #{e.message}")
       raise
     end
   end

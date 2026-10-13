@@ -66,18 +66,27 @@ Rails.application.configure do
   # Raise on delivery errors so failed emails are visible in logs.
   config.action_mailer.raise_delivery_errors = true
 
-  # Set host to be used by links generated in mailer templates.
-  config.action_mailer.default_url_options = { host: "learning-routes.com" }
+  # Links in mail point at the domain that exists. learning-routes.com has no DNS,
+  # so links built on it went nowhere. Engine URL helpers (core.reset_password_url,
+  # core.verify_email_url) ignore action_mailer's defaults, so the app's routes and
+  # Core::Engine's routes get the same host.
+  config.action_mailer.default_url_options = { host: "learningroutes.com", protocol: "https" }
+  Rails.application.routes.default_url_options = { host: "learningroutes.com", protocol: "https" }
+  config.after_initialize do
+    Core::Engine.routes.default_url_options = { host: "learningroutes.com", protocol: "https" } if defined?(Core::Engine)
+  end
 
-  # Brevo SMTP (transactional email — 300/day free tier)
+  # Resend SMTP. learningroutes.com is verified there (DKIM resend._domainkey,
+  # return-path send.learningroutes.com, DMARC). Free tier: 3,000 a month, 100 a day.
+  # The API key is the SMTP password; credentials key resend.api_key.
   config.action_mailer.delivery_method = :smtp
   config.action_mailer.smtp_settings = {
-    address: "smtp-relay.brevo.com",
+    address: "smtp.resend.com",
     port: 587,
-    domain: "learning-routes.com",
-    user_name: Rails.application.credentials.dig(:brevo, :smtp_login),
-    password: Rails.application.credentials.dig(:brevo, :smtp_password),
-    authentication: :login,
+    domain: "learningroutes.com",
+    user_name: "resend",
+    password: Rails.application.credentials.dig(:resend, :api_key),
+    authentication: :plain,
     enable_starttls_auto: true,
     open_timeout: 5,
     read_timeout: 5

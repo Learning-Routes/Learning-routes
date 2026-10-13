@@ -12,7 +12,7 @@ module AiOrchestrator
       message = AdminMailer.cost_alert(violation, owner)
 
       assert_equal [owner.email], message.to
-      assert_equal ["noreply@learning-routes.com"], message.from
+      assert_equal ["noreply@learningroutes.com"], message.from
       assert_match "daily limit exceeded", message.subject
     end
 

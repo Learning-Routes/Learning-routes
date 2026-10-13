@@ -18,7 +18,7 @@ module Core
         begin
           Core::VerificationMailer.verify_email(@user).deliver_now
         rescue => e
-          Rails.logger.error("[EMAIL FAILURE] Registration verification email for #{@user.email}: #{e.class}: #{e.message}")
+          Rails.logger.error("[EMAIL FAILURE] Registration verification email for user_id=#{@user.id}: #{e.class}: #{e.message}")
         end
         start_session_for(@user)
         redirect_to after_sign_in_path(@user), notice: t("flash.welcome")

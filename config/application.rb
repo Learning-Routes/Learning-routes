@@ -56,5 +56,11 @@ module LearningRoutes
     # Configure for Russian doll caching: combine fragment cache with action cache
     # Automatic cache key generation (Rails 6.1+) includes dependencies
     config.action_view.cache_template_loading = true
+
+    # One sender for every mailer, app and engines: the domain Resend
+    # authenticates (DKIM resend._domainkey, return-path send.learningroutes.com).
+    # Engine mailers used to set noreply@learning-routes.com, a domain with no DNS.
+    # test/mailers/mail_identity_test.rb holds every mailer to it.
+    config.action_mailer.default_options = { from: "Learning Routes <noreply@learningroutes.com>" }
   end
 end
