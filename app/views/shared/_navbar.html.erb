@@ -3,9 +3,7 @@
        class="flex items-center justify-between h-[58px] px-[clamp(1.5rem,5vw,4rem)] border-b border-transparent transition-all duration-300">
 
     <%# === Logo === %>
-    <%# Signed in: where `/` would send them (SignedInHomeHelper), so the logo never
-        points at a page that bounces back. "Home" below opens the landing itself. %>
-    <%= link_to (current_user ? signed_in_home_path(current_user) : main_app.root_path),
+    <%= link_to main_app.root_path,
         data: { nav: "logo" }, class: "flex items-center gap-[0.55rem] no-underline" do %>
       <%= render "shared/logo", size: 28 %>
       <span class="font-sans font-bold text-[0.92rem] tracking-[-0.5px] text-txt">Learning Routes</span>
@@ -21,7 +19,7 @@
       </a>
 
       <% if current_user %>
-        <%= link_to t("nav.home"), main_app.root_path(from: "nav"), data: { nav: "home" },
+        <%= link_to t("nav.home"), main_app.root_path, data: { nav: "home" },
             class: "font-sans text-[0.8rem] font-medium text-muted hover:text-txt focus-visible:text-txt focus-visible:outline-none focus-visible:underline transition-colors duration-200" %>
         <%= link_to t("nav.dashboard"), main_app.dashboard_path,
             class: "font-sans text-[0.8rem] font-medium text-muted hover:text-txt focus-visible:text-txt focus-visible:outline-none focus-visible:underline transition-colors duration-200" %>
@@ -68,7 +66,7 @@
       </a>
 
       <% if current_user %>
-        <%= link_to t("nav.home"), main_app.root_path(from: "nav"),
+        <%= link_to t("nav.home"), main_app.root_path,
             data: { nav: "home", action: "navbar#closeMenu" },
             class: "font-sans text-[0.88rem] font-medium text-sub hover:text-txt focus-visible:text-txt focus-visible:outline-none focus-visible:underline transition-colors py-1" %>
         <%= link_to t("nav.dashboard"), main_app.dashboard_path,
