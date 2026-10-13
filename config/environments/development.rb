@@ -39,19 +39,13 @@ Rails.application.configure do
   # Show delivery errors during development.
   config.action_mailer.raise_delivery_errors = true
 
-  # Brevo SMTP (transactional email — same provider as production)
+  # Mailpit: a local inbox, so development never sends real mail. There are no
+  # development credentials, so the Brevo block that used to be here could not log in.
+  #   docker run -d --name learning-routes-mailpit --restart unless-stopped \
+  #     -p 127.0.0.1:1025:1025 -p 127.0.0.1:8025:8025 axllent/mailpit:v1.31.2
+  # Inbox: http://127.0.0.1:8025
   config.action_mailer.delivery_method = :smtp
-  config.action_mailer.smtp_settings = {
-    address: "smtp-relay.brevo.com",
-    port: 587,
-    domain: "learning-routes.com",
-    user_name: Rails.application.credentials.dig(:brevo, :smtp_login),
-    password: Rails.application.credentials.dig(:brevo, :smtp_password),
-    authentication: :login,
-    enable_starttls_auto: true,
-    open_timeout: 5,
-    read_timeout: 5
-  }
+  config.action_mailer.smtp_settings = { address: "127.0.0.1", port: 1025, enable_starttls_auto: false }
 
   # Make template changes take effect immediately.
   config.action_mailer.perform_caching = false

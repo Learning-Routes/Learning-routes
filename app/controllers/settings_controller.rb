@@ -30,7 +30,7 @@ class SettingsController < ApplicationController
         begin
           Core::VerificationMailer.verify_email(@user).deliver_now
         rescue => e
-          Rails.logger.error("[EMAIL FAILURE] Settings email change verification for #{@user.email}: #{e.class}: #{e.message}")
+          Rails.logger.error("[EMAIL FAILURE] Settings email change verification for user_id=#{@user.id}: #{e.class}: #{e.message}")
         end
       end
 

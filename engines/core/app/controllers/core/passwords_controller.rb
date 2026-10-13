@@ -14,7 +14,7 @@ module Core
         begin
           Core::PasswordMailer.reset_password(user).deliver_now
         rescue => e
-          Rails.logger.error("[EMAIL FAILURE] Password reset email for #{user.email}: #{e.class}: #{e.message}")
+          Rails.logger.error("[EMAIL FAILURE] Password reset email for user_id=#{user.id}: #{e.class}: #{e.message}")
         end
       end
       # Always show success to prevent email enumeration

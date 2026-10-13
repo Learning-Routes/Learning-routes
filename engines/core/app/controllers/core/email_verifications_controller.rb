@@ -24,7 +24,7 @@ module Core
           redirect_back fallback_location: core.verify_pending_path,
                         notice: t("flash.verification_sent")
         rescue => e
-          Rails.logger.error("[EMAIL FAILURE] Resend verification for #{current_user.email}: #{e.class}: #{e.message}")
+          Rails.logger.error("[EMAIL FAILURE] Resend verification for user_id=#{current_user.id}: #{e.class}: #{e.message}")
           redirect_back fallback_location: core.verify_pending_path,
                         alert: t("flash.email_delivery_failed")
         end

@@ -7,7 +7,7 @@ module Core
 
       mail(to: user.email, subject: I18n.t("verification_mailer.verify_email.subject", name: user.name))
     rescue => e
-      Rails.logger.error("[EMAIL FAILURE] VerificationMailer#verify_email to=#{user.email} error=#{e.class}: #{e.message}")
+      Rails.logger.error("[EMAIL FAILURE] VerificationMailer#verify_email user_id=#{user.id} error=#{e.class}: #{e.message}")
       raise
     end
   end

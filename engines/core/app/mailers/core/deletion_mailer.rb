@@ -7,7 +7,7 @@ module Core
 
       mail(to: user.email, subject: I18n.t("deletion_mailer.route_deletion_code.subject"))
     rescue => e
-      Rails.logger.error("[EMAIL FAILURE] DeletionMailer#route_deletion_code to=#{user.email} error=#{e.class}: #{e.message}")
+      Rails.logger.error("[EMAIL FAILURE] DeletionMailer#route_deletion_code user_id=#{user.id} error=#{e.class}: #{e.message}")
       raise
     end
   end
