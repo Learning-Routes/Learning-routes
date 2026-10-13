@@ -42,6 +42,10 @@ const ICON = {
   arrow: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>'
 }
 
+// Turbo shows a cached PREVIEW of a page, then swaps in the fresh render: two
+// connects for one visit. The preview's URL lets the second skip the entrance.
+let previewedUrl = null
+
 const levelVar = (level) => `var(--color-node-${level || "nv1"})`
 const fill = (template, values) => String(template).replace(/%\{(\w+)\}/g, (_, k) => (k in values ? values[k] : ""))
 const inflate = (b, p) => ({ x: b.x - p, y: b.y - p, w: b.w + 2 * p, h: b.h + 2 * p })
@@ -56,6 +60,11 @@ export default class extends Controller {
     // with the elements this controller built last time still in it. Clear before
     // drawing, or the map is drawn twice; and do not replay the entrance.
     const restored = this.element.dataset.journeyReady === "true"
+    const preview = document.documentElement.hasAttribute("data-turbo-preview")
+    const afterPreview = !preview && previewedUrl === window.location.href
+    previewedUrl = preview ? window.location.href : null
+    // A snapshot taken with the popover open restores it open: close it first.
+    this._hidePop()
     this.tree = buildTree(this.rootValue, this.stagesValue)
     this.layout = layoutJourney(this.tree, OPTIONS)
     this.nodeById = new Map(this.layout.nodes.map((n) => [n.id, n]))
@@ -78,11 +87,13 @@ export default class extends Controller {
     this.userMoved = false
     this._apply(false)
 
-    const enter = !restored && !this.reduced.matches
+    const enter = !restored && !preview && !afterPreview && !this.reduced.matches
     this.worldTarget.classList.toggle("jm-world--enter", enter)
     if (enter) this.enterTimer = setTimeout(() => this.worldTarget.classList.remove("jm-world--enter"), ENTRANCE_MS)
 
     this._bind()
+    this.onBeforeCache = () => { this._hidePop(); this.worldTarget.classList.remove("jm-world--enter") }
+    document.addEventListener("turbo:before-cache", this.onBeforeCache)
     this.resizeObserver = new ResizeObserver(() => this._onResize())
     this.resizeObserver.observe(this.viewportTarget)
     this.element.dataset.journeyReady = "true"
@@ -92,8 +103,11 @@ export default class extends Controller {
     this.resizeObserver?.disconnect()
     clearTimeout(this.enterTimer)
     clearTimeout(this.popTimer)
+    clearTimeout(this.placeTimer)
     this.worldTarget.classList.remove("jm-world--enter")
     this._hidePop()
+    document.removeEventListener("turbo:before-cache", this.onBeforeCache)
+    document.removeEventListener("keydown", this.onDocumentKeyDown)
     const vp = this.viewportTarget
     vp.removeEventListener("pointerdown", this.onPointerDown)
     vp.removeEventListener("pointermove", this.onPointerMove)
@@ -259,25 +273,28 @@ export default class extends Controller {
     chip.style.setProperty("--jm-line", levelVar(node.level))
     chip.style.setProperty("--jm-i", i)
     const sep = () => this._span("·")
+    let detail
     if (node.readable) {
       const primaries = stage.topics.filter((t) => !t.reinforcement)
       const done = primaries.filter((t) => t.status === "completed").length
-      chip.append(this._bold(num), sep(), this._bold(level), sep(),
-                  this._span(fill(this.labelsValue.chip_progress, { done, total: primaries.length })))
+      detail = fill(this.labelsValue.chip_progress, { done, total: primaries.length })
+      chip.append(this._bold(num), sep(), this._bold(level), sep(), this._span(detail))
     } else {
       const count = stage.topics.length
+      detail = fill(count === 1 ? this.labelsValue.topic_count_one : this.labelsValue.topic_count_other, { count })
       const lock = document.createElement("span")
       lock.innerHTML = ICON.lock
-      chip.append(this._bold(num), sep(), this._bold(level), sep(), lock.firstChild,
-                  this._span(fill(count === 1 ? this.labelsValue.topic_count_one : this.labelsValue.topic_count_other, { count })))
+      chip.append(this._bold(num), sep(), this._bold(level), sep(), lock.firstChild, this._span(detail))
     }
-    chip.setAttribute("aria-label", `${num} · ${stage.label} · ${chip.textContent.replace(/\s+/g, " ").trim()}`)
+    chip.setAttribute("aria-label", [num, stage.label, level, node.readable ? null : this.labelsValue.locked, detail]
+      .filter(Boolean).join(" · "))
     if (node.readable) return [chip]
 
     const unlock = document.createElement("a")
     unlock.className = "jm-unlock"
     unlock.href = this.unlockPathValue
     unlock.draggable = false
+    unlock.dataset.moduleNodeId = node.id
     Object.assign(unlock.style, { left: `${panel.box.x + panel.box.w - 22}px`, top: `${panel.box.y}px` })
     unlock.style.setProperty("--jm-line", levelVar(node.level))
     unlock.style.setProperty("--jm-i", i)
@@ -304,7 +321,7 @@ export default class extends Controller {
     ].filter(Boolean).join(" ")
     el.dataset.nodeId = node.id
     const parts = [topic.name, this.labelsValue[status] || "", node.kind === "reinforcement" ? this.labelsValue.reinforcement : null]
-    el.setAttribute("aria-label", parts.filter(Boolean).join(", "))
+    el.setAttribute("aria-label", [...new Set(parts.filter(Boolean))].join(", "))
     if (masked) el.setAttribute("role", "img")
 
     const dot = this._dot()
@@ -491,7 +508,8 @@ export default class extends Controller {
     this.worldTarget.dataset.lod = k < 0.5 ? "far" : (k < 0.75 ? "mid" : "near")
     if (this.popNode) {
       // The popover follows the node once the camera has settled.
-      if (animate && !this.reduced.matches) setTimeout(() => this._placePop(), 460)
+      clearTimeout(this.placeTimer)
+      if (animate && !this.reduced.matches) this.placeTimer = setTimeout(() => this._placePop(), 460)
       else this._placePop()
     }
   }
@@ -541,6 +559,11 @@ export default class extends Controller {
     this.onDoubleClick = (e) => this._onDoubleClick(e)
     this.onPointerOver = (e) => this._onPointerOver(e)
     this.onPointerOut = (e) => this._onPointerOut(e)
+    this.onDocumentKeyDown = (e) => {
+      this.lastPointerType = null
+      if (e.key === "Escape" && this.popNode && !this.viewportTarget.contains(e.target)) this._hidePop()
+    }
+    document.addEventListener("keydown", this.onDocumentKeyDown)
     vp.addEventListener("pointerdown", this.onPointerDown)
     vp.addEventListener("pointermove", this.onPointerMove)
     vp.addEventListener("pointerup", this.onPointerUp)
@@ -620,7 +643,8 @@ export default class extends Controller {
       this.dragged = false
       return
     }
-    const el = this.lastPointerType === "touch" && this._popCandidate(e.target)
+    // detail 0 is a keyboard (or assistive) activation: it navigates.
+    const el = this.lastPointerType === "touch" && e.detail !== 0 && this._popCandidate(e.target)
     if (!el) return
     e.preventDefault()
     e.stopPropagation()
@@ -649,7 +673,9 @@ export default class extends Controller {
   }
 
   _onPointerOver(e) {
-    if (e.pointerType === "touch") return
+    // No hover while pressing or dragging: the drag closed it, and crossing the
+    // node's own children must not reopen it.
+    if (e.pointerType === "touch" || this.pointers.size > 0) return
     const el = this._popCandidate(e.target)
     if (!el) return
     clearTimeout(this.popTimer)
@@ -662,7 +688,8 @@ export default class extends Controller {
     const el = this._popCandidate(e.target)
     if (!el || el.contains(e.relatedTarget)) return
     clearTimeout(this.popTimer)
-    if (document.activeElement !== el) this.popTimer = setTimeout(() => this._hidePop(), HOVER_CLOSE_MS)
+    // Keyboard focus keeps it open; a link a mouse press happened to focus does not.
+    if (!el.matches(":focus-visible")) this.popTimer = setTimeout(() => this._hidePop(), HOVER_CLOSE_MS)
   }
 
   _onWheel(e) {
@@ -686,6 +713,11 @@ export default class extends Controller {
       e.preventDefault()
       return
     }
+    if ((e.key === "i" || e.key === "I") && !e.target.closest?.("input, textarea")) {
+      this.locate()
+      e.preventDefault()
+      return
+    }
     if (e.target !== this.viewportTarget) return
     const pan = (dx, dy) => this._userMove({ ...this.camera, x: this.camera.x + dx, y: this.camera.y + dy }, true)
     switch (e.key) {
@@ -696,7 +728,6 @@ export default class extends Controller {
       case "+": case "=": this.zoomIn(); break
       case "-": case "_": this.zoomOut(); break
       case "0": this.fit(); break
-      case "i": case "I": this.locate(); break
       default: return
     }
     e.preventDefault()
@@ -704,13 +735,24 @@ export default class extends Controller {
 
   // Focus follows the camera: Tab onto a node outside the safe area brings it
   // in; a focused step shows its popover.
+  // A press focuses its link before the click: that focus belongs to the
+  // pointer (hover and tap open the popover; moving the camera mid-press would
+  // slide the node out from under it), so only keyboard focus acts here.
   _onFocusIn(e) {
     const el = e.target.closest?.(".jm-node, .jm-chip, .jm-unlock")
-    if (!el) return
+    if (!el || this.pointers.size > 0) return
     const node = el.dataset.nodeId ? this.nodeById.get(el.dataset.nodeId) : null
-    if (node) this._userMove(ensureVisible(this.camera, node, this._safe(), 24), true)
+    this._userMove(ensureVisible(this.camera, node || this._worldBox(el), this._safe(), 24), true)
     const pop = this._popCandidate(e.target)
     if (pop) { clearTimeout(this.popTimer); this._showPop(pop) }
+  }
+
+  // An element's box in world coordinates, from where it is on screen now.
+  _worldBox(el) {
+    const r = el.getBoundingClientRect()
+    const vp = this.viewportTarget.getBoundingClientRect()
+    const { x, y, k } = this.camera
+    return { x: (r.left - vp.left - x) / k, y: (r.top - vp.top - y) / k, w: r.width / k, h: r.height / k }
   }
 
   _onFocusOut(e) {

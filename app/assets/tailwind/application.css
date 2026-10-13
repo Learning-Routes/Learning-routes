@@ -3596,6 +3596,12 @@ html[data-theme="dark"] .jm {
 .jm-counter__track { display: block; height: 3px; border-radius: 999px; background: var(--color-border-subtle); overflow: hidden; }
 .jm-counter__fill { display: block; height: 100%; border-radius: 999px; background: var(--jm-line); }
 
+/* Below 1280 px a centred card meets the bar: it moves left of the bar and the
+   legend rises above it, full width. */
+@media (min-width: 701px) and (max-width: 1279px) {
+  .jm-card { left: 20px; transform: none; max-width: calc(100vw - 368px); }
+  .jm-legend { bottom: 100px; max-width: calc(100vw - 368px); }
+}
 @media (max-width: 700px) {
   .jm-legend { display: none; }
   .jm-card { left: 12px; right: 12px; bottom: 74px; transform: none; max-width: none; }
@@ -3607,7 +3613,7 @@ html[data-theme="dark"] .jm {
 .jm-world--enter .jm-travelled, .jm-world--enter .jm-glow { stroke-dasharray: 1; stroke-dashoffset: 1;
   animation: jm-draw 900ms cubic-bezier(.23, 1, .32, 1) forwards; }
 .jm-world--enter .jm-node, .jm-world--enter .jm-chip, .jm-world--enter .jm-unlock { opacity: 0;
-  animation: jm-fade 450ms cubic-bezier(.23, 1, .32, 1) forwards; animation-delay: calc(var(--jm-i, 0) * 40ms); }
+  animation: jm-fade 450ms cubic-bezier(.23, 1, .32, 1) forwards; animation-delay: calc(min(var(--jm-i, 0), 40) * 40ms); }
 .jm-world--enter .jm-node__ping { display: block; position: absolute; inset: -6px; border-radius: 50%; border: 2px solid var(--jm-line);
   opacity: 0; animation: jm-ping 700ms ease-out 900ms 2; }
 @keyframes jm-draw { to { stroke-dashoffset: 0; } }

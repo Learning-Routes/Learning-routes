@@ -10,11 +10,12 @@ class JourneyFontsTest < ActiveSupport::TestCase
   LAYOUT = Rails.root.join("app/views/layouts/journey.html.erb").read
   GENERIC = %w[serif sans-serif monospace system-ui ui-monospace ui-sans-serif ui-serif inherit].freeze
 
+  # Every rule whose selector names a .jm class, wherever it sits (inside an
+  # @media block too): headings and their order do not matter.
   def journey_block
-    start = CSS.index("/* ── WP-37 journey map")
-    assert start, "the journey map block's heading moved"
-    stop = CSS.index("/* ── ", start + 10) || CSS.size
-    CSS[start...stop]
+    CSS.gsub(%r{/\*.*?\*/}m, "").scan(/([^{}]+)\{([^{}]*)\}/)
+       .select { |selector, _| selector.match?(/\.jm(?:-|\b)/) }
+       .map { |_, body| "{#{body}}" }.join("\n")
   end
 
   def families_named(css)

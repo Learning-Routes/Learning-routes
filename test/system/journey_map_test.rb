@@ -445,12 +445,15 @@ class JourneyMapTest < ApplicationSystemTestCase
     route = build_route(7)
     open_journey(route, reduced_motion: true)
 
-    page.driver.browser.action.move_to(find(".jm-node--current").native).perform
+    node = find(".jm-node--current")
+    page.driver.browser.action.move_to(node.native).perform
     assert_selector ".jm-pop.jm-pop--show"
     assert_selector ".jm-pop__act", text: I18n.t("learning_engine.journey.act_continue", locale: :es)
-    x, y = empty_point
-    page.driver.browser.action.move_to_location(x, y).click_and_hold.move_by(80, 40).release.perform
-    assert_no_selector ".jm-pop.jm-pop--show", visible: :all
+    # A drag that starts ON the node and stays over it: only the drag can close it.
+    page.driver.browser.action.click_and_hold(node.native).move_by(10, 0).perform
+    assert_equal false, page.evaluate_script("document.querySelector('.jm-pop').classList.contains('jm-pop--show')"),
+      "the drag did not close the popover"
+    page.driver.browser.action.release.perform
 
     page.driver.browser.action.move_to(find(".jm-node--module", match: :first).native).perform
     sleep 0.3
@@ -494,10 +497,16 @@ class JourneyMapTest < ApplicationSystemTestCase
 
     assert_operator matrix["a"], :<, 0.5
     assert_equal "far", find(".jm-world")["data-lod"]
-    opacities = page.evaluate_script(<<~JS)
-      [...document.querySelectorAll(".jm-node--step .jm-node__label, .jm-node--reinforcement .jm-node__label")]
-        .map((el) => getComputedStyle(el).opacity)
-    JS
+    # The fade is an opacity transition (0.01 ms under reduced motion): read the
+    # settled value, not a frame in between.
+    read = lambda do
+      page.evaluate_script(<<~JS)
+        [...document.querySelectorAll(".jm-node--step .jm-node__label, .jm-node--reinforcement .jm-node__label")]
+          .map((el) => getComputedStyle(el).opacity)
+      JS
+    end
+    opacities = read.call
+    Timeout.timeout(2) { sleep 0.05 until (opacities = read.call).all? { |o| o == "0" } } rescue Timeout::Error
     assert opacities.all? { |o| o == "0" }, "a label is still drawn at far zoom: #{opacities.uniq}"
     discs = page.evaluate_script("[...document.querySelectorAll('.jm-node__dot')].map((el) => getComputedStyle(el).opacity)")
     assert discs.all? { |o| o == "1" }
@@ -589,6 +598,80 @@ class JourneyMapTest < ApplicationSystemTestCase
     page.driver.browser.action.move_to(find(".jm-node--current").native).perform
     assert_selector ".jm-pop.jm-pop--show"
     screenshot("7-light-1440-popover")
+  end
+
+  # ── Fresh review (Task 14) ────────────────────────────────────────────
+  test "Back to the map finds the popover closed, though it was open on leaving" do
+    route = build_route(7)
+    open_journey(route, reduced_motion: true)
+    # Opened and left from the keyboard, so no pointer hovers the node on return.
+    page.execute_script("document.querySelector('.jm-viewport').focus()")
+    page.driver.browser.action.send_keys(:tab).perform until page.evaluate_script("document.activeElement.classList.contains('jm-node--current')")
+    assert_selector ".jm-pop.jm-pop--show"
+    page.driver.browser.action.send_keys(:enter).perform
+    assert_current_path %r{/steps/}
+
+    page.go_back
+    assert_selector "[data-journey-ready='true']", wait: 10
+    sleep 0.3
+    assert_no_selector ".jm-pop.jm-pop--show", visible: :all
+    assert_selector ".jm-pop[aria-hidden='true']", visible: :all
+  end
+
+  test "after a touch, Enter on a focused step still navigates" do
+    route = build_route(7)
+    open_journey(route, reduced_motion: true)
+    touch_tap(".jm-node--current")
+    touch_tap(".jm-node--current") # a second tap closes the popover
+    page.execute_script("document.querySelector('.jm-node--current').focus()")
+    page.driver.browser.action.send_keys(:enter).perform
+    assert_current_path %r{/steps/}
+  end
+
+  test "a tap opens the touch popover and keeps it open; a second tap closes it" do
+    route = build_route(7)
+    open_journey(route, reduced_motion: true)
+
+    touch_tap(".jm-node--current")
+    assert_selector ".jm-pop.jm-pop--show.jm-pop--touch"
+    assert_no_current_path %r{/steps/}
+
+    touch_tap(".jm-node--current")
+    assert_no_selector ".jm-pop.jm-pop--show", visible: :all
+  end
+
+  test "Tab onto an off-screen chip or unlock pill brings it into view" do
+    route = build_route(43)
+    open_journey(route, reduced_motion: true)
+    locked = route.route_modules.find_by!(access_state: :locked)
+    chip = ".jm-chip[data-module-node-id='m:#{locked.id}']"
+    assert_operator rect_of(chip)["top"], :>, page.evaluate_script("innerHeight"), "the chip should start off-screen"
+
+    page.execute_script("document.querySelector(#{chip.to_json}).focus()")
+    assert_clear rect_of(chip)
+
+    wheel(0, -3000)
+    page.execute_script("document.querySelector('.jm-unlock').focus()")
+    assert_clear rect_of(".jm-unlock")
+  end
+
+  [[1024, 768], [1180, 820], [800, 1000]].each do |w, h|
+    test "at #{w} × #{h} the overlays never overlap and the legend holds its items" do
+      viewport(w, h)
+      route = build_route(:production)
+      open_journey(route, reduced_motion: true)
+
+      boxes = overlay_boxes
+      assert_nil first_overlap(boxes), "two overlays overlap at #{w}: #{first_overlap(boxes).inspect}"
+      spill = page.evaluate_script(<<~JS)
+        (() => { const l = document.querySelector(".jm-legend"); if (!l || !l.offsetWidth) return []
+          const b = l.getBoundingClientRect()
+          return [...l.children].map((c) => c.getBoundingClientRect())
+            .filter((c) => c.right > b.right + 0.5 || c.left < b.left - 0.5 || c.bottom > b.bottom + 0.5).length ? ["spill"] : [] })()
+      JS
+      assert_empty spill, "a legend item spills out of its box at #{w}"
+      assert_current_clear(route)
+    end
   end
 
   private
@@ -789,6 +872,18 @@ class JourneyMapTest < ApplicationSystemTestCase
   def viewport(width, height)
     page.driver.browser.execute_cdp("Emulation.setDeviceMetricsOverride",
                                     width: width, height: height, deviceScaleFactor: 1, mobile: width < 700)
+  end
+
+  # A touch tap as the browser delivers it: pointerdown (touch), focus, pointerup, click.
+  def touch_tap(selector)
+    page.execute_script(<<~JS)
+      (() => { const el = document.querySelector(#{selector.to_json}); const r = el.querySelector(".jm-node__dot").getBoundingClientRect()
+        const at = { clientX: r.left + r.width / 2, clientY: r.top + r.height / 2, bubbles: true, cancelable: true,
+                     pointerId: 7, pointerType: "touch", isPrimary: true }
+        el.dispatchEvent(new PointerEvent("pointerdown", at)); el.focus()
+        el.dispatchEvent(new PointerEvent("pointerup", at)); el.dispatchEvent(new MouseEvent("click", { ...at, detail: 1 })) })()
+    JS
+    sleep 0.15
   end
 
   def wheel(dx, dy)

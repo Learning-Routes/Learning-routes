@@ -93,7 +93,7 @@
       <%= yield %>
     </main>
 
-    <%# Bottom gradient fade %>
-    <div style="position:fixed; bottom:0; left:0; right:0; height:50px; z-index:10; background:linear-gradient(transparent, var(--color-bg)); pointer-events:none;"></div>
+    <%# No bottom fade: it painted over the map's overlays (the Continue card,
+        the bar); the map's own vignette frames the canvas. %>
   </body>
 </html>
