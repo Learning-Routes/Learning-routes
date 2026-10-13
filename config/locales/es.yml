@@ -1011,6 +1011,8 @@ es:
       reset: "Reiniciar"
       motion:
         play: "Reproducir"
+        pause: "Pausar"
+        replay: "Repetir"
       default_title:
         concept: "Concepto"
         check: "Comprueba tu conocimiento"

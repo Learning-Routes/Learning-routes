@@ -14,14 +14,20 @@ class MotionSceneChromeTest < ActiveSupport::TestCase
   # ones that are legal, measured against the demo scenes — adding to this list
   # is a change to the contract and needs a reason in the commit, not a quiet
   # append.
-  # The leading '#' is required, not optional: a bare %r{\A#?\h{2,8}\z}
-  # matches any short word made only of hex letters — "cafe", "dead", "beef"
-  # all pass as a "colour" with no '#' in sight, and "cafe" is a plausible
-  # displayed token in a Portuguese lesson. Task 4 replaced every bare alpha
-  # fragment ('22', '1E') with full-hex named constants, so the inventory
-  # contains no bare hex at all — confirmed by scanning both scenes before
-  # this tightening (see the report) rather than assumed.
-  HEX          = /\A#\h{3,8}\z/                       # '#1C1812' and 8-digit alpha colours like '#C0453A22'
+  # There is NO colour entry in this allowlist, and that absence is the
+  # Checkpoint 2 ruling (PROMPT_27_WP36_NARRATED_SCENES.md, 12 September).
+  # It used to hold HEX = /\A#\h{3,8}\z/, admitting '#1C1812' and 8-digit
+  # alpha colours like '#C0453A22'. That admission is exactly what let both
+  # scenes bake the light palette in: the canvas drew correct ink on the
+  # app's dark theme and the student saw nothing — present in the DOM,
+  # invisible on screen, the WP-33/WP-35 class of defect.
+  #
+  # The rule now: the scene has no colours of its own. Every colour arrives
+  # in the `theme` bag that motion_scene_controller.js reads off the page's
+  # CSS custom properties at mount. A colour literal in a .tsx is the same
+  # kind of failure as a displayed string literal — a palette compiled into
+  # the artifact, wrong for half the users, and invisible until someone reads
+  # the TypeScript. Re-adding a colour pattern here reopens that defect.
   # Requires an actual module-path shape (a leading './', '../', or '@'), not
   # merely word characters — a bare %r{\A[@\w./-]+\z} matches ANY plain word
   # (e.g. 'SUJETO') because \w alone already satisfies it without a slash or
@@ -43,10 +49,15 @@ class MotionSceneChromeTest < ActiveSupport::TestCase
   # bolted on separately, or the allowlist would silently drift from what it
   # documents.
   LAYOUT_ENUM  = %w[row column center start end stretch baseline row-reverse column-reverse right].freeze
-  SCENE_NAMES  = %w[agreement transform words onToken].freeze
+  # The KEYS a scene reads out of `scene.variables` — its own name plus the
+  # three shared bags. They are identifiers in a contract with main.ts, not
+  # anything a student ever sees, and they are matched exactly, so this list
+  # cannot be widened by accident. "theme" joins it with the Checkpoint 2
+  # ruling: the colours move out of the scene and arrive under this key.
+  SCENE_NAMES  = %w[agreement transform theme words onToken].freeze
 
   def allowed?(literal)
-    literal.match?(HEX) || literal.match?(MODULE_SPEC) || literal == FONT_STACK ||
+    literal.match?(MODULE_SPEC) || literal == FONT_STACK ||
       LAYOUT_ENUM.include?(literal) || SCENE_NAMES.include?(literal)
   end
 
@@ -83,9 +94,11 @@ class MotionSceneChromeTest < ActiveSupport::TestCase
       offenders = literals_of(code_of(path)).reject { |s| allowed?(s) }
 
       assert_equal [], offenders.sort,
-        "these are displayed strings compiled into the scene. Move them into the " \
-        "scene's schema as data (see data.labels) so the generator writes them in " \
-        "the route's languages."
+        "these are values compiled into the scene. A displayed string moves into " \
+        "the scene's schema as data (see data.labels) so the generator writes it " \
+        "in the route's languages; a COLOUR moves into the `theme` bag the " \
+        "controller reads off the page's CSS tokens, so the scene is legible in " \
+        "both themes."
     end
   end
 end

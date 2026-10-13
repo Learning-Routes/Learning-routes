@@ -1,7 +1,7 @@
 {
   "ignored_warnings": [
     {
-      "fingerprint": "7f71e0e31b864b73c4cf053942c6b8b06dc13c86e1ea0b20c4cd5861fe0df966",
+      "fingerprint": "a8c1eda136e29fa81ac47c10fe7958de83827a26bed464eebc9d27af869f2af6",
       "note": "False positive: ContentEngine::AudioStorage.validated_audio_path restricts section MP3s to the canonical storage/audio/sections real path, rejects traversal and symlink escapes, and enforces a 1 KiB minimum. Covered by audio_storage_test.rb and section_audio_controller_test.rb."
     },
     {

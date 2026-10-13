@@ -38,7 +38,7 @@ class ContentEngine::SpeechPathsMeteringTest < ActiveSupport::TestCase
     stub_route_step_find!(step)
     generator = ContentEngine::SectionAudioGenerator.new("metered", 0, "hello")
 
-    url = generator.send(:synthesize_with_voice, "hello", "voice")
+    url, _words = generator.send(:synthesize_with_voice, "hello", "voice")
     @audio_paths << Rails.root.join(url.delete_prefix("/"))
 
     assert_one_synthesis_row

@@ -5,10 +5,10 @@ import {
 } from '@motion-canvas/core';
 import {cueFor, remainingUntil} from '../lib/cues';
 import type {Word} from '../lib/cues';
+import {FALLBACK_THEME} from '../lib/theme';
+import type {Theme} from '../lib/theme';
 import schema from './transform.schema.json';
 import type {Transform} from '../generated/schemas';
-
-const INK = '#1C1812', MUTED = '#887F72', HI = '#F2D66B';
 
 // The exact font stack every fontFamily in this scene must use (global constraint).
 const FONT = "'DM Sans', 'Hiragino Sans GB', 'PingFang SC', 'Microsoft YaHei', 'Noto Sans CJK SC', system-ui, sans-serif";
@@ -26,6 +26,10 @@ function fireToken(onToken: ((index: number | null) => void) | null, index: numb
 export default makeScene2D(function* (view) {
   const scene = useScene();
   const d = scene.variables.get<Transform>('transform', FALLBACK)();
+  // Not a palette, a reading: the page's own tokens, handed over by
+  // motion_scene_controller.js. FALLBACK_THEME (light) covers the one caller
+  // that mounts without them, the editorless preview page.
+  const theme = scene.variables.get<Theme>('theme', FALLBACK_THEME)();
   const words = scene.variables.get<Word[] | null>('words', null)();
   const onToken = scene.variables.get<((index: number | null) => void) | null>('onToken', null);
 
@@ -44,11 +48,14 @@ export default makeScene2D(function* (view) {
     <Layout direction="column" alignItems="start" gap={34} layout>
       {d.steps.map((s, i) => (
         <Layout ref={rows[i]} direction="row" alignItems="center" gap={30} opacity={0} layout>
-          <Txt ref={tags[i]} text={s.tag} fontFamily={FONT} fontSize={20} letterSpacing={4} fill={MUTED} width={210} textAlign="right" />
+          <Txt ref={tags[i]} text={s.tag} fontFamily={FONT} fontSize={20} letterSpacing={4} fill={theme.muted} width={210} textAlign="right" />
           <Layout direction="row" gap={14} layout>
             {s.tokens.map((t, k) => (
-              <Rect ref={chips[i][k]} radius={14} padding={[8, 18]} fill={'#00000000'} scale={0} layout>
-                <Txt text={t} fontFamily={FONT} fontWeight={700} fontSize={62} fill={INK} />
+              /* No `fill`: Rect's own default of null is an unfilled chip, and
+                 Color.lerp reads a null `from` as the destination at alpha 0, so
+                 the highlight fades in on its own hue. See agreement.tsx. */
+              <Rect ref={chips[i][k]} radius={14} padding={[8, 18]} scale={0} layout>
+                <Txt text={t} fontFamily={FONT} fontWeight={700} fontSize={62} fill={theme.ink} />
               </Rect>
             ))}
           </Layout>
@@ -73,7 +80,7 @@ export default makeScene2D(function* (view) {
       if (cue !== null) { cueCursor += 1; yield* waitUntilTime(cue); }
       else { yield* waitFor(0.45); }
       step.hi.forEach(k => fireToken(onToken(), k));
-      yield* all(...step.hi.map(k => chips[i][k]().fill(HI, 0.35, easeInOutCubic)));
+      yield* all(...step.hi.map(k => chips[i][k]().fill(theme.hi, 0.35, easeInOutCubic)));
       yield* all(...step.hi.map(k => chips[i][k]().scale(1.06, 0.25, easeOutBack)));
       yield* all(...step.hi.map(k => chips[i][k]().scale(1, 0.25)));
     } else {

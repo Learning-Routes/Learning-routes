@@ -9,32 +9,35 @@ module ContentEngine
     VOICE_MAP = VoiceCatalog::VOICE_MAP
     DEFAULT_VOICE = VoiceCatalog::DEFAULT_VOICE
 
-    def self.generate!(step_id, section_index, section_text, locale: "en", target_locale: nil)
-      new(step_id, section_index, section_text, locale: locale, target_locale: target_locale).generate!
+    def self.generate!(step_id, section_index, section_text, locale: "en", target_locale: nil, timestamps: false)
+      new(step_id, section_index, section_text, locale: locale, target_locale: target_locale, timestamps: timestamps).generate!
     end
 
-    def initialize(step_id, section_index, section_text, locale: "en", target_locale: nil)
+    def initialize(step_id, section_index, section_text, locale: "en", target_locale: nil, timestamps: false)
       @step_id = step_id
       @section_index = section_index
       @section_text = section_text
       @locale = locale
       @target_locale = target_locale
+      @timestamps = timestamps
     end
 
     def generate!
       sanitized = sanitize_for_tts(@section_text)
       return nil if sanitized.blank?
 
-      audio_path = synthesize_audio(sanitized)
+      audio_path, words = synthesize_audio(sanitized)
       duration = estimate_duration(sanitized)
 
       cache_key = self.class.cache_key(@step_id, @section_index)
-      Rails.cache.write(cache_key, { audio_url: audio_path, duration: duration }, expires_in: CACHE_TTL)
+      # Cache the words alongside audio_url/duration so a cache hit (see
+      # `.cached`) can still hand the animation its cues without re-synthesizing.
+      Rails.cache.write(cache_key, { audio_url: audio_path, duration: duration, words: words }, expires_in: CACHE_TTL)
 
       # Update step metadata audio_sections status
-      update_step_audio_status!("ready", audio_path, duration)
+      update_step_audio_status!("ready", audio_path, duration, words: words)
 
-      { audio_url: audio_path, duration: duration }
+      { audio_url: audio_path, duration: duration, words: words }
     end
 
     def self.cache_key(step_id, section_index)
@@ -155,6 +158,8 @@ module ContentEngine
       @target_locale.present?
     end
 
+    # Returns [audio_path, words], the same tuple synthesize_with_voice
+    # returns — see its comment below.
     def synthesize_audio(text)
       primary_voice = select_voice
       synthesize_with_voice(text, primary_voice)
@@ -168,6 +173,11 @@ module ContentEngine
       end
     end
 
+    # Returns [audio_path, words]: audio_path is the stored file's URL,
+    # words is the array from AiClient#chat's `words:` key — nil unless this
+    # generator was constructed with timestamps: true. A caller after only
+    # the path must destructure (`path, _words = synthesize_with_voice(...)`)
+    # rather than treat the return value as a bare String.
     def synthesize_with_voice(text, voice_id)
       step = LearningRoutesEngine::RouteStep.find(@step_id)
       user = step.learning_route.learning_profile&.user
@@ -184,12 +194,13 @@ module ContentEngine
         prompt: text,
         params: {
           voice_id: voice_id,
-          model_id: "eleven_multilingual_v2"
+          model_id: "eleven_multilingual_v2",
+          timestamps: @timestamps
         }
       )
 
       AiOrchestrator::SpeechCostRecorder.record_tts!(user: user, result: result)
-      store_audio_file(result[:content])
+      [store_audio_file(result[:content]), result[:words]]
     end
 
     def select_voice
@@ -223,7 +234,7 @@ module ContentEngine
       (word_count / 150.0 * 60).round(1)
     end
 
-    def update_step_audio_status!(status, url = nil, duration = nil)
+    def update_step_audio_status!(status, url = nil, duration = nil, words: nil)
       step = LearningRoutesEngine::RouteStep.find(@step_id)
 
       # Multiple section audio jobs run concurrently for the same step. Without
@@ -238,6 +249,10 @@ module ContentEngine
         entry = { "status" => status }
         entry["url"] = url if url
         entry["duration"] = duration if duration
+        # A TOP-LEVEL key on this section's audio_sections entry, never inside
+        # parsed_sections — that array belongs to the parser, and
+        # ContentEngine::SectionEnrichment::KEYS is the closed exception list.
+        entry["words"] = words if words.present?
         audio_sections[@section_index.to_s] = entry
 
         # merge_metadata!, not a whole-blob write: with_lock serialises the two

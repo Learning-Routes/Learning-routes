@@ -1,5 +1,6 @@
 // Bootstraps two Motion Canvas scenes WITHOUT the editor or the vite plugin, and
-// exposes a tiny API the demo page calls: mc.mount(el, sceneName, {data, words, onToken}).
+// exposes a tiny API the demo page calls:
+// mc.mount(el, sceneName, {data, theme, words, onToken}).
 //
 // This mirrors what @motion-canvas/player does internally (Player + Stage),
 // minus the web component, so the whole thing can be inlined into one HTML file.
@@ -11,6 +12,8 @@ import agreement from './scenes/agreement';
 import transform from './scenes/transform';
 import {resetCueStats, cueStats} from './lib/cues';
 import type {Word} from './lib/cues';
+import type {Theme} from './lib/theme';
+import {driftSeek} from './lib/sync';
 
 // What the vite plugin's `?scene` transform does, by hand.
 function describe(desc: any, name: string): FullSceneDescription {
@@ -33,6 +36,9 @@ function makeProjectFor(name: string): Project {
   const projectMeta = new MetaFile('project', false);
   projectMeta.loadData({
     version: 0,
+    // The project background STAYS transparent: what shows through is the
+    // page's own ground behind the canvas, so the scene needs no opinion about
+    // which theme it is being played on.
     shared: {background: 'rgba(0,0,0,0)', range: [0, null], size: {x: 1600, y: 900}, audioOffset: 0},
     preview: {fps: 30, resolutionScale: 1},
     rendering: {fps: 30, resolutionScale: 1, colorSpace: 'srgb', exporter: {name: '@motion-canvas/core/image-sequence', options: {}}},
@@ -44,6 +50,10 @@ function makeProjectFor(name: string): Project {
 
 type MountOpts = {
   data?: Record<string, unknown>;
+  // The page's colour tokens, read at mount by motion_scene_controller.js. Left
+  // out (or null) only by the editorless preview page, which is the one caller
+  // a scene's own FALLBACK_THEME exists for.
+  theme?: Theme | null;
   words?: Word[] | null;
   onToken?: (index: number | null) => void;
 };
@@ -66,8 +76,13 @@ function mount(el: HTMLElement, sceneName: string, opts: MountOpts = {}): Handle
   player.configure(settings);
 
   resetCueStats();
-  if (opts.data || opts.words) {
-    player.setVariables({[sceneName]: opts.data ?? {}, words: opts.words ?? null, onToken: opts.onToken ?? null});
+  if (opts.data || opts.theme || opts.words) {
+    player.setVariables({
+      [sceneName]: opts.data ?? {},
+      theme: opts.theme ?? null,
+      words: opts.words ?? null,
+      onToken: opts.onToken ?? null,
+    });
   }
 
   const render = async () => { await stage.render(player.playback.currentScene, player.playback.previousScene); };
@@ -92,4 +107,10 @@ function mount(el: HTMLElement, sceneName: string, opts: MountOpts = {}): Handle
   };
 }
 
-(window as any).mc = {mount};
+// `driftSeek` rides alongside `mount` rather than being duplicated in
+// motion_scene_controller.js: this bundle is the one place app/motion's
+// TypeScript is reachable from Rails' own JS, and the controller has no other
+// way to call the SAME pure decision test/javascript/motion_sync_test.rb
+// pins (see lib/sync.ts) — the same reasoning that already put `cueStats` on
+// the mount `Handle` rather than reimplementing the counters in the controller.
+(window as any).mc = {mount, driftSeek};
