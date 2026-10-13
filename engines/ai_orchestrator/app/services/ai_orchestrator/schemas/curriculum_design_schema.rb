@@ -24,7 +24,7 @@ module AiOrchestrator
     # live here even if we wanted them to.
     #
     # STRICT-MODE RULES (RubyLLM sends strict: true by default —
-    # ruby_llm-1.11.0/lib/ruby_llm/providers/openai/chat.rb:25):
+    # ruby_llm-1.16.0/lib/ruby_llm/providers/openai/chat.rb:33-43):
     #   * every object must set additionalProperties: false
     #   * EVERY property must be listed in `required` — strict mode has no concept
     #     of an optional key, which is why `topics` is required here even though
