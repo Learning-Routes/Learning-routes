@@ -3574,6 +3574,11 @@ html[data-theme="dark"] .jm {
 .jm-pop { position: fixed; z-index: 40; width: 280px; padding: 12px 14px; box-shadow: var(--jm-shadow); pointer-events: none;
           opacity: 0; transform: translate(-50%, 6px); transition-property: opacity, transform; transition-duration: 160ms; }
 .jm-pop--show { opacity: 1; transform: translate(-50%, 0); }
+/* The pointer toward the node; it follows the flip. */
+.jm-pop::after { content: ""; position: absolute; left: calc(50% + var(--jm-arrow, 0px)); bottom: -6px; width: 12px; height: 12px; background: var(--jm-glass);
+                 border-right: 1px solid var(--jm-glass-border); border-bottom: 1px solid var(--jm-glass-border);
+                 transform: translateX(-50%) rotate(45deg); }
+.jm-pop--below::after { bottom: auto; top: -6px; transform: translateX(-50%) rotate(225deg); }
 .jm-pop--touch { pointer-events: auto; }
 .jm-pop__eyebrow { font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: .02em; color: var(--color-sub);
                    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }

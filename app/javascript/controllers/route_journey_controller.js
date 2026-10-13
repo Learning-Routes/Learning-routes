@@ -432,6 +432,8 @@ export default class extends Controller {
     pop.classList.toggle("jm-pop--below", below)
     const x = Math.max(vp.left + w / 2 + 8, Math.min(vp.right - w / 2 - 8, top.x))
     pop.style.left = `${x}px`
+    // Clamped at an edge, the pointer still points at the node.
+    pop.style.setProperty("--jm-arrow", `${Math.max(-(w / 2 - 16), Math.min(w / 2 - 16, top.x - x))}px`)
     pop.style.top = `${below ? bottom + 14 : top.y - h - 14}px`
   }
 
