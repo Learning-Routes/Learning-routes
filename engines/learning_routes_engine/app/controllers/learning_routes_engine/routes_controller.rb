@@ -150,7 +150,8 @@ module LearningRoutesEngine
       else 0
       end
 
-      {
+      reinforcement = ReinforcementParents.reinforcement?(step)
+      topic = {
         id: step.id,
         name: step.localized_title,
         content_type: step.content_type,
@@ -158,11 +159,31 @@ module LearningRoutesEngine
         status: step.status,
         # One rule (ReinforcementParents.reinforcement?). The old second branch,
         # metadata["triggering_module_id"], had no writer anywhere.
-        reinforcement: ReinforcementParents.reinforcement?(step),
+        reinforcement: reinforcement,
         parent_id: parent_id,
         current: step.id == @current_step_id,
         path: route_step_path(@route, step)
       }
+      topic[:short_name] = reinforcement_short_name(step.localized_title) if reinforcement
+      topic[:minutes] = step.estimated_minutes if step.estimated_minutes
+      topic
+    end
+
+    REINFORCEMENT_KINDS = %w[review practice reassessment].freeze
+
+    # WP-37b brief §4.4. The map labels a reinforcement without its "Refuerzo:"
+    # prefix; `name` keeps the full title. A generated reinforcement's title is
+    # written in the ROUTE's language (AdaptiveDifficulty), so it is matched
+    # against every locale and its short form given in the page's.
+    def reinforcement_short_name(title)
+      kind = REINFORCEMENT_KINDS.find do |k|
+        I18n.available_locales.any? { |l| I18n.t("learning_engine.reinforcement.#{k}.title", locale: l) == title }
+      end
+      return t("learning_engine.reinforcement.#{kind}.short") if kind
+
+      prefixes = I18n.available_locales.map { |l| I18n.t("learning_engine.journey.status_reinforcement", locale: l) }
+      prefix = prefixes.find { |p| title.start_with?("#{p}:") }
+      prefix ? title.delete_prefix("#{prefix}:").strip : title
     end
 
     # WP-37 §1.4. ONE current step, decided here, from the position the server

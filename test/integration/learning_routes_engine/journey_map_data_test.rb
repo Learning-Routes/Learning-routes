@@ -245,6 +245,65 @@ class LearningRoutesEngine::JourneyMapDataTest < ActionDispatch::IntegrationTest
     assert_equal({ "title" => "Map" }, JSON.parse(node["data-route-journey-root-value"]))
   end
 
+  # ─── WP-37b brief §4.4 and §5.2: short names and minutes ─────────────
+
+  # A reinforcement's label on the map drops the "Refuerzo:" prefix; `name`
+  # keeps the full title for aria and the popover.
+  %w[es en].each do |locale|
+    %w[review practice reassessment].each do |kind|
+      test "a #{kind} reinforcement in #{locale} gets its short name, without the prefix" do
+        @user.update!(locale: locale)
+        primary = step!(@preview, 0, "Primary")
+        title = I18n.t("learning_engine.reinforcement.#{kind}.title", locale: locale)
+        reinforcement = step!(@preview, 1, title, metadata: { "reinforcement" => true, "triggering_step_id" => primary.id })
+
+        topic = all_topics.find { |t| t["id"] == reinforcement.id }
+        prefix = I18n.t("learning_engine.journey.status_reinforcement", locale: locale)
+        assert_equal I18n.t("learning_engine.reinforcement.#{kind}.short", locale: locale), topic["short_name"]
+        assert_not topic["short_name"].start_with?(prefix), "#{topic["short_name"].inspect} still carries #{prefix.inspect}"
+        assert_equal title, topic["name"], "name stays the full title"
+      end
+    end
+  end
+
+  test "a reinforcement in the route's language on a page in the other language still gets a short name" do
+    @user.update!(locale: "en")
+    primary = step!(@preview, 0, "Primary")
+    title = I18n.t("learning_engine.reinforcement.practice.title", locale: :es)
+    reinforcement = step!(@preview, 1, title, metadata: { "reinforcement" => true, "triggering_step_id" => primary.id })
+
+    topic = all_topics.find { |t| t["id"] == reinforcement.id }
+    assert_equal I18n.t("learning_engine.reinforcement.practice.short", locale: :en), topic["short_name"]
+  end
+
+  test "a reinforcement with its own title drops only the leading prefix" do
+    primary = step!(@preview, 0, "Primary")
+    reinforcement = step!(@preview, 1, "Refuerzo: los verbos irregulares",
+                          metadata: { "reinforcement" => true, "triggering_step_id" => primary.id })
+    plain = step!(@preview, 2, "Sin prefijo", metadata: { "reinforcement" => true, "triggering_step_id" => primary.id })
+
+    topics = all_topics.index_by { |t| t["id"] }
+    assert_equal "los verbos irregulares", topics[reinforcement.id]["short_name"]
+    assert_equal "Sin prefijo", topics[plain.id]["short_name"]
+  end
+
+  test "a primary step has no short name" do
+    primary = step!(@preview, 0, "Primary")
+
+    assert_not all_topics.find { |t| t["id"] == primary.id }.key?("short_name")
+  end
+
+  test "minutes come from estimated_minutes and are omitted when nil" do
+    timed = step!(@preview, 0, "Timed")
+    timed.update_column(:estimated_minutes, 11)
+    untimed = step!(@preview, 1, "Untimed")
+    untimed.update_column(:estimated_minutes, nil)
+
+    topics = all_topics.index_by { |t| t["id"] }
+    assert_equal 11, topics[timed.id]["minutes"]
+    assert_not topics[untimed.id].key?("minutes")
+  end
+
   private
 
   def all_topics = journey_stages.flat_map { |s| s["topics"] }

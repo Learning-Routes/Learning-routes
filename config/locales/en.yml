@@ -983,12 +983,15 @@ en:
       review:
         title: "Reinforcement: Review Key Concepts"
         description: "Review the concepts that need strengthening"
+        short: "Review key concepts"
       practice:
         title: "Reinforcement: Guided Practice"
         description: "Practice exercises with additional guidance"
+        short: "Guided practice"
       reassessment:
         title: "Reinforcement: Re-Assessment"
         description: "Quick check to verify understanding"
+        short: "Re-assessment"
     modules: { free_preview: "Free preview", locked: "Locked until purchase", purchased: "Purchased" }
     blocks:
       required:

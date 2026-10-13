@@ -983,12 +983,15 @@ es:
       review:
         title: "Refuerzo: repasa los conceptos clave"
         description: "Repasa los conceptos que necesitan afianzarse"
+        short: "Repasa los conceptos clave"
       practice:
         title: "Refuerzo: práctica guiada"
         description: "Ejercicios de práctica con apoyo adicional"
+        short: "Práctica guiada"
       reassessment:
         title: "Refuerzo: nueva evaluación"
         description: "Comprobación rápida para verificar que lo has entendido"
+        short: "Nueva evaluación"
     modules: { free_preview: "Vista previa gratuita", locked: "Bloqueado hasta la compra", purchased: "Comprado" }
     blocks:
       required:
