@@ -25,7 +25,7 @@ pin "mc", to: "mc.js", preload: false
 # === Content Delivery ===
 
 # KaTeX - math formula rendering
-pin "katex", to: "https://cdn.jsdelivr.net/npm/katex@0.16.21/dist/katex.mjs"
+pin "katex", to: "https://cdn.jsdelivr.net/npm/katex@0.18.11/dist/katex.mjs"
 
 # Ace Editor - code editor for exercises
 pin "ace-builds", to: "https://cdn.jsdelivr.net/npm/ace-builds@1.36.5/src-min-noconflict/ace.js"
@@ -33,10 +33,10 @@ pin "ace-builds", to: "https://cdn.jsdelivr.net/npm/ace-builds@1.36.5/src-min-no
 # === Diagram Rendering ===
 # Exact patch pin — a major-only (@11) pin auto-upgrades and could pull a
 # compromised release.
-pin "mermaid", to: "https://cdn.jsdelivr.net/npm/mermaid@11.16.0/dist/mermaid.esm.min.mjs"
+pin "mermaid", to: "https://cdn.jsdelivr.net/npm/mermaid@11.16.1/dist/mermaid.esm.min.mjs"
 
 # === Client-side HTML sanitization (defense-in-depth) ===
-pin "dompurify", to: "https://cdn.jsdelivr.net/npm/dompurify@3.4.12/dist/purify.es.mjs"
+pin "dompurify", to: "https://cdn.jsdelivr.net/npm/dompurify@3.4.17/dist/purify.es.mjs"
 
 # === Celebration System ===
 pin "canvas-confetti", to: "https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.module.mjs"

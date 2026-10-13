@@ -19,26 +19,18 @@ class LandingController < ApplicationController
     #
     # Rather than invent data for a decorative layout, the landing stays what it
     # is — a visitor page — and a student who has somewhere to be is sent there.
-    return redirect_to(destination_for(current_user)) if current_user
+    return redirect_to(helpers.signed_in_home_path(current_user)) if redirect_to_signed_in_home?
 
     @route_nodes = default_translated_nodes
   end
 
   private
 
-  # Where a signed-in student belongs instead of the landing: their most
-  # recently touched route, or the dashboard when they have none yet.
-  def destination_for(user)
-    profile = LearningRoutesEngine::LearningProfile.find_by(user: user)
-    return main_app.dashboard_path if profile.nil?
-
-    route = LearningRoutesEngine::LearningRoute
-      .where(learning_profile: profile)
-      .where.not(status: [:draft])
-      .order(updated_at: :desc)
-      .first
-
-    route ? learning_routes_engine.route_path(route) : main_app.dashboard_path
+  # Students only, and never from the navbar's "Home" link (`?from=nav`). The
+  # owner and teachers see the landing as a visitor would; it was unreachable for
+  # them while signed in, and the navbar logo looped back (PROMPT 33).
+  def redirect_to_signed_in_home?
+    current_user&.student? && params[:from] != "nav"
   end
 
   # Build translated default nodes from I18n YAML + satellite geometry

@@ -1,5 +1,14 @@
 # Audit all gems listed in the Gemfile for known security problems by running bin/bundler-audit.
 # CVEs that are not relevant to the application can be enumerated on the ignore list below.
+#
+# Every entry is held to its reason by test/config/bundler_audit_exemptions_test.rb,
+# which fails when the reason stops being true. Do not add an entry without a test there.
 
 ignore:
-  - CVE-THAT-DOES-NOT-APPLY
+  # ruby_llm 1.11.0. These are three regexp-backtracking DoS advisories, and each is
+  # scoped "on Ruby 3.1.x". This app runs Ruby 3.3.8 (.ruby-version, Dockerfile, CI),
+  # where regexp memoization bounds the backtracking. The only listed fix is ruby_llm 2.x,
+  # a new major version. The owner exempted these on 2026-10-12 (CI-2).
+  - CVE-2026-67987 # GHSA-5m38-526f-3498: think-tag response parsing
+  - CVE-2026-67989 # GHSA-57hg-jgw4-wcqw: Mistral model capability matching
+  - CVE-2026-67991 # GHSA-42r3-x6vx-x49x: RubyLLM::Utils.underscore

@@ -4,16 +4,20 @@ class ContentEngine::VoiceEvaluatorMeteringTest < ActiveSupport::TestCase
   setup do
     @audio_dir = Rails.root.join("storage", "voice_responses")
     FileUtils.mkdir_p(@audio_dir)
-    File.binwrite(@audio_dir.join("metering.mp3"), "audio")
+    # One file per test. A fixed "metering.mp3" was shared by every parallel worker,
+    # so one test's teardown deleted the file another was reading (CI, PR #46:
+    # ENOENT / "Audio file not found" in three tests).
+    @audio_key = "metering-#{SecureRandom.hex(8)}.mp3"
+    File.binwrite(@audio_dir.join(@audio_key), "audio")
     @user = create_test_user
-    response = Struct.new(:audio_blob_key, :user).new("metering.mp3", @user)
+    response = Struct.new(:audio_blob_key, :user).new(@audio_key, @user)
     @evaluator = ContentEngine::VoiceEvaluator.allocate
     @evaluator.instance_variable_set(:@response, response)
     @evaluator.define_singleton_method(:audio_duration_seconds) { |_path| BigDecimal("60.0") }
   end
 
   teardown do
-    FileUtils.rm_f(@audio_dir.join("metering.mp3"))
+    FileUtils.rm_f(@audio_dir.join(@audio_key))
   end
 
   # WP-34 §3.2. This class used to post to the provider with its own Net::HTTP,
@@ -82,7 +86,7 @@ class ContentEngine::VoiceEvaluatorMeteringTest < ActiveSupport::TestCase
   test "downstream evaluation failure does not relabel the successful Scribe charge" do
     stub_request(:post, "https://api.elevenlabs.io/v1/speech-to-text")
       .to_return(status: 200, body: { text: "transcribed" }.to_json)
-    response = MeteringResponse.new("metering.mp3", @user)
+    response = MeteringResponse.new(@audio_key, @user)
     evaluator = ContentEngine::VoiceEvaluator.new(response)
     evaluator.define_singleton_method(:audio_duration_seconds) { |_path| BigDecimal("60.0") }
     evaluator.define_singleton_method(:evaluate_response) { |_| raise "downstream failure" }

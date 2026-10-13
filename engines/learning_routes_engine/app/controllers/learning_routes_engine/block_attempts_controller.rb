@@ -10,6 +10,8 @@ module LearningRoutesEngine
     before_action :set_route_and_step
 
     def create
+      return head(:bad_request) unless params.fetch(:block, {}).is_a?(ActionController::Parameters)
+
       section = parsed_section
       return head(:not_found) if section.blank?
 
@@ -81,8 +83,17 @@ module LearningRoutesEngine
       sections[section_index]
     end
 
+    # The keys the block controllers send (every caller of block_submission.js's
+    # submitBlock). This was `permit!`, which stored whatever a client posted —
+    # `correct: true` included. `matches` and `ratings` are sent as index-keyed hashes of
+    # strings; `{}` lets them through at any depth, which their readers tolerate
+    # (BlockGrader stringifies match values, BlockAttempt#flashcard_rating maps unknown
+    # ratings to nil). `answers: []` takes scalars only.
+    PAYLOAD_KEYS = [:option_index, :timed_out, :interacted, :rated_count, :submission_complete,
+                    { answers: [], matches: {}, ratings: {} }].freeze
+
     def block_payload
-      params.fetch(:block, {}).permit!.to_h
+      params.fetch(:block, {}).permit(*PAYLOAD_KEYS).to_h
     end
 
     def complete_submission?

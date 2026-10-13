@@ -18,9 +18,9 @@ module ContentEngine
       @created_paths.reverse_each do |path|
         FileUtils.rm_f(path)
       end
-      [@outside_root, @sibling_root].each do |directory|
-        Dir.rmdir(directory) if directory.directory? && directory.empty?
-      end
+      # The directories stay: they are shared by parallel workers, so removing one raced
+      # another worker's check, rmdir or write (CI, PR #46: ENOENT / ENOTEMPTY). They are
+      # empty folders under the gitignored storage/, and every setup recreates them.
     end
 
     test "resolves an existing MP3 inside the audio root" do
