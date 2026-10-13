@@ -42,10 +42,6 @@
         &larr; <%= t("learning_engine.journey.back_to_profile") %>
       <% end %>
 
-      <div style="font-family:'Instrument Serif',serif; font-size:0.92rem; font-style:italic; color:var(--color-txt);">
-        <%= @route.localized_topic %>
-      </div>
-
       <div style="display:flex; align-items:center; gap:12px;">
         <% if @due_reviews&.any? %>
           <%= link_to learning_routes_engine.reviews_path, style: "display:inline-flex; align-items:center; gap:4px; font-family:'JetBrains Mono',monospace; font-size:0.55rem; color:var(--color-due-heading); text-decoration:none; background:var(--color-due-bg); padding:3px 8px; border-radius:6px;" do %>
@@ -54,8 +50,13 @@
           <% end %>
         <% end %>
         <% if @progress %>
-          <span style="font-family:'JetBrains Mono',monospace; font-size:0.55rem; color:var(--color-muted);">
-            <%= @progress[:completed_steps] %>/<%= @progress[:total_steps] %>
+          <%# WP-37b brief §4.1: one title (the map's h1), so the bar carries the
+              count and a progress line in the current module's level colour. %>
+          <% total = @progress[:total_steps].to_i %>
+          <% percent = total.positive? ? (100.0 * @progress[:completed_steps].to_i / total).round : 0 %>
+          <span class="jm-counter" data-journey-counter style="--jm-line: var(--color-node-<%= @continue&.dig(:level) || "nv1" %>);">
+            <span class="jm-counter__text"><%= t("learning_engine.journey.counter", done: @progress[:completed_steps], total: total, percent: percent) %></span>
+            <span class="jm-counter__track" aria-hidden="true"><span class="jm-counter__fill" style="width: <%= percent %>%;"></span></span>
           </span>
         <% end %>
       </div>

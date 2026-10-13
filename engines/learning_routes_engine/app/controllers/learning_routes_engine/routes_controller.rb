@@ -44,6 +44,7 @@ module LearningRoutesEngine
       @progress = RouteProgressTracker.new(@route).progress_summary
       @due_reviews = SpacedRepetition.new.due_reviews(@route)
       @stages = build_journey_stages(@journey_modules, readable_module)
+      @continue = journey_continue(@stages)
       render layout: "journey"
     end
 
@@ -167,6 +168,31 @@ module LearningRoutesEngine
       topic[:short_name] = reinforcement_short_name(step.localized_title) if reinforcement
       topic[:minutes] = step.estimated_minutes if step.estimated_minutes
       topic
+    end
+
+    # WP-37b brief §5.1. What the Continue card says, from the stages the map
+    # draws: the current step with its place among its module's primary steps,
+    # "route completed" when every readable step is done, nothing when no
+    # readable step exists.
+    def journey_continue(stages)
+      readable = stages.select { |stage| stage[:readable] }
+      topics = readable.flat_map { |stage| stage[:topics] }
+      return nil if topics.empty?
+
+      done = topics.count { |topic| topic[:status] == "completed" }
+      if done == topics.size
+        return { completed: true, done: done, total: topics.size, level: readable.last[:level],
+                 path: route_path(@route) }
+      end
+
+      current = topics.find { |topic| topic[:current] }
+      return nil unless current
+
+      stage = readable.find { |s| s[:topics].include?(current) }
+      primaries = stage[:topics].reject { |topic| topic[:reinforcement] }
+      upto = stage[:topics].take(stage[:topics].index(current) + 1)
+      { completed: false, module: stage[:label], level: stage[:level], title: current[:name], path: current[:path],
+        step: [upto.count { |topic| !topic[:reinforcement] }, 1].max, total: primaries.size }
     end
 
     REINFORCEMENT_KINDS = %w[review practice reassessment].freeze
