@@ -433,6 +433,8 @@ class JourneyMapTest < ApplicationSystemTestCase
     assert_selector ".jm-pop__title", text: TITLES[3]
     assert_selector ".jm-pop__eyebrow", text: "Vista previa gratuita · paso 4 de 7"
     assert_selector ".jm-pop__act", text: I18n.t("learning_engine.journey.act_locked", locale: :es)
+    # A step not yet reachable is "still ahead", never "available" (browser pass).
+    assert_selector ".jm-pop__meta", text: /\A#{I18n.t("learning_engine.journey.legend_ahead", locale: :es)} · 11 min\z/
     assert_equal "jm-pop", find("[data-node-id='s:#{step4.id}']")["aria-describedby"]
     assert_popover_contrast
 

@@ -386,7 +386,8 @@ export default class extends Controller {
       : fill(L.pop_step, { module: stage.label, step: Math.max(step, 1), total: heads.length })
     const status = masked ? L.locked
       : (topic.current && topic.status !== "completed" ? L.current
-        : (topic.status === "completed" ? L.completed : (node.kind === "reinforcement" ? L.reinforcement : L.available)))
+        : (topic.status === "completed" ? L.completed
+          : (topic.status === "locked" ? L.ahead : (node.kind === "reinforcement" ? L.reinforcement : L.available))))
     const action = masked ? L.act_masked
       : (topic.current && topic.status !== "completed" ? L.act_continue
         : (topic.status === "completed" ? L.act_review
