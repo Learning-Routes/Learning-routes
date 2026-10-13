@@ -72,9 +72,19 @@ node_modules/
 # Coverage reports
 /coverage/
 
-# Claude Code
+# Claude Code: local settings and session state. Never committed.
+/.claude/
 CLAUDE.md
 /CLAUDE.md
+
+# Editor and agent tooling caches, regenerated locally.
+/.ruby-lsp/
+/.superpowers/
+
+# Backup and merge leftovers. `.env.deploy.bak` is already covered by /.env* above.
+*.bak
+*.orig
+*.rej
 db/*.sqlite3
 
 # Ignore key files for decrypting credentials and more.
