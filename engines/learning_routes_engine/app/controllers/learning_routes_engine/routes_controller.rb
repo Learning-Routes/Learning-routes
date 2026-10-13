@@ -11,8 +11,9 @@ module LearningRoutesEngine
     layout "learning"
 
     def show
+      @readable_module = ModuleAccessPolicy.module_reader(@route)
       @modules = @route.route_modules.includes(:route_steps).order(:position, :id)
-      @steps = @modules.select(&:access_preview?).flat_map(&:route_steps)
+      @steps = @modules.select(&@readable_module).flat_map(&:route_steps)
       @progress = RouteProgressTracker.new(@route).progress_summary
       @due_reviews = SpacedRepetition.new.due_reviews(@route)
     end
@@ -33,13 +34,16 @@ module LearningRoutesEngine
       # Locked stages show their SHAPE, never their content: `journey_topic`
       # masks the title and drops the link for a module the student has no
       # access to, so the paywall holds.
+      readable_module = ModuleAccessPolicy.module_reader(@route)
       @journey_modules = @route.route_modules
         .includes(:route_steps)
         .order(:position, :id)
-      @steps = @journey_modules.select(&:access_preview?).flat_map { |m| m.route_steps.sort_by(&:position) }
+      @steps = @journey_modules.select(&readable_module).flat_map { |m| m.route_steps.sort_by(&:position) }
+      @current_step_id = journey_current_step_id(@steps)
+      @journey_root = { title: @route.localized_topic.presence || @route.topic }
       @progress = RouteProgressTracker.new(@route).progress_summary
       @due_reviews = SpacedRepetition.new.due_reviews(@route)
-      @stages = build_journey_stages(@journey_modules)
+      @stages = build_journey_stages(@journey_modules, readable_module)
       render layout: "journey"
     end
 
@@ -84,8 +88,6 @@ module LearningRoutesEngine
       end
     end
 
-    LEVEL_COLORS = { "nv1" => "#5BA880", "nv2" => "#6E9BC8", "nv3" => "#8B80C4" }.freeze
-
     # One stage per MODULE. `level` survives as a tag on the stage rather than as
     # the grouping.
     #
@@ -95,7 +97,7 @@ module LearningRoutesEngine
     # reinforcement immediately behind it, in the SAME module
     # (`triggering_module_id`). Ordering by position is therefore already
     # clustering; the flag below lets the view say so.
-    def build_journey_stages(modules)
+    def build_journey_stages(modules, readable_module)
       modules.filter_map do |route_module|
         steps = route_module.route_steps.sort_by(&:position)
         next if steps.empty?
@@ -104,17 +106,20 @@ module LearningRoutesEngine
         # lowest, which is what a student is being asked to start at.
         level = steps.map(&:level).compact.min || "nv1"
 
-        readable = route_module.access_preview?
+        # From the policy, not `access_preview?`: a PURCHASED module is readable to
+        # the student who paid (WP-37 §1.2).
+        readable = readable_module.call(route_module)
+        parents = readable ? ReinforcementParents.resolve(steps) : {}
 
         {
           module_id: route_module.id,
           access_state: route_module.access_state,
+          readable: readable,
           level: level,
           label: route_module.localized_title.presence || t("learning_engine.journey.#{level}_label"),
           tag: level.upcase,
-          color: LEVEL_COLORS[level] || LEVEL_COLORS["nv1"],
           status: readable ? stage_status_for(steps) : "locked",
-          topics: steps.map { |step| journey_topic(step, readable: readable) }
+          topics: steps.map { |step| journey_topic(step, readable: readable, parent_id: parents[step.id]&.parent_id) }
         }
       end
     end
@@ -127,15 +132,15 @@ module LearningRoutesEngine
       "locked"
     end
 
-    def journey_topic(step, readable: true)
+    def journey_topic(step, readable: true, parent_id: nil)
       # A locked module contributes its shape and nothing else: the student can
       # see how much is behind the paywall without reading what they have not
-      # bought.
+      # bought — and without learning which step a triplet hangs from.
       unless readable
         return {
           id: step.id, name: t("learning_engine.journey.locked_topic"),
           content_type: nil, progress: 0, status: "locked",
-          reinforcement: false, path: nil
+          reinforcement: false, parent_id: nil, current: false, path: nil
         }
       end
 
@@ -151,12 +156,25 @@ module LearningRoutesEngine
         content_type: step.content_type,
         progress: progress,
         status: step.status,
-        # Rendered as a class on the satellite so a reinforcement step reads as
-        # belonging to the step above it rather than as an independent topic.
-        reinforcement: step.metadata&.dig("reinforcement").present? ||
-                       step.metadata&.dig("triggering_module_id").present?,
+        # One rule (ReinforcementParents.reinforcement?). The old second branch,
+        # metadata["triggering_module_id"], had no writer anywhere.
+        reinforcement: ReinforcementParents.reinforcement?(step),
+        parent_id: parent_id,
+        current: step.id == @current_step_id,
         path: route_step_path(@route, step)
       }
+    end
+
+    # WP-37 §1.4. ONE current step, decided here, from the position the server
+    # already owns. The fallback applies only when that position is not a
+    # readable step.
+    def journey_current_step_id(readable_steps)
+      at_position = readable_steps.find { |step| step.position == @route.current_step }
+      return at_position.id if at_position
+
+      (readable_steps.find(&:in_progress?) ||
+        readable_steps.find(&:available?) ||
+        readable_steps.last)&.id
     end
   end
 end

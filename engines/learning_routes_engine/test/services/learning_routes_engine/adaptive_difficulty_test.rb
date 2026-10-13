@@ -51,6 +51,36 @@ module LearningRoutesEngine
       assert reinforcement.any?, "Should have reinforcement steps"
     end
 
+    # WP-37 §1.1. The map hangs reinforcement under the step that TRIGGERED it,
+    # and the trigger is a fact about the assessment, not a recomputation from
+    # positions — store it, so the two can disagree and the stored one wins.
+    test "reinforcement records the assessment step that triggered it" do
+      trigger = @route.route_steps.find_by!(position: 2) # an :assessment step
+      assessment = Assessments::Assessment.create!(
+        route_step: trigger, assessment_type: :level_up, passing_score: 70
+      )
+
+      AdaptiveDifficulty.new(@route, OpenStruct.new(score: 45, assessment_id: assessment.id)).adjust!
+
+      ids = RouteStep.where(learning_route_id: @route.id).order(:position)
+                  .select { |s| s.metadata["reinforcement"] == true }
+                  .map { |s| s.metadata["triggering_step_id"] }
+      assert_equal 3, ids.size, "test premise: one triplet was inserted"
+      assert_equal [trigger.id] * 3, ids,
+        "the triplet must name the assessment step, not the step it happens to sit behind"
+    end
+
+    test "without an assessment, the current step is the trigger" do
+      current = @route.route_steps.find_by!(position: @route.current_step)
+
+      AdaptiveDifficulty.new(@route, OpenStruct.new(score: 45)).adjust!
+
+      ids = RouteStep.where(learning_route_id: @route.id).order(:position)
+                  .select { |s| s.metadata["reinforcement"] == true }
+                  .map { |s| s.metadata["triggering_step_id"] }
+      assert_equal [current.id] * 3, ids
+    end
+
     test "normal score (60-90%) proceeds without changes" do
       original_count = @route.route_steps.count
       result = OpenStruct.new(score: 75)

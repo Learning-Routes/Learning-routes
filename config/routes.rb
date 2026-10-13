@@ -25,6 +25,14 @@ Rails.application.routes.draw do
     root "dashboard#show"
     resources :users, only: [:index, :show]
     resources :routes, only: [:show]
+
+    namespace :api do
+      resources :routes, only: [:index]
+      # The studio publishes to a step, so the video is a singular nested resource.
+      resources :steps, only: [] do
+        resource :video, only: [:create, :destroy], controller: "step_videos"
+      end
+    end
   end
 
   namespace :commerce do

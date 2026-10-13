@@ -9,6 +9,7 @@ es:
 
   # ── Navbar ──
   nav:
+    home: "Inicio"
     features: "Características"
     how_it_works: "Cómo funciona"
     sign_in: "Iniciar sesión"
@@ -988,7 +989,7 @@ es:
       reassessment:
         title: "Refuerzo: nueva evaluación"
         description: "Comprobación rápida para verificar que lo has entendido"
-    modules: { free_preview: "Vista previa gratuita", locked: "Bloqueado hasta la compra" }
+    modules: { free_preview: "Vista previa gratuita", locked: "Bloqueado hasta la compra", purchased: "Comprado" }
     blocks:
       required:
         one: "Completa el ejercicio de arriba para terminar esta lección."
@@ -1028,6 +1029,9 @@ es:
         motion: "Movimiento"
         audio: "Audio"
         audio_explainer: "Audio explicación"
+        video: "Vídeo"
+      badge:
+        video: "Vídeo"
       run: "Ejecutar ▶"
       run_code: "Ejecutar el código"
       reset_code: "Restablecer el código"
@@ -1058,7 +1062,15 @@ es:
     journey:
       locked_topic: "Bloqueado"
       route_label: "RUTA"
-      scroll_to_explore: "Desplaza para explorar"
+      drag_to_explore: "Arrastra para explorar"
+      map_keys: "Mapa de la ruta. Las flechas desplazan, más y menos acercan o alejan, 0 muestra toda la ruta."
+      fit: "Encajar"
+      fit_label: "Ver toda la ruta"
+      zoom_in: "Acercar"
+      zoom_out: "Alejar"
+      status_current: "Estás aquí"
+      status_available: "Disponible"
+      status_reinforcement: "Refuerzo"
       back_to_profile: "Perfil"
       end_of_route: "Fin de la ruta"
       stages_topics:

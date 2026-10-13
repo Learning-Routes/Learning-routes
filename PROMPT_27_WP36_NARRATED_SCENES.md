@@ -273,3 +273,32 @@ video; the scene is drawn live. Bilibili, TikTok, YouTube — that is the other 
    `transform`'s per-step `tokens` are exactly why. The helper counts misses and the scene reports
    them (`cueStats`) so the controller can log the fallback rate the handoff asks for. Ruby never
    computes cues.
+
+## Checkpoint 2 ruling (12 September) — the scene must be legible in both themes, inside this package
+
+Found at Task 11 in the browser: the canvas draws correctly (ink `#1C1812` sampled) and is
+invisible on the app's dark theme, because `main.ts` sets a transparent project background and both
+scenes hardcode the light palette. `learning.html.erb` sets `data-theme` from the user's preference
+(`current_theme`, default `system`), so a dark OS gives a dark page, and the app's tokens flip
+(`--color-card #FEFDFB → #221F18`, `--color-txt #1C1812 → #E8E4DC`). This is the WP-33/WP-35 class —
+present in the DOM, invisible to the student — and it is **not deferred**.
+
+Rule: **the scene has no colours of its own.** `motion_scene_controller.js` reads the page's tokens at
+mount with `getComputedStyle(document.documentElement).getPropertyValue(...)`, exactly as
+`route_journey_controller.js:108` does, and passes a `theme` bag alongside `data` and `labels`:
+`{ ink, sub, muted, card, ok, bad, hi, hi2 }`. The scenes read `theme` from variables and fall back to
+the light bag only in the editorless preview page. A colour literal in a `.tsx` becomes the same
+kind of failure as a displayed string literal — extend the chrome test (Task 11) so the allowlist
+no longer admits hex colours, and see it go red on today's scenes. The project background stays
+transparent: the card behind the canvas is the page's `--color-card`, so the canvas sits on the
+right ground in either theme. `hi`/`hi2`/`ok`/`bad` map to existing tokens where they exist and to two
+new tokens in `application.css` (light and dark values) where they do not — never to literals in JS.
+
+Test: the system test gains a legibility assertion, not a box assertion. Sample the canvas pixel
+where the first token's ink lands (the scene reports it, or sample the canvas's centre after the
+first beat) and the backing colour behind the canvas; compute WCAG relative luminance and assert the
+contrast ratio ≥ 4.5 — run once with `data-theme="dark"` stamped on `<html>` and once with `light`.
+Red today on dark; that is the point.
+
+Then re-run Task 11's browser check in both themes and put both screenshots' pixel samples in the
+handoff. Tasks 12–19 continue after this lands.

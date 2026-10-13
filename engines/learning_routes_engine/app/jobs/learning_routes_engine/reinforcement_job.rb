@@ -4,7 +4,10 @@ module LearningRoutesEngine
     retry_on StandardError, wait: :polynomially_longer, attempts: 3
 
     def perform(route_id)
-      route = LearningRoute.find(route_id)
+      # `ReinforcementGenerator#initialize` reads `route.learning_profile.user` and
+      # `route.learning_profile` (reinforcement_generator.rb:10-11). Same preload, and
+      # the same per-environment behaviour, as gap_analysis_job.rb.
+      route = LearningRoute.includes(learning_profile: :user).find(route_id)
       unresolved_gaps = route.knowledge_gaps.unresolved
 
       if unresolved_gaps.none?

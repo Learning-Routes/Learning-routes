@@ -235,6 +235,8 @@ module ContentEngine
             sections << parse_heading_scenario(title, body)
           when :flashcards
             sections << parse_heading_flashcards(title, body)
+          when :video
+            sections << parse_heading_video(title, body)
           else
             # Unknown or untyped heading — use existing logic
             sections << build_concept_or_visual(raw_title, body)
@@ -516,11 +518,32 @@ module ContentEngine
     # and treat everything after its matching `}` as the aftermath, the same
     # boundary every sibling heading parser in this file establishes.
     #
-    # Returns [json_text, remainder] — `json_text` is nil when no balanced
-    # object was found at all (malformed JSON), in which case `remainder` is
-    # the whole body: there is no JSON boundary to split on, so nothing here
-    # is "after" it.
-    def split_json_object(body)
+    # THE CONTRACT, AND IT LIVES HERE, ONCE.
+    #
+    # Returns [json_text, remainder].
+    #
+    #   * `json_text` is nil when no balanced object was found at all (malformed
+    #     JSON), in which case `remainder` is the whole body: there is no JSON
+    #     boundary to split on, so nothing here is "after" it.
+    #   * `remainder` is RAW. It is not stripped and it is never nil-for-blank.
+    #     **THE CALLER STRIPS.** The two callers want different tails and a helper
+    #     that stripped could only serve one of them: `parse_heading_motion` needs to
+    #     see the newline in front of a closing fence so `strip_closing_fence` can
+    #     remove it, while `parse_heading_video` wants a tidy `.presence`. Each does
+    #     its own tidying at the call site.
+    #
+    # WP-36 and WP-38 each shipped a copy of this method, and they disagreed on
+    # precisely that point — one stripped and `.presence`d, this one does not. When
+    # WP-38 merged on top of WP-36, git reported `Auto-merging` with **no conflict**,
+    # Ruby did not warn, every suite stayed green, and the later definition silently
+    # won: the motion parser was quietly repointed at a contract it was never written
+    # against. `test/services/no_duplicate_method_definitions_test.rb` exists so that
+    # cannot merge quietly again.
+    #
+    # Public on the class as well, because `LessonVideoPublisher` has to remove
+    # exactly the payload the parser decides to read; two answers to "where does the
+    # JSON end" is how the unpublish strip came to delete the author's prose.
+    def self.split_json_object(body)
       text = body.to_s
       start = text.index("{")
       return [nil, text] unless start
@@ -554,6 +577,8 @@ module ContentEngine
 
       [nil, text]
     end
+
+    def split_json_object(body) = self.class.split_json_object(body)
 
     # The fenced form's closing ``` immediately follows the JSON object and is
     # not itself content — strip it before what remains becomes the aftermath.
@@ -834,6 +859,52 @@ module ContentEngine
       {
         type: "flashcards", title: title.presence,
         cards: cards, aftermath: aftermath, body: body
+      }
+    end
+
+    # `## Video: <title>` with a JSON body written by the studio's upload.
+    # Mirrors parse_heading_visual in shape; mirrors WP-36's motion block in its
+    # failure rule — anything unparsable degrades to a concept carrying the title,
+    # never a blank player.
+    #
+    # `split_aftermath` trims a trailing sub-heading/fence/rule before the JSON
+    # is parsed — the same boundary every other heading parser in this file
+    # respects (see the SWEEP at the top of section_parser_boundaries_test.rb).
+    # Without it, prose the author put after the studio's upload would land
+    # inside the string handed to JSON.parse and a well-formed payload would
+    # fail to parse for a reason that has nothing to do with the payload.
+    def parse_heading_video(title_from_heading, body)
+      json_source, aftermath = split_json_object(body.to_s)
+      payload = safe_parse_json(json_source.to_s.strip)
+
+      unless payload.is_a?(Hash) && payload["video_url"].present?
+        Rails.logger.warn("[LessonSectionParser] video block fell back to concept — bad body")
+        return { type: "concept", title: title_from_heading.presence, body: body.to_s.strip }
+      end
+
+      {
+        type: "video",
+        title: (payload["title"].presence || title_from_heading.presence),
+        video_url: payload["video_url"],
+        subtitles_url: payload["subtitles_url"].presence,
+        duration_seconds: payload["duration_seconds"],
+        source: payload["source"],
+        lesson_id: payload["lesson_id"],
+        voice: payload["voice"],
+        published_at: payload["published_at"],
+        # Kept, not only excluded from the payload. Dropping this second return
+        # value is the `check` / `drag_drop` defect — the tail stays out of the
+        # parsed fields either way, so the swallow half of the boundaries sweep
+        # stays green while the author's prose is deleted. `_video.html.erb`
+        # renders it below the player, like every other partial that can carry
+        # one. Unreachable through the studio (it writes JSON only, and the
+        # publisher terminates the section at the next `##`), so this is defence
+        # in depth against the next writer of this heading, not a live loss.
+        # STRIPPED HERE, not by the helper: `split_json_object` answers a raw
+        # remainder so `parse_heading_motion` can find the newline before a closing
+        # fence. See the contract on that method.
+        aftermath: aftermath.to_s.strip.presence,
+        body: body.to_s.strip
       }
     end
 

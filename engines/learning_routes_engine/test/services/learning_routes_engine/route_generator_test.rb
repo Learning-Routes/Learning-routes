@@ -51,7 +51,12 @@ module LearningRoutesEngine
     test "route has level-up exams and final exam" do
       with_mock_ai(@ai_response) do
         route = RouteGenerator.new(@profile).generate!
-        steps = route.route_steps
+        # A QUERY, not a lazy traversal of the association on a strict_loading record
+        # — `select`/`find` with a block are Enumerable, so they load the target, and
+        # `route` here comes straight out of `generate!` with the suite-wide
+        # strict_loading flag set (test.rb:83-85). The sibling tests in this file
+        # already read their steps this way; `to_a` says the load happens once, here.
+        steps = route.route_steps.order(:position).to_a
 
         level_ups = steps.select { |s| s.title.include?("Level-Up") }
         assert_equal 2, level_ups.size, "Should have 2 level-up exams"

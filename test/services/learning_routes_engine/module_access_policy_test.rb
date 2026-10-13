@@ -1,7 +1,9 @@
 require "test_helper"
+require "support/route_purchase_helpers"
 
 module LearningRoutesEngine
   class ModuleAccessPolicyTest < ActiveSupport::TestCase
+    include RoutePurchaseHelpers
     setup do
       @user = create_test_user
       @profile = LearningProfile.create!(user: @user, current_level: "beginner")
@@ -16,6 +18,32 @@ module LearningRoutesEngine
       @paid_step = @route.route_steps.create!(
         route_module: @paid, position: 2, title: "Paid", status: :available
       )
+    end
+
+    # ─── module_reader: one entitled? per route (WP-37 §1.2) ──────────
+
+    test "module_reader: a refunded purchase keeps the route readable" do
+      purchase_route!(@route, user: @user, state: :refunded)
+
+      reader = ModuleAccessPolicy.module_reader(@route)
+      assert reader.call(@paid), "a refund does not revoke content already bought (reachable? agrees)"
+    end
+
+    test "module_reader: a pending purchase does not unlock anything" do
+      purchase_route!(@route, user: @user, state: :pending)
+
+      reader = ModuleAccessPolicy.module_reader(@route)
+      assert_not reader.call(@paid)
+      assert reader.call(@preview)
+    end
+
+    test "module_reader: a purchase of another route does not unlock this one" do
+      other = LearningRoute.create!(learning_profile: @profile, topic: "Another route")
+      purchase_route!(other, user: @user, state: :paid)
+
+      reader = ModuleAccessPolicy.module_reader(@route)
+      assert_not reader.call(@paid)
+      assert reader.call(@preview)
     end
 
     test "route owner may access a preview step" do

@@ -111,6 +111,22 @@ module ContentEngine
       "drag_drop" => [
         "## Match: Spanish animals",
         "Dog ==> Perro\nCat ==> Gato\n"
+      ],
+      # `video` does not accumulate either — its body is one JSON object and
+      # `split_aftermath` already kept the trailing content out of the payload.
+      # It is here for the OTHER half of this sweep: the first version of
+      # `parse_heading_video` dropped `split_aftermath`'s second return value, so
+      # the tail was kept out of the fields and out of the section entirely. That
+      # is the `check` / `drag_drop` defect again, in a parser written after the
+      # three rounds that closed it. Only the studio writes this heading today,
+      # which is why it is a defence in depth rather than a live loss.
+      "video" => [
+        "## Video: La ese de la tercera persona",
+        <<~JSON
+          {"title": "La ese de la tercera persona",
+           "video_url": "/rails/active_storage/blobs/proxy/abc/l.mp4",
+           "duration_seconds": 477, "source": "manim-studio"}
+        JSON
       ]
     }.freeze
 
@@ -684,6 +700,76 @@ module ContentEngine
       html = MarkdownRenderer.render(consequence).to_s
       assert_includes html, "<strong>", "`**` must render as emphasis, not print as asterisks"
       assert_not_includes html, "&amp;quot;", "the double-escaping that showed `&quot;` to students"
+    end
+
+    # ── `## Video:` — a film, or a concept, never a blank player ──────────────
+    #
+    # Only the studio writes this heading; the model never does. A broken upload
+    # must not reach a student as an empty <video> box.
+    test "a video block parses to a video section with its urls" do
+      body = <<~JSON
+        {"title": "La ese de la tercera persona",
+         "video_url": "/rails/active_storage/blobs/proxy/abc/l.mp4",
+         "subtitles_url": "/rails/active_storage/blobs/proxy/def/l.srt",
+         "duration_seconds": 477, "source": "manim-studio",
+         "lesson_id": "third-person-s", "voice": "english-teacher",
+         "published_at": "2026-09-16T13:00:04Z"}
+      JSON
+      section = parse_one_of("## Video: La ese de la tercera persona", body, "video")
+
+      assert_equal "/rails/active_storage/blobs/proxy/abc/l.mp4", section[:video_url]
+      assert_equal 477, section[:duration_seconds]
+      assert_equal "manim-studio", section[:source]
+    end
+
+    # FOUND BY THE REGRESSION SWEEP, ON REAL DATA. 8 of the 10 lesson bodies in the
+    # development database BEGIN with prose before their first `##` heading — the
+    # parser has a branch for exactly that shape (`build_concept_or_visual`, called for
+    # content before the first heading). Prepending `## Video:` to such a body makes
+    # that intro paragraph part of the video's section, and it carries no sub-heading,
+    # no fence and no horizontal rule, so `split_aftermath` finds no terminator and
+    # hands the whole thing — JSON and prose together — to JSON.parse.
+    #
+    # The block then degraded to a concept whose body was raw JSON. `publish!` raised
+    # rather than persisting that, which is the right instinct, but it meant the studio
+    # got a 422 for four out of five real lessons.
+    test "a video body followed by prose with no terminator still parses as a video" do
+      body = <<~MARKDOWN
+        {"title": "La ese", "video_url": "/x.mp4", "duration_seconds": 12}
+
+        ¿Sabías que la evaluación final es la llave para certificar tu nivel?
+      MARKDOWN
+      sections = LessonSectionParser.call("## Video: La ese\n\n#{body}")
+      section = sections.find { |s| s[:type] == "video" }
+
+      assert section, "unterminated prose after the JSON must not stop the video parsing"
+      assert_equal "/x.mp4", section[:video_url]
+      assert_includes section[:aftermath].to_s, "¿Sabías que la evaluación final",
+        "the prose is real lesson content: it belongs in the aftermath, not in the JSON"
+    end
+
+    test "a brace inside a JSON string does not end the payload early" do
+      body = '{"title": "Un {reto} difícil", "video_url": "/y.mp4", "duration_seconds": 3}' \
+             "\n\nProsa que sigue."
+      section = LessonSectionParser.call("## Video: T\n\n#{body}").find { |s| s[:type] == "video" }
+
+      assert section, "a brace inside a quoted string is data, not structure"
+      assert_equal "Un {reto} difícil", section[:title]
+      assert_includes section[:aftermath].to_s, "Prosa que sigue"
+    end
+
+    test "an unparsable video body renders as a concept, never a blank player" do
+      sections = LessonSectionParser.call(document("## Video: Roto", "{not json"))
+
+      assert_nil sections.find { |s| s[:type] == "video" },
+        "a broken upload must not reach the student as an empty <video>"
+      assert sections.any? { |s| s[:type] == "concept" && s[:title].to_s.include?("Roto") },
+        "the title survives as a concept so the student sees something"
+    end
+
+    test "the Spanish heading parses too" do
+      body = '{"title":"T","video_url":"/x.mp4","duration_seconds":10}'
+      assert parse_one_of("## Vídeo: T", body, "video")
     end
 
     # ── `## Motion:` — a scene, or a concept, never a blank ───────────────────

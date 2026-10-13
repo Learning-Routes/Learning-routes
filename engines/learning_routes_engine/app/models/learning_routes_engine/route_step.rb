@@ -3,6 +3,12 @@ module LearningRoutesEngine
     belongs_to :learning_route
     belongs_to :route_module
 
+    # The app's FIRST Active Storage attachments. Disk service, Rails.root/storage in
+    # dev and production (the persisted `learning_routes_storage` volume), tmp/storage
+    # in test — all already configured in config/storage.yml.
+    has_one_attached :lesson_video
+    has_one_attached :lesson_subtitles
+
     has_one :step_quiz, -> { where(assessment_type: :step_quiz) },
             class_name: "Assessments::Assessment",
             foreign_key: :route_step_id,

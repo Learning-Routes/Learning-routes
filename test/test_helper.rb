@@ -111,8 +111,17 @@ end
 module ActionDispatch
   class IntegrationTest
     # Sign in via the real session endpoint (params[:email]/[:password]).
+    #
+    # `Core::Engine.routes.url_helpers` and NOT the `core` routes proxy. The proxy
+    # resolves against the LAST request's script_name, so in any test that has
+    # already visited a mounted engine — `/learning/...`, `/content/...` — `core`
+    # answers "/learning/sign_in", the POST 404s, no session is created, and the
+    # next assertion fails as a redirect to sign in rather than as a broken helper.
+    # Measured. Core is mounted at "/" (config/routes.rb:3), so the engine's own
+    # helpers give the right path from anywhere.
     def sign_in_as(user, password: "password123")
-      post core.sign_in_path, params: { email: user.email, password: password }
+      post Core::Engine.routes.url_helpers.sign_in_path,
+           params: { email: user.email, password: password }
     end
 
     def setup_authenticated_user

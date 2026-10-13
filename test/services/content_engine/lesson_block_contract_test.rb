@@ -51,6 +51,20 @@ class ContentEngine::LessonBlockContractTest < ActiveSupport::TestCase
       "silently degrade to plain concept text."
   end
 
+  # `authored: false` was, until this package, a declaration nothing enforced:
+  # nothing derives the prompts from LessonBlocks and `authored_types` has no caller
+  # outside lesson_blocks.rb. This is what makes it true.
+  test "every authored heading type is requested by the lesson prompt" do
+    requested = prompt_text(LESSON_PROMPT).scan(/^\s*##\s+([A-Za-zÁ-úñÑ]+):/).flatten.uniq
+    authored = LB.authored_types.select { |t| LB::BLOCKS[t][:headings].any? }
+    missing = authored.reject { |t| LB::BLOCKS[t][:headings].any? { |h| requested.include?(h) } }
+
+    assert_equal [], missing,
+      "declared authored (the model is expected to write them) but lesson_content.yml " \
+      "never requests them: #{missing.inspect}. Either the prompt lost a block type, or " \
+      "the type should be declared authored: false."
+  end
+
   # ── Link 1c: the ## Motion: example → MotionScenes ──────────────────────
   #
   # The prompt's worked example is the FOURTH copy of a scene's shape (the other

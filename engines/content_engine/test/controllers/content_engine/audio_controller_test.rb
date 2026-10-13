@@ -28,7 +28,9 @@ module ContentEngine
 
     teardown do
       @created_paths.reverse_each { |path| FileUtils.rm_f(path) }
-      Dir.rmdir(@sibling_root) if @sibling_root.directory? && @sibling_root.empty?
+      # The directories stay: they are shared by parallel workers, so removing one raced
+      # another worker's check, rmdir or write (CI, PR #46: ENOENT / ENOTEMPTY). They are
+      # empty folders under the gitignored storage/, and every setup recreates them.
     end
 
     test "serves valid audio belonging to the signed-in user" do
