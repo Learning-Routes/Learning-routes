@@ -7,9 +7,7 @@
   <div style="display:flex; align-items:center; justify-content:space-between; max-width:1100px; margin:0 auto; padding:0 clamp(1rem,3vw,2.25rem); height:56px;">
 
     <%# === Left: Logo === %>
-    <%# Where `/` would send this user (SignedInHomeHelper). It was root_path, which
-        redirects a student straight back to their route: a click that did nothing. %>
-    <%= link_to signed_in_home_path(current_user), data: { nav: "logo" }, style: "display:flex; align-items:center; gap:0.5rem; text-decoration:none;" do %>
+    <%= link_to main_app.root_path, data: { nav: "logo" }, style: "display:flex; align-items:center; gap:0.5rem; text-decoration:none;" do %>
       <%= render "shared/logo", size: 28 %>
       <span style="font-family:'DM Sans',sans-serif; font-weight:800; font-size:0.95rem; letter-spacing:-0.6px; color:var(--color-txt, #1C1812);">Learning Routes</span>
     <% end %>
@@ -18,7 +16,7 @@
     <div style="display:flex; align-items:center; gap:1.8rem;" class="hidden md:flex">
       <%
         nav_links = [
-          { label: t("nav.home"), path: main_app.root_path(from: "nav"), match: "landing", nav: "home" },
+          { label: t("nav.home"), path: main_app.root_path, match: "landing", nav: "home" },
           { label: t("nav.my_routes"), path: main_app.profile_path, match: "profiles" },
           { label: t("nav.community"), path: main_app.community_path, match: "community" }
         ]
@@ -104,7 +102,7 @@
     <div style="display:flex; flex-direction:column; gap:0.5rem;">
       <%
         nav_links = [
-          { label: t("nav.home"), path: main_app.root_path(from: "nav"), match: "landing", nav: "home" },
+          { label: t("nav.home"), path: main_app.root_path, match: "landing", nav: "home" },
           { label: t("nav.my_routes"), path: main_app.profile_path, match: "profiles" },
           { label: t("nav.community"), path: main_app.community_path, match: "community" }
         ]
