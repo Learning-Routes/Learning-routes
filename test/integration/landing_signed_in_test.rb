@@ -1,12 +1,9 @@
 require "test_helper"
 
-# PROMPT 33. WP-35 §5 sends a signed-in student with a route from `/` to that
-# route. It sent everyone else too, so on 12 October the owner, signed in, could
-# not open his own landing page, and the navbar logo (root_path) bounced straight
-# back to where he already was. The redirect stays for students. The owner and
-# teachers see the landing as a visitor would, and `?from=nav` is the navbar's way
-# in for anyone. landing_redirects_signed_in_students_test.rb keeps the student
-# cases, unchanged.
+# PROMPT 33, then the owner's ruling of 13 October: every signed-in user sees the
+# landing at `/`, as a visitor would. landing_for_everyone_test.rb pins "never a
+# redirect" for every role; this file pins what a signed-in landing must also be:
+# the visitor's nodes, and never a public cache entry.
 class LandingSignedInTest < ActionDispatch::IntegrationTest
   setup do
     Core::User.where(role: :owner).update_all(role: Core::User.roles[:student])
@@ -28,14 +25,12 @@ class LandingSignedInTest < ActionDispatch::IntegrationTest
     assert_landing_for(teacher)
   end
 
-  test "a signed-in student at /?from=nav sees the landing, and plain / still redirects" do
+  test "a signed-in student with a route sees the landing at plain /" do
     student = signed_in(role: :student, with_route: true)
 
-    get root_path(from: "nav")
-    assert_landing_for(student)
-
     get root_path
-    assert_response :redirect
+
+    assert_landing_for(student)
   end
 
   private

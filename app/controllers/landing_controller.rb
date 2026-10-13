@@ -7,9 +7,11 @@ class LandingController < ApplicationController
     # Use fresh_when to leverage ETags and avoid rendering if client has cache
     fresh_when(etag: landing_cache_key, public: true) if stale_check_enabled?
 
-    # A signed-in student with a route goes to their route (WP-35 §5).
+    # The landing is the landing for everyone (owner's ruling, 13 October): GET /
+    # never redirects, signed in or not. Students reach their route through
+    # "My routes".
     #
-    # The landing used to render a "personalized" version of the visitor page:
+    # It is always the visitor page. The landing used to render a "personalized" version of the visitor page:
     # `build_route_nodes` gave each node `sats: satellite_pattern(i)` — GEOMETRY
     # ONLY — while the marketing version gave each satellite a `topic` and a
     # `desc`. So the real version drew circles with `undefined` labels: three
@@ -18,20 +20,11 @@ class LandingController < ApplicationController
     # reinforcement steps.
     #
     # Rather than invent data for a decorative layout, the landing stays what it
-    # is — a visitor page — and a student who has somewhere to be is sent there.
-    return redirect_to(helpers.signed_in_home_path(current_user)) if redirect_to_signed_in_home?
-
+    # is — a visitor page.
     @route_nodes = default_translated_nodes
   end
 
   private
-
-  # Students only, and never from the navbar's "Home" link (`?from=nav`). The
-  # owner and teachers see the landing as a visitor would; it was unreachable for
-  # them while signed in, and the navbar logo looped back (PROMPT 33).
-  def redirect_to_signed_in_home?
-    current_user&.student? && params[:from] != "nav"
-  end
 
   # Build translated default nodes from I18n YAML + satellite geometry
   def default_translated_nodes

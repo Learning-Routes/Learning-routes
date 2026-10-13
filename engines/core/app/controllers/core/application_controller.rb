@@ -1,11 +1,6 @@
 module Core
   class ApplicationController < ActionController::Base
     before_action :set_current_session
-
-    # Main-app helpers are not included in engine controllers (or in main-app
-    # controllers, which do not inherit from ActionController::Base directly), and
-    # both navbars need this one on every page. It is registered here, once.
-    helper ::SignedInHomeHelper
     around_action :with_locale
     before_action :set_theme
     before_action :require_email_verification!
