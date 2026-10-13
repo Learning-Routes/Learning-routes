@@ -83,6 +83,13 @@ kamal setup    # First deploy
 kamal deploy   # Subsequent deploys
 ```
 
+**Production runs `main`.** `.kamal/hooks/pre-build` refuses to build unless all of these hold:
+- the checkout is on `main`;
+- no tracked file is modified (untracked files are fine: Kamal builds from a clone of HEAD);
+- `HEAD` equals `origin/main` (pull or push first).
+
+For a hotfix the owner has decided to ship from a branch, `KAMAL_ALLOW_BRANCH_DEPLOY=1 kamal deploy` skips only the branch check and prints a warning naming the branch. It is never the default. The hook is tested by `test/deploy/pre_build_hook_test.rb`.
+
 ## Domain
 
 **learning-routes.com**

@@ -1,0 +1,51 @@
+#!/bin/sh
+# Refuses to build unless the checkout is main, has no modified tracked files, and
+# equals origin/main. Production runs main.
+#
+# Why it exists: on 12 September 9c9e19e reached production because `kamal deploy`
+# builds whatever the local checkout is, and the checkout was a branch. Built from
+# Kamal's pre-build.sample, with three changes:
+#   - untracked files are ignored (--untracked-files=no). This deploy's builder sets
+#     no `context`, so Kamal builds from a clone of HEAD and an untracked file never
+#     enters the image; the owner's checkout always has some.
+#   - the branch must be main;
+#   - HEAD is compared with origin/<branch> by `git rev-parse HEAD`, not KAMAL_VERSION.
+#     Kamal adds `_uncommitted_<hex>` to the version only when the tree has changes
+#     (untracked files count: Kamal::Git.uncommitted_changes is `git status --porcelain`)
+#     AND the builder is not cloning (kamal 2.12.0, Configuration#git_version).
+#
+# Override: KAMAL_ALLOW_BRANCH_DEPLOY=1 skips ONLY the branch check, for a hotfix the
+# owner has decided on, never by default. Tested by test/deploy/pre_build_hook_test.rb.
+set -e
+
+if [ -n "$(git status --porcelain --untracked-files=no)" ]; then
+  echo "pre-build: tracked files are modified; commit or stash before deploying" >&2
+  git status --porcelain --untracked-files=no >&2
+  exit 1
+fi
+
+branch="$(git branch --show-current)"
+if [ "$branch" != "main" ] && [ "$KAMAL_ALLOW_BRANCH_DEPLOY" != "1" ]; then
+  echo "pre-build: on '$branch', not main. Production runs main. (KAMAL_ALLOW_BRANCH_DEPLOY=1 to override, on purpose.)" >&2
+  exit 1
+fi
+[ "$branch" = "main" ] || echo "pre-build: WARNING — deploying branch '$branch' by explicit override" >&2
+
+local_head="$(git rev-parse HEAD)"
+remote_head="$(git ls-remote origin "refs/heads/$branch" | cut -f1)"
+if [ -z "$remote_head" ]; then
+  echo "pre-build: '$branch' is not on origin; push first" >&2
+  exit 1
+fi
+if [ "$local_head" != "$remote_head" ]; then
+  echo "pre-build: local HEAD $local_head != origin/$branch $remote_head; pull or push first" >&2
+  exit 1
+fi
+
+case "$KAMAL_VERSION" in
+  *_uncommitted_*)
+    echo "pre-build: note — KAMAL_VERSION is $KAMAL_VERSION: Kamal saw an untracked or modified file; tracked files are clean and HEAD is origin/$branch, so building $local_head" >&2
+    ;;
+esac
+
+exit 0
