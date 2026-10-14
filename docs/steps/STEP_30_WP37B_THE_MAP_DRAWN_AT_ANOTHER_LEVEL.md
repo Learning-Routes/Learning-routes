@@ -1,4 +1,4 @@
-# PROMPT 30 — WP-37b: the map, drawn at another level
+# STEP 30 — WP-37b: the map, drawn at another level
 
 **Package:** WP-37b (visual layer of the journey map). **Base:** `main` at `b907fea9` (WP-37 merged
 and deployed on 8 October). **Branch:** `wp37b-journey-map-drawn`. **Method:** superpowers —
@@ -281,7 +281,7 @@ list view, to the lesson page. The mascot. Anything in WP-39/WP-40.
 
 ## 8. Constraints that do not move
 `env -u RAILS_MASTER_KEY bin/rails test` for every run; never commit `config/master.key`,
-`config/credentials/*.key`, `.claude/`, or `node_modules` (WP-38's history purge must not repeat:
+`config/credentials/*.key`, local tool folders, or `node_modules` (WP-38's history purge must not repeat:
 no `git add -A`); keep `config/credentials/production.yml.enc` as it is; no API key is ever
 printed or pasted. Every fix ships with the test that catches its class, seen red first. All
 three suites (app, engines, system) green before each checkpoint. The agent reports; the owner

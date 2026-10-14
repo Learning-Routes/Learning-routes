@@ -27,7 +27,7 @@ desplegar no lo arregla — hay que escribir el fix.
 
 ## PAQUETE 0 — Hoy, sin desplegar nada (30 minutos)
 
-Esto no necesita Claude Code ni un deploy. Son comandos.
+Esto no necesita al agente ni un deploy. Son comandos.
 
 ### 0.1 · Lo único urgente de verdad
 
@@ -75,7 +75,7 @@ delicado.
 
 ## Los paquetes
 
-Cada uno es una sesión de Claude Code. La columna «Bloquea a» es lo que no puede empezar antes.
+Cada uno es una sesión del agente. La columna «Bloquea a» es lo que no puede empezar antes.
 
 | # | Paquete | Ítems | Esfuerzo | Bloquea a |
 |---|---|---|---|---|
@@ -321,5 +321,5 @@ completos. Mitigación: correr los 378 tests a mano antes, desplegar en horario 
 
 ## Siguiente paso
 
-`PROMPT_02_SHIP_READY.md` cubre **WP-1 + WP-2** en un solo PR desplegable. No despliega desde
+`STEP_02_SHIP_READY.md` cubre **WP-1 + WP-2** en un solo PR desplegable. No despliega desde
 dentro: el deploy es un paso humano con la lista de WP-3.

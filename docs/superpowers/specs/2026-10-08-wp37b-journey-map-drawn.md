@@ -1,6 +1,6 @@
 # WP-37b — The map, drawn at another level: spec addendum
 
-**Source of truth:** `PROMPT_30_WP37B_THE_MAP_DRAWN_AT_ANOTHER_LEVEL.md` (the brief) and the
+**Source of truth:** `STEP_30_WP37B_THE_MAP_DRAWN_AT_ANOTHER_LEVEL.md` (the brief) and the
 approved prototype `tmp/wp37b/prototype.html` with its renders. This addendum does not restate
 them. It records **the decisions the brief leaves open**, the interfaces the plan builds to, and
 the rulings the owner makes at checkpoints. Section numbers like "brief §3" refer to the brief.

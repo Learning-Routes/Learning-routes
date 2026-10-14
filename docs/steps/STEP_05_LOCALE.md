@@ -1,4 +1,4 @@
-# PROMPT 05 — WP-9: make the locale reach every prompt
+# STEP 05 — WP-9: make the locale reach every prompt
 
 > Run from `~/Documents/Learning-routes`, on `main` (HEAD = `96e8cce`).
 > Reference: `AUDIT.md` §P1-5, and `WP6_HANDOFF.md` §C — which fixed half of this.

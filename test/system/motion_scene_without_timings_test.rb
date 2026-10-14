@@ -1,6 +1,6 @@
 require "application_system_test_case"
 
-# PROMPT 35 §3. What production will do the day WP-36 lands. Production has no word
+# STEP 35 §3. What production will do the day WP-36 lands. Production has no word
 # timings in the database, and the ElevenLabs key is burned, so narration for a
 # motion section either was never generated or its generation failed. Either way
 # the scene must play exactly as it does without narration:

@@ -21,7 +21,7 @@ tests driven from Minitest, Selenium headless Chrome system tests (CDP reduced m
 source CSS at `app/assets/tailwind/application.css`.
 
 **Spec:**
-- The brief: `PROMPT_30_WP37B_THE_MAP_DRAWN_AT_ANOTHER_LEVEL.md` (main checkout, untracked; its
+- The brief: `STEP_30_WP37B_THE_MAP_DRAWN_AT_ANOTHER_LEVEL.md` (main checkout, untracked; its
   §-numbers are "brief §n").
 - The addendum: `docs/superpowers/specs/2026-10-08-wp37b-journey-map-drawn.md` ("addendum §X").
 - The approved prototype: `tmp/wp37b/prototype.html` in the main checkout.
@@ -32,7 +32,7 @@ source CSS at `app/assets/tailwind/application.css`.
   `7396de2f` (addendum §A). Nothing is pushed.
 - `env -u RAILS_MASTER_KEY bin/rails test` for every run. Run one suite at a time.
 - Never `git add -A`. Stage named paths only. Never commit `config/master.key`,
-  `config/credentials/*.key`, `.claude/`, `node_modules`, `.env`.
+  `config/credentials/*.key`, local tool folders, `node_modules`, `.env`.
 - Every fix ships with the test that catches its class, seen red first. Paste the red output into
   the checkpoint report.
 - Do not touch `app/motion/**`: it is hashed into `vendor/javascript/mc.js`.
@@ -41,7 +41,6 @@ source CSS at `app/assets/tailwind/application.css`.
 - Fonts on the journey: Instrument Serif, Manrope and JetBrains Mono only (brief §4.4).
 - Product strings are i18n keys in both `en.yml` and `es.yml`. Code, comments and commits are in
   English.
-- Commits end with `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>`.
 - Checkpoints (brief §9): after Task 4, after Task 13, and after Task 15. At each one, stop and
   hand off.
 

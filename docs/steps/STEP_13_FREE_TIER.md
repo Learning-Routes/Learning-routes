@@ -1,4 +1,4 @@
-# PROMPT 13 — WP-20: what the free module actually includes
+# STEP 13 — WP-20: what the free module actually includes
 
 > Run from `~/Documents/Learning-routes`. Branch off `main` as `wp20-free-tier`, **after**
 > `wp18-route-purchases` and `wp19-spend-leaks` are merged. Merge `wp18` first: it carries the

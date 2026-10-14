@@ -1,4 +1,4 @@
-# PROMPT 14 — WP-21: the quiz modal renders nothing, so no lesson can be finished
+# STEP 14 — WP-21: the quiz modal renders nothing, so no lesson can be finished
 
 > Run from `~/Documents/Learning-routes`, on `main` (already carries the WP-18 + WP-19 merges).
 > Branch as `wp21-quiz-modal`.

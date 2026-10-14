@@ -1,4 +1,4 @@
-# PROMPT 12 — WP-19: cerrar las cuatro fugas de gasto, cada una con su red
+# STEP 12 — WP-19: cerrar las cuatro fugas de gasto, cada una con su red
 
 > Run from `~/Documents/Learning-routes`. Branch off `main` as `wp19-spend-leaks`.
 > **Do not build on `wp18-route-purchases`** — that branch is finished and awaiting deploy;

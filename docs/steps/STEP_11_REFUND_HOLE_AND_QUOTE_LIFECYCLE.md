@@ -1,4 +1,4 @@
-# PROMPT 11 — WP-18 follow-up: the refund hole that stayed open, and the quote dead end
+# STEP 11 — WP-18 follow-up: the refund hole that stayed open, and the quote dead end
 
 > Run from `~/Documents/Learning-routes`, on `wp18-route-purchases` (HEAD `51b0b45`).
 > Reference: `WP18_RESUME.md` §2 (`ae62268`) and §5.

@@ -14,13 +14,13 @@ method.
 **Tech Stack:** Rails 8.1, PostgreSQL (`db/structure.sql`), Minitest, Solid Queue.
 
 **Spec:** `docs/superpowers/specs/2026-10-09-wp40-owner-panel-design.md` and the brief
-`PROMPT_31_WP40_THE_OWNERS_PANEL_WHO_JOINS_WHAT_THEY_DO.md`.
+`STEP_31_WP40_THE_OWNERS_PANEL_WHO_JOINS_WHAT_THEY_DO.md`.
 
 ## Global Constraints
 
 - `env -u RAILS_MASTER_KEY bin/rails test` for every run, one suite at a time (app, then
   `bin/rails test engines/*/test`, then `bin/rails test:system`).
-- Never commit `config/master.key`, `config/credentials/*.key`, `.claude/`, `node_modules`. No
+- Never commit `config/master.key`, `config/credentials/*.key`, local tool folders, `node_modules`. No
   `git add -A`; add files by name.
 - Never print an email address or a secret into a log line or a task's output.
 - Personal data is shown to the owner only. The digest goes to the owner's address only.

@@ -15,7 +15,7 @@ class MotionSceneChromeTest < ActiveSupport::TestCase
   # is a change to the contract and needs a reason in the commit, not a quiet
   # append.
   # There is NO colour entry in this allowlist, and that absence is the
-  # Checkpoint 2 ruling (PROMPT_27_WP36_NARRATED_SCENES.md, 12 September).
+  # Checkpoint 2 ruling (STEP_27_WP36_NARRATED_SCENES.md, 12 September).
   # It used to hold HEX = /\A#\h{3,8}\z/, admitting '#1C1812' and 8-digit
   # alpha colours like '#C0453A22'. That admission is exactly what let both
   # scenes bake the light palette in: the canvas drew correct ink on the

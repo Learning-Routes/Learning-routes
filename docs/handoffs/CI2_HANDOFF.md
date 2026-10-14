@@ -1,6 +1,6 @@
 # CI-2 handoff: CI back to green
 
-**Branch:** `ci-green` from `main` at `f929de5b`. **Brief:** `PROMPT 32`.
+**Branch:** `ci-green` from `main` at `f929de5b`. **Brief:** `STEP 32`.
 
 ## 0. What CI and production have been
 

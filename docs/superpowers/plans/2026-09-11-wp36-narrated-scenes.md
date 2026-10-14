@@ -1641,7 +1641,7 @@ Build a step whose `parsed_sections` has a motion block and whose `audio_section
 - [ ] **Step 3: Measure first-play latency on a preview step** — WP-20 §C asked for this and it has never been measured.
 - [ ] **Step 4: Record the cue fallback rate** from `cueStats()` on that real narration.
 - [ ] **Step 5: Verification** — the three suites, three runs each, from a clean base, one suite at a time, as `WP33_HANDOFF.md` tabulates them (the four known engine failures and nothing else); `bundle exec rubocop` clean.
-- [ ] **Step 6: `requesting-code-review`** — a subagent review of the whole diff against `PROMPT_27_WP36_NARRATED_SCENES.md`; its findings go in the handoff, fixed or argued.
+- [ ] **Step 6: `requesting-code-review`** — a subagent review of the whole diff against `STEP_27_WP36_NARRATED_SCENES.md`; its findings go in the handoff, fixed or argued.
 - [ ] **Step 7: Write `WP36_HANDOFF.md`** — what changed; the red-then-green of every new test; spec and plan paths; measured first-play latency; the cost of the one generated lesson; the cue fallback rate; and what was not done.
 
 ---

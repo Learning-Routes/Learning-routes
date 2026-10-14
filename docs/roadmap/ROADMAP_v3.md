@@ -192,7 +192,7 @@ La única pantalla que ve alguien que todavía no es usuario.
 Sin cambios respecto a v2, porque funciona:
 
 1. Se escribe un `PROMPT_XX.md` con contexto medido, restricciones duras y fases.
-2. Se dispara en Claude Code desde la carpeta del proyecto.
+2. Se dispara en el agente de terminal desde la carpeta del proyecto.
 3. **El reporte se verifica contra el código antes de creérselo.** Tres reportes en este proyecto
    han afirmado cosas que no eran ciertas, y una de esas veces fui yo dando una cifra de gasto que
    no había medido.

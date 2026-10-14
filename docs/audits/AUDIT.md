@@ -3,7 +3,7 @@
 **Date:** 2026-08-03 · **Repo:** `/Users/go/Documents/Learning-routes` · **HEAD:** `d18b31a` (2026-07-27)
 **Method:** read-only. No application file was modified. Claims carry `file:line` or command output.
 
-> **Note on the audit brief.** PROMPT 01 describes a repo at commit `09bd58c` (2026-04-29) with ~77
+> **Note on the audit brief.** STEP 01 describes a repo at commit `09bd58c` (2026-04-29) with ~77
 > uncommitted files, three uncommitted July migrations, and untracked `rack_attack.rb` / `sentry.rb` /
 > `strong_migrations.rb` / `solid_queue_strict_loading.rb`. **That state no longer exists.** The working
 > tree is clean apart from two entries, 36 commits have landed since, and all the "uncommitted" work
@@ -47,7 +47,7 @@
 
 ### 2.1 The brief's premise is void
 
-| Claim in PROMPT 01 | Reality | Evidence |
+| Claim in STEP 01 | Reality | Evidence |
 |---|---|---|
 | HEAD is `09bd58c`, 2026-04-29 | HEAD is `d18b31a`, 2026-07-27; `09bd58c` is 36 commits back | `git log -1`; `git rev-list --count b82338d..HEAD` → 36 |
 | ~77 modified/untracked files | 2 entries: ` M .gitignore`, `?? config/credentials/` | `git status --short` |
@@ -312,7 +312,7 @@ Nano. `gpt-5.2` and `gpt-4.1-mini` do not appear in the current catalogue.
 |---|---|---|
 | `model_router.rb:4-25` | `gpt-5.2`, `gpt-4.1-mini` | superseded by GPT-5.4/5.5 tiers |
 | `cost_tracker.rb:5-6` | gpt-5.2 $1.75/$14.00 per 1M | GPT-5.4 Standard $2.50/$15.00; GPT-5.5 $5.00/$30.00 |
-| `cost_tracker.rb:7-9` | 3 × `claude-*` priced | **routed nowhere** — dead config (`ROUTING_TABLE` has no Claude entry) |
+| `cost_tracker.rb:7-9` | 3 × `claude-*` priced | **routed nowhere** — dead config (`ROUTING_TABLE` has no entry for them) |
 | `ai_client.rb:94` | `eleven_multilingual_v2` | current; Flash/Turbo is half price ($0.05/1k chars) |
 
 Also contradicts the project's own no-hardcoding rule — these belong in credentials/config.
@@ -568,7 +568,7 @@ exactly one interactive type: `flashcards`.
 
 ## 9. Recommended sequence
 
-Each package is one Claude Code session. **Do not reorder WP-1 and WP-2.**
+Each package is one agent session. **Do not reorder WP-1 and WP-2.**
 
 | WP | Work | Depends on | Why this order |
 |---|---|---|---|

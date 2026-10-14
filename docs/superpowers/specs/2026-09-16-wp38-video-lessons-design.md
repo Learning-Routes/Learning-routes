@@ -3,7 +3,7 @@
 Branch `wp38-video-lessons`, off `main` at `39f7fa2`. Independent of `wp36-narrated-scenes`
 (31 commits, untouched here); the two can merge in either order.
 
-Brief: `PROMPT_29_WP38_VIDEO_LESSONS_FROM_THE_STUDIO.md`. This spec is checked against it.
+Brief: `STEP_29_WP38_VIDEO_LESSONS_FROM_THE_STUDIO.md`. This spec is checked against it.
 **Section numbers below are this document's own (1–11); the brief's are written `brief §N`.** Every
 decision below either comes from the brief, from an answer the owner gave during this brainstorm, or
 is marked **[new]** and carries the evidence I gathered for it.

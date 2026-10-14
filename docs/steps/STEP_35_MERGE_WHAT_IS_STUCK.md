@@ -1,9 +1,9 @@
-# PROMPT 35 — merge what is stuck: every branch that is ahead of `main`, into `main`
+# STEP 35 — merge what is stuck: every branch that is ahead of `main`, into `main`
 
 **Mandate from the owner (13 October):** *"Let's merge and push to main everything that is stuck."*
 
 **Base:** `main` at `e8e63a1f`, which is what production runs (confirmed with
-`bin/kamal app details`). **Standing order:** PROMPT 34 §0 and §5 apply — you stop only for a
+`bin/kamal app details`). **Standing order:** STEP 34 §0 and §5 apply — you stop only for a
 secret, a merge (the reviewer verifies each PR before it lands), or a product decision.
 
 ## 0. The inventory — measured on 13 October against the local clone, not remembered
@@ -11,7 +11,7 @@ secret, a merge (the reviewer verifies each PR before it lands), or a product de
 | Branch | Head | vs `main` | What it is | Action |
 |---|---|---|---|---|
 | `wp37b-journey-map-drawn` | `3e39c020` | 6 ahead / 13 behind (merge-base `7396de2f`) | WP-37b checkpoint 1, verified and approved by the reviewer on 9 October. Four pure modules, their node tests, spec + plan. Only `config/importmap.rb` overlaps `main`. | **Merge first** (§2) |
-| `wp36-narrated-scenes` | `41b813fa` | 12 ahead / 82 behind (merge-base `9c9e19e4`, 11 September) | PROMPT 27 tasks 1–16: ElevenLabs word timings stored on `audio_sections`, section audio endpoints serve them, the motion scene follows the voice, prefetch only for purchased modules. Never merged. Touches `app/motion/src` (5 files), `vendor/javascript/mc.js`, both locales, `tailwind/application.css`. | **Rebuild, prove, merge** (§3) |
+| `wp36-narrated-scenes` | `41b813fa` | 12 ahead / 82 behind (merge-base `9c9e19e4`, 11 September) | STEP 27 tasks 1–16: ElevenLabs word timings stored on `audio_sections`, section audio endpoints serve them, the motion scene follows the voice, prefetch only for purchased modules. Never merged. Touches `app/motion/src` (5 files), `vendor/javascript/mc.js`, both locales, `tailwind/application.css`. | **Rebuild, prove, merge** (§3) |
 | `wp40-owner-panel` | `f929de5b` | 0 ahead | Starting point only; the census is already in `main`. | Nothing to merge; keep |
 | `mail-resend` | `d4ed2d35` | 0 ahead | Starting point only; no Resend work exists yet. | Nothing to merge; keep |
 | `wp38-pre-purge` | `aca88065` | 28 ahead | Deliberate backup of the tree before WP-38 untracked `app/motion/dist`. | **Not a candidate.** Tag `backup/wp38-pre-purge`, then delete the branch |
@@ -20,13 +20,13 @@ secret, a merge (the reviewer verifies each PR before it lands), or a product de
 | `wp37-journey-map` | `7396de2f` | 0 ahead | Merged. | Delete; the owner removes `Learning-routes-wp37/` |
 | `ci-green`, `landing-signed-in` | | 0 ahead | Merged as PR #46 and #47. | Delete; the owner removes `Learning-routes-ci/`, `Learning-routes-landing/` |
 | `dependabot/*` | | 13 local, ~30 on `origin` | Dependency bumps, many superseded. | **Sweep** (§4) |
-| Untracked at the root | | | `PROMPT_30` … `PROMPT_34` (the earlier PROMPTs are tracked); `.claude/` | Commit the five PROMPTs on `main` in one `docs:` commit. `.claude/` is never committed |
+| Untracked at the root | | | `STEP_30` … `STEP_34` (the earlier STEPs are tracked); local tool folders | Commit the five STEPs on `main` in one `docs:` commit. local tool folders is never committed |
 
 Verify this table yourself before acting (`git rev-list --count main..<branch>` and
 `<branch>..main`); if a row is wrong, say so in the handoff and act on what you measured.
 
 ## 1. The rules for every merge
-- A PR against `main`; CI green **on the PR**; the reviewer's verification (PROMPT 34 §5: merge-base,
+- A PR against `main`; CI green **on the PR**; the reviewer's verification (STEP 34 §5: merge-base,
   commit range, suite numbers, the evidence named below) before it lands; merge commit or
   fast-forward, **never squash** — the commit history is the handoff.
 - After each merge the owner deploys by hand (`source .env.deploy && bin/kamal deploy`; the
@@ -52,7 +52,7 @@ reviewer verifies it do §3b; §2 after both are merged.
    `bin/importmap audit` clean; the three suites from a clean tree, numbers quoted.
 3. PR: merge-base, commit range, the grep output, the suite numbers. Stop for the reviewer.
 4. After the merge: checkpoint 2 continues on a **new** branch `wp37b-cp2` cut from `main`, per
-   PROMPT 30 and PROMPT 34 §2. Delete `wp37b-journey-map-drawn` once it is merged; the owner
+   STEP 30 and STEP 34 §2. Delete `wp37b-journey-map-drawn` once it is merged; the owner
    removes `Learning-routes-wp37b/`.
 
 ## 3. `wp36-narrated-scenes` — tasks 1–16, rebuilt on today's `main`
@@ -74,7 +74,7 @@ reviewer verifies it do §3b; §2 after both are merged.
    `motion_scene_test.rb`, `motion_scene_narration_retry_test.rb` and `motion_sync_test.rb` green;
    the metering test `41b813fa` fixed stays green.
 4. PR: merge-base, commit range, the conflict list and how each was resolved, the suite numbers,
-   the new test's name. Stop for the reviewer. Tasks 17–19 stay on PROMPT 34 track B1 and wait
+   the new test's name. Stop for the reviewer. Tasks 17–19 stay on STEP 34 track B1 and wait
    for the key — they are **not** part of this merge.
 5. After the merge and the owner's deploy, the owner's acceptance is a screenshot of a `motion`
    scene in production **in the dark theme**, on the same step where it was invisible.
@@ -164,7 +164,7 @@ PR number and its CI run, the deploy commit the owner confirmed after each merge
 PR with its outcome and reason, and what remains open and why.
 
 ## 7. Constraints, unchanged
-PROMPT 34 §6: `env -u RAILS_MASTER_KEY bin/rails test`; never commit `config/master.key`,
-`config/credentials/*.key`, `.claude/`, `.kamal/secrets` with literal values, `node_modules`, or any
+STEP 34 §6: `env -u RAILS_MASTER_KEY bin/rails test`; never commit `config/master.key`,
+`config/credentials/*.key`, local tool folders, `.kamal/secrets` with literal values, `node_modules`, or any
 `.env`; no `git add -A`; never print a key, a token or a password; every `kamal app exec` with
 `-r job`; one branch per track; worktrees as now.
