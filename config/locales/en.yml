@@ -591,6 +591,7 @@ en:
       session_label: "Preferred session length"
       per_week: "per week"
       per_session: "per session"
+      summary: "%{hours} h/week in %{minutes}-minute sessions"
       step_name: "— Time"
     step4:
       mini_test: "MINI-TEST"
@@ -598,6 +599,7 @@ en:
       heading: "How do you learn best?"
       subtext: "Answer quickly — there are no wrong answers."
       progress: "%{done} of 12"
+      question_html: "Question %{n} of 12"
       saved_badge: "Learning style saved"
       retake: "Retake test"
       questions:

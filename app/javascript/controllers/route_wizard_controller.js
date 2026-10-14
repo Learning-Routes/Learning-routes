@@ -301,7 +301,8 @@ export default class extends Controller {
   _updateTimeSummary() {
     if (!this.hasTimeSummaryTarget) return
     if (this.selectedHours && this.selectedSession) {
-      this.timeSummaryTarget.textContent = this.selectedHours + "h/week in " + this.selectedSession + "-minute sessions"
+      this.timeSummaryTarget.textContent = this.t("time_summary", ":hours h/week in :minutes-minute sessions")
+        .replace(":hours", this.selectedHours).replace(":minutes", this.selectedSession)
     } else {
       this.timeSummaryTarget.textContent = ""
     }
@@ -630,7 +631,7 @@ export default class extends Controller {
     // Update button text on last step
     if (this.hasBtnTextTarget) {
       if (this.stepValue === this.totalSteps - 1 && valid) {
-        this.btnTextTarget.textContent = "Create my route \u2728"
+        this.btnTextTarget.textContent = this.t("generate_text", "Create my route")
       } else {
         this.btnTextTarget.textContent = this.t("continue_text", "Continue")
       }
