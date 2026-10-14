@@ -32,6 +32,7 @@ jobs:
           fi
 
       - name: Description carries no generated-with footer
+        if: ${{ !cancelled() }}
         env:
           PR_BODY: ${{ github.event.pull_request.body }}
         run: |
