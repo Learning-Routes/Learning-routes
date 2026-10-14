@@ -58,3 +58,35 @@ detail ("teoria musica").
 - system: 107 runs, 2216 assertions, 0 failures, 0 errors, 0 skips
 - RuboCop: 645 files, no offenses
 - engine suites: not run locally (no engine code changed); CI runs them.
+
+## §2 — the journey header that repeated itself
+
+**Cause.** `journey.html.erb` built its own sentence ("Camino personalizado · N etapas · M temas")
+and then appended the route's `localized_subject_area`. Routes built by the wizard's template
+fallback (all of them while AI generation is down) store a full sentence there:
+`WizardRouteGenerationJob` writes "Camino personalizado · 8 etapas · nivel beginner" as
+`subject_area`. The two sentences were glued together, and their numbers counted different
+things: the header's "etapas" were modules, the stored "8 etapas" were steps. The header's "temas"
+also counted only readable steps (`@steps`), while the map draws the locked module's masked topics
+too.
+
+**Fix.** One sentence: "Camino personalizado · %{stages} · %{topics}". Both counts come from
+`@stages`, the JSON the map draws (modules, and every topic in them, locked ones included), with
+singular forms (`stage_count` / `topic_count`, es/en). The subject is dropped from the line,
+because the route's name is already the map's `<h1>`.
+Tests: two new tests in `test/integration/learning_routes_engine/journey_map_data_test.rb`, red before the fix:
+- one sentence, counted from the map's stages and topics. Before: "… 2 etapas · 2 temas · Camino
+  personalizado · 8 etapas · nivel beginner · Arrastra para explorar".
+- singular forms. Before: "1 etapas · 1 temas · Map".
+
+The existing "counts the purchased module's steps" test now reads the header element. It still
+passes.
+
+Not changed:
+- "Arrastra para explorar" stays on `main`; §4 drops it inside `wp37b-cp2`.
+- The fallback still stores that sentence as `subject_area`, and the profile card and dashboard
+  still show it ("… nivel beginner", with the level untranslated). That is outside §2; a fix
+  would change the job and existing rows.
+- The `stages_topics` key was already unused before this change.
+
+Suites: app 1901, engines 385, system 108, all 0 failures; RuboCop clean.

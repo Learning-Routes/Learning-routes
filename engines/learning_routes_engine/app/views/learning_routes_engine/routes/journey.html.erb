@@ -1,7 +1,6 @@
 <% content_for(:title, "#{@route.localized_topic} #{t('learning_engine.route.title_suffix')}") %>
 
 <%
-  total_count = @steps.size
   labels = {
     current: t("learning_engine.journey.status_current"),
     available: t("learning_engine.journey.status_available"),
@@ -31,7 +30,10 @@
   </div>
 
   <p class="jm-overlay jm-subtitle" data-journey-overlay>
-    <%= t("learning_engine.journey.subtitle", stages: @stages.size, topics: total_count, subject: @route.localized_subject_area.presence || @route.localized_topic) %>
+    <%# Counted from what the map draws (STEP 38 §2); the route's own name is the h1. %>
+    <%= t("learning_engine.journey.subtitle",
+          stages: t("learning_engine.journey.stage_count", count: @stages.size),
+          topics: t("learning_engine.journey.topic_count", count: @stages.sum { |stage| stage[:topics].size })) %>
     · <%= t("learning_engine.journey.drag_to_explore") %>
   </p>
 
