@@ -125,12 +125,12 @@
       { value: @routes.size, label: t("profile.stats.routes"), color: "#8B80C4", bg: "rgba(139,128,196,0.08)" },
       { value: @total_steps_completed, label: t("profile.stats.lessons"), color: "#6E9BC8", bg: "rgba(110,155,200,0.08)" },
       { value: format_study_time(@study_minutes), label: t("profile.stats.time"), color: "#5BA880", bg: "rgba(91,168,128,0.08)" },
-      { value: "#{@avg_accuracy}%", label: t("profile.stats.accuracy"), color: "#B09848", bg: "rgba(176,152,72,0.08)" }
+      { value: @accuracy_scored ? "#{@avg_accuracy}%" : "—", label: t("profile.stats.accuracy"), color: "#B09848", bg: "rgba(176,152,72,0.08)", stat: "overall-accuracy" }
     ]
   %>
   <% stats.each do |stat| %>
     <div style="background:var(--color-card-glass); border:1px solid var(--color-border-subtle); border-radius:14px; padding:1.1rem 1rem; text-align:center;">
-      <p style="font-family:'DM Mono',monospace; font-size:1.35rem; font-weight:500; color:<%= stat[:color] %>; margin:0 0 0.3rem; letter-spacing:-0.5px;">
+      <p <%= tag.attributes(data: { stat: stat[:stat] }) %> style="font-family:'DM Mono',monospace; font-size:1.35rem; font-weight:500; color:<%= stat[:color] %>; margin:0 0 0.3rem; letter-spacing:-0.5px;">
         <%= stat[:value] %>
       </p>
       <p style="font-family:'DM Mono',monospace; font-size:0.58rem; letter-spacing:1.2px; text-transform:uppercase; color:var(--color-muted); margin:0;">

@@ -31,8 +31,11 @@ class ProfilesController < ApplicationController
     @total_steps = @routes.sum(&:total_steps)
     @study_minutes = Analytics::StudySession.for_user(@user).sum(:duration_minutes)
     @assessment_results = Assessments::AssessmentResult.for_user(@user)
-    count, avg = @assessment_results.pick(Arel.sql("COUNT(*)"), Arel.sql("AVG(score)"))
-    @avg_accuracy = count.to_i.positive? ? avg.to_f.round(1) : 0
+    # COUNT(score) skips open attempts (nil score). @avg_accuracy stays numeric
+    # for the badge and achievement thresholds; the header shows "—" until scored.
+    count, avg = @assessment_results.pick(Arel.sql("COUNT(score)"), Arel.sql("AVG(score)"))
+    @accuracy_scored = count.to_i.positive?
+    @avg_accuracy = @accuracy_scored ? avg.to_f.round(1) : 0
 
     # Per-route stats for route cards (no N+1). Precision is the route's own
     # scored attempts; nil (shown as "—") until it has one.

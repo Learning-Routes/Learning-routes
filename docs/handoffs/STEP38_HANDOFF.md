@@ -37,12 +37,24 @@ and shows "—" until there is one. A real 0 % now shows "0.0%" instead of "—"
 Test: `test/integration/profile_route_card_accuracy_test.rb`. It was red before the fix (the
 fresh card showed "35.2%").
 
-Not changed: the profile header's overall "Precisión" still reads "0%" when there is no
-assessment, and the generation job still titles a route from the topic tile rather than the
-typed detail ("teoria musica").
+### Review additions (PR #57)
+- **The server enforces one topic.** A wizard page loaded before the deploy still sends
+  checkboxes. `RouteRequest` now rejects more than one entry in `topics` with a whole-sentence base
+  error, `route_request.errors.one_topic` ("Elige un solo tema: una ruta tiene un único tema." /
+  "Choose a single topic: a route has one subject."), which the wizard's error banner shows.
+  Model test with `%w[web_dev music]` in both locales (`raise: true`, so a missing key fails). It
+  was red before (the record was valid). The controller test that posted two topics now posts one.
+- **The header's overall "Precisión" shows "—"** until the user has a scored assessment. An open
+  attempt (nil score) no longer counts: `COUNT(score)`, not `COUNT(*)`, so "0%" no longer shows
+  for an unfinished exam. `@avg_accuracy` stays numeric (0 when unscored) for the high-accuracy
+  badge and the achievements, which compare against it. Integration test, three states: none, open
+  attempt only, scored 35.2. It was red against the old header ("0%").
+
+Not changed: the generation job still titles a route from the topic tile rather than the typed
+detail ("teoria musica").
 
 ### Suites (worktree `step38-wizard-route`)
-- app: 1889 runs, 509994 assertions, 0 failures, 0 errors, 0 skips
+- app: 1891 runs, 510006 assertions, 0 failures, 0 errors, 0 skips (after the review additions)
 - system: 107 runs, 2216 assertions, 0 failures, 0 errors, 0 skips
 - RuboCop: 645 files, no offenses
 - engine suites: not run locally (no engine code changed); CI runs them.

@@ -485,6 +485,7 @@ en:
       no_topics: "You must select at least one topic or enter a custom one"
       invalid_goals: "contains invalid options: %{invalid}"
       invalid_topics: "contains invalid options: %{invalid}"
+      one_topic: "Choose a single topic: a route has one subject."
       incomplete_style: "you must answer all 12 questions in the test"
 
   # ── Route Wizard ──

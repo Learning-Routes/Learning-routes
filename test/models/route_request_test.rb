@@ -198,6 +198,18 @@ class RouteRequestTest < ActiveSupport::TestCase
     assert rr.failed?
   end
 
+  # STEP 38 §1: a route has one subject. The wizard sends one tile now, but a page
+  # loaded before that deploy can still post two.
+  test "invalid with more than one standard topic, with a translated error" do
+    %i[es en].each do |locale|
+      I18n.with_locale(locale) do
+        rr = RouteRequest.new(valid_attrs.merge(topics: %w[web_dev music]))
+        assert_not rr.valid?
+        assert_includes rr.errors.full_messages, I18n.t("route_request.errors.one_topic", raise: true)
+      end
+    end
+  end
+
   # --- topic_display ---
 
   test "topic_display returns labels for standard topics" do
