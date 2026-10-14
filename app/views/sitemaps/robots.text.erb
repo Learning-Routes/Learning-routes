@@ -1,4 +1,4 @@
-# See https://www.robotstxt.org/robotstxt.html for documentation on how to use the robots.txt file
+# See https://www.robotstxt.org/robotstxt.html
 
 User-agent: *
 Allow: /
@@ -17,5 +17,4 @@ Disallow: /analytics/
 Disallow: /community_engine/
 Disallow: /community
 
-# Sitemap
-Sitemap: https://learning-routes.com/sitemap.xml
+Sitemap: <%= public_url("/sitemap.xml") %>

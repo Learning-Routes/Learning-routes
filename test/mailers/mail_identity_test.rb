@@ -35,6 +35,7 @@ class MailIdentityTest < ActiveSupport::TestCase
 
     assert_operator hosts.size, :>=, 3, "action_mailer, the app's routes and Core::Engine's routes each need a host"
     assert_equal [DOMAIN], hosts.uniq
+    assert_equal DOMAIN, Rails.configuration.x.public_host, "mail links and the public host (STEP 36 §1) are one domain"
     assert_match(/Core::Engine\.routes\.default_url_options/, PRODUCTION,
       "engine URL helpers (core.reset_password_url) ignore action_mailer's defaults")
   end

@@ -1,4 +1,13 @@
 module ApplicationHelper
+  # Absolute URL on the one public host (config.x.public_host), for canonical,
+  # share tags, JSON-LD and the sitemap: never the request's host.
+  # shortcut: http only for localhost, upgrade if a non-local http host appears.
+  def public_url(path = "/")
+    host = Rails.configuration.x.public_host
+    scheme = host.start_with?("localhost") ? "http" : "https"
+    "#{scheme}://#{host}#{path}"
+  end
+
   def format_study_time(minutes)
     return "0m" if minutes.nil? || minutes == 0
     if minutes >= 60

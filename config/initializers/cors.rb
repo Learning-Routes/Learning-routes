@@ -7,7 +7,7 @@
 
 Rails.application.config.middleware.insert_before 0, Rack::Cors do
   allow do
-    origins ENV.fetch("CORS_ORIGINS", "learning-routes.com").split(",")
+    origins ENV.fetch("CORS_ORIGINS", Rails.configuration.x.public_host).split(",")
 
     resource "/api/*",
       headers: :any,

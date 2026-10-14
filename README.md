@@ -92,7 +92,7 @@ For a hotfix the owner has decided to ship from a branch, `KAMAL_ALLOW_BRANCH_DE
 
 ## Domain
 
-**learning-routes.com**
+**learningroutes.com**
 
 ## License
 

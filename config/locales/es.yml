@@ -805,7 +805,7 @@ es:
       body: "Learning Routes no será responsable de ningún daño indirecto, incidental, especial o consecuente resultante de tu uso del Servicio. El contenido de aprendizaje es generado por IA y no debe considerarse asesoramiento profesional."
     contact:
       heading: "7. Contacto"
-      body_html: 'Para preguntas sobre estos Términos, contáctanos en <a href="mailto:hello@learning-routes.com" class="text-accent underline">hello@learning-routes.com</a>.'
+      body_html: 'Para preguntas sobre estos Términos, contáctanos en <a href="mailto:hello@learningroutes.com" class="text-accent underline">hello@learningroutes.com</a>.'
 
   # ── Política de Privacidad ──
   privacy:
@@ -832,7 +832,7 @@ es:
       body: "Puedes solicitar acceso, corrección o eliminación de tus datos personales en cualquier momento contactándonos. Puedes eliminar tu cuenta y todos los datos asociados desde la configuración de tu perfil."
     contact:
       heading: "7. Contacto"
-      body_html: 'Para preguntas relacionadas con la privacidad, contáctanos en <a href="mailto:hello@learning-routes.com" class="text-accent underline">hello@learning-routes.com</a>.'
+      body_html: 'Para preguntas relacionadas con la privacidad, contáctanos en <a href="mailto:hello@learningroutes.com" class="text-accent underline">hello@learningroutes.com</a>.'
 
   # ── Editor de Código ──
   code_editor:
@@ -1369,7 +1369,7 @@ es:
       title: "Configura tu perfil — Learning Routes"
     app_name: "Learning Routes"
     dismiss: "Cerrar"
-    mailer_footer: "Learning Routes — learning-routes.com"
+    mailer_footer: "Learning Routes — learningroutes.com"
 
   # ── Ajustes ──
   settings:
