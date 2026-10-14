@@ -342,15 +342,6 @@ export default class extends Controller {
 
     this.updateStyleProgress()
 
-    // Update mini progress
-    const answered = Object.keys(this.styleAnswers).length
-    if (this.hasStyleProgressFillTarget) {
-      this.styleProgressFillTarget.style.width = ((answered / 12) * 100) + "%"
-    }
-    if (this.hasStyleQuestionNumTarget) {
-      this.styleQuestionNumTarget.textContent = Math.min(answered + 1, 12)
-    }
-
     // Auto-advance: hide current question, show next unanswered one after 400ms
     const nextQ = parseInt(question) + 1
     if (nextQ <= 12 && !this.styleAnswers[String(nextQ)]) {
@@ -408,23 +399,19 @@ export default class extends Controller {
       this.styleDoneMsgTarget.style.opacity = "0"
     }
 
-    // Reset mini progress
-    if (this.hasStyleProgressFillTarget) {
-      this.styleProgressFillTarget.style.width = "0%"
-    }
-    if (this.hasStyleQuestionNumTarget) {
-      this.styleQuestionNumTarget.textContent = "1"
-    }
-
     this.updateStyleProgress()
     this.validateStep()
   }
 
   updateStyleProgress() {
     const answered = Object.keys(this.styleAnswers).length
-    if (this.hasStyleProgressTarget) {
-      const template = this.t("progress_of_6", ":done of 12")
-      this.styleProgressTarget.textContent = template.replace(":done", answered)
+    // Update the bar and the counter in place: styleProgress wraps both, so
+    // writing its textContent erased them.
+    if (this.hasStyleProgressFillTarget) {
+      this.styleProgressFillTarget.style.width = ((answered / 12) * 100) + "%"
+    }
+    if (this.hasStyleQuestionNumTarget) {
+      this.styleQuestionNumTarget.textContent = Math.min(answered + 1, 12)
     }
     if (answered === 12 && this.hasStyleDoneMsgTarget) {
       this.styleDoneMsgTarget.style.opacity = "1"

@@ -598,7 +598,6 @@ en:
       all_answered: "✓ All answered"
       heading: "How do you learn best?"
       subtext: "Answer quickly — there are no wrong answers."
-      progress: "%{done} of 12"
       question_html: "Question %{n} of 12"
       saved_badge: "Learning style saved"
       retake: "Retake test"

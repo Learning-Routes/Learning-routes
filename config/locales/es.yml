@@ -598,7 +598,6 @@ es:
       all_answered: "✓ Todas respondidas"
       heading: "¿Cómo aprendes mejor?"
       subtext: "Responde rápido — no hay respuestas correctas."
-      progress: "%{done} de 12"
       question_html: "Pregunta %{n} de 12"
       saved_badge: "Estilo de aprendizaje guardado"
       retake: "Repetir test"
