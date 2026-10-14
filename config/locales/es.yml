@@ -507,7 +507,7 @@ es:
       multimodal_desc: "Combinas varios estilos — eres versátil"
     step0:
       heading: "¿Qué quieres aprender?"
-      subtext: "Elige uno o más temas — la IA construirá tu ruta."
+      subtext: "Elige un tema — la IA construirá tu ruta."
       topics:
         programming: "Programación"
         programming_desc: "Código, algoritmos, estructuras"

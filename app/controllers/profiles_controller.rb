@@ -34,7 +34,13 @@ class ProfilesController < ApplicationController
     count, avg = @assessment_results.pick(Arel.sql("COUNT(*)"), Arel.sql("AVG(score)"))
     @avg_accuracy = count.to_i.positive? ? avg.to_f.round(1) : 0
 
-    # Per-route stats for route cards (no N+1)
+    # Per-route stats for route cards (no N+1). Precision is the route's own
+    # scored attempts; nil (shown as "—") until it has one.
+    accuracy_by_route = @assessment_results.where.not(score: nil)
+                          .joins(assessment: :route_step)
+                          .where(learning_routes_engine_route_steps: { learning_route_id: route_ids })
+                          .group("learning_routes_engine_route_steps.learning_route_id")
+                          .average(:score)
     study_minutes_by_route = Analytics::StudySession.for_user(@user)
                                .where(learning_route_id: route_ids)
                                .group(:learning_route_id)
@@ -44,7 +50,7 @@ class ProfilesController < ApplicationController
       @route_stats[r.id] = {
         study_minutes: study_minutes_by_route[r.id] || 0,
         lessons_completed: completed_by_route[r.id] || 0,
-        accuracy: @avg_accuracy
+        accuracy: accuracy_by_route[r.id]&.round(1)
       }
     end
 

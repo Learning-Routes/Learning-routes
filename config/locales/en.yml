@@ -507,7 +507,7 @@ en:
       multimodal_desc: "You combine several styles — you're versatile"
     step0:
       heading: "What do you want to learn?"
-      subtext: "Choose one or more topics — AI will build your route."
+      subtext: "Choose a topic — AI will build your route."
       topics:
         programming: "Programming"
         programming_desc: "Code, algorithms, data structures"
