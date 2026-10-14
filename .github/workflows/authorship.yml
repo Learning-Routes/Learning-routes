@@ -1,0 +1,41 @@
+name: Authorship
+
+# The owner's rule: no commit, PR or file names the tool that wrote it.
+# Fails when a commit in the PR carries a co-author trailer, or when the PR
+# description carries a "generated with" footer.
+on:
+  pull_request:
+    types: [opened, synchronize, edited, reopened]
+
+permissions:
+  contents: read
+
+jobs:
+  no-tool-attribution:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Commits carry no co-author trailer
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          found=$(git log --format='%h %s%n%b' "$BASE_SHA..$HEAD_SHA" | grep -iE '^co-authored-by:' || true)
+          if [ -n "$found" ]; then
+            echo "::error::Commits between $BASE_SHA and $HEAD_SHA carry a co-author trailer:"
+            git log --format='%h %s' --grep='^co-authored-by:' -i -E "$BASE_SHA..$HEAD_SHA"
+            exit 1
+          fi
+
+      - name: Description carries no generated-with footer
+        env:
+          PR_BODY: ${{ github.event.pull_request.body }}
+        run: |
+          if printf '%s' "$PR_BODY" | grep -qi 'generated with'; then
+            echo "::error::The PR description contains a 'Generated with' footer."
+            exit 1
+          fi
