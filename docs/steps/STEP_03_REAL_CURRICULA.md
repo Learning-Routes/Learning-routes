@@ -1,4 +1,4 @@
-# PROMPT 03 — WP-5: make every route a real curriculum
+# STEP 03 — WP-5: make every route a real curriculum
 
 > Run from `~/Documents/Learning-routes`. `AUDIT.md` §P1-1, §P1-3, §P1-4 and §7 are the reference.
 > Production now runs HEAD (deployed 2026-08-06). WP-1 and WP-2 are live.

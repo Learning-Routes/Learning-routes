@@ -1,4 +1,4 @@
-# PROMPT 15 — WP-22: a lesson still cannot be finished, plus six defects seen in production
+# STEP 15 — WP-22: a lesson still cannot be finished, plus six defects seen in production
 
 > Run from `~/Documents/Learning-routes`, on `main` (carries WP-18, WP-19, WP-21).
 > Branch as `wp22-lesson-completion`.

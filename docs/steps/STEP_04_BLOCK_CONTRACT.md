@@ -1,4 +1,4 @@
-# PROMPT 04 — WP-6: close the block contract
+# STEP 04 — WP-6: close the block contract
 
 > Run from `~/Documents/Learning-routes`, on top of `wp5-real-curricula`.
 > Reference: `AUDIT.md` §P1-2, §P1-5, §P1-8 and the capability matrix in §8.

@@ -1,4 +1,4 @@
-# PROMPT 02 — Ship-ready: deploy hygiene + wizard fixes
+# STEP 02 — Ship-ready: deploy hygiene + wizard fixes
 
 > Run from `~/Documents/Learning-routes` (HEAD `d18b31a`). `AUDIT.md` at the repo root is the
 > reference for every claim below — read it before touching anything.

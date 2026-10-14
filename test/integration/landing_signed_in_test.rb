@@ -1,6 +1,6 @@
 require "test_helper"
 
-# PROMPT 33, then the owner's ruling of 13 October: every signed-in user sees the
+# STEP 33, then the owner's ruling of 13 October: every signed-in user sees the
 # landing at `/`, as a visitor would. landing_for_everyone_test.rb pins "never a
 # redirect" for every role; this file pins what a signed-in landing must also be:
 # the visitor's nodes, and never a public cache entry.

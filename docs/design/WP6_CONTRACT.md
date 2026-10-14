@@ -6,7 +6,7 @@ Design decisions, made before writing code.
 
 ## 0. What I found that changes the framing
 
-PROMPT 04 describes two surfaces. There are **five** places the block vocabulary is
+STEP 04 describes two surfaces. There are **five** places the block vocabulary is
 declared, and they have all drifted independently:
 
 | # | Location | Declares |

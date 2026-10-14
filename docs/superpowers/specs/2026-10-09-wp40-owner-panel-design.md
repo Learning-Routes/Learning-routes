@@ -1,6 +1,6 @@
 # WP-40 — The owner's panel: who joins, what they do, what they don't
 
-**Source of truth:** `PROMPT_31_WP40_THE_OWNERS_PANEL_WHO_JOINS_WHAT_THEY_DO.md` (the brief). This
+**Source of truth:** `STEP_31_WP40_THE_OWNERS_PANEL_WHO_JOINS_WHAT_THEY_DO.md` (the brief). This
 document does not restate it. It records the rulings made on 9 October against the code, the
 interfaces the plan builds to, and (§3, after the census) which column each stage reads.
 Section numbers like "brief §3" refer to the brief.

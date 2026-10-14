@@ -1,4 +1,4 @@
-# PROMPT 09 — WP-15: the match block, procedural variation, and the dead space
+# STEP 09 — WP-15: the match block, procedural variation, and the dead space
 
 > Run from `~/Documents/Learning-routes`.
 > The working tree is currently on `wp7-true-costs` (HEAD `bd38b50`). **Confirm which branch

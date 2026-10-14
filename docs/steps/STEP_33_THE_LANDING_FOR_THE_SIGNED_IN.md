@@ -1,6 +1,6 @@
-# PROMPT 33 — the landing page for someone who is signed in
+# STEP 33 — the landing page for someone who is signed in
 
-**Package:** small, one sitting. **Base:** `main` once PROMPT 32 has it green and deployed.
+**Package:** small, one sitting. **Base:** `main` once STEP 32 has it green and deployed.
 **Branch:** `landing-signed-in`. **Ships alone**, before WP-37b's merge.
 
 ## 0. What the owner hit, and what the code does

@@ -2,7 +2,7 @@ require "test_helper"
 require "open3"
 require "tmpdir"
 
-# PROMPT 35 §3b. On 12 September 9c9e19e reached production because `kamal deploy`
+# STEP 35 §3b. On 12 September 9c9e19e reached production because `kamal deploy`
 # builds whatever the local checkout is, and the checkout was a branch. Nothing
 # refused it. .kamal/hooks/pre-build now refuses to build unless the checkout is
 # main, has no modified tracked files, and equals origin/main. Each case below runs
@@ -61,7 +61,7 @@ class PreBuildHookTest < ActiveSupport::TestCase
   end
 
   # Kamal clones HEAD to build, so an untracked file never enters the image, and
-  # the owner's checkout always has some (PROMPT files, .claude/).
+  # the owner's checkout always has some (step files, local tool folders).
   test "an untracked file only: builds" do
     File.write(File.join(@work, "NOTES.md"), "scratch")
 

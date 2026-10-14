@@ -182,7 +182,7 @@ died — every route was simply generic. Behaviour tests cannot see that. So:
 | Test | Guards |
 |---|---|
 | `ROUTING_TABLE.keys ⊆ TASK_TYPES` | the exact drift that caused this |
-| routable models ⊆ `SUPPORTED_MODELS` | the same failure one field over — `AiInteraction` validates `model` too, which PROMPT 03 did not mention |
+| routable models ⊆ `SUPPORTED_MODELS` | the same failure one field over — `AiInteraction` validates `model` too, which STEP 03 did not mention |
 | every routable model ∈ `PRICING` | otherwise `estimate_cost` silently returns 0 and every cap treats the calls as free |
 | an `AiInteraction` is creatable for every routed task type | the end-to-end assertion; this is literally what `Orchestrate.call` does |
 | `TASK_TYPES` are well-formed identifiers | catches the `%w[]`-comment mistake described in §2 |

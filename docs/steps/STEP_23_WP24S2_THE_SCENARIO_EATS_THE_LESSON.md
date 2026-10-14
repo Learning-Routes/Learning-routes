@@ -4,7 +4,7 @@ Branch: `wp24s2-scenario-terminator`, off `main` at `46e067a` or later.
 
 This is the one section of WP-24 that was not done. §1 (the quiz timer) and §3
 (`BlockGrader.answerable?`) shipped and are verified in production. Do not touch them.
-`PROMPT_17_WP24_THE_UNFINISHABLE_LESSON.md` §2 is the origin of this brief; this file
+`STEP_17_WP24_THE_UNFINISHABLE_LESSON.md` §2 is the origin of this brief; this file
 supersedes it, because three things it did not know turned out to decide the fix:
 
 1. `split_by_headings` already cuts the document on `^##\s` (`lesson_section_parser.rb:189-194`),

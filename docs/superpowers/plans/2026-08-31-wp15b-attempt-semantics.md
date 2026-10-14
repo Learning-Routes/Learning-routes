@@ -458,8 +458,8 @@ git commit -m "test(blocks): cover completed-attempt semantics in browser"
 **Files:**
 - Modify: `WP15_HANDOFF.md`
 - Create or modify: `FINDINGS_WP15.md`
-- Add: `PROMPT_09B_WHAT_COUNTS_AS_AN_ATTEMPT.md`
-- Add: `PROMPT_09_MATCH_VARIANTS_LAYOUT.md`
+- Add: `STEP_09B_WHAT_COUNTS_AS_AN_ATTEMPT.md`
+- Add: `STEP_09_MATCH_VARIANTS_LAYOUT.md`
 
 **Interfaces:**
 - Consumes: completed Tasks 1-3 and their test evidence.
@@ -522,8 +522,8 @@ Document the exact `submission_complete` field, every place it is set, focused/m
 - [ ] **Step 5: Track the two source prompts and commit the final handoff**
 
 ```bash
-git add PROMPT_09_MATCH_VARIANTS_LAYOUT.md \
-        PROMPT_09B_WHAT_COUNTS_AS_AN_ATTEMPT.md \
+git add STEP_09_MATCH_VARIANTS_LAYOUT.md \
+        STEP_09B_WHAT_COUNTS_AS_AN_ATTEMPT.md \
         WP15_HANDOFF.md FINDINGS_WP15.md
 git commit -m "docs(wp15): define and verify completed attempts"
 ```

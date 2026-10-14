@@ -1,4 +1,4 @@
-# PROMPT 09B — Execute WP-15B: what counts as an attempt?
+# STEP 09B — Execute WP-15B: what counts as an attempt?
 
 > Run from `~/Documents/Learning-routes`, on `wp15-match-variants`.
 > Required planning base: commit `8672602` (`docs: plan WP-15B attempt semantics`).
@@ -106,7 +106,7 @@ Implementation sketch, keep it this small:
 3. `fill_blank` submits on a completed board too, not only on a correct one, so its valve
    becomes reachable.
 4. `BlockVariant`'s seed keeps reading `attempts`, so it inherits the fix: the board now stays
-   stable for the whole exercise and re-permutes on a real retry, which is what §B of PROMPT 09
+   stable for the whole exercise and re-permutes on a real retry, which is what §B of STEP 09
    specified.
 
 Do not solve this by raising `RELEASE_AFTER`. That trades one arbitrary number for another and

@@ -17,7 +17,7 @@ The model no longer emits any.
 
 ## 1. The contract
 
-Five places declared the vocabulary and had drifted apart independently. PROMPT 04
+Five places declared the vocabulary and had drifted apart independently. STEP 04
 named two of them; the other three are why this kept happening:
 
 | Was | Now |

@@ -1,4 +1,4 @@
-# PROMPT 31 — WP-40: the owner's panel — who joins, what they do, what they don't
+# STEP 31 — WP-40: the owner's panel — who joins, what they do, what they don't
 
 **Package:** WP-40. **Base:** `main` (after the owner's `git merge --ff-only wp37-journey-map`,
 so `7396de2f` or later). **Branch:** `wp40-owner-panel`. **Independent of WP-37b:** it touches
@@ -183,7 +183,7 @@ design; anything that writes to a student's data.
 
 ## 7. Constraints that do not move
 `env -u RAILS_MASTER_KEY bin/rails test` for every run; never commit `config/master.key`,
-`config/credentials/*.key`, `.claude/`, `node_modules` (no `git add -A`); never print an email
+`config/credentials/*.key`, local tool folders, `node_modules` (no `git add -A`); never print an email
 address or any secret into a log line; the panel shows personal data to the owner only, and the
 digest goes to the owner's address only; no API key is ever printed or pasted. Every change
 ships with the test that catches its class, seen red first. Three suites green before each

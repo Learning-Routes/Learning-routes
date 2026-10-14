@@ -1,4 +1,4 @@
-# PROMPT 32 — CI back to green, and main deployed
+# STEP 32 — CI back to green, and main deployed
 
 **Package:** CI-2 (small; one afternoon). **Base:** `main` at `f929de5b`. **Branch:** `ci-green`.
 **Why:** CI run #223 for `f929de5b` is red (`scan_ruby`, `scan_js`, `test`, `system-test`; `lint`
@@ -49,7 +49,7 @@ If a failure *is* in a test, it ships with the test that catches its class, red 
 
 ## 4. Constraints
 `env -u RAILS_MASTER_KEY bin/rails test` locally; never commit `config/master.key`,
-`config/credentials/*.key`, `.claude/`, `.kamal/secrets` with literal values, or `node_modules`;
+`config/credentials/*.key`, local tool folders, `.kamal/secrets` with literal values, or `node_modules`;
 no `git add -A`. Touch nothing outside the workflow files, `config/importmap.rb` and what the logs
 prove broken. Handoff: `CI2_HANDOFF.md` — root cause per job, what changed, the last green
 commit before this, and the commit production runs now.

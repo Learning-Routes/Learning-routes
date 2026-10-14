@@ -22,7 +22,6 @@
 - No new dependencies, no vendored libraries, no CSP changes.
 - English in code, comments and commits. User-facing strings are i18n keys in **both** `config/locales/en.yml` and `config/locales/es.yml`.
 - After any edit to `app/assets/tailwind/application.css`: `env -u RAILS_MASTER_KEY bin/rails tailwindcss:build`. After any edit to an `engines/*/app/views` file, **restart the dev server** before trusting the browser.
-- Commits end with `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>`.
 - Three **CHECKPOINTS** (after Tasks 4, 7 and 9). At each one: stop, report, and wait for the owner's go-ahead.
 
 ## Review Focus
@@ -166,9 +165,7 @@ git add engines/learning_routes_engine/app/services/learning_routes_engine/adapt
 git commit -m "feat(reinforcement): store the step that triggered a triplet
 
 WP-37 §1.1. triggering_step_id is the assessment's step, else the current
-step, else nil — the same sources triggering_module_id uses, so they agree.
-
-Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
+step, else nil — the same sources triggering_module_id uses, so they agree."
 ```
 
 ---
@@ -422,9 +419,7 @@ git commit -m "fix(routes): a purchased module is readable on the journey and th
 
 routes_controller.rb:15/:39/:107 and show.html.erb:64-67 used access_preview?,
 so the student who paid saw their module locked. Readability now comes from
-ModuleAccessPolicy.module_reader: preview, or an entitled route, asked once.
-
-Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
+ModuleAccessPolicy.module_reader: preview, or an entitled route, asked once."
 ```
 
 ---
@@ -713,9 +708,7 @@ git commit -m "feat(journey): parent_id, one current step, one reinforcement rul
 WP-37 §1.3-1.5. ReinforcementParents is the one parent rule (stored id when it
 names a primary step in the module, else position, else orphan). The server
 marks exactly one current topic from route.current_step. The dead
-triggering_module_id branch is gone.
-
-Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
+triggering_module_id branch is gone."
 ```
 
 > **Ordering note, deliberate:** spec §1.5 removes `color` / `LEVEL_COLORS` from the JSON. The **old** Stimulus controller still reads `data-stage-color` and concatenates hex alpha onto it, so the key is removed in **Task 9**, together with its last consumer. Nothing else reads it.
@@ -842,9 +835,7 @@ Expected: `no offenses detected`.
 
 ```bash
 git add lib/tasks/wp37_reinforcement_parents.rake test/tasks/wp37_reinforcement_parents_test.rb
-git commit -m "feat(tasks): wp37:reinforcement_parents, a read-only census of map parents
-
-Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
+git commit -m "feat(tasks): wp37:reinforcement_parents, a read-only census of map parents"
 ```
 
 - [ ] **Step 7: Run `bin/rails test` once (alone) and record the numbers.** Expected: 0 failures, 0 errors. `bin/rails test engines/*/test` shows exactly the four known `ci-engine-tests` failures and nothing else.
@@ -932,9 +923,7 @@ Expected: PASS.
 
 ```bash
 git add app/assets/tailwind/application.css test/assets/journey_level_tokens_test.rb
-git commit -m "feat(theme): journey level colours are tokens in both themes
-
-Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
+git commit -m "feat(theme): journey level colours are tokens in both themes"
 ```
 
 ---
@@ -1462,9 +1451,7 @@ git commit -m "feat(journey): the map's pure layout — tidy-tree rules at depth
 
 Reserved spine column, snake rows with reserved gutters, wrapped reinforcement
 fans with street/trunk edges. Node tests at 1/7/8/20/43 x 1/2/5 modules, both
-43 shapes and 7+13: no node, subtree or edge-through-box overlap.
-
-Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
+43 shapes and 7+13: no node, subtree or edge-through-box overlap."
 ```
 
 ---
@@ -1713,9 +1700,7 @@ export function initialCamera({ moduleBox, node, safe, minScale, padding = 24 })
 
 ```bash
 git add app/javascript/lib/journey_camera.js test/javascript/journey_camera_test.rb
-git commit -m "feat(journey): pure camera math with one safe area
-
-Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
+git commit -m "feat(journey): pure camera math with one safe area"
 ```
 
 - [ ] **Step 6: CHECKPOINT 2 — STOP.** Report to the owner:
@@ -2155,9 +2140,7 @@ Expected: every test fails or errors, because `[data-journey-ready='true']` is n
 
 ```bash
 git add test/system/journey_map_test.rb
-git commit -m "test(journey): the measured map test, red against the scrolling journey
-
-Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
+git commit -m "test(journey): the measured map test, red against the scrolling journey"
 ```
 
 ---
@@ -2707,9 +2690,7 @@ git commit -m "feat(journey): the journey is a map — a pannable canvas over th
 The page no longer scrolls; the camera moves inside a safe area that excludes
 the fixed topbar and the overlays. The route title is the root node and the
 page's <h1>. Colours are CSS custom properties, so a theme toggle repaints.
-LEVEL_COLORS and the stage's colour key go with their last consumer.
-
-Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
+LEVEL_COLORS and the stage's colour key go with their last consumer."
 ```
 
 - [ ] **Step 10: Screenshots.** Run `SCREENSHOT=1 bin/rails test test/system/journey_map_test.rb`. Expected: PASS, plus five lines `[…] screenshot -> tmp/wp37-journey-{7-light,7-dark,43-light,43-dark,phone}.png`, and four `[wp37] … labels ellipsized` lines. Open each PNG and look at it.
@@ -2759,9 +2740,7 @@ Remove the three lines at `config/importmap.rb:9-11` (the two-line comment and `
 
 ```bash
 git add config/importmap.rb test/javascript/journey_map_layout_test.rb
-git commit -m "chore(journey): one layout module — delete the satellite layout and its tests
-
-Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
+git commit -m "chore(journey): one layout module — delete the satellite layout and its tests"
 ```
 
 ---
@@ -2810,9 +2789,7 @@ Expected: the app and system suites have 0 failures and 0 errors in all three ru
 
 ```bash
 git add WP37_HANDOFF.md
-git commit -m "docs(wp37): handoff
-
-Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
+git commit -m "docs(wp37): handoff"
 ```
 
 - [ ] **Step 6: Request the code review** (superpowers:requesting-code-review) over `main..wp37-journey-map`, then stop. Nothing is pushed.
