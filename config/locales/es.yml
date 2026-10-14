@@ -591,6 +591,7 @@ es:
       session_label: "Duración preferida por sesión"
       per_week: "por semana"
       per_session: "por sesión"
+      summary: "%{hours} h/semana en sesiones de %{minutes} min"
       step_name: "— Tiempo"
     step4:
       mini_test: "MINI-TEST"
@@ -598,6 +599,7 @@ es:
       heading: "¿Cómo aprendes mejor?"
       subtext: "Responde rápido — no hay respuestas correctas."
       progress: "%{done} de 12"
+      question_html: "Pregunta %{n} de 12"
       saved_badge: "Estilo de aprendizaje guardado"
       retake: "Repetir test"
       questions:
