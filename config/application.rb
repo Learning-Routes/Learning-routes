@@ -62,5 +62,10 @@ module LearningRoutes
     # Engine mailers used to set noreply@learning-routes.com, a domain with no DNS.
     # test/mailers/mail_identity_test.rb holds every mailer to it.
     config.action_mailer.default_options = { from: "Learning Routes <noreply@learningroutes.com>" }
+
+    # The one host search engines and shared links are told about (STEP 36 §1).
+    # Canonical, og/twitter tags, JSON-LD, robots and the sitemap read it through
+    # ApplicationHelper#public_url; development overrides it.
+    config.x.public_host = "learningroutes.com"
   end
 end

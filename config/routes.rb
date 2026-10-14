@@ -64,6 +64,10 @@ Rails.application.routes.draw do
   get "manifest" => "rails/pwa#manifest", as: :pwa_manifest, defaults: { format: :json }
   get "service-worker" => "rails/pwa#service_worker", as: :pwa_service_worker, defaults: { format: :js }
 
+  # Crawler files, rendered from the public host (STEP 36 §1)
+  get "robots.txt", to: "sitemaps#robots", as: :robots, format: false
+  get "sitemap.xml", to: "sitemaps#show", as: :sitemap, format: false
+
   # Health check endpoint for load balancers and uptime monitors
   get "up" => "rails/health#show", as: :rails_health_check
 

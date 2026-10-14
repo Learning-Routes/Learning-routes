@@ -117,6 +117,8 @@ Rails.application.configure do
   config.active_record.attributes_for_inspect = [:id]
 
   # Enable DNS rebinding protection and other `Host` header attacks.
+  # learning-routes.com stays answered until the owner redirects or drops it
+  # (STEP 36 §Owner 3); nothing links to it.
   config.hosts = [
     "learning-routes.com",
     /.*\.learning-routes\.com/,
