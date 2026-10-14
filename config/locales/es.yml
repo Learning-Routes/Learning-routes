@@ -485,6 +485,7 @@ es:
       no_topics: "Debes seleccionar al menos un tema o escribir uno personalizado"
       invalid_goals: "contiene opciones inválidas: %{invalid}"
       invalid_topics: "contiene opciones inválidas: %{invalid}"
+      one_topic: "Elige un solo tema: una ruta tiene un único tema."
       incomplete_style: "debes responder las 12 preguntas del test"
 
   # ── Route Wizard ──
@@ -507,7 +508,7 @@ es:
       multimodal_desc: "Combinas varios estilos — eres versátil"
     step0:
       heading: "¿Qué quieres aprender?"
-      subtext: "Elige uno o más temas — la IA construirá tu ruta."
+      subtext: "Elige un tema — la IA construirá tu ruta."
       topics:
         programming: "Programación"
         programming_desc: "Código, algoritmos, estructuras"

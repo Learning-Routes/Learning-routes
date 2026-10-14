@@ -110,6 +110,8 @@ class RouteRequest < ApplicationRecord
     return if topics.blank?
     invalid = topics - VALID_TOPICS
     errors.add(:topics, I18n.t("route_request.errors.invalid_topics", invalid: invalid.join(", "))) if invalid.any?
+    # One subject per route (STEP 38 §1); a wizard page loaded before that deploy can still send two.
+    errors.add(:base, I18n.t("route_request.errors.one_topic")) if topics.size > 1
   end
 
   def learning_style_answers_complete

@@ -133,11 +133,17 @@ export default class extends Controller {
     const card = event.currentTarget
     const topic = card.dataset.topic
 
-    if (this.selectedTopics.has(topic)) {
-      this.selectedTopics.delete(topic)
-      card.classList.remove("selected")
-      card.setAttribute("aria-checked", "false")
-    } else {
+    // One subject per route: choosing a tile replaces the previous choice
+    // (STEP 38 §1 — a kept first choice became the route's title).
+    const wasSelected = this.selectedTopics.has(topic)
+    this.selectedTopics.clear()
+    if (this.hasTopicGridTarget) {
+      this.topicGridTarget.querySelectorAll("[data-topic]").forEach(el => {
+        el.classList.remove("selected")
+        el.setAttribute("aria-checked", "false")
+      })
+    }
+    if (!wasSelected) {
       this.selectedTopics.add(topic)
       card.classList.add("selected")
       card.setAttribute("aria-checked", "true")

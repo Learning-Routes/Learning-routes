@@ -85,8 +85,8 @@
       </div>
       <div style="width:1px; height:22px; background:var(--color-border-subtle);"></div>
       <div style="display:flex; flex-direction:column; align-items:flex-start;">
-        <span style="font-family:'DM Mono',monospace; font-size:0.78rem; font-weight:500; color:var(--color-txt); letter-spacing:-0.2px;">
-          <%= stats[:accuracy]&.positive? ? "#{stats[:accuracy]}%" : "—" %>
+        <span data-stat="accuracy" style="font-family:'DM Mono',monospace; font-size:0.78rem; font-weight:500; color:var(--color-txt); letter-spacing:-0.2px;">
+          <%= stats[:accuracy] ? "#{stats[:accuracy]}%" : "—" %>
         </span>
         <span style="font-family:'DM Sans',sans-serif; font-size:0.62rem; color:var(--color-muted);"><%= t("route_card.accuracy") %></span>
       </div>

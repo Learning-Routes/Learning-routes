@@ -51,7 +51,7 @@ class RouteWizardControllerTest < ActionDispatch::IntegrationTest
 
     post "/routes/create", params: {
       route_request: {
-        topics: ["programming", "web_dev"],
+        topics: ["programming"],
         custom_topic: "",
         level: "beginner",
         pace: "steady",
@@ -69,7 +69,7 @@ class RouteWizardControllerTest < ActionDispatch::IntegrationTest
 
     assert_equal initial_count + 1, RouteRequest.count
     rr = RouteRequest.order(created_at: :desc).first
-    assert_equal ["programming", "web_dev"], rr.topics
+    assert_equal ["programming"], rr.topics
     assert_equal "beginner", rr.level
     assert_equal "steady", rr.pace
     assert_equal 10, rr.weekly_hours

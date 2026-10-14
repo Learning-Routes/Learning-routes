@@ -9,11 +9,11 @@
   <div aria-live="polite" aria-atomic="true" class="sr-only" data-route-wizard-target="stepLabel"></div>
 
   <%# ═══ STEP 0: TOPICS ═══ %>
-  <div class="wizard-step wizard-enter" data-route-wizard-target="step" data-step="0" role="group" aria-label="Choose topics">
+  <div class="wizard-step wizard-enter" data-route-wizard-target="step" data-step="0" role="group" aria-label="Choose a topic">
     <h2 class="wizard-heading"><span class="wizard-wave">&#x1F44B;</span> What do you want to learn?</h2>
-    <p class="wizard-subtitle">Choose one or more topics</p>
+    <p class="wizard-subtitle"><%= t("wizard.step0.subtext") %></p>
 
-    <div class="wizard-topic-grid" data-route-wizard-target="topicGrid">
+    <div class="wizard-topic-grid" data-route-wizard-target="topicGrid" role="radiogroup">
       <% [
         ["programming", "&#x1F916;", "Programación"],
         ["web_dev", "&#x1F310;", "Desarrollo Web"],
@@ -32,7 +32,7 @@
                 data-action="click->route-wizard#toggleTopic"
                 data-topic="<%= id %>"
                 tabindex="0"
-                role="checkbox"
+                role="radio"
                 aria-checked="false"
                 aria-label="<%= label %>">
           <span class="tile-icon"><%= icon.html_safe %></span>
