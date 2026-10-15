@@ -120,20 +120,21 @@ module AiOrchestrator
 
       agent = ContentAgent.new
       response = agent.ask(prompts[:user])
-      input_tokens, output_tokens = agent.usage_totals
+      input_tokens, output_tokens, cached_tokens = agent.usage_totals
 
       elapsed_ms = ((Process.clock_gettime(Process::CLOCK_MONOTONIC) - start_time) * 1000).round
 
       interaction.mark_completed!(
         response_text: response.content,
         input_tokens: input_tokens,
+        cached_tokens: cached_tokens,
         output_tokens: output_tokens,
         latency_ms: elapsed_ms
       )
 
       Rails.logger.info(
         "[AiOrchestrator] Agent completed in #{elapsed_ms}ms " \
-        "| tokens: #{input_tokens}+#{output_tokens} " \
+        "| tokens: #{input_tokens}+#{cached_tokens} cached+#{output_tokens} " \
         "| cost: #{interaction.cost_cents}c"
       )
 
@@ -176,6 +177,7 @@ module AiOrchestrator
       interaction.mark_completed!(
         response_text: result[:content],
         input_tokens: result[:input_tokens],
+        cached_tokens: result[:cached_tokens],
         output_tokens: result[:output_tokens],
         latency_ms: result[:latency_ms]
       )
