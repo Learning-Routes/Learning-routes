@@ -1386,6 +1386,7 @@ en:
     saved: "Settings saved successfully."
     saved_verify_email: "Settings saved. Please check your new email for a verification link."
     password_updated: "Password updated successfully."
+    password_created: "Password created. You can now sign in with your email and this password."
     wrong_current_password: "Current password is incorrect."
     password_required_for_email: "Current password is required to change your email."
     errors:
@@ -1446,6 +1447,9 @@ en:
       confirm_label: "Confirm Password"
       confirm_placeholder: "Repeat new password"
       submit: "Update Password"
+      create_heading: "Create password"
+      create_hint: "You sign in with Google. Create a password to also sign in with your email."
+      create_submit: "Create password"
 
   # Audio lesson system
   audio_lesson:

@@ -55,7 +55,7 @@ module Core
         # When linking onto an account that was NOT already verified, a squatter
         # may have set its password. Rotate it so only Google login (or an
         # explicit password reset by the real owner) works from now on.
-        attrs[:password] = SecureRandom.urlsafe_base64(32) unless user.email_verified?
+        attrs.merge!(password: SecureRandom.urlsafe_base64(32), own_password: false) unless user.email_verified?
 
         user.update!(attrs)
         return user
@@ -70,6 +70,7 @@ module Core
         avatar_url: auth.info.image,
         email_verified_at: google_verified ? Time.current : nil,
         password: SecureRandom.urlsafe_base64(32),
+        own_password: false,
         role: :student,
         locale: extract_locale
       )

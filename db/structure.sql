@@ -716,7 +716,8 @@ CREATE TABLE public.core_users (
     theme character varying DEFAULT 'system'::character varying NOT NULL,
     timezone character varying DEFAULT 'UTC'::character varying NOT NULL,
     uid character varying,
-    updated_at timestamp(6) without time zone NOT NULL
+    updated_at timestamp(6) without time zone NOT NULL,
+    own_password boolean DEFAULT true NOT NULL
 );
 
 
@@ -2997,6 +2998,7 @@ ALTER TABLE ONLY public.learning_routes_engine_route_steps
 SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
+('20261015000003'),
 ('20261015000001'),
 ('20260907000001'),
 ('20260904000002'),

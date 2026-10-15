@@ -1386,6 +1386,7 @@ es:
     saved: "Ajustes guardados correctamente."
     saved_verify_email: "Ajustes guardados. Revisa tu nuevo correo para verificarlo."
     password_updated: "Contraseña actualizada correctamente."
+    password_created: "Contraseña creada. Ya puedes entrar con tu correo y esta contraseña."
     wrong_current_password: "La contraseña actual es incorrecta."
     password_required_for_email: "Se requiere la contraseña actual para cambiar el correo electrónico."
     errors:
@@ -1446,6 +1447,9 @@ es:
       confirm_label: "Confirmar contraseña"
       confirm_placeholder: "Repite la nueva contraseña"
       submit: "Actualizar contraseña"
+      create_heading: "Crear contraseña"
+      create_hint: "Entras con Google. Si creas una contraseña, también podrás entrar con tu correo."
+      create_submit: "Crear contraseña"
 
   # ── Plantillas de correo ──
 
