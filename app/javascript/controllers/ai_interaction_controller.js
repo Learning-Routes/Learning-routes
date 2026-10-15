@@ -176,7 +176,7 @@ export default class extends Controller {
     if (!container) return
 
     const errorEl = document.createElement("div")
-    errorEl.style.cssText = "color:var(--color-error); padding:0.75rem; font-size:0.875rem; opacity:0; transition:opacity 0.3s;"
+    errorEl.style.cssText = "color:var(--color-negative); padding:0.75rem; font-size:0.875rem; opacity:0; transition:opacity 0.3s;"
     errorEl.textContent = message
     container.prepend(errorEl)
 
