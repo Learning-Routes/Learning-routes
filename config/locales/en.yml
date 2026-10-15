@@ -1078,7 +1078,13 @@ en:
       stages_topics:
         one: "%{stages} stage · %{topics} topic"
         other: "%{stages} stages · %{topics} topics"
-      subtitle: "Personalized path · %{stages} stages · %{topics} topics · %{subject}"
+      subtitle: "Personalized path · %{stages} · %{topics}"
+      stage_count:
+        one: "%{count} stage"
+        other: "%{count} stages"
+      topic_count:
+        one: "%{count} topic"
+        other: "%{count} topics"
       stage_of: "Stage %{current} of %{total}"
       stage_navigation: "Stage navigation"
       list_view: "List view"

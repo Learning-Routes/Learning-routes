@@ -67,7 +67,38 @@ class LearningRoutesEngine::JourneyMapDataTest < ActionDispatch::IntegrationTest
 
     get learning_routes_engine.journey_route_path(@route)
 
-    assert_match(/· 2 temas ·/, response.body, "@steps must come from the policy, not from access_preview?")
+    assert_match(/· 2 temas\b/, css_select(".jm-subtitle").first.text.squish, "the header counts every topic the map draws")
+  end
+
+  # STEP 38 §2: the header read "Camino personalizado · 3 etapas · 3 temas ·
+  # Camino personalizado · 8 etapas · nivel beginner · …" — its own sentence
+  # wrapped around a fallback route's subject_area sentence, two counts that
+  # disagreed. One sentence, counted from what the map draws.
+  test "the journey header is one sentence, counted from the map's stages and topics" do
+    @route.update!(
+      subject_area: "Camino personalizado · 8 etapas · nivel beginner",
+      translations: { "es" => { "title" => "Map", "subject_area" => "Camino personalizado · 8 etapas · nivel beginner" } }
+    )
+    step!(@preview, 0, "Free lesson")
+    step!(@preview, 1, "Second lesson")
+    step!(@paid, 10, "Paid lesson")
+
+    stages = journey_stages
+    drawn_topics = stages.sum { |stage| stage["topics"].size }
+    header = css_select(".jm-subtitle").first.text.squish
+
+    assert_equal "Camino personalizado · #{stages.size} etapas · #{drawn_topics} temas · Arrastra para explorar", header
+    assert_equal "Camino personalizado · 2 etapas · 3 temas · Arrastra para explorar", header
+  end
+
+  test "the journey header counts in the singular" do
+    @paid.destroy!
+    step!(@preview, 0, "Only lesson")
+
+    journey_stages
+
+    assert_equal "Camino personalizado · 1 etapa · 1 tema · Arrastra para explorar",
+                 css_select(".jm-subtitle").first.text.squish
   end
 
   test "the list view lists a purchased module's steps without the lock" do
