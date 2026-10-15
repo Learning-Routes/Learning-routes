@@ -12,12 +12,12 @@
     <%# Status icon %>
     <%
       if step.completed?
-        icon_bg = "linear-gradient(135deg, #10b981, #059669)"
-        icon_color = "#fff"
+        icon_bg = "linear-gradient(135deg, var(--color-positive), var(--color-badge-exercise-text))"
+        icon_color = "var(--color-accent-text)"
         icon_shadow = "0 2px 8px rgba(16,185,129,0.25)"
       elsif step.in_progress?
-        icon_bg = "linear-gradient(135deg, #6366f1, #8b5cf6)"
-        icon_color = "#fff"
+        icon_bg = "linear-gradient(135deg, var(--color-section-audio-active), var(--color-highlight-violet))"
+        icon_color = "var(--color-accent-text)"
         icon_shadow = "0 2px 8px rgba(99,102,241,0.25)"
       elsif step.available?
         icon_bg = "var(--color-tint-strong)"
@@ -45,10 +45,10 @@
         <h3 style="font-family:'DM Sans',sans-serif; font-size:0.9375rem; font-weight:700; color:var(--color-txt); margin:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; letter-spacing:-0.2px;"><%= step.localized_title %></h3>
         <%
           badge_colors = {
-            'lesson' => { bg: 'rgba(99,102,241,0.08)', text: '#6366f1' },
-            'exercise' => { bg: 'rgba(16,185,129,0.08)', text: '#059669' },
-            'assessment' => { bg: 'rgba(245,158,11,0.08)', text: '#D97706' },
-            'review' => { bg: 'rgba(139,92,246,0.08)', text: '#8b5cf6' }
+            'lesson' => { bg: 'rgba(99,102,241,0.08)', text: 'var(--color-section-audio-active)' },
+            'exercise' => { bg: 'rgba(16,185,129,0.08)', text: 'var(--color-badge-exercise-text)' },
+            'assessment' => { bg: 'rgba(245,158,11,0.08)', text: 'var(--color-badge-assessment-text)' },
+            'review' => { bg: 'rgba(139,92,246,0.08)', text: 'var(--color-highlight-violet)' }
           }
           bc = badge_colors[step.content_type] || { bg: 'var(--color-tint-strong)', text: 'var(--color-sub)' }
         %>

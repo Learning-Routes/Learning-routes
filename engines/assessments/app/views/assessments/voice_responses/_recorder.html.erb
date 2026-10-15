@@ -26,7 +26,7 @@
       <button data-voice-recorder-target="recordButton"
               data-action="click->voice-recorder#startRecording"
               class="w-16 h-16 rounded-full flex items-center justify-center transition-all hover:scale-105 hover-bg-red"
-              style="background: #EF4444; box-shadow: 0 8px 24px rgba(239,68,68,0.25);"
+              style="background: var(--color-negative); box-shadow: 0 8px 24px rgba(239,68,68,0.25);"
               aria-label="<%= t("voice_recorder.record_aria") %>">
         <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -45,19 +45,19 @@
     <div class="flex flex-col items-center gap-4 py-4">
       <%# Recording indicator %>
       <div class="flex items-center gap-2">
-        <div class="w-3 h-3 rounded-full animate-pulse" style="background: #EF4444;"></div>
-        <span class="text-sm font-medium" style="color: #F87171; font-family: 'DM Sans', sans-serif;">
+        <div class="w-3 h-3 rounded-full animate-pulse" style="background: var(--color-negative);"></div>
+        <span class="text-sm font-medium" style="color: var(--color-negative); font-family: 'DM Sans', sans-serif;">
           <%= t("voice_recorder.recording") %>
         </span>
       </div>
 
       <%# Waveform animation (5 bars) %>
       <div data-voice-recorder-target="waveform" class="flex items-end justify-center gap-1 h-12">
-        <div class="w-1.5 rounded-full animate-pulse" style="background: #F87171; height: 12px; animation-duration: 0.6s;"></div>
-        <div class="w-1.5 rounded-full animate-pulse" style="background: #F87171; height: 32px; animation-delay: 0.15s; animation-duration: 0.5s;"></div>
-        <div class="w-1.5 rounded-full animate-pulse" style="background: #F87171; height: 48px; animation-delay: 0.05s; animation-duration: 0.7s;"></div>
-        <div class="w-1.5 rounded-full animate-pulse" style="background: #F87171; height: 28px; animation-delay: 0.2s; animation-duration: 0.55s;"></div>
-        <div class="w-1.5 rounded-full animate-pulse" style="background: #F87171; height: 16px; animation-delay: 0.1s; animation-duration: 0.65s;"></div>
+        <div class="w-1.5 rounded-full animate-pulse" style="background: var(--color-negative); height: 12px; animation-duration: 0.6s;"></div>
+        <div class="w-1.5 rounded-full animate-pulse" style="background: var(--color-negative); height: 32px; animation-delay: 0.15s; animation-duration: 0.5s;"></div>
+        <div class="w-1.5 rounded-full animate-pulse" style="background: var(--color-negative); height: 48px; animation-delay: 0.05s; animation-duration: 0.7s;"></div>
+        <div class="w-1.5 rounded-full animate-pulse" style="background: var(--color-negative); height: 28px; animation-delay: 0.2s; animation-duration: 0.55s;"></div>
+        <div class="w-1.5 rounded-full animate-pulse" style="background: var(--color-negative); height: 16px; animation-delay: 0.1s; animation-duration: 0.65s;"></div>
       </div>
 
       <%# Timer countdown %>
@@ -71,7 +71,7 @@
               class="w-14 h-14 rounded-full flex items-center justify-center transition-colors hover-bg-tint"
               style="background: var(--color-tint-strong);"
               aria-label="<%= t("voice_recorder.stop_aria") %>">
-        <div class="w-5 h-5 rounded-sm" style="background: #F87171;"></div>
+        <div class="w-5 h-5 rounded-sm" style="background: var(--color-negative);"></div>
       </button>
     </div>
   </div>
@@ -107,7 +107,7 @@
         <button data-voice-recorder-target="submitButton"
                 data-action="click->voice-recorder#submit"
                 class="px-5 py-2.5 text-sm font-semibold text-white transition-colors rounded-[11px] hover-bg-indigo"
-                style="background: #6366F1; font-family: 'DM Sans', sans-serif;">
+                style="background: var(--color-section-audio-active); font-family: 'DM Sans', sans-serif;">
           <%= t("voice_recorder.submit_response") %>
         </button>
       </div>
@@ -118,7 +118,7 @@
   <div data-voice-recorder-target="stateSubmitting" class="hidden">
     <div class="flex flex-col items-center gap-3 py-6">
       <div class="w-8 h-8 rounded-full animate-spin"
-           style="border: 2px solid #6366F1; border-top-color: transparent;"></div>
+           style="border: 2px solid var(--color-section-audio-active); border-top-color: transparent;"></div>
       <p class="text-sm" style="color: var(--color-muted); font-family: 'DM Sans', sans-serif;">
         <%= t("voice_recorder.submitting") %>
       </p>
@@ -154,7 +154,7 @@
       <div class="relative">
         <div class="w-12 h-12 rounded-full animate-ping absolute inset-0" style="background: rgba(168,85,247,0.15);"></div>
         <div class="w-12 h-12 rounded-full flex items-center justify-center relative" style="background: rgba(168,85,247,0.2);">
-          <svg class="w-6 h-6" style="color: #C084FC;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg class="w-6 h-6" style="color: var(--color-highlight-violet);" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                   d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
           </svg>
@@ -218,7 +218,7 @@
       <div class="text-center">
         <button data-action="click->voice-recorder#retry"
                 class="text-sm transition-colors hover-text-indigo"
-                style="color: #818CF8; font-family: 'DM Sans', sans-serif;">
+                style="color: var(--color-highlight-violet); font-family: 'DM Sans', sans-serif;">
           <%= t("voice_recorder.try_again") %>
         </button>
       </div>

@@ -12,7 +12,7 @@
       <%# Audio icon %>
       <div class="w-10 h-10 rounded-[11px] flex items-center justify-center flex-shrink-0"
            style="background: rgba(99,102,241,0.15);">
-        <svg class="w-5 h-5" style="color: #818CF8;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg class="w-5 h-5" style="color: var(--color-highlight-violet);" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                 d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"/>
         </svg>
@@ -27,7 +27,7 @@
       <%# Badge + duration %>
       <div class="flex items-center gap-2 flex-shrink-0">
         <span class="px-2.5 py-1 text-xs font-medium uppercase tracking-wider rounded-full"
-              style="background: rgba(99,102,241,0.15); color: #818CF8; font-family: 'DM Mono', monospace;">
+              style="background: rgba(99,102,241,0.15); color: var(--color-highlight-violet); font-family: 'DM Mono', monospace;">
           <%= t("audio_lesson.label") %>
         </span>
         <% if step.estimated_minutes.present? %>
@@ -72,7 +72,7 @@
       <% if narration["discussion_questions"].present? %>
         <div class="mb-6 rounded-[14px] p-4" style="background: rgba(99,102,241,0.08); border: 1px solid rgba(99,102,241,0.15);">
           <p class="text-xs font-medium uppercase tracking-wider mb-2"
-             style="color: #818CF8; font-family: 'DM Mono', monospace;">
+             style="color: var(--color-highlight-violet); font-family: 'DM Mono', monospace;">
             <%= t("audio_lesson.reflection_question") %>
           </p>
           <p class="text-sm" style="color: var(--color-txt); font-family: 'DM Sans', sans-serif;">
@@ -96,7 +96,7 @@
           <%= link_to t("audio_lesson.start_quiz"),
               assessments.assessment_path(step.step_quiz),
               class: "inline-flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-white rounded-[11px] transition-all",
-              style: "background: linear-gradient(135deg, #6366F1, #A855F7);" %>
+              style: "background: linear-gradient(135deg, var(--color-section-audio-active), var(--color-highlight-violet));" %>
         </div>
       <% end %>
     </div>

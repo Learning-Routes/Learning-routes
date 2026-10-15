@@ -4,7 +4,7 @@
     <span style="font-family:'DM Sans',sans-serif; font-size:1.25rem; font-weight:800; color:var(--color-txt); letter-spacing:-0.5px;"><%= summary[:percentage] %>%</span>
   </div>
   <div style="height:0.625rem; background:var(--color-tint-strong); border-radius:9999px; overflow:hidden;" role="progressbar" aria-valuenow="<%= summary[:percentage] %>" aria-valuemin="0" aria-valuemax="100" aria-label="<%= t('learning_engine.progress.aria', percent: summary[:percentage]) %>">
-    <div style="height:100%; background:linear-gradient(to right, #6366f1, #8b5cf6); border-radius:9999px; transition:width 0.8s cubic-bezier(0.34,1.56,0.64,1); width:<%= summary[:percentage] %>%; box-shadow:0 2px 6px rgba(99,102,241,0.25);" aria-hidden="true"></div>
+    <div style="height:100%; background:linear-gradient(to right, var(--color-section-audio-active), var(--color-highlight-violet)); border-radius:9999px; transition:width 0.8s cubic-bezier(0.34,1.56,0.64,1); width:<%= summary[:percentage] %>%; box-shadow:0 2px 6px rgba(99,102,241,0.25);" aria-hidden="true"></div>
   </div>
   <div style="display:flex; align-items:center; justify-content:space-between; margin-top:0.875rem;">
     <span style="font-family:'DM Sans',sans-serif; font-size:0.8125rem; font-weight:500; color:var(--color-muted);"><%= t('learning_engine.progress.steps_completed', completed: summary[:completed_steps], total: summary[:total_steps]) %></span>

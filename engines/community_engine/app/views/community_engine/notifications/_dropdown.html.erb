@@ -14,7 +14,7 @@
     <span id="notification_badge"
           data-notifications-target="badge"
           style="display:none; position:absolute; top:-2px; right:-2px; min-width:16px; height:16px; padding:0 4px;
-                 border-radius:8px; background:#ef4444; color:white; font-family:'DM Mono',monospace;
+                 border-radius:8px; background:var(--color-negative); color:white; font-family:'DM Mono',monospace;
                  font-size:0.55rem; font-weight:700; line-height:16px; text-align:center;">
       0
     </span>
@@ -65,7 +65,7 @@
               </span>
             </div>
             <% if notification.unread? %>
-              <span data-unread-dot style="flex-shrink:0; width:6px; height:6px; border-radius:50%; background:#60A5FA; margin-top:0.4rem;"></span>
+              <span data-unread-dot style="flex-shrink:0; width:6px; height:6px; border-radius:50%; background:var(--color-info); margin-top:0.4rem;"></span>
             <% end %>
           </div>
         <% end %>

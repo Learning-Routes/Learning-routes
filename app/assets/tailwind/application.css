@@ -83,6 +83,14 @@
   --color-node-nv1: #2E6B4B;
   --color-node-nv2: #2C5F8E;
   --color-node-nv3: #5A4C9E;
+  /* Highlights (STEP 38 §3): gold for stars, streaks and rank; violet for the
+     lesson and exam gradients and the interactive-block tags. Neither is a
+     level and neither is a verdict. */
+  --color-highlight: #B09848;
+  --color-highlight-violet: #8B5CF6;
+  /* The code playground is a dark editor in both themes, on purpose. */
+  --color-code-bg: #1E1E1E;
+  --color-code-text: #D4D4D4;
 }
 
 /* Semi-transparent theme tokens (glassmorphic cards, subtle borders, tints) */
@@ -189,6 +197,8 @@ html[data-theme="dark"] {
   --color-node-nv1: #7CC4A0;
   --color-node-nv2: #8DB6E0;
   --color-node-nv3: #B2A8E6;
+  --color-highlight: #D4B65E;
+  --color-highlight-violet: #A78BFA;
   --color-bg: #1A1710;
   --color-card: #221F18;
   --color-txt: #E8E4DC;
