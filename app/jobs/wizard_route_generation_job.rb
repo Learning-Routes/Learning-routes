@@ -383,15 +383,15 @@ class WizardRouteGenerationJob < ApplicationJob
 
     en_title = "#{en_topic} Route"
     es_title = "Ruta de #{es_topic}"
-    en_subtitle = "Personalized path · #{steps.length} stages · #{request.level} level"
-    es_subtitle = "Camino personalizado · #{steps.length} etapas · nivel #{request.level}"
 
+    # The subject is the topic's label: cards show it as "what this route is
+    # about". It was a sentence with a step count and the raw level key.
     {
       title: locale == "es" ? es_title : en_title,
-      subtitle: locale == "es" ? es_subtitle : en_subtitle,
+      subtitle: locale == "es" ? es_topic : en_topic,
       translations: {
-        "en" => { "title" => en_title, "subject_area" => en_subtitle },
-        "es" => { "title" => es_title, "subject_area" => es_subtitle }
+        "en" => { "title" => en_title, "subject_area" => en_topic },
+        "es" => { "title" => es_title, "subject_area" => es_topic }
       },
       steps: steps
     }
