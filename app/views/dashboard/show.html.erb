@@ -17,11 +17,11 @@
       <path d="M8 1.5l6 11H2l6-11z" stroke="#B09848" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
       <path d="M8 6v3M8 11h.01" stroke="#B09848" stroke-width="1.2" stroke-linecap="round"/>
     </svg>
-    <p style="font-family:'DM Sans',sans-serif; font-size:0.78rem; color:var(--color-status-paused-text, #8B6D28); margin:0;">
+    <p style="font-family:'DM Sans',sans-serif; font-size:0.78rem; color:var(--color-status-paused-text); margin:0;">
       <%= t("dashboard.verify_email") %>
       <%= link_to t("dashboard.resend_verification"), core.resend_verification_path,
           data: { turbo_method: :post },
-          style: "color:var(--color-link, #8B6D28); font-weight:600; text-decoration:underline; text-underline-offset:2px;" %>
+          style: "color:var(--color-link); font-weight:600; text-decoration:underline; text-underline-offset:2px;" %>
     </p>
   </div>
 <% end %>
@@ -34,7 +34,7 @@
           class: "card-hover",
           style: "display:block; background:var(--color-card-glass); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); border:1px solid var(--color-border-subtle); border-radius:14px; padding:1.2rem 1.3rem; text-decoration:none;" do %>
         <div style="display:flex; align-items:center; justify-content:space-between; gap:1rem;">
-          <div style="width:38px; height:38px; border-radius:11px; background:<%= route_accent_color(route) %>12; display:flex; align-items:center; justify-content:center; flex-shrink:0; font-size:1.15rem;">
+          <div style="width:38px; height:38px; border-radius:11px; background:color-mix(in srgb, var(<%= route_accent_token(route) %>) 7%, transparent); display:flex; align-items:center; justify-content:center; flex-shrink:0; font-size:1.15rem;">
             <%= topic_emoji_for(route.topic) %>
           </div>
           <div style="flex:1; min-width:0;">
@@ -49,13 +49,13 @@
             <div style="text-align:right;">
               <span style="font-family:'DM Mono',monospace; font-size:0.82rem; font-weight:500; color:var(--color-txt);"><%= route.progress_percentage %>%</span>
               <div style="width:5rem; height:4px; background:var(--color-tint-strong); border-radius:2px; margin-top:0.35rem;">
-                <div style="width:<%= route.progress_percentage %>%; height:100%; background:var(--color-progress-bar, #5BA880); border-radius:2px; transition:width 0.3s;"></div>
+                <div style="width:<%= route.progress_percentage %>%; height:100%; background:var(--color-progress-bar); border-radius:2px; transition:width 0.3s;"></div>
               </div>
             </div>
             <% badge_colors = case route.status
-                              when 'active' then 'background:var(--color-status-active-bg, rgba(91,168,128,0.1)); color:var(--color-status-active-text, #3D7A5A)'
-                              when 'completed' then 'background:var(--color-status-completed-bg, rgba(110,155,200,0.1)); color:var(--color-status-completed-text, #4A7A9E)'
-                              when 'paused' then 'background:var(--color-status-paused-bg, rgba(176,152,72,0.1)); color:var(--color-status-paused-text, #8B6D28)'
+                              when 'active' then 'background:var(--color-status-active-bg, rgba(91,168,128,0.1)); color:var(--color-status-active-text)'
+                              when 'completed' then 'background:var(--color-status-completed-bg, rgba(110,155,200,0.1)); color:var(--color-status-completed-text)'
+                              when 'paused' then 'background:var(--color-status-paused-bg, rgba(176,152,72,0.1)); color:var(--color-status-paused-text)'
                               else "background:var(--color-tint); color:var(--color-sub)"
                               end %>
             <span style="font-family:'DM Mono',monospace; font-size:0.6rem; letter-spacing:0.5px; text-transform:uppercase; padding:0.25rem 0.55rem; border-radius:6px; <%= badge_colors %>">

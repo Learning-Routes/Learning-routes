@@ -2,7 +2,7 @@
 
 <% content_for(:auth_toggle) do %>
   <%= link_to core.sign_in_path,
-      style: "font-family:'DM Sans',sans-serif; font-size:0.82rem; color:var(--color-muted, #A09889); text-decoration:none; transition:color 0.2s;",
+      style: "font-family:'DM Sans',sans-serif; font-size:0.82rem; color:var(--color-muted); text-decoration:none; transition:color 0.2s;",
       class: "nav-link" do %>
     <%= t("auth.forgot.toggle") %>
   <% end %>
@@ -19,10 +19,10 @@
             box-shadow:0 8px 32px rgba(28,24,18,0.06), 0 1px 3px rgba(28,24,18,0.03);">
 
   <%# === Heading === %>
-  <h1 style="font-family:'DM Sans',sans-serif; font-weight:700; font-size:1.6rem; letter-spacing:-0.7px; color:var(--color-txt, #1C1812); margin:0 0 0.4rem; line-height:1.2;">
+  <h1 style="font-family:'DM Sans',sans-serif; font-weight:700; font-size:1.6rem; letter-spacing:-0.7px; color:var(--color-txt); margin:0 0 0.4rem; line-height:1.2;">
     <%= t("auth.forgot.heading") %>
   </h1>
-  <p style="font-family:'DM Sans',sans-serif; font-size:0.82rem; color:var(--color-muted, #A09889); margin:0 0 1.4rem; line-height:1.5;">
+  <p style="font-family:'DM Sans',sans-serif; font-size:0.82rem; color:var(--color-muted); margin:0 0 1.4rem; line-height:1.5;">
     <%= t("auth.forgot.subtext") %>
   </p>
 
@@ -33,7 +33,7 @@
       <%# Email %>
       <div>
         <%= f.label :email, t("auth.forgot.email_label"),
-            style: "display:block; font-family:'DM Sans',sans-serif; font-size:0.78rem; font-weight:500; color:var(--color-sub, #6D665B); margin-bottom:0.45rem;" %>
+            style: "display:block; font-family:'DM Sans',sans-serif; font-size:0.78rem; font-weight:500; color:var(--color-sub); margin-bottom:0.45rem;" %>
         <%= f.email_field :email,
             class: "auth-input",
             style: "display:block; width:100%; box-sizing:border-box; font-family:'DM Sans',sans-serif; font-size:0.92rem; padding:0.78rem 0.95rem; border-radius:10px; outline:none; transition:border-color 0.2s, box-shadow 0.2s;",
@@ -55,10 +55,10 @@
   <% end %>
 
   <%# === Back to login === %>
-  <p style="text-align:center; margin:1.3rem 0 0; font-family:'DM Sans',sans-serif; font-size:0.78rem; color:var(--color-muted, #A09889);">
+  <p style="text-align:center; margin:1.3rem 0 0; font-family:'DM Sans',sans-serif; font-size:0.78rem; color:var(--color-muted);">
     <%= t("auth.forgot.switch_text") %>
     <%= link_to t("auth.forgot.switch_link"), core.sign_in_path,
-        style: "color:var(--color-link, #8B6D28); text-decoration:none; font-weight:600;",
+        style: "color:var(--color-link); text-decoration:none; font-weight:600;",
         data: { action: "mouseenter->auth-form#inlineLinkOver mouseleave->auth-form#inlineLinkOut" } %>
   </p>
 

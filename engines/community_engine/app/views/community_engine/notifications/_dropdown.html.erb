@@ -7,7 +7,7 @@
   <%# Bell trigger %>
   <button data-action="click->notifications#toggle"
           style="position:relative; padding:0.4rem; border-radius:11px; border:none; background:transparent;
-                 color:var(--color-muted, #887F72); cursor:pointer; transition:all 0.15s;">
+                 color:var(--color-muted); cursor:pointer; transition:all 0.15s;">
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
       <path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
     </svg>
@@ -23,16 +23,16 @@
   <%# Dropdown panel — uses theme variables for day/night compatibility %>
   <div data-notifications-target="dropdown"
        style="display:none; position:absolute; right:0; top:100%; margin-top:0.5rem; width:22rem; max-width:calc(100vw - 2rem);
-              background:var(--color-card, #FEFDFB); border-radius:14px; border:1px solid var(--color-faint, rgba(28,24,18,0.08));
+              background:var(--color-card); border-radius:14px; border:1px solid var(--color-faint, rgba(28,24,18,0.08));
               box-shadow:0 16px 48px rgba(0,0,0,0.15); z-index:50; overflow:hidden;">
 
     <%# Header %>
     <div style="display:flex; align-items:center; justify-content:space-between; padding:0.75rem 1rem; border-bottom:1px solid var(--color-faint, rgba(28,24,18,0.06));">
-      <h3 style="font-family:'DM Sans',sans-serif; font-weight:700; font-size:0.82rem; color:var(--color-txt, #1C1812); margin:0;">
+      <h3 style="font-family:'DM Sans',sans-serif; font-weight:700; font-size:0.82rem; color:var(--color-txt); margin:0;">
         <%= t("community_engine.notifications_ui.title") %>
       </h3>
       <button data-action="click->notifications#markAllRead"
-              style="font-family:'DM Sans',sans-serif; font-size:0.68rem; color:var(--color-muted, #887F72); background:none; border:none; cursor:pointer; transition:color 0.15s;">
+              style="font-family:'DM Sans',sans-serif; font-size:0.68rem; color:var(--color-muted); background:none; border:none; cursor:pointer; transition:color 0.15s;">
         <%= t("community_engine.notifications_ui.mark_all_read") %>
       </button>
     </div>
@@ -50,17 +50,17 @@
                data-action="click->notifications#markRead"
                data-notification-id="<%= notification.id %>">
             <%# Actor avatar %>
-            <div style="flex-shrink:0; width:30px; height:30px; border-radius:50%; background:var(--color-accent, #2C261E);
-                        display:flex; align-items:center; justify-content:center; color:var(--color-accent-text, #F5F1EB);
+            <div style="flex-shrink:0; width:30px; height:30px; border-radius:50%; background:var(--color-accent);
+                        display:flex; align-items:center; justify-content:center; color:var(--color-accent-text);
                         font-family:'DM Sans',sans-serif; font-size:0.6rem; font-weight:700;">
               <%= notification.actor.name.to_s.first&.upcase || "?" %>
             </div>
             <div style="flex:1; min-width:0;">
-              <p style="font-family:'DM Sans',sans-serif; font-size:0.78rem; color:var(--color-txt, #1C1812); line-height:1.4; margin:0;">
+              <p style="font-family:'DM Sans',sans-serif; font-size:0.78rem; color:var(--color-txt); line-height:1.4; margin:0;">
                 <span style="font-weight:600;"><%= notification.actor.name %></span>
-                <span style="color:var(--color-muted, #887F72);"> <%= notification.notification_text %></span>
+                <span style="color:var(--color-muted);"> <%= notification.notification_text %></span>
               </p>
-              <span style="font-family:'DM Mono',monospace; font-size:0.55rem; color:var(--color-muted, #887F72); margin-top:0.2rem; display:block;">
+              <span style="font-family:'DM Mono',monospace; font-size:0.55rem; color:var(--color-muted); margin-top:0.2rem; display:block;">
                 <%= time_ago_in_words(notification.created_at) %>
               </span>
             </div>
@@ -71,7 +71,7 @@
         <% end %>
       <% else %>
         <div style="padding:2rem 1rem; text-align:center;">
-          <p style="font-family:'DM Sans',sans-serif; font-size:0.78rem; color:var(--color-muted, #887F72); margin:0;">
+          <p style="font-family:'DM Sans',sans-serif; font-size:0.78rem; color:var(--color-muted); margin:0;">
             <%= t("community_engine.notifications_ui.empty") %>
           </p>
         </div>
@@ -81,7 +81,7 @@
     <%# Footer %>
     <div style="padding:0.5rem 1rem; border-top:1px solid var(--color-faint, rgba(28,24,18,0.06));">
       <%= link_to community_engine.notifications_path,
-            style: "display:block; text-align:center; font-family:'DM Sans',sans-serif; font-size:0.72rem; color:var(--color-muted, #887F72); text-decoration:none; transition:color 0.15s;" do %>
+            style: "display:block; text-align:center; font-family:'DM Sans',sans-serif; font-size:0.72rem; color:var(--color-muted); text-decoration:none; transition:color 0.15s;" do %>
         <%= t("community_engine.notifications_ui.view_all") %>
       <% end %>
     </div>

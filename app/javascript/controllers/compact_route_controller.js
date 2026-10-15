@@ -5,12 +5,12 @@ import { Controller } from "@hotwired/stimulus"
  *
  * Renders a horizontal SVG route path with nodes representing route steps.
  * Each node's appearance reflects its status (completed, in_progress, available, locked).
- * The accent color is ONE color per route, derived from the route's color seed.
+ * The accent color is ONE color per route: the level of the stage the student is in.
  *
  * Data attributes:
  *   data-compact-route-nodes-value  — JSON array of {label, status}
  *   data-compact-route-seed-value   — integer seed for deterministic vertical offsets
- *   data-compact-route-color-value  — hex accent color for this route (e.g. "#8B80C4")
+ *   data-compact-route-color-value  — the accent's token name (e.g. "--color-node-nv1") or a colour
  */
 export default class extends Controller {
   static values = {
@@ -36,7 +36,11 @@ export default class extends Controller {
     const nodes = this.nodesValue
     if (!nodes || nodes.length === 0) return
 
-    const color = this.colorValue
+    // The card passes a token name (--color-node-nv1); SVG presentation
+    // attributes do not resolve var(), so read the current theme's value.
+    const color = this.colorValue.startsWith("--")
+      ? getComputedStyle(document.documentElement).getPropertyValue(this.colorValue).trim()
+      : this.colorValue
     const seed = this.seedValue
     const w = this.element.clientWidth
     if (w === 0) return
