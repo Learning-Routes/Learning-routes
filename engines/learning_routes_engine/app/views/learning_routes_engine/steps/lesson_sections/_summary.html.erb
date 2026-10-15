@@ -22,8 +22,8 @@
       <% section[:key_points].each_with_index do |point, i| %>
         <div class="animate-fade-in"
              style="display:flex; align-items:flex-start; gap:0.875rem; padding:1rem 1.25rem; border-radius:14px; background:var(--color-card); border:1px solid var(--color-border-subtle); box-shadow:0 1px 3px rgba(0,0,0,0.02), 0 4px 12px rgba(0,0,0,0.01); animation-delay:<%= i * 0.12 %>s;">
-          <span style="display:flex; align-items:center; justify-content:center; width:1.75rem; height:1.75rem; border-radius:50%; background:linear-gradient(135deg, #10b981, #059669); flex-shrink:0; margin-top:0.0625rem; box-shadow:0 2px 6px rgba(16,185,129,0.2);">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          <span style="display:flex; align-items:center; justify-content:center; width:1.75rem; height:1.75rem; border-radius:50%; background:linear-gradient(135deg, var(--color-positive), var(--color-badge-exercise-text)); flex-shrink:0; margin-top:0.0625rem; box-shadow:0 2px 6px rgba(16,185,129,0.2);">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--color-accent-text)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
           </span>
           <span style="font-size:0.9375rem; font-weight:500; color:var(--color-txt); line-height:1.6;"><%= point %></span>
         </div>

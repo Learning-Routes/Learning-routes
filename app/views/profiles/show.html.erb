@@ -25,8 +25,8 @@
         <% if @streak > 0 %>
           <span style="display:inline-flex; align-items:center; gap:0.25rem; background:var(--color-status-paused-bg, rgba(176,152,72,0.1)); color:var(--color-status-paused-text); font-family:'DM Mono',monospace; font-size:0.6rem; font-weight:500; padding:0.2rem 0.55rem; border-radius:8px; letter-spacing:0.3px;">
             <svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-              <path d="M8 1C8 1 6.5 4 6.5 6C6.5 7.1 7.2 8 8 8C8.8 8 9.5 7.1 9.5 6C9.5 4 8 1 8 1Z" fill="#B09848"/>
-              <path d="M8 5C8 5 5 8 5 10.5C5 12.4 6.3 14 8 14C9.7 14 11 12.4 11 10.5C11 8 8 5 8 5Z" fill="#B09848" opacity="0.6"/>
+              <path d="M8 1C8 1 6.5 4 6.5 6C6.5 7.1 7.2 8 8 8C8.8 8 9.5 7.1 9.5 6C9.5 4 8 1 8 1Z" fill="var(--color-highlight)"/>
+              <path d="M8 5C8 5 5 8 5 10.5C5 12.4 6.3 14 8 14C9.7 14 11 12.4 11 10.5C11 8 8 5 8 5Z" fill="var(--color-highlight)" opacity="0.6"/>
             </svg>
             <%= t("profile.days_streak", count: @streak) %>
           </span>
@@ -76,7 +76,7 @@
     </div>
     <div style="width:100%; height:6px; background:var(--color-tint-strong); border-radius:3px; overflow:hidden;">
       <div data-controller="xp-bar" data-xp-bar-progress-value="<%= @xp_progress %>"
-           style="height:100%; background:linear-gradient(90deg, #8B80C4, #5BA880); border-radius:3px;">
+           style="height:100%; background:linear-gradient(90deg, var(--color-node-nv3), var(--color-progress-bar)); border-radius:3px;">
       </div>
     </div>
   </div>
@@ -84,16 +84,16 @@
   <%# Badges row %>
   <div style="display:flex; gap:0.5rem; margin-top:1rem; flex-wrap:wrap;">
     <% badges = [] %>
-    <% badges << { icon: "path", label: t("profile.badges.first_route"), color: "#8B80C4" } if @routes.any? %>
-    <% badges << { icon: "check", label: t("profile.badges.step_completed"), color: "#5BA880" } if @total_steps_completed > 0 %>
-    <% badges << { icon: "star", label: t("profile.badges.high_accuracy"), color: "#B09848" } if @avg_accuracy >= 80 %>
-    <% badges << { icon: "fire", label: t("profile.badges.streak", count: @streak), color: "#B06050" } if @streak >= 3 %>
-    <% badges << { icon: "bolt", label: t("profile.badges.route_complete"), color: "#6E9BC8" } if @completed_routes.any? %>
+    <% badges << { icon: "path", label: t("profile.badges.first_route"), color: "var(--color-node-nv3)" } if @routes.any? %>
+    <% badges << { icon: "check", label: t("profile.badges.step_completed"), color: "var(--color-progress-bar)" } if @total_steps_completed > 0 %>
+    <% badges << { icon: "star", label: t("profile.badges.high_accuracy"), color: "var(--color-highlight)" } if @avg_accuracy >= 80 %>
+    <% badges << { icon: "fire", label: t("profile.badges.streak", count: @streak), color: "var(--color-flash-alert-text)" } if @streak >= 3 %>
+    <% badges << { icon: "bolt", label: t("profile.badges.route_complete"), color: "var(--color-node-nv2)" } if @completed_routes.any? %>
 
     <% if badges.any? %>
       <% badges.each do |badge| %>
         <div style="display:inline-flex; align-items:center; gap:0.3rem; background:var(--color-tint); border:1px solid var(--color-border-subtle); border-radius:8px; padding:0.3rem 0.6rem;">
-          <div style="width:18px; height:18px; border-radius:5px; background:<%= badge[:color] %>15; display:flex; align-items:center; justify-content:center;">
+          <div style="width:18px; height:18px; border-radius:5px; background:color-mix(in srgb, <%= badge[:color] %> 8%, transparent); display:flex; align-items:center; justify-content:center;">
             <% case badge[:icon] %>
             <% when "path" %>
               <svg width="10" height="10" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 13V8l5-5 5 5v5" stroke="<%= badge[:color] %>" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -122,10 +122,10 @@
 <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(150px, 1fr)); gap:0.6rem; margin-bottom:1rem;">
   <%
     stats = [
-      { value: @routes.size, label: t("profile.stats.routes"), color: "#8B80C4", bg: "rgba(139,128,196,0.08)" },
-      { value: @total_steps_completed, label: t("profile.stats.lessons"), color: "#6E9BC8", bg: "rgba(110,155,200,0.08)" },
-      { value: format_study_time(@study_minutes), label: t("profile.stats.time"), color: "#5BA880", bg: "rgba(91,168,128,0.08)" },
-      { value: @accuracy_scored ? "#{@avg_accuracy}%" : "—", label: t("profile.stats.accuracy"), color: "#B09848", bg: "rgba(176,152,72,0.08)", stat: "overall-accuracy" }
+      { value: @routes.size, label: t("profile.stats.routes"), color: "var(--color-node-nv3)", bg: "rgba(139,128,196,0.08)" },
+      { value: @total_steps_completed, label: t("profile.stats.lessons"), color: "var(--color-node-nv2)", bg: "rgba(110,155,200,0.08)" },
+      { value: format_study_time(@study_minutes), label: t("profile.stats.time"), color: "var(--color-progress-bar)", bg: "rgba(91,168,128,0.08)" },
+      { value: @accuracy_scored ? "#{@avg_accuracy}%" : "—", label: t("profile.stats.accuracy"), color: "var(--color-highlight)", bg: "rgba(176,152,72,0.08)", stat: "overall-accuracy" }
     ]
   %>
   <% stats.each do |stat| %>
@@ -148,7 +148,7 @@
          data-hover-translate-value="-2"
          data-hover-border-color-value="rgba(176,152,72,0.45)">
       <div style="width:42px; height:42px; border-radius:12px; background:rgba(176,152,72,0.15); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#B09848" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--color-highlight)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <path d="M3 12a9 9 0 1 0 9-9"/>
           <path d="M3 5v4h4"/>
           <path d="M12 7v5l3 2"/>
@@ -167,7 +167,7 @@
           <% end %>
         </p>
       </div>
-      <span style="font-family:'DM Mono',monospace; font-size:0.68rem; letter-spacing:1.2px; text-transform:uppercase; color:#B09848; font-weight:500; flex-shrink:0;">
+      <span style="font-family:'DM Mono',monospace; font-size:0.68rem; letter-spacing:1.2px; text-transform:uppercase; color:var(--color-highlight); font-weight:500; flex-shrink:0;">
         <%= t("profile.reviews.cta") %> →
       </span>
     </div>

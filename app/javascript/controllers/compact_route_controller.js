@@ -87,7 +87,7 @@ export default class extends Controller {
     const shadowPath = document.createElementNS(ns, "path")
     shadowPath.setAttribute("d", pathD)
     shadowPath.setAttribute("fill", "none")
-    shadowPath.setAttribute("stroke", "rgba(28,24,18,0.08)")
+    shadowPath.setAttribute("stroke", rootStyle.getPropertyValue("--color-tint-strong").trim() || "rgba(28,24,18,0.08)")
     shadowPath.setAttribute("stroke-width", "8")
     shadowPath.setAttribute("stroke-linecap", "round")
     shadowPath.setAttribute("transform", "translate(1,1.5)")

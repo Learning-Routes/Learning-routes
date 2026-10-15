@@ -23,7 +23,7 @@
       <div class="relative">
         <div class="w-16 h-16 rounded-full animate-ping absolute inset-0" style="background: rgba(99,102,241,0.15);"></div>
         <div class="w-16 h-16 rounded-full flex items-center justify-center relative" style="background: rgba(99,102,241,0.2);">
-          <svg class="w-8 h-8 animate-pulse" style="color: #818CF8;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg class="w-8 h-8 animate-pulse" style="color: var(--color-highlight-violet);" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                   d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"/>
           </svg>
@@ -65,7 +65,7 @@
       <%# Play / Pause button %>
       <button data-action="click->audio-player#togglePlay"
               class="w-14 h-14 rounded-full flex items-center justify-center transition-colors flex-shrink-0 hover-bg-indigo"
-              style="background: #6366F1;"
+              style="background: var(--color-section-audio-active);"
               aria-label="<%= t("audio_player.play_pause_aria") %>">
         <svg data-audio-player-target="playIcon" class="w-6 h-6 text-white ml-1" fill="currentColor" viewBox="0 0 24 24">
           <path d="M8 5v14l11-7z"/>
@@ -85,7 +85,7 @@
           <div data-audio-player-target="bufferedFill"
                class="absolute inset-y-0 left-0 rounded-full" style="width: 0%; background: var(--color-tint-hover);"></div>
           <div data-audio-player-target="progressFill"
-               class="absolute inset-y-0 left-0 rounded-full transition-all duration-100" style="width: 0%; background: #6366F1;"></div>
+               class="absolute inset-y-0 left-0 rounded-full transition-all duration-100" style="width: 0%; background: var(--color-section-audio-active);"></div>
           <div class="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity" style="background: var(--color-tint);"></div>
         </div>
 
@@ -141,7 +141,7 @@
         <ul class="space-y-1.5">
           <% narration["key_points"].each do |point| %>
             <li class="flex items-start gap-2 text-sm" style="color: var(--color-txt); font-family: 'DM Sans', sans-serif;">
-              <span style="color: #818CF8;" class="mt-0.5">•</span>
+              <span style="color: var(--color-highlight-violet);" class="mt-0.5">•</span>
               <span><%= point %></span>
             </li>
           <% end %>
@@ -153,7 +153,7 @@
   <%# ── Error State ── %>
   <div data-audio-player-target="errorState" class="hidden">
     <div class="flex flex-col items-center gap-3 py-6">
-      <svg class="w-12 h-12" style="color: #F87171;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <svg class="w-12 h-12" style="color: var(--color-negative);" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
               d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/>
       </svg>
@@ -162,7 +162,7 @@
       </p>
       <button data-action="click->audio-player#triggerGeneration"
               class="px-4 py-2 text-sm font-medium transition-colors hover-bg-indigo-light"
-              style="color: #818CF8; background: rgba(99,102,241,0.1); border-radius: 11px;">
+              style="color: var(--color-highlight-violet); background: rgba(99,102,241,0.1); border-radius: 11px;">
         <%= t("audio_player.retry") %>
       </button>
     </div>

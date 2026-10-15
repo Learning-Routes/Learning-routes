@@ -1,7 +1,7 @@
 <div id="<%= dom_id(@step, :review) %>" style="max-width:var(--step-measure); margin:0 auto; padding:1rem;">
   <%# Header %>
   <div style="margin-bottom:2rem;">
-    <span class="lesson-section-badge" style="background:linear-gradient(135deg, rgba(139,92,246,0.12), rgba(139,92,246,0.06)); color:#8b5cf6; border:1px solid rgba(139,92,246,0.15);">
+    <span class="lesson-section-badge" style="background:linear-gradient(135deg, rgba(139,92,246,0.12), rgba(139,92,246,0.06)); color:var(--color-highlight-violet); border:1px solid rgba(139,92,246,0.15);">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20V10"/><path d="M18 20V4"/><path d="M6 20v-4"/></svg>
       <span><%= t('learning_engine.review.badge') %></span>
     </span>
@@ -16,16 +16,16 @@
     <%
       strength_pct = (@retrievability * 100).round
       if @retrievability >= 0.7
-        strength_color = "#10b981"
-        strength_gradient = "linear-gradient(135deg, #10b981, #059669)"
+        strength_color = "var(--color-positive)"
+        strength_gradient = "linear-gradient(135deg, var(--color-positive), var(--color-badge-exercise-text))"
         strength_bg = "rgba(16,185,129,0.06)"
       elsif @retrievability >= 0.4
-        strength_color = "#f59e0b"
-        strength_gradient = "linear-gradient(135deg, #f59e0b, #D97706)"
+        strength_color = "var(--color-warning)"
+        strength_gradient = "linear-gradient(135deg, var(--color-warning), var(--color-badge-assessment-text))"
         strength_bg = "rgba(245,158,11,0.06)"
       else
-        strength_color = "#ef4444"
-        strength_gradient = "linear-gradient(135deg, #ef4444, #dc2626)"
+        strength_color = "var(--color-negative)"
+        strength_gradient = "linear-gradient(135deg, var(--color-negative), var(--color-negative))"
         strength_bg = "rgba(239,68,68,0.06)"
       end
     %>
@@ -37,7 +37,7 @@
         </span>
       </div>
       <div style="height:0.625rem; background:var(--color-tint-strong); border-radius:9999px; overflow:hidden;">
-        <div style="height:100%; border-radius:9999px; transition:width 0.8s cubic-bezier(0.34,1.56,0.64,1); background:<%= strength_gradient %>; width:<%= strength_pct %>%; box-shadow:0 2px 6px <%= strength_color %>33;"></div>
+        <div style="height:100%; border-radius:9999px; transition:width 0.8s cubic-bezier(0.34,1.56,0.64,1); background:<%= strength_gradient %>; width:<%= strength_pct %>%; box-shadow:0 2px 6px color-mix(in srgb, <%= strength_color %> 20%, transparent);"></div>
       </div>
     </div>
   <% end %>
@@ -68,10 +68,10 @@
       <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:0.75rem;">
         <%
           ratings = [
-            [1, t('learning_engine.review.again'), '#ef4444', 'rgba(239,68,68,0.06)', 'rgba(239,68,68,0.15)'],
-            [2, t('learning_engine.review.hard'), '#f59e0b', 'rgba(245,158,11,0.06)', 'rgba(245,158,11,0.15)'],
-            [3, t('learning_engine.review.good'), '#10b981', 'rgba(16,185,129,0.06)', 'rgba(16,185,129,0.15)'],
-            [4, t('learning_engine.review.easy'), '#6366f1', 'rgba(99,102,241,0.06)', 'rgba(99,102,241,0.15)']
+            [1, t('learning_engine.review.again'), 'var(--color-negative)', 'rgba(239,68,68,0.06)', 'rgba(239,68,68,0.15)'],
+            [2, t('learning_engine.review.hard'), 'var(--color-warning)', 'rgba(245,158,11,0.06)', 'rgba(245,158,11,0.15)'],
+            [3, t('learning_engine.review.good'), 'var(--color-positive)', 'rgba(16,185,129,0.06)', 'rgba(16,185,129,0.15)'],
+            [4, t('learning_engine.review.easy'), 'var(--color-section-audio-active)', 'rgba(99,102,241,0.06)', 'rgba(99,102,241,0.15)']
           ]
         %>
         <% ratings.each do |rating, label, text_color, bg_color, border_color| %>

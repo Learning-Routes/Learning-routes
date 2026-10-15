@@ -4,7 +4,7 @@
     <title><%= content_for(:title) || t("layout.onboarding.title") %></title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <meta name="theme-color" content="#F5F1EB">
+    <%= render "shared/theme_color" %>
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
 

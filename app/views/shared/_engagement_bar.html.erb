@@ -7,7 +7,7 @@
   <div data-engagement-target="streak" title="<%= t('engagement.streak_days', count: engagement.current_streak) %>"
        style="display:flex; align-items:center; gap:0.2rem; cursor:default;">
     <span data-engagement-target="flameIcon" style="font-size:1rem; line-height:1; transition:transform 0.3s;">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="<%= engagement.streak_active? ? '#F59E0B' : 'var(--color-muted)' %>" aria-hidden="true">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="<%= engagement.streak_active? ? 'var(--color-warning)' : 'var(--color-muted)' %>" aria-hidden="true">
         <path d="M12 23c-4.97 0-9-3.58-9-8 0-3.19 2.13-6.65 4-8.5 0 0 .5 3.5 3 5.5 0-5 3.5-10 6-12 0 3 1.5 5 3 6.5 1.5 1.5 2 3.5 2 5.5 0 5-4.03 9-9 9z"/>
       </svg>
     </span>
@@ -26,7 +26,7 @@
       <%= number_to_human(engagement.total_xp, precision: 1, significant: false, format: '%n%u', units: { thousand: 'k', million: 'M' }) %>
     </span>
     <%# Floating XP gain text — hidden by default, shown by Stimulus %>
-    <span data-engagement-target="xpFloat" style="position:absolute; top:-1.2rem; left:50%; transform:translateX(-50%); font-family:'DM Mono',monospace; font-size:0.65rem; font-weight:700; color:#5BA880; opacity:0; pointer-events:none; white-space:nowrap;">
+    <span data-engagement-target="xpFloat" style="position:absolute; top:-1.2rem; left:50%; transform:translateX(-50%); font-family:'DM Mono',monospace; font-size:0.65rem; font-weight:700; color:var(--color-progress-bar); opacity:0; pointer-events:none; white-space:nowrap;">
     </span>
   </div>
 
