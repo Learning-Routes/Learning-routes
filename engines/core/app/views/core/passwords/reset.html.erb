@@ -11,10 +11,10 @@
             box-shadow:0 8px 32px rgba(28,24,18,0.06), 0 1px 3px rgba(28,24,18,0.03);">
 
   <%# === Heading === %>
-  <h1 style="font-family:'DM Sans',sans-serif; font-weight:700; font-size:1.6rem; letter-spacing:-0.7px; color:var(--color-txt, #1C1812); margin:0 0 0.4rem; line-height:1.2;">
+  <h1 style="font-family:'DM Sans',sans-serif; font-weight:700; font-size:1.6rem; letter-spacing:-0.7px; color:var(--color-txt); margin:0 0 0.4rem; line-height:1.2;">
     <%= t("auth.reset.heading") %>
   </h1>
-  <p style="font-family:'DM Sans',sans-serif; font-size:0.82rem; color:var(--color-muted, #A09889); margin:0 0 1.4rem; line-height:1.5;">
+  <p style="font-family:'DM Sans',sans-serif; font-size:0.82rem; color:var(--color-muted); margin:0 0 1.4rem; line-height:1.5;">
     <%= t("auth.reset.subtext") %>
   </p>
 
@@ -23,7 +23,7 @@
 
     <%# Form errors %>
     <% if @user.errors.any? %>
-      <div role="alert" class="auth-errors" style="background:var(--color-flash-alert-bg, rgba(176,96,80,0.08)); border:1px solid var(--color-flash-alert-border, rgba(176,96,80,0.15)); border-radius:10px; padding:0.75rem 0.9rem; margin-bottom:1rem; color:var(--color-flash-alert-text, #B06050);">
+      <div role="alert" class="auth-errors" style="background:var(--color-flash-alert-bg, rgba(176,96,80,0.08)); border:1px solid var(--color-flash-alert-border, rgba(176,96,80,0.15)); border-radius:10px; padding:0.75rem 0.9rem; margin-bottom:1rem; color:var(--color-flash-alert-text);">
         <p style="font-family:'DM Sans',sans-serif; font-size:0.76rem; font-weight:500; color:inherit; margin:0 0 0.3rem;">
           <%= t("auth.reset.errors", count: @user.errors.count) %>
         </p>
@@ -40,7 +40,7 @@
       <%# New password %>
       <div>
         <%= f.label :password, t("auth.reset.password_label"),
-            style: "display:block; font-family:'DM Sans',sans-serif; font-size:0.78rem; font-weight:500; color:var(--color-sub, #6D665B); margin-bottom:0.45rem;" %>
+            style: "display:block; font-family:'DM Sans',sans-serif; font-size:0.78rem; font-weight:500; color:var(--color-sub); margin-bottom:0.45rem;" %>
         <%= f.password_field :password,
             class: "auth-input",
             style: "display:block; width:100%; box-sizing:border-box; font-family:'DM Sans',sans-serif; font-size:0.92rem; padding:0.78rem 0.95rem; border-radius:10px; outline:none; transition:border-color 0.2s, box-shadow 0.2s;",
@@ -55,7 +55,7 @@
       <%# Confirm password %>
       <div>
         <%= f.label :password_confirmation, t("auth.reset.confirm_label"),
-            style: "display:block; font-family:'DM Sans',sans-serif; font-size:0.78rem; font-weight:500; color:var(--color-sub, #6D665B); margin-bottom:0.45rem;" %>
+            style: "display:block; font-family:'DM Sans',sans-serif; font-size:0.78rem; font-weight:500; color:var(--color-sub); margin-bottom:0.45rem;" %>
         <%= f.password_field :password_confirmation,
             class: "auth-input",
             style: "display:block; width:100%; box-sizing:border-box; font-family:'DM Sans',sans-serif; font-size:0.92rem; padding:0.78rem 0.95rem; border-radius:10px; outline:none; transition:border-color 0.2s, box-shadow 0.2s;",

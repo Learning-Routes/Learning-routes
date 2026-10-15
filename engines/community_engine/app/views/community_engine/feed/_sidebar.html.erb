@@ -12,8 +12,8 @@
          data-share-route-id-value="">
       <button data-action="click->share#open"
               style="width:100%; display:flex; align-items:center; justify-content:center; gap:0.45rem;
-                     font-family:'DM Sans',sans-serif; font-size:0.78rem; font-weight:600; color:var(--color-accent-text, #F5F1EB);
-                     background:var(--color-accent, #2C261E); border:none; border-radius:10px; padding:0.65rem 0.85rem;
+                     font-family:'DM Sans',sans-serif; font-size:0.78rem; font-weight:600; color:var(--color-accent-text);
+                     background:var(--color-accent); border:none; border-radius:10px; padding:0.65rem 0.85rem;
                      cursor:pointer; transition:all 0.2s; box-shadow:0 1px 3px rgba(28,24,18,0.12);">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/>
@@ -29,14 +29,14 @@
            data-action="click->share#backdropClick">
         <div style="position:absolute; inset:0; background:rgba(0,0,0,0.5); backdrop-filter:blur(4px); pointer-events:none;"></div>
         <div data-action="click->share#stopPropagation"
-             style="position:relative; background:var(--color-card, #FEFDFB); border-radius:16px; width:100%; max-width:420px; max-height:80vh; overflow-y:auto;
+             style="position:relative; background:var(--color-card); border-radius:16px; width:100%; max-width:420px; max-height:80vh; overflow-y:auto;
                     box-shadow:0 24px 48px rgba(0,0,0,0.2);">
           <%# Header %>
           <div style="display:flex; align-items:center; justify-content:space-between; padding:1rem 1.25rem; border-bottom:1px solid var(--color-border-subtle, rgba(28,24,18,0.06));">
-            <h3 style="font-family:'DM Sans',sans-serif; font-weight:700; font-size:0.95rem; color:var(--color-txt, #1C1812); margin:0;">
+            <h3 style="font-family:'DM Sans',sans-serif; font-weight:700; font-size:0.95rem; color:var(--color-txt); margin:0;">
               <%= t("community_engine.share_modal.title") %>
             </h3>
-            <button data-action="click->share#close" style="color:var(--color-muted, #9B9590); background:none; border:none; cursor:pointer; padding:0.2rem;">
+            <button data-action="click->share#close" style="color:var(--color-muted); background:none; border:none; cursor:pointer; padding:0.2rem;">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
             </button>
           </div>
@@ -44,7 +44,7 @@
           <%# Form view %>
           <div data-share-target="formView" style="padding:1rem 1.25rem;">
             <% if unshared_routes.any? %>
-              <p style="font-family:'DM Sans',sans-serif; font-size:0.75rem; font-weight:500; color:var(--color-sub, #6D665B); margin:0 0 0.5rem;">
+              <p style="font-family:'DM Sans',sans-serif; font-size:0.75rem; font-weight:500; color:var(--color-sub); margin:0 0 0.5rem;">
                 <%= t("community_engine.share_modal.select_route") %>
               </p>
               <div style="display:flex; flex-direction:column; gap:0.4rem; margin-bottom:1rem; max-height:180px; overflow-y:auto;">
@@ -59,10 +59,10 @@
                       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#5BA880" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v8M8 12h8"/></svg>
                     </div>
                     <div style="flex:1; min-width:0;">
-                      <p style="font-family:'DM Sans',sans-serif; font-size:0.78rem; font-weight:500; color:var(--color-txt, #1C1812); margin:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+                      <p style="font-family:'DM Sans',sans-serif; font-size:0.78rem; font-weight:500; color:var(--color-txt); margin:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
                         <%= route.localized_topic %>
                       </p>
-                      <p style="font-family:'DM Mono',monospace; font-size:0.58rem; color:var(--color-muted, #9B9590); margin:0.1rem 0 0;">
+                      <p style="font-family:'DM Mono',monospace; font-size:0.58rem; color:var(--color-muted); margin:0.1rem 0 0;">
                         <%= route.route_steps.size %> <%= t("community_engine.share_modal.steps") %>
                       </p>
                     </div>
@@ -70,13 +70,13 @@
                 <% end %>
               </div>
             <% else %>
-              <p style="font-family:'DM Sans',sans-serif; font-size:0.78rem; color:var(--color-muted, #9B9590); text-align:center; padding:0.75rem 0; margin:0 0 0.75rem;">
+              <p style="font-family:'DM Sans',sans-serif; font-size:0.78rem; color:var(--color-muted); text-align:center; padding:0.75rem 0; margin:0 0 0.75rem;">
                 <%= t("community_engine.share_modal.all_shared") %>
               </p>
             <% end %>
 
             <%# Visibility selector %>
-            <p style="font-family:'DM Sans',sans-serif; font-size:0.75rem; font-weight:500; color:var(--color-sub, #6D665B); margin:0 0 0.4rem;">
+            <p style="font-family:'DM Sans',sans-serif; font-size:0.75rem; font-weight:500; color:var(--color-sub); margin:0 0 0.4rem;">
               <%= t("community_engine.share_modal.visibility_label") %>
             </p>
             <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:0.35rem; margin-bottom:0.85rem;">
@@ -89,11 +89,11 @@
                         data-action="click->share#selectVisibility"
                         data-share-target="visibilityBtn"
                         data-visibility="<%= value %>"
-                        style="padding:0.5rem 0.4rem; border-radius:10px; border:1px solid <%= value == 'public' ? 'var(--color-accent, #2C261E)' : 'var(--color-faint, #E0DBCF)' %>;
+                        style="padding:0.5rem 0.4rem; border-radius:10px; border:1px solid <%= value == 'public' ? 'var(--color-accent)' : 'var(--color-faint)' %>;
                                background:<%= value == 'public' ? 'var(--color-tint, rgba(44,38,30,0.05))' : 'transparent' %>;
                                cursor:pointer; text-align:center; transition:all 0.15s;">
-                  <span style="display:block; font-family:'DM Sans',sans-serif; font-size:0.72rem; font-weight:500; color:var(--color-txt, #1C1812);"><%= label %></span>
-                  <span style="display:block; font-family:'DM Mono',monospace; font-size:0.52rem; color:var(--color-muted, #9B9590); margin-top:0.15rem;"><%= desc %></span>
+                  <span style="display:block; font-family:'DM Sans',sans-serif; font-size:0.72rem; font-weight:500; color:var(--color-txt);"><%= label %></span>
+                  <span style="display:block; font-family:'DM Mono',monospace; font-size:0.52rem; color:var(--color-muted); margin-top:0.15rem;"><%= desc %></span>
                 </button>
               <% end %>
             </div>
@@ -103,13 +103,13 @@
                       placeholder="<%= t('community_engine.share_modal.description_placeholder') %>"
                       rows="2"
                       style="width:100%; box-sizing:border-box; padding:0.6rem 0.8rem; border-radius:10px; border:1px solid var(--color-border-subtle, rgba(28,24,18,0.1));
-                             font-family:'DM Sans',sans-serif; font-size:0.78rem; color:var(--color-txt, #1C1812); background:var(--color-bg, #F9F7F3); resize:none; outline:none;
+                             font-family:'DM Sans',sans-serif; font-size:0.78rem; color:var(--color-txt); background:var(--color-bg); resize:none; outline:none;
                              transition:border-color 0.2s; margin-bottom:0.85rem;"></textarea>
 
             <% if unshared_routes.any? %>
               <button data-action="click->share#submit"
                       data-share-target="submitBtn"
-                      style="width:100%; padding:0.65rem 0.85rem; border-radius:10px; border:none; background:var(--color-accent, #2C261E); color:var(--color-accent-text, #F5F1EB);
+                      style="width:100%; padding:0.65rem 0.85rem; border-radius:10px; border:none; background:var(--color-accent); color:var(--color-accent-text);
                              font-family:'DM Sans',sans-serif; font-size:0.8rem; font-weight:600; cursor:pointer; transition:all 0.2s;">
                 <%= t("community_engine.share_modal.share_btn") %>
               </button>
@@ -122,15 +122,15 @@
                         display:flex; align-items:center; justify-content:center;">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
             </div>
-            <p style="font-family:'DM Sans',sans-serif; font-size:0.82rem; font-weight:500; color:var(--color-txt, #1C1812); margin:0 0 0.85rem;">
+            <p style="font-family:'DM Sans',sans-serif; font-size:0.82rem; font-weight:500; color:var(--color-txt); margin:0 0 0.85rem;">
               <%= t("community_engine.share_modal.success") %>
             </p>
             <div style="display:flex; align-items:center; gap:0.4rem; margin-bottom:0.85rem;">
               <input type="text" data-share-target="urlField" readonly
                      style="flex:1; padding:0.5rem 0.7rem; border-radius:10px; border:1px solid var(--color-border-subtle, rgba(28,24,18,0.1));
-                            font-family:'DM Mono',monospace; font-size:0.7rem; color:var(--color-txt, #1C1812); background:var(--color-bg, #F9F7F3); outline:none;">
+                            font-family:'DM Mono',monospace; font-size:0.7rem; color:var(--color-txt); background:var(--color-bg); outline:none;">
               <button data-action="click->share#copyUrl" data-share-target="copyBtn"
-                      style="flex-shrink:0; padding:0.5rem 0.85rem; border-radius:10px; border:none; background:var(--color-accent, #2C261E); color:var(--color-accent-text, #F5F1EB);
+                      style="flex-shrink:0; padding:0.5rem 0.85rem; border-radius:10px; border:none; background:var(--color-accent); color:var(--color-accent-text);
                              font-family:'DM Sans',sans-serif; font-size:0.72rem; font-weight:500; cursor:pointer;">
                 <%= t("community_engine.share_modal.copy") %>
               </button>
@@ -138,7 +138,7 @@
             <button data-action="click->share#close"
                     style="width:100%; padding:0.55rem 0.85rem; border-radius:10px; border:1px solid var(--color-border-subtle, rgba(28,24,18,0.1));
                            background:transparent; font-family:'DM Sans',sans-serif; font-size:0.78rem; font-weight:500;
-                           color:var(--color-txt, #1C1812); cursor:pointer; transition:all 0.2s;">
+                           color:var(--color-txt); cursor:pointer; transition:all 0.2s;">
               <%= t("community_engine.share_modal.done") %>
             </button>
           </div>
@@ -151,30 +151,30 @@
   <% followed_ids = current_user ? current_user.active_follows.pluck(:followed_id).to_set : Set.new %>
   <div style="background:var(--color-card, rgba(255,255,255,0.6)); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px);
               border:1px solid var(--color-faint, rgba(28,24,18,0.06)); border-radius:12px; padding:1rem;">
-    <h3 style="font-family:'DM Sans',sans-serif; font-weight:700; font-size:0.78rem; color:var(--color-txt, #1C1812); margin:0 0 0.75rem;">
+    <h3 style="font-family:'DM Sans',sans-serif; font-weight:700; font-size:0.78rem; color:var(--color-txt); margin:0 0 0.75rem;">
       <%= t("community_engine.feed.sidebar.top_learners") %>
     </h3>
     <% if @top_learners.any? %>
       <div style="display:flex; flex-direction:column; gap:0.55rem;">
         <% @top_learners.each_with_index do |learner, i| %>
           <div style="display:flex; align-items:center; gap:0.5rem;">
-            <span style="width:16px; text-align:right; font-family:'DM Mono',monospace; font-size:0.58rem; font-weight:700; color:var(--color-muted, #887F72);">
+            <span style="width:16px; text-align:right; font-family:'DM Mono',monospace; font-size:0.58rem; font-weight:700; color:var(--color-muted);">
               <%= i + 1 %>
             </span>
-            <div style="width:26px; height:26px; border-radius:50%; background:var(--color-accent, #2C261E);
-                        display:flex; align-items:center; justify-content:center; color:var(--color-accent-text, #F5F1EB);
+            <div style="width:26px; height:26px; border-radius:50%; background:var(--color-accent);
+                        display:flex; align-items:center; justify-content:center; color:var(--color-accent-text);
                         font-family:'DM Sans',sans-serif; font-size:0.55rem; font-weight:700; flex-shrink:0;">
               <%= learner.name.to_s.first&.upcase || "?" %>
             </div>
             <div style="flex:1; min-width:0;">
-              <p style="font-family:'DM Sans',sans-serif; font-size:0.78rem; font-weight:500; color:var(--color-txt, #1C1812); margin:0;
+              <p style="font-family:'DM Sans',sans-serif; font-size:0.78rem; font-weight:500; color:var(--color-txt); margin:0;
                         overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
                 <%= learner.name %>
               </p>
             </div>
             <% if current_user && learner.id != current_user.id %>
               <% if followed_ids.include?(learner.id) %>
-                <span style="font-family:'DM Mono',monospace; font-size:0.55rem; color:var(--color-muted, #887F72); padding:0.15rem 0.4rem; border-radius:5px;
+                <span style="font-family:'DM Mono',monospace; font-size:0.55rem; color:var(--color-muted); padding:0.15rem 0.4rem; border-radius:5px;
                              background:var(--color-faint, rgba(28,24,18,0.04));">
                   <%= t("community_engine.follows.following") %>
                 </span>
@@ -186,7 +186,7 @@
         <% end %>
       </div>
     <% else %>
-      <p style="font-family:'DM Sans',sans-serif; font-size:0.72rem; color:var(--color-muted, #887F72); text-align:center; padding:0.75rem 0;">
+      <p style="font-family:'DM Sans',sans-serif; font-size:0.72rem; color:var(--color-muted); text-align:center; padding:0.75rem 0;">
         <%= t("community_engine.feed.sidebar.no_learners") %>
       </p>
     <% end %>
@@ -195,7 +195,7 @@
   <%# Platform stats %>
   <div style="background:var(--color-card, rgba(255,255,255,0.6)); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px);
               border:1px solid var(--color-faint, rgba(28,24,18,0.06)); border-radius:12px; padding:1rem;">
-    <h3 style="font-family:'DM Sans',sans-serif; font-weight:700; font-size:0.78rem; color:var(--color-txt, #1C1812); margin:0 0 0.65rem;">
+    <h3 style="font-family:'DM Sans',sans-serif; font-weight:700; font-size:0.78rem; color:var(--color-txt); margin:0 0 0.65rem;">
       <%= t("community_engine.feed.sidebar.platform_stats") %>
     </h3>
     <div style="display:flex; flex-direction:column; gap:0.5rem;">
@@ -205,8 +205,8 @@
         [t("community_engine.feed.stats.shared"), @stats[:total_shared]]
       ].each do |label, value| %>
         <div style="display:flex; align-items:center; justify-content:space-between;">
-          <span style="font-family:'DM Sans',sans-serif; font-size:0.72rem; color:var(--color-sub, #6D665B);"><%= label %></span>
-          <span style="font-family:'DM Mono',monospace; font-size:0.78rem; font-weight:700; color:var(--color-txt, #1C1812);"><%= value %></span>
+          <span style="font-family:'DM Sans',sans-serif; font-size:0.72rem; color:var(--color-sub);"><%= label %></span>
+          <span style="font-family:'DM Mono',monospace; font-size:0.78rem; font-weight:700; color:var(--color-txt);"><%= value %></span>
         </div>
       <% end %>
     </div>
@@ -223,19 +223,19 @@
     <% if suggested.any? %>
       <div style="background:var(--color-card, rgba(255,255,255,0.6)); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px);
                   border:1px solid var(--color-faint, rgba(28,24,18,0.06)); border-radius:12px; padding:1rem;">
-        <h3 style="font-family:'DM Sans',sans-serif; font-weight:700; font-size:0.78rem; color:var(--color-txt, #1C1812); margin:0 0 0.65rem;">
+        <h3 style="font-family:'DM Sans',sans-serif; font-weight:700; font-size:0.78rem; color:var(--color-txt); margin:0 0 0.65rem;">
           <%= t("community_engine.feed.sidebar.suggested") %>
         </h3>
         <div style="display:flex; flex-direction:column; gap:0.55rem;">
           <% suggested.each do |user| %>
             <div style="display:flex; align-items:center; gap:0.5rem;">
-              <div style="width:26px; height:26px; border-radius:50%; background:var(--color-accent, #2C261E);
-                          display:flex; align-items:center; justify-content:center; color:var(--color-accent-text, #F5F1EB);
+              <div style="width:26px; height:26px; border-radius:50%; background:var(--color-accent);
+                          display:flex; align-items:center; justify-content:center; color:var(--color-accent-text);
                           font-family:'DM Sans',sans-serif; font-size:0.55rem; font-weight:700; flex-shrink:0;">
                 <%= user.name.to_s.first&.upcase || "?" %>
               </div>
               <div style="flex:1; min-width:0;">
-                <p style="font-family:'DM Sans',sans-serif; font-size:0.78rem; font-weight:500; color:var(--color-txt, #1C1812); margin:0;
+                <p style="font-family:'DM Sans',sans-serif; font-size:0.78rem; font-weight:500; color:var(--color-txt); margin:0;
                           overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
                   <%= user.name %>
                 </p>

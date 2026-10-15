@@ -19,21 +19,17 @@ module ApplicationHelper
     end
   end
 
-  # Derives a single accent color for a route from its UUID.
-  # Returns one of 6 design-system-friendly colors.
-  ROUTE_ACCENT_COLORS = %w[
-    #8B80C4
-    #6E9BC8
-    #5BA880
-    #B09848
-    #B5718E
-    #7EA5A0
-  ].freeze
+  # A route's level is the level of the stage the student is in: the first step
+  # not completed, or the last step once all are. The card's accent is that
+  # level's token, the NV1/NV2/NV3 colour the journey map uses (STEP 38 §3);
+  # it was picked from the UUID, so identical routes got different colours.
+  def route_level(route)
+    steps = route.route_steps.sort_by(&:position)
+    (steps.find { |step| !step.completed? } || steps.last)&.level.presence || "nv1"
+  end
 
-  def route_accent_color(route)
-    return ROUTE_ACCENT_COLORS.first unless route&.id
-    seed = route.id.to_s.delete("-").last(8).to_i(16)
-    ROUTE_ACCENT_COLORS[seed % ROUTE_ACCENT_COLORS.length]
+  def route_accent_token(route)
+    "--color-node-#{route_level(route)}"
   end
 
   # Returns a topic-relevant emoji for a route based on keyword matching.
