@@ -192,6 +192,7 @@ module AiOrchestrator
         content: serialize_content(response.content),
         model: @model,
         input_tokens: response.input_tokens,
+        cached_tokens: response.cached_tokens.to_i,
         output_tokens: response.output_tokens,
         latency_ms: elapsed_ms
       }
