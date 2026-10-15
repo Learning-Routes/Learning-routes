@@ -19,6 +19,7 @@ module AiOrchestrator
       )
       interaction.mark_completed!(
         response_text: "tool_completed", input_tokens: result[:input_tokens],
+        cached_tokens: result[:cached_tokens],
         output_tokens: result[:output_tokens], latency_ms: result[:latency_ms].to_i
       )
     rescue ActiveRecord::ActiveRecordError => e

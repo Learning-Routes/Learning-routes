@@ -214,7 +214,8 @@ CREATE TABLE public.ai_orchestrator_ai_interactions (
     provider_units bigint,
     provider_rate_microcents bigint,
     pricing_status character varying DEFAULT 'unpriced'::character varying NOT NULL,
-    pricing_version character varying
+    pricing_version character varying,
+    cached_tokens integer DEFAULT 0
 );
 
 

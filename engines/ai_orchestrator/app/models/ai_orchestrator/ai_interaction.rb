@@ -55,10 +55,10 @@ module AiOrchestrator
     end
 
     def total_tokens
-      (input_tokens || 0) + (output_tokens || 0)
+      (input_tokens || 0) + (cached_tokens || 0) + (output_tokens || 0)
     end
 
-    def mark_completed!(response_text:, input_tokens: 0, output_tokens: 0, latency_ms: 0,
+    def mark_completed!(response_text:, input_tokens: 0, cached_tokens: 0, output_tokens: 0, latency_ms: 0,
                         image_input_tokens: 0, characters: nil, audio_seconds: nil)
       provider_priced = CostTracker::PRICING.dig(model, :provider_reported_credits)
       usage_known = input_tokens.present? && output_tokens.present?
@@ -66,7 +66,7 @@ module AiOrchestrator
         0
       else
         CostTracker.estimate_microcents(
-          model: model, input_tokens: input_tokens, output_tokens: output_tokens,
+          model: model, input_tokens: input_tokens, cached_tokens: cached_tokens, output_tokens: output_tokens,
           image_input_tokens: image_input_tokens, characters: characters,
           audio_seconds: audio_seconds
         )
@@ -76,8 +76,9 @@ module AiOrchestrator
         status: :completed,
         response: response_text,
         input_tokens: usage_known ? input_tokens.to_i : nil,
+        cached_tokens: cached_tokens.to_i,
         output_tokens: usage_known ? output_tokens.to_i : nil,
-        tokens_used: input_tokens.to_i + output_tokens.to_i,
+        tokens_used: input_tokens.to_i + cached_tokens.to_i + output_tokens.to_i,
         latency_ms: latency_ms,
         pricing_status: provider_priced || (!cached? && !usage_known) ? "unpriced" : "priced",
         cost_microcents: microcents,
