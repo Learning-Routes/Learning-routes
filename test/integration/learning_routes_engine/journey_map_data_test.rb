@@ -398,6 +398,17 @@ class LearningRoutesEngine::JourneyMapDataTest < ActionDispatch::IntegrationTest
     assert_select ".jm-root__title", text: "Mapa nuevo"
   end
 
+  # Review finding: an HTML parser reads "<String>" as a tag and drops it. Only
+  # formatting tags are markup; everything else in a title is its text.
+  test "a title that is code keeps its angle brackets" do
+    { 1 => "List<String> y Map<K, V>", 2 => "Si a<b entonces x <= y", 3 => "Usa <strong>Vec<i32></strong> en Rust" }
+      .each { |position, title| step!(@preview, position, title) }
+
+    names = journey_stages.flat_map { |stage| stage["topics"] }.map { |topic| topic["name"] }
+
+    assert_equal ["List<String> y Map<K, V>", "Si a<b entonces x <= y", "Usa Vec<i32> en Rust"], names
+  end
+
   def step!(route_module, position, title, status: :available, metadata: {})
     @route.route_steps.create!(
       route_module: route_module, position: position, title: title, status: status,

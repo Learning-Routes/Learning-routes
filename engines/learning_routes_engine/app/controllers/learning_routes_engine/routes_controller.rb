@@ -74,10 +74,13 @@ module LearningRoutesEngine
 
     private
 
-    # STEP 39 PR 2: a title on the map is plain text. Markup in a title is
-    # stripped (entities decoded), never shown as escaped tags.
+    # STEP 39 PR 2: a title on the map is plain text. Formatting tags in a title
+    # are stripped and entities decoded, never shown as escaped tags. Only those
+    # tags: anything else in angle brackets ("List<String>", "a<b") is the title.
+    FORMATTING_TAG = %r{</?(?:b|strong|i|em|u|s|code|mark|small|sub|sup|span|br)(?:\s[^<>]*)?/?>}i
+
     def plain_title(text)
-      Nokogiri::HTML5.fragment(text.to_s).text.strip
+      CGI.unescapeHTML(text.to_s.gsub(FORMATTING_TAG, "")).strip
     end
 
     def deletion_cache_key
