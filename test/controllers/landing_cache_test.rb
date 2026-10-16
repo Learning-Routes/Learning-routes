@@ -34,9 +34,30 @@ class LandingCacheTest < ActionDispatch::IntegrationTest
   test "the same anonymous visitor revalidating gets a 304" do
     cookies[:theme] = "dark"
     get root_path
+    get root_path # the first render created the session's CSRF secret, part of the key
     get root_path, headers: { "If-None-Match" => response.headers["ETag"] }
 
     assert_response :not_modified
+  end
+
+  # The page carries the session's CSRF token (csrf_meta_tags). A visitor whose
+  # session is gone (browser closed, cache kept) must not get a 304 that brings
+  # back the old token, or the theme toggle's PATCH fails with a 422.
+  test "a new session revalidating an old ETag gets a fresh page" do
+    get root_path
+    get root_path # the session now holds its CSRF secret
+    etag = response.headers["ETag"]
+
+    reset! # a new session, same browser cache
+    get root_path, headers: { "If-None-Match" => etag }
+
+    assert_response :success
+  end
+
+  test "the landing is never stored by a shared cache" do
+    get root_path
+
+    assert_no_match(/public/, response.headers["Cache-Control"].to_s)
   end
 
   test "a signed-in landing is never cached publicly" do
