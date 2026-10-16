@@ -130,3 +130,56 @@ Reduced motion on and off, and 390 × 844, are covered by the system suite under
 The owner's post-deploy census `bin/kamal app exec -r job 'bin/rails wp37:reinforcement_parents'`
 has not been reported to me, so it is still pending as far as this record goes. Nothing in
 WP-37b depends on it.
+
+## 9. STEP 39 PR 2 — the merge and the leash (16 October)
+
+**Branch.** `wp37b-cp2` was pushed for the first time on 16 October (commit messages rewritten to
+drop a tool trailer, trees unchanged; a local-only backup branch keeps the old ids). This handoff
+was committed onto it first.
+
+**The merge.** `main` merged in, no rebase. Two conflicts, both from #61: the journey header
+sentence. The drawn map has no header subtitle — its root carries "N módulos · N temas", which
+already counts the topics the map draws — so the view keeps this branch's side, #61's two tests
+now check `.jm-root__meta` ("2 módulos · 3 temas", and the singular), and the keys only the old
+subtitle used (`subtitle`, `stage_count`, `drag_to_explore`, a second identical `topic_count`)
+are gone from es and en. #63/#64/#66's colour sweeps passed on this branch unchanged. Main's
+`html_safe` sweep (STEP 37 §6) caught the Continue arrow: it is an `svg_icon` now, and the
+engine's helper includes the app's to reach it.
+
+**The leash (STEP 38 §4).** The drawn content plus a 48 px margin is the world. Every camera
+move — drag, pinch, keys, double-click, focus, a module chip, resize — passes `clampCamera`, so
+the world always covers the screen (or is centred on an axis where it is smaller). Zoom runs from
+the fitted scale to 2× it. The page opens fitted with the current step centred; "Encajar" returns
+there, and its label and the keyboard help now say so ("Volver a la vista inicial"). A wheel
+without Ctrl/⌘ leaves the map alone. There was no inertia. A drag held at the bound restarts
+from there, so reversing it moves the map at once. "Arrastra para explorar" is gone.
+
+**Provisional, for the owner:** the fitted scale is fit-to-width **held between the legible floor
+(12/13) and 1**. Literal fit-to-width opened a 7-step route on a phone at 0.25 (7 px labels, the
+WP-37b legibility rule broken) and at 1440 at 1.44 (everything blown up). With the hold, a phone
+opens at the floor with the map wider than the screen (dragging sideways stays on the leash),
+and a short route on a wide screen sits at its drawn size. Say if fit-to-width should be literal.
+
+**Titles.** A title with formatting tags showed them as text on the map and in the Continue card.
+`RoutesController#plain_title` strips formatting tags only (b, strong, i, em, code, …) and decodes
+entities; anything else in angle brackets — `List<String>`, `a<b`, `Vec<i32>` — is the title.
+
+**Tests.** The two system tests STEP 38 §4 names ("a drag of 10,000 px leaves the map within
+bounds", "wheel without a modifier does not change the camera"), Ctrl+wheel stopping at both ends
+and a reversed drag past the bound — each red on the free camera; `clampCamera`/`leashRange` in
+`journey_camera_test.rb`. Tests of the free camera now test the leash ("Encajar returns to the
+opening view", "after a resize, Encajar fits the viewport it has now"); panning in tests is a real
+CDP drag; the far-zoom fade test is gone (zoom never reaches 0.5 now, so LOD "far"/"mid" are
+unreachable — the code and CSS are left for the owner's call). `initialCamera` is gone.
+
+**Suites (clean tree, `11a4d1be`).** `bin/rails test` 1983 runs, 0 failures · engines 436, 0 ·
+`test:system` 139, 0 failures, 1 skip (the owner renders, which run with `SCREENSHOT=1`).
+
+**Renders.** 7, 7+13 and 43 nodes × light/dark × 1440/390 (390 as a phone: mobile, scale 2,
+`clientWidth` 390), plus the popover, in `tmp/wp37b/mapa-pr2-*.png` beside the prototype's
+`mapa-light.png` / `mapa-dark.png` / `mapa-phone.png`. Regenerate with
+`SCREENSHOT=1 SCREENSHOT_PREFIX=pr2- bin/rails test test/system/journey_map_test.rb -n "/renders for the owner/"`.
+
+**What the owner will see after the deploy.** Production draws straight lines today because
+checkpoint 1 (#49) shipped only the pure modules; this branch is checkpoint 2 — the page itself.
+Acceptance is his production screenshot against the prototype.
