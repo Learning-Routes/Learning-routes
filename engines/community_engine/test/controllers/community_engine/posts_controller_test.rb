@@ -53,6 +53,18 @@ module CommunityEngine
       assert_equal 0, Like.where(likeable_type: Post.name, likeable_id: target.id).count
     end
 
+    # The body's <p> is white-space: pre-wrap, so any newline or indentation
+    # between the tag and the text shows as a blank first line.
+    test "a post body renders flush against its tag, with the author's newlines kept" do
+      target = Post.create!(user: @owner, body: "First line & more\nSecond line")
+      sign_in_as(@other)
+
+      get community_engine.feed_path
+
+      body = css_select("#post_#{target.id} p[style*='pre-wrap']").sole
+      assert_equal "First line &amp; more\nSecond line", body.inner_html
+    end
+
     # Not a 403/404: the controller redirects with an alert. The post survives.
     test "another user cannot delete the post" do
       target = Post.create!(user: @owner, body: "Mine")
