@@ -182,4 +182,4 @@ unreachable — the code and CSS are left for the owner's call). `initialCamera`
 
 **What the owner will see after the deploy.** Production draws straight lines today because
 checkpoint 1 (#49) shipped only the pure modules; this branch is checkpoint 2 — the page itself.
-Acceptance is his production screenshot against the prototype.
+Acceptance is the owner's production screenshot against the prototype.
