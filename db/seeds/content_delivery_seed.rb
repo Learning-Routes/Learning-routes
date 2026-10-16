@@ -6,21 +6,26 @@
 def seed_content_delivery
   puts "=== Content Delivery Seed ==="
 
-  profile = LearningRoutesEngine::LearningProfile.first
+  profile = LearningRoutesEngine::LearningProfile.includes(:user).first
   unless profile
     puts "  No learning profile found. Skipping."
     return
   end
 
-  user = profile.user
-  route = profile.learning_routes.first
+  route = LearningRoutesEngine::LearningRoute.where(learning_profile_id: profile.id).first
   unless route
     puts "  No learning route found. Skipping."
     return
   end
 
-# Clean existing steps/content for idempotency
-route.route_steps.destroy_all
+  # This replaces the route's steps, so it may only ever touch the demo account's route.
+  unless Rails.env.local? && profile.user.email == "student@learning-routes.com"
+    puts "  skipped: production data"
+    return
+  end
+
+# Clean existing steps/content for idempotency (strict_loading off so dependents cascade)
+LearningRoutesEngine::RouteStep.strict_loading(false).where(learning_route_id: route.id).destroy_all
 puts "  Cleared existing steps."
 
 # Activate the route
