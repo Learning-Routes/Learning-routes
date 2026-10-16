@@ -398,6 +398,16 @@ class LearningRoutesEngine::JourneyMapDataTest < ActionDispatch::IntegrationTest
     assert_select ".jm-root__title", text: "Mapa nuevo"
   end
 
+  # STEP 38 §4: Encajar returns to the opening view; it no longer shows the
+  # whole route, so its label and the keyboard help must not say so.
+  test "Encajar says it returns to the opening view" do
+    step!(@preview, 1, "Lesson")
+    journey_stages
+
+    assert_select "[data-action~='route-journey#fit'][aria-label=?]", "Volver a la vista inicial"
+    assert_no_match(/toda la ruta/, response.body)
+  end
+
   # Review finding: an HTML parser reads "<String>" as a tag and drops it. Only
   # formatting tags are markup; everything else in a title is its text.
   test "a title that is code keeps its angle brackets" do
