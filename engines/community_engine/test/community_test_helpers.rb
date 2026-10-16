@@ -2,6 +2,10 @@
 
 # Builders shared by the community engine's integration tests.
 module CommunityTestHelpers
+  # Not `core.sign_in_path`: after a request under /community_engine the proxy
+  # answers "/community_engine/sign_in" (see sign_in_as in test/test_helper.rb).
+  def core_sign_in_path = Core::Engine.routes.url_helpers.sign_in_path
+
   def community_user(name)
     create_test_user(
       name: name,
