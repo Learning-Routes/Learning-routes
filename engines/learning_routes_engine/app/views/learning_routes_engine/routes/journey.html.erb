@@ -25,7 +25,6 @@
     act_masked: t("#{scope}.act_masked")
   }
   topic_count = @stages.sum { |stage| stage[:topics].size }
-  arrow = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>'.html_safe
 %>
 
 <%# WP-37/37b: the journey is a map. The page does not scroll; the camera moves.
@@ -84,7 +83,7 @@
         </button>
       <% end %>
       <%= link_to @continue[:path], class: "jm-cta", data: { journey_continue: "" } do %>
-        <%= @continue[:completed] ? t("#{scope}.list_view") : t("#{scope}.continue") %><%= arrow %>
+        <%= @continue[:completed] ? t("#{scope}.list_view") : t("#{scope}.continue") %><%= svg_icon(:arrow_right) %>
       <% end %>
     </div>
   <% end %>

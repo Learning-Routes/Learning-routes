@@ -2,6 +2,10 @@
 
 module LearningRoutesEngine
   module ApplicationHelper
+    # svg_icon is the one place allowed to mark markup html_safe (STEP 37 §6);
+    # the engine is isolated, so it reaches the app's helper this way.
+    include ::ApplicationHelper
+
     # The title a block shows, resolved AT RENDER TIME.
     #
     # The parser used to bake a literal into `parsed_sections` when a heading had
