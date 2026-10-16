@@ -281,6 +281,18 @@ class JourneyMapTest < ApplicationSystemTestCase
     end
   end
 
+  # Review finding: past the bound, reversing the same drag moves the map at once,
+  # not only after coming back the whole distance dragged beyond it.
+  test "reversing a drag that went past the bound moves the map at once" do
+    route = build_route(43)
+    open_journey(route, reduced_motion: true)
+    x, y = empty_point
+    at_bound = nil
+    drag_path([[x, y], [x, y + 3000]]) { at_bound = matrix["f"] }
+    drag_path([[x, y + 3000], [x, y + 2800]], press: false)
+    assert_in_delta at_bound - 200, matrix["f"], 1, "the map waited for the pointer to come back 3,000 px"
+  end
+
   # STEP 38 §4: "wheel without a modifier does not change the camera".
   test "wheel without a modifier does not change the camera" do
     route = build_route(43)
@@ -915,6 +927,29 @@ class JourneyMapTest < ApplicationSystemTestCase
   # A real mouse drag from an empty point, through CDP: unlike WebDriver actions
   # it may travel past the window's edge, as a 10,000 px drag must. The pan is
   # what the map would do for a wheel of (-dx, -dy) before the leash.
+  # One gesture along `points`; with press: false it continues a drag already
+  # pressed. The block runs mid-gesture, the button still down.
+  def drag_path(points, press: true, steps: 20)
+    send = ->(type, px, py, buttons) {
+      page.driver.browser.execute_cdp("Input.dispatchMouseEvent", type: type, x: px, y: py,
+                                      button: "left", buttons: buttons, clickCount: 1)
+    }
+    if press
+      send.call("mouseMoved", *points.first, 0)
+      send.call("mousePressed", *points.first, 1)
+    end
+    points.each_cons(2) do |(ax, ay), (bx, by)|
+      (1..steps).each { |i| send.call("mouseMoved", ax + (bx - ax) * i / steps, ay + (by - ay) * i / steps, 1) }
+    end
+    sleep 0.1
+    if block_given?
+      yield
+    else
+      send.call("mouseReleased", *points.last, 0)
+      sleep 0.1
+    end
+  end
+
   def drag_by(dx, dy, steps: 20)
     x, y = empty_point
     send = ->(type, px, py, buttons) {

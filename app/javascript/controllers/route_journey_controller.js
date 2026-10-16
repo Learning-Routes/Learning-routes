@@ -544,7 +544,7 @@ export default class extends Controller {
   }
 
   _keepCurrentVisible() {
-    if (this.current) this.camera = ensureVisible(this.camera, this.current, this.lastSafe, 24)
+    if (this.current) this.camera = clampCamera(ensureVisible(this.camera, this.current, this.lastSafe, 24), this._world(), this.lastSafe)
   }
 
   // ── Events ───────────────────────────────────────────────────────────
@@ -624,7 +624,10 @@ export default class extends Controller {
       this.viewportTarget.classList.add("jm-viewport--dragging")
       this.viewportTarget.setPointerCapture(e.pointerId)
     }
-    this._userMove({ ...this.dragStart.camera, x: this.dragStart.camera.x + dx, y: this.dragStart.camera.y + dy }, false)
+    const wanted = { x: this.dragStart.camera.x + dx, y: this.dragStart.camera.y + dy }
+    this._userMove({ ...this.dragStart.camera, ...wanted }, false)
+    // Held at the leash: restart the drag from here, so reversing it moves the map at once.
+    if (this.camera.x !== wanted.x || this.camera.y !== wanted.y) this.dragStart = { point: p, camera: { ...this.camera } }
   }
 
   _onPointerUp(e) {
