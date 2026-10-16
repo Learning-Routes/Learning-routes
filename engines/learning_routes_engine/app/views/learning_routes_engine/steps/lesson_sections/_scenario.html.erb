@@ -48,7 +48,7 @@
              data-scenario-target="consequenceFor"
              data-option-index="<%= i %>"
              style="color: var(--color-txt);">
-          <%= ContentEngine::MarkdownRenderer.render(option[:consequence]).html_safe %>
+          <%= ContentEngine::MarkdownRenderer.render(option[:consequence]) %>
         </div>
       <% end %>
     </div>

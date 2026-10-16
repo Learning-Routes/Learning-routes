@@ -1,4 +1,16 @@
 module ApplicationHelper
+  # Constant SVG markup: the one place a view or helper marks a string
+  # html_safe (STEP 37 §6). Never build these from data.
+  SVG_ICONS = {
+    info: '<svg aria-hidden="true" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>',
+    layers: '<svg aria-hidden="true" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>',
+    check_circle: '<svg aria-hidden="true" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>'
+  }.freeze
+
+  def svg_icon(name)
+    SVG_ICONS.fetch(name.to_sym).html_safe
+  end
+
   # Absolute URL on the one public host (config.x.public_host), for canonical,
   # share tags, JSON-LD and the sitemap: never the request's host.
   # shortcut: http only for localhost, upgrade if a non-local http host appears.

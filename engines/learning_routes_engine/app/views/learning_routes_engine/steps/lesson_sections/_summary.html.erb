@@ -35,7 +35,7 @@
   <% if section[:body].present? %>
     <div style="background:var(--color-card); border:1px solid var(--color-border-subtle); border-radius:16px; padding:1.5rem 1.75rem; margin-top:1.5rem; box-shadow:0 1px 3px rgba(0,0,0,0.02), 0 4px 16px rgba(0,0,0,0.01);">
       <div class="lesson-content" data-controller="math-renderer" data-math-renderer-target="content">
-        <%= ContentEngine::MarkdownRenderer.render(section[:body]).html_safe %>
+        <%= ContentEngine::MarkdownRenderer.render(section[:body]) %>
       </div>
     </div>
   <% end %>

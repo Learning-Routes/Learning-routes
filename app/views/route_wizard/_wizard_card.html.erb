@@ -15,18 +15,18 @@
 
     <div class="wizard-topic-grid" data-route-wizard-target="topicGrid" role="radiogroup">
       <% [
-        ["programming", "&#x1F916;"],
-        ["web_dev", "&#x1F310;"],
-        ["data_science", "&#x1F4CA;"],
-        ["mobile_dev", "&#x1F4F1;"],
-        ["languages", "&#x1F4AC;"],
-        ["math", "&#x1F9EE;"],
-        ["science", "&#x1F52C;"],
-        ["business", "&#x1F4BC;"],
-        ["design", "&#x1F3A8;"],
-        ["music", "&#x1F3B5;"],
-        ["writing", "&#x1F58B;&#xFE0F;"],
-        ["health", "&#x2764;&#xFE0F;"]
+        ["programming", "\u{1F916}"],
+        ["web_dev", "\u{1F310}"],
+        ["data_science", "\u{1F4CA}"],
+        ["mobile_dev", "\u{1F4F1}"],
+        ["languages", "\u{1F4AC}"],
+        ["math", "\u{1F9EE}"],
+        ["science", "\u{1F52C}"],
+        ["business", "\u{1F4BC}"],
+        ["design", "\u{1F3A8}"],
+        ["music", "\u{1F3B5}"],
+        ["writing", "\u{1F58B FE0F}"],
+        ["health", "\u{2764 FE0F}"]
       ].each do |id, icon| %>
         <% label = t("wizard.step0.topics.#{id}") %>
         <button type="button" class="wizard-topic-tile"
@@ -36,7 +36,7 @@
                 role="radio"
                 aria-checked="false"
                 aria-label="<%= label %>">
-          <span class="tile-icon"><%= icon.html_safe %></span>
+          <span class="tile-icon"><%= icon %></span>
           <span class="tile-label"><%= label %></span>
           <span class="tile-check">&#x2713;</span>
         </button>
@@ -71,13 +71,13 @@
     <%# Language selector %>
     <p style="font-family:'DM Mono',monospace; font-size:0.68rem; font-weight:600; color:var(--color-muted); text-transform:uppercase; letter-spacing:0.08em; text-align:center; margin:0.5rem 0 0.5rem;"><%= t("wizard.step0.language_label") %></p>
     <div class="wizard-locale-row" data-route-wizard-target="localeGrid">
-      <% [["es", "&#x1F1EA;&#x1F1F8;"], ["en", "&#x1F1FA;&#x1F1F8;"], ["pt", "&#x1F1E7;&#x1F1F7;"], ["fr", "&#x1F1EB;&#x1F1F7;"]].each do |id, flag| %>
+      <% [["es", "\u{1F1EA 1F1F8}"], ["en", "\u{1F1FA 1F1F8}"], ["pt", "\u{1F1E7 1F1F7}"], ["fr", "\u{1F1EB 1F1F7}"]].each do |id, flag| %>
         <% name = t("wizard.step0.locales.#{id}") %>
         <button type="button" class="wizard-locale-tile<%= ' selected' if id == 'es' %>"
                 data-action="click->route-wizard#selectLocale"
                 data-locale="<%= id %>"
                 tabindex="0" role="radio" aria-checked="<%= id == 'es' %>">
-          <span class="locale-flag"><%= flag.html_safe %></span>
+          <span class="locale-flag"><%= flag %></span>
           <span><%= name %></span>
         </button>
       <% end %>
@@ -91,17 +91,17 @@
     <p class="wizard-subtitle"><%= t("wizard.step1.subtext") %></p>
 
     <% [
-      ["beginner", "&#x1F331;"],
-      ["basic", "&#x1F33F;"],
-      ["intermediate", "&#x1F333;"],
-      ["advanced", "&#x1F332;"]
+      ["beginner", "\u{1F331}"],
+      ["basic", "\u{1F33F}"],
+      ["intermediate", "\u{1F333}"],
+      ["advanced", "\u{1F332}"]
     ].each do |id, icon| %>
       <% name = t("wizard.step1.levels.#{id}"); desc = t("wizard.step1.levels.#{id}_desc") %>
       <button type="button" class="wizard-level-card"
               data-action="click->route-wizard#selectLevel"
               data-level="<%= id %>"
               tabindex="0" role="radio" aria-checked="false">
-        <span class="level-icon"><%= icon.html_safe %></span>
+        <span class="level-icon"><%= icon %></span>
         <div class="level-info">
           <div class="level-name"><%= name %></div>
           <div class="level-desc"><%= desc %></div>
@@ -119,19 +119,19 @@
 
     <div class="wizard-goal-grid">
       <% [
-        ["career", "&#x1F680;"],
-        ["personal", "&#x2B50;"],
-        ["exam", "&#x1F4DC;"],
-        ["project", "&#x1F527;"],
-        ["switch", "&#x1F500;"],
-        ["teaching", "&#x1F9D1;&#x200D;&#x1F3EB;"]
+        ["career", "\u{1F680}"],
+        ["personal", "\u{2B50}"],
+        ["exam", "\u{1F4DC}"],
+        ["project", "\u{1F527}"],
+        ["switch", "\u{1F500}"],
+        ["teaching", "\u{1F9D1 200D 1F3EB}"]
       ].each do |id, icon| %>
         <% label = t("wizard.step2.goals.#{id}") %>
         <button type="button" class="wizard-goal-chip"
                 data-action="click->route-wizard#toggleGoal"
                 data-goal="<%= id %>"
                 tabindex="0" role="checkbox" aria-checked="false">
-          <span class="goal-icon"><%= icon.html_safe %></span>
+          <span class="goal-icon"><%= icon %></span>
           <span class="goal-label"><%= label %></span>
         </button>
       <% end %>
@@ -153,9 +153,9 @@
 
     <p style="font-family:'DM Mono',monospace; font-size:0.68rem; font-weight:600; color:var(--color-muted); text-transform:uppercase; letter-spacing:0.08em; margin:1.5rem 0 0.6rem; text-align:center;"><%= t("wizard.step3.session_label") %></p>
     <div class="wizard-time-row" data-route-wizard-target="sessionGrid">
-      <% [[15, "15 min", "&#x2615;"], [30, "30 min", "&#x23F3;"], [60, "60 min", "&#x1F680;"]].each do |val, label, icon| %>
+      <% [[15, "15 min", "\u{2615}"], [30, "30 min", "\u{23F3}"], [60, "60 min", "\u{1F680}"]].each do |val, label, icon| %>
         <button type="button" class="wizard-time-btn" data-action="click->route-wizard#selectSession" data-minutes="<%= val %>" tabindex="0">
-          <div><%= icon.html_safe %></div>
+          <div><%= icon %></div>
           <div><%= label %></div>
         </button>
       <% end %>
@@ -237,16 +237,16 @@
     <p class="wizard-subtitle"><%= t("wizard.step5.subtext") %></p>
 
     <% [
-      ["relaxed", "&#x1F422;"],
-      ["steady", "&#x1F97E;"],
-      ["intensive", "&#x1F525;"]
+      ["relaxed", "\u{1F422}"],
+      ["steady", "\u{1F97E}"],
+      ["intensive", "\u{1F525}"]
     ].each do |id, icon| %>
       <% name = t("wizard.step5.paces.#{id}"); desc = t("wizard.step5.paces.#{id}_desc") %>
       <button type="button" class="wizard-pace-card"
               data-action="click->route-wizard#selectPace"
               data-pace="<%= id %>"
               tabindex="0" role="radio" aria-checked="false">
-        <span class="pace-icon"><%= icon.html_safe %></span>
+        <span class="pace-icon"><%= icon %></span>
         <div class="pace-info">
           <div class="pace-name"><%= name %></div>
           <div class="pace-desc"><%= desc %></div>

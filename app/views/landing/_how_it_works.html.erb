@@ -1,10 +1,4 @@
-<%
-  step_icons = [
-    '<svg aria-hidden="true" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>',
-    '<svg aria-hidden="true" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>',
-    '<svg aria-hidden="true" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>'
-  ]
-%>
+<% step_icons = %i[info layers check_circle] %>
 
 <section class="py-16 md:py-32 px-5 sm:px-8" id="how-it-works">
   <div class="max-w-[1100px] mx-auto">
@@ -26,7 +20,7 @@
 
           <%# Icon %>
           <div class="w-14 h-14 rounded-[14px] bg-bg flex items-center justify-center mx-auto mb-6 text-sub">
-            <%= step_icons[i].html_safe %>
+            <%= svg_icon(step_icons[i]) %>
           </div>
 
           <%# Step label %>
