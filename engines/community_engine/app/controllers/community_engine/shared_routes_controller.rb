@@ -6,7 +6,10 @@ module CommunityEngine
     skip_before_action :authenticate_user!, only: [:show]
 
     def create
-      route = current_user.learning_profile&.learning_routes&.find_by(id: params[:learning_route_id])
+      # A join, not current_user.learning_profile: users are strict_loading.
+      route = LearningRoutesEngine::LearningRoute.joins(:learning_profile)
+        .where(learning_routes_engine_learning_profiles: { user_id: current_user.id })
+        .find_by(id: params[:learning_route_id])
       return head(:forbidden) unless route
 
       @shared_route = RouteSharer.share!(route, current_user, visibility: params[:visibility] || "public", description: params[:description])
@@ -22,7 +25,7 @@ module CommunityEngine
     end
 
     def show
-      @shared_route = SharedRoute.find_by!(share_token: params[:id])
+      @shared_route = SharedRoute.includes(:user, :learning_route).find_by!(share_token: params[:id])
       unless @shared_route.visibility.in?(%w[public unlisted]) || @shared_route.user_id == current_user&.id
         raise ActiveRecord::RecordNotFound
       end
@@ -32,7 +35,8 @@ module CommunityEngine
     end
 
     def clone
-      shared_route = SharedRoute.find_by!(share_token: params[:id])
+      # Non-strict: RouteSharer.clone! walks the route and its steps.
+      shared_route = SharedRoute.strict_loading(false).find_by!(share_token: params[:id])
 
       # Only allow cloning public/unlisted shared routes
       unless shared_route.visibility.in?(%w[public unlisted])

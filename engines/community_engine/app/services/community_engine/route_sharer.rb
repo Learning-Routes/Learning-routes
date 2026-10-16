@@ -29,14 +29,27 @@ module CommunityEngine
         )
 
         # Associate with user's learning profile
-        profile = user.learning_profile || LearningRoutesEngine::LearningProfile.find_or_create_by!(user: user) { |p| p.current_level = "beginner" }
+        profile = LearningRoutesEngine::LearningProfile.find_or_create_by!(user: user) { |p| p.current_level = "beginner" }
         new_route.learning_profile = profile
         new_route.save!
+
+        # Steps sit in the new route's own modules. Its preview was created on save;
+        # the others are copied with the column defaults (locked, outlined), so a
+        # clone never carries the sharer's purchase or generated state.
+        modules = LearningRoutesEngine::RouteModule.where(learning_route_id: new_route.id).index_by(&:position)
+        module_ids = original_route.route_modules.to_h do |mod|
+          modules[mod.position] ||= LearningRoutesEngine::RouteModule.create!(
+            learning_route: new_route, position: mod.position, title: mod.title,
+            description: mod.description, translations: mod.translations
+          )
+          [mod.id, modules[mod.position].id]
+        end
 
         # Clone all steps (positions are 0-indexed)
         original_route.route_steps.order(:position).each do |step|
           new_step = step.dup
           new_step.learning_route = new_route
+          new_step.route_module_id = module_ids.fetch(step.route_module_id)
           new_step.status = step.position == 0 ? "available" : "locked"
           new_step.completed_at = nil
           new_step.save!
