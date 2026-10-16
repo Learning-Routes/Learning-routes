@@ -25,12 +25,12 @@
                 data-score="<%= star_num %>"
                 style="background:none; border:none; cursor:pointer; padding:0.1rem; line-height:0; transition:transform 0.12s;"
                 aria-label="<%= t('community_engine.ratings.rate_star', n: star_num) %>">
-          <svg width="16" height="16" viewBox="0 0 24 24" stroke="<%= filled ? '#B09848' : 'var(--color-muted, #887F72)' %>" stroke-width="1.5" fill="<%= filled ? '#B09848' : 'none' %>">
+          <svg width="16" height="16" viewBox="0 0 24 24" stroke="<%= filled ? 'var(--color-highlight)' : 'var(--color-muted)' %>" stroke-width="1.5" fill="<%= filled ? 'var(--color-highlight)' : 'none' %>">
             <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
           </svg>
         </button>
       <% else %>
-        <svg width="14" height="14" viewBox="0 0 24 24" stroke="<%= filled ? '#B09848' : 'var(--color-muted, #887F72)' %>" stroke-width="1.5" fill="<%= filled ? '#B09848' : 'none' %>">
+        <svg width="14" height="14" viewBox="0 0 24 24" stroke="<%= filled ? 'var(--color-highlight)' : 'var(--color-muted)' %>" stroke-width="1.5" fill="<%= filled ? 'var(--color-highlight)' : 'none' %>">
           <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
         </svg>
       <% end %>
@@ -38,7 +38,7 @@
   </div>
 
   <%# Rating text %>
-  <span style="font-family:'DM Mono',monospace; font-size:0.65rem; color:var(--color-muted, #887F72);">
+  <span style="font-family:'DM Mono',monospace; font-size:0.65rem; color:var(--color-muted);">
     <% if count > 0 %>
       <%= avg %> (<%= count %>)
     <% elsif defined?(current_user) && current_user && shared_route.user_id == current_user.id %>

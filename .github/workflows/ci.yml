@@ -125,7 +125,8 @@ jobs:
 
       # The engines are a SEPARATE step, and the glob is the whole point: `bin/rails
       # test` only collects `test/`, so until now the 57 test files under `engines/`
-      # never ran in CI — and CI green auto-deploys (deploy.yml). Three strict-loading
+      # never ran in CI — and CI green auto-deployed then (deploy.yml; manual-only
+      # since STEP 38 §6). Three strict-loading
       # violations in the route-generation, gap-analysis and reinforcement jobs sat
       # behind that gap: a WARN line each in production, where the setting is :log,
       # but hard failures under the suite's :raise.

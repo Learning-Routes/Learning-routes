@@ -15,9 +15,9 @@
   </h2>
 
   <%# Rendered body in a subtle card with blue accent %>
-  <div style="background:var(--color-card); border:1px solid var(--color-border-subtle); border-left:4px solid #6E9BC8; border-radius:16px; padding:1.5rem 1.75rem; box-shadow:0 1px 3px rgba(110,155,200,0.04), 0 4px 16px rgba(110,155,200,0.02);">
+  <div style="background:var(--color-card); border:1px solid var(--color-border-subtle); border-left:4px solid var(--color-node-nv2); border-radius:16px; padding:1.5rem 1.75rem; box-shadow:0 1px 3px rgba(110,155,200,0.04), 0 4px 16px rgba(110,155,200,0.02);">
     <div class="lesson-content" data-controller="math-renderer" data-math-renderer-target="content">
-      <%= ContentEngine::MarkdownRenderer.render(section[:body]).html_safe %>
+      <%= ContentEngine::MarkdownRenderer.render(section[:body]) %>
     </div>
   </div>
 

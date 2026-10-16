@@ -2,23 +2,23 @@
 
 <% content_for(:head) do %>
   <meta name="description" content="<%= t('landing.meta_description') %>">
-  <link rel="canonical" href="https://learning-routes.com/">
+  <link rel="canonical" href="<%= public_url %>">
   <meta property="og:title" content="<%= t('landing.og_title') %>">
   <meta property="og:description" content="<%= t('landing.og_description') %>">
   <meta property="og:type" content="website">
-  <meta property="og:url" content="https://learning-routes.com">
+  <meta property="og:url" content="<%= public_url %>">
   <meta property="og:site_name" content="Learning Routes">
-  <meta property="og:image" content="https://learning-routes.com/apple-touch-icon.png">
+  <meta property="og:image" content="<%= public_url("/apple-touch-icon.png") %>">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="<%= t('landing.og_title') %>">
   <meta name="twitter:description" content="<%= t('landing.twitter_description') %>">
-  <meta name="twitter:image" content="https://learning-routes.com/apple-touch-icon.png">
+  <meta name="twitter:image" content="<%= public_url("/apple-touch-icon.png") %>">
   <script type="application/ld+json" nonce="<%= content_security_policy_nonce %>">
     {
       "@context": "https://schema.org",
       "@type": "WebApplication",
       "name": "Learning Routes",
-      "url": "https://learning-routes.com",
+      "url": "<%= j public_url %>",
       "description": "<%= j t('landing.meta_description') %>",
       "applicationCategory": "EducationalApplication",
       "operatingSystem": "Web",

@@ -24,12 +24,12 @@
     <% errors = @user.errors.full_messages + @profile.errors.full_messages %>
     <% if errors.any? %>
       <div role="alert" style="background:var(--color-flash-alert-bg, rgba(176,96,80,0.08)); border:1px solid var(--color-flash-alert-border, rgba(176,96,80,0.15)); border-radius:12px; padding:0.75rem 0.9rem; margin-bottom:1.2rem;">
-        <p style="font-family:'DM Sans',sans-serif; font-size:0.76rem; font-weight:500; color:var(--color-flash-alert-text, #B06050); margin:0 0 0.3rem;">
+        <p style="font-family:'DM Sans',sans-serif; font-size:0.76rem; font-weight:500; color:var(--color-flash-alert-text); margin:0 0 0.3rem;">
           <%= t("settings.errors", count: errors.size) %>
         </p>
         <ul style="margin:0; padding-left:1rem;">
           <% errors.each do |message| %>
-            <li style="font-family:'DM Sans',sans-serif; font-size:0.72rem; color:var(--color-flash-alert-text, #B06050); line-height:1.5;"><%= message %></li>
+            <li style="font-family:'DM Sans',sans-serif; font-size:0.72rem; color:var(--color-flash-alert-text); line-height:1.5;"><%= message %></li>
           <% end %>
         </ul>
       </div>
@@ -262,13 +262,22 @@
               border:1px solid var(--color-border-subtle); border-radius:20px; padding:1.8rem 1.6rem;
               box-shadow:0 8px 32px rgba(28,24,18,0.06), 0 1px 3px rgba(28,24,18,0.03); margin-bottom:1rem;">
 
+    <%# A Google account with only its random sign-up password creates one instead
+        (STEP 38 §5). From the database, so a failed attempt re-renders the same variant. %>
+    <% own_password = @user.own_password_in_database %>
     <h2 style="font-family:'DM Sans',sans-serif; font-weight:600; font-size:1rem; color:var(--color-txt); margin:0 0 1.2rem; letter-spacing:-0.3px;">
-      <%= t("settings.password.heading") %>
+      <%= t(own_password ? "settings.password.heading" : "settings.password.create_heading") %>
     </h2>
+    <% unless own_password %>
+      <p style="font-family:'DM Sans',sans-serif; font-size:0.82rem; color:var(--color-sub); margin:-0.6rem 0 1.2rem;">
+        <%= t("settings.password.create_hint") %>
+      </p>
+    <% end %>
 
     <%= form_with(url: settings_password_path, method: :patch) do |f| %>
       <div style="display:flex; flex-direction:column; gap:1rem;">
         <%# Current password %>
+        <% if own_password %>
         <div>
           <%= f.label :current_password, t("settings.password.current_label"),
               style: "display:block; font-family:'DM Sans',sans-serif; font-size:0.78rem; font-weight:500; color:var(--color-sub); margin-bottom:0.45rem;" %>
@@ -279,6 +288,7 @@
               autocomplete: "current-password",
               data: { auth_form_target: "input", action: "focus->auth-form#inputFocus blur->auth-form#inputBlur" } %>
         </div>
+        <% end %>
 
         <%# New password %>
         <div>
@@ -307,7 +317,7 @@
 
         <%# Submit %>
         <div style="margin-top:0.3rem;">
-          <%= f.submit t("settings.password.submit"),
+          <%= f.submit t(own_password ? "settings.password.submit" : "settings.password.create_submit"),
               style: "display:block; width:100%; font-family:'DM Sans',sans-serif; font-size:0.88rem; font-weight:600; color:var(--color-txt); background:transparent; padding:0.78rem 1rem; border-radius:11px; border:1px solid var(--color-border-subtle); cursor:pointer; transition:all 0.2s;",
               data: { action: "mouseenter->auth-form#oauthOver mouseleave->auth-form#oauthOut" } %>
         </div>

@@ -1,7 +1,7 @@
 # WP-36 — Narrated scenes: design
 
 Branch `wp36-narrated-scenes`, off `main` at `22beb68` (WP-33 merged).
-Brief: `PROMPT_27_WP36_NARRATED_SCENES.md`, including its **Brainstorm answers (11 September)**
+Brief: `STEP_27_WP36_NARRATED_SCENES.md`, including its **Brainstorm answers (11 September)**
 appendix, which supersedes the body where they differ. This spec is checked against that appendix;
 every decision below either comes from it or is marked **[new]** and carries its evidence.
 

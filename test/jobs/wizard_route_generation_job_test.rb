@@ -168,4 +168,32 @@ class WizardRouteGenerationJobTest < ActiveSupport::TestCase
     assert_equal "failed", rr.status
     assert_match(/Simulated failure/, rr.error_message)
   end
+
+  # #61's note: the template fallback stored "Camino personalizado · 8 etapas ·
+  # nivel beginner" as subject_area, and the profile card and dashboard showed
+  # it, raw level key included, as the route's subject. The subject is the
+  # topic's translated label.
+  test "the template fallback stores the topic's label as the subject, in each locale" do
+    rr = create_request(topics: ["music"], custom_topic: "teoria musica", level: "beginner", route_locale: "es")
+
+    WizardRouteGenerationJob.perform_now(rr.id)
+    route = reload_for_assertions(rr).learning_route
+
+    assert_equal "Música", route.subject_area
+    assert_equal "Música", route.translations.dig("es", "subject_area")
+    assert_equal "Music", route.translations.dig("en", "subject_area")
+    [route.subject_area, *route.translations.values.map { |t| t["subject_area"] }].each do |subject|
+      assert_no_match(/beginner|nivel|level|etapas|stages/, subject)
+    end
+  end
+
+  test "a fallback route without a topic tile takes the typed topic as its subject" do
+    rr = create_request(topics: [], custom_topic: "Cocina italiana", route_locale: "en")
+
+    WizardRouteGenerationJob.perform_now(rr.id)
+    route = reload_for_assertions(rr).learning_route
+
+    assert_equal "Cocina italiana", route.subject_area
+    assert_equal "Cocina italiana", route.translations.dig("en", "subject_area")
+  end
 end

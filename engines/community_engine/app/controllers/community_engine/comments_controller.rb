@@ -15,6 +15,9 @@ module CommunityEngine
     def create
       @comment = Comment.new(comment_params)
       @comment.user = current_user
+      # create reads commentable, its owner and the parent's user; records loaded
+      # through a non-strict owner are non-strict too (as in set_comment).
+      @comment.strict_loading!(false)
 
       # Validate commentable type whitelist
       unless @comment.commentable_type.in?(ALLOWED_COMMENTABLE_TYPES)

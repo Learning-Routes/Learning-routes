@@ -133,11 +133,17 @@ export default class extends Controller {
     const card = event.currentTarget
     const topic = card.dataset.topic
 
-    if (this.selectedTopics.has(topic)) {
-      this.selectedTopics.delete(topic)
-      card.classList.remove("selected")
-      card.setAttribute("aria-checked", "false")
-    } else {
+    // One subject per route: choosing a tile replaces the previous choice
+    // (STEP 38 §1 — a kept first choice became the route's title).
+    const wasSelected = this.selectedTopics.has(topic)
+    this.selectedTopics.clear()
+    if (this.hasTopicGridTarget) {
+      this.topicGridTarget.querySelectorAll("[data-topic]").forEach(el => {
+        el.classList.remove("selected")
+        el.setAttribute("aria-checked", "false")
+      })
+    }
+    if (!wasSelected) {
       this.selectedTopics.add(topic)
       card.classList.add("selected")
       card.setAttribute("aria-checked", "true")
@@ -295,7 +301,8 @@ export default class extends Controller {
   _updateTimeSummary() {
     if (!this.hasTimeSummaryTarget) return
     if (this.selectedHours && this.selectedSession) {
-      this.timeSummaryTarget.textContent = this.selectedHours + "h/week in " + this.selectedSession + "-minute sessions"
+      this.timeSummaryTarget.textContent = this.t("time_summary", ":hours h/week in :minutes-minute sessions")
+        .replace(":hours", this.selectedHours).replace(":minutes", this.selectedSession)
     } else {
       this.timeSummaryTarget.textContent = ""
     }
@@ -334,15 +341,6 @@ export default class extends Controller {
     }
 
     this.updateStyleProgress()
-
-    // Update mini progress
-    const answered = Object.keys(this.styleAnswers).length
-    if (this.hasStyleProgressFillTarget) {
-      this.styleProgressFillTarget.style.width = ((answered / 12) * 100) + "%"
-    }
-    if (this.hasStyleQuestionNumTarget) {
-      this.styleQuestionNumTarget.textContent = Math.min(answered + 1, 12)
-    }
 
     // Auto-advance: hide current question, show next unanswered one after 400ms
     const nextQ = parseInt(question) + 1
@@ -401,23 +399,19 @@ export default class extends Controller {
       this.styleDoneMsgTarget.style.opacity = "0"
     }
 
-    // Reset mini progress
-    if (this.hasStyleProgressFillTarget) {
-      this.styleProgressFillTarget.style.width = "0%"
-    }
-    if (this.hasStyleQuestionNumTarget) {
-      this.styleQuestionNumTarget.textContent = "1"
-    }
-
     this.updateStyleProgress()
     this.validateStep()
   }
 
   updateStyleProgress() {
     const answered = Object.keys(this.styleAnswers).length
-    if (this.hasStyleProgressTarget) {
-      const template = this.t("progress_of_6", ":done of 12")
-      this.styleProgressTarget.textContent = template.replace(":done", answered)
+    // Update the bar and the counter in place: styleProgress wraps both, so
+    // writing its textContent erased them.
+    if (this.hasStyleProgressFillTarget) {
+      this.styleProgressFillTarget.style.width = ((answered / 12) * 100) + "%"
+    }
+    if (this.hasStyleQuestionNumTarget) {
+      this.styleQuestionNumTarget.textContent = Math.min(answered + 1, 12)
     }
     if (answered === 12 && this.hasStyleDoneMsgTarget) {
       this.styleDoneMsgTarget.style.opacity = "1"
@@ -624,7 +618,7 @@ export default class extends Controller {
     // Update button text on last step
     if (this.hasBtnTextTarget) {
       if (this.stepValue === this.totalSteps - 1 && valid) {
-        this.btnTextTarget.textContent = "Create my route \u2728"
+        this.btnTextTarget.textContent = this.t("generate_text", "Create my route")
       } else {
         this.btnTextTarget.textContent = this.t("continue_text", "Continue")
       }

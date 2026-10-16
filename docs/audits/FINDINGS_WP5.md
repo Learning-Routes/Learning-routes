@@ -6,7 +6,7 @@ Found while doing WP-5, deliberately **not** fixed here to keep the PR reviewabl
 
 ## 1. `AUDIT.md` §P1-7 is wrong about model retirement — correct it before WP-7
 
-The audit (and PROMPT 03's "trap") state that `gpt-4.1-mini` is no longer in OpenAI's
+The audit (and STEP 03's "trap") state that `gpt-4.1-mini` is no longer in OpenAI's
 catalogue and that routing `curriculum_design` to it would fail. **That is false.**
 Verified against the live API rather than a pricing blog:
 

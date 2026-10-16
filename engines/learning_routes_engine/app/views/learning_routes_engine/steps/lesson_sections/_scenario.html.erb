@@ -1,7 +1,7 @@
 <%# engines/learning_routes_engine/app/views/learning_routes_engine/steps/lesson_sections/_scenario.html.erb %>
 <div data-controller="scenario" class="space-y-4">
   <!-- Badge -->
-  <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium tracking-wide uppercase" style="background: rgba(168, 85, 247, 0.1); color: #a855f7; font-family: 'DM Mono', monospace;">
+  <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium tracking-wide uppercase" style="background: rgba(168, 85, 247, 0.1); color: var(--color-highlight-violet); font-family: 'DM Mono', monospace;">
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
     <%= t('learning_engine.blocks.badge_scenario') %>
   </div>
@@ -23,7 +23,7 @@
                 tabindex="0"
                 role="button"
                 aria-label="Option <%= ('A'.ord + i).chr %>: <%= option[:label] %>">
-          <span class="inline-flex items-center justify-center w-7 h-7 rounded-full text-xs font-bold mr-3" style="background: rgba(168, 85, 247, 0.12); color: #a855f7;">
+          <span class="inline-flex items-center justify-center w-7 h-7 rounded-full text-xs font-bold mr-3" style="background: rgba(168, 85, 247, 0.12); color: var(--color-highlight-violet);">
             <%= ('A'.ord + i).chr %>
           </span>
           <span class="font-medium"><%= option[:label] %></span>
@@ -42,13 +42,13 @@
         printed as asterisks and every newline was gone. The markdown is rendered
         here now, and the controller only unhides the matching element. %>
     <div data-scenario-target="consequence" class="mt-4 px-5 py-4 rounded-xl hidden" style="background: rgba(168, 85, 247, 0.06); border: 1px solid rgba(168, 85, 247, 0.15);">
-      <p class="text-sm font-medium mb-1" style="color: #a855f7;"><%= t('learning_engine.blocks.scenario_consequence') %></p>
+      <p class="text-sm font-medium mb-1" style="color: var(--color-highlight-violet);"><%= t('learning_engine.blocks.scenario_consequence') %></p>
       <% section[:options]&.each_with_index do |option, i| %>
         <div class="lesson-content hidden"
              data-scenario-target="consequenceFor"
              data-option-index="<%= i %>"
              style="color: var(--color-txt);">
-          <%= ContentEngine::MarkdownRenderer.render(option[:consequence]).html_safe %>
+          <%= ContentEngine::MarkdownRenderer.render(option[:consequence]) %>
         </div>
       <% end %>
     </div>
@@ -61,7 +61,7 @@
         Renamed, not regraded. %>
     <div data-scenario-target="retryContainer" class="mt-4 text-center hidden">
       <button class="px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200"
-              style="background: rgba(168, 85, 247, 0.1); color: #a855f7; border: 1px solid rgba(168, 85, 247, 0.2);"
+              style="background: rgba(168, 85, 247, 0.1); color: var(--color-highlight-violet); border: 1px solid rgba(168, 85, 247, 0.2);"
               data-action="click->scenario#retry">
         <%= t('learning_engine.blocks.scenario_explore_another') %>
       </button>

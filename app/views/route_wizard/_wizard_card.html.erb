@@ -2,40 +2,41 @@
 
   <%# Error banner %>
   <div id="wizard-error-banner" data-route-wizard-target="errorBanner"
-       style="display:none; position:fixed; top:0; left:0; right:0; z-index:100; padding:0.75rem 1rem; background:#B06050; color:white; text-align:center; font-family:'DM Sans',sans-serif; font-size:0.82rem; font-weight:500;">
+       style="display:none; position:fixed; top:0; left:0; right:0; z-index:100; padding:0.75rem 1rem; background:var(--color-flash-alert-text); color:white; text-align:center; font-family:'DM Sans',sans-serif; font-size:0.82rem; font-weight:500;">
   </div>
 
   <%# ARIA live region for step announcements %>
   <div aria-live="polite" aria-atomic="true" class="sr-only" data-route-wizard-target="stepLabel"></div>
 
   <%# ═══ STEP 0: TOPICS ═══ %>
-  <div class="wizard-step wizard-enter" data-route-wizard-target="step" data-step="0" role="group" aria-label="Choose topics">
-    <h2 class="wizard-heading"><span class="wizard-wave">&#x1F44B;</span> What do you want to learn?</h2>
-    <p class="wizard-subtitle">Choose one or more topics</p>
+  <div class="wizard-step wizard-enter" data-route-wizard-target="step" data-step="0" role="group" aria-label="<%= t("wizard.step0.heading") %>">
+    <h2 class="wizard-heading"><span class="wizard-wave">&#x1F44B;</span> <%= t("wizard.step0.heading") %></h2>
+    <p class="wizard-subtitle"><%= t("wizard.step0.subtext") %></p>
 
-    <div class="wizard-topic-grid" data-route-wizard-target="topicGrid">
+    <div class="wizard-topic-grid" data-route-wizard-target="topicGrid" role="radiogroup">
       <% [
-        ["programming", "&#x1F916;", "Programación"],
-        ["web_dev", "&#x1F310;", "Desarrollo Web"],
-        ["data_science", "&#x1F4CA;", "Ciencia de Datos"],
-        ["mobile_dev", "&#x1F4F1;", "Desarrollo Móvil"],
-        ["languages", "&#x1F4AC;", "Idiomas"],
-        ["math", "&#x1F9EE;", "Matemáticas"],
-        ["science", "&#x1F52C;", "Ciencias"],
-        ["business", "&#x1F4BC;", "Negocios"],
-        ["design", "&#x1F3A8;", "Diseño"],
-        ["music", "&#x1F3B5;", "Música"],
-        ["writing", "&#x1F58B;&#xFE0F;", "Escritura"],
-        ["health", "&#x2764;&#xFE0F;", "Salud y Bienestar"]
-      ].each do |id, icon, label| %>
+        ["programming", "\u{1F916}"],
+        ["web_dev", "\u{1F310}"],
+        ["data_science", "\u{1F4CA}"],
+        ["mobile_dev", "\u{1F4F1}"],
+        ["languages", "\u{1F4AC}"],
+        ["math", "\u{1F9EE}"],
+        ["science", "\u{1F52C}"],
+        ["business", "\u{1F4BC}"],
+        ["design", "\u{1F3A8}"],
+        ["music", "\u{1F3B5}"],
+        ["writing", "\u{1F58B FE0F}"],
+        ["health", "\u{2764 FE0F}"]
+      ].each do |id, icon| %>
+        <% label = t("wizard.step0.topics.#{id}") %>
         <button type="button" class="wizard-topic-tile"
                 data-action="click->route-wizard#toggleTopic"
                 data-topic="<%= id %>"
                 tabindex="0"
-                role="checkbox"
+                role="radio"
                 aria-checked="false"
                 aria-label="<%= label %>">
-          <span class="tile-icon"><%= icon.html_safe %></span>
+          <span class="tile-icon"><%= icon %></span>
           <span class="tile-label"><%= label %></span>
           <span class="tile-check">&#x2713;</span>
         </button>
@@ -45,7 +46,7 @@
     <%# Topic detail (shown when a predefined topic is selected) %>
     <div data-route-wizard-target="topicDetailWrap" style="display:none; margin-bottom:1rem; width:100%;">
       <label style="font-family:'DM Mono',monospace; font-size:0.68rem; font-weight:600; color:var(--color-muted); text-transform:uppercase; letter-spacing:0.08em; display:block; margin-bottom:0.4rem;"
-             data-route-wizard-target="topicDetailLabel">Specify your topic</label>
+             data-route-wizard-target="topicDetailLabel"><%= t("wizard.step0.topic_detail_label") %></label>
       <input type="text" name="route_request[custom_topic]"
              class="wizard-custom-input"
              data-route-wizard-target="topicDetailInput"
@@ -58,7 +59,7 @@
       <span style="position:absolute; left:0.85rem; top:50%; transform:translateY(-50%); font-size:1rem;">&#x2728;</span>
       <input type="text"
              class="wizard-custom-input"
-             placeholder="Or type something specific..."
+             placeholder="<%= t("wizard.step0.custom_placeholder") %>"
              data-route-wizard-target="customInput"
              data-action="input->route-wizard#updateCustomTopic keydown.enter->route-wizard#preventEnterSubmit"
              autocomplete="off" maxlength="200">
@@ -68,14 +69,15 @@
     <div data-route-wizard-target="topicInputs"></div>
 
     <%# Language selector %>
-    <p style="font-family:'DM Mono',monospace; font-size:0.68rem; font-weight:600; color:var(--color-muted); text-transform:uppercase; letter-spacing:0.08em; text-align:center; margin:0.5rem 0 0.5rem;">Language</p>
+    <p style="font-family:'DM Mono',monospace; font-size:0.68rem; font-weight:600; color:var(--color-muted); text-transform:uppercase; letter-spacing:0.08em; text-align:center; margin:0.5rem 0 0.5rem;"><%= t("wizard.step0.language_label") %></p>
     <div class="wizard-locale-row" data-route-wizard-target="localeGrid">
-      <% [["es", "&#x1F1EA;&#x1F1F8;", "Español"], ["en", "&#x1F1FA;&#x1F1F8;", "English"], ["pt", "&#x1F1E7;&#x1F1F7;", "Português"], ["fr", "&#x1F1EB;&#x1F1F7;", "Français"]].each do |id, flag, name| %>
+      <% [["es", "\u{1F1EA 1F1F8}"], ["en", "\u{1F1FA 1F1F8}"], ["pt", "\u{1F1E7 1F1F7}"], ["fr", "\u{1F1EB 1F1F7}"]].each do |id, flag| %>
+        <% name = t("wizard.step0.locales.#{id}") %>
         <button type="button" class="wizard-locale-tile<%= ' selected' if id == 'es' %>"
                 data-action="click->route-wizard#selectLocale"
                 data-locale="<%= id %>"
                 tabindex="0" role="radio" aria-checked="<%= id == 'es' %>">
-          <span class="locale-flag"><%= flag.html_safe %></span>
+          <span class="locale-flag"><%= flag %></span>
           <span><%= name %></span>
         </button>
       <% end %>
@@ -84,21 +86,22 @@
   </div>
 
   <%# ═══ STEP 1: LEVEL ═══ %>
-  <div class="wizard-step" data-route-wizard-target="step" data-step="1" aria-hidden="true" role="radiogroup" aria-label="Select your level">
-    <h2 class="wizard-heading">What is your level?</h2>
-    <p class="wizard-subtitle">Be honest — we will adapt to you</p>
+  <div class="wizard-step" data-route-wizard-target="step" data-step="1" aria-hidden="true" role="radiogroup" aria-label="<%= t("wizard.step1.heading") %>">
+    <h2 class="wizard-heading"><%= t("wizard.step1.heading") %></h2>
+    <p class="wizard-subtitle"><%= t("wizard.step1.subtext") %></p>
 
     <% [
-      ["beginner", "&#x1F331;", "Beginner", "I am just getting started"],
-      ["basic", "&#x1F33F;", "Basic", "I know the fundamentals"],
-      ["intermediate", "&#x1F333;", "Intermediate", "I have solid experience"],
-      ["advanced", "&#x1F332;", "Advanced", "I want to master this"]
-    ].each do |id, icon, name, desc| %>
+      ["beginner", "\u{1F331}"],
+      ["basic", "\u{1F33F}"],
+      ["intermediate", "\u{1F333}"],
+      ["advanced", "\u{1F332}"]
+    ].each do |id, icon| %>
+      <% name = t("wizard.step1.levels.#{id}"); desc = t("wizard.step1.levels.#{id}_desc") %>
       <button type="button" class="wizard-level-card"
               data-action="click->route-wizard#selectLevel"
               data-level="<%= id %>"
               tabindex="0" role="radio" aria-checked="false">
-        <span class="level-icon"><%= icon.html_safe %></span>
+        <span class="level-icon"><%= icon %></span>
         <div class="level-info">
           <div class="level-name"><%= name %></div>
           <div class="level-desc"><%= desc %></div>
@@ -110,24 +113,25 @@
   </div>
 
   <%# ═══ STEP 2: GOALS ═══ %>
-  <div class="wizard-step" data-route-wizard-target="step" data-step="2" aria-hidden="true" role="group" aria-label="Select your goals">
-    <h2 class="wizard-heading">What are your goals?</h2>
-    <p class="wizard-subtitle">Select all that apply</p>
+  <div class="wizard-step" data-route-wizard-target="step" data-step="2" aria-hidden="true" role="group" aria-label="<%= t("wizard.step2.heading") %>">
+    <h2 class="wizard-heading"><%= t("wizard.step2.heading") %></h2>
+    <p class="wizard-subtitle"><%= t("wizard.step2.subtext") %></p>
 
     <div class="wizard-goal-grid">
       <% [
-        ["career", "&#x1F680;", "Career growth"],
-        ["personal", "&#x2B50;", "Personal interest"],
-        ["exam", "&#x1F4DC;", "Pass an exam"],
-        ["project", "&#x1F527;", "Build a project"],
-        ["switch", "&#x1F500;", "Switch fields"],
-        ["teaching", "&#x1F9D1;&#x200D;&#x1F3EB;", "Teach others"]
-      ].each do |id, icon, label| %>
+        ["career", "\u{1F680}"],
+        ["personal", "\u{2B50}"],
+        ["exam", "\u{1F4DC}"],
+        ["project", "\u{1F527}"],
+        ["switch", "\u{1F500}"],
+        ["teaching", "\u{1F9D1 200D 1F3EB}"]
+      ].each do |id, icon| %>
+        <% label = t("wizard.step2.goals.#{id}") %>
         <button type="button" class="wizard-goal-chip"
                 data-action="click->route-wizard#toggleGoal"
                 data-goal="<%= id %>"
                 tabindex="0" role="checkbox" aria-checked="false">
-          <span class="goal-icon"><%= icon.html_safe %></span>
+          <span class="goal-icon"><%= icon %></span>
           <span class="goal-label"><%= label %></span>
         </button>
       <% end %>
@@ -136,22 +140,22 @@
   </div>
 
   <%# ═══ STEP 3: TIME ═══ %>
-  <div class="wizard-step" data-route-wizard-target="step" data-step="3" aria-hidden="true" role="group" aria-label="Time commitment">
-    <h2 class="wizard-heading">How much time can you dedicate?</h2>
-    <p class="wizard-subtitle">We will pace your route accordingly</p>
+  <div class="wizard-step" data-route-wizard-target="step" data-step="3" aria-hidden="true" role="group" aria-label="<%= t("wizard.step3.heading") %>">
+    <h2 class="wizard-heading"><%= t("wizard.step3.heading") %></h2>
+    <p class="wizard-subtitle"><%= t("wizard.step3.subtext") %></p>
 
-    <p style="font-family:'DM Mono',monospace; font-size:0.68rem; font-weight:600; color:var(--color-muted); text-transform:uppercase; letter-spacing:0.08em; margin:0 0 0.6rem; text-align:center;">Weekly hours</p>
+    <p style="font-family:'DM Mono',monospace; font-size:0.68rem; font-weight:600; color:var(--color-muted); text-transform:uppercase; letter-spacing:0.08em; margin:0 0 0.6rem; text-align:center;"><%= t("wizard.step3.weekly_label") %></p>
     <div class="wizard-time-row" data-route-wizard-target="hoursGrid">
       <% [[2, "2h"], [5, "5h"], [10, "10h"], [20, "20h"]].each do |val, label| %>
         <button type="button" class="wizard-time-btn" data-action="click->route-wizard#selectHours" data-hours="<%= val %>" tabindex="0"><%= label %></button>
       <% end %>
     </div>
 
-    <p style="font-family:'DM Mono',monospace; font-size:0.68rem; font-weight:600; color:var(--color-muted); text-transform:uppercase; letter-spacing:0.08em; margin:1.5rem 0 0.6rem; text-align:center;">Session length</p>
+    <p style="font-family:'DM Mono',monospace; font-size:0.68rem; font-weight:600; color:var(--color-muted); text-transform:uppercase; letter-spacing:0.08em; margin:1.5rem 0 0.6rem; text-align:center;"><%= t("wizard.step3.session_label") %></p>
     <div class="wizard-time-row" data-route-wizard-target="sessionGrid">
-      <% [[15, "15 min", "&#x2615;"], [30, "30 min", "&#x23F3;"], [60, "60 min", "&#x1F680;"]].each do |val, label, icon| %>
+      <% [[15, "15 min", "\u{2615}"], [30, "30 min", "\u{23F3}"], [60, "60 min", "\u{1F680}"]].each do |val, label, icon| %>
         <button type="button" class="wizard-time-btn" data-action="click->route-wizard#selectSession" data-minutes="<%= val %>" tabindex="0">
-          <div><%= icon.html_safe %></div>
+          <div><%= icon %></div>
           <div><%= label %></div>
         </button>
       <% end %>
@@ -164,21 +168,21 @@
   </div>
 
   <%# ═══ STEP 4: LEARNING STYLE ═══ %>
-  <div class="wizard-step" data-route-wizard-target="step" data-step="4" aria-hidden="true" role="group" aria-label="Learning style">
+  <div class="wizard-step" data-route-wizard-target="step" data-step="4" aria-hidden="true" role="group" aria-label="<%= t("wizard.step4.heading") %>">
     <%# Saved style banner %>
     <div data-route-wizard-target="savedStyleBanner" style="display:none;">
       <div class="wizard-style-result">
         <div data-route-wizard-target="savedStyleText"></div>
         <button type="button" data-action="click->route-wizard#retakeStyle"
                 style="margin-top:0.75rem; font-family:'DM Sans',sans-serif; font-size:0.78rem; color:var(--color-accent); background:none; border:none; cursor:pointer; text-decoration:underline;">
-          Retake quiz
+          <%= t("wizard.step4.retake") %>
         </button>
       </div>
     </div>
 
     <div data-route-wizard-target="styleHeader">
-      <h2 class="wizard-heading">How do you learn best?</h2>
-      <p class="wizard-subtitle">Answer 12 quick questions</p>
+      <h2 class="wizard-heading"><%= t("wizard.step4.heading") %></h2>
+      <p class="wizard-subtitle"><%= t("wizard.step4.subtext") %></p>
     </div>
 
     <%# Mini progress bar %>
@@ -187,41 +191,25 @@
         <div class="wizard-style-progress-fill" style="width:0%;" data-route-wizard-target="styleProgressFill"></div>
       </div>
       <p style="font-family:'DM Mono',monospace; font-size:0.68rem; color:var(--color-muted); text-align:center; margin:0.4rem 0 0;">
-        Question <span data-route-wizard-target="styleQuestionNum">1</span> of 12
+        <%= t("wizard.step4.question_html", n: tag.span("1", data: { route_wizard_target: "styleQuestionNum" })) %>
       </p>
     </div>
 
-    <p data-route-wizard-target="styleDoneMsg" style="display:none; text-align:center; font-family:'DM Sans',sans-serif; font-size:0.85rem; color:var(--color-accent); font-weight:600; margin:0.5rem 0;">All done!</p>
+    <p data-route-wizard-target="styleDoneMsg" style="display:none; text-align:center; font-family:'DM Sans',sans-serif; font-size:0.85rem; color:var(--color-accent); font-weight:600; margin:0.5rem 0;"><%= t("wizard.step4.all_answered") %></p>
 
     <%# Questions — one visible at a time %>
     <div data-route-wizard-target="styleQuestionsWrap">
-      <%
-        vark_questions = [
-          ["When learning something new, I prefer to...", "Watch a video or diagram", "Listen to a podcast or lecture", "Read a textbook or article", "Try it hands-on immediately"],
-          ["I remember best when I...", "See pictures or charts", "Hear someone explain it", "Write notes by hand", "Practice with real examples"],
-          ["In a meeting, I focus on...", "Slides and visuals", "What people say", "Written agenda and notes", "Interactive activities"],
-          ["To solve a problem, I...", "Draw a diagram", "Talk it through with someone", "Research and read about it", "Experiment until it works"],
-          ["I get distracted by...", "Messy or ugly visuals", "Background noise", "Spelling or grammar errors", "Sitting still too long"],
-          ["When giving directions, I...", "Draw a map", "Explain verbally step by step", "Write detailed instructions", "Walk the person there"],
-          ["My ideal study tool is...", "Infographics and mind maps", "Audiobooks or discussions", "Detailed written guides", "Simulations and labs"],
-          ["When I read, I...", "Visualize the scenes", "Hear the words in my head", "Focus on the text structure", "Want to act out the scenes"],
-          ["I learn a new language by...", "Flashcards with images", "Listening to native speakers", "Grammar rules and reading", "Immersion and conversations"],
-          ["In a new city, I navigate by...", "Using a visual map", "Asking locals for directions", "Reading street signs", "Walking and exploring"],
-          ["When studying, I prefer...", "Color-coded highlights", "Study groups or audio", "Organized written outlines", "Building projects"],
-          ["I express ideas best by...", "Creating a presentation", "Talking about them", "Writing them down", "Demonstrating with examples"]
-        ]
-        style_letters = ["v", "a", "r", "k"]
-      %>
-      <% vark_questions.each_with_index do |q, qi| %>
-        <div class="wizard-style-question" data-style-question="<%= qi + 1 %>" <%= 'aria-hidden="true"' if qi > 0 %>>
-          <p style="font-family:'DM Sans',sans-serif; font-size:0.92rem; font-weight:600; color:var(--color-txt); margin:0 0 1rem; text-align:center;"><%= q[0] %></p>
-          <% q[1..4].each_with_index do |option, oi| %>
+      <%# Option letters are the VARK styles (v/a/r/k) the controller scores. %>
+      <% (1..12).each do |n| %>
+        <div class="wizard-style-question" data-style-question="<%= n %>" <%= 'aria-hidden="true"' if n > 1 %>>
+          <p style="font-family:'DM Sans',sans-serif; font-size:0.92rem; font-weight:600; color:var(--color-txt); margin:0 0 1rem; text-align:center;"><%= t("wizard.step4.questions.q#{n}.scenario") %></p>
+          <% %w[v a r k].each do |letter| %>
             <button type="button" class="wizard-style-option"
                     data-action="click->route-wizard#selectStyleAnswer keydown->route-wizard#activateOnEnter"
-                    data-question="<%= qi + 1 %>"
-                    data-option="<%= qi + 1 %><%= style_letters[oi] %>"
+                    data-question="<%= n %>"
+                    data-option="<%= n %><%= letter %>"
                     tabindex="0" role="radio" aria-checked="false">
-              <%= option %>
+              <%= t("wizard.step4.questions.q#{n}.options.#{letter}") %>
             </button>
           <% end %>
         </div>
@@ -244,20 +232,21 @@
   </div>
 
   <%# ═══ STEP 5: PACE ═══ %>
-  <div class="wizard-step" data-route-wizard-target="step" data-step="5" aria-hidden="true" role="radiogroup" aria-label="Choose your pace">
-    <h2 class="wizard-heading">Choose your pace</h2>
-    <p class="wizard-subtitle">You can always change this later</p>
+  <div class="wizard-step" data-route-wizard-target="step" data-step="5" aria-hidden="true" role="radiogroup" aria-label="<%= t("wizard.step5.heading") %>">
+    <h2 class="wizard-heading"><%= t("wizard.step5.heading") %></h2>
+    <p class="wizard-subtitle"><%= t("wizard.step5.subtext") %></p>
 
     <% [
-      ["relaxed", "&#x1F422;", "Relaxed", "Take it easy, no pressure"],
-      ["steady", "&#x1F97E;", "Steady", "Balanced and consistent"],
-      ["intensive", "&#x1F525;", "Intensive", "Full speed ahead"]
-    ].each do |id, icon, name, desc| %>
+      ["relaxed", "\u{1F422}"],
+      ["steady", "\u{1F97E}"],
+      ["intensive", "\u{1F525}"]
+    ].each do |id, icon| %>
+      <% name = t("wizard.step5.paces.#{id}"); desc = t("wizard.step5.paces.#{id}_desc") %>
       <button type="button" class="wizard-pace-card"
               data-action="click->route-wizard#selectPace"
               data-pace="<%= id %>"
               tabindex="0" role="radio" aria-checked="false">
-        <span class="pace-icon"><%= icon.html_safe %></span>
+        <span class="pace-icon"><%= icon %></span>
         <div class="pace-info">
           <div class="pace-name"><%= name %></div>
           <div class="pace-desc"><%= desc %></div>
@@ -276,7 +265,7 @@
     <button type="button" class="wizard-btn-continue disabled"
             data-route-wizard-target="continueBtn"
             data-action="click->route-wizard#next">
-      <span data-route-wizard-target="btnText">Continue</span>
+      <span data-route-wizard-target="btnText"><%= t("wizard.continue") %></span>
     </button>
   </div>
 </div>

@@ -176,7 +176,8 @@ module ContentEngine
     def active_storage_available?
       defined?(ActiveStorage::Blob) &&
         ActiveRecord::Base.connection.table_exists?("active_storage_blobs")
-    rescue
+    rescue => e
+      Rails.logger.warn("[ImageGenerationService] ActiveStorage check failed, using data URI: #{e.class}: #{e.message}")
       false
     end
 

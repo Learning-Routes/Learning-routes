@@ -84,7 +84,8 @@ module ContentEngine
           user: Thread.current[:lesson_agent_user], model: "tavily", task_type: "web_search",
           prompt: "tavily_search", status: :failed, pricing_status: "unpriced"
         )
-      rescue ActiveRecord::ActiveRecordError
+      rescue ActiveRecord::ActiveRecordError => e
+        Rails.logger.warn("[WebSearch] Failure metering failed user=#{Thread.current[:lesson_agent_user]&.id} #{e.class}: #{e.message}")
         nil
       end
 

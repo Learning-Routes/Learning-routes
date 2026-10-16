@@ -33,7 +33,7 @@
   <% progress = LearningRoutesEngine::RouteProgressTracker.new(@route).progress_summary %>
   <%= turbo_stream.replace "route_progress_bar" do %>
     <div id="route_progress_bar"
-         style="height:100%; background:linear-gradient(to right, #6366f1, #a855f7); transition:width 0.7s ease; width:<%= progress[:percentage] %>%;"></div>
+         style="height:100%; background:linear-gradient(to right, var(--color-section-audio-active), var(--color-highlight-violet)); transition:width 0.7s ease; width:<%= progress[:percentage] %>%;"></div>
   <% end %>
 
   <%# Update engagement stats %>

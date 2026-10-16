@@ -298,7 +298,7 @@ Dockerfile starts via `./bin/thrust ./bin/rails server` — Thruster handles HTT
 
 ### D.3 — `DailyStreakCheckJob` wired into recurring.yml
 
-`CLAUDE.md` documented this job running at 6 am UTC to reset `streak_freeze_used_today` for all users, but `config/recurring.yml` only scheduled the Solid Queue cleanup. Without the recurring entry, user streak freezes were never being reset — a functional gap, not just a perf one. Now scheduled via:
+The project notes documented this job running at 6 am UTC to reset `streak_freeze_used_today` for all users, but `config/recurring.yml` only scheduled the Solid Queue cleanup. Without the recurring entry, user streak freezes were never being reset — a functional gap, not just a perf one. Now scheduled via:
 
 ```yaml
 daily_streak_check:

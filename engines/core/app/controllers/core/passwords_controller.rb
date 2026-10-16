@@ -36,8 +36,8 @@ module Core
         return
       end
 
-      if @user.update(password_params)
-        @user.sessions.destroy_all
+      if @user.update(password_params.merge(own_password: true))
+        Core::Session.where(user: @user).destroy_all # a query: the association is strict_loading
         redirect_to core.sign_in_path, notice: t("flash.password_updated")
       else
         render :reset, status: :unprocessable_entity

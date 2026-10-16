@@ -20,6 +20,9 @@ class RouteRequest < ApplicationRecord
   validate :must_have_at_least_one_topic
   validate :goals_must_be_valid
   validate :topics_must_be_valid
+  # One subject per route (STEP 38 §1), for new requests only: one saved with two
+  # before that deploy must still take its status updates.
+  validate :only_one_topic, on: :create
   validate :learning_style_answers_complete
 
   before_save :calculate_style_result, if: :should_calculate_style?
@@ -110,6 +113,11 @@ class RouteRequest < ApplicationRecord
     return if topics.blank?
     invalid = topics - VALID_TOPICS
     errors.add(:topics, I18n.t("route_request.errors.invalid_topics", invalid: invalid.join(", "))) if invalid.any?
+  end
+
+  # A wizard page loaded before STEP 38 can still send two.
+  def only_one_topic
+    errors.add(:base, I18n.t("route_request.errors.one_topic")) if topics.to_a.size > 1
   end
 
   def learning_style_answers_complete

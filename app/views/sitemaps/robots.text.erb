@@ -1,0 +1,20 @@
+# See https://www.robotstxt.org/robotstxt.html
+
+User-agent: *
+Allow: /
+
+# Disallow authenticated areas from indexing
+Disallow: /dashboard
+Disallow: /onboarding
+Disallow: /profile
+Disallow: /settings
+Disallow: /routes/
+Disallow: /learning/
+Disallow: /content/
+Disallow: /assessments/
+Disallow: /ai/
+Disallow: /analytics/
+Disallow: /community_engine/
+Disallow: /community
+
+Sitemap: <%= public_url("/sitemap.xml") %>

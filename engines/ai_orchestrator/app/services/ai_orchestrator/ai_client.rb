@@ -185,13 +185,14 @@ module AiOrchestrator
 
       {
         # When a schema is set, RubyLLM JSON.parses the body and hands back a Hash
-        # (ruby_llm-1.11.0/lib/ruby_llm/chat.rb:147-154). AiInteraction#response is a
+        # (ruby_llm-1.16.0/lib/ruby_llm/chat.rb:294-300). AiInteraction#response is a
         # text column and every consumer parses a JSON string, so re-serialize —
         # storing a Hash would persist Ruby's `{"a"=>1}` inspect form, which is not
         # valid JSON and would fail on the way back out.
         content: serialize_content(response.content),
         model: @model,
         input_tokens: response.input_tokens,
+        cached_tokens: response.cached_tokens.to_i,
         output_tokens: response.output_tokens,
         latency_ms: elapsed_ms
       }

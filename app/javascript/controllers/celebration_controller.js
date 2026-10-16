@@ -148,7 +148,7 @@ export default class extends Controller {
     toast.style.cssText = `
       pointer-events:auto; position:fixed; bottom:2rem; left:50%; transform:translateX(-50%) translateY(100%);
       display:flex; align-items:center; gap:0.75rem;
-      background:var(--color-card-bg, #FEFDFB); border:1px solid var(--color-faint, rgba(28,24,18,0.06));
+      background:var(--color-card); border:1px solid var(--color-faint, rgba(28,24,18,0.06));
       border-radius:14px; padding:${large ? "1rem 1.75rem" : "0.85rem 1.5rem"};
       box-shadow:0 8px 32px rgba(28,24,18,0.12); max-width:420px; z-index:9999;
       opacity:0; transition:all 0.4s cubic-bezier(0.34,1.56,0.64,1);
@@ -213,7 +213,7 @@ export default class extends Controller {
 
     const card = document.createElement("div")
     card.style.cssText = `
-      background:var(--color-card-bg, #FEFDFB); border-radius:24px;
+      background:var(--color-card); border-radius:24px;
       padding:2.5rem 2.5rem 2rem; max-width:320px; width:90%;
       text-align:center; box-shadow:0 24px 64px rgba(28,24,18,0.2);
       transform:scale(0.8); opacity:0;

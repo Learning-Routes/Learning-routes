@@ -53,7 +53,7 @@ module Core
                       uniqueness: { case_sensitive: false },
                       format: { with: URI::MailTo::EMAIL_REGEXP }
     validates :name, presence: true, length: { minimum: 2, maximum: 100 }
-    validates :password, length: { minimum: 8 }, if: -> { password.present? && !oauth_user? }
+    validates :password, length: { minimum: 8 }, if: -> { password.present? }
     validates :locale, inclusion: { in: %w[en es] }
     validates :theme, inclusion: { in: VALID_THEMES }
     validates :role, presence: true

@@ -1,24 +1,26 @@
 module AiOrchestrator
   class CostTracker
-    # Pricing per million tokens (in cents) - Feb 2026
+    # Pricing per million tokens (in cents) - Feb 2026. cached_input is the rate for
+    # prompt tokens served from the provider cache (Oct 2026), which ruby_llm >= 1.15
+    # reports apart from input_tokens.
     PRICING = {
-      "gpt-5.2"            => { input: 175, output: 1400 },
-      "gpt-4.1-mini" => { input: 40, output: 160 },
-      "claude-opus-4-5"    => { input: 500, output: 2500 },
-      "claude-haiku-4-5"   => { input: 100, output: 500 },
-      "claude-sonnet-4-5"  => { input: 300, output: 1500 },
+      "gpt-5.2"            => { input: 175, cached_input: 17.5r, output: 1400 },
+      "gpt-4.1-mini" => { input: 40, cached_input: 10, output: 160 },
+      "claude-opus-4-5"    => { input: 500, cached_input: 50, output: 2500 },
+      "claude-haiku-4-5"   => { input: 100, cached_input: 10, output: 500 },
+      "claude-sonnet-4-5"  => { input: 300, cached_input: 30, output: 1500 },
       "elevenlabs"         => { flat: 0 },
       "eleven_multilingual_v2" => { per_1k_chars: 10 },
       "eleven_flash_v2_5"      => { per_1k_chars: 5 },
       "scribe_v2"               => { per_hour: 22 },
-      "gpt-image-1"        => { input: 500, image_input: 1000, output: 4000 },
+      "gpt-image-1"        => { input: 500, cached_input: 125, image_input: 1000, output: 4000 },
       "tavily"             => { provider_reported_credits: true }
     }.freeze
 
     MICROCENTS_PER_CENT = 10_000
     MICROCENTS_PER_DOLLAR = 1_000_000
 
-    def self.estimate_microcents(model:, input_tokens: 0, output_tokens: 0,
+    def self.estimate_microcents(model:, input_tokens: 0, cached_tokens: 0, output_tokens: 0,
                                  image_input_tokens: 0, characters: nil, audio_seconds: nil)
       pricing = PRICING[model]
       return 0 unless pricing
@@ -37,6 +39,7 @@ module AiOrchestrator
         pricing[:per_request] * MICROCENTS_PER_CENT
       else
         numerator = input_tokens.to_i * pricing[:input].to_i
+        numerator += cached_tokens.to_i * pricing.fetch(:cached_input)
         numerator += image_input_tokens.to_i * pricing[:image_input].to_i
         numerator += output_tokens.to_i * pricing[:output].to_i
         Rational(numerator, 100).round

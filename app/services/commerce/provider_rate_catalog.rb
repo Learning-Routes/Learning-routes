@@ -48,7 +48,8 @@ module Commerce
     def rate_assumptions_for(calls)
       models = calls.filter_map { |call| call["model"] }.uniq
       assumptions = models.to_h do |model|
-        [model, AiOrchestrator::CostTracker::PRICING.fetch(model).transform_keys(&:to_s)]
+        # A quote prices every input token uncached, so the cached rate is not an assumption of it.
+        [model, AiOrchestrator::CostTracker::PRICING.fetch(model).except(:cached_input).transform_keys(&:to_s)]
       end
       if calls.any? { |call| call["kind"] == "tavily" }
         assumptions["tavily"] = { "microcents_per_credit" => @tavily[:microcents_per_credit] }

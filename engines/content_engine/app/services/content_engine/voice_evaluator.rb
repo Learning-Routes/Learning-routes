@@ -93,7 +93,8 @@ module ContentEngine
         user: @response.user, model: STT_MODEL, task_type: "transcription",
         prompt: "provider_usage", status: :failed, pricing_status: "unpriced"
       )
-    rescue ActiveRecord::ActiveRecordError
+    rescue ActiveRecord::ActiveRecordError => e
+      Rails.logger.warn("[VoiceEvaluator] Failure metering failed voice_response=#{@response.id} #{e.class}: #{e.message}")
       nil
     end
 

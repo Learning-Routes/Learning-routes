@@ -152,7 +152,7 @@ export default class extends Controller {
     if (!parent) return
 
     const errorEl = document.createElement("p")
-    errorEl.style.cssText = "color:var(--color-error); font-size:0.8125rem; margin:0.5rem 0 0; opacity:0; transition:opacity 0.3s;"
+    errorEl.style.cssText = "color:var(--color-negative); font-size:0.8125rem; margin:0.5rem 0 0; opacity:0; transition:opacity 0.3s;"
     errorEl.textContent = message
     parent.appendChild(errorEl)
 

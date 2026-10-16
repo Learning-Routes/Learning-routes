@@ -35,7 +35,7 @@ module CommunityEngine
     end
 
     def destroy
-      @post = Post.find(params[:id])
+      @post = Post.strict_loading(false).find(params[:id]) # destroy cascades through comments and likes
 
       unless @post.owned_by?(current_user)
         return redirect_to community_engine.feed_path, alert: t("community_engine.posts.unauthorized")

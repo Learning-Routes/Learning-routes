@@ -19,6 +19,7 @@ module AiOrchestrator
       )
       interaction.mark_completed!(
         response_text: "tool_completed", input_tokens: result[:input_tokens],
+        cached_tokens: result[:cached_tokens],
         output_tokens: result[:output_tokens], latency_ms: result[:latency_ms].to_i
       )
     rescue ActiveRecord::ActiveRecordError => e
@@ -31,8 +32,9 @@ module AiOrchestrator
         user: user, model: "gpt-4.1-mini", task_type: task_type,
         prompt: "content_tool", status: :failed, pricing_status: "unpriced"
       )
-    rescue ActiveRecord::ActiveRecordError
-      nil
+    rescue ActiveRecord::ActiveRecordError => e
+      # The request error is re-raised by the caller; a metering failure must not mask it.
+      Rails.logger.warn("[TrackedTextCall] Failure metering failed user=#{user&.id} task=#{task_type} #{e.class}: #{e.message}")
     end
     private_class_method :persist_failure
   end

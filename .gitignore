@@ -72,7 +72,7 @@ node_modules/
 # Coverage reports
 /coverage/
 
-# Claude Code: local settings and session state. Never committed.
+# Local tool settings and session state. Never committed.
 /.claude/
 CLAUDE.md
 /CLAUDE.md

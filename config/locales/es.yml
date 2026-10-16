@@ -111,8 +111,6 @@ es:
     items:
       - name: "OpenAI"
         desc: "Generación de contenido"
-      - name: "Claude"
-        desc: "Análisis y razonamiento"
       - name: "ElevenLabs"
         desc: "Síntesis de voz"
       - name: "GPT Image"
@@ -485,6 +483,7 @@ es:
       no_topics: "Debes seleccionar al menos un tema o escribir uno personalizado"
       invalid_goals: "contiene opciones inválidas: %{invalid}"
       invalid_topics: "contiene opciones inválidas: %{invalid}"
+      one_topic: "Elige un solo tema: una ruta tiene un único tema."
       incomplete_style: "debes responder las 12 preguntas del test"
 
   # ── Route Wizard ──
@@ -507,7 +506,7 @@ es:
       multimodal_desc: "Combinas varios estilos — eres versátil"
     step0:
       heading: "¿Qué quieres aprender?"
-      subtext: "Elige uno o más temas — la IA construirá tu ruta."
+      subtext: "Elige un tema — la IA construirá tu ruta."
       topics:
         programming: "Programación"
         programming_desc: "Código, algoritmos, estructuras"
@@ -590,13 +589,14 @@ es:
       session_label: "Duración preferida por sesión"
       per_week: "por semana"
       per_session: "por sesión"
+      summary: "%{hours} h/semana en sesiones de %{minutes} min"
       step_name: "— Tiempo"
     step4:
       mini_test: "MINI-TEST"
       all_answered: "✓ Todas respondidas"
       heading: "¿Cómo aprendes mejor?"
       subtext: "Responde rápido — no hay respuestas correctas."
-      progress: "%{done} de 12"
+      question_html: "Pregunta %{n} de 12"
       saved_badge: "Estilo de aprendizaje guardado"
       retake: "Repetir test"
       questions:
@@ -804,7 +804,7 @@ es:
       body: "Learning Routes no será responsable de ningún daño indirecto, incidental, especial o consecuente resultante de tu uso del Servicio. El contenido de aprendizaje es generado por IA y no debe considerarse asesoramiento profesional."
     contact:
       heading: "7. Contacto"
-      body_html: 'Para preguntas sobre estos Términos, contáctanos en <a href="mailto:hello@learning-routes.com" class="text-accent underline">hello@learning-routes.com</a>.'
+      body_html: 'Para preguntas sobre estos Términos, contáctanos en <a href="mailto:hello@learningroutes.com" class="text-accent underline">hello@learningroutes.com</a>.'
 
   # ── Política de Privacidad ──
   privacy:
@@ -831,7 +831,7 @@ es:
       body: "Puedes solicitar acceso, corrección o eliminación de tus datos personales en cualquier momento contactándonos. Puedes eliminar tu cuenta y todos los datos asociados desde la configuración de tu perfil."
     contact:
       heading: "7. Contacto"
-      body_html: 'Para preguntas relacionadas con la privacidad, contáctanos en <a href="mailto:hello@learning-routes.com" class="text-accent underline">hello@learning-routes.com</a>.'
+      body_html: 'Para preguntas relacionadas con la privacidad, contáctanos en <a href="mailto:hello@learningroutes.com" class="text-accent underline">hello@learningroutes.com</a>.'
 
   # ── Editor de Código ──
   code_editor:
@@ -1094,7 +1094,6 @@ es:
       act_masked: "Desbloquea el módulo para abrirlo"
       locked_topic: "Bloqueado"
       route_label: "RUTA"
-      drag_to_explore: "Arrastra para explorar"
       map_keys: "Mapa de la ruta. Las flechas desplazan, más y menos acercan o alejan, 0 muestra toda la ruta, I te lleva a donde estás y Escape cierra el detalle."
       fit: "Encajar"
       fit_label: "Ver toda la ruta"
@@ -1108,7 +1107,6 @@ es:
       stages_topics:
         one: "%{stages} etapa · %{topics} tema"
         other: "%{stages} etapas · %{topics} temas"
-      subtitle: "Camino personalizado · %{stages} etapas · %{topics} temas · %{subject}"
       stage_of: "Etapa %{current} de %{total}"
       stage_navigation: "Navegacion de etapas"
       list_view: "Vista de lista"
@@ -1400,7 +1398,7 @@ es:
       title: "Configura tu perfil — Learning Routes"
     app_name: "Learning Routes"
     dismiss: "Cerrar"
-    mailer_footer: "Learning Routes — learning-routes.com"
+    mailer_footer: "Learning Routes — learningroutes.com"
 
   # ── Ajustes ──
   settings:
@@ -1410,6 +1408,7 @@ es:
     saved: "Ajustes guardados correctamente."
     saved_verify_email: "Ajustes guardados. Revisa tu nuevo correo para verificarlo."
     password_updated: "Contraseña actualizada correctamente."
+    password_created: "Contraseña creada. Ya puedes entrar con tu correo y esta contraseña."
     wrong_current_password: "La contraseña actual es incorrecta."
     password_required_for_email: "Se requiere la contraseña actual para cambiar el correo electrónico."
     errors:
@@ -1470,6 +1469,9 @@ es:
       confirm_label: "Confirmar contraseña"
       confirm_placeholder: "Repite la nueva contraseña"
       submit: "Actualizar contraseña"
+      create_heading: "Crear contraseña"
+      create_hint: "Entras con Google. Si creas una contraseña, también podrás entrar con tu correo."
+      create_submit: "Crear contraseña"
 
   # ── Plantillas de correo ──
 

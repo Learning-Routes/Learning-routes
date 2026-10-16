@@ -20,7 +20,7 @@
       title: step.localized_title,
       desc: step.learning_route&.localized_topic || t("activity.unknown_route"),
       time: step.completed_at,
-      color: step.content_type_assessment? ? "#B09848" : "#5BA880"
+      color: step.content_type_assessment? ? "var(--color-highlight)" : "var(--color-progress-bar)"
     }
   end
 
@@ -31,7 +31,7 @@
       title: route.localized_topic,
       desc: t("activity.new_route_desc"),
       time: route.created_at,
-      color: "#8B80C4"
+      color: "var(--color-node-nv3)"
     }
   end
 
@@ -43,7 +43,7 @@
       title: r.assessment&.route_step&.localized_title.presence || (r.assessment&.assessment_type ? t("assessment_types.#{r.assessment&.assessment_type}", default: r.assessment&.assessment_type&.humanize) : t("activity.exam")),
       desc: r.passed? ? t("activity.passed_with", score: "#{r.score&.round(1)}%") : t("activity.failed_score", score: "#{r.score&.round(1)}%"),
       time: r.created_at,
-      color: r.passed? ? "#5BA880" : "#B06050"
+      color: r.passed? ? "var(--color-progress-bar)" : "var(--color-flash-alert-text)"
     }
   end
 
@@ -55,7 +55,7 @@
       title: t("activity.study_session"),
       desc: s.duration_minutes ? t("activity.study_duration", minutes: s.duration_minutes) : t("activity.session_completed"),
       time: s.started_at,
-      color: "#6E9BC8"
+      color: "var(--color-node-nv2)"
     }
   end
 
@@ -71,22 +71,22 @@
 
         <%# Color dot with accessible label %>
         <div style="display:flex; align-items:center; gap:6px; margin-top:7px; flex-shrink:0;">
-          <div style="width:6px; height:6px; border-radius:50%; background:<%= act[:color] %>; box-shadow:0 0 6px <%= act[:color] %>40;" aria-hidden="true"></div>
+          <div style="width:6px; height:6px; border-radius:50%; background:<%= act[:color] %>; box-shadow:0 0 6px color-mix(in srgb, <%= act[:color] %> 25%, transparent);" aria-hidden="true"></div>
         </div>
 
         <%# Content %>
         <div style="flex:1; min-width:0;">
-          <p style="font-family:'DM Sans',sans-serif; font-weight:600; font-size:0.8rem; color:var(--color-txt, #1C1812); margin:0 0 0.15rem; line-height:1.35;">
+          <p style="font-family:'DM Sans',sans-serif; font-weight:600; font-size:0.8rem; color:var(--color-txt); margin:0 0 0.15rem; line-height:1.35;">
             <span style="font-family:'DM Mono',monospace; font-size:0.55rem; letter-spacing:0.5px; text-transform:uppercase; color:<%= act[:color] %>; margin-right:0.35rem;"><%= t("activity.types.#{act[:type]}", default: act[:type].to_s.humanize) %></span>
             <%= act[:title] %>
           </p>
-          <p style="font-family:'DM Sans',sans-serif; font-size:0.72rem; color:var(--color-sub, #A09889); margin:0; line-height:1.35;">
+          <p style="font-family:'DM Sans',sans-serif; font-size:0.72rem; color:var(--color-sub); margin:0; line-height:1.35;">
             <%= act[:desc] %>
           </p>
         </div>
 
         <%# Timestamp %>
-        <span style="font-family:'DM Mono',monospace; font-size:0.62rem; color:var(--color-faint, #CCC5B8); flex-shrink:0; white-space:nowrap; margin-top:2px;">
+        <span style="font-family:'DM Mono',monospace; font-size:0.62rem; color:var(--color-faint); flex-shrink:0; white-space:nowrap; margin-top:2px;">
           <% if act[:time] %>
             <% if act[:time].to_date == Date.current %>
               <%= t("activity.time.today", time: act[:time].strftime("%H:%M")) %>
@@ -103,13 +103,13 @@
 <% else %>
   <div style="text-align:center; padding:2.5rem 1rem;">
     <div style="width:48px; height:48px; border-radius:14px; background:rgba(91,168,128,0.08); display:inline-flex; align-items:center; justify-content:center; margin-bottom:0.8rem;">
-      <svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#5BA880" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--color-progress-bar)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
         <circle cx="12" cy="12" r="9"/>
         <path d="M12 7v5l3 2"/>
       </svg>
     </div>
-    <p style="font-family:'DM Sans',sans-serif; font-size:0.85rem; font-weight:500; color:var(--color-txt, #1C1812); margin:0 0 0.3rem;"><%= t("activity.no_recent") %></p>
-    <p style="font-family:'DM Sans',sans-serif; font-size:0.75rem; color:var(--color-sub, #A09889); margin:0;"><%= t("activity.no_recent_desc") %></p>
+    <p style="font-family:'DM Sans',sans-serif; font-size:0.85rem; font-weight:500; color:var(--color-txt); margin:0 0 0.3rem;"><%= t("activity.no_recent") %></p>
+    <p style="font-family:'DM Sans',sans-serif; font-size:0.75rem; color:var(--color-sub); margin:0;"><%= t("activity.no_recent_desc") %></p>
   </div>
 <% end %>
 

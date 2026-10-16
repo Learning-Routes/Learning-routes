@@ -24,6 +24,8 @@ Rails.application.configure do
 
     # Connections: self + ActionCable websockets. Both production hostnames are
     # served (see config/deploy.yml proxy host), so allow both; dev uses ws.
+    # The old name stays until the owner redirects or drops it (STEP 36 §Owner 3);
+    # test/config/one_public_host_test.rb allow-lists exactly this entry.
     ws_sources =
       if Rails.env.development? || Rails.env.test?
         ["ws://localhost:3000", "ws://127.0.0.1:3000"]

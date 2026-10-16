@@ -71,6 +71,37 @@ class LearningRoutesEngine::JourneyMapDataTest < ActionDispatch::IntegrationTest
     assert_select ".jm-root__meta", text: /· 2 temas\z/, message: "@steps must come from the policy, not from access_preview?"
   end
 
+  # STEP 38 §2: the header read "Camino personalizado · 3 etapas · 3 temas ·
+  # Camino personalizado · 8 etapas · nivel beginner · …" — its own sentence
+  # wrapped around a fallback route's subject_area sentence, two counts that
+  # disagreed. One sentence, counted from what the map draws.
+  test "the root's meta line is one sentence, counted from the map's modules and topics" do
+    @route.update!(
+      subject_area: "Camino personalizado · 8 etapas · nivel beginner",
+      translations: { "es" => { "title" => "Map", "subject_area" => "Camino personalizado · 8 etapas · nivel beginner" } }
+    )
+    step!(@preview, 0, "Free lesson")
+    step!(@preview, 1, "Second lesson")
+    step!(@paid, 10, "Paid lesson")
+
+    stages = journey_stages
+    drawn_topics = stages.sum { |stage| stage["topics"].size }
+    header = css_select(".jm-root__meta").first.text.squish
+
+    assert_equal "#{stages.size} módulos · #{drawn_topics} temas", header
+    assert_equal "2 módulos · 3 temas", header
+  end
+
+  test "the root's meta line counts in the singular" do
+    @paid.destroy!
+    step!(@preview, 0, "Only lesson")
+
+    journey_stages
+
+    assert_equal "1 módulo · 1 tema",
+                 css_select(".jm-root__meta").first.text.squish
+  end
+
   test "the list view lists a purchased module's steps without the lock" do
     step!(@preview, 0, "Free lesson")
     step!(@paid, 10, "Paid lesson")

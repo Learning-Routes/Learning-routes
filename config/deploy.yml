@@ -23,6 +23,8 @@ servers:
 
 proxy:
   ssl: true
+  # learning-routes.com stays so a request to it is still answered, until the
+  # owner redirects or drops it (STEP 36 §Owner 3). The site links only to learningroutes.com.
   host: learningroutes.com,learning-routes.com
   app_port: 80
   # kamal-proxy gives up after 30s by default and returns 504. On-demand image

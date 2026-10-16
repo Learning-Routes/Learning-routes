@@ -1,6 +1,6 @@
 <%#
   Route card with compact SVG visualization.
-  Locals: route (LearningRoute), accent_color (String hex)
+  Locals: route (LearningRoute), accent_token (CSS custom property name, e.g. "--color-node-nv1")
   Click navigates to the V4 journey page.
 %>
 <%
@@ -30,7 +30,7 @@
        data-controller="compact-route"
        data-compact-route-nodes-value="<%= nodes_data.to_json %>"
        data-compact-route-seed-value="<%= color_seed %>"
-       data-compact-route-color-value="<%= accent_color %>">
+       data-compact-route-color-value="<%= accent_token %>">
   </div>
 
   <%# === Route Info === %>
@@ -42,9 +42,9 @@
         <span style="margin-right:0.3rem;"><%= topic_emoji_for(route.topic) %></span><%= route.localized_topic %>
       </h3>
       <% badge_style = case route.status
-                        when 'active' then "background:var(--color-status-active-bg, rgba(91,168,128,0.1)); color:var(--color-status-active-text, #3D7A5A)"
-                        when 'completed' then "background:var(--color-status-completed-bg, rgba(110,155,200,0.1)); color:var(--color-status-completed-text, #4A7A9E)"
-                        when 'paused' then "background:var(--color-status-paused-bg, rgba(176,152,72,0.1)); color:var(--color-status-paused-text, #8B6D28)"
+                        when 'active' then "background:var(--color-status-active-bg); color:var(--color-status-active-text)"
+                        when 'completed' then "background:var(--color-status-completed-bg); color:var(--color-status-completed-text)"
+                        when 'paused' then "background:var(--color-status-paused-bg); color:var(--color-status-paused-text)"
                         else "background:var(--color-tint); color:var(--color-sub)"
                         end %>
       <span style="font-family:'DM Mono',monospace; font-size:0.55rem; letter-spacing:0.5px; text-transform:uppercase; padding:0.2rem 0.55rem; border-radius:6px; flex-shrink:0; white-space:nowrap; <%= badge_style %>">
@@ -59,11 +59,14 @@
 
     <%# Progress row: badge + bar %>
     <div style="display:flex; align-items:center; gap:0.7rem; margin-bottom:0.85rem;">
-      <span style="font-family:'DM Mono',monospace; font-size:0.72rem; font-weight:500; color:<%= accent_color %>; background:<%= accent_color %>0D; padding:0.18rem 0.55rem; border-radius:7px; flex-shrink:0;">
+      <% level = route_level(route) %>
+      <span data-route-level title="<%= t("learning_engine.journey.#{level}_label") %>"
+            style="font-family:'DM Mono',monospace; font-size:0.62rem; letter-spacing:1px; color:var(<%= accent_token %>); flex-shrink:0;"><%= level.upcase %></span>
+      <span style="font-family:'DM Mono',monospace; font-size:0.72rem; font-weight:500; color:var(<%= accent_token %>); background:color-mix(in srgb, var(<%= accent_token %>) 5%, transparent); padding:0.18rem 0.55rem; border-radius:7px; flex-shrink:0;">
         <%= progress %>%
       </span>
       <div style="flex:1; height:3px; background:var(--color-tint-strong); border-radius:2px; overflow:hidden;">
-        <div style="width:<%= progress %>%; height:100%; background:<%= accent_color %>; border-radius:2px; transition:width 0.4s cubic-bezier(0.22,1,0.36,1);"></div>
+        <div style="width:<%= progress %>%; height:100%; background:var(<%= accent_token %>); border-radius:2px; transition:width 0.4s cubic-bezier(0.22,1,0.36,1);"></div>
       </div>
     </div>
 
@@ -85,8 +88,8 @@
       </div>
       <div style="width:1px; height:22px; background:var(--color-border-subtle);"></div>
       <div style="display:flex; flex-direction:column; align-items:flex-start;">
-        <span style="font-family:'DM Mono',monospace; font-size:0.78rem; font-weight:500; color:var(--color-txt); letter-spacing:-0.2px;">
-          <%= stats[:accuracy]&.positive? ? "#{stats[:accuracy]}%" : "—" %>
+        <span data-stat="accuracy" style="font-family:'DM Mono',monospace; font-size:0.78rem; font-weight:500; color:var(--color-txt); letter-spacing:-0.2px;">
+          <%= stats[:accuracy] ? "#{stats[:accuracy]}%" : "—" %>
         </span>
         <span style="font-family:'DM Sans',sans-serif; font-size:0.62rem; color:var(--color-muted);"><%= t("route_card.accuracy") %></span>
       </div>

@@ -58,8 +58,8 @@
     ],
     continue_text: t("wizard.continue"),
     generate_text: t("wizard.generate"),
+    time_summary: t("wizard.step3.summary", hours: ":hours", minutes: ":minutes"),
     back_text: t("wizard.back"),
-    progress_of_6: t("wizard.step4.progress", done: ":done"),
     saved_style_badge: t("wizard.step4.saved_badge"),
     retake_text: t("wizard.step4.retake"),
     topics: {
@@ -121,7 +121,9 @@
 
   <%# === Step counter === %>
   <div class="wizard-step-counter" data-route-wizard-target="stepCounter">
-    Step <span data-route-wizard-target="stepNum">1</span> of 6
+    <%# "Paso %{n}" + "de 6": the number stays the span the controller updates. %>
+    <% label = t("wizard.step_label", n: "%{n}").split("%{n}", 2) %>
+    <%= safe_join([label.first, tag.span("1", data: { route_wizard_target: "stepNum" }), label.last, " ", t("wizard.step_of")]) %>
   </div>
 
   <%# === Content area === %>

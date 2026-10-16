@@ -48,17 +48,22 @@ class SettingsController < ApplicationController
   end
 
   def update_password
-    unless @user.authenticate(params[:current_password].to_s)
+    # A Google account that never chose a password has only a random one it never
+    # saw; Google verified it, so it creates one without the current (STEP 38 §5).
+    if @user.own_password? && !@user.authenticate(params[:current_password].to_s)
       @user.errors.add(:base, t("settings.wrong_current_password"))
       return render :edit, status: :unprocessable_entity
     end
 
-    if @user.update(password: params[:new_password], password_confirmation: params[:new_password_confirmation])
+    created = !@user.own_password?
+    # presence: has_secure_password ignores "" and would report success unchanged
+    if @user.update(password: params[:new_password].presence, password_confirmation: params[:new_password_confirmation].to_s,
+                    own_password: true)
       # Invalidate all other sessions (keep current one)
       current_session_id = session[:core_session_id]
       @user.sessions.where.not(id: current_session_id).destroy_all
 
-      redirect_to settings_path, notice: t("settings.password_updated")
+      redirect_to settings_path, notice: t(created ? "settings.password_created" : "settings.password_updated")
     else
       render :edit, status: :unprocessable_entity
     end

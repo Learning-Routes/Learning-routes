@@ -1,6 +1,6 @@
 # WP-37 — The journey is a map, not a scroll: design
 
-Source: `PROMPT_28_WP37_THE_JOURNEY_IS_A_MAP.md`. Branch `wp37-journey-map`, off `main` at
+Source: `STEP_28_WP37_THE_JOURNEY_IS_A_MAP.md`. Branch `wp37-journey-map`, off `main` at
 `5e07c80f`. Every section below was presented, amended by the owner, and accepted; the
 rulings are recorded inline where they changed the design, and collected in §7.
 
