@@ -40,7 +40,7 @@ module LearningRoutesEngine
         .order(:position, :id)
       @steps = @journey_modules.select(&readable_module).flat_map { |m| m.route_steps.sort_by(&:position) }
       @current_step_id = journey_current_step_id(@steps)
-      @journey_root = { title: @route.localized_topic.presence || @route.topic }
+      @journey_root = { title: plain_title(@route.localized_topic.presence || @route.topic) }
       @progress = RouteProgressTracker.new(@route).progress_summary
       @due_reviews = SpacedRepetition.new.due_reviews(@route)
       @stages = build_journey_stages(@journey_modules, readable_module)
@@ -73,6 +73,12 @@ module LearningRoutesEngine
     end
 
     private
+
+    # STEP 39 PR 2: a title on the map is plain text. Markup in a title is
+    # stripped (entities decoded), never shown as escaped tags.
+    def plain_title(text)
+      Nokogiri::HTML5.fragment(text.to_s).text.strip
+    end
 
     def deletion_cache_key
       "route_deletion_code:#{current_user.id}:#{@route.id}"
@@ -117,7 +123,7 @@ module LearningRoutesEngine
           access_state: route_module.access_state,
           readable: readable,
           level: level,
-          label: route_module.localized_title.presence || t("learning_engine.journey.#{level}_label"),
+          label: plain_title(route_module.localized_title).presence || t("learning_engine.journey.#{level}_label"),
           tag: level.upcase,
           status: readable ? stage_status_for(steps) : "locked",
           topics: steps.map { |step| journey_topic(step, readable: readable, parent_id: parents[step.id]&.parent_id) }
@@ -154,7 +160,7 @@ module LearningRoutesEngine
       reinforcement = ReinforcementParents.reinforcement?(step)
       topic = {
         id: step.id,
-        name: step.localized_title,
+        name: plain_title(step.localized_title),
         content_type: step.content_type,
         progress: progress,
         status: step.status,
@@ -165,7 +171,7 @@ module LearningRoutesEngine
         current: step.id == @current_step_id,
         path: route_step_path(@route, step)
       }
-      topic[:short_name] = reinforcement_short_name(step.localized_title) if reinforcement
+      topic[:short_name] = reinforcement_short_name(topic[:name]) if reinforcement
       topic[:minutes] = step.estimated_minutes if step.estimated_minutes
       topic
     end

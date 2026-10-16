@@ -196,12 +196,16 @@ class JourneyMapTest < ApplicationSystemTestCase
   end
 
   # ── Review Focus 2: titles are text ───────────────────────────────────
-  test "markup in a title renders as text" do
+  # STEP 39 PR 2: a title with markup is plain text — tags stripped, never
+  # rendered as markup and never shown as escaped "<b>" either.
+  test "markup in a title shows as plain text, on the map and in the Continue card" do
     route = build_route(7)
     open_journey(route)
     # Chips use <b> for their numbers; a title is never markup.
     assert_equal 0, page.evaluate_script("document.querySelectorAll('.jm-node__label b, .jm-root__title b, .jm-pop b:not(:first-child)').length")
-    assert_includes page.evaluate_script("document.querySelector('.jm-nodes').textContent"), "<b>ser</b>"
+    text = page.evaluate_script("document.querySelector('.jm-nodes').textContent + document.querySelector('.jm-card').textContent")
+    assert_includes text, "Comparar ser y"
+    assert_not_includes text, "<b>"
   end
 
   # ── Interactions (reduced motion: no transition to wait for) ──────────

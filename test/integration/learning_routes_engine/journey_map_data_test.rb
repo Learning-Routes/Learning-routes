@@ -377,6 +377,27 @@ class LearningRoutesEngine::JourneyMapDataTest < ActionDispatch::IntegrationTest
     journey_stages.find { |s| s["module_id"] == @preview.id }["topics"].index_by { |t| t["id"] }
   end
 
+  # STEP 39 PR 2: the cp2 renders showed "Comparar <b>ser</b>…" with its tags as
+  # text, on the map and in the Continue card. Titles on the map are plain text:
+  # tags stripped, entities decoded, never escaped markup.
+  test "a title with markup reaches the map and the Continue card as plain text" do
+    @route.update!(topic: "Mapa <i>nuevo</i>")
+    @preview.update!(title: "Módulo <b>uno</b>", translations: { "es" => { "title" => "Módulo <b>uno</b>" } })
+    step!(@preview, 1, "Comparar <b>ser</b> y <i>estar</i> &amp; más", status: :in_progress)
+    step!(@preview, 2, "Refuerzo: <b>ser</b> en contexto", metadata: { "reinforcement" => true })
+
+    stages = journey_stages
+
+    topics = stages.flat_map { |stage| stage["topics"] }
+    assert_equal "Comparar ser y estar & más", topics.first["name"]
+    assert_equal "Módulo uno", stages.first["label"]
+    topics.each do |topic|
+      %w[name short_name].each { |key| assert_no_match(/[<>]|&amp;/, topic[key].to_s, "#{key} carries markup: #{topic[key]}") }
+    end
+    assert_select ".jm-card__title", text: "Comparar ser y estar & más"
+    assert_select ".jm-root__title", text: "Mapa nuevo"
+  end
+
   def step!(route_module, position, title, status: :available, metadata: {})
     @route.route_steps.create!(
       route_module: route_module, position: position, title: title, status: status,
