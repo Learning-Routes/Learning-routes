@@ -601,10 +601,11 @@ class JourneyMapTest < ApplicationSystemTestCase
     { 7 => "7", production: "7+13", 43 => "43" }.each do |shape, name|
       [[1440, 1000, "1440"], [390, 844, "390"]].each do |w, h, width|
         %w[light dark].each do |theme|
-          viewport(w, h)
+          viewport(w, h, scale: w < 700 ? 2 : 1) # a phone at its real density (STEP 39 §2b)
           route = build_route(shape)
           open_journey(route, theme: theme, reduced_motion: true, sign_in: !signed_in)
           signed_in = true
+          assert_equal w, page.evaluate_script("document.documentElement.clientWidth")
           screenshot("#{name}-#{theme}-#{width}")
           page.driver.browser.execute_cdp("Emulation.setEmulatedMedia", features: [])
         end
@@ -880,16 +881,16 @@ class JourneyMapTest < ApplicationSystemTestCase
 
     dir = Rails.root.join("tmp", "wp37b", "renders")
     FileUtils.mkdir_p(dir)
-    path = dir.join("mapa-#{name}.png")
+    path = dir.join("mapa-#{ENV.fetch("SCREENSHOT_PREFIX", "")}#{name}.png")
     page.save_screenshot(path.to_s)
     puts "[#{name}] screenshot -> #{path}"
   end
 
 
   # The page area itself, not the window (CDP device metrics).
-  def viewport(width, height)
+  def viewport(width, height, scale: 1)
     page.driver.browser.execute_cdp("Emulation.setDeviceMetricsOverride",
-                                    width: width, height: height, deviceScaleFactor: 1, mobile: width < 700)
+                                    width: width, height: height, deviceScaleFactor: scale, mobile: width < 700)
   end
 
   # A touch tap as the browser delivers it: pointerdown (touch), focus, pointerup, click.
