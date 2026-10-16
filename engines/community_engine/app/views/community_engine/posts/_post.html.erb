@@ -33,7 +33,7 @@
       </p>
 
       <%# Inline floating thought — best comment preview %>
-      <% best_comment = post.comments.order(created_at: :desc).includes(:user).first %>
+      <% best_comment = post.latest_comment %>
       <% if best_comment %>
         <div style="display:inline-flex; align-items:center; gap:0.4rem; margin-top:0.5rem; padding:0.3rem 0.55rem;
                     background:var(--color-tint, rgba(28,24,18,0.03)); border-radius:8px; max-width:100%;">

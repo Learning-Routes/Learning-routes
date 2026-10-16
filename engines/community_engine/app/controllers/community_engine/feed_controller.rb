@@ -80,7 +80,8 @@ module CommunityEngine
       CommunityEngine::StatePreloader.new(current_user).preload(
         likeables: all_shared_routes + posts,
         rateables: all_shared_routes,
-        best_comments_for: all_shared_routes
+        best_comments_for: all_shared_routes,
+        latest_comments_for: posts
       )
     end
 

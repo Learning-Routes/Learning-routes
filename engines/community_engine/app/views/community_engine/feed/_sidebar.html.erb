@@ -2,8 +2,11 @@
   <%# Share My Routes — button + modal %>
   <% if current_user %>
     <%
-      profile = current_user.learning_profile
-      shareable_routes = profile&.learning_routes&.active_routes&.includes(:route_steps)&.order(updated_at: :desc) || []
+      # A join, not current_user.learning_profile: users are strict_loading.
+      shareable_routes = LearningRoutesEngine::LearningRoute.active_routes
+        .joins(:learning_profile)
+        .where(learning_routes_engine_learning_profiles: { user_id: current_user.id })
+        .includes(:route_steps).order(updated_at: :desc)
       already_shared_ids = current_user.shared_routes.pluck(:learning_route_id)
       unshared_routes = shareable_routes.reject { |r| already_shared_ids.include?(r.id) }
     %>

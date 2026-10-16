@@ -18,6 +18,11 @@ module CommunityEngine
       likes.exists?(user_id: user.id)
     end
 
+    def latest_comment
+      return @_latest_comment_cached if instance_variable_defined?(:@_latest_comment_preloaded)
+      comments.order(created_at: :desc).includes(:user).first
+    end
+
     def owned_by?(user)
       return false unless user
       user_id == user.id
