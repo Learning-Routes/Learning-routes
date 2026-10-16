@@ -1,61 +1,103 @@
 <% content_for(:title, "#{@route.localized_topic} #{t('learning_engine.route.title_suffix')}") %>
 
 <%
+  scope = "learning_engine.journey"
   labels = {
-    current: t("learning_engine.journey.status_current"),
-    available: t("learning_engine.journey.status_available"),
-    completed: t("learning_engine.journey.completed"),
-    locked: t("learning_engine.journey.locked_topic"),
-    reinforcement: t("learning_engine.journey.status_reinforcement")
+    current: t("#{scope}.status_current"),
+    available: t("#{scope}.status_available"),
+    completed: t("#{scope}.completed"),
+    locked: t("#{scope}.locked_topic"),
+    reinforcement: t("#{scope}.status_reinforcement"),
+    ahead: t("#{scope}.legend_ahead"),
+    chip_progress: t("#{scope}.chip_progress", done: "%{done}", total: "%{total}"),
+    topic_count_one: t("#{scope}.topic_count.one", count: "%{count}"),
+    topic_count_other: t("#{scope}.topic_count.other", count: "%{count}"),
+    unlock_module: t("#{scope}.unlock_module"),
+    pop_step: t("#{scope}.pop_step", module: "%{module}", step: "%{step}", total: "%{total}"),
+    pop_reinforcement: t("#{scope}.pop_reinforcement", parent: "%{parent}"),
+    pop_masked_title: t("#{scope}.pop_masked_title"),
+    pop_minutes: t("#{scope}.pop_minutes", count: "%{count}"),
+    act_continue: t("#{scope}.act_continue"),
+    act_review: t("#{scope}.act_review"),
+    act_reinforcement: t("#{scope}.act_reinforcement"),
+    act_open: t("#{scope}.act_open"),
+    act_locked: t("#{scope}.act_locked"),
+    act_masked: t("#{scope}.act_masked")
   }
+  topic_count = @stages.sum { |stage| stage[:topics].size }
 %>
 
-<%# WP-37: the journey is a map. The page does not scroll; the camera moves.
-    Nodes are built by route_journey_controller.js from the JSON below; the
-    route title is the root node and the page's only <h1>. %>
+<%# WP-37/37b: the journey is a map. The page does not scroll; the camera moves.
+    Nodes, panels, chips and lines are drawn by route_journey_controller.js from
+    the JSON below; the route title is the root and the page's only <h1>.
+    Every overlay carries data-journey-overlay so the camera keeps the current
+    step clear of it. %>
 <div id="journey-map" class="jm"
      data-controller="route-journey"
      data-route-journey-stages-value="<%= ERB::Util.html_escape(@stages.to_json) %>"
      data-route-journey-root-value="<%= ERB::Util.html_escape(@journey_root.to_json) %>"
-     data-route-journey-labels-value="<%= ERB::Util.html_escape(labels.to_json) %>">
+     data-route-journey-labels-value="<%= ERB::Util.html_escape(labels.to_json) %>"
+     data-route-journey-unlock-path-value="<%= route_path(@route) %>">
 
   <div class="jm-viewport" data-route-journey-target="viewport" tabindex="0" role="region"
-       aria-label="<%= t('learning_engine.journey.map_keys') %>">
-    <div class="jm-world" data-route-journey-target="world">
+       aria-label="<%= t("#{scope}.map_keys") %>">
+    <div class="jm-world" data-route-journey-target="world" data-lod="near">
+      <svg class="jm-terrain" data-route-journey-target="terrain" aria-hidden="true"></svg>
       <svg class="jm-edges" data-route-journey-target="edges" aria-hidden="true"></svg>
       <div class="jm-nodes" data-route-journey-target="nodes">
-        <h1 class="jm-root" data-route-journey-target="root" data-node-id="root"><%= @journey_root[:title] %></h1>
+        <div class="jm-root" data-route-journey-target="root" data-node-id="root">
+          <span class="jm-root__eyebrow"><%= t("#{scope}.your_route") %></span>
+          <h1 class="jm-root__title"><%= @journey_root[:title] %></h1>
+          <span class="jm-root__meta"><%= t("#{scope}.module_count", count: @stages.size) %> · <%= t("#{scope}.topic_count", count: topic_count) %></span>
+        </div>
       </div>
     </div>
   </div>
 
-  <p class="jm-overlay jm-subtitle" data-journey-overlay>
-    <%# Counted from what the map draws (STEP 38 §2); the route's own name is the h1. %>
-    <%= t("learning_engine.journey.subtitle",
-          stages: t("learning_engine.journey.stage_count", count: @stages.size),
-          topics: t("learning_engine.journey.topic_count", count: @stages.sum { |stage| stage[:topics].size })) %>
-    · <%= t("learning_engine.journey.drag_to_explore") %>
-  </p>
+  <div id="jm-pop" class="jm-pop jm-glass" data-route-journey-target="pop" role="tooltip" aria-hidden="true"></div>
 
-  <nav class="jm-overlay jm-rail" data-journey-overlay aria-label="<%= t('learning_engine.journey.stage_navigation') %>">
-    <% @stages.each_with_index do |stage, i| %>
-      <button type="button" class="jm-rail__dot" data-route-journey-target="railDot"
-              data-action="click->route-journey#focusModule" data-stage-index="<%= i %>"
-              style="--jm-level: var(--color-node-<%= stage[:level] %>);"
-              aria-label="<%= t('learning_engine.journey.stage_of', current: i + 1, total: @stages.size) %> - <%= stage[:label] %>"></button>
-    <% end %>
-  </nav>
-
-  <div class="jm-overlay jm-controls" data-journey-overlay>
-    <button type="button" data-action="route-journey#zoomOut" aria-label="<%= t('learning_engine.journey.zoom_out') %>">−</button>
-    <button type="button" data-action="route-journey#zoomIn" aria-label="<%= t('learning_engine.journey.zoom_in') %>">+</button>
-    <button type="button" data-action="route-journey#fit" aria-label="<%= t('learning_engine.journey.fit_label') %>"><%= t("learning_engine.journey.fit") %></button>
+  <div class="jm-overlay jm-legend jm-glass" data-journey-overlay aria-label="<%= t("#{scope}.legend_label") %>" role="group">
+    <span><i class="jm-legend__mark jm-legend__mark--done"></i><%= t("#{scope}.legend_done") %></span>
+    <span><i class="jm-legend__mark jm-legend__mark--current"></i><%= t("#{scope}.status_current") %></span>
+    <span><i class="jm-legend__mark"></i><%= t("#{scope}.legend_ahead") %></span>
+    <span><i class="jm-legend__mark jm-legend__mark--reinforcement"></i><%= t("#{scope}.status_reinforcement") %></span>
+    <span><i class="jm-legend__mark jm-legend__mark--locked"></i><%= t("#{scope}.locked") %></span>
   </div>
 
-  <%= link_to route_path(@route), class: "jm-overlay jm-list-link", data: { journey_overlay: "" } do %>
-    <svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-      <path d="M2 4h12M2 8h12M2 12h12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-    </svg>
-    <%= t("learning_engine.journey.list_view") %>
+  <% if @continue %>
+    <div class="jm-overlay jm-card jm-glass" data-journey-overlay data-route-journey-target="card"
+         style="--jm-line: var(--color-node-<%= @continue[:level] %>);">
+      <div class="jm-card__text">
+        <% if @continue[:completed] %>
+          <span class="jm-card__eyebrow"><%= t("#{scope}.route_completed_eyebrow", done: @continue[:done], total: @continue[:total]) %></span>
+          <span class="jm-card__title"><%= t("#{scope}.route_completed") %></span>
+        <% else %>
+          <span class="jm-card__eyebrow"><%= t("#{scope}.continue_eyebrow", module: @continue[:module], step: @continue[:step], total: @continue[:total]) %></span>
+          <span class="jm-card__title"><%= @continue[:title] %></span>
+        <% end %>
+      </div>
+      <% unless @continue[:completed] %>
+        <button type="button" class="jm-iconbtn" data-action="route-journey#locate"
+                aria-label="<%= t("#{scope}.locate") %>" title="<%= t("#{scope}.locate_title") %>">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="3.5"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/><circle cx="12" cy="12" r="8"/></svg>
+        </button>
+      <% end %>
+      <%= link_to @continue[:path], class: "jm-cta", data: { journey_continue: "" } do %>
+        <%= @continue[:completed] ? t("#{scope}.list_view") : t("#{scope}.continue") %><%= svg_icon(:arrow_right) %>
+      <% end %>
+    </div>
   <% end %>
+
+  <div class="jm-overlay jm-bar jm-glass" data-journey-overlay>
+    <%= link_to route_path(@route), class: "jm-bar__list" do %>
+      <svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+        <path d="M2 4h12M2 8h12M2 12h12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+      <%= t("#{scope}.list_view") %>
+    <% end %>
+    <span class="jm-bar__rule" aria-hidden="true"></span>
+    <button type="button" data-action="route-journey#zoomOut" aria-label="<%= t("#{scope}.zoom_out") %>">−</button>
+    <button type="button" data-action="route-journey#zoomIn" aria-label="<%= t("#{scope}.zoom_in") %>">+</button>
+    <button type="button" data-action="route-journey#fit" aria-label="<%= t("#{scope}.fit_label") %>"><%= t("#{scope}.fit") %></button>
+  </div>
 </div>

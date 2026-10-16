@@ -40,10 +40,11 @@ module LearningRoutesEngine
         .order(:position, :id)
       @steps = @journey_modules.select(&readable_module).flat_map { |m| m.route_steps.sort_by(&:position) }
       @current_step_id = journey_current_step_id(@steps)
-      @journey_root = { title: @route.localized_topic.presence || @route.topic }
+      @journey_root = { title: plain_title(@route.localized_topic.presence || @route.topic) }
       @progress = RouteProgressTracker.new(@route).progress_summary
       @due_reviews = SpacedRepetition.new.due_reviews(@route)
       @stages = build_journey_stages(@journey_modules, readable_module)
+      @continue = journey_continue(@stages)
       render layout: "journey"
     end
 
@@ -72,6 +73,15 @@ module LearningRoutesEngine
     end
 
     private
+
+    # STEP 39 PR 2: a title on the map is plain text. Formatting tags in a title
+    # are stripped and entities decoded, never shown as escaped tags. Only those
+    # tags: anything else in angle brackets ("List<String>", "a<b") is the title.
+    FORMATTING_TAG = %r{</?(?:b|strong|i|em|u|s|code|mark|small|sub|sup|span|br)(?:\s[^<>]*)?/?>}i
+
+    def plain_title(text)
+      CGI.unescapeHTML(text.to_s.gsub(FORMATTING_TAG, "")).strip
+    end
 
     def deletion_cache_key
       "route_deletion_code:#{current_user.id}:#{@route.id}"
@@ -116,7 +126,7 @@ module LearningRoutesEngine
           access_state: route_module.access_state,
           readable: readable,
           level: level,
-          label: route_module.localized_title.presence || t("learning_engine.journey.#{level}_label"),
+          label: plain_title(route_module.localized_title).presence || t("learning_engine.journey.#{level}_label"),
           tag: level.upcase,
           status: readable ? stage_status_for(steps) : "locked",
           topics: steps.map { |step| journey_topic(step, readable: readable, parent_id: parents[step.id]&.parent_id) }
@@ -150,19 +160,65 @@ module LearningRoutesEngine
       else 0
       end
 
-      {
+      reinforcement = ReinforcementParents.reinforcement?(step)
+      topic = {
         id: step.id,
-        name: step.localized_title,
+        name: plain_title(step.localized_title),
         content_type: step.content_type,
         progress: progress,
         status: step.status,
         # One rule (ReinforcementParents.reinforcement?). The old second branch,
         # metadata["triggering_module_id"], had no writer anywhere.
-        reinforcement: ReinforcementParents.reinforcement?(step),
+        reinforcement: reinforcement,
         parent_id: parent_id,
         current: step.id == @current_step_id,
         path: route_step_path(@route, step)
       }
+      topic[:short_name] = reinforcement_short_name(topic[:name]) if reinforcement
+      topic[:minutes] = step.estimated_minutes if step.estimated_minutes
+      topic
+    end
+
+    # WP-37b brief §5.1. What the Continue card says, from the stages the map
+    # draws: the current step with its place among its module's primary steps,
+    # "route completed" when every readable step is done, nothing when no
+    # readable step exists.
+    def journey_continue(stages)
+      readable = stages.select { |stage| stage[:readable] }
+      topics = readable.flat_map { |stage| stage[:topics] }
+      return nil if topics.empty?
+
+      done = topics.count { |topic| topic[:status] == "completed" }
+      if done == topics.size
+        return { completed: true, done: done, total: topics.size, level: readable.last[:level],
+                 path: route_path(@route) }
+      end
+
+      current = topics.find { |topic| topic[:current] }
+      return nil unless current
+
+      stage = readable.find { |s| s[:topics].include?(current) }
+      primaries = stage[:topics].reject { |topic| topic[:reinforcement] }
+      upto = stage[:topics].take(stage[:topics].index(current) + 1)
+      { completed: false, module: stage[:label], level: stage[:level], title: current[:name], path: current[:path],
+        step: [upto.count { |topic| !topic[:reinforcement] }, 1].max, total: primaries.size }
+    end
+
+    REINFORCEMENT_KINDS = %w[review practice reassessment].freeze
+
+    # WP-37b brief §4.4. The map labels a reinforcement without its "Refuerzo:"
+    # prefix; `name` keeps the full title. A generated reinforcement's title is
+    # written in the ROUTE's language (AdaptiveDifficulty), so it is matched
+    # against every locale and its short form given in the page's.
+    def reinforcement_short_name(title)
+      kind = REINFORCEMENT_KINDS.find do |k|
+        I18n.available_locales.any? { |l| I18n.t("learning_engine.reinforcement.#{k}.title", locale: l) == title }
+      end
+      return t("learning_engine.reinforcement.#{kind}.short") if kind
+
+      prefixes = I18n.available_locales.map { |l| I18n.t("learning_engine.journey.status_reinforcement", locale: l) }
+      prefix = prefixes.find { |p| title.start_with?("#{p}:") }
+      prefix ? title.delete_prefix("#{prefix}:").strip : title
     end
 
     # WP-37 §1.4. ONE current step, decided here, from the position the server
