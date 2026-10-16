@@ -590,7 +590,9 @@ module ContentEngine
       return nil if text.nil?
 
       JSON.parse(text)
-    rescue JSON::ParserError
+    rescue JSON::ParserError => e
+      # Callers fall back to a concept block; this keeps the parser's own reason.
+      Rails.logger.warn("[LessonSectionParser] #{e.class}: #{e.message.truncate(200)}")
       nil
     end
 

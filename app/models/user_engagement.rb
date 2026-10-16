@@ -63,7 +63,8 @@ class UserEngagement < ApplicationRecord
                  .select("DATE(created_at)")
                  .distinct
                  .count
-  rescue
+  rescue => e
+    Rails.logger.warn("[UserEngagement] user=#{user_id} active days unavailable: #{e.class}: #{e.message}")
     0
   end
 end
