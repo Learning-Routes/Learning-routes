@@ -83,28 +83,27 @@ export function ensureVisible(camera, box, safe, margin = 24) {
   return { ...camera, x: camera.x + dx, y: camera.y + dy };
 }
 
-const unionOf = (a, b) => {
-  const x = Math.min(a.x, b.x);
-  const y = Math.min(a.y, b.y);
-  return { x, y, w: Math.max(a.x + a.w, b.x + b.w) - x, h: Math.max(a.y + a.h, b.y + b.h) - y };
-};
 
-// §3.4. Fit the current module, never zoomed past 1x and never below the scale
-// that keeps labels legible. If the whole module fits at that scale, centre it;
-// otherwise centre the current node. With no module (nothing readable), centre
-// the given node — the root — at 1x.
-// WP-37b: `alsoBox` (the route's title) joins the module when their union still
-// fits at the legible floor; otherwise the rule above applies unchanged.
-export function initialCamera({ moduleBox, alsoBox = null, node, safe, minScale, padding = 24 }) {
-  if (moduleBox && alsoBox) {
-    const union = unionOf(moduleBox, alsoBox);
-    const fit = Math.min((safe.width - 2 * padding) / union.w, (safe.height - 2 * padding) / union.h);
-    if (fit >= minScale) return centerOn(centerOf(union), safe, Math.min(1, fit));
-  }
-  if (!moduleBox) return centerOn(centerOf(node), safe, 1);
-  const fit = Math.min((safe.width - 2 * padding) / moduleBox.w, (safe.height - 2 * padding) / moduleBox.h);
-  const k = clampScale(fit, { min: minScale, max: 1 });
-  const fits = moduleBox.w * k <= safe.width - 2 * padding + 0.5 &&
-               moduleBox.h * k <= safe.height - 2 * padding + 0.5;
-  return centerOn(centerOf(fits ? moduleBox : node), safe, k);
+// STEP 38 §4, the leash. `world` is the content box plus a margin. Zoom runs
+// from the fitted scale to twice that; nothing beyond. The fitted scale is
+// fit-to-width, held between the legible floor (labels never under 12 px, the
+// WP-37b rule) and 1 (a small route is not blown up past its drawn size).
+export function leashRange(world, safe, { floor = 0, ceiling = Infinity } = {}) {
+  const fit = Math.min(ceiling, Math.max(floor, safe.width / world.w));
+  return { min: fit, max: 2 * fit };
+}
+
+// The camera never shows past the world: on an axis where the world is larger
+// than the safe rect it covers the rect; where it is smaller it is centred.
+export function clampCamera(camera, world, safe) {
+  const axis = (pos, start, size, safeStart, safeSize) => {
+    const span = size * camera.k;
+    if (span <= safeSize) return safeStart + (safeSize - span) / 2 - start * camera.k;
+    const max = safeStart - start * camera.k;
+    const min = safeStart + safeSize - (start + size) * camera.k;
+    return Math.min(max, Math.max(min, pos));
+  };
+  return { k: camera.k,
+           x: axis(camera.x, world.x, world.w, safe.left, safe.width),
+           y: axis(camera.y, world.y, world.h, safe.top, safe.height) };
 }

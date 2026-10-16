@@ -205,11 +205,16 @@ class JourneyMapTest < ApplicationSystemTestCase
   end
 
   # ── Interactions (reduced motion: no transition to wait for) ──────────
-  test "Fit shows every node clear of the overlays" do
+  # STEP 38 §4: "Encajar" returns to the opening view — fitted, the current step centred.
+  test "Encajar returns to the opening view: fitted, the current step centred" do
     route = build_route(43)
     open_journey(route, reduced_motion: true)
+    opening = matrix
+    drag_by(0, -1500)
+    assert_operator (matrix["f"] - opening["f"]).abs, :>, 100, "the drag did not move the map"
     find("[data-action~='route-journey#fit']").click
-    node_boxes.each { |box| assert_clear box }
+    opening.each { |key, value| assert_in_delta value, matrix[key], 0.5, "Encajar did not return to the opening #{key}" }
+    assert_clear box_of(page.evaluate_script("document.querySelector('.jm-node--current').dataset.nodeId"))
   end
 
   # WP-37b §4.1: the rail is gone; a module's chip (and its disc) jump to it.
@@ -218,21 +223,24 @@ class JourneyMapTest < ApplicationSystemTestCase
     open_journey(route, reduced_motion: true)
     assert_no_selector ".jm-rail"
     locked = route.route_modules.find_by!(access_state: :locked)
-    # From the whole route in view (Fit), the locked module's chip is on screen.
-    find("[data-action~='route-journey#fit']").click
-    find(".jm-chip[data-module-node-id='m:#{locked.id}']").click
+    chip = ".jm-chip[data-module-node-id='m:#{locked.id}']"
+    # The camera is on a leash (STEP 38 §4): drag the chip on screen first.
+    vp = rect_of(".jm-viewport")
+    drag_by(0, -(rect_of(chip)["top"] - (vp["top"] + vp["bottom"]) / 2))
+    find(chip).click
     assert_clear box_of("m:#{locked.id}")
   end
 
+  # Inside the leash: the 43-step route is taller than the screen, so a vertical
+  # drag moves it by exactly the dragged distance.
   test "a pointer drag pans by the dragged distance; a drag from a node does not navigate" do
-    route = build_route(7)
+    route = build_route(43)
     open_journey(route, reduced_motion: true)
     before = translate
     x, y = empty_point
-    page.driver.browser.action.move_to_location(x, y).click_and_hold.move_by(120, 80).release.perform
+    page.driver.browser.action.move_to_location(x, y).click_and_hold.move_by(0, -80).release.perform
     after = translate
-    assert_in_delta before[0] + 120, after[0], 1
-    assert_in_delta before[1] + 80, after[1], 1
+    assert_in_delta before[1] - 80, after[1], 1
 
     # Turbo changes the URL only after its fetch returns, so comparing the URL
     # right after the gesture proves nothing. Count visits STARTED instead, and
@@ -252,15 +260,43 @@ class JourneyMapTest < ApplicationSystemTestCase
     assert_current_path %r{/steps/}
   end
 
-  test "a plain wheel pans and does not zoom" do
+  # STEP 38 §4, the leash: "a drag of 10,000 px leaves the map within bounds".
+  test "a drag of 10,000 px leaves the map within bounds" do
+    route = build_route(43)
+    open_journey(route, reduced_motion: true)
+    [[10_000, 0], [-10_000, 0], [0, 10_000], [0, -10_000]].each do |dx, dy|
+      drag_by(dx, dy)
+      nodes = node_boxes
+      vp = rect_of(".jm-viewport")
+      assert nodes.any? { |b| b["left"] < vp["right"] && b["right"] > vp["left"] && b["top"] < vp["bottom"] && b["bottom"] > vp["top"] },
+             "after a drag of #{dx},#{dy} no step is on screen"
+      held = matrix
+      drag_by(dx, dy)
+      assert_in_delta held["e"], matrix["e"], 0.5, "a second drag of #{dx},#{dy} moved the map past its bound"
+      assert_in_delta held["f"], matrix["f"], 0.5, "a second drag of #{dx},#{dy} moved the map past its bound"
+    end
+  end
+
+  # STEP 38 §4: "wheel without a modifier does not change the camera".
+  test "wheel without a modifier does not change the camera" do
     route = build_route(43)
     open_journey(route, reduced_motion: true)
     before = matrix
     origin = Selenium::WebDriver::WheelActions::ScrollOrigin.element(find(".jm-viewport").native)
-    page.driver.browser.action.scroll_from(origin, 0, 200).perform
-    after = matrix
-    assert_in_delta before["a"], after["a"], 1e-6, "a plain wheel zoomed"
-    assert_in_delta before["f"] - 200, after["f"], 1
+    page.driver.browser.action.scroll_from(origin, 0, 400).perform
+    page.driver.browser.action.scroll_from(origin, 300, 0).perform
+    sleep 0.1
+    assert_equal before, matrix
+  end
+
+  test "Ctrl + wheel zooms, never past twice the fitted scale nor below it" do
+    route = build_route(43)
+    open_journey(route, reduced_motion: true)
+    fitted = matrix["a"]
+    ctrl_wheel(-5000)
+    assert_in_delta 2 * fitted, matrix["a"], 1e-3
+    ctrl_wheel(5000)
+    assert_in_delta fitted, matrix["a"], 1e-3
   end
 
   # §3.3: a resize keeps the camera's centre. Once the student has moved the
@@ -268,12 +304,9 @@ class JourneyMapTest < ApplicationSystemTestCase
   test "a resize after panning away keeps the view and does not jump back to the current step" do
     route = build_route(43)
     open_journey(route, reduced_motion: true)
-    page.execute_script(<<~JS)
-      document.querySelector(".jm-viewport").dispatchEvent(new WheelEvent("wheel", { deltaY: 1500, bubbles: true, cancelable: true }))
-    JS
-    sleep 0.2
+    drag_by(0, -1500)
     current_id = page.evaluate_script("document.querySelector('.jm-node--current').dataset.nodeId")
-    assert_operator box_of(current_id)["bottom"], :<, 0, "the wheel should have panned the current step off the top"
+    assert_operator box_of(current_id)["bottom"], :<, 0, "the drag should have panned the current step off the top"
     before = translate
 
     page.current_window.resize_to(1200, 900)
@@ -309,14 +342,16 @@ class JourneyMapTest < ApplicationSystemTestCase
     assert_equal edges, page.evaluate_script("document.querySelectorAll('.jm-edges path').length")
   end
 
-  # A phone rotates: Fit must fit the viewport it has NOW.
-  test "after a resize, Fit still shows every node clear of the overlays" do
+  # A phone rotates: Encajar fits the viewport it has NOW, legible, the current step clear.
+  test "after a resize, Encajar fits the viewport it has now" do
     route = build_route(7)
     open_journey(route, reduced_motion: true)
     page.current_window.resize_to(390, 844)
     sleep 0.3
     find("[data-action~='route-journey#fit']").click
-    node_boxes.each { |box| assert_clear box }
+    assert_in_delta 12 / 13.0, matrix["a"], 1e-3, "the phone opens at the legible floor"
+    current = page.evaluate_script("document.querySelector('.jm-node--current').dataset.nodeId")
+    assert_clear box_of(current)
   end
 
   # Ctrl/Cmd with = - 0 is the BROWSER's page zoom; the map must not take it.
@@ -410,14 +445,14 @@ class JourneyMapTest < ApplicationSystemTestCase
     route = build_route(43)
     open_journey(route, reduced_motion: true)
     current_id = page.evaluate_script("document.querySelector('.jm-node--current').dataset.nodeId")
-    wheel(0, 1500)
+    drag_by(0, -1500)
     assert_operator box_of(current_id)["bottom"], :<, 0
 
     page.execute_script("document.querySelector('.jm-viewport').focus()")
     page.driver.browser.action.send_keys("i").perform
     assert_clear box_of(current_id)
 
-    wheel(0, 1500)
+    drag_by(0, -1500)
     find(".jm-card .jm-iconbtn").click
     assert_clear box_of(current_id)
   end
@@ -481,7 +516,7 @@ class JourneyMapTest < ApplicationSystemTestCase
     first = route.route_steps.find_by!(position: 0)
     top = box_of("s:#{first.id}")["top"]
     topbar = page.evaluate_script("document.getElementById('journey-topbar').getBoundingClientRect().bottom")
-    wheel(0, top - topbar - 6)
+    drag_by(0, -(top - topbar - 6))
 
     page.driver.browser.action.move_to(find("[data-node-id='s:#{first.id}'] .jm-node__dot").native).perform
     assert_selector ".jm-pop.jm-pop--show.jm-pop--below"
@@ -490,30 +525,7 @@ class JourneyMapTest < ApplicationSystemTestCase
     assert_operator pop["right"], :<=, 390
   end
 
-  # ── WP-37b §5.3: LOD and double-click ─────────────────────────────────
-  test "zoomed far out the labels fade and the discs stay" do
-    page.current_window.resize_to(390, 844)
-    route = build_route(43)
-    open_journey(route, reduced_motion: true)
-    find("[data-action~='route-journey#fit']").click
-
-    assert_operator matrix["a"], :<, 0.5
-    assert_equal "far", find(".jm-world")["data-lod"]
-    # The fade is an opacity transition (0.01 ms under reduced motion): read the
-    # settled value, not a frame in between.
-    read = lambda do
-      page.evaluate_script(<<~JS)
-        [...document.querySelectorAll(".jm-node--step .jm-node__label, .jm-node--reinforcement .jm-node__label")]
-          .map((el) => getComputedStyle(el).opacity)
-      JS
-    end
-    opacities = read.call
-    Timeout.timeout(2) { sleep 0.05 until (opacities = read.call).all? { |o| o == "0" } } rescue Timeout::Error
-    assert opacities.all? { |o| o == "0" }, "a label is still drawn at far zoom: #{opacities.uniq}"
-    discs = page.evaluate_script("[...document.querySelectorAll('.jm-node__dot')].map((el) => getComputedStyle(el).opacity)")
-    assert discs.all? { |o| o == "1" }
-  end
-
+  # ── WP-37b §5.3: double-click (LOD far is out of reach on the leash) ──
   test "double-click on the canvas zooms in there; on the module disc it centres it at 1.2 or more" do
     route = build_route(7)
     open_journey(route, reduced_motion: true)
@@ -652,7 +664,7 @@ class JourneyMapTest < ApplicationSystemTestCase
     page.execute_script("document.querySelector(#{chip.to_json}).focus()")
     assert_clear rect_of(chip)
 
-    wheel(0, -3000)
+    drag_by(0, 3000)
     page.execute_script("document.querySelector('.jm-unlock').focus()")
     assert_clear rect_of(".jm-unlock")
   end
@@ -888,10 +900,26 @@ class JourneyMapTest < ApplicationSystemTestCase
     sleep 0.15
   end
 
-  def wheel(dx, dy)
+  def ctrl_wheel(dy)
     page.execute_script(<<~JS)
-      document.querySelector(".jm-viewport").dispatchEvent(new WheelEvent("wheel", { deltaX: #{dx}, deltaY: #{dy}, bubbles: true, cancelable: true }))
+      document.querySelector(".jm-viewport").dispatchEvent(new WheelEvent("wheel", { deltaY: #{dy}, ctrlKey: true, bubbles: true, cancelable: true }))
     JS
+    sleep 0.1
+  end
+
+  # A real mouse drag from an empty point, through CDP: unlike WebDriver actions
+  # it may travel past the window's edge, as a 10,000 px drag must. The pan is
+  # what the map would do for a wheel of (-dx, -dy) before the leash.
+  def drag_by(dx, dy, steps: 20)
+    x, y = empty_point
+    send = ->(type, px, py, buttons) {
+      page.driver.browser.execute_cdp("Input.dispatchMouseEvent", type: type, x: px, y: py,
+                                      button: "left", buttons: buttons, clickCount: 1)
+    }
+    send.call("mouseMoved", x, y, 0)
+    send.call("mousePressed", x, y, 1)
+    (1..steps).each { |i| send.call("mouseMoved", x + dx * i / steps, y + dy * i / steps, 1) }
+    send.call("mouseReleased", x + dx, y + dy, 0)
     sleep 0.1
   end
 

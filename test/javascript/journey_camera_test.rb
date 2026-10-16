@@ -53,76 +53,6 @@ class JourneyCameraTest < ActiveSupport::TestCase
     assert_inside s, safe
   end
 
-  test "initial camera: a module that fits is centred whole, at no more than 1x" do
-    safe = call("safeRect", DESKTOP, [TOPBAR])
-    mod = { x: -84, y: 132, w: 900, h: 300 }
-    node = { x: 400, y: 150, w: 168, h: 88 }
-    cam = call("initialCamera", { moduleBox: mod, node: node, safe: safe, minScale: 12 / 13.0 })
-    assert_equal 1, cam["k"], "a module that fits at 1x is shown at 1x"
-    assert_inside call("screenBox", cam, mod), safe
-    assert_centred mod, cam, safe
-  end
-
-  test "initial camera: a module that fits between the legible floor and 1x is fitted exactly" do
-    safe = call("safeRect", DESKTOP, [TOPBAR])
-    mod = { x: -84, y: 132, w: 1500, h: 400 } # fit = (1440 - 48) / 1500 = 0.928, inside [12/13, 1]
-    node = { x: 1200, y: 150, w: 168, h: 88 }
-    cam = call("initialCamera", { moduleBox: mod, node: node, safe: safe, minScale: 12 / 13.0 })
-    assert_in_delta (1440 - 48) / 1500.0, cam["k"], 1e-9
-    assert_centred mod, cam, safe
-  end
-
-  test "initial camera: a module too big at the legible floor centres the current step instead" do
-    safe = call("safeRect", PHONE, [{ left: 0, top: 0, width: 390, height: 72 }])
-    mod = { x: -84, y: 132, w: 900, h: 3000 }
-    node = { x: 600, y: 2000, w: 168, h: 88 }
-    cam = call("initialCamera", { moduleBox: mod, node: node, safe: safe, minScale: 12 / 13.0 })
-    assert_in_delta 12 / 13.0, cam["k"], 1e-9, "labels must be at least 12px at first paint"
-    assert_inside call("screenBox", cam, node), safe
-  end
-
-  test "initial camera with no module (nothing readable) centres the root at 1x" do
-    safe = call("safeRect", DESKTOP, [TOPBAR])
-    root = { x: -180, y: 0, w: 360, h: 76 }
-    cam = call("initialCamera", { moduleBox: nil, node: root, safe: safe, minScale: 12 / 13.0 })
-    assert_equal 1, cam["k"]
-    assert_inside call("screenBox", cam, root), safe
-  end
-
-  # WP-37b §2.3 / §5.4: the title beside the spine's origin is kept in view with the
-  # first module when both fit at a legible scale.
-  test "initial camera: module and title together, when their union fits at the legible floor" do
-    safe = call("safeRect", DESKTOP, [TOPBAR])
-    mod = { x: -98, y: 98, w: 1200, h: 520 }
-    title = { x: 18, y: 0, w: 420, h: 64 }
-    node = { x: 400, y: 150, w: 124, h: 100 }
-    cam = call("initialCamera", { moduleBox: mod, alsoBox: title, node: node, safe: safe, minScale: 12 / 13.0 })
-    union = { x: -98, y: 0, w: 1200, h: 618 }
-    assert_in_delta [(1440 - 48) / 1200.0, 1].min, cam["k"], 1e-9
-    assert_inside call("screenBox", cam, mod), safe
-    assert_inside call("screenBox", cam, title), safe
-    assert_centred union, cam, safe
-  end
-
-  test "initial camera: a union too big at the floor falls back to today's rule exactly" do
-    safe = call("safeRect", PHONE, [{ left: 0, top: 0, width: 390, height: 72 }])
-    mod = { x: -98, y: 98, w: 900, h: 3000 }
-    title = { x: 18, y: 0, w: 420, h: 64 }
-    node = { x: 600, y: 2000, w: 124, h: 100 }
-    base = { moduleBox: mod, node: node, safe: safe, minScale: 12 / 13.0 }
-    assert_equal call("initialCamera", base), call("initialCamera", base.merge(alsoBox: title))
-  end
-
-  test "initial camera: alsoBox null changes nothing" do
-    safe = call("safeRect", DESKTOP, [TOPBAR])
-    [[{ x: -84, y: 132, w: 900, h: 300 }, { x: 400, y: 150, w: 168, h: 88 }],
-     [{ x: -84, y: 132, w: 1500, h: 400 }, { x: 1200, y: 150, w: 168, h: 88 }],
-     [nil, { x: -180, y: 0, w: 360, h: 76 }]].each do |mod, node|
-      base = { moduleBox: mod, node: node, safe: safe, minScale: 12 / 13.0 }
-      assert_equal call("initialCamera", base), call("initialCamera", base.merge(alsoBox: nil))
-    end
-  end
-
   test "ensureVisible moves an off-screen box just inside the safe rect" do
     safe = call("safeRect", DESKTOP, [TOPBAR])
     box = { x: 3000, y: 2000, w: 168, h: 88 }
@@ -131,6 +61,45 @@ class JourneyCameraTest < ActiveSupport::TestCase
   end
 
   private
+
+  # STEP 38 §4, the leash: the content box plus a margin is the world; the
+  # camera never shows past it, and zoom runs from fit-to-width to 2× that.
+  WORLD = { x: -40, y: -40, w: 880, h: 2400 }.freeze
+
+  test "a drag of 10,000 px in any direction leaves the world covering the screen" do
+    safe = DESKTOP.merge(top: 52, height: 948)
+    k = call("leashRange", WORLD, safe)["min"]
+    [[10_000, 0], [-10_000, 0], [0, 10_000], [0, -10_000], [10_000, 10_000]].each do |dx, dy|
+      cam = call("clampCamera", { x: dx, y: dy, k: k }, WORLD, safe)
+      s = call("screenBox", cam, WORLD)
+      assert_operator s["top"], :<=, safe[:top] + 0.01, "dragged #{dx},#{dy}: a gap above the world"
+      assert_operator s["top"] + s["height"], :>=, safe[:top] + safe[:height] - 0.01, "dragged #{dx},#{dy}: a gap below"
+      assert_in_delta safe[:left] + safe[:width] / 2.0, s["left"] + s["width"] / 2.0, 0.01,
+                      "the world fits the width, so it stays centred across it"
+    end
+  end
+
+  test "a world narrower than the screen at this zoom is centred, not pushed off" do
+    cam = call("clampCamera", { x: -5000, y: 0, k: 0.2 }, WORLD, DESKTOP)
+    s = call("screenBox", cam, WORLD)
+    assert_in_delta 720, s["left"] + s["width"] / 2.0, 0.01
+    assert_in_delta 500, s["top"] + s["height"] / 2.0, 0.01
+  end
+
+  test "zoom runs from fit-to-width to twice that" do
+    range = call("leashRange", WORLD, PHONE)
+    assert_in_delta 390.0 / 880, range["min"], 1e-9
+    assert_in_delta 2 * 390.0 / 880, range["max"], 1e-9
+  end
+
+  test "the fitted scale is held between the legible floor and 1" do
+    floor = 12 / 13.0
+    assert_in_delta floor, call("leashRange", WORLD, PHONE, { floor: floor, ceiling: 1 })["min"], 1e-9,
+                    "a phone fit-to-width under the floor would make labels illegible"
+    assert_in_delta 1, call("leashRange", { x: 0, y: 0, w: 600, h: 900 }, DESKTOP, { floor: floor, ceiling: 1 })["min"], 1e-9,
+                    "a small route is not blown up past its drawn size"
+    assert_in_delta 2, call("leashRange", { x: 0, y: 0, w: 600, h: 900 }, DESKTOP, { floor: floor, ceiling: 1 })["max"], 1e-9
+  end
 
   def call(fn, *args)
     script = <<~JS

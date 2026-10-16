@@ -1,6 +1,6 @@
 import { Controller } from "@hotwired/stimulus"
 import { buildTree, layoutJourney, DEFAULTS } from "journey_map_layout"
-import { safeRect, fitCamera, centerOn, zoomAbout, ensureVisible, initialCamera } from "journey_camera"
+import { safeRect, fitCamera, centerOn, zoomAbout, ensureVisible, leashRange, clampCamera, clampScale } from "journey_camera"
 import { buildPaths } from "journey_map_paths"
 import { contours } from "journey_terrain"
 
@@ -26,6 +26,8 @@ const OPTIONS = Object.freeze({
 })
 const PANEL_PAD = 18
 const TERRAIN_PAD = 700
+// STEP 38 §4, the leash: the drawn content plus this margin is the whole world.
+const LEASH_MARGIN = 48
 const MIN_LABEL_PX = 12
 const SVG_NS = "http://www.w3.org/2000/svg"
 const DRAG_THRESHOLD = 4
@@ -81,9 +83,8 @@ export default class extends Controller {
     this._renderNodes()
 
     const safe = this._safe()
-    this.minScale = MIN_LABEL_PX / OPTIONS.labelFontPx
     this._updateZoomRange(safe)
-    this.camera = this._initialCamera(safe)
+    this.camera = this._opening(safe)
     this.userMoved = false
     this._apply(false)
 
@@ -125,12 +126,11 @@ export default class extends Controller {
   }
 
   // ── Actions ──────────────────────────────────────────────────────────
-  // Fit means the WHOLE route in the viewport it has now — never clamped by a
-  // zoom floor computed for a different viewport.
+  // STEP 38 §4: "Encajar" returns to the opening view — fitted, the current step centred.
   fit() {
     const safe = this._safe()
     this._updateZoomRange(safe)
-    this._userMove(fitCamera(this.layout.bounds, safe, { padding: 32, min: 0.01, max: 1 }), true)
+    this._userMove(this._opening(safe), true)
   }
 
   zoomIn() { this._zoomCenter(KEY_ZOOM) }
@@ -484,22 +484,20 @@ export default class extends Controller {
     return this.lastSafe
   }
 
-  // Brief §5.4: the current module's panel with the route's title when both fit
-  // at the legible floor; otherwise the module, otherwise the current step.
-  _initialCamera(safe) {
-    const current = this.current
-    const mod = current ? this.layout.modules.find((m) => m.id === current.moduleId) : null
-    const root = this.nodeById.get("root")
-    return initialCamera({ moduleBox: mod ? inflate(mod.box, PANEL_PAD) : null,
-                           alsoBox: { x: root.x, y: root.y, w: root.w, h: root.h },
-                           node: current || root, safe, minScale: this.minScale, padding: 24 })
+  // STEP 38 §4: the page opens fitted to the world's width, the current step
+  // (or, with nothing readable, the root) centred, inside the world.
+  _opening(safe) {
+    const node = this.current || this.nodeById.get("root")
+    return clampCamera(centerOn({ x: node.cx, y: node.cy }, safe, this.zoomRange.min), this._world(), safe)
   }
 
-  // The zoom-out floor is "fit-all or the legible floor, whichever is smaller",
-  // so it depends on the viewport: recomputed on every resize.
+  _world() {
+    return inflate(this.layout.bounds, PANEL_PAD * 2 + LEASH_MARGIN)
+  }
+
+  // The fitted scale to 2× that; it depends on the viewport, so every resize recomputes it.
   _updateZoomRange(safe) {
-    const fitAll = fitCamera(this.layout.bounds, safe, { padding: 32, min: 0.01, max: 1 })
-    this.zoomRange = { min: Math.min(fitAll.k, this.minScale), max: 2 }
+    this.zoomRange = leashRange(this._world(), safe, { floor: MIN_LABEL_PX / OPTIONS.labelFontPx, ceiling: 1 })
   }
 
   _apply(animate) {
@@ -527,16 +525,21 @@ export default class extends Controller {
                     y: (old.top + old.height / 2 - this.camera.y) / this.camera.k }
     const safe = this._safe()
     this._updateZoomRange(safe)
-    this.camera = centerOn(world, safe, this.camera.k)
+    this.camera = clampCamera(centerOn(world, safe, clampScale(this.camera.k, this.zoomRange)), this._world(), safe)
     // Until the student moves the map, the current step stays in view; after,
     // what they chose to look at stays put (§3.3).
     if (!this.userMoved) this._keepCurrentVisible()
     this._apply(false)
   }
 
+  // Every move passes the leash: zoom inside the range, the world covering the screen.
   _userMove(camera, animate) {
     this.userMoved = true
-    this.camera = camera
+    const k = clampScale(camera.k, this.zoomRange)
+    const safe = this.lastSafe || this._safe()
+    const centre = { x: safe.left + safe.width / 2, y: safe.top + safe.height / 2 }
+    const scaled = k === camera.k ? camera : zoomAbout(camera, centre, k / camera.k, this.zoomRange)
+    this.camera = clampCamera(scaled, this._world(), safe)
     this._apply(animate)
   }
 
@@ -693,15 +696,13 @@ export default class extends Controller {
     if (!el.matches(":focus-visible")) this.popTimer = setTimeout(() => this._hidePop(), HOVER_CLOSE_MS)
   }
 
+  // STEP 38 §4: the wheel does not move the map unless Ctrl/⌘ is held; without
+  // it the event is left to the page.
   _onWheel(e) {
+    if (!e.ctrlKey && !e.metaKey) return
     e.preventDefault()
     const unit = e.deltaMode === 1 ? 16 : (e.deltaMode === 2 ? this.viewportTarget.clientHeight : 1)
-    if (e.ctrlKey) {
-      this._userMove(zoomAbout(this.camera, this._local(e), Math.exp(-e.deltaY * unit * 0.01), this.zoomRange), false)
-    } else {
-      // A plain wheel PANS: a page that does not scroll must not trap a mouse user.
-      this._userMove({ ...this.camera, x: this.camera.x - e.deltaX * unit, y: this.camera.y - e.deltaY * unit }, false)
-    }
+    this._userMove(zoomAbout(this.camera, this._local(e), Math.exp(-e.deltaY * unit * 0.01), this.zoomRange), false)
   }
 
   _onKeyDown(e) {
