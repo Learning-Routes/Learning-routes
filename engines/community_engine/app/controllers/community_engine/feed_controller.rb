@@ -3,8 +3,7 @@ module CommunityEngine
     def index
       @tab = params[:tab] || "all"
 
-      # Only show "shared" activities in the feed (not likes, follows, comments, etc.)
-      shared_only = Activity.by_action("shared")
+      shared_only = public_shares
 
       @activities = case @tab
       when "following"
@@ -54,7 +53,7 @@ module CommunityEngine
     end
 
     def following
-      @activities = Activity.by_action("shared").from_followed_users(current_user).recent.includes(:user, :trackable).limit(30)
+      @activities = public_shares.from_followed_users(current_user).recent.includes(:user, :trackable).limit(30)
       preload_shared_route_associations(@activities)
       render partial: "community_engine/feed/activity_list", locals: { activities: @activities }
     end
@@ -65,6 +64,13 @@ module CommunityEngine
     end
 
     private
+
+    # Only "shared" activities (not likes, follows, comments, etc.), and only for
+    # shares that are public now: a private or unlisted share is not for the feed.
+    def public_shares
+      Activity.by_action("shared")
+        .where(trackable_type: SharedRoute.name, trackable_id: SharedRoute.publicly_visible.select(:id))
+    end
 
     def preload_shared_route_associations(activities)
       shared_routes = activities.filter_map { |a| a.trackable if a.trackable.is_a?(SharedRoute) }
@@ -80,15 +86,17 @@ module CommunityEngine
       CommunityEngine::StatePreloader.new(current_user).preload(
         likeables: all_shared_routes + posts,
         rateables: all_shared_routes,
-        best_comments_for: all_shared_routes
+        best_comments_for: all_shared_routes,
+        latest_comments_for: posts
       )
     end
 
     def build_floating_thoughts
       # Cache the rendered hash (30 min). Includes locale so bilingual topic labels stay correct.
-      Rails.cache.fetch("community_floating_thoughts_v1:#{I18n.locale}", expires_in: 30.minutes) do
+      # v2: v1 entries may quote comments on private shares.
+      Rails.cache.fetch("community_floating_thoughts_v2:#{I18n.locale}", expires_in: 30.minutes) do
         top_comments = Comment
-          .where(commentable_type: "CommunityEngine::SharedRoute")
+          .where(commentable_type: "CommunityEngine::SharedRoute", commentable_id: SharedRoute.publicly_visible.select(:id))
           .joins("INNER JOIN community_engine_likes ON community_engine_likes.likeable_type = 'CommunityEngine::Comment' AND community_engine_likes.likeable_id = community_engine_comments.id")
           .group("community_engine_comments.id")
           .order(Arel.sql("COUNT(community_engine_likes.id) DESC"))
@@ -98,7 +106,7 @@ module CommunityEngine
         # Fallback to recent comments if no liked ones exist
         if top_comments.empty?
           top_comments = Comment
-            .where(commentable_type: "CommunityEngine::SharedRoute")
+            .where(commentable_type: "CommunityEngine::SharedRoute", commentable_id: SharedRoute.publicly_visible.select(:id))
             .order(created_at: :desc)
             .limit(6)
             .includes(:user, commentable: :learning_route)

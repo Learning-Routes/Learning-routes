@@ -19,12 +19,13 @@ module CommunityEngine
       klass = LIKEABLE_CLASSES[likeable_type]
       return head(:bad_request) unless klass
 
-      likeable = klass.find(likeable_id)
+      # Non-strict: authorization and the owner notification read its associations.
+      likeable = klass.strict_loading(false).find(likeable_id)
 
       # Authorization: only allow liking accessible resources
       return head(:forbidden) unless can_like?(likeable)
 
-      existing_like = Like.find_by(user: current_user, likeable_type: likeable_type, likeable_id: likeable_id)
+      existing_like = Like.strict_loading(false).find_by(user: current_user, likeable_type: likeable_type, likeable_id: likeable_id)
 
       if existing_like
         existing_like.destroy
@@ -34,7 +35,7 @@ module CommunityEngine
           Like.create!(user: current_user, likeable: likeable)
         rescue ActiveRecord::RecordNotUnique
           # Race condition: like was created between find_by and create
-          existing_like = Like.find_by(user: current_user, likeable_type: likeable_type, likeable_id: likeable_id)
+          existing_like = Like.strict_loading(false).find_by(user: current_user, likeable_type: likeable_type, likeable_id: likeable_id)
           existing_like&.destroy
           @liked = false
 

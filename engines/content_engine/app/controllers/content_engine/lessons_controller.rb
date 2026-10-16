@@ -139,7 +139,9 @@ module ContentEngine
       return {} unless parsed.is_a?(Array) && parsed[section_index]
 
       parsed[section_index].symbolize_keys
-    rescue
+    rescue => e
+      # The assistant still answers without the section's context.
+      Rails.logger.warn("[LessonsController] step=#{@step.id} section=#{section_index} context unavailable: #{e.class}: #{e.message}")
       {}
     end
   end

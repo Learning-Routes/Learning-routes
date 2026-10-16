@@ -3,9 +3,12 @@ class LandingController < ApplicationController
   skip_before_action :authenticate_user!, raise: false
 
   def index
-    # Set HTTP cache headers for the landing page
-    # Use fresh_when to leverage ETags and avoid rendering if client has cache
-    fresh_when(etag: landing_cache_key, public: true) if stale_check_enabled?
+    # Only the anonymous page is cached: a signed-in one shows the student's own
+    # name and links, which this key does not cover. The key is everything the
+    # anonymous page varies on — locale, the theme rendered into <html>, and the
+    # session's CSRF secret (csrf_meta_tags), so a new session never gets a 304
+    # carrying an old token. Never public: the page holds that token.
+    fresh_when(etag: [I18n.locale, current_theme, session[:_csrf_token]]) unless current_user
 
     # The landing is the landing for everyone (owner's ruling, 13 October): GET /
     # never redirects, signed in or not. Students reach their route through
@@ -61,18 +64,5 @@ class LandingController < ApplicationController
       { sats: [{ a: -52, d: 1.06, r: 40 }, { a: 0, d: 1.24, r: 42 }, { a: 52, d: 1.1, r: 38 }] },
       { sats: [{ a: -48, d: 1.1, r: 42 }, { a: 0, d: 1.28, r: 40 }, { a: 48, d: 1.1, r: 42 }] }
     ]
-  end
-
-  # === PERFORMANCE HELPERS ===
-  # Generate a cache key for the landing page
-  def landing_cache_key
-    # Cache key varies by user presence and locale
-    [I18n.locale, current_user&.id, @route_nodes&.first&.fetch(:id)].compact.join("-")
-  end
-
-  # Determine if HTTP caching checks should be performed
-  def stale_check_enabled?
-    # Only enable for non-authenticated or when there's no personalized data
-    !current_user || @route_nodes == default_translated_nodes
   end
 end

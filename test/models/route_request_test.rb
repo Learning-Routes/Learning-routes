@@ -210,6 +210,15 @@ class RouteRequestTest < ActiveSupport::TestCase
     end
   end
 
+  # The rule is for new requests. One saved with two topics before STEP 38 must
+  # still take its status updates, or its generation job fails on save.
+  test "a request saved with two topics before the rule can still be updated" do
+    rr = RouteRequest.create!(valid_attrs)
+    rr.update_columns(topics: %w[web_dev music])
+
+    assert rr.reload.update(status: "completed"), rr.errors.full_messages.join(", ")
+  end
+
   # --- topic_display ---
 
   test "topic_display returns labels for standard topics" do

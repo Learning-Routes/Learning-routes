@@ -6,6 +6,6 @@
     would hide it from anyone who does not interact. %>
 <% if section[:aftermath].present? %>
   <div class="lesson-content mt-6" data-controller="math-renderer" data-math-renderer-target="content">
-    <%= ContentEngine::MarkdownRenderer.render(section[:aftermath]).html_safe %>
+    <%= ContentEngine::MarkdownRenderer.render(section[:aftermath]) %>
   </div>
 <% end %>

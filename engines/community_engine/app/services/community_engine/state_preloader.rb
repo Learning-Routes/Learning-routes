@@ -6,20 +6,22 @@ module CommunityEngine
   #   CommunityEngine::StatePreloader.new(current_user).preload(
   #     likeables: [shared_routes, posts, comments].flatten,
   #     rateables: shared_routes,
-  #     best_comments_for: shared_routes
+  #     best_comments_for: shared_routes,
+  #     latest_comments_for: posts
   #   )
   #
-  # After calling this, #liked_by?, #rated_by?, #user_rating, #best_comment on the
+  # After calling this, #liked_by?, #rated_by?, #user_rating, #best_comment, #latest_comment on the
   # passed-in records read from memoized state instead of hitting the DB per call.
   class StatePreloader
     def initialize(user)
       @user = user
     end
 
-    def preload(likeables: [], rateables: [], best_comments_for: [])
+    def preload(likeables: [], rateables: [], best_comments_for: [], latest_comments_for: [])
       preload_likes(Array(likeables).compact)
       preload_ratings(Array(rateables).compact)
       preload_best_comments(Array(best_comments_for).compact)
+      preload_latest_comments(Array(latest_comments_for).compact)
     end
 
     private
@@ -81,6 +83,23 @@ module CommunityEngine
       shared_routes.each do |sr|
         sr.instance_variable_set(:@_best_comment_cached, by_route[sr.id])
         sr.instance_variable_set(:@_best_comment_preloaded, true)
+      end
+    end
+
+    # Post#latest_comment: the newest comment per post, one query for all posts.
+    def preload_latest_comments(posts)
+      return if posts.empty?
+
+      by_post = Comment
+        .select("DISTINCT ON (commentable_id) community_engine_comments.*")
+        .where(commentable_type: "CommunityEngine::Post", commentable_id: posts.map(&:id))
+        .order(Arel.sql("commentable_id, created_at DESC"))
+        .includes(:user)
+        .index_by(&:commentable_id)
+
+      posts.each do |post|
+        post.instance_variable_set(:@_latest_comment_cached, by_post[post.id])
+        post.instance_variable_set(:@_latest_comment_preloaded, true)
       end
     end
   end

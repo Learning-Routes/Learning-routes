@@ -111,8 +111,6 @@ en:
     items:
       - name: "OpenAI"
         desc: "Content generation"
-      - name: "Claude"
-        desc: "Analysis and reasoning"
       - name: "ElevenLabs"
         desc: "Voice synthesis"
       - name: "GPT Image"

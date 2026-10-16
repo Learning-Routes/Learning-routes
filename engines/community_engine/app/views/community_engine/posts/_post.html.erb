@@ -27,13 +27,11 @@
         <% end %>
       </div>
 
-      <%# Post body %>
-      <p style="font-family:'DM Sans',sans-serif; font-size:0.88rem; color:var(--color-sub); line-height:1.6; margin:0; white-space:pre-wrap; word-break:break-word;">
-        <%= post.body %>
-      </p>
+      <%# Post body — on the tag's line: pre-wrap would show any whitespace around it %>
+      <p style="font-family:'DM Sans',sans-serif; font-size:0.88rem; color:var(--color-sub); line-height:1.6; margin:0; white-space:pre-wrap; word-break:break-word;"><%= post.body %></p>
 
       <%# Inline floating thought — best comment preview %>
-      <% best_comment = post.comments.order(created_at: :desc).includes(:user).first %>
+      <% best_comment = post.latest_comment %>
       <% if best_comment %>
         <div style="display:inline-flex; align-items:center; gap:0.4rem; margin-top:0.5rem; padding:0.3rem 0.55rem;
                     background:var(--color-tint, rgba(28,24,18,0.03)); border-radius:8px; max-width:100%;">

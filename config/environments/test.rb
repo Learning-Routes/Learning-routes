@@ -52,6 +52,11 @@ Rails.application.configure do
   # calling `Rails.application.routes.url_helpers.rails_storage_proxy_path` does. Mirrors
   # the equivalent line already in config/environments/development.rb.
   Rails.application.routes.default_url_options = { host: "example.com" }
+  # Engine URL helpers (core.verify_email_url, core.reset_password_url) ignore
+  # action_mailer's defaults; without this the Core mailers raise in tests.
+  config.after_initialize do
+    Core::Engine.routes.default_url_options = { host: "example.com" } if defined?(Core::Engine)
+  end
 
   # Print deprecation notices to the stderr.
   config.active_support.deprecation = :stderr

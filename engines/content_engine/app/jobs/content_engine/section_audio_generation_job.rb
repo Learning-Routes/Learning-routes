@@ -64,8 +64,8 @@ module ContentEngine
         entry["error_kind"] = e.kind.to_s if e.is_a?(AiOrchestrator::SpendGuard::LimitExceeded)
         audio_sections[section_index.to_s] = entry
         step.merge_metadata!("audio_sections" => audio_sections)
-      rescue
-        nil
+      rescue => record_error
+        Rails.logger.error("[SectionAudioGenerationJob] step=#{step_id} section=#{section_index} could not record the failure: #{record_error.class}: #{record_error.message}")
       end
 
       Turbo::StreamsChannel.broadcast_replace_to(
