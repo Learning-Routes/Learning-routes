@@ -81,6 +81,12 @@ module AiOrchestrator
       session
     end
 
+    # ruby_llm 1.x sent o-series and gpt-5 models temperature 1.0, the only value
+    # they accepted; 2.x sends what it is given, so these requests keep 1.0.
+    def self.temperature_for(model, temperature)
+      model.match?(/\A(o\d|gpt-5)/) ? 1.0 : temperature
+    end
+
     # ElevenLabs' character alignment times each CHARACTER individually; a word
     # is a run of non-space characters, timed from its first character's start
     # to its last character's end. Pure and class-level (no instance state
@@ -168,7 +174,7 @@ module AiOrchestrator
       schema = SchemaRegistry.for(@task_type)
       chat.with_schema(schema) if schema
 
-      chat.with_temperature(merged_params[:temperature]) if merged_params[:temperature]
+      chat.with_temperature(self.class.temperature_for(@model, merged_params[:temperature])) if merged_params[:temperature]
       # ruby_llm names the field per provider: max_completion_tokens on OpenAI, max_tokens elsewhere.
       chat.with_max_output_tokens(merged_params[:max_tokens]) if merged_params[:max_tokens]
 

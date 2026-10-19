@@ -25,4 +25,10 @@ class AiOrchestrator::OpenaiProtocolTest < ActiveSupport::TestCase
     assert_requested :post, "https://api.openai.com/v1/chat/completions", times: 1
     assert_not_requested :post, "https://api.openai.com/v1/responses"
   end
+
+  test "a gpt-5 request carries temperature 1.0, as on ruby_llm 1.x" do
+    AiOrchestrator::AiClient.new(model: "gpt-5.2", task_type: :curriculum_design).chat(prompt: "hi")
+
+    assert_requested(:post, "https://api.openai.com/v1/chat/completions") { |req| JSON.parse(req.body)["temperature"] == 1.0 }
+  end
 end

@@ -73,6 +73,13 @@ class AiOrchestrator::ContentAgentTest < ActiveSupport::TestCase
     end
   end
 
+  # ruby_llm 1.x sent gpt-5 models temperature 1.0, the only value they took;
+  # 2.x sends what it is given.
+  test "gpt-5.2 is sent temperature 1.0, as on ruby_llm 1.x; other models get TEMPERATURE" do
+    assert_in_delta 1.0, AiOrchestrator::ContentAgent.new.chat.render[:temperature]
+    assert_in_delta 0.75, AiOrchestrator::ContentAgent.new(model: "gpt-4.1-mini").chat.render[:temperature]
+  end
+
   test "accepts model override" do
     agent = AiOrchestrator::ContentAgent.new(model: "gpt-4.1-mini")
     assert_equal "gpt-4.1-mini", agent.model.id

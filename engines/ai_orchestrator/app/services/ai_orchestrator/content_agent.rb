@@ -53,7 +53,7 @@ module AiOrchestrator
       @chat = RubyLLM
         .chat(model: model)
         .with_instructions(INSTRUCTIONS)
-        .with_temperature(TEMPERATURE)
+        .with_temperature(AiClient.temperature_for(model, TEMPERATURE))
         .with_tools(*TOOL_CLASSES)
         .with_max_output_tokens(MAX_OUTPUT_TOKENS)
         .with_provider_options(params)
