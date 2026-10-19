@@ -7,8 +7,8 @@ module ContentEngine
                   "Use this when the user wants to hear content spoken aloud, " \
                   "needs an audio version of a lesson section, or when audio would enhance learning."
 
-      param :text, desc: "The text to convert to speech audio (max 5000 characters)"
-      param :voice_id, desc: "ElevenLabs voice ID (optional, uses default)", required: false
+      parameter :text, description: "The text to convert to speech audio (max 5000 characters)"
+      parameter :voice_id, description: "ElevenLabs voice ID (optional, uses default)", required: false
 
       def execute(text:, voice_id: nil)
         truncated = text.to_s.first(5000)
@@ -32,7 +32,7 @@ module ContentEngine
         path = dir.join(filename)
         File.binwrite(path, result[:content])
 
-        halt "/storage/audio/#{filename}"
+        Final.new("/storage/audio/#{filename}")
       rescue => e
         "Could not generate audio: #{e.message}"
       end

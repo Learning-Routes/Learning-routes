@@ -7,9 +7,9 @@ module ContentEngine
                   "Use this for language-learning routes when the user needs a translation, " \
                   "wants to see content in another language, or needs vocabulary help."
 
-      param :content, desc: "The text content to translate"
-      param :from_locale, desc: "Source language code: en, es, fr, de, etc."
-      param :to_locale, desc: "Target language code: en, es, fr, de, etc."
+      parameter :content, description: "The text content to translate"
+      parameter :from_locale, description: "Source language code: en, es, fr, de, etc."
+      parameter :to_locale, description: "Target language code: en, es, fr, de, etc."
 
       def execute(content:, from_locale:, to_locale:)
         prompt = <<~PROMPT
@@ -22,7 +22,7 @@ module ContentEngine
         PROMPT
 
         content = AiOrchestrator::TrackedTextCall.call(prompt: prompt, task_type: "translation")
-        halt content.strip
+        Final.new(content.strip)
       rescue => e
         "Could not translate: #{e.message}"
       end

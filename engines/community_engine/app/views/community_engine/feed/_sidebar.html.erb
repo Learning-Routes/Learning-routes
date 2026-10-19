@@ -7,7 +7,7 @@
         .joins(:learning_profile)
         .where(learning_routes_engine_learning_profiles: { user_id: current_user.id })
         .includes(:route_steps).order(updated_at: :desc)
-      already_shared_ids = current_user.shared_routes.pluck(:learning_route_id)
+      already_shared_ids = CommunityEngine::SharedRoute.where(user_id: current_user.id).pluck(:learning_route_id)
       unshared_routes = shareable_routes.reject { |r| already_shared_ids.include?(r.id) }
     %>
     <div data-controller="share"
@@ -151,7 +151,7 @@
   <% end %>
 
   <%# Top learners %>
-  <% followed_ids = current_user ? current_user.active_follows.pluck(:followed_id).to_set : Set.new %>
+  <% followed_ids = current_user ? CommunityEngine::Follow.where(follower_id: current_user.id).pluck(:followed_id).to_set : Set.new %>
   <div style="background:var(--color-card, rgba(255,255,255,0.6)); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px);
               border:1px solid var(--color-faint, rgba(28,24,18,0.06)); border-radius:12px; padding:1rem;">
     <h3 style="font-family:'DM Sans',sans-serif; font-weight:700; font-size:0.78rem; color:var(--color-txt); margin:0 0 0.75rem;">

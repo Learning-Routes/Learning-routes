@@ -618,7 +618,7 @@ DEPENDENCIES
   debug
   dotenv-rails
   faker
-  httparty (~> 0.22)
+  httparty (~> 0.24)
   image_processing (~> 2.2)
   importmap-rails
   json_schemer (~> 2.5)

@@ -81,6 +81,12 @@ module AiOrchestrator
       session
     end
 
+    # ruby_llm 1.x sent o-series and gpt-5 models temperature 1.0, the only value
+    # they accepted; 2.x sends what it is given, so these requests keep 1.0.
+    def self.temperature_for(model, temperature)
+      model.match?(/\A(o\d|gpt-5)/) ? 1.0 : temperature
+    end
+
     # ElevenLabs' character alignment times each CHARACTER individually; a word
     # is a run of non-space characters, timed from its first character's start
     # to its last character's end. Pure and class-level (no instance state
@@ -168,12 +174,9 @@ module AiOrchestrator
       schema = SchemaRegistry.for(@task_type)
       chat.with_schema(schema) if schema
 
-      chat.with_temperature(merged_params[:temperature]) if merged_params[:temperature]
-      if merged_params[:max_tokens]
-        # GPT-5.x models require max_completion_tokens; GPT-4.x supports max_tokens
-        token_key = @model.start_with?("gpt-5") ? :max_completion_tokens : :max_tokens
-        chat.with_params(token_key => merged_params[:max_tokens])
-      end
+      chat.with_temperature(self.class.temperature_for(@model, merged_params[:temperature])) if merged_params[:temperature]
+      # ruby_llm names the field per provider: max_completion_tokens on OpenAI, max_tokens elsewhere.
+      chat.with_max_output_tokens(merged_params[:max_tokens]) if merged_params[:max_tokens]
 
       if system_prompt.present?
         chat.with_instructions(system_prompt)
@@ -184,16 +187,14 @@ module AiOrchestrator
       elapsed_ms = ((monotonic_now - start_time) * 1000).round
 
       {
-        # When a schema is set, RubyLLM JSON.parses the body and hands back a Hash
-        # (ruby_llm-1.16.0/lib/ruby_llm/chat.rb:294-300). AiInteraction#response is a
-        # text column and every consumer parses a JSON string, so re-serialize —
-        # storing a Hash would persist Ruby's `{"a"=>1}` inspect form, which is not
-        # valid JSON and would fail on the way back out.
-        content: serialize_content(response.content),
+        # A String even with a schema (ruby_llm 2 puts the parsed Hash in #parsed),
+        # which is what AiInteraction#response and every consumer expect.
+        content: response.content,
         model: @model,
-        input_tokens: response.input_tokens,
-        cached_tokens: response.cached_tokens.to_i,
-        output_tokens: response.output_tokens,
+        input_tokens: response.tokens.input,
+        cached_tokens: response.tokens.cache_read.to_i,
+        cache_write_tokens: response.tokens.cache_write.to_i,
+        output_tokens: response.tokens.output,
         latency_ms: elapsed_ms
       }
     rescue => e
@@ -361,13 +362,6 @@ module AiOrchestrator
       return RubyLLM.chat(model: @model) if timeout.blank?
 
       RubyLLM.context { |c| c.request_timeout = timeout }.chat(model: @model)
-    end
-
-    # Schema-constrained responses arrive as a parsed Hash/Array; everything else is
-    # already a String. Normalise to a String so AiInteraction#response and every
-    # downstream parser see the same thing regardless of how the call was made.
-    def serialize_content(content)
-      content.is_a?(Hash) || content.is_a?(Array) ? content.to_json : content
     end
 
     def monotonic_now

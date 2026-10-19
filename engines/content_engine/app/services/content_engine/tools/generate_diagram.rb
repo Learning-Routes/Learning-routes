@@ -7,8 +7,8 @@ module ContentEngine
                   "Use this when the user needs a visual explanation, asks for a diagram, " \
                   "or when a concept would benefit from a flowchart, sequence diagram, or mind map."
 
-      param :description, desc: "What the diagram should illustrate"
-      param :diagram_type, desc: "Type of Mermaid diagram: flowchart, sequence, mindmap, classDiagram, stateDiagram, erDiagram", required: false
+      parameter :description, description: "What the diagram should illustrate"
+      parameter :diagram_type, description: "Type of Mermaid diagram: flowchart, sequence, mindmap, classDiagram, stateDiagram, erDiagram", required: false
 
       def execute(description:, diagram_type: "flowchart")
         prompt = <<~PROMPT
@@ -37,7 +37,7 @@ module ContentEngine
           mermaid_code = "#{diagram_type} TD\n#{mermaid_code}"
         end
 
-        halt "```mermaid\n#{mermaid_code}\n```"
+        Final.new("```mermaid\n#{mermaid_code}\n```")
       rescue => e
         "Could not generate diagram: #{e.message}"
       end

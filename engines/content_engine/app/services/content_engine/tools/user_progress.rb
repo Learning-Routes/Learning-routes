@@ -7,7 +7,7 @@ module ContentEngine
                   "league, and completed routes. Use this to personalize content based on the " \
                   "student's actual progress and achievements."
 
-      param :info_type, desc: "What to look up: overview, routes, or streak", required: false
+      parameter :info_type, description: "What to look up: overview, routes, or streak", required: false
 
       def execute(info_type: "overview")
         user = Thread.current[:lesson_agent_user]
@@ -50,7 +50,7 @@ module ContentEngine
           }
         end
 
-        halt data.to_json
+        Final.new(data.to_json)
       rescue => e
         "Could not fetch progress: #{e.message}"
       end

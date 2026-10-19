@@ -110,7 +110,7 @@ class ContentEngine::Tools::AudioNarrationTest < ActiveSupport::TestCase
 
   def execute_tool(**kwargs)
     result = @tool.execute(**kwargs)
-    result = result.is_a?(RubyLLM::Tool::Halt) ? result.content : result
+    result = result.is_a?(ContentEngine::Tools::Final) ? result.content : result
     @written << @audio_dir.join(File.basename(result)) if result.to_s.start_with?("/storage/audio/")
     result
   end

@@ -215,7 +215,8 @@ CREATE TABLE public.ai_orchestrator_ai_interactions (
     provider_rate_microcents bigint,
     pricing_status character varying DEFAULT 'unpriced'::character varying NOT NULL,
     pricing_version character varying,
-    cached_tokens integer DEFAULT 0
+    cached_tokens integer DEFAULT 0,
+    cache_write_tokens integer DEFAULT 0
 );
 
 
@@ -2999,6 +3000,7 @@ ALTER TABLE ONLY public.learning_routes_engine_route_steps
 SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
+('20261019000001'),
 ('20261015000003'),
 ('20261015000002'),
 ('20261015000001'),

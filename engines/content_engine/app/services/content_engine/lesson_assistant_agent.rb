@@ -37,8 +37,8 @@ module ContentEngine
       user_prompt = build_user_prompt(action, message)
 
       start_time = Process.clock_gettime(Process::CLOCK_MONOTONIC)
-      response = chat.ask(user_prompt)
-      input_tokens, output_tokens, cached_tokens = aggregate_usage(chat.messages)
+      response = Tools::Final.ask(chat, user_prompt)
+      input_tokens, output_tokens, cached_tokens, cache_write_tokens = aggregate_usage(chat.messages)
       elapsed_ms = ((Process.clock_gettime(Process::CLOCK_MONOTONIC) - start_time) * 1000).round
 
       result = parse_response(response)
@@ -46,6 +46,7 @@ module ContentEngine
       track_interaction!(action, message, result,
         input_tokens: input_tokens,
         cached_tokens: cached_tokens,
+        cache_write_tokens: cache_write_tokens,
         output_tokens: output_tokens,
         latency_ms: elapsed_ms
       )
@@ -201,12 +202,12 @@ module ContentEngine
       end
     end
 
-    def track_interaction!(action, message, result, input_tokens: 0, cached_tokens: 0, output_tokens: 0,
-                           latency_ms: 0)
+    def track_interaction!(action, message, result, input_tokens: 0, cached_tokens: 0, cache_write_tokens: 0,
+                           output_tokens: 0, latency_ms: 0)
       usage_known = input_tokens.present? && output_tokens.present?
       cost_microcents = AiOrchestrator::CostTracker.estimate_microcents(
         model: "gpt-4.1-mini", input_tokens: input_tokens.to_i, cached_tokens: cached_tokens.to_i,
-        output_tokens: output_tokens.to_i
+        cache_write_tokens: cache_write_tokens.to_i, output_tokens: output_tokens.to_i
       )
       AiOrchestrator::AiInteraction.create!(
         user: @user,
@@ -217,6 +218,7 @@ module ContentEngine
         response: result[:content].to_s.truncate(2000),
         input_tokens: input_tokens.to_i,
         cached_tokens: cached_tokens.to_i,
+        cache_write_tokens: cache_write_tokens.to_i,
         output_tokens: output_tokens.to_i,
         latency_ms: latency_ms,
         cost_microcents: cost_microcents,
@@ -237,12 +239,13 @@ module ContentEngine
 
     def aggregate_usage(messages)
       provider_messages = messages.select { |entry| entry.role.to_s == "assistant" }
-      return [nil, nil, nil] if provider_messages.empty? || provider_messages.any? do |entry|
-        entry.input_tokens.nil? || entry.output_tokens.nil?
+      return [nil, nil, nil, nil] if provider_messages.empty? || provider_messages.any? do |entry|
+        entry.tokens.input.nil? || entry.tokens.output.nil?
       end
 
-      [provider_messages.sum(&:input_tokens), provider_messages.sum(&:output_tokens),
-       provider_messages.sum { |entry| entry.cached_tokens.to_i }]
+      [provider_messages.sum { |entry| entry.tokens.input }, provider_messages.sum { |entry| entry.tokens.output },
+       provider_messages.sum { |entry| entry.tokens.cache_read.to_i },
+       provider_messages.sum { |entry| entry.tokens.cache_write.to_i }]
     end
 
     class RateLimitExceeded < StandardError; end

@@ -44,6 +44,7 @@ module AiOrchestrator
         response_text: result[:content],
         input_tokens: result[:input_tokens],
         cached_tokens: result[:cached_tokens],
+        cache_write_tokens: result[:cache_write_tokens],
         output_tokens: result[:output_tokens],
         latency_ms: result[:latency_ms]
       )

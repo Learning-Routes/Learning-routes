@@ -16,6 +16,10 @@ Rails.application.config.after_initialize do
     config.anthropic_api_key = Rails.application.credentials.dig(:anthropic, :api_key)
     config.gemini_api_key = Rails.application.credentials.dig(:gemini, :api_key)
 
+    # ruby_llm 2 defaults OpenAI to the Responses API; requests and usage
+    # parsing stay on Chat Completions, as on 1.x.
+    config.openai_protocol = :chat_completions
+
     # Request defaults
     config.request_timeout = 30
   end

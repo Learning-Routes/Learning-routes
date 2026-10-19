@@ -7,8 +7,8 @@ module ContentEngine
                   "Use this when the user says they do not understand, asks for a simpler explanation, " \
                   "or requests an ELI5 (explain like I am 5) version."
 
-      param :content, desc: "The content to simplify"
-      param :level, desc: "Simplification level: basic, eli5, analogy", required: false
+      parameter :content, description: "The content to simplify"
+      parameter :level, description: "Simplification level: basic, eli5, analogy", required: false
 
       def execute(content:, level: "basic")
         locale = Thread.current[:lesson_agent_locale] || "en"
@@ -31,7 +31,7 @@ module ContentEngine
         PROMPT
 
         content = AiOrchestrator::TrackedTextCall.call(prompt: prompt, task_type: "simplify_content")
-        halt content.strip
+        Final.new(content.strip)
       rescue => e
         "Could not simplify: #{e.message}"
       end

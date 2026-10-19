@@ -53,7 +53,7 @@ class ContentEngine::Tools::TextToolMeteringTest < ActiveSupport::TestCase
 
   def execute(tool, **attributes)
     result = tool.execute(**attributes)
-    result.is_a?(RubyLLM::Tool::Halt) ? result.content : result
+    result.is_a?(ContentEngine::Tools::Final) ? result.content : result
   end
 
   def execute_all_tools
