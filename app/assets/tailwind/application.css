@@ -73,6 +73,109 @@
   }
 }
 
+/* ── Components with body (STEP 41 §1.3). Values from the reference's CSS,
+   on the app's tokens: --panel is --color-card, --line --color-border-subtle,
+   --line-2 --color-faint, --route --color-accent. ── */
+@property --gl { syntax: '<percentage>'; inherits: false; initial-value: 0%; }
+
+@layer components {
+  /* A sheet with thickness, lit from above. data-controller="card-tilt" on
+     the cards you can act on. */
+  .card3 {
+    --th: 8px; --gl: 0%;
+    position: relative; border-radius: 18px;
+    background:
+      radial-gradient(560px circle at var(--mx, 30%) var(--my, 0%), color-mix(in srgb, var(--color-hi) var(--gl), transparent), transparent 62%),
+      linear-gradient(170deg, var(--color-card) 0%, var(--color-card) 40%, color-mix(in srgb, var(--color-card) 90%, var(--color-bg)) 100%);
+    box-shadow: inset 0 1px 0 var(--color-hi), inset 0 0 0 1px var(--color-border-subtle),
+      0 var(--th) 0 -1px var(--color-edge), 0 var(--th) 0 0 color-mix(in srgb, var(--color-faint) 80%, transparent),
+      0 calc(var(--th) + 14px) 26px -14px var(--color-shade), 0 calc(var(--th) + 40px) 70px -36px var(--color-shade);
+    transform: perspective(1100px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)) translateY(var(--ty, 0px));
+    transition: transform .5s cubic-bezier(.23, 1, .32, 1), box-shadow .5s cubic-bezier(.23, 1, .32, 1), --gl .5s ease;
+  }
+  html[data-theme="dark"] .card3 {
+    box-shadow: inset 0 1px 0 var(--color-hi), inset 0 0 0 1px var(--color-faint),
+      0 var(--th) 0 -1px var(--color-edge), 0 var(--th) 0 0 var(--color-faint),
+      0 calc(var(--th) + 14px) 26px -12px var(--color-shade), 0 calc(var(--th) + 40px) 70px -30px var(--color-shade);
+  }
+  @media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+    .card3:hover { --ty: -6px; --gl: 65%; --th: 12px; }
+  }
+
+  /* A button you press: a lit top edge, a 3px edge in a darker accent, a glow. */
+  .btn3 {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    height: 48px; padding: 0 22px; border: 0; border-radius: 10px;
+    background: var(--color-accent); color: var(--color-accent-text);
+    font-size: 16px; font-weight: 650; line-height: 1; text-decoration: none; white-space: nowrap; cursor: pointer;
+    box-shadow: inset 0 1px 0 color-mix(in srgb, white 22%, transparent),
+      0 3px 0 0 color-mix(in srgb, var(--color-accent) 62%, black),
+      0 8px 16px -8px color-mix(in srgb, var(--color-accent) 70%, transparent);
+    transition: background-color .15s ease, transform .12s cubic-bezier(.23, 1, .32, 1), box-shadow .12s ease;
+  }
+  .btn3:hover { background: var(--color-accent-hover); }
+  .btn3:active {
+    transform: translateY(2px);
+    box-shadow: inset 0 1px 0 color-mix(in srgb, white 18%, transparent), 0 1px 0 0 color-mix(in srgb, var(--color-accent) 62%, black);
+  }
+  .btn3:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 3px; }
+  .btn3[disabled], .btn3[aria-disabled="true"] { opacity: .45; cursor: default; }
+  .btn3--sm { height: 38px; padding: 0 14px; font-size: 14.5px; border-radius: 9px; }
+  .btn3--secondary {
+    background: var(--color-card); color: var(--color-txt);
+    box-shadow: inset 0 0 0 1px var(--color-faint), 0 3px 0 0 var(--color-faint);
+  }
+  .btn3--secondary:hover { background: var(--color-bg-2); }
+  .btn3--secondary:active { box-shadow: inset 0 0 0 1px var(--color-faint), 0 1px 0 0 var(--color-faint); }
+
+  /* A recessed well for a route's mini-map, and the progress groove. */
+  .tray {
+    padding: 10px 12px 8px; border-radius: 12px;
+    background: color-mix(in srgb, var(--color-bg) 75%, var(--color-card));
+    box-shadow: inset 0 2px 5px -1px var(--color-shade), inset 0 0 0 1px var(--color-border-subtle);
+  }
+  .groove {
+    height: 8px; border-radius: 8px; overflow: hidden;
+    background: color-mix(in srgb, var(--color-bg) 70%, var(--color-border-subtle));
+    box-shadow: inset 0 1px 2px var(--color-shade);
+  }
+  .groove > span { display: block; height: 100%; border-radius: 6px; background: var(--color-progress-bar); }
+
+  /* "Módulo N · Gratis" */
+  .chip {
+    display: inline-flex; align-items: center; gap: 7px; padding: 5px 10px; border-radius: 7px;
+    background: var(--color-card); box-shadow: inset 0 0 0 1px var(--color-border-subtle);
+    font-size: 13px; font-weight: 620; color: var(--color-sub); white-space: nowrap;
+  }
+  .chip__dot { flex: none; width: 7px; height: 7px; border-radius: 50%; background: var(--color-accent); }
+  .chip__tag {
+    padding: 1px 7px; border-radius: 5px; font-size: 12px; font-weight: 650;
+    background: var(--color-accent-soft); color: var(--color-accent);
+  }
+
+  /* Hecho, Estás aquí, Refuerzo, and a route's level. */
+  .tag { display: inline-block; padding: 4px 9px; border-radius: 7px; font-size: 12.5px; font-weight: 620; }
+  .tag--done { background: var(--color-accent); color: var(--color-accent-text); }
+  .tag--now { box-shadow: inset 0 0 0 1.5px var(--color-highlight); color: var(--color-signal-text); }
+  .tag--reinforce { box-shadow: inset 0 0 0 1.5px var(--color-reinforce); color: var(--color-reinforce); }
+  .level-tag {
+    padding: 3px 8px; border-radius: 6px; font-size: 12px; font-weight: 650;
+    background: var(--color-accent-soft); color: var(--color-accent);
+  }
+
+  .input3 {
+    height: 46px; min-width: 0; padding: 0 14px; border: 0; border-radius: 12px;
+    background: var(--color-card); color: var(--color-txt); font-size: 15px; font-weight: 500;
+    box-shadow: inset 0 0 0 1.5px var(--color-faint);
+  }
+  .input3::placeholder { color: var(--color-muted); }
+  .input3:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .card3, .btn3 { transition: none; }
+  }
+}
+
 /* ── Type scale (STEP 41 §1.2) ── */
 @layer components {
   .type-display, .type-hero, .type-section {
