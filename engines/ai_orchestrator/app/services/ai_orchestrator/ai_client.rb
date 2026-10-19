@@ -181,12 +181,9 @@ module AiOrchestrator
       elapsed_ms = ((monotonic_now - start_time) * 1000).round
 
       {
-        # When a schema is set, RubyLLM JSON.parses the body and hands back a Hash
-        # (ruby_llm-1.16.0/lib/ruby_llm/chat.rb:294-300). AiInteraction#response is a
-        # text column and every consumer parses a JSON string, so re-serialize —
-        # storing a Hash would persist Ruby's `{"a"=>1}` inspect form, which is not
-        # valid JSON and would fail on the way back out.
-        content: serialize_content(response.content),
+        # A String even with a schema (ruby_llm 2 puts the parsed Hash in #parsed),
+        # which is what AiInteraction#response and every consumer expect.
+        content: response.content,
         model: @model,
         input_tokens: response.tokens.input,
         cached_tokens: response.tokens.cache_read.to_i,
@@ -359,13 +356,6 @@ module AiOrchestrator
       return RubyLLM.chat(model: @model) if timeout.blank?
 
       RubyLLM.context { |c| c.request_timeout = timeout }.chat(model: @model)
-    end
-
-    # Schema-constrained responses arrive as a parsed Hash/Array; everything else is
-    # already a String. Normalise to a String so AiInteraction#response and every
-    # downstream parser see the same thing regardless of how the call was made.
-    def serialize_content(content)
-      content.is_a?(Hash) || content.is_a?(Array) ? content.to_json : content
     end
 
     def monotonic_now

@@ -1,8 +1,8 @@
 module AiOrchestrator
   class CostTracker
     # Pricing per million tokens (in cents) - Feb 2026. cached_input is the rate for
-    # prompt tokens served from the provider cache (Oct 2026), which ruby_llm >= 1.15
-    # reports apart from input_tokens. cache_write is Anthropic's 5-minute cache-write
+    # prompt tokens served from the provider cache (Oct 2026), which ruby_llm reports
+    # apart from input (tokens.cache_read). cache_write is Anthropic's 5-minute cache-write
     # rate, 1.25x input (Oct 2026); a model without one bills cache writes as input,
     # as OpenAI does for these models.
     # shortcut: 1-hour cache writes (2x input) are billed at the 5-minute rate; nothing here requests a 1-hour TTL.
