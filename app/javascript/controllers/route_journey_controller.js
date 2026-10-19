@@ -504,7 +504,6 @@ export default class extends Controller {
     const { x, y, k } = this.camera
     this.worldTarget.classList.toggle("jm-world--animate", animate && !this.reduced.matches)
     this.worldTarget.style.transform = `translate(${x}px, ${y}px) scale(${k})`
-    this.worldTarget.dataset.lod = k < 0.5 ? "far" : (k < 0.75 ? "mid" : "near")
     if (this.popNode) {
       // The popover follows the node once the camera has settled.
       clearTimeout(this.placeTimer)

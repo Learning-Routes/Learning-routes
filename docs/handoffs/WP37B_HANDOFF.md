@@ -34,7 +34,6 @@ merged in once, at `d982eb81`. Not rebased.
 - The Continue card, with `I` / the locate button to bring the current step back.
 - A screen-space popover on hover, keyboard focus and tap. It carries the full title, status · minutes and the action, points at its node, flips below near the top, and is clamped at the edges.
 - Double-click: on a node, centre it at ≥ 1.2; on the canvas, zoom ×1.6.
-- `data-lod` fades labels when zoomed far out.
 - The opening camera of §5.4.
 - The entrance draws in on the first paint of a visit only: not on a Turbo restore, not after a Turbo preview, not under reduced motion.
 

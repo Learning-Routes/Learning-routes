@@ -3507,8 +3507,7 @@ html[data-theme="dark"] .jm {
                   display: -webkit-box; -webkit-line-clamp: var(--jm-lines); -webkit-box-orient: vertical; overflow: hidden;
                   overflow-wrap: anywhere; text-wrap: balance;
                   text-shadow: 0 0 2px var(--jm-halo-c), 0 0 2px var(--jm-halo-c), 0 0 3px var(--jm-halo-c),
-                               0 0 4px var(--jm-halo-c), 0 0 6px var(--jm-halo-c);
-                  transition-property: opacity; transition-duration: 200ms; }
+                               0 0 4px var(--jm-halo-c), 0 0 6px var(--jm-halo-c); }
 .jm-node--reinforcement .jm-node__label, .jm-node--masked .jm-node__label { color: var(--color-sub); font-weight: 400; }
 .jm-node--module .jm-node__label { font-weight: 700; font-size: 14px; line-height: 16px; letter-spacing: -.01em; }
 .jm-node--module.jm-node--locked .jm-node__label { color: var(--color-sub); }
@@ -3536,12 +3535,6 @@ html[data-theme="dark"] .jm {
 .jm-root__title { margin: 2px 0 0; font-family: 'Instrument Serif', serif; font-weight: 400; font-size: 30px; line-height: 1.05;
                   letter-spacing: -.005em; overflow: hidden; text-overflow: ellipsis; }
 .jm-root__meta { margin-top: 5px; letter-spacing: 0; }
-
-/* ── LOD (brief §5.3): far away, labels that could not be read fade; the DOM stays ── */
-.jm-world[data-lod="mid"] .jm-node--reinforcement .jm-node__label,
-.jm-world[data-lod="far"] .jm-node--reinforcement .jm-node__label,
-.jm-world[data-lod="far"] .jm-node--step .jm-node__label,
-.jm-world[data-lod="far"] .jm-chevron { opacity: 0; }
 
 /* ── Overlays ── */
 .jm-overlay { position: fixed; z-index: 20; }
