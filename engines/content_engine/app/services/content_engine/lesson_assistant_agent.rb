@@ -238,11 +238,11 @@ module ContentEngine
     def aggregate_usage(messages)
       provider_messages = messages.select { |entry| entry.role.to_s == "assistant" }
       return [nil, nil, nil] if provider_messages.empty? || provider_messages.any? do |entry|
-        entry.input_tokens.nil? || entry.output_tokens.nil?
+        entry.tokens.input.nil? || entry.tokens.output.nil?
       end
 
-      [provider_messages.sum(&:input_tokens), provider_messages.sum(&:output_tokens),
-       provider_messages.sum { |entry| entry.cached_tokens.to_i }]
+      [provider_messages.sum { |entry| entry.tokens.input }, provider_messages.sum { |entry| entry.tokens.output },
+       provider_messages.sum { |entry| entry.tokens.cache_read.to_i }]
     end
 
     class RateLimitExceeded < StandardError; end
