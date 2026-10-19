@@ -60,7 +60,7 @@
   }
 
   ::selection {
-    background: rgba(120, 100, 70, 0.1);
+    background: color-mix(in srgb, var(--color-accent) 20%, transparent);
   }
 
   body {
@@ -421,15 +421,6 @@ html[data-theme="dark"] {
   --color-motion-hi2: #2A5F7D;
 }
 
-html[data-theme="dark"] ::selection {
-  background: rgba(200, 180, 140, 0.2);
-}
-
-/* Dark nav scroll state */
-html[data-theme="dark"] .nav-scrolled {
-  background: rgba(26, 23, 16, 0.92);
-  border-bottom-color: rgba(255, 255, 255, 0.06);
-}
 
 /* Dark section-dark: slightly lighter so it stands out from body bg */
 html[data-theme="dark"] .section-dark {
@@ -437,77 +428,6 @@ html[data-theme="dark"] .section-dark {
   border: 1px solid rgba(255, 255, 255, 0.04);
 }
 
-/* Dark card hover */
-html[data-theme="dark"] .card-hover:hover {
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3), 0 2px 8px rgba(0, 0, 0, 0.2);
-  border-color: rgba(255, 255, 255, 0.1);
-}
-
-/* Dark auth components */
-html[data-theme="dark"] .auth-card {
-  background: rgba(34, 31, 24, 0.85);
-  border-color: rgba(255, 255, 255, 0.08);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
-}
-
-html[data-theme="dark"] .auth-input {
-  background: #2A2620;
-  border-color: rgba(255, 255, 255, 0.1);
-  color: #E8E4DC;
-}
-html[data-theme="dark"] .auth-input::placeholder {
-  color: #706858;
-}
-html[data-theme="dark"] .auth-input:focus {
-  border-color: rgba(255, 255, 255, 0.2);
-  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.04);
-}
-
-html[data-theme="dark"] .auth-btn {
-  background: #E8E4DC;
-  color: #1A1710;
-}
-
-html[data-theme="dark"] .auth-google-btn {
-  background: #2A2620;
-  border-color: rgba(255, 255, 255, 0.1);
-  color: #E8E4DC;
-}
-
-/* Dark auth errors */
-html[data-theme="dark"] .auth-errors {
-  background: rgba(220, 120, 100, 0.1);
-  border-color: rgba(220, 120, 100, 0.2);
-  color: #E8A090;
-}
-html[data-theme="dark"] .auth-errors li {
-  color: #E8A090;
-}
-
-/* Dark auth flash messages */
-html[data-theme="dark"] .auth-flash-notice {
-  background: rgba(91, 168, 128, 0.12);
-  border-color: rgba(91, 168, 128, 0.2);
-  color: #7FD4A5;
-}
-html[data-theme="dark"] .auth-flash-alert {
-  background: rgba(220, 120, 100, 0.1);
-  border-color: rgba(220, 120, 100, 0.2);
-  color: #E8A090;
-}
-
-/* Dark nav links */
-html[data-theme="dark"] .nav-link:hover {
-  color: #E8E4DC !important;
-}
-
-/* Dark footer links */
-html[data-theme="dark"] .footer-link:hover {
-  color: #E8E4DC !important;
-}
-html[data-theme="dark"] .social-link:hover {
-  color: #E8E4DC !important;
-}
 
 /* Dark background texture (suppress on dark) */
 html[data-theme="dark"] .theme-bg-texture {
@@ -522,25 +442,16 @@ html[data-theme="dark"] .border-lr-hover {
   border-color: rgba(255, 255, 255, 0.12);
 }
 
-/* App navbar — theme-aware backgrounds */
+/* App and learning navs: the page's own background, frosted. */
 .app-navbar {
-  background: rgba(245, 241, 235, 0.88);
-  border-bottom: 1px solid rgba(28, 24, 18, 0.04);
+  background: color-mix(in srgb, var(--color-bg) 88%, transparent);
+  border-bottom: 1px solid var(--color-border-subtle);
 }
-html[data-theme="dark"] .app-navbar {
-  background: rgba(26, 23, 16, 0.92);
-  border-bottom-color: rgba(255, 255, 255, 0.06);
-}
-
-/* Learning nav — theme-aware backgrounds */
 .learning-nav {
-  background: rgba(245, 241, 235, 0.88);
+  background: color-mix(in srgb, var(--color-bg) 88%, transparent);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border-bottom: 1px solid var(--color-border-subtle);
-}
-html[data-theme="dark"] .learning-nav {
-  background: rgba(26, 23, 16, 0.85);
 }
 
 /* --- Reduced motion: disable all animations for users who prefer it --- */
@@ -589,8 +500,8 @@ html[data-theme="dark"] .learning-nav {
   }
   .card-hover:hover {
     transform: translateY(-2px);
-    box-shadow: 0 8px 30px rgba(28, 24, 18, 0.08), 0 2px 8px rgba(28, 24, 18, 0.04);
-    border-color: rgba(28, 24, 18, 0.13);
+    box-shadow: 0 8px 30px var(--color-shade), 0 2px 8px color-mix(in srgb, var(--color-shade) 50%, transparent);
+    border-color: var(--color-faint);
   }
 
   /* --- Subtle hover lift (buttons, small elements) --- */
@@ -599,23 +510,23 @@ html[data-theme="dark"] .learning-nav {
   }
   .hover-lift:hover {
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(28, 24, 18, 0.1), 0 1px 3px rgba(28, 24, 18, 0.06);
+    box-shadow: 0 4px 12px var(--color-shade), 0 1px 3px color-mix(in srgb, var(--color-shade) 50%, transparent);
   }
 
   /* --- Primary button shadow --- */
   .btn-shadow {
-    box-shadow: 0 1px 3px rgba(28, 24, 18, 0.12), 0 1px 2px rgba(28, 24, 18, 0.06);
+    box-shadow: 0 1px 3px var(--color-shade), 0 1px 2px color-mix(in srgb, var(--color-shade) 50%, transparent);
   }
   .btn-shadow:hover {
-    box-shadow: 0 4px 12px rgba(28, 24, 18, 0.15), 0 2px 4px rgba(28, 24, 18, 0.08);
+    box-shadow: 0 4px 12px var(--color-shade), 0 2px 4px color-mix(in srgb, var(--color-shade) 50%, transparent);
   }
 
   /* --- Navbar scroll states --- */
   .nav-scrolled {
-    background: rgba(245, 241, 235, 0.88);
+    background: color-mix(in srgb, var(--color-bg) 88%, transparent);
     backdrop-filter: blur(16px) saturate(1.4);
     -webkit-backdrop-filter: blur(16px) saturate(1.4);
-    border-bottom-color: rgba(28, 24, 18, 0.06);
+    border-bottom-color: var(--color-border-subtle);
   }
 
   /* --- Dark section gradient --- */
@@ -644,91 +555,65 @@ html[data-theme="dark"] .learning-nav {
    ========================================================================== */
 
 @layer components {
-  /* --- Auth glassmorphic card --- */
+  /* --- Auth card: the shape a .card3 fills (STEP 41 §1.3) --- */
   .auth-card {
-    background: rgba(255, 255, 255, 0.5);
-    backdrop-filter: blur(50px) saturate(1.4);
-    -webkit-backdrop-filter: blur(50px) saturate(1.4);
-    border: 1px solid rgba(28, 24, 18, 0.07);
     border-radius: 20px;
-    box-shadow: 0 8px 32px rgba(28, 24, 18, 0.05), 0 1px 3px rgba(28, 24, 18, 0.03);
   }
 
-  /* --- Auth input --- */
+  /* --- Auth input: the .input3 line and ring --- */
   .auth-input {
     width: 100%;
-    font-family: var(--font-sans);
-    font-size: 0.86rem;
+    font-size: 15px;
+    font-weight: 500;
     padding: 0.68rem 0.85rem;
-    border-radius: 10px;
-    border: 1px solid rgba(28, 24, 18, 0.1);
-    background: white;
-    color: #1C1812;
+    border-radius: 12px;
+    border: 0;
+    box-shadow: inset 0 0 0 1.5px var(--color-faint);
+    background: var(--color-card);
+    color: var(--color-txt);
     outline: none;
-    transition: border-color 0.2s ease, box-shadow 0.2s ease;
   }
   .auth-input::placeholder {
-    color: #A09889;
+    color: var(--color-muted);
   }
-  .auth-input:focus {
-    border-color: rgba(28, 24, 18, 0.22);
-    box-shadow: 0 0 0 3px rgba(28, 24, 18, 0.04);
+  .auth-input:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
   }
 
   /* --- Auth label --- */
   .auth-label {
     display: block;
-    font-family: var(--font-sans);
     font-size: 0.72rem;
     font-weight: 500;
-    color: #6D665B;
+    color: var(--color-sub);
     margin-bottom: 0.35rem;
   }
 
-  /* --- Auth submit button --- */
-  .auth-btn {
-    width: 100%;
-    font-family: var(--font-sans);
-    font-size: 0.82rem;
-    font-weight: 600;
-    padding: 0.72rem 1rem;
-    border-radius: 11px;
-    border: none;
-    background: #2C261E;
-    color: #F5F1EB;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    box-shadow: 0 1px 3px rgba(28, 24, 18, 0.12), 0 1px 2px rgba(28, 24, 18, 0.06);
-  }
-  .auth-btn:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(28, 24, 18, 0.15), 0 2px 4px rgba(28, 24, 18, 0.08);
-  }
-  .auth-btn:active {
-    transform: translateY(0);
-  }
-
-  /* --- Google OAuth button --- */
+  /* --- Google OAuth button: the .btn3--secondary surface --- */
   .auth-google-btn {
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 0.6rem;
     width: 100%;
-    font-family: var(--font-sans);
     font-size: 0.8rem;
     font-weight: 500;
     padding: 0.65rem 1rem;
-    border-radius: 11px;
-    border: 1px solid rgba(28, 24, 18, 0.1);
-    background: white;
-    color: #1C1812;
+    border-radius: 10px;
+    border: 0;
+    background: var(--color-card);
+    color: var(--color-txt);
+    box-shadow: inset 0 0 0 1px var(--color-faint), 0 3px 0 0 var(--color-faint);
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: background-color 0.15s ease, transform 0.12s ease;
   }
   .auth-google-btn:hover {
-    border-color: rgba(28, 24, 18, 0.2);
-    box-shadow: 0 2px 8px rgba(28, 24, 18, 0.06);
+    background: var(--color-bg-2);
+  }
+  .auth-google-btn:active {
+    transform: translateY(2px);
+    box-shadow: inset 0 0 0 1px var(--color-faint), 0 1px 0 0 var(--color-faint);
   }
 
   /* --- Auth card enter animation --- */
@@ -742,17 +627,16 @@ html[data-theme="dark"] .learning-nav {
 
   /* --- Auth form errors --- */
   .auth-errors {
-    background: rgba(176, 96, 80, 0.08);
-    border: 1px solid rgba(176, 96, 80, 0.15);
+    background: var(--color-flash-alert-bg);
+    border: 1px solid var(--color-flash-alert-border);
     border-radius: 10px;
     padding: 0.7rem 0.85rem;
     margin-bottom: 1rem;
   }
   .auth-errors p {
-    font-family: var(--font-sans);
     font-size: 0.72rem;
     font-weight: 500;
-    color: #B06050;
+    color: var(--color-flash-alert-text);
     margin: 0;
   }
   .auth-errors ul {
@@ -760,9 +644,8 @@ html[data-theme="dark"] .learning-nav {
     padding-left: 1rem;
   }
   .auth-errors li {
-    font-family: var(--font-sans);
     font-size: 0.68rem;
-    color: #B06050;
+    color: var(--color-flash-alert-text);
     line-height: 1.4;
   }
 
@@ -772,20 +655,19 @@ html[data-theme="dark"] .learning-nav {
     margin: 0 auto 1rem;
     padding: 0.6rem 0.85rem;
     border-radius: 10px;
-    font-family: var(--font-sans);
     font-size: 0.72rem;
     font-weight: 500;
     animation: authEnter 0.35s ease both;
   }
   .auth-flash-notice {
-    background: rgba(91, 168, 128, 0.1);
-    border: 1px solid rgba(91, 168, 128, 0.18);
-    color: #3D7A5A;
+    background: var(--color-flash-notice-bg);
+    border: 1px solid var(--color-flash-notice-border);
+    color: var(--color-flash-notice-text);
   }
   .auth-flash-alert {
-    background: rgba(176, 96, 80, 0.08);
-    border: 1px solid rgba(176, 96, 80, 0.15);
-    color: #B06050;
+    background: var(--color-flash-alert-bg);
+    border: 1px solid var(--color-flash-alert-border);
+    color: var(--color-flash-alert-text);
   }
 }
 
@@ -797,14 +679,14 @@ html[data-theme="dark"] .learning-nav {
   transition: color 0.2s;
 }
 .footer-link:hover {
-  color: #1C1812 !important;
+  color: var(--color-txt) !important;
 }
 
 .social-link {
   transition: color 0.2s;
 }
 .social-link:hover {
-  color: #1C1812 !important;
+  color: var(--color-txt) !important;
 }
 
 /* --- App nav link hover --- */
@@ -812,7 +694,7 @@ html[data-theme="dark"] .learning-nav {
   transition: color 0.2s;
 }
 .nav-link:hover {
-  color: #1C1812 !important;
+  color: var(--color-txt) !important;
 }
 
 /* --- Avatar hover --- */

@@ -44,8 +44,8 @@
     <%# === Subtle background texture (fixed, decorative) === %>
     <div style="position:fixed; inset:0; pointer-events:none; z-index:0;
                 background:
-                  radial-gradient(ellipse at 15% 25%, rgba(139,128,196,0.035) 0%, transparent 55%),
-                  radial-gradient(ellipse at 85% 65%, rgba(91,168,128,0.03) 0%, transparent 50%);"
+                  radial-gradient(ellipse at 15% 25%, color-mix(in srgb, var(--color-accent) 4%, transparent) 0%, transparent 55%),
+                  radial-gradient(ellipse at 85% 65%, color-mix(in srgb, var(--color-reinforce) 3%, transparent) 0%, transparent 50%);"
          class="theme-bg-texture"></div>
 
     <%# === Authenticated navbar (hidden when content_for(:hide_navbar) is set) === %>
@@ -62,7 +62,7 @@
       <div style="max-width:840px; margin:0 auto; padding:1rem 1.5rem 0;">
         <% if flash[:notice] %>
           <div data-controller="flash"
-               style="background:var(--color-flash-notice-bg, rgba(91,168,128,0.1)); border:1px solid var(--color-flash-notice-border, rgba(91,168,128,0.18)); border-radius:14px; padding:0.875rem 1.25rem; margin-bottom:0.5rem; box-shadow:0 2px 8px rgba(91,168,128,0.08); animation:flashSlideIn 0.3s ease;">
+               style="background:var(--color-flash-notice-bg); border:1px solid var(--color-flash-notice-border); border-radius:14px; padding:0.875rem 1.25rem; margin-bottom:0.5rem; box-shadow:0 2px 8px rgba(91,168,128,0.08); animation:flashSlideIn 0.3s ease;">
             <div style="display:flex; align-items:center; gap:0.625rem;">
               <%= svg_icon(:check, size: 16, style: "flex-shrink:0; color:var(--color-flash-notice-text);") %>
               <p style="font-size:0.875rem; font-weight:500; color:var(--color-flash-notice-text); margin:0; flex:1;"><%= flash[:notice] %></p>
@@ -74,7 +74,7 @@
         <% end %>
         <% if flash[:alert] %>
           <div data-controller="flash"
-               style="background:var(--color-flash-alert-bg, rgba(176,96,80,0.08)); border:1px solid var(--color-flash-alert-border, rgba(176,96,80,0.15)); border-radius:14px; padding:0.875rem 1.25rem; margin-bottom:0.5rem; box-shadow:0 2px 8px rgba(176,96,80,0.08); animation:flashSlideIn 0.3s ease;">
+               style="background:var(--color-flash-alert-bg); border:1px solid var(--color-flash-alert-border); border-radius:14px; padding:0.875rem 1.25rem; margin-bottom:0.5rem; box-shadow:0 2px 8px rgba(176,96,80,0.08); animation:flashSlideIn 0.3s ease;">
             <div style="display:flex; align-items:center; gap:0.625rem;">
               <%= svg_icon(:alert_circle, size: 16, style: "flex-shrink:0; color:var(--color-flash-alert-text);") %>
               <p style="font-size:0.875rem; font-weight:500; color:var(--color-flash-alert-text); margin:0; flex:1;"><%= flash[:alert] %></p>

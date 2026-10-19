@@ -57,12 +57,12 @@
 
     <%# === Flash messages === %>
     <% if flash[:notice] %>
-      <div role="status" style="max-width:620px; margin:0 auto 0.8rem; padding:0.6rem 0.85rem; border-radius:10px; font-size:0.75rem; font-weight:500; background:var(--color-flash-notice-bg, rgba(91,168,128,0.1)); border:1px solid var(--color-flash-notice-border, rgba(91,168,128,0.18)); color:var(--color-flash-notice-text);">
+      <div role="status" style="max-width:620px; margin:0 auto 0.8rem; padding:0.6rem 0.85rem; border-radius:10px; font-size:0.75rem; font-weight:500; background:var(--color-flash-notice-bg); border:1px solid var(--color-flash-notice-border); color:var(--color-flash-notice-text);">
         <%= flash[:notice] %>
       </div>
     <% end %>
     <% if flash[:alert] %>
-      <div role="alert" style="max-width:620px; margin:0 auto 0.8rem; padding:0.6rem 0.85rem; border-radius:10px; font-size:0.75rem; font-weight:500; background:var(--color-flash-alert-bg, rgba(176,96,80,0.08)); border:1px solid var(--color-flash-alert-border, rgba(176,96,80,0.15)); color:var(--color-flash-alert-text);">
+      <div role="alert" style="max-width:620px; margin:0 auto 0.8rem; padding:0.6rem 0.85rem; border-radius:10px; font-size:0.75rem; font-weight:500; background:var(--color-flash-alert-bg); border:1px solid var(--color-flash-alert-border); color:var(--color-flash-alert-text);">
         <%= flash[:alert] %>
       </div>
     <% end %>

@@ -33,14 +33,10 @@
 
       <% if current_user %>
         <%= link_to t("nav.profile"), main_app.profile_path,
-            class: "inline-flex items-center justify-center font-sans text-[0.8rem] font-semibold
-                    bg-accent text-accent-text px-[1.15rem] py-[0.48rem] rounded-btn btn-shadow
-                    hover-lift tracking-[-0.2px]" %>
+            class: "btn3 btn3--sm" %>
       <% else %>
         <%= link_to t("nav.sign_up"), core.sign_up_path,
-            class: "inline-flex items-center justify-center font-sans text-[0.8rem] font-semibold
-                    bg-accent text-accent-text px-[1.15rem] py-[0.48rem] rounded-btn btn-shadow
-                    hover-lift tracking-[-0.2px]" %>
+            class: "btn3 btn3--sm" %>
       <% end %>
     </div>
 
@@ -84,12 +80,10 @@
       <div class="pt-2">
         <% if current_user %>
           <%= link_to t("nav.profile"), main_app.profile_path,
-              class: "inline-flex items-center justify-center font-sans text-[0.85rem] font-semibold
-                      bg-accent text-accent-text px-5 py-2.5 rounded-btn btn-shadow w-full" %>
+              class: "btn3 w-full" %>
         <% else %>
           <%= link_to t("nav.sign_up"), core.sign_up_path,
-              class: "inline-flex items-center justify-center font-sans text-[0.85rem] font-semibold
-                      bg-accent text-accent-text px-5 py-2.5 rounded-btn btn-shadow w-full" %>
+              class: "btn3 w-full" %>
         <% end %>
       </div>
     </div>

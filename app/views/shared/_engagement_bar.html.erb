@@ -28,9 +28,9 @@
 
   <%# Level badge %>
   <div data-engagement-target="levelBadge" title="<%= t('engagement.level_n', level: engagement.current_level) %>"
-       style="display:flex; align-items:center; gap:0.15rem; background:var(--color-faint, rgba(28,24,18,0.04)); border-radius:8px; padding:0.15rem 0.45rem; cursor:default; position:relative; overflow:hidden;">
+       style="display:flex; align-items:center; gap:0.15rem; background:var(--color-faint); border-radius:8px; padding:0.15rem 0.45rem; cursor:default; position:relative; overflow:hidden;">
     <%# Level progress background %>
-    <div data-engagement-target="levelProgress" style="position:absolute; inset:0; width:<%= engagement.level_progress_percentage %>%; background:rgba(91,168,128,0.12); border-radius:8px; transition:width 0.6s ease;"></div>
+    <div data-engagement-target="levelProgress" style="position:absolute; inset:0; width:<%= engagement.level_progress_percentage %>%; background:color-mix(in srgb, var(--color-progress-bar) 14%, transparent); border-radius:8px; transition:width 0.6s ease;"></div>
     <span class="font-mono" style="font-size:0.65rem; font-weight:700; color:var(--color-sub); position:relative; z-index:1;">
       Nv<span data-engagement-target="levelNum"><%= engagement.current_level %></span>
     </span>
