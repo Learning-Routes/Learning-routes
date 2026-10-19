@@ -84,7 +84,7 @@ class JourneyMapTest < ApplicationSystemTestCase
   # ── Phone ─────────────────────────────────────────────────────────────
   [7, 43].each do |size|
     test "#{size} steps on a phone: legible, apart, current step clear of every overlay" do
-      page.current_window.resize_to(390, 844)
+      viewport(390, 844)
       route = build_route(size)
       open_journey(route)
 
@@ -362,7 +362,7 @@ class JourneyMapTest < ApplicationSystemTestCase
   test "after a resize, Encajar fits the viewport it has now" do
     route = build_route(7)
     open_journey(route, reduced_motion: true)
-    page.current_window.resize_to(390, 844)
+    viewport(390, 844)
     sleep 0.3
     find("[data-action~='route-journey#fit']").click
     assert_in_delta 12 / 13.0, matrix["a"], 1e-3, "the phone opens at the legible floor"
@@ -385,7 +385,7 @@ class JourneyMapTest < ApplicationSystemTestCase
   test "after the window resizes, the current step is still clear of the overlays" do
     route = build_route(7)
     open_journey(route, reduced_motion: true)
-    page.current_window.resize_to(390, 844)
+    viewport(390, 844)
     sleep 0.3
     assert_current_clear(route)
   end
@@ -402,7 +402,7 @@ class JourneyMapTest < ApplicationSystemTestCase
     assert_selector "#journey-topbar .jm-counter__text", text: "2 de 9 · 22 %"
     assert_selector ".jm-legend", visible: true
 
-    page.current_window.resize_to(390, 844)
+    viewport(390, 844)
     assert_selector ".jm-legend", visible: :hidden
   end
 
