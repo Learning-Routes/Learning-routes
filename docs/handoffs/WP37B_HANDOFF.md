@@ -153,11 +153,12 @@ there, and its label and the keyboard help now say so ("Volver a la vista inicia
 without Ctrl/⌘ leaves the map alone. There was no inertia. A drag held at the bound restarts
 from there, so reversing it moves the map at once. "Arrastra para explorar" is gone.
 
-**Provisional, for the owner:** the fitted scale is fit-to-width **held between the legible floor
-(12/13) and 1**. Literal fit-to-width opened a 7-step route on a phone at 0.25 (7 px labels, the
-WP-37b legibility rule broken) and at 1440 at 1.44 (everything blown up). With the hold, a phone
-opens at the floor with the map wider than the screen (dragging sideways stays on the leash),
-and a short route on a wide screen sits at its drawn size. Say if fit-to-width should be literal.
+**Owner's decision:** the fitted scale is fit-to-width **held between the legible floor (12/13)
+and 1**, and stays that way: labels stay legible, and on a phone you drag sideways. Literal
+fit-to-width opened a 7-step route on a phone at 0.25 (7 px labels, the WP-37b legibility rule
+broken) and at 1440 at 1.44 (everything blown up). With the hold, a phone opens at the floor with
+the map wider than the screen (dragging sideways stays on the leash), and a short route on a wide
+screen sits at its drawn size.
 
 **Titles.** A title with formatting tags showed them as text on the map and in the Continue card.
 `RoutesController#plain_title` strips formatting tags only (b, strong, i, em, code, …) and decodes
@@ -168,11 +169,19 @@ bounds", "wheel without a modifier does not change the camera"), Ctrl+wheel stop
 and a reversed drag past the bound — each red on the free camera; `clampCamera`/`leashRange` in
 `journey_camera_test.rb`. Tests of the free camera now test the leash ("Encajar returns to the
 opening view", "after a resize, Encajar fits the viewport it has now"); panning in tests is a real
-CDP drag; the far-zoom fade test is gone (zoom never reaches 0.5 now, so LOD "far"/"mid" are
-unreachable — the code and CSS are left for the owner's call). `initialCamera` is gone.
+CDP drag; the far-zoom fade test is gone (zoom never goes below 12/13 now, so LOD "far"/"mid" were
+unreachable). On the reviewer's ruling the fade went too: `data-lod`, its CSS and the labels'
+opacity transition. `initialCamera` is gone.
 
-**Suites (clean tree, `11a4d1be`).** `bin/rails test` 1983 runs, 0 failures · engines 436, 0 ·
-`test:system` 139, 0 failures, 1 skip (the owner renders, which run with `SCREENSHOT=1`).
+**CI's red system-test (`e8259090`).** "On a phone, a popover near the top flips below" could not
+find the first step's dot. macOS Chrome keeps a window at least 500 px wide, so `resize_to(390, 844)`
+ran that test at 500 locally and at 390 on CI, where the phone's opening (the current step centred)
+leaves the first step off the left edge. It now sizes a true 390 px viewport through CDP and drags
+the first step into view before hovering it; the assertions are unchanged.
+
+**Suites (clean tree, after the CI fix and the fade removal).** `bin/rails test` 1983 runs, 0
+failures · engines 436, 0 · `test:system` 139, 0 failures, 1 skip (the owner renders, which run
+with `SCREENSHOT=1`).
 
 **Renders.** 7, 7+13 and 43 nodes × light/dark × 1440/390 (390 as a phone: mobile, scale 2,
 `clientWidth` 390), plus the popover, in `tmp/wp37b/mapa-pr2-*.png` beside the prototype's
