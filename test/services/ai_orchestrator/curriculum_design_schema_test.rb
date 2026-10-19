@@ -108,13 +108,13 @@ class AiOrchestrator::CurriculumDesignSchemaTest < ActiveSupport::TestCase
     RubyLLM.config.openai_api_key = "test-key"
 
     chat = RubyLLM.chat(model: "gpt-4.1-mini")
-    chat.with_schema(AiOrchestrator::Schemas::CurriculumDesignSchema)
+    chat.with_schema(AiOrchestrator::Schemas::CurriculumDesignSchema).ask_later("Design a route")
 
-    # ruby_llm 1.16 stores { name:, schema:, strict: } and builds OpenAI's
-    # response_format from exactly those (providers/openai/chat.rb:33-43).
-    assert_equal SCHEMA, chat.schema[:schema],
-      "with_schema should unwrap to_json_schema[:schema] and store it verbatim"
-    assert_equal true, chat.schema[:strict], "OpenAI must receive strict: true"
+    # ruby_llm 2 decides strict when it renders the request, not in chat.schema.
+    json_schema = chat.render.dig(:response_format, :json_schema)
+    assert_equal SCHEMA, json_schema[:schema],
+      "with_schema should unwrap to_json_schema[:schema] and send it verbatim"
+    assert_equal true, json_schema[:strict], "OpenAI must receive strict: true"
   ensure
     RubyLLM.config.openai_api_key = original
   end
