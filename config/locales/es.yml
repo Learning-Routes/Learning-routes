@@ -983,12 +983,15 @@ es:
       review:
         title: "Refuerzo: repasa los conceptos clave"
         description: "Repasa los conceptos que necesitan afianzarse"
+        short: "Repasa los conceptos clave"
       practice:
         title: "Refuerzo: práctica guiada"
         description: "Ejercicios de práctica con apoyo adicional"
+        short: "Práctica guiada"
       reassessment:
         title: "Refuerzo: nueva evaluación"
         description: "Comprobación rápida para verificar que lo has entendido"
+        short: "Nueva evaluación"
     modules: { free_preview: "Vista previa gratuita", locked: "Bloqueado hasta la compra", purchased: "Comprado" }
     blocks:
       required:
@@ -1060,12 +1063,40 @@ es:
       exhausted: "Lo hemos intentado varias veces sin éxito. Nuestro equipo puede ver el error y lo revisará."
       back: "Volver a la ruta"
     journey:
+      your_route: "Tu ruta"
+      module_count:
+        one: "%{count} módulo"
+        other: "%{count} módulos"
+      topic_count:
+        one: "%{count} tema"
+        other: "%{count} temas"
+      counter: "%{done} de %{total} · %{percent} %"
+      chip_progress: "%{done} de %{total}"
+      unlock_module: "Desbloquear módulo"
+      legend_label: "Leyenda"
+      legend_done: "Hecho"
+      legend_ahead: "Por llegar"
+      continue_eyebrow: "Sigues en · %{module} · paso %{step} de %{total}"
+      continue: "Continuar"
+      locate: "Ir a donde estoy"
+      locate_title: "Ir a donde estoy (I)"
+      route_completed: "Ruta completada"
+      route_completed_eyebrow: "%{done} de %{total} temas hechos"
+      pop_step: "%{module} · paso %{step} de %{total}"
+      pop_reinforcement: "Refuerzo de · %{parent}"
+      pop_masked_title: "Contenido del módulo"
+      pop_minutes: "%{count} min"
+      act_continue: "Continuar"
+      act_review: "Volver a verlo"
+      act_reinforcement: "Empezar el refuerzo"
+      act_open: "Abrir"
+      act_locked: "Se abre al terminar el paso anterior"
+      act_masked: "Desbloquea el módulo para abrirlo"
       locked_topic: "Bloqueado"
       route_label: "RUTA"
-      drag_to_explore: "Arrastra para explorar"
-      map_keys: "Mapa de la ruta. Las flechas desplazan, más y menos acercan o alejan, 0 muestra toda la ruta."
+      map_keys: "Mapa de la ruta. Las flechas desplazan, más y menos acercan o alejan, 0 vuelve a la vista inicial, I te lleva a donde estás y Escape cierra el detalle."
       fit: "Encajar"
-      fit_label: "Ver toda la ruta"
+      fit_label: "Volver a la vista inicial"
       zoom_in: "Acercar"
       zoom_out: "Alejar"
       status_current: "Estás aquí"
@@ -1076,13 +1107,6 @@ es:
       stages_topics:
         one: "%{stages} etapa · %{topics} tema"
         other: "%{stages} etapas · %{topics} temas"
-      subtitle: "Camino personalizado · %{stages} · %{topics}"
-      stage_count:
-        one: "%{count} etapa"
-        other: "%{count} etapas"
-      topic_count:
-        one: "%{count} tema"
-        other: "%{count} temas"
       stage_of: "Etapa %{current} de %{total}"
       stage_navigation: "Navegacion de etapas"
       list_view: "Vista de lista"

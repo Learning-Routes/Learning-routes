@@ -67,14 +67,15 @@ class LearningRoutesEngine::JourneyMapDataTest < ActionDispatch::IntegrationTest
 
     get learning_routes_engine.journey_route_path(@route)
 
-    assert_match(/· 2 temas\b/, css_select(".jm-subtitle").first.text.squish, "the header counts every topic the map draws")
+    # WP-37b: the count lives in the root's meta line ("2 módulos · 2 temas").
+    assert_select ".jm-root__meta", text: /· 2 temas\z/, message: "@steps must come from the policy, not from access_preview?"
   end
 
   # STEP 38 §2: the header read "Camino personalizado · 3 etapas · 3 temas ·
   # Camino personalizado · 8 etapas · nivel beginner · …" — its own sentence
   # wrapped around a fallback route's subject_area sentence, two counts that
   # disagreed. One sentence, counted from what the map draws.
-  test "the journey header is one sentence, counted from the map's stages and topics" do
+  test "the root's meta line is one sentence, counted from the map's modules and topics" do
     @route.update!(
       subject_area: "Camino personalizado · 8 etapas · nivel beginner",
       translations: { "es" => { "title" => "Map", "subject_area" => "Camino personalizado · 8 etapas · nivel beginner" } }
@@ -85,20 +86,20 @@ class LearningRoutesEngine::JourneyMapDataTest < ActionDispatch::IntegrationTest
 
     stages = journey_stages
     drawn_topics = stages.sum { |stage| stage["topics"].size }
-    header = css_select(".jm-subtitle").first.text.squish
+    header = css_select(".jm-root__meta").first.text.squish
 
-    assert_equal "Camino personalizado · #{stages.size} etapas · #{drawn_topics} temas · Arrastra para explorar", header
-    assert_equal "Camino personalizado · 2 etapas · 3 temas · Arrastra para explorar", header
+    assert_equal "#{stages.size} módulos · #{drawn_topics} temas", header
+    assert_equal "2 módulos · 3 temas", header
   end
 
-  test "the journey header counts in the singular" do
+  test "the root's meta line counts in the singular" do
     @paid.destroy!
     step!(@preview, 0, "Only lesson")
 
     journey_stages
 
-    assert_equal "Camino personalizado · 1 etapa · 1 tema · Arrastra para explorar",
-                 css_select(".jm-subtitle").first.text.squish
+    assert_equal "1 módulo · 1 tema",
+                 css_select(".jm-root__meta").first.text.squish
   end
 
   test "the list view lists a purchased module's steps without the lock" do
@@ -276,6 +277,65 @@ class LearningRoutesEngine::JourneyMapDataTest < ActionDispatch::IntegrationTest
     assert_equal({ "title" => "Map" }, JSON.parse(node["data-route-journey-root-value"]))
   end
 
+  # ─── WP-37b brief §4.4 and §5.2: short names and minutes ─────────────
+
+  # A reinforcement's label on the map drops the "Refuerzo:" prefix; `name`
+  # keeps the full title for aria and the popover.
+  %w[es en].each do |locale|
+    %w[review practice reassessment].each do |kind|
+      test "a #{kind} reinforcement in #{locale} gets its short name, without the prefix" do
+        @user.update!(locale: locale)
+        primary = step!(@preview, 0, "Primary")
+        title = I18n.t("learning_engine.reinforcement.#{kind}.title", locale: locale)
+        reinforcement = step!(@preview, 1, title, metadata: { "reinforcement" => true, "triggering_step_id" => primary.id })
+
+        topic = all_topics.find { |t| t["id"] == reinforcement.id }
+        prefix = I18n.t("learning_engine.journey.status_reinforcement", locale: locale)
+        assert_equal I18n.t("learning_engine.reinforcement.#{kind}.short", locale: locale), topic["short_name"]
+        assert_not topic["short_name"].start_with?(prefix), "#{topic["short_name"].inspect} still carries #{prefix.inspect}"
+        assert_equal title, topic["name"], "name stays the full title"
+      end
+    end
+  end
+
+  test "a reinforcement in the route's language on a page in the other language still gets a short name" do
+    @user.update!(locale: "en")
+    primary = step!(@preview, 0, "Primary")
+    title = I18n.t("learning_engine.reinforcement.practice.title", locale: :es)
+    reinforcement = step!(@preview, 1, title, metadata: { "reinforcement" => true, "triggering_step_id" => primary.id })
+
+    topic = all_topics.find { |t| t["id"] == reinforcement.id }
+    assert_equal I18n.t("learning_engine.reinforcement.practice.short", locale: :en), topic["short_name"]
+  end
+
+  test "a reinforcement with its own title drops only the leading prefix" do
+    primary = step!(@preview, 0, "Primary")
+    reinforcement = step!(@preview, 1, "Refuerzo: los verbos irregulares",
+                          metadata: { "reinforcement" => true, "triggering_step_id" => primary.id })
+    plain = step!(@preview, 2, "Sin prefijo", metadata: { "reinforcement" => true, "triggering_step_id" => primary.id })
+
+    topics = all_topics.index_by { |t| t["id"] }
+    assert_equal "los verbos irregulares", topics[reinforcement.id]["short_name"]
+    assert_equal "Sin prefijo", topics[plain.id]["short_name"]
+  end
+
+  test "a primary step has no short name" do
+    primary = step!(@preview, 0, "Primary")
+
+    assert_not all_topics.find { |t| t["id"] == primary.id }.key?("short_name")
+  end
+
+  test "minutes come from estimated_minutes and are omitted when nil" do
+    timed = step!(@preview, 0, "Timed")
+    timed.update_column(:estimated_minutes, 11)
+    untimed = step!(@preview, 1, "Untimed")
+    untimed.update_column(:estimated_minutes, nil)
+
+    topics = all_topics.index_by { |t| t["id"] }
+    assert_equal 11, topics[timed.id]["minutes"]
+    assert_not topics[untimed.id].key?("minutes")
+  end
+
   private
 
   def all_topics = journey_stages.flat_map { |s| s["topics"] }
@@ -315,6 +375,48 @@ class LearningRoutesEngine::JourneyMapDataTest < ActionDispatch::IntegrationTest
 
   def preview_topics
     journey_stages.find { |s| s["module_id"] == @preview.id }["topics"].index_by { |t| t["id"] }
+  end
+
+  # STEP 39 PR 2: the cp2 renders showed "Comparar <b>ser</b>…" with its tags as
+  # text, on the map and in the Continue card. Titles on the map are plain text:
+  # tags stripped, entities decoded, never escaped markup.
+  test "a title with markup reaches the map and the Continue card as plain text" do
+    @route.update!(topic: "Mapa <i>nuevo</i>")
+    @preview.update!(title: "Módulo <b>uno</b>", translations: { "es" => { "title" => "Módulo <b>uno</b>" } })
+    step!(@preview, 1, "Comparar <b>ser</b> y <i>estar</i> &amp; más", status: :in_progress)
+    step!(@preview, 2, "Refuerzo: <b>ser</b> en contexto", metadata: { "reinforcement" => true })
+
+    stages = journey_stages
+
+    topics = stages.flat_map { |stage| stage["topics"] }
+    assert_equal "Comparar ser y estar & más", topics.first["name"]
+    assert_equal "Módulo uno", stages.first["label"]
+    topics.each do |topic|
+      %w[name short_name].each { |key| assert_no_match(/[<>]|&amp;/, topic[key].to_s, "#{key} carries markup: #{topic[key]}") }
+    end
+    assert_select ".jm-card__title", text: "Comparar ser y estar & más"
+    assert_select ".jm-root__title", text: "Mapa nuevo"
+  end
+
+  # STEP 38 §4: Encajar returns to the opening view; it no longer shows the
+  # whole route, so its label and the keyboard help must not say so.
+  test "Encajar says it returns to the opening view" do
+    step!(@preview, 1, "Lesson")
+    journey_stages
+
+    assert_select "[data-action~='route-journey#fit'][aria-label=?]", "Volver a la vista inicial"
+    assert_no_match(/toda la ruta/, response.body)
+  end
+
+  # Review finding: an HTML parser reads "<String>" as a tag and drops it. Only
+  # formatting tags are markup; everything else in a title is its text.
+  test "a title that is code keeps its angle brackets" do
+    { 1 => "List<String> y Map<K, V>", 2 => "Si a<b entonces x <= y", 3 => "Usa <strong>Vec<i32></strong> en Rust" }
+      .each { |position, title| step!(@preview, position, title) }
+
+    names = journey_stages.flat_map { |stage| stage["topics"] }.map { |topic| topic["name"] }
+
+    assert_equal ["List<String> y Map<K, V>", "Si a<b entonces x <= y", "Usa Vec<i32> en Rust"], names
   end
 
   def step!(route_module, position, title, status: :available, metadata: {})
