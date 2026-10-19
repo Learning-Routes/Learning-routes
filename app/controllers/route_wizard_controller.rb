@@ -77,7 +77,7 @@ class RouteWizardController < ApplicationController
           render turbo_stream: turbo_stream.replace("wizard-error-banner",
             html: helpers.content_tag(:div, error_msg,
               id: "wizard-error-banner", "data-route-wizard-target": "errorBanner",
-              style: "max-width:640px; width:100%; margin-bottom:10px; padding:10px 16px; border-radius:10px; background:var(--color-flash-alert-bg, rgba(176,96,80,0.08)); border:1px solid var(--color-flash-alert-border, rgba(176,96,80,0.15)); font-family:'DM Sans',sans-serif; font-size:0.78rem; color:var(--color-flash-alert-text, #B06050);")),
+              style: "max-width:640px; width:100%; margin-bottom:10px; padding:10px 16px; border-radius:10px; background:var(--color-flash-alert-bg, rgba(176,96,80,0.08)); border:1px solid var(--color-flash-alert-border, rgba(176,96,80,0.15)); font-size:0.78rem; color:var(--color-flash-alert-text, #B06050);")),
             status: :unprocessable_entity
         }
         format.html {

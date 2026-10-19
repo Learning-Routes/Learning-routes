@@ -11,7 +11,7 @@ import schema from './agreement.schema.json';
 import type {Agreement} from '../generated/schemas';
 
 // The exact font stack every fontFamily in this scene must use (global constraint).
-const FONT = "'DM Sans', 'Hiragino Sans GB', 'PingFang SC', 'Microsoft YaHei', 'Noto Sans CJK SC', system-ui, sans-serif";
+const FONT = "'Archivo', 'Hiragino Sans GB', 'PingFang SC', 'Microsoft YaHei', 'Noto Sans CJK SC', system-ui, sans-serif";
 
 // The JSON the AI generates. This schema is its only declaration: the type
 // below is generated from it, and this fallback is its examples[0].
