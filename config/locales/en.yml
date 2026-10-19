@@ -30,7 +30,6 @@ en:
     subtext_active: "Continue your personalized route. %{progress}% completed with %{steps} steps finished."
     cta: "See how it works"
     cta_active: "Continue learning"
-    social_proof: "4.8 satisfaction in private beta"
 
   # ── Product Preview ──
   product_preview:
