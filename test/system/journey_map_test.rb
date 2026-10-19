@@ -526,13 +526,16 @@ class JourneyMapTest < ApplicationSystemTestCase
   end
 
   test "on a phone, a popover near the top flips below and stays inside the viewport" do
-    page.current_window.resize_to(390, 844)
+    # A true 390 px viewport (CDP): macOS Chrome keeps a window at least 500 px
+    # wide, so resize_to(390, …) measured this at 500 locally and 390 on CI.
+    viewport(390, 844)
     route = build_route(7)
     open_journey(route, reduced_motion: true)
     first = route.route_steps.find_by!(position: 0)
-    top = box_of("s:#{first.id}")["top"]
+    box = box_of("s:#{first.id}")
     topbar = page.evaluate_script("document.getElementById('journey-topbar').getBoundingClientRect().bottom")
-    drag_by(0, -(top - topbar - 6))
+    # The phone opens on the current step, so the first one starts off the left edge.
+    drag_by(8 - box["left"], -(box["top"] - topbar - 6))
 
     page.driver.browser.action.move_to(find("[data-node-id='s:#{first.id}'] .jm-node__dot").native).perform
     assert_selector ".jm-pop.jm-pop--show.jm-pop--below"
