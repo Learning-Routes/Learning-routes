@@ -51,4 +51,26 @@ class JourneyLevelTokensTest < ActiveSupport::TestCase
     dark = %w[nv1 nv2 nv3].map { |l| DARK.to_s[/--color-node-#{l}:\s*([^;]+);/, 1].to_s.strip }
     assert_equal 3, dark.uniq.size
   end
+
+  # WP-37b brief §4.3. The terrain is texture, never a line competing with the
+  # route: its stroke stays at or under 10 % alpha in both themes.
+  JOURNEY_LIGHT = CSS[/^\.jm\s*\{(.*?)\}/m, 1].to_s
+  JOURNEY_DARK = CSS[/^html\[data-theme="dark"\] \.jm\s*\{(.*?)\}/m, 1].to_s
+
+  test "--jm-contour is a faint rgba in both themes" do
+    { "light" => JOURNEY_LIGHT, "dark" => JOURNEY_DARK }.each do |theme, block|
+      value = block[/--jm-contour:\s*([^;]+);/, 1]
+      assert value, "no #{theme} value for --jm-contour"
+      alpha = value[/rgba\([^)]*,\s*([\d.]+)\s*\)/, 1]
+      assert alpha, "--jm-contour must be an rgba so its alpha is explicit, got #{value.inspect} (#{theme})"
+      assert_operator alpha.to_f, :<=, 0.1, "--jm-contour alpha #{alpha} on #{theme} turns the terrain into lines"
+    end
+  end
+
+  test "every journey token is defined in both themes" do
+    light = JOURNEY_LIGHT.scan(/(--jm-[a-z-]+):/).flatten.uniq
+    dark = JOURNEY_DARK.scan(/(--jm-[a-z-]+):/).flatten.uniq
+    refute_empty light
+    assert_equal light.sort, dark.sort, "a --jm- token exists in one theme only"
+  end
 end
