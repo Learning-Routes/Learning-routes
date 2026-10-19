@@ -139,7 +139,7 @@ export default class extends Controller {
     span.textContent = "+10 XP"
     span.style.cssText = `
       position:absolute; top:-0.3rem; right:0.5rem;
-      font-family:'DM Mono',monospace; font-size:0.78rem; font-weight:700;
+      font-family:var(--font-mono); font-size:0.78rem; font-weight:700;
       color:#B09848; pointer-events:none; opacity:1; z-index:10;
       transition:all 0.9s cubic-bezier(0.16,1,0.3,1);
     `

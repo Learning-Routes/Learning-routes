@@ -6,7 +6,7 @@
 
 <% content_for(:auth_toggle) do %>
   <%= link_to core.sign_up_path,
-      style: "font-family:'DM Sans',sans-serif; font-size:0.82rem; color:var(--color-muted); text-decoration:none; transition:color 0.2s;",
+      style: "font-size:0.82rem; color:var(--color-muted); text-decoration:none; transition:color 0.2s;",
       class: "nav-link" do %>
     <%= t("auth.login.toggle") %>
   <% end %>
@@ -19,7 +19,7 @@
             box-shadow:0 8px 32px rgba(28,24,18,0.06), 0 1px 3px rgba(28,24,18,0.03);">
 
   <%# === Heading === %>
-  <h1 style="font-family:'DM Sans',sans-serif; font-weight:700; font-size:1.6rem; letter-spacing:-0.7px; color:var(--color-txt); margin:0 0 1.5rem; line-height:1.2;">
+  <h1 style="font-weight:700; font-size:1.6rem; letter-spacing:-0.7px; color:var(--color-txt); margin:0 0 1.5rem; line-height:1.2;">
     <%= t("auth.login.heading") %>
   </h1>
 
@@ -31,7 +31,7 @@
               aria-label="<%= t('auth.login.google') %>"
               class="auth-google-btn"
               style="display:flex; align-items:center; justify-content:center; gap:0.65rem; width:100%;
-                     font-family:'DM Sans',sans-serif; font-size:0.88rem; font-weight:500;
+                     font-size:0.88rem; font-weight:500;
                      padding:0.78rem 1rem; border-radius:11px;
                      cursor:pointer; transition:all 0.2s;">
         <%= render "core/shared/google_logo" %>
@@ -43,7 +43,7 @@
   <%# === Divider === %>
   <div style="display:flex; align-items:center; gap:0.8rem; margin:1.4rem 0;" role="presentation">
     <div style="flex:1; height:1px; background:var(--color-faint, rgba(28,24,18,0.08));"></div>
-    <span style="font-family:'DM Mono',monospace; font-size:0.55rem; letter-spacing:2px; text-transform:uppercase; color:var(--color-muted);"><%= t("auth.login.divider") %></span>
+    <span class="font-mono" style="font-size:0.55rem; letter-spacing:2px; text-transform:uppercase; color:var(--color-muted);"><%= t("auth.login.divider") %></span>
     <div style="flex:1; height:1px; background:var(--color-faint, rgba(28,24,18,0.08));"></div>
   </div>
 
@@ -59,10 +59,10 @@
         <%# Email %>
         <div>
           <%= f.label :email, t("auth.login.email_label"),
-              style: "display:block; font-family:'DM Sans',sans-serif; font-size:0.78rem; font-weight:500; color:var(--color-sub); margin-bottom:0.45rem;" %>
+              style: "display:block; font-size:0.78rem; font-weight:500; color:var(--color-sub); margin-bottom:0.45rem;" %>
           <%= f.email_field :email,
               class: "auth-input",
-              style: "display:block; width:100%; box-sizing:border-box; font-family:'DM Sans',sans-serif; font-size:0.92rem; padding:0.78rem 0.95rem; border-radius:10px; outline:none; transition:border-color 0.2s, box-shadow 0.2s;",
+              style: "display:block; width:100%; box-sizing:border-box; font-size:0.92rem; padding:0.78rem 0.95rem; border-radius:10px; outline:none; transition:border-color 0.2s, box-shadow 0.2s;",
               placeholder: t("auth.login.email_placeholder"),
               required: true,
               autofocus: true,
@@ -74,13 +74,13 @@
         <div>
           <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:0.45rem;">
             <%= f.label :password, t("auth.login.password_label"),
-                style: "display:block; font-family:'DM Sans',sans-serif; font-size:0.78rem; font-weight:500; color:var(--color-sub); margin:0;" %>
+                style: "display:block; font-size:0.78rem; font-weight:500; color:var(--color-sub); margin:0;" %>
             <%= link_to t("auth.login.forgot"), core.forgot_password_path,
-                style: "font-family:'DM Sans',sans-serif; font-size:0.72rem; color:var(--color-muted); text-decoration:none; transition:color 0.2s;" %>
+                style: "font-size:0.72rem; color:var(--color-muted); text-decoration:none; transition:color 0.2s;" %>
           </div>
           <%= f.password_field :password,
               class: "auth-input",
-              style: "display:block; width:100%; box-sizing:border-box; font-family:'DM Sans',sans-serif; font-size:0.92rem; padding:0.78rem 0.95rem; border-radius:10px; outline:none; transition:border-color 0.2s, box-shadow 0.2s;",
+              style: "display:block; width:100%; box-sizing:border-box; font-size:0.92rem; padding:0.78rem 0.95rem; border-radius:10px; outline:none; transition:border-color 0.2s, box-shadow 0.2s;",
               placeholder: t("auth.login.password_placeholder"),
               required: true,
               autocomplete: "current-password",
@@ -88,7 +88,7 @@
         </div>
 
         <%# Remember me %>
-        <label style="display:flex; align-items:center; gap:0.55rem; cursor:pointer; font-family:'DM Sans',sans-serif; font-size:0.82rem; color:var(--color-sub); user-select:none;">
+        <label style="display:flex; align-items:center; gap:0.55rem; cursor:pointer; font-size:0.82rem; color:var(--color-sub); user-select:none;">
           <%= f.check_box :remember_me,
               { checked: false,
                 style: "width:1rem; height:1rem; cursor:pointer; accent-color:var(--color-accent);" },
@@ -100,7 +100,7 @@
         <div style="margin-top:0.3rem;">
           <%= f.submit t("auth.login.submit"),
               class: "auth-btn",
-              style: "display:block; width:100%; font-family:'DM Sans',sans-serif; font-size:0.9rem; font-weight:600; padding:0.85rem 1rem; border-radius:11px; border:none; cursor:pointer; transition:all 0.2s; box-shadow:0 1px 3px rgba(28,24,18,0.12), 0 1px 2px rgba(28,24,18,0.06);",
+              style: "display:block; width:100%; font-size:0.9rem; font-weight:600; padding:0.85rem 1rem; border-radius:11px; border:none; cursor:pointer; transition:all 0.2s; box-shadow:0 1px 3px rgba(28,24,18,0.12), 0 1px 2px rgba(28,24,18,0.06);",
               data: { auth_form_target: "submit" } %>
         </div>
       </div>
@@ -108,7 +108,7 @@
   </div>
 
   <%# === Switch to register === %>
-  <p style="text-align:center; margin:1.3rem 0 0; font-family:'DM Sans',sans-serif; font-size:0.78rem; color:var(--color-muted);">
+  <p style="text-align:center; margin:1.3rem 0 0; font-size:0.78rem; color:var(--color-muted);">
     <%= t("auth.login.switch_text") %>
     <%= link_to t("auth.login.switch_link"), core.sign_up_path,
         style: "color:var(--color-link); text-decoration:none; font-weight:600;" %>

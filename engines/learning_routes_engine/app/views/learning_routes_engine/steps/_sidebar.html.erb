@@ -3,7 +3,7 @@
 
     <%# ── Step Info Card ── %>
     <div style="background:var(--color-card); border:1px solid var(--color-border-subtle); border-radius:16px; padding:1.25rem; box-shadow:0 1px 3px rgba(0,0,0,0.02), 0 4px 12px rgba(0,0,0,0.01);">
-      <h3 style="font-family:'DM Mono',monospace; font-size:0.625rem; font-weight:600; color:var(--color-muted); text-transform:uppercase; letter-spacing:0.1em; margin:0 0 1rem;"><%= t('learning_engine.sidebar.step_info') %></h3>
+      <h3 class="font-mono" style="font-size:0.625rem; font-weight:600; color:var(--color-muted); text-transform:uppercase; letter-spacing:0.1em; margin:0 0 1rem;"><%= t('learning_engine.sidebar.step_info') %></h3>
       <%# WP-15 §D. Four visually identical tinted pills, one per fact, made the card
           read as a list of buttons and gave 40% of its height to chrome. Same facts,
           same theme tokens, no new colours: a label/value grid separated by the
@@ -41,7 +41,7 @@
 
     <%# ── Progress Ring Card ── %>
     <div style="background:var(--color-card); border:1px solid var(--color-border-subtle); border-radius:16px; padding:1.25rem; box-shadow:0 1px 3px rgba(0,0,0,0.02), 0 4px 12px rgba(0,0,0,0.01);">
-      <h3 style="font-family:'DM Mono',monospace; font-size:0.625rem; font-weight:600; color:var(--color-muted); text-transform:uppercase; letter-spacing:0.1em; margin:0 0 1rem;"><%= t('learning_engine.sidebar.progress') %></h3>
+      <h3 class="font-mono" style="font-size:0.625rem; font-weight:600; color:var(--color-muted); text-transform:uppercase; letter-spacing:0.1em; margin:0 0 1rem;"><%= t('learning_engine.sidebar.progress') %></h3>
 
       <%# SVG Progress Ring %>
       <div style="display:flex; flex-direction:column; align-items:center; gap:0.75rem;">
@@ -60,11 +60,11 @@
             </defs>
           </svg>
           <div style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; flex-direction:column;">
-            <span style="font-family:'DM Sans',sans-serif; font-size:1.25rem; font-weight:800; color:var(--color-txt); line-height:1;"><%= @progress[:percentage] %>%</span>
+            <span style="font-size:1.25rem; font-weight:800; color:var(--color-txt); line-height:1;"><%= @progress[:percentage] %>%</span>
           </div>
         </div>
         <div style="text-align:center;">
-          <span style="font-family:'DM Sans',sans-serif; font-size:0.75rem; font-weight:500; color:var(--color-muted);"><%= @progress[:completed_steps] %>/<%= @progress[:total_steps] %> <%= t('learning_engine.sidebar.steps') %></span>
+          <span style="font-size:0.75rem; font-weight:500; color:var(--color-muted);"><%= @progress[:completed_steps] %>/<%= @progress[:total_steps] %> <%= t('learning_engine.sidebar.steps') %></span>
         </div>
       </div>
 

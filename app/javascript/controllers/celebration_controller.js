@@ -121,7 +121,7 @@ export default class extends Controller {
     span.textContent = `+${amount} XP`
     span.style.cssText = `
       position:absolute; top:-0.5rem; left:50%; transform:translateX(-50%);
-      font-family:'DM Mono',monospace; font-size:0.85rem; font-weight:700;
+      font-family:var(--font-mono); font-size:0.85rem; font-weight:700;
       color:#B09848; pointer-events:none; white-space:nowrap; z-index:10;
       opacity:1; transition:all 1s cubic-bezier(0.16,1,0.3,1);
     `
@@ -164,7 +164,7 @@ export default class extends Controller {
 
     // Text
     const text = document.createElement("span")
-    text.style.cssText = `font-family:'DM Sans',sans-serif; font-size:${large ? "0.95rem" : "0.85rem"}; font-weight:600; color:var(--color-txt, #1C1812);`
+    text.style.cssText = `font-family:var(--font-sans); font-size:${large ? "0.95rem" : "0.85rem"}; font-weight:600; color:var(--color-txt, #1C1812);`
     text.textContent = message
 
     toast.appendChild(check)
@@ -174,7 +174,7 @@ export default class extends Controller {
     if (xp > 0) {
       const badge = document.createElement("span")
       badge.style.cssText = `
-        font-family:'DM Mono',monospace; font-size:0.78rem; font-weight:600;
+        font-family:var(--font-mono); font-size:0.78rem; font-weight:600;
         color:#B09848; background:rgba(176,152,72,0.08); border-radius:8px;
         padding:0.2rem 0.5rem; white-space:nowrap;
       `
@@ -222,16 +222,16 @@ export default class extends Controller {
 
     const i18n = this.i18nValue || {}
     card.innerHTML = `
-      <div style="font-family:'DM Mono',monospace; font-size:0.6rem; font-weight:600; color:#B09848; text-transform:uppercase; letter-spacing:2px; margin-bottom:0.5rem;">${this._esc(i18n.level_label || "LEVEL")}</div>
-      <div style="font-family:'DM Mono',monospace; font-size:4rem; font-weight:700; color:var(--color-txt, #1C1812); line-height:1; text-shadow:0 0 40px rgba(176,152,72,0.3);">${level}</div>
-      <div style="font-family:'DM Sans',sans-serif; font-size:1.1rem; font-weight:700; color:var(--color-txt, #1C1812); margin-top:0.75rem;">${this._esc(i18n.congrats || "Congratulations!")}</div>
-      <div style="font-family:'DM Sans',sans-serif; font-size:0.78rem; color:var(--color-muted, #887F72); margin-top:0.4rem;">${this._esc(i18n.new_level || "You reached a new level")}</div>
+      <div style="font-family:var(--font-mono); font-size:0.6rem; font-weight:600; color:#B09848; text-transform:uppercase; letter-spacing:2px; margin-bottom:0.5rem;">${this._esc(i18n.level_label || "LEVEL")}</div>
+      <div style="font-family:var(--font-mono); font-size:4rem; font-weight:700; color:var(--color-txt, #1C1812); line-height:1; text-shadow:0 0 40px rgba(176,152,72,0.3);">${level}</div>
+      <div style="font-family:var(--font-sans); font-size:1.1rem; font-weight:700; color:var(--color-txt, #1C1812); margin-top:0.75rem;">${this._esc(i18n.congrats || "Congratulations!")}</div>
+      <div style="font-family:var(--font-sans); font-size:0.78rem; color:var(--color-muted, #887F72); margin-top:0.4rem;">${this._esc(i18n.new_level || "You reached a new level")}</div>
     `
 
     const continueBtn = document.createElement("button")
     continueBtn.textContent = i18n.continue || "Continue"
     continueBtn.style.cssText = `
-      margin-top:1.5rem; font-family:'DM Sans',sans-serif; font-size:0.82rem; font-weight:600;
+      margin-top:1.5rem; font-family:var(--font-sans); font-size:0.82rem; font-weight:600;
       color:var(--color-accent-text, #fff); background:var(--color-accent, #2C261E); border:none; border-radius:11px;
       padding:0.65rem 2rem; cursor:pointer; transition:opacity 0.2s;
     `

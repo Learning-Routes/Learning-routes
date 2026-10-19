@@ -8,8 +8,8 @@
 
 @theme {
   /* --- Typography --- */
-  --font-sans: 'DM Sans', sans-serif;
-  --font-mono: 'DM Mono', monospace;
+  --font-sans: "Archivo", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "DM Mono", monospace;
 
   /* --- Colors: Light theme (Ciruela, STEP 41 §1.1) --- */
   --color-bg: #F5F2F6;
@@ -66,6 +66,27 @@
   body {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    /* STEP 41 §1.2: Archivo (--font-sans, inherited from html) at body size. */
+    font-size: 17px;
+    font-weight: 420;
+    line-height: 1.55;
+  }
+}
+
+/* ── Type scale (STEP 41 §1.2) ── */
+@layer components {
+  .type-display, .type-hero, .type-section {
+    font-weight: 740; font-stretch: 112%; letter-spacing: -.03em; line-height: .98;
+  }
+  .type-hero { font-size: clamp(52px, 5.1vw, 100px); }
+  .type-section { font-size: clamp(42px, 4vw, 76px); }
+  .type-h2 { font-size: clamp(32px, 2.75vw, 54px); font-weight: 730; font-stretch: 110%; letter-spacing: -.02em; line-height: 1.05; }
+  .type-h3 { font-size: 22px; font-weight: 720; font-stretch: 108%; letter-spacing: -.01em; line-height: 1.2; }
+  .type-small { font-size: 14.5px; }
+  .type-label { font-size: 13px; }
+  @media (max-width: 860px) {
+    .type-hero { font-size: 42px; }
+    .type-h2 { font-size: 29px; }
   }
 }
 
@@ -508,7 +529,7 @@ html[data-theme="dark"] .learning-nav {
 
   /* --- Mono label style (tags, step numbers) --- */
   .label-mono {
-    font-family: 'DM Mono', monospace;
+    font-family: var(--font-mono);
     font-size: 0.56rem;
     letter-spacing: 2px;
     text-transform: uppercase;
@@ -533,7 +554,7 @@ html[data-theme="dark"] .learning-nav {
   /* --- Auth input --- */
   .auth-input {
     width: 100%;
-    font-family: 'DM Sans', sans-serif;
+    font-family: var(--font-sans);
     font-size: 0.86rem;
     padding: 0.68rem 0.85rem;
     border-radius: 10px;
@@ -554,7 +575,7 @@ html[data-theme="dark"] .learning-nav {
   /* --- Auth label --- */
   .auth-label {
     display: block;
-    font-family: 'DM Sans', sans-serif;
+    font-family: var(--font-sans);
     font-size: 0.72rem;
     font-weight: 500;
     color: #6D665B;
@@ -564,7 +585,7 @@ html[data-theme="dark"] .learning-nav {
   /* --- Auth submit button --- */
   .auth-btn {
     width: 100%;
-    font-family: 'DM Sans', sans-serif;
+    font-family: var(--font-sans);
     font-size: 0.82rem;
     font-weight: 600;
     padding: 0.72rem 1rem;
@@ -591,7 +612,7 @@ html[data-theme="dark"] .learning-nav {
     justify-content: center;
     gap: 0.6rem;
     width: 100%;
-    font-family: 'DM Sans', sans-serif;
+    font-family: var(--font-sans);
     font-size: 0.8rem;
     font-weight: 500;
     padding: 0.65rem 1rem;
@@ -625,7 +646,7 @@ html[data-theme="dark"] .learning-nav {
     margin-bottom: 1rem;
   }
   .auth-errors p {
-    font-family: 'DM Sans', sans-serif;
+    font-family: var(--font-sans);
     font-size: 0.72rem;
     font-weight: 500;
     color: #B06050;
@@ -636,7 +657,7 @@ html[data-theme="dark"] .learning-nav {
     padding-left: 1rem;
   }
   .auth-errors li {
-    font-family: 'DM Sans', sans-serif;
+    font-family: var(--font-sans);
     font-size: 0.68rem;
     color: #B06050;
     line-height: 1.4;
@@ -648,7 +669,7 @@ html[data-theme="dark"] .learning-nav {
     margin: 0 auto 1rem;
     padding: 0.6rem 0.85rem;
     border-radius: 10px;
-    font-family: 'DM Sans', sans-serif;
+    font-family: var(--font-sans);
     font-size: 0.72rem;
     font-weight: 500;
     animation: authEnter 0.35s ease both;
@@ -861,7 +882,7 @@ html[data-theme="dark"] .learning-nav {
     background: var(--color-tint-strong);
     color: var(--color-txt);
     border-bottom: 1px solid var(--color-border-subtle);
-    font-family: 'DM Sans', sans-serif;
+    font-family: var(--font-sans);
   }
   .lesson-content td {
     @apply px-4 py-3 text-sm;
@@ -884,7 +905,7 @@ html[data-theme="dark"] .learning-nav {
   .mermaid-label {
     display: block;
     padding: 0.625rem 1.25rem 0;
-    font-family: 'DM Mono', monospace;
+    font-family: var(--font-mono);
     font-size: 0.5625rem;
     font-weight: 600;
     letter-spacing: 0.12em;
@@ -918,7 +939,7 @@ html[data-theme="dark"] .learning-nav {
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    font-family: 'DM Mono', monospace;
+    font-family: var(--font-mono);
     font-size: 0.75rem;
     font-weight: 500;
     color: var(--color-muted);
@@ -933,7 +954,7 @@ html[data-theme="dark"] .learning-nav {
   }
   .mermaid-fallback__details > summary {
     cursor: pointer;
-    font-family: 'DM Mono', monospace;
+    font-family: var(--font-mono);
     font-size: 0.6875rem;
     color: var(--color-muted);
     list-style: none;
@@ -1258,7 +1279,7 @@ html[data-theme="dark"] .learning-nav {
 }
 
 .lesson-progress-counter {
-  font-family: 'DM Mono', monospace;
+  font-family: var(--font-mono);
   font-size: 0.6875rem;
   font-weight: 500;
   color: var(--color-muted);
@@ -1358,7 +1379,7 @@ html[data-theme="dark"] .learning-nav {
   gap: 0.375rem;
   padding: 0.25rem 0.75rem;
   border-radius: 9999px;
-  font-family: 'DM Mono', monospace;
+  font-family: var(--font-mono);
   font-size: 0.6875rem;
   font-weight: 600;
   letter-spacing: 0.08em;
@@ -1487,7 +1508,7 @@ html[data-theme="dark"] .lesson-section-badge--video {
 
 .lesson-video__duration {
   margin: 0.75rem 0 0;
-  font-family: 'DM Mono', monospace;
+  font-family: var(--font-mono);
   font-size: 0.8125rem;
   color: var(--color-muted);
 }
@@ -1522,7 +1543,7 @@ html[data-theme="dark"] .lesson-nav-footer {
   border: none;
   background: linear-gradient(135deg, #2C261E 0%, #3D352B 100%);
   color: #F5F1EB;
-  font-family: 'DM Sans', sans-serif;
+  font-family: var(--font-sans);
   font-size: 0.9375rem;
   font-weight: 600;
   cursor: pointer;
@@ -1549,7 +1570,7 @@ html[data-theme="dark"] .lesson-nav-footer {
   border: none;
   background: var(--color-tint-strong);
   color: var(--color-muted);
-  font-family: 'DM Sans', sans-serif;
+  font-family: var(--font-sans);
   font-size: 0.9375rem;
   font-weight: 600;
   cursor: not-allowed;
@@ -1704,7 +1725,7 @@ html[data-theme="dark"] {
 }
 
 .lesson-completion-heading {
-  font-family: 'DM Sans', sans-serif;
+  font-family: var(--font-sans);
   font-size: 1.5rem;
   font-weight: 700;
   color: var(--color-txt);
@@ -1727,7 +1748,7 @@ html[data-theme="dark"] {
 
 .lesson-completion-xp-badge {
   display: inline-block;
-  font-family: 'DM Mono', monospace;
+  font-family: var(--font-mono);
   font-size: 1.125rem;
   font-weight: 700;
   color: #B09848;
@@ -1746,7 +1767,7 @@ html[data-theme="dark"] {
 
 .lesson-completion-level-label {
   display: block;
-  font-family: 'DM Mono', monospace;
+  font-family: var(--font-mono);
   font-size: 0.625rem;
   font-weight: 600;
   color: #B09848;
@@ -1757,7 +1778,7 @@ html[data-theme="dark"] {
 
 .lesson-completion-level-number {
   display: block;
-  font-family: 'DM Mono', monospace;
+  font-family: var(--font-mono);
   font-size: 3rem;
   font-weight: 700;
   color: var(--color-txt);
@@ -1779,7 +1800,7 @@ html[data-theme="dark"] {
 }
 
 .lesson-completion-streak-count {
-  font-family: 'DM Mono', monospace;
+  font-family: var(--font-mono);
   font-size: 0.875rem;
   font-weight: 600;
   color: var(--color-sub);
@@ -1802,7 +1823,7 @@ html[data-theme="dark"] {
   gap: 0.375rem;
   padding: 0.875rem 2rem;
   border-radius: 11px;
-  font-family: 'DM Sans', sans-serif;
+  font-family: var(--font-sans);
   font-size: 0.9375rem;
   font-weight: 600;
   text-decoration: none;
@@ -2048,7 +2069,7 @@ html[data-theme="dark"] {
   padding: 0.25rem 0.625rem;
   border-radius: 8px;
   background: linear-gradient(135deg, #FEF3C7, #FDE68A);
-  font-family: 'DM Mono', monospace;
+  font-family: var(--font-mono);
   font-size: 0.6875rem;
   font-weight: 700;
   color: #B45309;
@@ -2152,7 +2173,7 @@ html[data-theme="dark"] .lesson-section-badge--challenge {
   gap: 0.5rem;
   width: 100%;
   padding: 0.875rem 1.5rem;
-  font-family: 'DM Sans', sans-serif;
+  font-family: var(--font-sans);
   font-size: 0.9375rem;
   font-weight: 700;
   color: #fff;
@@ -2499,7 +2520,7 @@ html[data-theme="dark"] .lesson-companion-body {
 .code-block-dots span:nth-child(3) { background: #A6E3A1; }
 
 .code-block-lang {
-  font-family: 'DM Mono', monospace;
+  font-family: var(--font-mono);
   font-size: 0.6875rem;
   color: #6C7086;
   text-transform: uppercase;
@@ -2515,7 +2536,7 @@ html[data-theme="dark"] .lesson-companion-body {
   color: #1E1E2E;
   border: none;
   cursor: pointer;
-  font-family: 'DM Mono', monospace;
+  font-family: var(--font-mono);
   font-size: 0.6875rem;
   font-weight: 700;
   transition: all 0.2s;
@@ -2541,7 +2562,7 @@ html[data-theme="dark"] .lesson-companion-body {
   background: #11111B;
   border-top: 1px solid #313244;
   border-radius: 0 0 11px 11px;
-  font-family: 'DM Mono', monospace;
+  font-family: var(--font-mono);
   font-size: 0.8125rem;
   color: #A6E3A1;
   white-space: pre;
@@ -2610,7 +2631,7 @@ html[data-theme="dark"] .lesson-companion-body {
 }
 
 .lesson-completion-stat-label {
-  font-family: 'DM Mono', monospace;
+  font-family: var(--font-mono);
   font-size: 0.625rem;
   color: var(--color-muted);
   text-transform: uppercase;
@@ -2715,14 +2736,14 @@ html[data-theme="dark"] .lesson-companion-body {
 }
 
 .step-info-label {
-  font-family: 'DM Sans', sans-serif;
+  font-family: var(--font-sans);
   font-size: 0.75rem;
   color: var(--color-muted);
   margin: 0;
 }
 
 .step-info-value {
-  font-family: 'DM Sans', sans-serif;
+  font-family: var(--font-sans);
   font-size: 0.75rem;
   font-weight: 600;
   color: var(--color-txt);
@@ -2886,7 +2907,7 @@ html[data-theme="dark"] .lesson-content img,
   right: 0.5rem;
   padding: 0.25rem 0.75rem;
   border-radius: 9999px;
-  font-family: 'DM Mono', monospace;
+  font-family: var(--font-mono);
   font-size: 0.75rem;
   font-weight: 700;
   background: rgba(44, 38, 30, 0.06);
@@ -2924,7 +2945,7 @@ html[data-theme="dark"] .lesson-content img,
 
 /* Step counter */
 .wizard-step-counter {
-  font-family: 'DM Mono', monospace;
+  font-family: var(--font-mono);
   font-size: 0.72rem;
   color: var(--color-muted, #887F72);
   text-align: center;
@@ -2960,7 +2981,7 @@ html[data-theme="dark"] .lesson-content img,
 
 /* Step heading */
 .wizard-heading {
-  font-family: 'DM Sans', sans-serif;
+  font-family: var(--font-sans);
   font-size: 1.75rem;
   font-weight: 700;
   color: var(--color-txt, #1C1812);
@@ -2970,7 +2991,7 @@ html[data-theme="dark"] .lesson-content img,
   letter-spacing: -0.5px;
 }
 .wizard-subtitle {
-  font-family: 'DM Sans', sans-serif;
+  font-family: var(--font-sans);
   font-size: 0.92rem;
   color: var(--color-muted, #887F72);
   text-align: center;
@@ -3016,7 +3037,7 @@ html[data-theme="dark"] .lesson-content img,
 }
 .wizard-topic-tile .tile-icon { font-size: 1.75rem; line-height: 1; }
 .wizard-topic-tile .tile-label {
-  font-family: 'DM Sans', sans-serif;
+  font-family: var(--font-sans);
   font-size: 0.72rem;
   font-weight: 600;
   color: var(--color-txt, #1C1812);
@@ -3056,7 +3077,7 @@ html[data-theme="dark"] .lesson-content img,
   border: 2px solid var(--color-faint, rgba(28,24,18,0.06));
   cursor: pointer;
   transition: border-color 200ms ease, background 200ms ease;
-  font-family: 'DM Sans', sans-serif;
+  font-family: var(--font-sans);
   font-size: 0.72rem;
   font-weight: 500;
   color: var(--color-muted, #887F72);
@@ -3075,7 +3096,7 @@ html[data-theme="dark"] .lesson-content img,
   border-radius: 11px;
   border: 2px solid var(--color-faint, rgba(28,24,18,0.06));
   background: transparent;
-  font-family: 'DM Sans', sans-serif;
+  font-family: var(--font-sans);
   font-size: 0.88rem;
   color: var(--color-txt, #1C1812);
   outline: none;
@@ -3109,13 +3130,13 @@ html[data-theme="dark"] .lesson-content img,
 .wizard-level-card .level-icon { font-size: 1.5rem; flex-shrink: 0; }
 .wizard-level-card .level-info { flex: 1; text-align: left; }
 .wizard-level-card .level-name {
-  font-family: 'DM Sans', sans-serif;
+  font-family: var(--font-sans);
   font-size: 0.95rem;
   font-weight: 700;
   color: var(--color-txt, #1C1812);
 }
 .wizard-level-card .level-desc {
-  font-family: 'DM Sans', sans-serif;
+  font-family: var(--font-sans);
   font-size: 0.78rem;
   color: var(--color-muted, #887F72);
 }
@@ -3165,7 +3186,7 @@ html[data-theme="dark"] .lesson-content img,
 }
 .wizard-goal-chip .goal-icon { font-size: 1.1rem; flex-shrink: 0; }
 .wizard-goal-chip .goal-label {
-  font-family: 'DM Sans', sans-serif;
+  font-family: var(--font-sans);
   font-size: 0.82rem;
   font-weight: 500;
   color: var(--color-txt, #1C1812);
@@ -3184,7 +3205,7 @@ html[data-theme="dark"] .lesson-content img,
   border: 2px solid var(--color-faint, rgba(28,24,18,0.06));
   background: transparent;
   cursor: pointer;
-  font-family: 'DM Sans', sans-serif;
+  font-family: var(--font-sans);
   font-size: 0.88rem;
   font-weight: 600;
   color: var(--color-txt, #1C1812);
@@ -3200,7 +3221,7 @@ html[data-theme="dark"] .lesson-content img,
   color: white;
 }
 .wizard-time-summary {
-  font-family: 'DM Mono', monospace;
+  font-family: var(--font-mono);
   font-size: 0.78rem;
   color: var(--color-accent, #2C261E);
   text-align: center;
@@ -3236,7 +3257,7 @@ html[data-theme="dark"] .lesson-content img,
   border: 2px solid var(--color-faint, rgba(28,24,18,0.06));
   background: transparent;
   cursor: pointer;
-  font-family: 'DM Sans', sans-serif;
+  font-family: var(--font-sans);
   font-size: 0.85rem;
   color: var(--color-txt, #1C1812);
   text-align: left;
@@ -3260,13 +3281,13 @@ html[data-theme="dark"] .lesson-content img,
 }
 .wizard-style-result .result-icon { font-size: 2.5rem; margin-bottom: 0.5rem; }
 .wizard-style-result .result-name {
-  font-family: 'DM Sans', sans-serif;
+  font-family: var(--font-sans);
   font-size: 1.1rem;
   font-weight: 700;
   color: var(--color-txt, #1C1812);
 }
 .wizard-style-result .result-desc {
-  font-family: 'DM Sans', sans-serif;
+  font-family: var(--font-sans);
   font-size: 0.82rem;
   color: var(--color-muted, #887F72);
   margin-top: 0.25rem;
@@ -3297,13 +3318,13 @@ html[data-theme="dark"] .lesson-content img,
 .wizard-pace-card .pace-icon { font-size: 1.5rem; flex-shrink: 0; }
 .wizard-pace-card .pace-info { flex: 1; }
 .wizard-pace-card .pace-name {
-  font-family: 'DM Sans', sans-serif;
+  font-family: var(--font-sans);
   font-size: 0.95rem;
   font-weight: 700;
   color: var(--color-txt, #1C1812);
 }
 .wizard-pace-card .pace-desc {
-  font-family: 'DM Sans', sans-serif;
+  font-family: var(--font-sans);
   font-size: 0.78rem;
   color: var(--color-muted, #887F72);
 }
@@ -3330,7 +3351,7 @@ html[data-theme="dark"] .lesson-content img,
   border: none;
   background: var(--color-accent, #2C261E);
   color: white;
-  font-family: 'DM Sans', sans-serif;
+  font-family: var(--font-sans);
   font-size: 0.95rem;
   font-weight: 600;
   cursor: pointer;
@@ -3346,7 +3367,7 @@ html[data-theme="dark"] .lesson-content img,
 .wizard-btn-back {
   background: none;
   border: none;
-  font-family: 'DM Sans', sans-serif;
+  font-family: var(--font-sans);
   font-size: 0.85rem;
   font-weight: 500;
   color: var(--color-muted, #887F72);
@@ -3491,6 +3512,9 @@ html[data-theme="dark"] .jm {
                 display: grid; place-items: center; background: var(--color-card); border: 2px solid var(--jm-ring);
                 color: var(--color-txt); transition-property: transform; transition-duration: 150ms; }
 .jm-node:hover .jm-node__dot, .jm-node--hot .jm-node__dot { transform: translateY(-1px) scale(1.06); }
+/* The journey keeps WP-37b's faces until STEP 41 PR 5b aligns it. */
+.jm-sans { font-family: 'Manrope', sans-serif; }
+.jm-mono { font-family: 'JetBrains Mono', monospace; }
 .jm-node__num { font-family: 'JetBrains Mono', monospace; font-weight: 500; font-size: 15px; line-height: 1;
                 font-variant-numeric: tabular-nums; color: var(--color-txt); }
 .jm-node--completed .jm-node__dot { background: var(--jm-line); border-color: var(--jm-line); color: var(--color-bg);

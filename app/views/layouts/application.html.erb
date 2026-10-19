@@ -23,7 +23,7 @@
     <link rel="icon" href="/icon.png?v=2" type="image/png">
     <link rel="apple-touch-icon" href="/apple-touch-icon.png?v=2">
 
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400..700;1,9..40,400..700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 
     <%# Prevent flash of wrong theme before JS loads %>
     <script nonce="<%= content_security_policy_nonce %>">
@@ -38,7 +38,7 @@
     <%= javascript_importmap_tags %>
   </head>
 
-  <body style="margin:0; min-height:100vh; font-family:'DM Sans',sans-serif; background:var(--color-bg); color:var(--color-txt); transition:background-color 0.3s, color 0.3s;">
+  <body style="margin:0; min-height:100vh; background:var(--color-bg); color:var(--color-txt); transition:background-color 0.3s, color 0.3s;">
     <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-[200] focus:bg-accent focus:text-accent-text focus:px-4 focus:py-2 focus:rounded-btn focus:text-sm focus:font-semibold"><%= t("layout.skip_to_content") %></a>
 
     <%# === Subtle background texture (fixed, decorative) === %>
@@ -65,7 +65,7 @@
                style="background:var(--color-flash-notice-bg, rgba(91,168,128,0.1)); border:1px solid var(--color-flash-notice-border, rgba(91,168,128,0.18)); border-radius:14px; padding:0.875rem 1.25rem; margin-bottom:0.5rem; box-shadow:0 2px 8px rgba(91,168,128,0.08); animation:flashSlideIn 0.3s ease;">
             <div style="display:flex; align-items:center; gap:0.625rem;">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0; color:var(--color-flash-notice-text);"><polyline points="20 6 9 17 4 12"/></svg>
-              <p style="font-family:'DM Sans',sans-serif; font-size:0.875rem; font-weight:500; color:var(--color-flash-notice-text); margin:0; flex:1;"><%= flash[:notice] %></p>
+              <p style="font-size:0.875rem; font-weight:500; color:var(--color-flash-notice-text); margin:0; flex:1;"><%= flash[:notice] %></p>
               <button data-action="click->flash#dismiss" style="background:none; border:none; cursor:pointer; color:var(--color-flash-notice-text); padding:0.2rem; opacity:0.6; transition:opacity 0.2s;" aria-label="<%= t(%(layout.dismiss)) %>">
                 <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M3 3l8 8M11 3l-8 8"/></svg>
               </button>
@@ -77,7 +77,7 @@
                style="background:var(--color-flash-alert-bg, rgba(176,96,80,0.08)); border:1px solid var(--color-flash-alert-border, rgba(176,96,80,0.15)); border-radius:14px; padding:0.875rem 1.25rem; margin-bottom:0.5rem; box-shadow:0 2px 8px rgba(176,96,80,0.08); animation:flashSlideIn 0.3s ease;">
             <div style="display:flex; align-items:center; gap:0.625rem;">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0; color:var(--color-flash-alert-text);"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-              <p style="font-family:'DM Sans',sans-serif; font-size:0.875rem; font-weight:500; color:var(--color-flash-alert-text); margin:0; flex:1;"><%= flash[:alert] %></p>
+              <p style="font-size:0.875rem; font-weight:500; color:var(--color-flash-alert-text); margin:0; flex:1;"><%= flash[:alert] %></p>
               <button data-action="click->flash#dismiss" style="background:none; border:none; cursor:pointer; color:var(--color-flash-alert-text); padding:0.2rem; opacity:0.6; transition:opacity 0.2s;" aria-label="<%= t(%(layout.dismiss)) %>">
                 <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M3 3l8 8M11 3l-8 8"/></svg>
               </button>

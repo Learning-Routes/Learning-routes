@@ -31,8 +31,8 @@
     %>
     <div style="background:var(--color-card); border:1px solid var(--color-border-subtle); border-radius:16px; padding:1.5rem; margin-bottom:1.25rem; box-shadow:0 1px 3px rgba(0,0,0,0.02), 0 4px 16px rgba(0,0,0,0.01);">
       <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:1rem;">
-        <h3 style="font-family:'DM Mono',monospace; font-size:0.625rem; font-weight:600; color:var(--color-muted); text-transform:uppercase; letter-spacing:0.1em; margin:0;"><%= t('learning_engine.review.memory_strength') %></h3>
-        <span style="font-family:'DM Sans',sans-serif; font-size:1.25rem; font-weight:800; color:<%= strength_color %>; letter-spacing:-0.5px;">
+        <h3 class="font-mono" style="font-size:0.625rem; font-weight:600; color:var(--color-muted); text-transform:uppercase; letter-spacing:0.1em; margin:0;"><%= t('learning_engine.review.memory_strength') %></h3>
+        <span style="font-size:1.25rem; font-weight:800; color:<%= strength_color %>; letter-spacing:-0.5px;">
           <%= strength_pct %>%
         </span>
       </div>
@@ -44,14 +44,14 @@
 
   <%# Concept map %>
   <div style="background:var(--color-card); border:1px solid var(--color-border-subtle); border-radius:16px; padding:1.5rem; margin-bottom:1.25rem; box-shadow:0 1px 3px rgba(0,0,0,0.02), 0 4px 16px rgba(0,0,0,0.01);" data-controller="mind-map">
-    <h3 style="font-family:'DM Mono',monospace; font-size:0.625rem; font-weight:600; color:var(--color-muted); text-transform:uppercase; letter-spacing:0.1em; margin:0 0 1rem;"><%= t('learning_engine.review.concept_map') %></h3>
+    <h3 class="font-mono" style="font-size:0.625rem; font-weight:600; color:var(--color-muted); text-transform:uppercase; letter-spacing:0.1em; margin:0 0 1rem;"><%= t('learning_engine.review.concept_map') %></h3>
     <div data-mind-map-target="svg" style="width:100%; min-height:14rem; display:flex; align-items:center; justify-content:center;">
       <% if @review_steps.any? %>
         <div style="display:grid; grid-template-columns:repeat(2, 1fr); gap:0.75rem; width:100%;">
           <% @review_steps.each_with_index do |step, i| %>
             <div class="animate-fade-in" style="background:var(--color-tint); border:1px solid var(--color-border-subtle); border-radius:14px; padding:1rem; text-align:center; transition:all 0.2s; animation-delay:<%= i * 0.08 %>s;">
               <div style="font-size:0.8125rem; font-weight:600; color:var(--color-txt); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"><%= step.localized_title %></div>
-              <div style="font-family:'DM Mono',monospace; font-size:0.625rem; font-weight:500; color:var(--color-muted); margin-top:0.375rem; text-transform:uppercase; letter-spacing:0.05em;"><%= t("learning_engine.#{step.content_type}.badge") %></div>
+              <div class="font-mono" style="font-size:0.625rem; font-weight:500; color:var(--color-muted); margin-top:0.375rem; text-transform:uppercase; letter-spacing:0.05em;"><%= t("learning_engine.#{step.content_type}.badge") %></div>
             </div>
           <% end %>
         </div>
@@ -64,7 +64,7 @@
   <%# FSRS Rating buttons %>
   <% unless @step.completed? %>
     <div style="background:var(--color-card); border:1px solid var(--color-border-subtle); border-radius:16px; padding:1.5rem; box-shadow:0 1px 3px rgba(0,0,0,0.02), 0 4px 16px rgba(0,0,0,0.01);">
-      <h3 style="font-family:'DM Mono',monospace; font-size:0.625rem; font-weight:600; color:var(--color-muted); text-transform:uppercase; letter-spacing:0.1em; margin:0 0 1.25rem;"><%= t('learning_engine.review.prompt') %></h3>
+      <h3 class="font-mono" style="font-size:0.625rem; font-weight:600; color:var(--color-muted); text-transform:uppercase; letter-spacing:0.1em; margin:0 0 1.25rem;"><%= t('learning_engine.review.prompt') %></h3>
       <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:0.75rem;">
         <%
           ratings = [
@@ -79,7 +79,7 @@
               learning_routes_engine.submit_review_review_path(@step),
               params: { rating: rating },
               method: :post,
-              style: "border-radius:14px; padding:0.875rem; font-family:'DM Sans',sans-serif; font-size:0.875rem; font-weight:700; color:#{text_color}; background:#{bg_color}; border:1.5px solid #{border_color}; cursor:pointer; transition:all 0.25s; box-shadow:0 1px 3px #{border_color};" %>
+              style: "border-radius:14px; padding:0.875rem; font-size:0.875rem; font-weight:700; color:#{text_color}; background:#{bg_color}; border:1.5px solid #{border_color}; cursor:pointer; transition:all 0.25s; box-shadow:0 1px 3px #{border_color};" %>
         <% end %>
       </div>
     </div>

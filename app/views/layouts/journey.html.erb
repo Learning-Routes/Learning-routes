@@ -33,18 +33,18 @@
     <%= javascript_importmap_tags %>
   </head>
 
-  <body style="height:100%; margin:0; background:var(--color-bg); color:var(--color-txt); font-family:'Manrope',sans-serif; overflow:hidden; transition:background-color 0.3s, color 0.3s;">
+  <body class="jm-sans" style="height:100%; margin:0; background:var(--color-bg); color:var(--color-txt); overflow:hidden; transition:background-color 0.3s, color 0.3s;">
     <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-4 focus:z-[200] focus:bg-indigo-500 focus:text-white focus:px-4 focus:py-2 focus:rounded-lg focus:text-sm focus:font-semibold"><%= t("layout.skip_to_content") %></a>
 
     <%# Fixed top bar %>
     <nav id="journey-topbar" style="position:fixed; top:0; left:0; right:0; z-index:30; padding:14px 28px; background:linear-gradient(var(--color-bg) 50%, transparent); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); display:flex; justify-content:space-between; align-items:center;">
-      <%= link_to main_app.profile_path, style: "font-family:'Manrope',sans-serif; font-size:0.72rem; color:var(--color-muted); text-decoration:none; transition:color 0.2s;", "aria-label": t("learning_engine.journey.back_to_profile") do %>
+      <%= link_to main_app.profile_path, style: "font-size:0.72rem; color:var(--color-muted); text-decoration:none; transition:color 0.2s;", "aria-label": t("learning_engine.journey.back_to_profile") do %>
         &larr; <%= t("learning_engine.journey.back_to_profile") %>
       <% end %>
 
       <div style="display:flex; align-items:center; gap:12px;">
         <% if @due_reviews&.any? %>
-          <%= link_to learning_routes_engine.reviews_path, style: "display:inline-flex; align-items:center; gap:4px; font-family:'JetBrains Mono',monospace; font-size:0.55rem; color:var(--color-due-heading); text-decoration:none; background:var(--color-due-bg); padding:3px 8px; border-radius:6px;" do %>
+          <%= link_to learning_routes_engine.reviews_path, class: "jm-mono", style: "display:inline-flex; align-items:center; gap:4px; font-size:0.55rem; color:var(--color-due-heading); text-decoration:none; background:var(--color-due-bg); padding:3px 8px; border-radius:6px;" do %>
             <svg width="10" height="10" viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="1.5"/><path d="M8 4v4l3 2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
             <%= @due_reviews.size %>
           <% end %>

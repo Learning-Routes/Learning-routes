@@ -30,10 +30,10 @@
         </div>
       </div>
       <div class="text-center">
-        <p class="text-sm font-medium" style="color: var(--color-txt); font-family: 'DM Sans', sans-serif;">
+        <p class="text-sm font-medium" style="color: var(--color-txt); ">
           <%= t("audio_player.generating") %>
         </p>
-        <p class="text-xs mt-1" style="color: var(--color-muted); font-family: 'DM Sans', sans-serif;">
+        <p class="text-xs mt-1" style="color: var(--color-muted); ">
           <%= t("audio_player.generating_wait") %>
         </p>
       </div>
@@ -54,7 +54,7 @@
 
     <%# Narration title %>
     <% if narration["title"].present? %>
-      <h3 class="text-lg font-semibold mb-4" style="color: var(--color-txt); font-family: 'DM Sans', sans-serif;">
+      <h3 class="text-lg font-semibold mb-4" style="color: var(--color-txt); ">
         <%= narration["title"] %>
       </h3>
     <% end %>
@@ -91,8 +91,8 @@
 
         <%# Time display %>
         <div class="flex justify-between mt-1.5">
-          <span data-audio-player-target="currentTime" class="text-xs" style="color: var(--color-muted); font-family: 'DM Mono', monospace;">0:00</span>
-          <span data-audio-player-target="totalTime" class="text-xs" style="color: var(--color-muted); font-family: 'DM Mono', monospace;">0:00</span>
+          <span data-audio-player-target="currentTime" class="font-mono text-xs" style="color: var(--color-muted); ">0:00</span>
+          <span data-audio-player-target="totalTime" class="font-mono text-xs" style="color: var(--color-muted); ">0:00</span>
         </div>
       </div>
     </div>
@@ -124,9 +124,9 @@
       </div>
 
       <%# Speed control %>
-      <button data-action="click->audio-player#cycleSpeed"
+      <button class="font-mono" data-action="click->audio-player#cycleSpeed"
               class="px-3 py-1 rounded-lg text-xs transition-colors hover-bg-tint"
-              style="background: var(--color-tint-strong); color: var(--color-sub); font-family: 'DM Mono', monospace;"
+              style="background: var(--color-tint-strong); color: var(--color-sub); "
         <span data-audio-player-target="speedDisplay">1.0x</span>
       </button>
     </div>
@@ -134,13 +134,13 @@
     <%# Key Points %>
     <% if narration["key_points"].present? %>
       <div class="mt-5 pt-4" style="border-top: 1px solid var(--color-border-subtle);">
-        <p class="text-xs font-medium uppercase tracking-wider mb-2"
-           style="color: var(--color-muted); font-family: 'DM Mono', monospace;">
+        <p class="font-mono text-xs font-medium uppercase tracking-wider mb-2"
+           style="color: var(--color-muted); ">
           <%= t("audio_player.key_points") %>
         </p>
         <ul class="space-y-1.5">
           <% narration["key_points"].each do |point| %>
-            <li class="flex items-start gap-2 text-sm" style="color: var(--color-txt); font-family: 'DM Sans', sans-serif;">
+            <li class="flex items-start gap-2 text-sm" style="color: var(--color-txt); ">
               <span style="color: var(--color-highlight-violet);" class="mt-0.5">•</span>
               <span><%= point %></span>
             </li>
@@ -157,7 +157,7 @@
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
               d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/>
       </svg>
-      <p class="text-sm" style="color: var(--color-muted); font-family: 'DM Sans', sans-serif;">
+      <p class="text-sm" style="color: var(--color-muted); ">
         <%= t("audio_player.error_generating") %>
       </p>
       <button data-action="click->audio-player#triggerGeneration"

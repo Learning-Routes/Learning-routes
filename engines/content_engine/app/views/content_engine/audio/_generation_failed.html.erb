@@ -14,19 +14,19 @@
       </svg>
     </div>
 
-    <p class="text-sm font-medium" style="color: var(--color-negative); font-family: 'DM Sans', sans-serif;">
+    <p class="text-sm font-medium" style="color: var(--color-negative); ">
       <%= t("audio_player.error_generating") %>
     </p>
 
     <% if error.present? %>
-      <p class="text-xs text-center max-w-xs" style="color: var(--color-faint); font-family: 'DM Sans', sans-serif;">
+      <p class="text-xs text-center max-w-xs" style="color: var(--color-faint); ">
         <%= error.to_s.truncate(120) %>
       </p>
     <% end %>
 
     <button data-action="click->audio-player#triggerGeneration"
             class="mt-2 px-5 py-2.5 text-sm font-medium transition-all rounded-[11px] hover-bg-indigo-light"
-            style="color: var(--color-highlight-violet); background: rgba(99,102,241,0.1); font-family: 'DM Sans', sans-serif;">
+            style="color: var(--color-highlight-violet); background: rgba(99,102,241,0.1); ">
       <%= t("audio_player.retry_generation") %>
     </button>
   </div>

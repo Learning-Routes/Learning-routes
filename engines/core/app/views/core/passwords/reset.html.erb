@@ -11,10 +11,10 @@
             box-shadow:0 8px 32px rgba(28,24,18,0.06), 0 1px 3px rgba(28,24,18,0.03);">
 
   <%# === Heading === %>
-  <h1 style="font-family:'DM Sans',sans-serif; font-weight:700; font-size:1.6rem; letter-spacing:-0.7px; color:var(--color-txt); margin:0 0 0.4rem; line-height:1.2;">
+  <h1 style="font-weight:700; font-size:1.6rem; letter-spacing:-0.7px; color:var(--color-txt); margin:0 0 0.4rem; line-height:1.2;">
     <%= t("auth.reset.heading") %>
   </h1>
-  <p style="font-family:'DM Sans',sans-serif; font-size:0.82rem; color:var(--color-muted); margin:0 0 1.4rem; line-height:1.5;">
+  <p style="font-size:0.82rem; color:var(--color-muted); margin:0 0 1.4rem; line-height:1.5;">
     <%= t("auth.reset.subtext") %>
   </p>
 
@@ -24,12 +24,12 @@
     <%# Form errors %>
     <% if @user.errors.any? %>
       <div role="alert" class="auth-errors" style="background:var(--color-flash-alert-bg, rgba(176,96,80,0.08)); border:1px solid var(--color-flash-alert-border, rgba(176,96,80,0.15)); border-radius:10px; padding:0.75rem 0.9rem; margin-bottom:1rem; color:var(--color-flash-alert-text);">
-        <p style="font-family:'DM Sans',sans-serif; font-size:0.76rem; font-weight:500; color:inherit; margin:0 0 0.3rem;">
+        <p style="font-size:0.76rem; font-weight:500; color:inherit; margin:0 0 0.3rem;">
           <%= t("auth.reset.errors", count: @user.errors.count) %>
         </p>
         <ul style="margin:0; padding-left:1rem;">
           <% @user.errors.full_messages.each do |message| %>
-            <li style="font-family:'DM Sans',sans-serif; font-size:0.72rem; color:inherit; line-height:1.5;"><%= message %></li>
+            <li style="font-size:0.72rem; color:inherit; line-height:1.5;"><%= message %></li>
           <% end %>
         </ul>
       </div>
@@ -40,10 +40,10 @@
       <%# New password %>
       <div>
         <%= f.label :password, t("auth.reset.password_label"),
-            style: "display:block; font-family:'DM Sans',sans-serif; font-size:0.78rem; font-weight:500; color:var(--color-sub); margin-bottom:0.45rem;" %>
+            style: "display:block; font-size:0.78rem; font-weight:500; color:var(--color-sub); margin-bottom:0.45rem;" %>
         <%= f.password_field :password,
             class: "auth-input",
-            style: "display:block; width:100%; box-sizing:border-box; font-family:'DM Sans',sans-serif; font-size:0.92rem; padding:0.78rem 0.95rem; border-radius:10px; outline:none; transition:border-color 0.2s, box-shadow 0.2s;",
+            style: "display:block; width:100%; box-sizing:border-box; font-size:0.92rem; padding:0.78rem 0.95rem; border-radius:10px; outline:none; transition:border-color 0.2s, box-shadow 0.2s;",
             placeholder: t("auth.reset.password_placeholder"),
             required: true,
             minlength: 8,
@@ -55,10 +55,10 @@
       <%# Confirm password %>
       <div>
         <%= f.label :password_confirmation, t("auth.reset.confirm_label"),
-            style: "display:block; font-family:'DM Sans',sans-serif; font-size:0.78rem; font-weight:500; color:var(--color-sub); margin-bottom:0.45rem;" %>
+            style: "display:block; font-size:0.78rem; font-weight:500; color:var(--color-sub); margin-bottom:0.45rem;" %>
         <%= f.password_field :password_confirmation,
             class: "auth-input",
-            style: "display:block; width:100%; box-sizing:border-box; font-family:'DM Sans',sans-serif; font-size:0.92rem; padding:0.78rem 0.95rem; border-radius:10px; outline:none; transition:border-color 0.2s, box-shadow 0.2s;",
+            style: "display:block; width:100%; box-sizing:border-box; font-size:0.92rem; padding:0.78rem 0.95rem; border-radius:10px; outline:none; transition:border-color 0.2s, box-shadow 0.2s;",
             placeholder: t("auth.reset.confirm_placeholder"),
             required: true,
             autocomplete: "new-password",
@@ -69,7 +69,7 @@
       <div style="margin-top:0.3rem;">
         <%= f.submit t("auth.reset.submit"),
             class: "auth-btn",
-            style: "display:block; width:100%; font-family:'DM Sans',sans-serif; font-size:0.9rem; font-weight:600; padding:0.85rem 1rem; border-radius:11px; border:none; cursor:pointer; transition:all 0.2s; box-shadow:0 1px 3px rgba(28,24,18,0.12), 0 1px 2px rgba(28,24,18,0.06);",
+            style: "display:block; width:100%; font-size:0.9rem; font-weight:600; padding:0.85rem 1rem; border-radius:11px; border:none; cursor:pointer; transition:all 0.2s; box-shadow:0 1px 3px rgba(28,24,18,0.12), 0 1px 2px rgba(28,24,18,0.06);",
             data: { auth_form_target: "submit", action: "mouseenter->auth-form#submitOver mouseleave->auth-form#submitOut" } %>
       </div>
     </div>

@@ -4,7 +4,7 @@ require "test_helper"
 # font-family inline. Mailers keep inline styles: email clients ignore the
 # stylesheet. The journey keeps WP-37b's own faces until PR 5b aligns it.
 class TypographyTest < ActiveSupport::TestCase
-  ARCHIVO = "https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&display=swap".freeze
+  ARCHIVO = "fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&".freeze
   LAYOUTS = %w[application auth landing learning onboarding].freeze
 
   test "no view or layout sets font-family inline" do

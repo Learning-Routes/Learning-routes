@@ -23,7 +23,7 @@ export default class extends Controller {
         themeVariables: isDark ? this._darkTheme() : this._lightTheme(),
         flowchart: { curve: "basis", padding: 15, htmlLabels: true },
         sequence: { mirrorActors: false, bottomMarginAdj: 1 },
-        fontFamily: "'DM Sans', sans-serif",
+        fontFamily: "var(--font-sans)",
         securityLevel: "strict",
         // Mermaid 11 renders its OWN error graphic into document.body when a
         // diagram will not parse — an orphan SVG reading "Syntax error in text /

@@ -140,7 +140,7 @@ export default class extends Controller {
     wrapper.style.cssText = "opacity:0; transform:translateY(8px); transition:all 0.3s ease;"
     wrapper.innerHTML = `
       <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.5rem;">
-        <span style="font-family:'DM Mono',monospace; font-size:0.625rem; font-weight:600; color:var(--color-muted); text-transform:uppercase; letter-spacing:0.1em;">AI Assistant</span>
+        <span style="font-family:var(--font-mono); font-size:0.625rem; font-weight:600; color:var(--color-muted); text-transform:uppercase; letter-spacing:0.1em;">AI Assistant</span>
         <span style="font-size:0.625rem; color:var(--color-muted); background:var(--color-card); border-radius:4px; padding:0.125rem 0.375rem;">${safeType}</span>
         <button style="margin-left:auto; background:none; border:none; cursor:pointer; color:var(--color-muted); font-size:0.75rem; padding:0.125rem 0.375rem; border-radius:4px; transition:color 0.2s;" class="ai-dismiss-btn" aria-label="Dismiss">&times;</button>
       </div>

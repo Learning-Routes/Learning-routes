@@ -59,8 +59,8 @@ const DEFAULT_NODES = [
 // ─── Constants ───────────────────────────────────────────────────────────────
 const C    = { dkT: "#E8E4DC", dkM: "#605848", dkS: "#7A7264" }
 const ROW  = 500
-const FF   = "'DM Sans', sans-serif"
-const FM   = "'DM Mono', monospace"
+const FF   = "var(--font-sans)"
+const FM   = "var(--font-mono)"
 const FADE = "opacity 0.35s ease"
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────

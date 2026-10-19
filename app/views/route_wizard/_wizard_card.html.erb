@@ -2,7 +2,7 @@
 
   <%# Error banner %>
   <div id="wizard-error-banner" data-route-wizard-target="errorBanner"
-       style="display:none; position:fixed; top:0; left:0; right:0; z-index:100; padding:0.75rem 1rem; background:var(--color-flash-alert-text); color:white; text-align:center; font-family:'DM Sans',sans-serif; font-size:0.82rem; font-weight:500;">
+       style="display:none; position:fixed; top:0; left:0; right:0; z-index:100; padding:0.75rem 1rem; background:var(--color-flash-alert-text); color:white; text-align:center; font-size:0.82rem; font-weight:500;">
   </div>
 
   <%# ARIA live region for step announcements %>
@@ -45,7 +45,7 @@
 
     <%# Topic detail (shown when a predefined topic is selected) %>
     <div data-route-wizard-target="topicDetailWrap" style="display:none; margin-bottom:1rem; width:100%;">
-      <label style="font-family:'DM Mono',monospace; font-size:0.68rem; font-weight:600; color:var(--color-muted); text-transform:uppercase; letter-spacing:0.08em; display:block; margin-bottom:0.4rem;"
+      <label class="font-mono" style="font-size:0.68rem; font-weight:600; color:var(--color-muted); text-transform:uppercase; letter-spacing:0.08em; display:block; margin-bottom:0.4rem;"
              data-route-wizard-target="topicDetailLabel"><%= t("wizard.step0.topic_detail_label") %></label>
       <input type="text" name="route_request[custom_topic]"
              class="wizard-custom-input"
@@ -69,7 +69,7 @@
     <div data-route-wizard-target="topicInputs"></div>
 
     <%# Language selector %>
-    <p style="font-family:'DM Mono',monospace; font-size:0.68rem; font-weight:600; color:var(--color-muted); text-transform:uppercase; letter-spacing:0.08em; text-align:center; margin:0.5rem 0 0.5rem;"><%= t("wizard.step0.language_label") %></p>
+    <p class="font-mono" style="font-size:0.68rem; font-weight:600; color:var(--color-muted); text-transform:uppercase; letter-spacing:0.08em; text-align:center; margin:0.5rem 0 0.5rem;"><%= t("wizard.step0.language_label") %></p>
     <div class="wizard-locale-row" data-route-wizard-target="localeGrid">
       <% [["es", "\u{1F1EA 1F1F8}"], ["en", "\u{1F1FA 1F1F8}"], ["pt", "\u{1F1E7 1F1F7}"], ["fr", "\u{1F1EB 1F1F7}"]].each do |id, flag| %>
         <% name = t("wizard.step0.locales.#{id}") %>
@@ -144,14 +144,14 @@
     <h2 class="wizard-heading"><%= t("wizard.step3.heading") %></h2>
     <p class="wizard-subtitle"><%= t("wizard.step3.subtext") %></p>
 
-    <p style="font-family:'DM Mono',monospace; font-size:0.68rem; font-weight:600; color:var(--color-muted); text-transform:uppercase; letter-spacing:0.08em; margin:0 0 0.6rem; text-align:center;"><%= t("wizard.step3.weekly_label") %></p>
+    <p class="font-mono" style="font-size:0.68rem; font-weight:600; color:var(--color-muted); text-transform:uppercase; letter-spacing:0.08em; margin:0 0 0.6rem; text-align:center;"><%= t("wizard.step3.weekly_label") %></p>
     <div class="wizard-time-row" data-route-wizard-target="hoursGrid">
       <% [[2, "2h"], [5, "5h"], [10, "10h"], [20, "20h"]].each do |val, label| %>
         <button type="button" class="wizard-time-btn" data-action="click->route-wizard#selectHours" data-hours="<%= val %>" tabindex="0"><%= label %></button>
       <% end %>
     </div>
 
-    <p style="font-family:'DM Mono',monospace; font-size:0.68rem; font-weight:600; color:var(--color-muted); text-transform:uppercase; letter-spacing:0.08em; margin:1.5rem 0 0.6rem; text-align:center;"><%= t("wizard.step3.session_label") %></p>
+    <p class="font-mono" style="font-size:0.68rem; font-weight:600; color:var(--color-muted); text-transform:uppercase; letter-spacing:0.08em; margin:1.5rem 0 0.6rem; text-align:center;"><%= t("wizard.step3.session_label") %></p>
     <div class="wizard-time-row" data-route-wizard-target="sessionGrid">
       <% [[15, "15 min", "\u{2615}"], [30, "30 min", "\u{23F3}"], [60, "60 min", "\u{1F680}"]].each do |val, label, icon| %>
         <button type="button" class="wizard-time-btn" data-action="click->route-wizard#selectSession" data-minutes="<%= val %>" tabindex="0">
@@ -174,7 +174,7 @@
       <div class="wizard-style-result">
         <div data-route-wizard-target="savedStyleText"></div>
         <button type="button" data-action="click->route-wizard#retakeStyle"
-                style="margin-top:0.75rem; font-family:'DM Sans',sans-serif; font-size:0.78rem; color:var(--color-accent); background:none; border:none; cursor:pointer; text-decoration:underline;">
+                style="margin-top:0.75rem; font-size:0.78rem; color:var(--color-accent); background:none; border:none; cursor:pointer; text-decoration:underline;">
           <%= t("wizard.step4.retake") %>
         </button>
       </div>
@@ -190,19 +190,19 @@
       <div class="wizard-style-progress">
         <div class="wizard-style-progress-fill" style="width:0%;" data-route-wizard-target="styleProgressFill"></div>
       </div>
-      <p style="font-family:'DM Mono',monospace; font-size:0.68rem; color:var(--color-muted); text-align:center; margin:0.4rem 0 0;">
+      <p class="font-mono" style="font-size:0.68rem; color:var(--color-muted); text-align:center; margin:0.4rem 0 0;">
         <%= t("wizard.step4.question_html", n: tag.span("1", data: { route_wizard_target: "styleQuestionNum" })) %>
       </p>
     </div>
 
-    <p data-route-wizard-target="styleDoneMsg" style="display:none; text-align:center; font-family:'DM Sans',sans-serif; font-size:0.85rem; color:var(--color-accent); font-weight:600; margin:0.5rem 0;"><%= t("wizard.step4.all_answered") %></p>
+    <p data-route-wizard-target="styleDoneMsg" style="display:none; text-align:center; font-size:0.85rem; color:var(--color-accent); font-weight:600; margin:0.5rem 0;"><%= t("wizard.step4.all_answered") %></p>
 
     <%# Questions — one visible at a time %>
     <div data-route-wizard-target="styleQuestionsWrap">
       <%# Option letters are the VARK styles (v/a/r/k) the controller scores. %>
       <% (1..12).each do |n| %>
         <div class="wizard-style-question" data-style-question="<%= n %>" <%= 'aria-hidden="true"' if n > 1 %>>
-          <p style="font-family:'DM Sans',sans-serif; font-size:0.92rem; font-weight:600; color:var(--color-txt); margin:0 0 1rem; text-align:center;"><%= t("wizard.step4.questions.q#{n}.scenario") %></p>
+          <p style="font-size:0.92rem; font-weight:600; color:var(--color-txt); margin:0 0 1rem; text-align:center;"><%= t("wizard.step4.questions.q#{n}.scenario") %></p>
           <% %w[v a r k].each do |letter| %>
             <button type="button" class="wizard-style-option"
                     data-action="click->route-wizard#selectStyleAnswer keydown->route-wizard#activateOnEnter"

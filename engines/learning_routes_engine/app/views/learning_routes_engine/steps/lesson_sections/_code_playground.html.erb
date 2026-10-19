@@ -9,7 +9,7 @@
      data-code-playground-initial-code-value="<%= section[:code] %>"
      class="space-y-4">
   <!-- Badge -->
-  <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium tracking-wide uppercase" style="background: rgba(59, 130, 246, 0.1); color: var(--color-info); font-family: 'DM Mono', monospace;">
+  <div class="font-mono inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium tracking-wide uppercase" style="background: rgba(59, 130, 246, 0.1); color: var(--color-info); ">
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
     <%= t('learning_engine.blocks.badge_playground') %>
   </div>
@@ -19,7 +19,7 @@
   <div class="rounded-2xl overflow-hidden" style="border: 1px solid rgba(28, 24, 18, 0.1);">
     <!-- Editor toolbar -->
     <div class="flex items-center justify-between px-4 py-2" style="background: var(--color-txt);">
-      <span class="text-xs font-medium" style="color: var(--color-card); font-family: 'DM Mono', monospace;"><%= section[:language] || 'python' %></span>
+      <span class="font-mono text-xs font-medium" style="color: var(--color-card); "><%= section[:language] || 'python' %></span>
       <div class="flex gap-2">
         <button class="px-3 py-1 rounded-lg text-xs font-medium transition-all duration-200"
                 style="background: rgba(255,255,255,0.1); color: var(--color-card);"
@@ -36,22 +36,22 @@
     <!-- Code editor area -->
     <div data-code-playground-target="editor" style="height: 200px; background: var(--color-code-bg);">
       <textarea data-code-playground-target="textarea"
-                class="w-full h-full p-4 resize-none font-mono text-sm"
-                style="background: var(--color-code-bg); color: var(--color-code-text); border: none; outline: none; font-family: 'DM Mono', monospace;"
+                class="font-mono w-full h-full p-4 resize-none font-mono text-sm"
+                style="background: var(--color-code-bg); color: var(--color-code-text); border: none; outline: none; "
                 spellcheck="false"><%= section[:code] %></textarea>
     </div>
 
     <!-- Output panel -->
     <div class="px-4 py-3" style="background: var(--color-txt); border-top: 1px solid rgba(255,255,255,0.1);">
-      <p class="text-xs mb-1" style="color: var(--color-muted); font-family: 'DM Mono', monospace;"><%= t('learning_engine.blocks.output') %></p>
+      <p class="font-mono text-xs mb-1" style="color: var(--color-muted); "><%= t('learning_engine.blocks.output') %></p>
       <pre data-code-playground-target="output"
-           class="text-sm whitespace-pre-wrap"
-           style="color: var(--color-positive); font-family: 'DM Mono', monospace; min-height: 24px;">Click Run to execute...</pre>
+           class="font-mono text-sm whitespace-pre-wrap"
+           style="color: var(--color-positive); min-height: 24px;">Click Run to execute...</pre>
     </div>
 
     <% if section[:expected_output].present? %>
       <div class="px-4 py-2" style="background: rgba(28, 24, 18, 0.03); border-top: 1px solid rgba(28, 24, 18, 0.06);">
-        <p class="text-xs" style="color: var(--color-muted); font-family: 'DM Mono', monospace;">
+        <p class="font-mono text-xs" style="color: var(--color-muted); ">
           Expected: <span style="color: var(--color-sub);"><%= section[:expected_output].to_s.truncate(200) %></span>
         </p>
       </div>

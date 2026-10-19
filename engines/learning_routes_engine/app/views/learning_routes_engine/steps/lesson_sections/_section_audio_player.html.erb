@@ -19,7 +19,7 @@
   <%# Generate button %>
   <div data-section-audio-target="generateBtn" style="<%= audio_url.present? ? 'display:none;' : '' %>">
     <button data-action="click->section-audio#generate"
-            style="display:inline-flex; align-items:center; gap:0.5rem; padding:0.5rem 1rem; border-radius:12px; font-family:'DM Sans',sans-serif; font-size:0.8125rem; font-weight:600; color:var(--color-sub); background:var(--color-card); border:1px solid var(--color-border-subtle); cursor:pointer; transition:all 0.2s; box-shadow:0 1px 3px rgba(0,0,0,0.02);"
+            style="display:inline-flex; align-items:center; gap:0.5rem; padding:0.5rem 1rem; border-radius:12px; font-size:0.8125rem; font-weight:600; color:var(--color-sub); background:var(--color-card); border:1px solid var(--color-border-subtle); cursor:pointer; transition:all 0.2s; box-shadow:0 1px 3px rgba(0,0,0,0.02);"
             onmouseover="this.style.borderColor='rgba(99,102,241,0.3)'; this.style.color='var(--color-section-audio-active)';"
             onmouseout="this.style.borderColor='var(--color-border-subtle)'; this.style.color='var(--color-sub)';">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 010 7.07"/></svg>
@@ -45,12 +45,12 @@
              style="width:0%; height:100%; border-radius:2px; background:linear-gradient(to right, var(--color-section-audio-active), var(--color-highlight-violet)); transition:width 0.1s linear;"></div>
       </div>
 
-      <span data-section-audio-target="currentTime"
-            style="font-family:'DM Mono',monospace; font-size:0.6875rem; color:var(--color-muted); min-width:2.75rem; text-align:right;">0:00</span>
+      <span class="font-mono" data-section-audio-target="currentTime"
+            style="font-size:0.6875rem; color:var(--color-muted); min-width:2.75rem; text-align:right;">0:00</span>
 
-      <button data-action="click->section-audio#cycleSpeed"
+      <button class="font-mono" data-action="click->section-audio#cycleSpeed"
               data-section-audio-target="speedBtn"
-              style="font-family:'DM Mono',monospace; font-size:0.625rem; font-weight:600; color:var(--color-muted); background:var(--color-tint-strong); border:1px solid var(--color-border-subtle); border-radius:9999px; padding:0.125rem 0.5rem; cursor:pointer; white-space:nowrap;">1x</button>
+              style="font-size:0.625rem; font-weight:600; color:var(--color-muted); background:var(--color-tint-strong); border:1px solid var(--color-border-subtle); border-radius:9999px; padding:0.125rem 0.5rem; cursor:pointer; white-space:nowrap;">1x</button>
     </div>
   </div>
 

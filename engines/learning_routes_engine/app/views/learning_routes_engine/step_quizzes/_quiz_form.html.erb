@@ -13,7 +13,7 @@
           <p style="font-size:0.75rem; color:var(--color-sub); margin:0;"><%= t("learning_engine.step_quiz.subtitle", count: questions.size) %></p>
         </div>
       </div>
-      <span style="font-size:0.75rem; color:var(--color-muted); font-family:'DM Mono',monospace;" data-step-quiz-target="counter">
+      <span class="font-mono" style="font-size:0.75rem; color:var(--color-muted); " data-step-quiz-target="counter">
         0/<%= questions.size %>
       </span>
     </div>
@@ -25,7 +25,7 @@
         <% questions.each_with_index do |question, idx| %>
           <div style="border-radius:0.5rem; background:var(--color-tint-strong); border:1px solid var(--color-tint); padding:1rem;">
             <p style="font-size:0.875rem; font-weight:500; color:var(--color-txt); margin:0 0 0.75rem;">
-              <span style="color:var(--color-muted); font-family:'DM Mono',monospace; font-size:0.75rem; margin-right:0.5rem;"><%= idx + 1 %>.</span>
+              <span class="font-mono" style="color:var(--color-muted); font-size:0.75rem; margin-right:0.5rem;"><%= idx + 1 %>.</span>
               <%= question.body %>
             </p>
             <div class="space-y-2">

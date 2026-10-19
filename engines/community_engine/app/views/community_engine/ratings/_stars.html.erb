@@ -38,7 +38,7 @@
   </div>
 
   <%# Rating text %>
-  <span style="font-family:'DM Mono',monospace; font-size:0.65rem; color:var(--color-muted);">
+  <span class="font-mono" style="font-size:0.65rem; color:var(--color-muted);">
     <% if count > 0 %>
       <%= avg %> (<%= count %>)
     <% elsif defined?(current_user) && current_user && shared_route.user_id == current_user.id %>
