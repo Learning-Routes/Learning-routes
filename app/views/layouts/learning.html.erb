@@ -18,7 +18,7 @@
     <link rel="apple-touch-icon" href="/apple-touch-icon.png?v=2">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400..700;1,9..40,400..700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.18.11/dist/katex.min.css">
 
     <%# Prevent flash of wrong theme before JS loads %>
@@ -34,7 +34,7 @@
     <%= javascript_importmap_tags %>
   </head>
 
-  <body style="margin:0; min-height:100vh; font-family:'DM Sans',sans-serif; background:var(--color-bg); color:var(--color-txt); transition:background-color 0.3s, color 0.3s;">
+  <body style="margin:0; min-height:100vh; background:var(--color-bg); color:var(--color-txt); transition:background-color 0.3s, color 0.3s;">
     <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-4 focus:z-[200] focus:bg-indigo-500 focus:text-white focus:px-4 focus:py-2 focus:rounded-lg focus:text-sm focus:font-semibold"><%= t("layout.skip_to_content") %></a>
     <%= turbo_stream_from "learning_route_#{@route.id}" if @route %>
     <%= turbo_stream_from "step_content_#{@step.id}" if @step %>
@@ -47,17 +47,13 @@
             <% if @step && @route %>
               <%# When viewing a step, back goes to the route (not dashboard) %>
               <%= link_to learning_routes_engine.route_path(@route), style: "font-size:0.875rem; font-weight:500; color:var(--color-sub); text-decoration:none; display:inline-flex; align-items:center; transition:color 0.2s;" do %>
-                <svg aria-hidden="true" style="width:1.25rem; height:1.25rem; margin-right:0.25rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
-                </svg>
+                <%= svg_icon(:chevron_left, size: 20, style: "margin-right:0.25rem;") %>
                 <%= @route.localized_topic.truncate(25) %>
               <% end %>
             <% else %>
               <%# When viewing a route overview, back goes to dashboard %>
               <%= link_to main_app.dashboard_path, style: "font-size:0.875rem; font-weight:500; color:var(--color-sub); text-decoration:none; display:inline-flex; align-items:center; transition:color 0.2s;" do %>
-                <svg aria-hidden="true" style="width:1.25rem; height:1.25rem; margin-right:0.25rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
-                </svg>
+                <%= svg_icon(:chevron_left, size: 20, style: "margin-right:0.25rem;") %>
                 <%= t("layout.learning.dashboard") %>
               <% end %>
 
@@ -78,7 +74,7 @@
             <div style="display:flex; align-items:center; gap:0.5rem;" data-controller="lesson"
                  data-lesson-step-id-value="<%= @step&.id %>"
                  data-lesson-route-id-value="<%= @route&.id %>">
-              <span style="font-size:0.75rem; font-family:'DM Mono',monospace; color:var(--color-muted);" data-lesson-target="timer">0:00</span>
+              <span class="font-mono" style="font-size:0.75rem; color:var(--color-muted);" data-lesson-target="timer">0:00</span>
 
               <%# NOT on an assessment step. This layout is used by the exam page and
                   the results page too (both set @step = @assessment.route_step), so
@@ -117,25 +113,25 @@
     <% if flash[:notice] || flash[:alert] %>
       <div style="max-width:80rem; margin:1rem auto 0; padding:0 1rem;">
         <% if flash[:notice] %>
-          <div style="border-radius:14px; background:var(--color-flash-notice-bg); border:1px solid var(--color-flash-notice-border); padding:0.875rem 1.25rem; font-family:'DM Sans',sans-serif; font-size:0.875rem; font-weight:500; color:var(--color-flash-notice-text); box-shadow:0 2px 8px rgba(91,168,128,0.08); animation:flashSlideIn 0.3s ease;"
+          <div style="border-radius:14px; background:var(--color-flash-notice-bg); border:1px solid var(--color-flash-notice-border); padding:0.875rem 1.25rem; font-size:0.875rem; font-weight:500; color:var(--color-flash-notice-text); box-shadow:0 2px 8px rgba(91,168,128,0.08); animation:flashSlideIn 0.3s ease;"
                data-controller="flash">
             <div style="display:flex; align-items:center; gap:0.625rem;">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><polyline points="20 6 9 17 4 12"/></svg>
+              <%= svg_icon(:check, size: 16, style: "flex-shrink:0;") %>
               <p style="margin:0; flex:1;"><%= flash[:notice] %></p>
               <button data-action="click->flash#dismiss" style="background:none; border:none; color:var(--color-flash-notice-text); cursor:pointer; padding:4px; opacity:0.6; transition:opacity 0.2s;" aria-label="<%= t('layout.dismiss') %>">
-                <svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z"/></svg>
+                <%= svg_icon(:close, size: 14) %>
               </button>
             </div>
           </div>
         <% end %>
         <% if flash[:alert] %>
-          <div style="border-radius:14px; background:var(--color-flash-alert-bg); border:1px solid var(--color-flash-alert-border); padding:0.875rem 1.25rem; font-family:'DM Sans',sans-serif; font-size:0.875rem; font-weight:500; color:var(--color-flash-alert-text); box-shadow:0 2px 8px rgba(176,96,80,0.08); animation:flashSlideIn 0.3s ease; <%= 'margin-top:0.5rem;' if flash[:notice] %>"
+          <div style="border-radius:14px; background:var(--color-flash-alert-bg); border:1px solid var(--color-flash-alert-border); padding:0.875rem 1.25rem; font-size:0.875rem; font-weight:500; color:var(--color-flash-alert-text); box-shadow:0 2px 8px rgba(176,96,80,0.08); animation:flashSlideIn 0.3s ease; <%= 'margin-top:0.5rem;' if flash[:notice] %>"
                data-controller="flash">
             <div style="display:flex; align-items:center; gap:0.625rem;">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              <%= svg_icon(:alert_circle, size: 16, style: "flex-shrink:0;") %>
               <p style="margin:0; flex:1;"><%= flash[:alert] %></p>
               <button data-action="click->flash#dismiss" style="background:none; border:none; color:var(--color-flash-alert-text); cursor:pointer; padding:4px; opacity:0.6; transition:opacity 0.2s;" aria-label="<%= t('layout.dismiss') %>">
-                <svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z"/></svg>
+                <%= svg_icon(:close, size: 14) %>
               </button>
             </div>
           </div>

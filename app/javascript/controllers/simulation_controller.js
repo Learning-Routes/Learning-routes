@@ -82,7 +82,7 @@ export default class extends Controller {
 
     // Labels
     ctx.fillStyle = "#6D665B"
-    ctx.font = "12px 'DM Mono', monospace"
+    ctx.font = "12px var(--font-mono)"
     varNames.forEach((name, i) => {
       ctx.fillText(name + " = " + (vars[name] || 0).toFixed(1), w - 180, 30 + i * 20)
     })

@@ -26,7 +26,7 @@ module CommunityEngine
             render turbo_stream: turbo_stream.replace(
               "post_form_errors",
               html: content_tag(:p, @post.errors.full_messages.join(", "),
-                style: "font-family:'DM Sans',sans-serif; font-size:0.75rem; color:var(--color-error, #B06050); margin:0 0 0.5rem;")
+                style: "font-size:0.75rem; color:var(--color-error, #B06050); margin:0 0 0.5rem;")
             )
           end
           format.html { redirect_to community_engine.feed_path, alert: @post.errors.full_messages.join(", ") }

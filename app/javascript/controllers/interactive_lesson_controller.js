@@ -948,7 +948,7 @@ export default class extends Controller {
     float.textContent = `+${xp} XP`
     float.style.cssText = `
       position:fixed; top:50%; left:50%; transform:translate(-50%,-50%) scale(0.5);
-      font-family:'DM Mono',monospace; font-size:1.5rem; font-weight:700;
+      font-family:var(--font-mono); font-size:1.5rem; font-weight:700;
       color:#B09848; pointer-events:none; z-index:100;
       opacity:0; transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1), opacity 0.4s ease;
     `

@@ -78,7 +78,7 @@ export default class extends Controller {
     errorEl.className = "auth-field-error"
     errorEl.textContent = message
     Object.assign(errorEl.style, {
-      fontFamily: "'DM Sans', sans-serif",
+      fontFamily: "var(--font-sans)",
       fontSize: "0.72rem",
       fontWeight: "500",
       color: alertColor,

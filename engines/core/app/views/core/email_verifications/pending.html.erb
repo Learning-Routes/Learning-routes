@@ -1,4 +1,4 @@
-<div style="width: 100%; max-width: 460px; font-family: 'DM Sans', sans-serif;">
+<div style="width: 100%; max-width: 460px; ">
   <div style="background-color: var(--color-card); border-radius: 14px; padding: 48px 36px; text-align: center; box-shadow: 0 2px 12px rgba(28, 24, 18, 0.06);">
     <!-- Mail icon -->
     <div style="width: 64px; height: 64px; margin: 0 auto 24px; background-color: var(--color-bg); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
@@ -24,7 +24,7 @@
       <%= button_to t("email_verification.pending.resend"),
             core.resend_verification_path,
             method: :post,
-            style: "width: 100%; padding: 12px 24px; font-size: 15px; font-weight: 600; color: var(--color-accent-text); background-color: var(--color-accent); border: none; border-radius: 11px; cursor: pointer; font-family: 'DM Sans', sans-serif;" %>
+            style: "width: 100%; padding: 12px 24px; font-size: 15px; font-weight: 600; color: var(--color-accent-text); background-color: var(--color-accent); border: none; border-radius: 11px; cursor: pointer; " %>
 
       <%= link_to t("email_verification.pending.sign_out"),
             core.sign_out_path,

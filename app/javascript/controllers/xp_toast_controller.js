@@ -26,7 +26,7 @@ export default class extends Controller {
       textShadow: "0 1px 4px rgba(0,0,0,0.2)",
       pointerEvents: "none",
       zIndex: "9999",
-      fontFamily: "'DM Mono', monospace",
+      fontFamily: "var(--font-mono)",
       animation: "xp-toast-rise 1.2s ease-out forwards"
     })
 

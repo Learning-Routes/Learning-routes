@@ -221,7 +221,7 @@ export default class extends Controller {
         text.setAttribute("y", pos.y + nodeR + 12)
         text.setAttribute("text-anchor", "middle")
         text.setAttribute("fill", pos.status === "locked" ? "rgba(28,24,18,0.2)" : mutedColor)
-        text.setAttribute("font-family", "'DM Sans', sans-serif")
+        text.setAttribute("font-family", "var(--font-sans)")
         text.setAttribute("font-size", "8.5")
         text.setAttribute("font-weight", pos.status === "in_progress" ? "600" : "400")
 

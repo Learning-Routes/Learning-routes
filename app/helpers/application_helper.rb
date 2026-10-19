@@ -1,15 +1,33 @@
 module ApplicationHelper
-  # Constant SVG markup: the one place a view or helper marks a string
-  # html_safe (STEP 37 §6). Never build these from data.
+  # The app's one icon language (STEP 41 §1.3): a 24px grid, round caps and
+  # joins, a 1.75 stroke (2 at 18px and under, where thinner lines fade).
+  # SVG_ICONS holds constant inner markup: the one place a view or helper marks
+  # a string html_safe (STEP 37 §6). Never build these from data.
   SVG_ICONS = {
-    info: '<svg aria-hidden="true" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>',
-    layers: '<svg aria-hidden="true" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>',
-    arrow_right: '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>',
-    check_circle: '<svg aria-hidden="true" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>'
+    info: '<circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/>',
+    layers: '<path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>',
+    arrow_right: '<path d="M5 12h14M13 6l6 6-6 6"/>',
+    check_circle: '<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="M22 4L12 14.01l-3-3"/>',
+    check: '<path d="M20 6L9 17l-5-5"/>',
+    close: '<path d="M6 6l12 12M18 6L6 18"/>',
+    alert_circle: '<circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/>',
+    chevron_left: '<path d="M15 19l-7-7 7-7"/>',
+    clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+    settings: '<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>',
+    menu: '<path d="M4 7h16M4 12h16M4 17h16"/>',
+    flame: '<path d="M12 22c-4.4 0-8-3.2-8-7.4 0-2.9 1.9-6 3.6-7.7 0 0 .5 3.1 2.7 4.9 0-4.5 3.1-8.9 5.4-10.8 0 2.7 1.3 4.5 2.7 5.8C19.8 8.2 20 10 20 11.8 20 18 16.4 22 12 22z"/>',
+    star: '<path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>',
+    github: '<path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/>',
+    x_logo: '<path d="M4 4l11.733 16h4.267l-11.733-16h-4.267z"/><path d="M4 20l6.768-6.768m2.46-2.46L20 4"/>',
+    monitor: '<rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/>',
+    sun: '<circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>',
+    moon: '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>'
   }.freeze
 
-  def svg_icon(name)
-    SVG_ICONS.fetch(name.to_sym).html_safe
+  def svg_icon(name, size: 24, **attributes)
+    tag.svg(SVG_ICONS.fetch(name.to_sym).html_safe, width: size, height: size, viewBox: "0 0 24 24", fill: "none",
+            stroke: "currentColor", "stroke-width": size <= 18 ? 2 : 1.75, "stroke-linecap": "round",
+            "stroke-linejoin": "round", "aria-hidden": "true", **attributes)
   end
 
   # Absolute URL on the one public host (config.x.public_host), for canonical,

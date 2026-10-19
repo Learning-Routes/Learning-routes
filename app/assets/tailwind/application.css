@@ -8,18 +8,18 @@
 
 @theme {
   /* --- Typography --- */
-  --font-sans: 'DM Sans', sans-serif;
-  --font-mono: 'DM Mono', monospace;
+  --font-sans: "Archivo", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "DM Mono", monospace;
 
-  /* --- Colors: Light theme (warm cream) --- */
-  --color-bg: #F5F1EB;
-  --color-card: #FEFDFB;
-  --color-txt: #1C1812;
-  --color-sub: #6D665B;
-  --color-muted: #887F72;
-  --color-faint: #B5AD9F;
-  --color-accent: #2C261E;
-  --color-accent-text: #F5F1EB;
+  /* --- Colors: Light theme (Ciruela, STEP 41 §1.1) --- */
+  --color-bg: #F5F2F6;
+  --color-card: #FFFFFF;
+  --color-txt: #1D1226;
+  --color-sub: #4A3D54;
+  --color-muted: #73667C;
+  --color-faint: #D1C5D7;
+  --color-accent: #6A2EA0;
+  --color-accent-text: #FFFFFF;
 
   /* --- Colors: Dark card (route viz, product preview) --- */
   --color-dark: #1C1912;
@@ -28,7 +28,7 @@
   --color-dark-muted: #605848;
 
   /* --- Colors: Auth pages --- */
-  --color-link: #8B6D28;
+  --color-link: #57248A;
 
   /* --- Colors: Node/route types --- */
   --color-node-mm: #B0A898;
@@ -60,12 +60,136 @@
   }
 
   ::selection {
-    background: rgba(120, 100, 70, 0.1);
+    background: color-mix(in srgb, var(--color-accent) 20%, transparent);
   }
 
   body {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    /* STEP 41 §1.2: Archivo (--font-sans, inherited from html) at body size. */
+    font-size: 17px;
+    font-weight: 420;
+    line-height: 1.55;
+  }
+}
+
+/* ── Components with body (STEP 41 §1.3). Values from the reference's CSS,
+   on the app's tokens: --panel is --color-card, --line --color-border-subtle,
+   --line-2 --color-faint, --route --color-accent. ── */
+@property --gl { syntax: '<percentage>'; inherits: false; initial-value: 0%; }
+
+@layer components {
+  /* A sheet with thickness, lit from above. data-controller="card-tilt" on
+     the cards you can act on. */
+  .card3 {
+    --th: 8px; --gl: 0%;
+    position: relative; border-radius: 18px;
+    background:
+      radial-gradient(560px circle at var(--mx, 30%) var(--my, 0%), color-mix(in srgb, var(--color-hi) var(--gl), transparent), transparent 62%),
+      linear-gradient(170deg, var(--color-card) 0%, var(--color-card) 40%, color-mix(in srgb, var(--color-card) 90%, var(--color-bg)) 100%);
+    box-shadow: inset 0 1px 0 var(--color-hi), inset 0 0 0 1px var(--color-border-subtle),
+      0 var(--th) 0 -1px var(--color-edge), 0 var(--th) 0 0 color-mix(in srgb, var(--color-faint) 80%, transparent),
+      0 calc(var(--th) + 14px) 26px -14px var(--color-shade), 0 calc(var(--th) + 40px) 70px -36px var(--color-shade);
+    transform: perspective(1100px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)) translateY(var(--ty, 0px));
+    transition: transform .5s cubic-bezier(.23, 1, .32, 1), box-shadow .5s cubic-bezier(.23, 1, .32, 1), --gl .5s ease;
+  }
+  html[data-theme="dark"] .card3 {
+    box-shadow: inset 0 1px 0 var(--color-hi), inset 0 0 0 1px var(--color-faint),
+      0 var(--th) 0 -1px var(--color-edge), 0 var(--th) 0 0 var(--color-faint),
+      0 calc(var(--th) + 14px) 26px -12px var(--color-shade), 0 calc(var(--th) + 40px) 70px -30px var(--color-shade);
+  }
+  @media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+    .card3:hover { --ty: -6px; --gl: 65%; --th: 12px; }
+  }
+
+  /* A button you press: a lit top edge, a 3px edge in a darker accent, a glow. */
+  .btn3 {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    height: 48px; padding: 0 22px; border: 0; border-radius: 10px;
+    background: var(--color-accent); color: var(--color-accent-text);
+    font-size: 16px; font-weight: 650; line-height: 1; text-decoration: none; white-space: nowrap; cursor: pointer;
+    box-shadow: inset 0 1px 0 color-mix(in srgb, white 22%, transparent),
+      0 3px 0 0 color-mix(in srgb, var(--color-accent) 62%, black),
+      0 8px 16px -8px color-mix(in srgb, var(--color-accent) 70%, transparent);
+    transition: background-color .15s ease, transform .12s cubic-bezier(.23, 1, .32, 1), box-shadow .12s ease;
+  }
+  .btn3:hover { background: var(--color-accent-hover); }
+  .btn3:active {
+    transform: translateY(2px);
+    box-shadow: inset 0 1px 0 color-mix(in srgb, white 18%, transparent), 0 1px 0 0 color-mix(in srgb, var(--color-accent) 62%, black);
+  }
+  .btn3:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 3px; }
+  .btn3[disabled], .btn3[aria-disabled="true"] { opacity: .45; cursor: default; }
+  .btn3--sm { height: 38px; padding: 0 14px; font-size: 14.5px; border-radius: 9px; }
+  .btn3--secondary {
+    background: var(--color-card); color: var(--color-txt);
+    box-shadow: inset 0 0 0 1px var(--color-faint), 0 3px 0 0 var(--color-faint);
+  }
+  .btn3--secondary:hover { background: var(--color-bg-2); }
+  .btn3--secondary:active { box-shadow: inset 0 0 0 1px var(--color-faint), 0 1px 0 0 var(--color-faint); }
+
+  /* A recessed well for a route's mini-map, and the progress groove. */
+  .tray {
+    padding: 10px 12px 8px; border-radius: 12px;
+    background: color-mix(in srgb, var(--color-bg) 75%, var(--color-card));
+    box-shadow: inset 0 2px 5px -1px var(--color-shade), inset 0 0 0 1px var(--color-border-subtle);
+  }
+  .groove {
+    height: 8px; border-radius: 8px; overflow: hidden;
+    background: color-mix(in srgb, var(--color-bg) 70%, var(--color-border-subtle));
+    box-shadow: inset 0 1px 2px var(--color-shade);
+  }
+  .groove > span { display: block; height: 100%; border-radius: 6px; background: var(--color-progress-bar); }
+
+  /* "Módulo N · Gratis" */
+  .chip {
+    display: inline-flex; align-items: center; gap: 7px; padding: 5px 10px; border-radius: 7px;
+    background: var(--color-card); box-shadow: inset 0 0 0 1px var(--color-border-subtle);
+    font-size: 13px; font-weight: 620; color: var(--color-sub); white-space: nowrap;
+  }
+  .chip__dot { flex: none; width: 7px; height: 7px; border-radius: 50%; background: var(--color-accent); }
+  .chip__tag {
+    padding: 1px 7px; border-radius: 5px; font-size: 12px; font-weight: 650;
+    background: var(--color-accent-soft); color: var(--color-accent);
+  }
+
+  /* Hecho, Estás aquí, Refuerzo, and a route's level. */
+  .tag { display: inline-block; padding: 4px 9px; border-radius: 7px; font-size: 12.5px; font-weight: 620; }
+  .tag--done { background: var(--color-accent); color: var(--color-accent-text); }
+  .tag--now { box-shadow: inset 0 0 0 1.5px var(--color-highlight); color: var(--color-signal-text); }
+  .tag--reinforce { box-shadow: inset 0 0 0 1.5px var(--color-reinforce); color: var(--color-reinforce); }
+  .level-tag {
+    padding: 3px 8px; border-radius: 6px; font-size: 12px; font-weight: 650;
+    background: var(--color-accent-soft); color: var(--color-accent);
+  }
+
+  .input3 {
+    height: 46px; min-width: 0; padding: 0 14px; border: 0; border-radius: 12px;
+    background: var(--color-card); color: var(--color-txt); font-size: 15px; font-weight: 500;
+    box-shadow: inset 0 0 0 1.5px var(--color-faint);
+  }
+  .input3::placeholder { color: var(--color-muted); }
+  .input3:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .card3, .btn3 { transition: none; }
+  }
+}
+
+/* ── Type scale (STEP 41 §1.2) ── */
+@layer components {
+  .type-display, .type-hero, .type-section {
+    font-weight: 740; font-stretch: 112%; letter-spacing: -.03em; line-height: .98;
+  }
+  .type-hero { font-size: clamp(52px, 5.1vw, 100px); }
+  .type-section { font-size: clamp(42px, 4vw, 76px); }
+  .type-h2 { font-size: clamp(32px, 2.75vw, 54px); font-weight: 730; font-stretch: 110%; letter-spacing: -.02em; line-height: 1.05; }
+  .type-h3 { font-size: 22px; font-weight: 720; font-stretch: 108%; letter-spacing: -.01em; line-height: 1.2; }
+  .type-small { font-size: 14.5px; }
+  .type-label { font-size: 13px; }
+  @media (max-width: 860px) {
+    .type-hero { font-size: 42px; }
+    .type-h2 { font-size: 29px; }
   }
 }
 
@@ -86,17 +210,26 @@
   /* Highlights (STEP 38 §3): gold for stars, streaks and rank; violet for the
      lesson and exam gradients and the interactive-block tags. Neither is a
      level and neither is a verdict. */
-  --color-highlight: #B09848;
+  --color-highlight: #E79A0F;
   --color-highlight-violet: #8B5CF6;
   /* The code playground is a dark editor in both themes, on purpose. */
   --color-code-bg: #1E1E1E;
   --color-code-text: #D4D4D4;
+  /* Ciruela additions (STEP 41 §1.1); the dark values are in the dark block. */
+  --color-accent-hover: #57248A;
+  --color-accent-soft: #F0E5F8;
+  --color-signal-text: #9A6200;
+  --color-reinforce: #13807A;
+  --color-bg-2: #ECE6EF;
+  --color-edge: #DED3E3;
+  --color-shade: rgba(29, 18, 38, 0.18);
+  --color-hi: rgba(255, 255, 255, 0.9);
 }
 
 /* Semi-transparent theme tokens (glassmorphic cards, subtle borders, tints) */
 :root {
   --color-card-glass: rgba(255, 255, 255, 0.6);
-  --color-border-subtle: rgba(28, 24, 18, 0.06);
+  --color-border-subtle: #E4DCE8;
   --color-tint: rgba(28, 24, 18, 0.04);
   --color-tint-strong: rgba(28, 24, 18, 0.08);
   --color-flash-notice-bg: rgba(91, 168, 128, 0.1);
@@ -111,7 +244,7 @@
   --color-status-completed-text: #4A7A9E;
   --color-status-paused-bg: rgba(176, 152, 72, 0.1);
   --color-status-paused-text: #8B6D28;
-  --color-progress-bar: #5BA880;
+  --color-progress-bar: #6A2EA0;
   --color-faint-text: #B5AD9F;
   /* Step type badge colors (learning pages) */
   --color-badge-lesson-bg: rgba(59, 130, 246, 0.1);
@@ -123,7 +256,7 @@
   --color-badge-review-bg: rgba(139, 92, 246, 0.1);
   --color-badge-review-text: #7C3AED;
   /* Progress bar track */
-  --color-progress-track: rgba(28, 24, 18, 0.06);
+  --color-progress-track: #ECE6EF;
   /* Journey page contrast (for SVG overlays) */
   --journey-contrast-rgb: 28, 24, 18;
   --journey-alpha-mult: 5;
@@ -197,20 +330,28 @@ html[data-theme="dark"] {
   --color-node-nv1: #7CC4A0;
   --color-node-nv2: #8DB6E0;
   --color-node-nv3: #B2A8E6;
-  --color-highlight: #D4B65E;
+  --color-highlight: #F5B23C;
   --color-highlight-violet: #A78BFA;
-  --color-bg: #1A1710;
-  --color-card: #221F18;
-  --color-txt: #E8E4DC;
-  --color-sub: #A09889;
-  --color-muted: #8A8070;
-  --color-faint: #3D3730;
-  --color-accent: #E8E4DC;
-  --color-accent-text: #1A1710;
-  --color-link: #D4A84B;
+  --color-bg: #150E1C;
+  --color-card: #241931;
+  --color-txt: #F2ECF6;
+  --color-sub: #CDBFD8;
+  --color-muted: #9C8BAA;
+  --color-faint: #44344F;
+  --color-accent: #B98AF0;
+  --color-accent-text: #150E1C;
+  --color-link: #CAA4F5;
+  --color-accent-hover: #CAA4F5;
+  --color-accent-soft: #33224A;
+  --color-signal-text: #F8C66B;
+  --color-reinforce: #46C2B6;
+  --color-bg-2: #1C1325;
+  --color-edge: #1C1325;
+  --color-shade: rgba(0, 0, 0, 0.55);
+  --color-hi: rgba(255, 255, 255, 0.07);
 
   --color-card-glass: rgba(34, 31, 24, 0.75);
-  --color-border-subtle: rgba(255, 255, 255, 0.06);
+  --color-border-subtle: #33263F;
   --color-tint: rgba(255, 255, 255, 0.06);
   --color-tint-strong: rgba(255, 255, 255, 0.1);
   --color-flash-notice-bg: rgba(91, 168, 128, 0.12);
@@ -225,7 +366,7 @@ html[data-theme="dark"] {
   --color-status-completed-text: #8AB8D8;
   --color-status-paused-bg: rgba(176, 152, 72, 0.15);
   --color-status-paused-text: #D4B85C;
-  --color-progress-bar: #5BA880;
+  --color-progress-bar: #B98AF0;
   --color-faint-text: #6A6050;
   --color-badge-lesson-bg: rgba(59, 130, 246, 0.15);
   --color-badge-lesson-text: #93c5fd;
@@ -235,7 +376,7 @@ html[data-theme="dark"] {
   --color-badge-assessment-text: #fdba74;
   --color-badge-review-bg: rgba(139, 92, 246, 0.15);
   --color-badge-review-text: #c4b5fd;
-  --color-progress-track: rgba(255, 255, 255, 0.06);
+  --color-progress-track: #1C1325;
   --journey-contrast-rgb: 255, 255, 255;
   --journey-alpha-mult: 1;
   --journey-opacity-mult: 1;
@@ -280,15 +421,6 @@ html[data-theme="dark"] {
   --color-motion-hi2: #2A5F7D;
 }
 
-html[data-theme="dark"] ::selection {
-  background: rgba(200, 180, 140, 0.2);
-}
-
-/* Dark nav scroll state */
-html[data-theme="dark"] .nav-scrolled {
-  background: rgba(26, 23, 16, 0.92);
-  border-bottom-color: rgba(255, 255, 255, 0.06);
-}
 
 /* Dark section-dark: slightly lighter so it stands out from body bg */
 html[data-theme="dark"] .section-dark {
@@ -296,77 +428,6 @@ html[data-theme="dark"] .section-dark {
   border: 1px solid rgba(255, 255, 255, 0.04);
 }
 
-/* Dark card hover */
-html[data-theme="dark"] .card-hover:hover {
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3), 0 2px 8px rgba(0, 0, 0, 0.2);
-  border-color: rgba(255, 255, 255, 0.1);
-}
-
-/* Dark auth components */
-html[data-theme="dark"] .auth-card {
-  background: rgba(34, 31, 24, 0.85);
-  border-color: rgba(255, 255, 255, 0.08);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
-}
-
-html[data-theme="dark"] .auth-input {
-  background: #2A2620;
-  border-color: rgba(255, 255, 255, 0.1);
-  color: #E8E4DC;
-}
-html[data-theme="dark"] .auth-input::placeholder {
-  color: #706858;
-}
-html[data-theme="dark"] .auth-input:focus {
-  border-color: rgba(255, 255, 255, 0.2);
-  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.04);
-}
-
-html[data-theme="dark"] .auth-btn {
-  background: #E8E4DC;
-  color: #1A1710;
-}
-
-html[data-theme="dark"] .auth-google-btn {
-  background: #2A2620;
-  border-color: rgba(255, 255, 255, 0.1);
-  color: #E8E4DC;
-}
-
-/* Dark auth errors */
-html[data-theme="dark"] .auth-errors {
-  background: rgba(220, 120, 100, 0.1);
-  border-color: rgba(220, 120, 100, 0.2);
-  color: #E8A090;
-}
-html[data-theme="dark"] .auth-errors li {
-  color: #E8A090;
-}
-
-/* Dark auth flash messages */
-html[data-theme="dark"] .auth-flash-notice {
-  background: rgba(91, 168, 128, 0.12);
-  border-color: rgba(91, 168, 128, 0.2);
-  color: #7FD4A5;
-}
-html[data-theme="dark"] .auth-flash-alert {
-  background: rgba(220, 120, 100, 0.1);
-  border-color: rgba(220, 120, 100, 0.2);
-  color: #E8A090;
-}
-
-/* Dark nav links */
-html[data-theme="dark"] .nav-link:hover {
-  color: #E8E4DC !important;
-}
-
-/* Dark footer links */
-html[data-theme="dark"] .footer-link:hover {
-  color: #E8E4DC !important;
-}
-html[data-theme="dark"] .social-link:hover {
-  color: #E8E4DC !important;
-}
 
 /* Dark background texture (suppress on dark) */
 html[data-theme="dark"] .theme-bg-texture {
@@ -381,25 +442,16 @@ html[data-theme="dark"] .border-lr-hover {
   border-color: rgba(255, 255, 255, 0.12);
 }
 
-/* App navbar — theme-aware backgrounds */
+/* App and learning navs: the page's own background, frosted. */
 .app-navbar {
-  background: rgba(245, 241, 235, 0.88);
-  border-bottom: 1px solid rgba(28, 24, 18, 0.04);
+  background: color-mix(in srgb, var(--color-bg) 88%, transparent);
+  border-bottom: 1px solid var(--color-border-subtle);
 }
-html[data-theme="dark"] .app-navbar {
-  background: rgba(26, 23, 16, 0.92);
-  border-bottom-color: rgba(255, 255, 255, 0.06);
-}
-
-/* Learning nav — theme-aware backgrounds */
 .learning-nav {
-  background: rgba(245, 241, 235, 0.88);
+  background: color-mix(in srgb, var(--color-bg) 88%, transparent);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border-bottom: 1px solid var(--color-border-subtle);
-}
-html[data-theme="dark"] .learning-nav {
-  background: rgba(26, 23, 16, 0.85);
 }
 
 /* --- Reduced motion: disable all animations for users who prefer it --- */
@@ -448,8 +500,8 @@ html[data-theme="dark"] .learning-nav {
   }
   .card-hover:hover {
     transform: translateY(-2px);
-    box-shadow: 0 8px 30px rgba(28, 24, 18, 0.08), 0 2px 8px rgba(28, 24, 18, 0.04);
-    border-color: rgba(28, 24, 18, 0.13);
+    box-shadow: 0 8px 30px var(--color-shade), 0 2px 8px color-mix(in srgb, var(--color-shade) 50%, transparent);
+    border-color: var(--color-faint);
   }
 
   /* --- Subtle hover lift (buttons, small elements) --- */
@@ -458,23 +510,23 @@ html[data-theme="dark"] .learning-nav {
   }
   .hover-lift:hover {
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(28, 24, 18, 0.1), 0 1px 3px rgba(28, 24, 18, 0.06);
+    box-shadow: 0 4px 12px var(--color-shade), 0 1px 3px color-mix(in srgb, var(--color-shade) 50%, transparent);
   }
 
   /* --- Primary button shadow --- */
   .btn-shadow {
-    box-shadow: 0 1px 3px rgba(28, 24, 18, 0.12), 0 1px 2px rgba(28, 24, 18, 0.06);
+    box-shadow: 0 1px 3px var(--color-shade), 0 1px 2px color-mix(in srgb, var(--color-shade) 50%, transparent);
   }
   .btn-shadow:hover {
-    box-shadow: 0 4px 12px rgba(28, 24, 18, 0.15), 0 2px 4px rgba(28, 24, 18, 0.08);
+    box-shadow: 0 4px 12px var(--color-shade), 0 2px 4px color-mix(in srgb, var(--color-shade) 50%, transparent);
   }
 
   /* --- Navbar scroll states --- */
   .nav-scrolled {
-    background: rgba(245, 241, 235, 0.88);
+    background: color-mix(in srgb, var(--color-bg) 88%, transparent);
     backdrop-filter: blur(16px) saturate(1.4);
     -webkit-backdrop-filter: blur(16px) saturate(1.4);
-    border-bottom-color: rgba(28, 24, 18, 0.06);
+    border-bottom-color: var(--color-border-subtle);
   }
 
   /* --- Dark section gradient --- */
@@ -491,7 +543,7 @@ html[data-theme="dark"] .learning-nav {
 
   /* --- Mono label style (tags, step numbers) --- */
   .label-mono {
-    font-family: 'DM Mono', monospace;
+    font-family: var(--font-mono);
     font-size: 0.56rem;
     letter-spacing: 2px;
     text-transform: uppercase;
@@ -503,91 +555,65 @@ html[data-theme="dark"] .learning-nav {
    ========================================================================== */
 
 @layer components {
-  /* --- Auth glassmorphic card --- */
+  /* --- Auth card: the shape a .card3 fills (STEP 41 §1.3) --- */
   .auth-card {
-    background: rgba(255, 255, 255, 0.5);
-    backdrop-filter: blur(50px) saturate(1.4);
-    -webkit-backdrop-filter: blur(50px) saturate(1.4);
-    border: 1px solid rgba(28, 24, 18, 0.07);
     border-radius: 20px;
-    box-shadow: 0 8px 32px rgba(28, 24, 18, 0.05), 0 1px 3px rgba(28, 24, 18, 0.03);
   }
 
-  /* --- Auth input --- */
+  /* --- Auth input: the .input3 line and ring --- */
   .auth-input {
     width: 100%;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 0.86rem;
+    font-size: 15px;
+    font-weight: 500;
     padding: 0.68rem 0.85rem;
-    border-radius: 10px;
-    border: 1px solid rgba(28, 24, 18, 0.1);
-    background: white;
-    color: #1C1812;
+    border-radius: 12px;
+    border: 0;
+    box-shadow: inset 0 0 0 1.5px var(--color-faint);
+    background: var(--color-card);
+    color: var(--color-txt);
     outline: none;
-    transition: border-color 0.2s ease, box-shadow 0.2s ease;
   }
   .auth-input::placeholder {
-    color: #A09889;
+    color: var(--color-muted);
   }
-  .auth-input:focus {
-    border-color: rgba(28, 24, 18, 0.22);
-    box-shadow: 0 0 0 3px rgba(28, 24, 18, 0.04);
+  .auth-input:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
   }
 
   /* --- Auth label --- */
   .auth-label {
     display: block;
-    font-family: 'DM Sans', sans-serif;
     font-size: 0.72rem;
     font-weight: 500;
-    color: #6D665B;
+    color: var(--color-sub);
     margin-bottom: 0.35rem;
   }
 
-  /* --- Auth submit button --- */
-  .auth-btn {
-    width: 100%;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 0.82rem;
-    font-weight: 600;
-    padding: 0.72rem 1rem;
-    border-radius: 11px;
-    border: none;
-    background: #2C261E;
-    color: #F5F1EB;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    box-shadow: 0 1px 3px rgba(28, 24, 18, 0.12), 0 1px 2px rgba(28, 24, 18, 0.06);
-  }
-  .auth-btn:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(28, 24, 18, 0.15), 0 2px 4px rgba(28, 24, 18, 0.08);
-  }
-  .auth-btn:active {
-    transform: translateY(0);
-  }
-
-  /* --- Google OAuth button --- */
+  /* --- Google OAuth button: the .btn3--secondary surface --- */
   .auth-google-btn {
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 0.6rem;
     width: 100%;
-    font-family: 'DM Sans', sans-serif;
     font-size: 0.8rem;
     font-weight: 500;
     padding: 0.65rem 1rem;
-    border-radius: 11px;
-    border: 1px solid rgba(28, 24, 18, 0.1);
-    background: white;
-    color: #1C1812;
+    border-radius: 10px;
+    border: 0;
+    background: var(--color-card);
+    color: var(--color-txt);
+    box-shadow: inset 0 0 0 1px var(--color-faint), 0 3px 0 0 var(--color-faint);
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: background-color 0.15s ease, transform 0.12s ease;
   }
   .auth-google-btn:hover {
-    border-color: rgba(28, 24, 18, 0.2);
-    box-shadow: 0 2px 8px rgba(28, 24, 18, 0.06);
+    background: var(--color-bg-2);
+  }
+  .auth-google-btn:active {
+    transform: translateY(2px);
+    box-shadow: inset 0 0 0 1px var(--color-faint), 0 1px 0 0 var(--color-faint);
   }
 
   /* --- Auth card enter animation --- */
@@ -601,17 +627,16 @@ html[data-theme="dark"] .learning-nav {
 
   /* --- Auth form errors --- */
   .auth-errors {
-    background: rgba(176, 96, 80, 0.08);
-    border: 1px solid rgba(176, 96, 80, 0.15);
+    background: var(--color-flash-alert-bg);
+    border: 1px solid var(--color-flash-alert-border);
     border-radius: 10px;
     padding: 0.7rem 0.85rem;
     margin-bottom: 1rem;
   }
   .auth-errors p {
-    font-family: 'DM Sans', sans-serif;
     font-size: 0.72rem;
     font-weight: 500;
-    color: #B06050;
+    color: var(--color-flash-alert-text);
     margin: 0;
   }
   .auth-errors ul {
@@ -619,9 +644,8 @@ html[data-theme="dark"] .learning-nav {
     padding-left: 1rem;
   }
   .auth-errors li {
-    font-family: 'DM Sans', sans-serif;
     font-size: 0.68rem;
-    color: #B06050;
+    color: var(--color-flash-alert-text);
     line-height: 1.4;
   }
 
@@ -631,20 +655,19 @@ html[data-theme="dark"] .learning-nav {
     margin: 0 auto 1rem;
     padding: 0.6rem 0.85rem;
     border-radius: 10px;
-    font-family: 'DM Sans', sans-serif;
     font-size: 0.72rem;
     font-weight: 500;
     animation: authEnter 0.35s ease both;
   }
   .auth-flash-notice {
-    background: rgba(91, 168, 128, 0.1);
-    border: 1px solid rgba(91, 168, 128, 0.18);
-    color: #3D7A5A;
+    background: var(--color-flash-notice-bg);
+    border: 1px solid var(--color-flash-notice-border);
+    color: var(--color-flash-notice-text);
   }
   .auth-flash-alert {
-    background: rgba(176, 96, 80, 0.08);
-    border: 1px solid rgba(176, 96, 80, 0.15);
-    color: #B06050;
+    background: var(--color-flash-alert-bg);
+    border: 1px solid var(--color-flash-alert-border);
+    color: var(--color-flash-alert-text);
   }
 }
 
@@ -656,14 +679,14 @@ html[data-theme="dark"] .learning-nav {
   transition: color 0.2s;
 }
 .footer-link:hover {
-  color: #1C1812 !important;
+  color: var(--color-txt) !important;
 }
 
 .social-link {
   transition: color 0.2s;
 }
 .social-link:hover {
-  color: #1C1812 !important;
+  color: var(--color-txt) !important;
 }
 
 /* --- App nav link hover --- */
@@ -671,7 +694,7 @@ html[data-theme="dark"] .learning-nav {
   transition: color 0.2s;
 }
 .nav-link:hover {
-  color: #1C1812 !important;
+  color: var(--color-txt) !important;
 }
 
 /* --- Avatar hover --- */
@@ -844,7 +867,7 @@ html[data-theme="dark"] .learning-nav {
     background: var(--color-tint-strong);
     color: var(--color-txt);
     border-bottom: 1px solid var(--color-border-subtle);
-    font-family: 'DM Sans', sans-serif;
+    font-family: var(--font-sans);
   }
   .lesson-content td {
     @apply px-4 py-3 text-sm;
@@ -867,7 +890,7 @@ html[data-theme="dark"] .learning-nav {
   .mermaid-label {
     display: block;
     padding: 0.625rem 1.25rem 0;
-    font-family: 'DM Mono', monospace;
+    font-family: var(--font-mono);
     font-size: 0.5625rem;
     font-weight: 600;
     letter-spacing: 0.12em;
@@ -901,7 +924,7 @@ html[data-theme="dark"] .learning-nav {
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    font-family: 'DM Mono', monospace;
+    font-family: var(--font-mono);
     font-size: 0.75rem;
     font-weight: 500;
     color: var(--color-muted);
@@ -916,7 +939,7 @@ html[data-theme="dark"] .learning-nav {
   }
   .mermaid-fallback__details > summary {
     cursor: pointer;
-    font-family: 'DM Mono', monospace;
+    font-family: var(--font-mono);
     font-size: 0.6875rem;
     color: var(--color-muted);
     list-style: none;
@@ -1241,7 +1264,7 @@ html[data-theme="dark"] .learning-nav {
 }
 
 .lesson-progress-counter {
-  font-family: 'DM Mono', monospace;
+  font-family: var(--font-mono);
   font-size: 0.6875rem;
   font-weight: 500;
   color: var(--color-muted);
@@ -1341,7 +1364,7 @@ html[data-theme="dark"] .learning-nav {
   gap: 0.375rem;
   padding: 0.25rem 0.75rem;
   border-radius: 9999px;
-  font-family: 'DM Mono', monospace;
+  font-family: var(--font-mono);
   font-size: 0.6875rem;
   font-weight: 600;
   letter-spacing: 0.08em;
@@ -1470,7 +1493,7 @@ html[data-theme="dark"] .lesson-section-badge--video {
 
 .lesson-video__duration {
   margin: 0.75rem 0 0;
-  font-family: 'DM Mono', monospace;
+  font-family: var(--font-mono);
   font-size: 0.8125rem;
   color: var(--color-muted);
 }
@@ -1505,7 +1528,7 @@ html[data-theme="dark"] .lesson-nav-footer {
   border: none;
   background: linear-gradient(135deg, #2C261E 0%, #3D352B 100%);
   color: #F5F1EB;
-  font-family: 'DM Sans', sans-serif;
+  font-family: var(--font-sans);
   font-size: 0.9375rem;
   font-weight: 600;
   cursor: pointer;
@@ -1532,7 +1555,7 @@ html[data-theme="dark"] .lesson-nav-footer {
   border: none;
   background: var(--color-tint-strong);
   color: var(--color-muted);
-  font-family: 'DM Sans', sans-serif;
+  font-family: var(--font-sans);
   font-size: 0.9375rem;
   font-weight: 600;
   cursor: not-allowed;
@@ -1687,7 +1710,7 @@ html[data-theme="dark"] {
 }
 
 .lesson-completion-heading {
-  font-family: 'DM Sans', sans-serif;
+  font-family: var(--font-sans);
   font-size: 1.5rem;
   font-weight: 700;
   color: var(--color-txt);
@@ -1710,7 +1733,7 @@ html[data-theme="dark"] {
 
 .lesson-completion-xp-badge {
   display: inline-block;
-  font-family: 'DM Mono', monospace;
+  font-family: var(--font-mono);
   font-size: 1.125rem;
   font-weight: 700;
   color: #B09848;
@@ -1729,7 +1752,7 @@ html[data-theme="dark"] {
 
 .lesson-completion-level-label {
   display: block;
-  font-family: 'DM Mono', monospace;
+  font-family: var(--font-mono);
   font-size: 0.625rem;
   font-weight: 600;
   color: #B09848;
@@ -1740,7 +1763,7 @@ html[data-theme="dark"] {
 
 .lesson-completion-level-number {
   display: block;
-  font-family: 'DM Mono', monospace;
+  font-family: var(--font-mono);
   font-size: 3rem;
   font-weight: 700;
   color: var(--color-txt);
@@ -1762,7 +1785,7 @@ html[data-theme="dark"] {
 }
 
 .lesson-completion-streak-count {
-  font-family: 'DM Mono', monospace;
+  font-family: var(--font-mono);
   font-size: 0.875rem;
   font-weight: 600;
   color: var(--color-sub);
@@ -1785,7 +1808,7 @@ html[data-theme="dark"] {
   gap: 0.375rem;
   padding: 0.875rem 2rem;
   border-radius: 11px;
-  font-family: 'DM Sans', sans-serif;
+  font-family: var(--font-sans);
   font-size: 0.9375rem;
   font-weight: 600;
   text-decoration: none;
@@ -2031,7 +2054,7 @@ html[data-theme="dark"] {
   padding: 0.25rem 0.625rem;
   border-radius: 8px;
   background: linear-gradient(135deg, #FEF3C7, #FDE68A);
-  font-family: 'DM Mono', monospace;
+  font-family: var(--font-mono);
   font-size: 0.6875rem;
   font-weight: 700;
   color: #B45309;
@@ -2135,7 +2158,7 @@ html[data-theme="dark"] .lesson-section-badge--challenge {
   gap: 0.5rem;
   width: 100%;
   padding: 0.875rem 1.5rem;
-  font-family: 'DM Sans', sans-serif;
+  font-family: var(--font-sans);
   font-size: 0.9375rem;
   font-weight: 700;
   color: #fff;
@@ -2482,7 +2505,7 @@ html[data-theme="dark"] .lesson-companion-body {
 .code-block-dots span:nth-child(3) { background: #A6E3A1; }
 
 .code-block-lang {
-  font-family: 'DM Mono', monospace;
+  font-family: var(--font-mono);
   font-size: 0.6875rem;
   color: #6C7086;
   text-transform: uppercase;
@@ -2498,7 +2521,7 @@ html[data-theme="dark"] .lesson-companion-body {
   color: #1E1E2E;
   border: none;
   cursor: pointer;
-  font-family: 'DM Mono', monospace;
+  font-family: var(--font-mono);
   font-size: 0.6875rem;
   font-weight: 700;
   transition: all 0.2s;
@@ -2524,7 +2547,7 @@ html[data-theme="dark"] .lesson-companion-body {
   background: #11111B;
   border-top: 1px solid #313244;
   border-radius: 0 0 11px 11px;
-  font-family: 'DM Mono', monospace;
+  font-family: var(--font-mono);
   font-size: 0.8125rem;
   color: #A6E3A1;
   white-space: pre;
@@ -2593,7 +2616,7 @@ html[data-theme="dark"] .lesson-companion-body {
 }
 
 .lesson-completion-stat-label {
-  font-family: 'DM Mono', monospace;
+  font-family: var(--font-mono);
   font-size: 0.625rem;
   color: var(--color-muted);
   text-transform: uppercase;
@@ -2698,14 +2721,14 @@ html[data-theme="dark"] .lesson-companion-body {
 }
 
 .step-info-label {
-  font-family: 'DM Sans', sans-serif;
+  font-family: var(--font-sans);
   font-size: 0.75rem;
   color: var(--color-muted);
   margin: 0;
 }
 
 .step-info-value {
-  font-family: 'DM Sans', sans-serif;
+  font-family: var(--font-sans);
   font-size: 0.75rem;
   font-weight: 600;
   color: var(--color-txt);
@@ -2869,7 +2892,7 @@ html[data-theme="dark"] .lesson-content img,
   right: 0.5rem;
   padding: 0.25rem 0.75rem;
   border-radius: 9999px;
-  font-family: 'DM Mono', monospace;
+  font-family: var(--font-mono);
   font-size: 0.75rem;
   font-weight: 700;
   background: rgba(44, 38, 30, 0.06);
@@ -2907,7 +2930,7 @@ html[data-theme="dark"] .lesson-content img,
 
 /* Step counter */
 .wizard-step-counter {
-  font-family: 'DM Mono', monospace;
+  font-family: var(--font-mono);
   font-size: 0.72rem;
   color: var(--color-muted, #887F72);
   text-align: center;
@@ -2943,7 +2966,7 @@ html[data-theme="dark"] .lesson-content img,
 
 /* Step heading */
 .wizard-heading {
-  font-family: 'DM Sans', sans-serif;
+  font-family: var(--font-sans);
   font-size: 1.75rem;
   font-weight: 700;
   color: var(--color-txt, #1C1812);
@@ -2953,7 +2976,7 @@ html[data-theme="dark"] .lesson-content img,
   letter-spacing: -0.5px;
 }
 .wizard-subtitle {
-  font-family: 'DM Sans', sans-serif;
+  font-family: var(--font-sans);
   font-size: 0.92rem;
   color: var(--color-muted, #887F72);
   text-align: center;
@@ -2999,7 +3022,7 @@ html[data-theme="dark"] .lesson-content img,
 }
 .wizard-topic-tile .tile-icon { font-size: 1.75rem; line-height: 1; }
 .wizard-topic-tile .tile-label {
-  font-family: 'DM Sans', sans-serif;
+  font-family: var(--font-sans);
   font-size: 0.72rem;
   font-weight: 600;
   color: var(--color-txt, #1C1812);
@@ -3039,7 +3062,7 @@ html[data-theme="dark"] .lesson-content img,
   border: 2px solid var(--color-faint, rgba(28,24,18,0.06));
   cursor: pointer;
   transition: border-color 200ms ease, background 200ms ease;
-  font-family: 'DM Sans', sans-serif;
+  font-family: var(--font-sans);
   font-size: 0.72rem;
   font-weight: 500;
   color: var(--color-muted, #887F72);
@@ -3058,7 +3081,7 @@ html[data-theme="dark"] .lesson-content img,
   border-radius: 11px;
   border: 2px solid var(--color-faint, rgba(28,24,18,0.06));
   background: transparent;
-  font-family: 'DM Sans', sans-serif;
+  font-family: var(--font-sans);
   font-size: 0.88rem;
   color: var(--color-txt, #1C1812);
   outline: none;
@@ -3092,13 +3115,13 @@ html[data-theme="dark"] .lesson-content img,
 .wizard-level-card .level-icon { font-size: 1.5rem; flex-shrink: 0; }
 .wizard-level-card .level-info { flex: 1; text-align: left; }
 .wizard-level-card .level-name {
-  font-family: 'DM Sans', sans-serif;
+  font-family: var(--font-sans);
   font-size: 0.95rem;
   font-weight: 700;
   color: var(--color-txt, #1C1812);
 }
 .wizard-level-card .level-desc {
-  font-family: 'DM Sans', sans-serif;
+  font-family: var(--font-sans);
   font-size: 0.78rem;
   color: var(--color-muted, #887F72);
 }
@@ -3148,7 +3171,7 @@ html[data-theme="dark"] .lesson-content img,
 }
 .wizard-goal-chip .goal-icon { font-size: 1.1rem; flex-shrink: 0; }
 .wizard-goal-chip .goal-label {
-  font-family: 'DM Sans', sans-serif;
+  font-family: var(--font-sans);
   font-size: 0.82rem;
   font-weight: 500;
   color: var(--color-txt, #1C1812);
@@ -3167,7 +3190,7 @@ html[data-theme="dark"] .lesson-content img,
   border: 2px solid var(--color-faint, rgba(28,24,18,0.06));
   background: transparent;
   cursor: pointer;
-  font-family: 'DM Sans', sans-serif;
+  font-family: var(--font-sans);
   font-size: 0.88rem;
   font-weight: 600;
   color: var(--color-txt, #1C1812);
@@ -3183,7 +3206,7 @@ html[data-theme="dark"] .lesson-content img,
   color: white;
 }
 .wizard-time-summary {
-  font-family: 'DM Mono', monospace;
+  font-family: var(--font-mono);
   font-size: 0.78rem;
   color: var(--color-accent, #2C261E);
   text-align: center;
@@ -3219,7 +3242,7 @@ html[data-theme="dark"] .lesson-content img,
   border: 2px solid var(--color-faint, rgba(28,24,18,0.06));
   background: transparent;
   cursor: pointer;
-  font-family: 'DM Sans', sans-serif;
+  font-family: var(--font-sans);
   font-size: 0.85rem;
   color: var(--color-txt, #1C1812);
   text-align: left;
@@ -3243,13 +3266,13 @@ html[data-theme="dark"] .lesson-content img,
 }
 .wizard-style-result .result-icon { font-size: 2.5rem; margin-bottom: 0.5rem; }
 .wizard-style-result .result-name {
-  font-family: 'DM Sans', sans-serif;
+  font-family: var(--font-sans);
   font-size: 1.1rem;
   font-weight: 700;
   color: var(--color-txt, #1C1812);
 }
 .wizard-style-result .result-desc {
-  font-family: 'DM Sans', sans-serif;
+  font-family: var(--font-sans);
   font-size: 0.82rem;
   color: var(--color-muted, #887F72);
   margin-top: 0.25rem;
@@ -3280,13 +3303,13 @@ html[data-theme="dark"] .lesson-content img,
 .wizard-pace-card .pace-icon { font-size: 1.5rem; flex-shrink: 0; }
 .wizard-pace-card .pace-info { flex: 1; }
 .wizard-pace-card .pace-name {
-  font-family: 'DM Sans', sans-serif;
+  font-family: var(--font-sans);
   font-size: 0.95rem;
   font-weight: 700;
   color: var(--color-txt, #1C1812);
 }
 .wizard-pace-card .pace-desc {
-  font-family: 'DM Sans', sans-serif;
+  font-family: var(--font-sans);
   font-size: 0.78rem;
   color: var(--color-muted, #887F72);
 }
@@ -3313,7 +3336,7 @@ html[data-theme="dark"] .lesson-content img,
   border: none;
   background: var(--color-accent, #2C261E);
   color: white;
-  font-family: 'DM Sans', sans-serif;
+  font-family: var(--font-sans);
   font-size: 0.95rem;
   font-weight: 600;
   cursor: pointer;
@@ -3329,7 +3352,7 @@ html[data-theme="dark"] .lesson-content img,
 .wizard-btn-back {
   background: none;
   border: none;
-  font-family: 'DM Sans', sans-serif;
+  font-family: var(--font-sans);
   font-size: 0.85rem;
   font-weight: 500;
   color: var(--color-muted, #887F72);
@@ -3474,6 +3497,9 @@ html[data-theme="dark"] .jm {
                 display: grid; place-items: center; background: var(--color-card); border: 2px solid var(--jm-ring);
                 color: var(--color-txt); transition-property: transform; transition-duration: 150ms; }
 .jm-node:hover .jm-node__dot, .jm-node--hot .jm-node__dot { transform: translateY(-1px) scale(1.06); }
+/* The journey keeps WP-37b's faces until STEP 41 PR 5b aligns it. */
+.jm-sans { font-family: 'Manrope', sans-serif; }
+.jm-mono { font-family: 'JetBrains Mono', monospace; }
 .jm-node__num { font-family: 'JetBrains Mono', monospace; font-weight: 500; font-size: 15px; line-height: 1;
                 font-variant-numeric: tabular-nums; color: var(--color-txt); }
 .jm-node--completed .jm-node__dot { background: var(--jm-line); border-color: var(--jm-line); color: var(--color-bg);

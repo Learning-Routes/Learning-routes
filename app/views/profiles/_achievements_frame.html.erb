@@ -32,13 +32,13 @@
 
       <%# Text %>
       <div style="flex:1; min-width:0;">
-        <p style="font-family:'DM Sans',sans-serif; font-size:0.8rem; font-weight:600; color:var(--color-txt); margin:0 0 0.15rem;">
+        <p style="font-size:0.8rem; font-weight:600; color:var(--color-txt); margin:0 0 0.15rem;">
           <%= ach[:title] %>
           <% if ach[:unlocked] %>
             <svg aria-hidden="true" width="12" height="12" viewBox="0 0 16 16" fill="none" style="vertical-align:-1px; margin-left:3px;"><path d="M3 8l3.5 3.5L13 5" stroke="var(--color-progress-bar)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
           <% end %>
         </p>
-        <p style="font-family:'DM Sans',sans-serif; font-size:0.68rem; color:var(--color-sub); margin:0;">
+        <p style="font-size:0.68rem; color:var(--color-sub); margin:0;">
           <%= ach[:desc] %>
         </p>
       </div>

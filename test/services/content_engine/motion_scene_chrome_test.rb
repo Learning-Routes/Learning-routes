@@ -42,7 +42,7 @@ class MotionSceneChromeTest < ActiveSupport::TestCase
   # is strictly tighter AND enforces the constraint itself: a scene that
   # changes its font stack now fails this test. This equality is deliberate,
   # not a shortcut — extending it back into a pattern would reopen the gap.
-  FONT_STACK   = "'DM Sans', 'Hiragino Sans GB', 'PingFang SC', 'Microsoft YaHei', " \
+  FONT_STACK   = "'Archivo', 'Hiragino Sans GB', 'PingFang SC', 'Microsoft YaHei', " \
                  "'Noto Sans CJK SC', system-ui, sans-serif"
   # "right" is measured in transform.tsx (Txt textAlign="right" on the tag
   # column) — it belongs here alongside the other Layout/Txt enum values, not
@@ -70,7 +70,7 @@ class MotionSceneChromeTest < ActiveSupport::TestCase
 
   # NOTE on the nested-quote trap: the font stack is a DOUBLE-quoted string
   # containing nested SINGLE-quoted font names, e.g.
-  #   "'DM Sans', 'Hiragino Sans GB', ..., system-ui, sans-serif"
+  #   "'Archivo', 'Hiragino Sans GB', ..., system-ui, sans-serif"
   # This scanner's alternation tries the single-quote branch first at each
   # starting position, but that branch only matches where the character AT
   # that position is itself a single quote. At the position of the font

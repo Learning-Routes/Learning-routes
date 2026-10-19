@@ -4,10 +4,10 @@
   <%# === Segmented progress bar === %>
   <div style="margin-bottom:2.2rem;">
     <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:0.6rem;">
-      <span style="font-family:'DM Sans',sans-serif; font-size:0.78rem; font-weight:500; color:var(--color-txt);">
+      <span style="font-size:0.78rem; font-weight:500; color:var(--color-txt);">
         <%= t("onboarding.progress", step: @step_number, total: @total_steps) %> — <span style="color:var(--color-sub);"><%= @step_label %></span>
       </span>
-      <span style="font-family:'DM Mono',monospace; font-size:0.65rem; color:var(--color-sub);">
+      <span class="font-mono" style="font-size:0.65rem; color:var(--color-sub);">
         <%= (@step_number.to_f / @total_steps * 100).round %>%
       </span>
     </div>

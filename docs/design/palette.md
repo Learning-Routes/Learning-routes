@@ -60,30 +60,43 @@ drawing.
 Light and dark values are read from `application.css`. "Used in" counts the files that reference
 the token with `var()`, by area.
 
+### Ciruela additions (STEP 41 §1.1)
+
+| token | light | dark | use |
+|---|---|---|---|
+| `--color-accent-hover` | `#57248A` | `#CAA4F5` | primary button hover |
+| `--color-accent-soft` | `#F0E5F8` | `#33224A` | level tag, selected row |
+| `--color-signal-text` | `#9A6200` | `#F8C66B` | text in the signal colour |
+| `--color-reinforce` | `#13807A` | `#46C2B6` | reinforcement (the map's dotted fan) |
+| `--color-bg-2` | `#ECE6EF` | `#1C1325` | second surface, hover fills |
+| `--color-edge` | `#DED3E3` | `#1C1325` | a card's thickness |
+| `--color-shade` | `rgba(29, 18, 38, 0.18)` | `rgba(0, 0, 0, 0.55)` | card and button shadows |
+| `--color-hi` | `rgba(255, 255, 255, 0.9)` | `rgba(255, 255, 255, 0.07)` | the lit top edge |
+
 ### Surfaces, text, accent
 
 | token | light | dark | used in (files) |
 |---|---|---|---|
-| `--color-bg` | `#F5F1EB` | `#1A1710` | other (3), landing (2), shell (navbar, footer, layouts) (2), auth (2), community (2), application.css (1), journey (1), onboarding/wizard (1), profile (1) |
-| `--color-card` | `#FEFDFB` | `#221F18` | lesson (26), other (14), community (10), onboarding/wizard (5), profile (3), exam (3), application.css (1), settings (1), auth (1) |
-| `--color-txt` | `#1C1812` | `#E8E4DC` | lesson (25), other (19), community (15), onboarding/wizard (10), auth (6), exam (6), shell (navbar, footer, layouts) (5), profile (5), application.css (1), journey (1), settings (1) |
-| `--color-sub` | `#6D665B` | `#A09889` | lesson (19), other (12), community (10), profile (5), exam (5), auth (5), onboarding/wizard (5), shell (navbar, footer, layouts) (4), application.css (1), settings (1) |
-| `--color-muted` | `#887F72` | `#8A8070` | other (19), community (16), lesson (16), shell (navbar, footer, layouts) (6), onboarding/wizard (5), exam (5), profile (4), auth (4), application.css (1), journey (1), settings (1) |
-| `--color-faint` | `#B5AD9F` | `#3D3730` | community (16), other (7), shell (navbar, footer, layouts) (4), exam (4), auth (2), application.css (1), landing (1), profile (1), onboarding/wizard (1) |
-| `--color-accent` | `#2C261E` | `#E8E4DC` | community (14), onboarding/wizard (8), other (4), lesson (4), auth (2), application.css (1), landing (1), profile (1), settings (1), shell (navbar, footer, layouts) (1) |
-| `--color-accent-text` | `#F5F1EB` | `#1A1710` | community (14), onboarding/wizard (7), lesson (7), other (6), application.css (1), landing (1), shell (navbar, footer, layouts) (1), profile (1), settings (1), auth (1) |
+| `--color-bg` | `#F5F2F6` | `#150E1C` | other (3), landing (2), shell (navbar, footer, layouts) (2), auth (2), community (2), application.css (1), journey (1), onboarding/wizard (1), profile (1) |
+| `--color-card` | `#FFFFFF` | `#241931` | lesson (26), other (14), community (10), onboarding/wizard (5), profile (3), exam (3), application.css (1), settings (1), auth (1) |
+| `--color-txt` | `#1D1226` | `#F2ECF6` | lesson (25), other (19), community (15), onboarding/wizard (10), auth (6), exam (6), shell (navbar, footer, layouts) (5), profile (5), application.css (1), journey (1), settings (1) |
+| `--color-sub` | `#4A3D54` | `#CDBFD8` | lesson (19), other (12), community (10), profile (5), exam (5), auth (5), onboarding/wizard (5), shell (navbar, footer, layouts) (4), application.css (1), settings (1) |
+| `--color-muted` | `#73667C` | `#9C8BAA` | other (19), community (16), lesson (16), shell (navbar, footer, layouts) (6), onboarding/wizard (5), exam (5), profile (4), auth (4), application.css (1), journey (1), settings (1) |
+| `--color-faint` | `#D1C5D7` | `#44344F` | community (16), other (7), shell (navbar, footer, layouts) (4), exam (4), auth (2), application.css (1), landing (1), profile (1), onboarding/wizard (1) |
+| `--color-accent` | `#6A2EA0` | `#B98AF0` | community (14), onboarding/wizard (8), other (4), lesson (4), auth (2), application.css (1), landing (1), profile (1), settings (1), shell (navbar, footer, layouts) (1) |
+| `--color-accent-text` | `#FFFFFF` | `#150E1C` | community (14), onboarding/wizard (7), lesson (7), other (6), application.css (1), landing (1), shell (navbar, footer, layouts) (1), profile (1), settings (1), auth (1) |
 | `--color-dark` | `#1C1912` | `same` | unused |
 | `--color-dark-text` | `#E8E4DC` | `same` | application.css (1) |
 | `--color-dark-sub` | `#908880` | `same` | unused |
 | `--color-dark-muted` | `#605848` | `same` | application.css (1) |
-| `--color-link` | `#8B6D28` | `#D4A84B` | auth (3), application.css (1), community (1), other (1), settings (1) |
+| `--color-link` | `#57248A` | `#CAA4F5` | auth (3), application.css (1), community (1), other (1), settings (1) |
 | `--color-card-glass` | `rgba(255, 255, 255, 0.6)` | `rgba(34, 31, 24, 0.75)` | community (1), other (1), profile (1), settings (1) |
-| `--color-border-subtle` | `rgba(28, 24, 18, 0.06)` | `rgba(255, 255, 255, 0.06)` | lesson (24), other (17), onboarding/wizard (6), exam (6), profile (5), community (2), landing (2), shell (navbar, footer, layouts) (2), application.css (1), settings (1) |
+| `--color-border-subtle` | `#E4DCE8` | `#33263F` | lesson (24), other (17), onboarding/wizard (6), exam (6), profile (5), community (2), landing (2), shell (navbar, footer, layouts) (2), application.css (1), settings (1) |
 | `--color-tint` | `rgba(28, 24, 18, 0.04)` | `rgba(255, 255, 255, 0.06)` | other (13), lesson (9), community (5), profile (2), application.css (1), exam (1) |
 | `--color-tint-strong` | `rgba(28, 24, 18, 0.08)` | `rgba(255, 255, 255, 0.1)` | other (11), lesson (10), exam (7), profile (3), application.css (1), onboarding/wizard (1) |
-| `--color-progress-bar` | `#5BA880` | `#5BA880` | profile (3), onboarding/wizard (3), shell (navbar, footer, layouts) (3), community (2), application.css (1), other (1), landing (1) |
+| `--color-progress-bar` | `#6A2EA0` | `#B98AF0` | profile (3), onboarding/wizard (3), shell (navbar, footer, layouts) (3), community (2), application.css (1), other (1), landing (1) |
 | `--color-faint-text` | `#B5AD9F` | `#6A6050` | unused |
-| `--color-progress-track` | `rgba(28, 24, 18, 0.06)` | `rgba(255, 255, 255, 0.06)` | shell (navbar, footer, layouts) (1), lesson (1) |
+| `--color-progress-track` | `#ECE6EF` | `#1C1325` | shell (navbar, footer, layouts) (1), lesson (1) |
 | `--color-tint-hover` | `rgba(28, 24, 18, 0.14)` | `rgba(255, 255, 255, 0.16)` | application.css (1), other (1) |
 
 ### Level accents (NV1/NV2/NV3)
@@ -139,7 +152,7 @@ the token with `var()`, by area.
 
 | token | light | dark | used in (files) |
 |---|---|---|---|
-| `--color-highlight` | `#B09848` | `#D4B65E` | profile (3), community (2), landing (2), other (1), shell (navbar, footer, layouts) (1) |
+| `--color-highlight` | `#E79A0F` | `#F5B23C` | profile (3), community (2), landing (2), other (1), shell (navbar, footer, layouts) (1) |
 | `--color-highlight-violet` | `#8B5CF6` | `#A78BFA` | lesson (13), other (7), exam (4), shell (navbar, footer, layouts) (1) |
 
 ### Content-type badges

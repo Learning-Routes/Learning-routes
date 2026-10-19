@@ -311,8 +311,8 @@ class VideoLessonTest < ApplicationSystemTestCase
   # under test; pinning them here would fail a palette change in the wrong place, with
   # a message about themes not settling instead of about contrast.
   BODY_BACKGROUND = {
-    "dark" => "rgb(26, 23, 16)",
-    "light" => "rgb(245, 241, 235)"
+    "dark" => "rgb(21, 14, 28)",
+    "light" => "rgb(245, 242, 246)"
   }.freeze
 
   # The theme is normally stamped by the inline script in layouts/learning.html.erb

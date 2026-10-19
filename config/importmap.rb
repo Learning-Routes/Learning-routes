@@ -14,6 +14,7 @@ pin "journey_camera", to: "lib/journey_camera.js"
 # by test/javascript/journey_map_paths_test.rb and journey_terrain_test.rb.
 pin "journey_map_paths", to: "lib/journey_map_paths.js"
 pin "journey_terrain", to: "lib/journey_terrain.js"
+pin "card_tilt", to: "lib/card_tilt.js"
 
 # Motion Canvas runtime — built by bin/motion-build, committed because the image
 # has no node. Lazy-imported (the mermaid_diagram_controller.js:13 idiom,

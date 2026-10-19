@@ -29,7 +29,7 @@ class NoRawHtmlInViewsTest < ActiveSupport::TestCase
   end
 
   test "svg_icon returns a known icon and refuses an unknown name" do
-    helper = Object.new.extend(ApplicationHelper)
+    helper = ApplicationController.helpers
 
     assert helper.svg_icon(:info).html_safe?
     assert_match(/\A<svg /, helper.svg_icon("info"))

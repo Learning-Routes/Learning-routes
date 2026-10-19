@@ -262,7 +262,7 @@
     <%# ── AI interaction buttons (collapsed at bottom) ── %>
     <div style="padding:0 1rem;">
       <div style="border-top:1px solid var(--color-border-subtle); padding-top:1.5rem; margin-top:1rem;">
-        <p style="font-family:'DM Mono',monospace; font-size:0.625rem; font-weight:600; color:var(--color-muted); text-transform:uppercase; letter-spacing:0.1em; margin:0 0 0.75rem;"><%= t('learning_engine.lesson.ai_tools') %></p>
+        <p class="font-mono" style="font-size:0.625rem; font-weight:600; color:var(--color-muted); text-transform:uppercase; letter-spacing:0.1em; margin:0 0 0.75rem;"><%= t('learning_engine.lesson.ai_tools') %></p>
         <%= render "ai_buttons" %>
       </div>
       <div id="ai_supplementary_<%= @step.id %>" class="lesson-ai-supplementary"></div>

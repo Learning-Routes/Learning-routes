@@ -44,17 +44,17 @@ export default class extends Controller {
       <input type="hidden" name="authenticity_token" value="${csrfToken}">
       <textarea name="comment[body]" rows="3"
         style="width:100%; box-sizing:border-box; padding:0.6rem 0.8rem; border-radius:11px; border:1px solid var(--color-faint, rgba(28,24,18,0.1));
-               font-family:'DM Sans',sans-serif; font-size:0.82rem; color:var(--color-txt, #1C1812); background:var(--color-bg, #F5F1EB);
+               font-family:var(--font-sans); font-size:0.82rem; color:var(--color-txt, #1C1812); background:var(--color-bg, #F5F1EB);
                resize:none; outline:none; margin-bottom:0.4rem;">${body.textContent.trim()}</textarea>
       <div style="display:flex; gap:0.4rem; justify-content:flex-end;">
         <button type="button" data-action="click->comment-edit#cancel" data-comment-id="${commentId}"
                 style="padding:0.4rem 0.8rem; border-radius:11px; border:1px solid var(--color-faint, rgba(28,24,18,0.1)); background:transparent;
-                       font-family:'DM Sans',sans-serif; font-size:0.75rem; color:var(--color-sub, #6D665B); cursor:pointer;">
+                       font-family:var(--font-sans); font-size:0.75rem; color:var(--color-sub, #6D665B); cursor:pointer;">
           ${this.cancelTextValue}
         </button>
         <button type="submit"
                 style="padding:0.4rem 0.8rem; border-radius:11px; border:none; background:var(--color-accent, #2C261E);
-                       font-family:'DM Sans',sans-serif; font-size:0.75rem; font-weight:500; color:var(--color-accent-text, #F5F1EB); cursor:pointer;">
+                       font-family:var(--font-sans); font-size:0.75rem; font-weight:500; color:var(--color-accent-text, #F5F1EB); cursor:pointer;">
           ${this.saveTextValue}
         </button>
       </div>

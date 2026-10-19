@@ -33,22 +33,16 @@
 
       <% if current_user %>
         <%= link_to t("nav.profile"), main_app.profile_path,
-            class: "inline-flex items-center justify-center font-sans text-[0.8rem] font-semibold
-                    bg-accent text-accent-text px-[1.15rem] py-[0.48rem] rounded-btn btn-shadow
-                    hover-lift tracking-[-0.2px]" %>
+            class: "btn3 btn3--sm" %>
       <% else %>
         <%= link_to t("nav.sign_up"), core.sign_up_path,
-            class: "inline-flex items-center justify-center font-sans text-[0.8rem] font-semibold
-                    bg-accent text-accent-text px-[1.15rem] py-[0.48rem] rounded-btn btn-shadow
-                    hover-lift tracking-[-0.2px]" %>
+            class: "btn3 btn3--sm" %>
       <% end %>
     </div>
 
     <%# === Mobile hamburger === %>
     <button data-action="navbar#toggleMenu" data-navbar-target="menuBtn" class="md:hidden p-2 -mr-2 text-txt" aria-label="<%= t("layout.menu_aria") %>" aria-expanded="false" aria-controls="navbar-mobile-menu">
-      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true">
-        <path d="M3 6h14M3 10h14M3 14h14"/>
-      </svg>
+      <%= svg_icon(:menu, size: 20) %>
     </button>
   </div>
 
@@ -86,12 +80,10 @@
       <div class="pt-2">
         <% if current_user %>
           <%= link_to t("nav.profile"), main_app.profile_path,
-              class: "inline-flex items-center justify-center font-sans text-[0.85rem] font-semibold
-                      bg-accent text-accent-text px-5 py-2.5 rounded-btn btn-shadow w-full" %>
+              class: "btn3 w-full" %>
         <% else %>
           <%= link_to t("nav.sign_up"), core.sign_up_path,
-              class: "inline-flex items-center justify-center font-sans text-[0.85rem] font-semibold
-                      bg-accent text-accent-text px-5 py-2.5 rounded-btn btn-shadow w-full" %>
+              class: "btn3 w-full" %>
         <% end %>
       </div>
     </div>

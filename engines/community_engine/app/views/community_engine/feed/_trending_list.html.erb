@@ -9,15 +9,15 @@
           <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.5rem;">
             <div style="width:24px; height:24px; border-radius:50%; background:var(--color-accent);
                         display:flex; align-items:center; justify-content:center; color:var(--color-accent-text);
-                        font-family:'DM Sans',sans-serif; font-size:0.5rem; font-weight:700; flex-shrink:0;">
+                        font-size:0.5rem; font-weight:700; flex-shrink:0;">
               <%= shared_route.user&.name.to_s.first&.upcase || "?" %>
             </div>
             <div style="flex:1; min-width:0;">
-              <h3 style="font-family:'DM Sans',sans-serif; font-weight:600; font-size:0.85rem; color:var(--color-txt); margin:0;
+              <h3 style="font-weight:600; font-size:0.85rem; color:var(--color-txt); margin:0;
                          overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
                 <%= route.localized_topic %>
               </h3>
-              <p style="font-family:'DM Mono',monospace; font-size:0.6rem; color:var(--color-muted); margin:0;">
+              <p class="font-mono" style="font-size:0.6rem; color:var(--color-muted); margin:0;">
                 <%= shared_route.user&.name || t("community_engine.comments.deleted_user") %> · <%= route.localized_subject_area %>
               </p>
             </div>
@@ -25,7 +25,7 @@
 
           <%# Description preview %>
           <% if shared_route.description.present? %>
-            <p style="font-family:'DM Sans',sans-serif; font-size:0.72rem; color:var(--color-sub); line-height:1.45; margin:0 0 0.5rem;
+            <p style="font-size:0.72rem; color:var(--color-sub); line-height:1.45; margin:0 0 0.5rem;
                       display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;">
               <%= shared_route.description %>
             </p>
@@ -37,7 +37,7 @@
           </div>
 
           <%# Stats + actions row %>
-          <div style="display:flex; align-items:center; gap:0.75rem; font-family:'DM Mono',monospace; font-size:0.6rem; color:var(--color-muted);">
+          <div class="font-mono" style="display:flex; align-items:center; gap:0.75rem; font-size:0.6rem; color:var(--color-muted);">
             <span style="display:inline-flex; align-items:center; gap:0.2rem;">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
               <%= shared_route.likes_count %>
@@ -54,7 +54,7 @@
             <div style="margin-left:auto; display:flex; gap:0.35rem;">
               <%= link_to community_engine.shared_route_path(shared_route.share_token),
                     style: "padding:0.35rem 0.7rem; border-radius:8px; background:var(--color-accent);
-                           color:var(--color-accent-text); font-family:'DM Sans',sans-serif; font-size:0.68rem; font-weight:500;
+                           color:var(--color-accent-text); font-size:0.68rem; font-weight:500;
                            text-decoration:none; transition:opacity 0.15s;" do %>
                 <%= t("community_engine.feed.trending.view_route") %>
               <% end %>
@@ -64,7 +64,7 @@
                       method: :post,
                       style: "padding:0.35rem 0.7rem; border-radius:8px;
                              border:1px solid var(--color-faint); background:transparent; color:var(--color-txt);
-                             font-family:'DM Sans',sans-serif; font-size:0.68rem; font-weight:500; cursor:pointer; transition:all 0.15s;" do %>
+                             font-size:0.68rem; font-weight:500; cursor:pointer; transition:all 0.15s;" do %>
                   <%= t("community_engine.feed.trending.clone_route") %>
                 <% end %>
               <% end %>
@@ -82,10 +82,10 @@
           <path d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
       </div>
-      <p style="font-family:'DM Sans',sans-serif; font-size:0.82rem; font-weight:600; color:var(--color-txt); margin:0 0 0.2rem;">
+      <p style="font-size:0.82rem; font-weight:600; color:var(--color-txt); margin:0 0 0.2rem;">
         <%= t("community_engine.feed.trending.empty_title") %>
       </p>
-      <p style="font-family:'DM Sans',sans-serif; font-size:0.72rem; color:var(--color-muted); margin:0; max-width:300px; margin-left:auto; margin-right:auto; line-height:1.45;">
+      <p style="font-size:0.72rem; color:var(--color-muted); margin:0; max-width:300px; margin-left:auto; margin-right:auto; line-height:1.45;">
         <%= t("community_engine.feed.trending.empty_subtitle") %>
       </p>
     </div>
