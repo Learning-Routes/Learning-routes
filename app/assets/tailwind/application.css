@@ -11,15 +11,15 @@
   --font-sans: 'DM Sans', sans-serif;
   --font-mono: 'DM Mono', monospace;
 
-  /* --- Colors: Light theme (warm cream) --- */
-  --color-bg: #F5F1EB;
-  --color-card: #FEFDFB;
-  --color-txt: #1C1812;
-  --color-sub: #6D665B;
-  --color-muted: #887F72;
-  --color-faint: #B5AD9F;
-  --color-accent: #2C261E;
-  --color-accent-text: #F5F1EB;
+  /* --- Colors: Light theme (Ciruela, STEP 41 §1.1) --- */
+  --color-bg: #F5F2F6;
+  --color-card: #FFFFFF;
+  --color-txt: #1D1226;
+  --color-sub: #4A3D54;
+  --color-muted: #73667C;
+  --color-faint: #D1C5D7;
+  --color-accent: #6A2EA0;
+  --color-accent-text: #FFFFFF;
 
   /* --- Colors: Dark card (route viz, product preview) --- */
   --color-dark: #1C1912;
@@ -28,7 +28,7 @@
   --color-dark-muted: #605848;
 
   /* --- Colors: Auth pages --- */
-  --color-link: #8B6D28;
+  --color-link: #57248A;
 
   /* --- Colors: Node/route types --- */
   --color-node-mm: #B0A898;
@@ -86,17 +86,26 @@
   /* Highlights (STEP 38 §3): gold for stars, streaks and rank; violet for the
      lesson and exam gradients and the interactive-block tags. Neither is a
      level and neither is a verdict. */
-  --color-highlight: #B09848;
+  --color-highlight: #E79A0F;
   --color-highlight-violet: #8B5CF6;
   /* The code playground is a dark editor in both themes, on purpose. */
   --color-code-bg: #1E1E1E;
   --color-code-text: #D4D4D4;
+  /* Ciruela additions (STEP 41 §1.1); the dark values are in the dark block. */
+  --color-accent-hover: #57248A;
+  --color-accent-soft: #F0E5F8;
+  --color-signal-text: #9A6200;
+  --color-reinforce: #13807A;
+  --color-bg-2: #ECE6EF;
+  --color-edge: #DED3E3;
+  --color-shade: rgba(29, 18, 38, 0.18);
+  --color-hi: rgba(255, 255, 255, 0.9);
 }
 
 /* Semi-transparent theme tokens (glassmorphic cards, subtle borders, tints) */
 :root {
   --color-card-glass: rgba(255, 255, 255, 0.6);
-  --color-border-subtle: rgba(28, 24, 18, 0.06);
+  --color-border-subtle: #E4DCE8;
   --color-tint: rgba(28, 24, 18, 0.04);
   --color-tint-strong: rgba(28, 24, 18, 0.08);
   --color-flash-notice-bg: rgba(91, 168, 128, 0.1);
@@ -111,7 +120,7 @@
   --color-status-completed-text: #4A7A9E;
   --color-status-paused-bg: rgba(176, 152, 72, 0.1);
   --color-status-paused-text: #8B6D28;
-  --color-progress-bar: #5BA880;
+  --color-progress-bar: #6A2EA0;
   --color-faint-text: #B5AD9F;
   /* Step type badge colors (learning pages) */
   --color-badge-lesson-bg: rgba(59, 130, 246, 0.1);
@@ -123,7 +132,7 @@
   --color-badge-review-bg: rgba(139, 92, 246, 0.1);
   --color-badge-review-text: #7C3AED;
   /* Progress bar track */
-  --color-progress-track: rgba(28, 24, 18, 0.06);
+  --color-progress-track: #ECE6EF;
   /* Journey page contrast (for SVG overlays) */
   --journey-contrast-rgb: 28, 24, 18;
   --journey-alpha-mult: 5;
@@ -197,20 +206,28 @@ html[data-theme="dark"] {
   --color-node-nv1: #7CC4A0;
   --color-node-nv2: #8DB6E0;
   --color-node-nv3: #B2A8E6;
-  --color-highlight: #D4B65E;
+  --color-highlight: #F5B23C;
   --color-highlight-violet: #A78BFA;
-  --color-bg: #1A1710;
-  --color-card: #221F18;
-  --color-txt: #E8E4DC;
-  --color-sub: #A09889;
-  --color-muted: #8A8070;
-  --color-faint: #3D3730;
-  --color-accent: #E8E4DC;
-  --color-accent-text: #1A1710;
-  --color-link: #D4A84B;
+  --color-bg: #150E1C;
+  --color-card: #241931;
+  --color-txt: #F2ECF6;
+  --color-sub: #CDBFD8;
+  --color-muted: #9C8BAA;
+  --color-faint: #44344F;
+  --color-accent: #B98AF0;
+  --color-accent-text: #150E1C;
+  --color-link: #CAA4F5;
+  --color-accent-hover: #CAA4F5;
+  --color-accent-soft: #33224A;
+  --color-signal-text: #F8C66B;
+  --color-reinforce: #46C2B6;
+  --color-bg-2: #1C1325;
+  --color-edge: #1C1325;
+  --color-shade: rgba(0, 0, 0, 0.55);
+  --color-hi: rgba(255, 255, 255, 0.07);
 
   --color-card-glass: rgba(34, 31, 24, 0.75);
-  --color-border-subtle: rgba(255, 255, 255, 0.06);
+  --color-border-subtle: #33263F;
   --color-tint: rgba(255, 255, 255, 0.06);
   --color-tint-strong: rgba(255, 255, 255, 0.1);
   --color-flash-notice-bg: rgba(91, 168, 128, 0.12);
@@ -225,7 +242,7 @@ html[data-theme="dark"] {
   --color-status-completed-text: #8AB8D8;
   --color-status-paused-bg: rgba(176, 152, 72, 0.15);
   --color-status-paused-text: #D4B85C;
-  --color-progress-bar: #5BA880;
+  --color-progress-bar: #B98AF0;
   --color-faint-text: #6A6050;
   --color-badge-lesson-bg: rgba(59, 130, 246, 0.15);
   --color-badge-lesson-text: #93c5fd;
@@ -235,7 +252,7 @@ html[data-theme="dark"] {
   --color-badge-assessment-text: #fdba74;
   --color-badge-review-bg: rgba(139, 92, 246, 0.15);
   --color-badge-review-text: #c4b5fd;
-  --color-progress-track: rgba(255, 255, 255, 0.06);
+  --color-progress-track: #1C1325;
   --journey-contrast-rgb: 255, 255, 255;
   --journey-alpha-mult: 1;
   --journey-opacity-mult: 1;
