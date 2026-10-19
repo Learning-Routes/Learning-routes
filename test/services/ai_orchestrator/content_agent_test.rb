@@ -40,8 +40,10 @@ class AiOrchestrator::ContentAgentTest < ActiveSupport::TestCase
     assert_in_delta 0.75, AiOrchestrator::ContentAgent::TEMPERATURE
   end
 
-  test "DEFAULT_PARAMS includes max_completion_tokens" do
-    assert_equal({ max_completion_tokens: 8192 }, AiOrchestrator::ContentAgent::DEFAULT_PARAMS)
+  test "the request caps output at 8192 tokens" do
+    payload = AiOrchestrator::ContentAgent.new.chat.render
+
+    assert_equal 8192, payload[:max_completion_tokens]
   end
 
   test "instructions mention educational content" do
@@ -78,7 +80,7 @@ class AiOrchestrator::ContentAgentTest < ActiveSupport::TestCase
 
   test "accepts additional params" do
     agent = AiOrchestrator::ContentAgent.new(params: { top_p: 0.9 })
-    assert_instance_of RubyLLM::Chat, agent.chat
+    assert_in_delta 0.9, agent.chat.render[:top_p]
   end
 
   test "delegates messages to chat" do
@@ -90,10 +92,10 @@ class AiOrchestrator::ContentAgentTest < ActiveSupport::TestCase
   test "aggregates every provider response in a tool loop" do
     agent = AiOrchestrator::ContentAgent.new
     messages = [
-      OpenStruct.new(role: :user, input_tokens: nil, output_tokens: nil),
-      OpenStruct.new(role: :assistant, input_tokens: 100, output_tokens: 20),
-      OpenStruct.new(role: :tool, input_tokens: nil, output_tokens: nil),
-      OpenStruct.new(role: :assistant, input_tokens: 140, output_tokens: 30)
+      OpenStruct.new(role: :user, tokens: RubyLLM::Tokens.new),
+      OpenStruct.new(role: :assistant, tokens: RubyLLM::Tokens.new(input: 100, output: 20)),
+      OpenStruct.new(role: :tool, tokens: RubyLLM::Tokens.new),
+      OpenStruct.new(role: :assistant, tokens: RubyLLM::Tokens.new(input: 140, output: 30))
     ]
     agent.chat.define_singleton_method(:messages) { messages }
 

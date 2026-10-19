@@ -169,11 +169,8 @@ module AiOrchestrator
       chat.with_schema(schema) if schema
 
       chat.with_temperature(merged_params[:temperature]) if merged_params[:temperature]
-      if merged_params[:max_tokens]
-        # GPT-5.x models require max_completion_tokens; GPT-4.x supports max_tokens
-        token_key = @model.start_with?("gpt-5") ? :max_completion_tokens : :max_tokens
-        chat.with_params(token_key => merged_params[:max_tokens])
-      end
+      # ruby_llm names the field per provider: max_completion_tokens on OpenAI, max_tokens elsewhere.
+      chat.with_max_output_tokens(merged_params[:max_tokens]) if merged_params[:max_tokens]
 
       if system_prompt.present?
         chat.with_instructions(system_prompt)

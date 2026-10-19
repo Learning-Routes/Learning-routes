@@ -15,7 +15,7 @@ module AiOrchestrator
 
     MODEL = "gpt-5.2"
     TEMPERATURE = 0.75
-    DEFAULT_PARAMS = { max_completion_tokens: 8192 }.freeze
+    MAX_OUTPUT_TOKENS = 8192
 
     INSTRUCTIONS = <<~PROMPT
       You are a world-class educational content designer with access to tools.
@@ -47,17 +47,18 @@ module AiOrchestrator
     # Build a new ContentAgent wrapping a RubyLLM::Chat with all tools wired up.
     #
     # @param model [String] override model (default: gpt-5.2)
-    # @param params [Hash] additional model params
-    # @param on_tool_call [Proc] optional callback invoked on each tool call
+    # @param params [Hash] additional provider options
+    # @param on_tool_call [Proc] optional callback invoked before each tool call
     def initialize(model: MODEL, params: {}, on_tool_call: nil)
       @chat = RubyLLM
         .chat(model: model)
         .with_instructions(INSTRUCTIONS)
         .with_temperature(TEMPERATURE)
         .with_tools(*TOOL_CLASSES)
-        .with_params(**DEFAULT_PARAMS.merge(params))
+        .with_max_output_tokens(MAX_OUTPUT_TOKENS)
+        .with_provider_options(params)
 
-      @chat.on_tool_call { |call| on_tool_call.call(call) } if on_tool_call
+      @chat.before_tool_call { |call| on_tool_call.call(call) } if on_tool_call
     end
 
     # Send a prompt to the agent and return the response message.
