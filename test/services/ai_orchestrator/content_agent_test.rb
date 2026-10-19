@@ -99,6 +99,6 @@ class AiOrchestrator::ContentAgentTest < ActiveSupport::TestCase
     ]
     agent.chat.define_singleton_method(:messages) { messages }
 
-    assert_equal [240, 50, 0], agent.usage_totals
+    assert_equal [240, 50, 0, 0], agent.usage_totals
   end
 end

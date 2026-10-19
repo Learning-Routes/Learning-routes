@@ -190,6 +190,7 @@ module AiOrchestrator
         model: @model,
         input_tokens: response.tokens.input,
         cached_tokens: response.tokens.cache_read.to_i,
+        cache_write_tokens: response.tokens.cache_write.to_i,
         output_tokens: response.tokens.output,
         latency_ms: elapsed_ms
       }

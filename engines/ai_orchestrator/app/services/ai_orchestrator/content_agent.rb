@@ -77,13 +77,14 @@ module AiOrchestrator
 
     def usage_totals
       provider_messages = messages.select { |message| message.role.to_s == "assistant" }
-      return [nil, nil, nil] if provider_messages.empty? || provider_messages.any? do |message|
+      return [nil, nil, nil, nil] if provider_messages.empty? || provider_messages.any? do |message|
         message.tokens.input.nil? || message.tokens.output.nil?
       end
 
-      # cache_read is nil from providers without a prompt cache
+      # cache_read and cache_write are nil from providers without a prompt cache
       [provider_messages.sum { |message| message.tokens.input }, provider_messages.sum { |message| message.tokens.output },
-       provider_messages.sum { |message| message.tokens.cache_read.to_i }]
+       provider_messages.sum { |message| message.tokens.cache_read.to_i },
+       provider_messages.sum { |message| message.tokens.cache_write.to_i }]
     end
 
     # Access the model info.

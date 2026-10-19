@@ -36,7 +36,7 @@ module AiOrchestrator
       agent = ContentAgent.new(model: "gpt-4.1-mini")
       agent.ask("hi")
 
-      assert_equal [200, 100, 800], agent.usage_totals
+      assert_equal [200, 100, 800, 0], agent.usage_totals
     end
 
     test "LessonAssistantAgent aggregates the cached tokens" do
@@ -44,7 +44,7 @@ module AiOrchestrator
       chat.ask("hi")
       agent = ContentEngine::LessonAssistantAgent.allocate
 
-      assert_equal [200, 100, 800], agent.send(:aggregate_usage, chat.messages)
+      assert_equal [200, 100, 800, 0], agent.send(:aggregate_usage, chat.messages)
     end
 
     test "the interaction records cached tokens and prices them at the cached rate" do
