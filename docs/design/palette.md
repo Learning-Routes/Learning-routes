@@ -60,6 +60,19 @@ drawing.
 Light and dark values are read from `application.css`. "Used in" counts the files that reference
 the token with `var()`, by area.
 
+### The owner's answers on contrast (PR #87, 19 October)
+
+Checked against the Ciruela surfaces (text 4.5:1, UI parts 3:1), eleven colours he had not named
+fell short in light. He took a same-hue proposal for each, light theme only: badge-assessment-text,
+badge-exercise-text, due-link, positive, warning, negative, flash-alert-text, section-audio-active,
+status-completed-text, status-paused-text and step-completed-icon (the last a UI part, 3:1).
+`--color-reinforce` light is `#127C76` (5.04:1 on card, 4.54:1 on bg). All of them, and the dark
+values, are held on card and bg by `test/config/token_contrast_test.rb`.
+
+`--color-highlight` stays `#E79A0F` (2.33:1 on card in light): it always sits next to its words
+(Estás aquí, the streak count), so colour is never the only cue. That is why the contrast test
+leaves it out.
+
 ### Ciruela additions (STEP 41 §1.1)
 
 | token | light | dark | use |
@@ -67,7 +80,7 @@ the token with `var()`, by area.
 | `--color-accent-hover` | `#57248A` | `#CAA4F5` | primary button hover |
 | `--color-accent-soft` | `#F0E5F8` | `#33224A` | level tag, selected row |
 | `--color-signal-text` | `#9A6200` | `#F8C66B` | text in the signal colour |
-| `--color-reinforce` | `#13807A` | `#46C2B6` | reinforcement (the map's dotted fan) |
+| `--color-reinforce` | `#127C76` | `#46C2B6` | reinforcement (the map's dotted fan) |
 | `--color-bg-2` | `#ECE6EF` | `#1C1325` | second surface, hover fills |
 | `--color-edge` | `#DED3E3` | `#1C1325` | a card's thickness |
 | `--color-shade` | `rgba(29, 18, 38, 0.18)` | `rgba(0, 0, 0, 0.55)` | card and button shadows |
@@ -116,15 +129,15 @@ the token with `var()`, by area.
 | `--color-flash-notice-text` | `#3D7A5A` | `#7BC8A0` | shell (navbar, footer, layouts) (3), auth (1), journey (1), onboarding/wizard (1) |
 | `--color-flash-alert-bg` | `rgba(176, 96, 80, 0.08)` | `rgba(176, 96, 80, 0.12)` | lesson (4), onboarding/wizard (4), shell (navbar, footer, layouts) (3), auth (3), journey (1), settings (1), exam (1), community (1) |
 | `--color-flash-alert-border` | `rgba(176, 96, 80, 0.15)` | `rgba(176, 96, 80, 0.25)` | lesson (4), onboarding/wizard (4), shell (navbar, footer, layouts) (3), auth (3), journey (1), settings (1), exam (1), community (1) |
-| `--color-flash-alert-text` | `#B06050` | `#D4887A` | onboarding/wizard (6), lesson (3), shell (navbar, footer, layouts) (3), auth (3), other (2), profile (2), exam (2), journey (1), settings (1), community (1) |
+| `--color-flash-alert-text` | `#A65A4B` | `#D4887A` | onboarding/wizard (6), lesson (3), shell (navbar, footer, layouts) (3), auth (3), other (2), profile (2), exam (2), journey (1), settings (1), community (1) |
 | `--color-status-active-bg` | `rgba(91, 168, 128, 0.1)` | `rgba(91, 168, 128, 0.15)` | other (1), profile (1) |
 | `--color-status-active-text` | `#3D7A5A` | `#7BC8A0` | other (1), profile (1) |
 | `--color-status-completed-bg` | `rgba(110, 155, 200, 0.1)` | `rgba(110, 155, 200, 0.15)` | other (1), profile (1) |
-| `--color-status-completed-text` | `#4A7A9E` | `#8AB8D8` | other (1), profile (1) |
+| `--color-status-completed-text` | `#467395` | `#8AB8D8` | other (1), profile (1) |
 | `--color-status-paused-bg` | `rgba(176, 152, 72, 0.1)` | `rgba(176, 152, 72, 0.15)` | profile (2), other (1) |
-| `--color-status-paused-text` | `#8B6D28` | `#D4B85C` | profile (2), other (1) |
+| `--color-status-paused-text` | `#876A27` | `#D4B85C` | profile (2), other (1) |
 | `--color-step-completed-bg` | `rgba(34, 197, 94, 0.1)` | `rgba(34, 197, 94, 0.15)` | unused |
-| `--color-step-completed-icon` | `#16a34a` | `#4ade80` | unused |
+| `--color-step-completed-icon` | `#16A149` | `#4ade80` | unused |
 | `--color-step-progress-bg` | `rgba(99, 102, 241, 0.1)` | `rgba(99, 102, 241, 0.15)` | unused |
 | `--color-step-progress-icon` | `#4F46E5` | `#818cf8` | unused |
 | `--color-step-available-bg` | `rgba(28, 24, 18, 0.06)` | `rgba(255, 255, 255, 0.06)` | unused |
@@ -134,14 +147,14 @@ the token with `var()`, by area.
 | `--color-due-border` | `rgba(217, 119, 6, 0.15)` | `rgba(217, 119, 6, 0.2)` | unused |
 | `--color-due-heading` | `#92400E` | `#FCD34D` | journey (1) |
 | `--color-due-text` | `#B45309` | `#FBBF24` | unused |
-| `--color-due-link` | `#D97706` | `#F59E0B` | unused |
-| `--color-positive` | `#16A34A` | `#4ADE80` | lesson (9), other (2), exam (2), community (1) |
+| `--color-due-link` | `#A75C05` | `#F59E0B` | unused |
+| `--color-positive` | `#117F3A` | `#4ADE80` | lesson (9), other (2), exam (2), community (1) |
 | `--color-positive-bg` | `rgba(22, 163, 74, 0.08)` | `rgba(74, 222, 128, 0.12)` | other (1), exam (1), auth (1) |
 | `--color-positive-border` | `rgba(22, 163, 74, 0.18)` | `rgba(74, 222, 128, 0.22)` | exam (1), other (1) |
-| `--color-warning` | `#CA8A04` | `#FACC15` | lesson (4), exam (2), other (2), shell (navbar, footer, layouts) (1) |
+| `--color-warning` | `#956603` | `#FACC15` | lesson (4), exam (2), other (2), shell (navbar, footer, layouts) (1) |
 | `--color-warning-bg` | `rgba(202, 138, 4, 0.08)` | `rgba(250, 204, 21, 0.12)` | other (2), exam (1) |
 | `--color-warning-border` | `rgba(202, 138, 4, 0.18)` | `rgba(250, 204, 21, 0.22)` | other (2), exam (1) |
-| `--color-negative` | `#DC2626` | `#F87171` | lesson (8), other (4), exam (3), community (2), auth (1) |
+| `--color-negative` | `#D52222` | `#F87171` | lesson (8), other (4), exam (3), community (2), auth (1) |
 | `--color-negative-bg` | `rgba(220, 38, 38, 0.08)` | `rgba(248, 113, 113, 0.12)` | other (1), exam (1), auth (1) |
 | `--color-negative-border` | `rgba(220, 38, 38, 0.18)` | `rgba(248, 113, 113, 0.22)` | exam (1) |
 | `--color-info` | `#2563EB` | `#60A5FA` | community (2), lesson (2), exam (1) |
@@ -162,9 +175,9 @@ the token with `var()`, by area.
 | `--color-badge-lesson-bg` | `rgba(59, 130, 246, 0.1)` | `rgba(59, 130, 246, 0.15)` | unused |
 | `--color-badge-lesson-text` | `#2563EB` | `#93c5fd` | unused |
 | `--color-badge-exercise-bg` | `rgba(16, 185, 129, 0.1)` | `rgba(16, 185, 129, 0.15)` | lesson (1) |
-| `--color-badge-exercise-text` | `#059669` | `#6ee7b7` | lesson (5), other (1) |
+| `--color-badge-exercise-text` | `#047D58` | `#6ee7b7` | lesson (5), other (1) |
 | `--color-badge-assessment-bg` | `rgba(249, 115, 22, 0.1)` | `rgba(249, 115, 22, 0.15)` | unused |
-| `--color-badge-assessment-text` | `#D97706` | `#fdba74` | lesson (2), other (1) |
+| `--color-badge-assessment-text` | `#A75C05` | `#fdba74` | lesson (2), other (1) |
 | `--color-badge-review-bg` | `rgba(139, 92, 246, 0.1)` | `rgba(139, 92, 246, 0.15)` | unused |
 | `--color-badge-review-text` | `#7C3AED` | `#c4b5fd` | application.css (1) |
 
@@ -184,4 +197,4 @@ the token with `var()`, by area.
 | `--color-node-goal` | `#B0A898` | `same` | unused |
 | `--color-motion-hi` | `#F2D66B` | `#6B5418` | other (1) |
 | `--color-motion-hi2` | `#9AD1F0` | `#2A5F7D` | other (1) |
-| `--color-section-audio-active` | `#6366f1` | `#818cf8` | lesson (9), other (6), shell (navbar, footer, layouts) (1), exam (1) |
+| `--color-section-audio-active` | `#575BF0` | `#818cf8` | lesson (9), other (6), shell (navbar, footer, layouts) (1), exam (1) |
