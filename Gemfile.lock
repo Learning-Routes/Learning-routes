@@ -239,7 +239,7 @@ GEM
       multi_xml (>= 0.5.2)
     i18n (1.15.2)
       concurrent-ruby (~> 1.0)
-    image_processing (2.1.0)
+    image_processing (2.2.0)
     importmap-rails (2.2.3)
       actionpack (>= 6.0.0)
       activesupport (>= 6.0.0)
@@ -620,7 +620,7 @@ DEPENDENCIES
   dotenv-rails
   faker
   httparty (~> 0.22)
-  image_processing (~> 2.0)
+  image_processing (~> 2.2)
   importmap-rails
   json_schemer (~> 2.5)
   kamal
