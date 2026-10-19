@@ -65,7 +65,7 @@ module Commerce
       quote = RouteQuote.create!(valid_attributes)
       other = create_test_user
 
-      assert_equal [quote.id], @user.route_quotes.pluck(:id)
+      assert_equal [quote.id], Core::User.includes(:route_quotes).find(@user.id).route_quotes.map(&:id)
       assert_empty other.route_quotes
     end
 
