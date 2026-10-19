@@ -10,8 +10,8 @@ module ContentEngine
                   "Use this when the lesson needs up-to-date facts, statistics, " \
                   "recent developments, or real-world context that may not be in training data."
 
-      param :query, desc: "Search query — be specific and educational, e.g. 'photosynthesis light reactions process'"
-      param :max_results, desc: "Number of results to return (1-10)", required: false
+      parameter :query, description: "Search query — be specific and educational, e.g. 'photosynthesis light reactions process'"
+      parameter :max_results, description: "Number of results to return (1-10)", required: false
 
       def execute(query:, max_results: 5)
         api_key = Rails.application.credentials.dig(:tavily, :api_key)

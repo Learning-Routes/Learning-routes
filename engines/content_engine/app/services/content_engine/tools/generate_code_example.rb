@@ -7,9 +7,9 @@ module ContentEngine
                   "Use this when the user asks to see code, wants a programming example, " \
                   "or when the topic involves programming concepts."
 
-      param :concept, desc: "The concept to demonstrate with code"
-      param :language, desc: "Programming language: python, javascript, ruby, java, etc.", required: false
-      param :difficulty, desc: "Difficulty level: beginner, intermediate, advanced", required: false
+      parameter :concept, description: "The concept to demonstrate with code"
+      parameter :language, description: "Programming language: python, javascript, ruby, java, etc.", required: false
+      parameter :difficulty, description: "Difficulty level: beginner, intermediate, advanced", required: false
 
       def execute(concept:, language: "python", difficulty: "beginner")
         prompt = <<~PROMPT

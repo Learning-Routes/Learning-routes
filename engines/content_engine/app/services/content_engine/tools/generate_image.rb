@@ -7,8 +7,8 @@ module ContentEngine
                   "Use this when the user needs a visual representation that cannot be expressed " \
                   "as a diagram -- e.g., real-world scenes, analogies, comparisons, or artistic illustrations."
 
-      param :description, desc: "Detailed description of what the image should show"
-      param :style, desc: "Image style: educational, diagram, comparison, analogy, realistic", required: false
+      parameter :description, description: "Detailed description of what the image should show"
+      parameter :style, description: "Image style: educational, diagram, comparison, analogy, realistic", required: false
 
       def execute(description:, style: "educational")
         prompt = "Educational illustration: #{description}. " \
