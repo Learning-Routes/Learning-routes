@@ -95,6 +95,6 @@ class ContentEngine::Tools::UserProgressTest < ActiveSupport::TestCase
 
   def execute_tool(**kwargs)
     result = @tool.execute(**kwargs)
-    result.is_a?(RubyLLM::Tool::Halt) ? result.content : result
+    result.is_a?(ContentEngine::Tools::Final) ? result.content : result
   end
 end

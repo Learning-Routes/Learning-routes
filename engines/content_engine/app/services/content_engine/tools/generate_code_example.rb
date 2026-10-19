@@ -25,7 +25,7 @@ module ContentEngine
         PROMPT
 
         content = AiOrchestrator::TrackedTextCall.call(prompt: prompt, task_type: "code_generation")
-        halt content.strip
+        Final.new(content.strip)
       rescue => e
         "Could not generate code example: #{e.message}"
       end

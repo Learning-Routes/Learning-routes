@@ -183,8 +183,8 @@ class ContentEngine::Tools::WebSearchTest < ActiveSupport::TestCase
 
   private
 
-  # Execute the tool, unwrapping Halt objects (halt returns a Halt wrapper, not
-  # raises). Stubs the Tavily credential lookup to the test's @tavily_key.
+  # Execute the tool, unwrapping a Final (the tool's answer, returned rather
+  # than raised). Stubs the Tavily credential lookup to the test's @tavily_key.
   def execute_tool(**kwargs)
     creds = Rails.application.credentials
     key = @tavily_key
@@ -201,7 +201,7 @@ class ContentEngine::Tools::WebSearchTest < ActiveSupport::TestCase
     end
     begin
       result = @tool.execute(**kwargs)
-      result.is_a?(RubyLLM::Tool::Halt) ? result.content : result
+      result.is_a?(ContentEngine::Tools::Final) ? result.content : result
     ensure
       creds.singleton_class.send(:remove_method, :dig)
     end

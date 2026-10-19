@@ -22,7 +22,7 @@ module ContentEngine
         PROMPT
 
         content = AiOrchestrator::TrackedTextCall.call(prompt: prompt, task_type: "translation")
-        halt content.strip
+        Final.new(content.strip)
       rescue => e
         "Could not translate: #{e.message}"
       end

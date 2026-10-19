@@ -65,9 +65,9 @@ module AiOrchestrator
     # The agent will autonomously invoke tools as needed, then return the final answer.
     #
     # @param prompt [String] the user-facing content generation prompt
-    # @return [RubyLLM::Message] the assistant's final response
+    # @return [RubyLLM::Message, ContentEngine::Tools::Final] the model's answer, or the tool output that ended the turn
     def ask(prompt)
-      @chat.ask(prompt)
+      ContentEngine::Tools::Final.ask(@chat, prompt)
     end
 
     # Access the conversation message history.

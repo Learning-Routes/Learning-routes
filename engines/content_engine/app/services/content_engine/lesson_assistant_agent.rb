@@ -37,7 +37,7 @@ module ContentEngine
       user_prompt = build_user_prompt(action, message)
 
       start_time = Process.clock_gettime(Process::CLOCK_MONOTONIC)
-      response = chat.ask(user_prompt)
+      response = Tools::Final.ask(chat, user_prompt)
       input_tokens, output_tokens, cached_tokens = aggregate_usage(chat.messages)
       elapsed_ms = ((Process.clock_gettime(Process::CLOCK_MONOTONIC) - start_time) * 1000).round
 

@@ -33,7 +33,7 @@ module ContentEngine
         end
 
         alt = description.gsub('"', "&quot;")
-        halt "![#{alt}](#{image_data})"
+        Final.new("![#{alt}](#{image_data})")
       rescue => e
         "Could not generate image: #{e.message}"
       end

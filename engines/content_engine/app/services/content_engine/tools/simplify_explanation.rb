@@ -31,7 +31,7 @@ module ContentEngine
         PROMPT
 
         content = AiOrchestrator::TrackedTextCall.call(prompt: prompt, task_type: "simplify_content")
-        halt content.strip
+        Final.new(content.strip)
       rescue => e
         "Could not simplify: #{e.message}"
       end

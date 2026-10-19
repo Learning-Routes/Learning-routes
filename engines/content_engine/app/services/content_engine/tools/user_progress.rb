@@ -50,7 +50,7 @@ module ContentEngine
           }
         end
 
-        halt data.to_json
+        Final.new(data.to_json)
       rescue => e
         "Could not fetch progress: #{e.message}"
       end

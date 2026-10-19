@@ -52,7 +52,7 @@ module ContentEngine
           { "title" => r["title"], "url" => r["url"], "snippet" => r["content"].to_s.truncate(300) }
         end
 
-        halt results.to_json
+        Final.new(results.to_json)
       rescue Net::ReadTimeout, Net::OpenTimeout, JSON::ParserError, StandardError => e
         record_failed_interaction!
         Rails.logger.warn("[WebSearch] Search failed (#{e.class.name})")

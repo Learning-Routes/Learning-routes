@@ -32,7 +32,7 @@ module ContentEngine
         path = dir.join(filename)
         File.binwrite(path, result[:content])
 
-        halt "/storage/audio/#{filename}"
+        Final.new("/storage/audio/#{filename}")
       rescue => e
         "Could not generate audio: #{e.message}"
       end

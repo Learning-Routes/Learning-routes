@@ -37,7 +37,7 @@ module ContentEngine
           mermaid_code = "#{diagram_type} TD\n#{mermaid_code}"
         end
 
-        halt "```mermaid\n#{mermaid_code}\n```"
+        Final.new("```mermaid\n#{mermaid_code}\n```")
       rescue => e
         "Could not generate diagram: #{e.message}"
       end
