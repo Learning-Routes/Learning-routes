@@ -5,7 +5,7 @@ require "test_helper"
 # of their own; the logo is a mark, not an icon.
 class IconLanguageTest < ActiveSupport::TestCase
   test "every svg_icon is on the 24px grid with a 1.75-2 round stroke" do
-    helper = Object.new.extend(ApplicationHelper)
+    helper = ApplicationController.helpers
 
     ApplicationHelper::SVG_ICONS.each_key do |name|
       [16, 24].each do |size|
@@ -13,7 +13,7 @@ class IconLanguageTest < ActiveSupport::TestCase
 
         assert_equal "0 0 24 24", svg["viewbox"] || svg["viewBox"], name
         assert_includes 1.75..2.0, svg["stroke-width"].to_f, "#{name} at #{size}px"
-        assert_equal %w[round round], svg.values_at("stroke-linecap", "stroke-linejoin"), name
+        assert_equal %w[round round], [svg["stroke-linecap"], svg["stroke-linejoin"]], name
         assert_equal size.to_s, svg["width"], name
       end
     end
