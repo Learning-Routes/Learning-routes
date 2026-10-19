@@ -58,7 +58,7 @@ gem "ruby-vips", "~> 2.3"
 gem "ruby_llm", "~> 1.16"
 
 # HTTP client for ElevenLabs TTS API
-gem "httparty", "~> 0.22"
+gem "httparty", "~> 0.24"
 
 # JSON Schema validation for Motion Canvas scene payloads
 gem "json_schemer", "~> 2.5"
