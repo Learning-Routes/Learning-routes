@@ -983,12 +983,15 @@ en:
       review:
         title: "Reinforcement: Review Key Concepts"
         description: "Review the concepts that need strengthening"
+        short: "Review key concepts"
       practice:
         title: "Reinforcement: Guided Practice"
         description: "Practice exercises with additional guidance"
+        short: "Guided practice"
       reassessment:
         title: "Reinforcement: Re-Assessment"
         description: "Quick check to verify understanding"
+        short: "Re-assessment"
     modules: { free_preview: "Free preview", locked: "Locked until purchase", purchased: "Purchased" }
     blocks:
       required:
@@ -1060,12 +1063,40 @@ en:
       exhausted: "We've tried a few times without success. Our team can see the error and will look into it."
       back: "Back to the route"
     journey:
+      your_route: "Your route"
+      module_count:
+        one: "%{count} module"
+        other: "%{count} modules"
+      topic_count:
+        one: "%{count} topic"
+        other: "%{count} topics"
+      counter: "%{done} of %{total} · %{percent}%"
+      chip_progress: "%{done} of %{total}"
+      unlock_module: "Unlock module"
+      legend_label: "Legend"
+      legend_done: "Done"
+      legend_ahead: "Still ahead"
+      continue_eyebrow: "You're on · %{module} · step %{step} of %{total}"
+      continue: "Continue"
+      locate: "Go to where I am"
+      locate_title: "Go to where I am (I)"
+      route_completed: "Route completed"
+      route_completed_eyebrow: "%{done} of %{total} topics done"
+      pop_step: "%{module} · step %{step} of %{total}"
+      pop_reinforcement: "Reinforcement for · %{parent}"
+      pop_masked_title: "Module content"
+      pop_minutes: "%{count} min"
+      act_continue: "Continue"
+      act_review: "See it again"
+      act_reinforcement: "Start the reinforcement"
+      act_open: "Open"
+      act_locked: "Opens when you finish the step before"
+      act_masked: "Unlock the module to open it"
       locked_topic: "Locked"
       route_label: "ROUTE"
-      drag_to_explore: "Drag to explore"
-      map_keys: "Route map. Arrow keys pan, plus and minus zoom, 0 shows the whole route."
+      map_keys: "Route map. Arrow keys pan, plus and minus zoom, 0 returns to the opening view, I goes to where you are, Escape closes the details."
       fit: "Fit"
-      fit_label: "Show the whole route"
+      fit_label: "Back to the opening view"
       zoom_in: "Zoom in"
       zoom_out: "Zoom out"
       status_current: "You are here"
@@ -1076,13 +1107,6 @@ en:
       stages_topics:
         one: "%{stages} stage · %{topics} topic"
         other: "%{stages} stages · %{topics} topics"
-      subtitle: "Personalized path · %{stages} · %{topics}"
-      stage_count:
-        one: "%{count} stage"
-        other: "%{count} stages"
-      topic_count:
-        one: "%{count} topic"
-        other: "%{count} topics"
       stage_of: "Stage %{current} of %{total}"
       stage_navigation: "Stage navigation"
       list_view: "List view"
