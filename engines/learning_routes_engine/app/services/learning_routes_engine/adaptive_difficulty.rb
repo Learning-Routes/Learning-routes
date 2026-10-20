@@ -288,20 +288,24 @@ module LearningRoutesEngine
     # The round already hanging under the trigger's parent, as the journey map
     # resolves it (ReinforcementParents): a failed re-assessment inside a round
     # belongs to that round's step. Steps with several trios from before the rule
-    # reopen only the latest; the older ones are left as they are.
+    # reopen only the latest; the older ones are left as they are. Latest means
+    # created last: every trio is inserted at current_step + 1, so a newer trio
+    # can sit at lower positions than an older one.
     def existing_round
       return [] unless triggering_step_id
 
       steps = RouteStep.where(learning_route_id: @route.id, route_module_id: triggering_module_id).order(:position).to_a
       parents = ReinforcementParents.resolve(steps)
       parent_id = parents[triggering_step_id]&.parent_id || triggering_step_id
-      steps.select { |step| parents[step.id]&.parent_id == parent_id }.last(3)
+      steps.select { |step| parents[step.id]&.parent_id == parent_id }.sort_by { |step| [step.created_at, step.id] }.last(3)
     end
 
     # Completed steps become available again; in progress and locked ones stay.
     # Their attempts and results are the student's history and are kept.
     def reopen!(round)
-      round.select(&:completed?).each { |step| step.update!(status: :available, completed_at: nil) }
+      RouteStep.transaction do
+        round.select(&:completed?).each { |step| step.update!(status: :available, completed_at: nil) }
+      end
     end
 
     # Does this route already carry reinforcement the student has not worked
