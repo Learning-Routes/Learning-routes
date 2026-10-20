@@ -3420,36 +3420,35 @@ html[data-theme="dark"] .wizard-footer { background: var(--color-bg, #1A1710); }
 /* ── WP-37 journey map ─────────────────────────────────────────────────── */
 .jm { position: fixed; inset: 0; overflow: clip; background: var(--color-bg);
   /* WP-37b map tokens, light. Text on the map uses --color-txt / --color-sub
-     (both >= 4.5:1 on the map); --jm-locked and --jm-track are strokes only. */
-  --jm-panel: rgba(254, 253, 251, 0.62);
-  --jm-contour: rgba(28, 24, 18, 0.075);
-  --jm-vignette: rgba(28, 24, 18, 0.07);
+     (both >= 4.5:1 on the map); --jm-locked and --jm-track are strokes only.
+     STEP 41: the tones are Ciruela's tokens, which carry both themes. Every
+     level's line is the accent: route and done steps are one colour. */
+  --color-node-nv1: var(--color-accent);
+  --color-node-nv2: var(--color-accent);
+  --color-node-nv3: var(--color-accent);
+  --jm-panel: color-mix(in srgb, var(--color-card) 62%, transparent);
+  --jm-contour: var(--color-border-subtle);
+  --jm-vignette: color-mix(in srgb, var(--color-shade) 39%, transparent);
   --jm-halo: 0;
-  --jm-halo-c: #FAF8F3;
+  --jm-halo-c: var(--color-bg);
   --jm-glow-a: 0.07;
-  --jm-reinf: #0E6F67;
-  --jm-track: rgba(28, 24, 18, 0.18);
-  --jm-locked: #B5AD9F;
-  --jm-ring: #7D8B8A;
-  --jm-glass: rgba(254, 253, 251, 0.78);
-  --jm-glass-border: rgba(28, 24, 18, 0.10);
-  --jm-shadow: 0 10px 30px -12px rgba(28, 24, 18, 0.25);
+  --jm-reinf: var(--color-reinforce);
+  --jm-track: color-mix(in srgb, var(--color-txt) 18%, transparent);
+  /* Locked is "not yet": 3:1 on card, bg and sheet, lighter than the ring
+     (journey_ciruela_test.rb measures it). */
+  --jm-locked: color-mix(in srgb, var(--color-muted) 85%, var(--color-card));
+  --jm-ring: var(--color-muted);
+  --jm-glass: color-mix(in srgb, var(--color-card) 78%, transparent);
+  --jm-glass-border: color-mix(in srgb, var(--color-txt) 10%, transparent);
+  --jm-shadow: 0 10px 30px -12px var(--color-shade);
   --jm-focus: #2C5F8E;
 }
 html[data-theme="dark"] .jm {
-  --jm-panel: rgba(34, 31, 24, 0.62);
-  --jm-contour: rgba(240, 235, 226, 0.07);
-  --jm-vignette: rgba(0, 0, 0, 0.30);
+  /* STEP 41: Ciruela's tokens carry the theme; only weights differ here. */
+  --jm-vignette: color-mix(in srgb, var(--color-shade) 55%, transparent);
   --jm-halo: 1;
-  --jm-halo-c: #1F1C16;
   --jm-glow-a: 0.16;
-  --jm-reinf: #5CCFC3;
-  --jm-track: rgba(240, 235, 226, 0.20);
-  --jm-locked: #7C7466;
-  --jm-ring: #8A8275;
-  --jm-glass: rgba(34, 31, 24, 0.78);
-  --jm-glass-border: rgba(240, 235, 226, 0.10);
-  --jm-shadow: 0 10px 30px -12px rgba(0, 0, 0, 0.6);
+  --jm-track: color-mix(in srgb, var(--color-txt) 20%, transparent);
   --jm-focus: #8DB6E0;
 }
 /* No implicit transitions inside the map. The app-wide reduced-motion rule
@@ -3498,19 +3497,19 @@ html[data-theme="dark"] .jm {
                 color: var(--color-txt); transition-property: transform; transition-duration: 150ms; }
 .jm-node:hover .jm-node__dot, .jm-node--hot .jm-node__dot { transform: translateY(-1px) scale(1.06); }
 /* The journey keeps WP-37b's faces until STEP 41 PR 5b aligns it. */
-.jm-sans { font-family: 'Manrope', sans-serif; }
+.jm-sans { font-family: var(--font-sans); }
 .jm-mono { font-family: 'JetBrains Mono', monospace; }
 .jm-node__num { font-family: 'JetBrains Mono', monospace; font-weight: 500; font-size: 15px; line-height: 1;
                 font-variant-numeric: tabular-nums; color: var(--color-txt); }
 .jm-node--completed .jm-node__dot { background: var(--jm-line); border-color: var(--jm-line); color: var(--color-bg);
                                     background-image: linear-gradient(180deg, rgba(255, 255, 255, .22), rgba(255, 255, 255, 0) 55%); }
 .jm-node--current:not(.jm-node--completed) .jm-node__dot {
-  border-color: var(--jm-line); color: var(--jm-line);
-  box-shadow: 0 0 0 5px var(--color-bg), 0 0 0 6.5px var(--jm-line),
-              0 0 calc(26px * var(--jm-halo)) calc(2px * var(--jm-halo)) color-mix(in srgb, var(--jm-line) 45%, transparent); }
+  border-color: var(--color-highlight); color: var(--jm-line);
+  box-shadow: 0 0 0 5px var(--color-bg), 0 0 0 6.5px var(--color-highlight),
+              0 0 calc(26px * var(--jm-halo)) calc(2px * var(--jm-halo)) color-mix(in srgb, var(--color-highlight) 45%, transparent); }
 .jm-node--current:not(.jm-node--completed) .jm-node__num { color: var(--jm-line); }
 .jm-node__orbit { position: absolute; inset: -14px; border-radius: 50%; pointer-events: none;
-                  background: conic-gradient(from 0deg, transparent 0 62%, var(--jm-line) 78%, transparent 90%);
+                  background: conic-gradient(from 0deg, transparent 0 62%, var(--color-highlight) 78%, transparent 90%);
                   -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 2px), #000 calc(100% - 1.5px));
                   mask: radial-gradient(farthest-side, transparent calc(100% - 2px), #000 calc(100% - 1.5px));
                   animation: jm-orbit 6s linear infinite; }
@@ -3528,7 +3527,7 @@ html[data-theme="dark"] .jm {
 /* The cartographic halo replaces WP-37's opaque box: a line may pass beside a
    label (never through one — journey_map_test.rb samples every path), and the
    halo keeps the text legible over the terrain. */
-.jm-node__label { width: 100%; text-align: center; font-family: 'Manrope', sans-serif; font-size: 13px; line-height: 16px;
+.jm-node__label { width: 100%; text-align: center; font-family: var(--font-sans); font-size: 13px; line-height: 16px;
                   font-weight: 500; letter-spacing: .005em; color: var(--color-txt); padding: 0 3px; box-sizing: border-box;
                   display: -webkit-box; -webkit-line-clamp: var(--jm-lines); -webkit-box-orient: vertical; overflow: hidden;
                   overflow-wrap: anywhere; text-wrap: balance;
@@ -3540,7 +3539,7 @@ html[data-theme="dark"] .jm {
 
 /* ── Module chips and the unlock pill (brief §4.2) ── */
 .jm-chip { position: absolute; transform: translate(-50%, -50%); display: inline-flex; align-items: center; gap: 6px;
-           height: 22px; padding: 0 10px; border-radius: 999px; background: var(--color-bg); border: 1px solid var(--jm-line);
+           height: 22px; padding: 0 10px; border-radius: 999px; background: var(--color-accent-soft); border: 1px solid var(--jm-line);
            font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 400; color: var(--color-sub);
            letter-spacing: .02em; white-space: nowrap; font-variant-numeric: tabular-nums; cursor: pointer; }
 .jm-chip:focus-visible { outline: 2px solid var(--jm-focus); outline-offset: 2px; }
@@ -3550,7 +3549,7 @@ html[data-theme="dark"] .jm {
 .jm-chip svg, .jm-unlock svg { width: 11px; height: 11px; flex: none; }
 .jm-unlock { position: absolute; transform: translate(-100%, -50%); display: inline-flex; align-items: center; gap: 6px;
              height: 26px; padding: 0 12px; border-radius: 999px; background: var(--color-bg); border: 1px solid var(--jm-line);
-             color: var(--jm-line); font-family: 'Manrope', sans-serif; font-size: 12px; font-weight: 700;
+             color: var(--jm-line); font-family: var(--font-sans); font-size: 12px; font-weight: 700;
              text-decoration: none; white-space: nowrap; }
 .jm-unlock:focus-visible { outline: 2px solid var(--jm-focus); outline-offset: 2px; }
 
@@ -3558,8 +3557,8 @@ html[data-theme="dark"] .jm {
 .jm-root { position: absolute; text-align: left; color: var(--color-txt); white-space: nowrap; }
 .jm-root__eyebrow, .jm-root__meta { display: block; font-family: 'JetBrains Mono', monospace; font-size: 11px;
                                     letter-spacing: .04em; color: var(--color-sub); font-weight: 400; font-variant-numeric: tabular-nums; }
-.jm-root__title { margin: 2px 0 0; font-family: 'Instrument Serif', serif; font-weight: 400; font-size: 30px; line-height: 1.05;
-                  letter-spacing: -.005em; overflow: hidden; text-overflow: ellipsis; }
+.jm-root__title { margin: 2px 0 0; font-family: var(--font-sans); font-weight: 740; font-stretch: 112%; font-size: 30px; line-height: 1.05;
+                  letter-spacing: -.03em; overflow: hidden; text-overflow: ellipsis; }
 .jm-root__meta { margin-top: 5px; letter-spacing: 0; }
 
 /* ── Overlays ── */
@@ -3570,11 +3569,11 @@ html[data-theme="dark"] .jm {
   .jm-glass { -webkit-backdrop-filter: none; backdrop-filter: none; background: var(--color-card); }
 }
 .jm-legend { left: 20px; bottom: 20px; display: flex; flex-wrap: wrap; gap: 10px 16px; padding: 10px 14px;
-             max-width: calc(50vw - 330px); font-family: 'Manrope', sans-serif; font-size: 12px; color: var(--color-sub); }
+             max-width: calc(50vw - 330px); font-family: var(--font-sans); font-size: 12px; color: var(--color-sub); }
 .jm-legend span { display: inline-flex; align-items: center; gap: 7px; }
 .jm-legend__mark { width: 12px; height: 12px; border-radius: 50%; border: 2px solid var(--jm-ring); display: inline-block; box-sizing: border-box; }
 .jm-legend__mark--done { background: var(--color-node-nv1); border-color: var(--color-node-nv1); }
-.jm-legend__mark--current { border-color: var(--color-node-nv1); box-shadow: 0 0 0 2px var(--color-bg), 0 0 0 3.5px var(--color-node-nv1); }
+.jm-legend__mark--current { border-color: var(--color-highlight); box-shadow: 0 0 0 2px var(--color-bg), 0 0 0 3.5px var(--color-highlight); }
 .jm-legend__mark--reinforcement { border: 1.5px dotted var(--jm-reinf); }
 .jm-legend__mark--locked { border: 1.5px dashed var(--jm-locked); }
 .jm-card { left: 50%; bottom: 20px; transform: translateX(-50%); z-index: 21; display: flex; align-items: center; gap: 14px;
@@ -3582,21 +3581,19 @@ html[data-theme="dark"] .jm {
 .jm-card__text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 .jm-card__eyebrow { font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: .02em; color: var(--color-sub);
                     white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.jm-card__title { font-family: 'Manrope', sans-serif; font-weight: 700; font-size: 15px; letter-spacing: -.01em; color: var(--color-txt);
+.jm-card__title { font-family: var(--font-sans); font-weight: 700; font-size: 15px; letter-spacing: -.01em; color: var(--color-txt);
                   white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.jm-cta { flex: none; height: 40px; padding: 0 16px; border-radius: 9px; background: var(--jm-line); color: var(--color-bg);
-          font-family: 'Manrope', sans-serif; font-weight: 700; font-size: 14px; display: inline-flex; align-items: center; gap: 8px;
-          white-space: nowrap; text-decoration: none; transition-property: transform, filter; transition-duration: 150ms; }
-.jm-cta:hover { filter: brightness(1.06); transform: translateY(-1px); }
-.jm-cta:focus-visible, .jm-iconbtn:focus-visible, .jm-bar button:focus-visible, .jm-bar__list:focus-visible {
+/* Continue is a .btn3; the map's no-transition rule above would freeze its press. */
+.jm-cta { flex: none; transition-property: background-color, transform, box-shadow; }
+.jm-iconbtn:focus-visible, .jm-bar button:focus-visible, .jm-bar__list:focus-visible {
   outline: 2px solid var(--jm-focus); outline-offset: 2px; }
 .jm-iconbtn, .jm-bar button { appearance: none; border: 0; background: transparent; color: var(--color-txt);
-                              font-family: 'Manrope', sans-serif; font-weight: 500; font-size: 14px; height: 44px; min-width: 44px;
+                              font-family: var(--font-sans); font-weight: 500; font-size: 14px; height: 44px; min-width: 44px;
                               padding: 0 10px; border-radius: 8px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; }
 .jm-iconbtn:hover, .jm-bar button:hover { background: var(--color-border-subtle); }
 .jm-bar { right: 20px; bottom: 20px; display: flex; align-items: center; gap: 2px; padding: 3px; }
 .jm-bar__list { display: inline-flex; align-items: center; gap: 6px; height: 44px; padding: 0 12px; border-radius: 8px;
-                font-family: 'Manrope', sans-serif; font-size: 13px; color: var(--color-txt); text-decoration: none; }
+                font-family: var(--font-sans); font-size: 13px; color: var(--color-txt); text-decoration: none; }
 .jm-bar__rule { width: 1px; height: 22px; background: var(--jm-glass-border); margin: 0 4px; }
 
 /* ── Popover (brief §5.2) ── */
@@ -3609,13 +3606,13 @@ html[data-theme="dark"] .jm {
                  transform: translateX(-50%) rotate(45deg); }
 .jm-pop--below::after { bottom: auto; top: -6px; transform: translateX(-50%) rotate(225deg); }
 .jm-pop--show, .jm-pop--touch { pointer-events: auto; }
-.jm-pop__eyebrow { font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: .02em; color: var(--color-sub);
+.jm-pop__eyebrow { font-family: var(--font-sans); font-size: 11px; letter-spacing: .02em; color: var(--color-sub);
                    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.jm-pop__title { font-family: 'Manrope', sans-serif; font-weight: 700; font-size: 15px; letter-spacing: -.01em; line-height: 1.25;
+.jm-pop__title { font-family: var(--font-sans); font-weight: 700; font-size: 15px; letter-spacing: -.01em; line-height: 1.25;
                  margin-top: 4px; color: var(--color-txt); text-wrap: balance; overflow-wrap: anywhere; }
-.jm-pop__meta { margin-top: 8px; font-family: 'Manrope', sans-serif; font-size: 12px; color: var(--color-sub); }
+.jm-pop__meta { margin-top: 8px; font-family: var(--font-sans); font-size: 12px; color: var(--color-sub); }
 .jm-pop__meta b { color: var(--color-txt); font-weight: 500; }
-.jm-pop__act { margin-top: 10px; font-family: 'Manrope', sans-serif; font-size: 13px; font-weight: 600; color: var(--color-txt);
+.jm-pop__act { margin-top: 10px; font-family: var(--font-sans); font-size: 13px; font-weight: 600; color: var(--color-txt);
                display: flex; align-items: center; gap: 6px; text-decoration: none; }
 .jm-pop__act svg { width: 14px; height: 14px; }
 
@@ -3623,7 +3620,7 @@ html[data-theme="dark"] .jm {
 .jm-counter { display: inline-flex; flex-direction: column; gap: 4px; align-items: stretch; }
 .jm-counter__text { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--color-sub); font-variant-numeric: tabular-nums; white-space: nowrap; }
 .jm-counter__track { display: block; height: 3px; border-radius: 999px; background: var(--color-border-subtle); overflow: hidden; }
-.jm-counter__fill { display: block; height: 100%; border-radius: 999px; background: var(--jm-line); }
+.jm-counter__fill { display: block; height: 100%; border-radius: 999px; background: var(--color-accent); }
 
 /* Below 1280 px a centred card meets the bar: it moves left of the bar and the
    legend rises above it, full width. */

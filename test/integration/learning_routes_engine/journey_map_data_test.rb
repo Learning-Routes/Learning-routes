@@ -277,6 +277,15 @@ class LearningRoutesEngine::JourneyMapDataTest < ActionDispatch::IntegrationTest
     assert_equal({ "title" => "Map" }, JSON.parse(node["data-route-journey-root-value"]))
   end
 
+  # STEP 41: the Continue button is the app's pressable button, not the map's own.
+  test "the Continue button is a .btn3" do
+    step!(@preview, 0, "Done", status: :completed)
+    step!(@preview, 1, "Next")
+
+    get learning_routes_engine.journey_route_path(@route)
+    assert_select ".jm-card a.btn3[data-journey-continue]", 1
+  end
+
   # ─── WP-37b brief §4.4 and §5.2: short names and minutes ─────────────
 
   # A reinforcement's label on the map drops the "Refuerzo:" prefix; `name`

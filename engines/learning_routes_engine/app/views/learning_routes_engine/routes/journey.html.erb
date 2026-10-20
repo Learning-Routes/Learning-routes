@@ -82,7 +82,7 @@
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="3.5"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/><circle cx="12" cy="12" r="8"/></svg>
         </button>
       <% end %>
-      <%= link_to @continue[:path], class: "jm-cta", data: { journey_continue: "" } do %>
+      <%= link_to @continue[:path], class: "btn3 btn3--sm jm-cta", data: { journey_continue: "" } do %>
         <%= @continue[:completed] ? t("#{scope}.list_view") : t("#{scope}.continue") %><%= svg_icon(:arrow_right) %>
       <% end %>
     </div>
