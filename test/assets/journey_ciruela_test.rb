@@ -19,6 +19,8 @@ class JourneyCiruelaTest < ActiveSupport::TestCase
 
   test "route and done steps are the accent, whatever the level" do
     %w[nv1 nv2 nv3].each { |level| declares(".jm", "--color-node-#{level}", "var(--color-accent)") }
+    # The top bar's progress line lives in the layout, outside .jm.
+    declares(".jm-counter__fill", "background", "var(--color-accent)")
   end
 
   test "reinforcement, upcoming and locked outlines and terrain are tokens, in both themes" do
