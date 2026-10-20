@@ -1,8 +1,8 @@
 require "test_helper"
 
 # WP-37b brief §4.4. The journey layout loads its families from Google Fonts —
-# Manrope, JetBrains Mono, and since STEP 41 Archivo for the popover, the labels
-# and the route's title (which no longer needs Instrument Serif) — and nothing else. WP-37's `.jm-*`
+# JetBrains Mono, and since STEP 41 Archivo for all of the map's text (which no
+# longer needs Instrument Serif or Manrope) — and nothing else. WP-37's `.jm-*`
 # rules asked for DM Sans and DM Mono, which that layout never loads, so
 # production fell back silently. Every family the map's CSS names must be one
 # the layout's link actually fetches.
@@ -44,6 +44,6 @@ class JourneyFontsTest < ActiveSupport::TestCase
   end
 
   test "the layout loads exactly the journey families" do
-    assert_equal ["Manrope", "JetBrains Mono", "Archivo"], loaded_families
+    assert_equal ["JetBrains Mono", "Archivo"], loaded_families
   end
 end
