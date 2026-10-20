@@ -3442,13 +3442,14 @@ html[data-theme="dark"] .wizard-footer { background: var(--color-bg, #1A1710); }
   --jm-focus: #2C5F8E;
 }
 html[data-theme="dark"] .jm {
-  --jm-panel: rgba(34, 31, 24, 0.62);
+  /* STEP 41: Ciruela's plum surfaces, not WP-37b's warm browns. */
+  --jm-panel: color-mix(in srgb, var(--color-card) 62%, var(--color-bg-2));
   --jm-vignette: rgba(0, 0, 0, 0.30);
   --jm-halo: 1;
-  --jm-halo-c: #1F1C16;
+  --jm-halo-c: var(--color-bg);
   --jm-glow-a: 0.16;
   --jm-track: rgba(240, 235, 226, 0.20);
-  --jm-glass: rgba(34, 31, 24, 0.78);
+  --jm-glass: color-mix(in srgb, var(--color-card) 78%, transparent);
   --jm-glass-border: rgba(240, 235, 226, 0.10);
   --jm-shadow: 0 10px 30px -12px rgba(0, 0, 0, 0.6);
   --jm-focus: #8DB6E0;
@@ -3559,8 +3560,8 @@ html[data-theme="dark"] .jm {
 .jm-root { position: absolute; text-align: left; color: var(--color-txt); white-space: nowrap; }
 .jm-root__eyebrow, .jm-root__meta { display: block; font-family: 'JetBrains Mono', monospace; font-size: 11px;
                                     letter-spacing: .04em; color: var(--color-sub); font-weight: 400; font-variant-numeric: tabular-nums; }
-.jm-root__title { margin: 2px 0 0; font-family: 'Instrument Serif', serif; font-weight: 400; font-size: 30px; line-height: 1.05;
-                  letter-spacing: -.005em; overflow: hidden; text-overflow: ellipsis; }
+.jm-root__title { margin: 2px 0 0; font-family: var(--font-sans); font-weight: 740; font-stretch: 112%; font-size: 30px; line-height: 1.05;
+                  letter-spacing: -.03em; overflow: hidden; text-overflow: ellipsis; }
 .jm-root__meta { margin-top: 5px; letter-spacing: 0; }
 
 /* ── Overlays ── */
