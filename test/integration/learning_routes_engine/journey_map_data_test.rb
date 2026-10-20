@@ -280,11 +280,11 @@ class LearningRoutesEngine::JourneyMapDataTest < ActionDispatch::IntegrationTest
   # ─── WP-37b brief §4.4 and §5.2: short names and minutes ─────────────
 
   # A reinforcement's label on the map drops the "Refuerzo:" prefix; `name`
-  # keeps the full title for aria and the popover.
+  # keeps the full title for aria and the popover. Both are in the ROUTE's language.
   %w[es en].each do |locale|
     %w[review practice reassessment].each do |kind|
       test "a #{kind} reinforcement in #{locale} gets its short name, without the prefix" do
-        @user.update!(locale: locale)
+        @route.update!(locale: locale)
         primary = step!(@preview, 0, "Primary")
         title = I18n.t("learning_engine.reinforcement.#{kind}.title", locale: locale)
         reinforcement = step!(@preview, 1, title, metadata: { "reinforcement" => true, "triggering_step_id" => primary.id })
@@ -298,14 +298,14 @@ class LearningRoutesEngine::JourneyMapDataTest < ActionDispatch::IntegrationTest
     end
   end
 
-  test "a reinforcement in the route's language on a page in the other language still gets a short name" do
+  test "a reinforcement on a page in the other language keeps the route's language" do
     @user.update!(locale: "en")
     primary = step!(@preview, 0, "Primary")
     title = I18n.t("learning_engine.reinforcement.practice.title", locale: :es)
     reinforcement = step!(@preview, 1, title, metadata: { "reinforcement" => true, "triggering_step_id" => primary.id })
 
     topic = all_topics.find { |t| t["id"] == reinforcement.id }
-    assert_equal I18n.t("learning_engine.reinforcement.practice.short", locale: :en), topic["short_name"]
+    assert_equal I18n.t("learning_engine.reinforcement.practice.short", locale: :es), topic["short_name"]
   end
 
   test "a reinforcement with its own title drops only the leading prefix" do

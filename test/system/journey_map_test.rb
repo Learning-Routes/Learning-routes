@@ -513,6 +513,51 @@ class JourneyMapTest < ApplicationSystemTestCase
     assert_no_selector ".jm-pop.jm-pop--show", visible: :all
   end
 
+  test "with a mouse, the popover's link can be reached and opens the step" do
+    route = build_route(7)
+    open_journey(route, reduced_motion: true)
+    current = route.route_steps.find_by!(position: route.current_step)
+
+    node = find(".jm-node--current")
+    page.driver.browser.action.move_to(node.native).perform
+    assert_selector ".jm-pop.jm-pop--show"
+    href = find(".jm-pop__act")["href"]
+    from = rect_of(".jm-node--current")
+    to = rect_of(".jm-pop__act")
+    # A person's pace: across the gap and onto the link in ~400 ms, longer than the close delay.
+    a = [(from["left"] + from["right"]) / 2, (from["top"] + from["bottom"]) / 2]
+    b = [(to["left"] + to["right"]) / 2, (to["top"] + to["bottom"]) / 2]
+    mouse = ->(type, (x, y), buttons = 0) {
+      page.driver.browser.execute_cdp("Input.dispatchMouseEvent", type: type, x: x, y: y,
+                                      button: "left", buttons: buttons, clickCount: 1)
+    }
+    20.times do |i|
+      mouse.call("mouseMoved", [a[0] + (b[0] - a[0]) * (i + 1) / 20, a[1] + (b[1] - a[1]) * (i + 1) / 20])
+      sleep 0.02
+    end
+    assert_selector ".jm-pop.jm-pop--show"
+    mouse.call("mousePressed", b, 1)
+    mouse.call("mouseReleased", b)
+
+    assert_no_selector "#journey-map", wait: 5
+    assert_current_path URI(href).path
+    assert_equal learning_routes_engine.route_step_path(route, current), URI(href).path
+  end
+
+  test "leaving the open popover closes it after the delay" do
+    route = build_route(7)
+    open_journey(route, reduced_motion: true)
+
+    page.driver.browser.action.move_to(find(".jm-node--current").native).perform
+    assert_selector ".jm-pop.jm-pop--show"
+    page.driver.browser.action.move_to(find(".jm-pop__title").native).perform
+    sleep 0.3
+    assert_selector ".jm-pop.jm-pop--show"
+    x, y = empty_point
+    page.driver.browser.execute_cdp("Input.dispatchMouseEvent", type: "mouseMoved", x: x, y: y, button: "none", buttons: 0)
+    assert_no_selector ".jm-pop.jm-pop--show", visible: :all
+  end
+
   test "a masked node's popover is generic and leaks no title" do
     route = build_route(7)
     open_journey(route, reduced_motion: true)
@@ -572,6 +617,30 @@ class JourneyMapTest < ApplicationSystemTestCase
       assert_clear rect_of(".jm-root__title")
       assert_clear rect_of(".jm-chip")
       assert_clear rect_of(".jm-panel")
+    end
+  end
+
+  # The owner's screenshot: a current step deep in a reinforcement fan opened
+  # with the route's title half under the blurred top bar. The title opens
+  # clear of it while the step stays in view; when both cannot fit, the step
+  # wins and the title is wholly off the top, never half under the bar.
+  [[1440, 1000, 3, :clear], [390, 844, 1, :clear], [1440, 1000, 30, :off]].each do |w, h, kid, expect|
+    test "at #{w} with the current step at reinforcement #{kid + 1}, the title opens #{expect} of the top bar" do
+      viewport(w, h, scale: w < 700 ? 3 : 1)
+      route = build_route(43)
+      current = route.route_steps.where("metadata->>'reinforcement' = 'true'").order(:position)[kid]
+      current.update!(status: :available)
+      route.update!(current_step: current.position)
+      open_journey(route, reduced_motion: true)
+
+      root = rect_of(".jm-root")
+      bar = rect_of("#journey-topbar")
+      if expect == :clear
+        assert_operator root["top"], :>=, bar["bottom"], "the title opens under the top bar: #{root.inspect}"
+      else
+        assert_operator root["bottom"], :<=, 0, "the title opens half under the top bar: #{root.inspect}"
+      end
+      assert_current_clear(route)
     end
   end
 

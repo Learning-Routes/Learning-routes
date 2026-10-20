@@ -3608,7 +3608,7 @@ html[data-theme="dark"] .jm {
                  border-right: 1px solid var(--jm-glass-border); border-bottom: 1px solid var(--jm-glass-border);
                  transform: translateX(-50%) rotate(45deg); }
 .jm-pop--below::after { bottom: auto; top: -6px; transform: translateX(-50%) rotate(225deg); }
-.jm-pop--touch { pointer-events: auto; }
+.jm-pop--show, .jm-pop--touch { pointer-events: auto; }
 .jm-pop__eyebrow { font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: .02em; color: var(--color-sub);
                    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .jm-pop__title { font-family: 'Manrope', sans-serif; font-weight: 700; font-size: 15px; letter-spacing: -.01em; line-height: 1.25;

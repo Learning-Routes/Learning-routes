@@ -106,11 +106,31 @@ module LearningRoutesEngine
     end
 
     def localized_title(locale = I18n.locale)
-      translations.dig(locale.to_s, "title") || title
+      translations.dig(locale.to_s, "title") || reinforcement_text("title") || title
+    end
+
+    REINFORCEMENT_KINDS = %w[review practice reassessment].freeze
+
+    # Which of AdaptiveDifficulty's three titles this is, in whichever locale it
+    # was written (rows from before WP-9 carry English on a Spanish route).
+    def reinforcement_kind
+      return unless ReinforcementParents.reinforcement?(self)
+
+      REINFORCEMENT_KINDS.find do |kind|
+        I18n.available_locales.any? { |l| I18n.t("learning_engine.reinforcement.#{kind}.title", locale: l) == title }
+      end
+    end
+
+    # The route's language, read without loading the route when it is not loaded.
+    def route_locale
+      @route_locale ||= begin
+        locale = association(:learning_route).loaded? ? learning_route.locale : LearningRoute.where(id: learning_route_id).pick(:locale)
+        locale.presence || I18n.default_locale.to_s
+      end
     end
 
     def localized_description(locale = I18n.locale)
-      translations.dig(locale.to_s, "description") || description
+      translations.dig(locale.to_s, "description") || reinforcement_text("description") || description
     end
 
     # Lesson and exercise only, and the two absentees are deliberate.
@@ -207,6 +227,12 @@ module LearningRoutesEngine
     end
 
     private
+
+    # A generated reinforcement's title and description, in the route's language.
+    def reinforcement_text(field)
+      kind = reinforcement_kind
+      kind && I18n.t("learning_engine.reinforcement.#{kind}.#{field}", locale: route_locale)
+    end
 
     # Default a step with no module into the preview module.
     #
