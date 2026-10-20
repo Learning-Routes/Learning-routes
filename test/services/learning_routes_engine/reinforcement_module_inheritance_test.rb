@@ -118,14 +118,19 @@ module LearningRoutesEngine
   end
 
   # The cap must not become a permanent block: reinforcement the student has
-  # actually worked through has served its purpose.
+  # actually worked through has served its purpose. Since the owner's rule of
+  # 20 Oct (one round per step) the same step gets its round back rather than
+  # another trio, and a different step gets a trio of its own.
   test "once the reinforcement is worked through, more may be inserted" do
     reinforce_from(@paid_step)
     first_batch = reinforcement_steps.size
 
     reinforcement_steps.each { |step| step.update!(status: :completed) }
     reinforce_from(@paid_step)
+    assert reinforcement_steps.all?(&:available?), "the worked-through round is reopened, not blocked"
 
+    reinforcement_steps.each { |step| step.update!(status: :completed) }
+    reinforce_from(@free_step)
     assert_operator reinforcement_steps.size, :>, first_batch
   end
 
