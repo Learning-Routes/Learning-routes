@@ -4,6 +4,15 @@ require "test_helper"
 # both themes, with the values application.css actually declares.
 class TokenContrastTest < ActiveSupport::TestCase
   PAIRS = [%w[txt bg], %w[txt card], %w[sub card], %w[accent-text accent], %w[link card]].freeze
+  # The owner's answers on PR #87 (19 Oct): these hold on both surfaces, text
+  # at 4.5:1, the step-completed icon (a UI part) at 3:1. --color-highlight is
+  # left out on purpose: it always sits next to its words (Estás aquí, the
+  # streak count), so it is never the only cue (docs/design/palette.md).
+  ON_SURFACES = {
+    "badge-assessment-text" => 4.5, "badge-exercise-text" => 4.5, "due-link" => 4.5, "positive" => 4.5,
+    "warning" => 4.5, "negative" => 4.5, "flash-alert-text" => 4.5, "section-audio-active" => 4.5,
+    "status-completed-text" => 4.5, "status-paused-text" => 4.5, "reinforce" => 4.5, "step-completed-icon" => 3.0
+  }.freeze
 
   test "text pairs read at 4.5:1 in light and dark" do
     tokens = self.class.tokens
@@ -12,6 +21,19 @@ class TokenContrastTest < ActiveSupport::TestCase
       PAIRS.each do |fg, bg|
         ratio = contrast(tokens[theme].fetch(fg), tokens[theme].fetch(bg))
         assert_operator ratio, :>=, 4.5, "#{theme}: --color-#{fg} on --color-#{bg} is #{ratio.round(2)}:1"
+      end
+    end
+  end
+
+  test "status, feedback and badge colours read on card and bg in light and dark" do
+    tokens = self.class.tokens
+
+    %i[light dark].each do |theme|
+      ON_SURFACES.each do |token, need|
+        %w[card bg].each do |surface|
+          ratio = contrast(tokens[theme].fetch(token), tokens[theme].fetch(surface))
+          assert_operator ratio, :>=, need, "#{theme}: --color-#{token} on --color-#{surface} is #{ratio.round(2)}:1"
+        end
       end
     end
   end
