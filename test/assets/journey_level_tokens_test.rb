@@ -67,13 +67,18 @@ class JourneyLevelTokensTest < ActiveSupport::TestCase
     end
   end
 
-  # A token set to a --color-* token follows the theme through it (STEP 41);
-  # every other one needs its own dark value.
+  # A token built only from --color-* tokens (a var or a color-mix of them, no
+  # literal colour) follows the theme through them (STEP 41); every other one
+  # needs its own dark value.
   test "every journey token is defined in both themes" do
-    light = JOURNEY_LIGHT.scan(/(--jm-[a-z-]+):\s*([^;]+);/).reject { |_, v| v.strip.match?(/\Avar\(--color-[a-z0-9-]+\)\z/) }.map(&:first)
+    from_tokens = ->(v) { v.include?("var(--color-") && !v.match?(/#\h{3,8}\b|rgba?\(/) }
+    declared = JOURNEY_LIGHT.scan(/(--jm-[a-z-]+):\s*([^;]+);/)
+    light = declared.reject { |_, v| from_tokens.(v) }.map(&:first)
     dark = JOURNEY_DARK.scan(/(--jm-[a-z-]+):/).flatten.uniq
     refute_empty light
-    assert_equal light.sort, dark.sort, "a --jm- token exists in one theme only"
+    assert_empty light - dark, "a --jm- token exists in one theme only"
+    # Dark may re-weight a token-built value (the track, the vignette); it may not invent one.
+    assert_empty dark - declared.map(&:first), "dark declares a --jm- token light does not"
   end
 
   private

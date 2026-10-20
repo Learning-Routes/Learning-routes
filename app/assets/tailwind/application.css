@@ -3426,32 +3426,29 @@ html[data-theme="dark"] .wizard-footer { background: var(--color-bg, #1A1710); }
   --color-node-nv1: var(--color-accent);
   --color-node-nv2: var(--color-accent);
   --color-node-nv3: var(--color-accent);
-  --jm-panel: rgba(254, 253, 251, 0.62);
+  --jm-panel: color-mix(in srgb, var(--color-card) 62%, transparent);
   --jm-contour: var(--color-border-subtle);
-  --jm-vignette: rgba(28, 24, 18, 0.07);
+  --jm-vignette: color-mix(in srgb, var(--color-shade) 39%, transparent);
   --jm-halo: 0;
-  --jm-halo-c: #FAF8F3;
+  --jm-halo-c: var(--color-bg);
   --jm-glow-a: 0.07;
   --jm-reinf: var(--color-reinforce);
-  --jm-track: rgba(28, 24, 18, 0.18);
-  --jm-locked: var(--color-faint);
+  --jm-track: color-mix(in srgb, var(--color-txt) 18%, transparent);
+  /* Locked is "not yet": 3:1 on card, bg and sheet, lighter than the ring
+     (journey_ciruela_test.rb measures it). */
+  --jm-locked: color-mix(in srgb, var(--color-muted) 85%, var(--color-card));
   --jm-ring: var(--color-muted);
-  --jm-glass: rgba(254, 253, 251, 0.78);
-  --jm-glass-border: rgba(28, 24, 18, 0.10);
-  --jm-shadow: 0 10px 30px -12px rgba(28, 24, 18, 0.25);
+  --jm-glass: color-mix(in srgb, var(--color-card) 78%, transparent);
+  --jm-glass-border: color-mix(in srgb, var(--color-txt) 10%, transparent);
+  --jm-shadow: 0 10px 30px -12px var(--color-shade);
   --jm-focus: #2C5F8E;
 }
 html[data-theme="dark"] .jm {
-  /* STEP 41: Ciruela's plum surfaces, not WP-37b's warm browns. */
-  --jm-panel: color-mix(in srgb, var(--color-card) 62%, var(--color-bg-2));
-  --jm-vignette: rgba(0, 0, 0, 0.30);
+  /* STEP 41: Ciruela's tokens carry the theme; only weights differ here. */
+  --jm-vignette: color-mix(in srgb, var(--color-shade) 55%, transparent);
   --jm-halo: 1;
-  --jm-halo-c: var(--color-bg);
   --jm-glow-a: 0.16;
-  --jm-track: rgba(240, 235, 226, 0.20);
-  --jm-glass: color-mix(in srgb, var(--color-card) 78%, transparent);
-  --jm-glass-border: rgba(240, 235, 226, 0.10);
-  --jm-shadow: 0 10px 30px -12px rgba(0, 0, 0, 0.6);
+  --jm-track: color-mix(in srgb, var(--color-txt) 20%, transparent);
   --jm-focus: #8DB6E0;
 }
 /* No implicit transitions inside the map. The app-wide reduced-motion rule
@@ -3500,7 +3497,7 @@ html[data-theme="dark"] .jm {
                 color: var(--color-txt); transition-property: transform; transition-duration: 150ms; }
 .jm-node:hover .jm-node__dot, .jm-node--hot .jm-node__dot { transform: translateY(-1px) scale(1.06); }
 /* The journey keeps WP-37b's faces until STEP 41 PR 5b aligns it. */
-.jm-sans { font-family: 'Manrope', sans-serif; }
+.jm-sans { font-family: var(--font-sans); }
 .jm-mono { font-family: 'JetBrains Mono', monospace; }
 .jm-node__num { font-family: 'JetBrains Mono', monospace; font-weight: 500; font-size: 15px; line-height: 1;
                 font-variant-numeric: tabular-nums; color: var(--color-txt); }
@@ -3552,7 +3549,7 @@ html[data-theme="dark"] .jm {
 .jm-chip svg, .jm-unlock svg { width: 11px; height: 11px; flex: none; }
 .jm-unlock { position: absolute; transform: translate(-100%, -50%); display: inline-flex; align-items: center; gap: 6px;
              height: 26px; padding: 0 12px; border-radius: 999px; background: var(--color-bg); border: 1px solid var(--jm-line);
-             color: var(--jm-line); font-family: 'Manrope', sans-serif; font-size: 12px; font-weight: 700;
+             color: var(--jm-line); font-family: var(--font-sans); font-size: 12px; font-weight: 700;
              text-decoration: none; white-space: nowrap; }
 .jm-unlock:focus-visible { outline: 2px solid var(--jm-focus); outline-offset: 2px; }
 
@@ -3572,7 +3569,7 @@ html[data-theme="dark"] .jm {
   .jm-glass { -webkit-backdrop-filter: none; backdrop-filter: none; background: var(--color-card); }
 }
 .jm-legend { left: 20px; bottom: 20px; display: flex; flex-wrap: wrap; gap: 10px 16px; padding: 10px 14px;
-             max-width: calc(50vw - 330px); font-family: 'Manrope', sans-serif; font-size: 12px; color: var(--color-sub); }
+             max-width: calc(50vw - 330px); font-family: var(--font-sans); font-size: 12px; color: var(--color-sub); }
 .jm-legend span { display: inline-flex; align-items: center; gap: 7px; }
 .jm-legend__mark { width: 12px; height: 12px; border-radius: 50%; border: 2px solid var(--jm-ring); display: inline-block; box-sizing: border-box; }
 .jm-legend__mark--done { background: var(--color-node-nv1); border-color: var(--color-node-nv1); }
@@ -3584,19 +3581,19 @@ html[data-theme="dark"] .jm {
 .jm-card__text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 .jm-card__eyebrow { font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: .02em; color: var(--color-sub);
                     white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.jm-card__title { font-family: 'Manrope', sans-serif; font-weight: 700; font-size: 15px; letter-spacing: -.01em; color: var(--color-txt);
+.jm-card__title { font-family: var(--font-sans); font-weight: 700; font-size: 15px; letter-spacing: -.01em; color: var(--color-txt);
                   white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 /* Continue is a .btn3; the map's no-transition rule above would freeze its press. */
 .jm-cta { flex: none; transition-property: background-color, transform, box-shadow; }
 .jm-iconbtn:focus-visible, .jm-bar button:focus-visible, .jm-bar__list:focus-visible {
   outline: 2px solid var(--jm-focus); outline-offset: 2px; }
 .jm-iconbtn, .jm-bar button { appearance: none; border: 0; background: transparent; color: var(--color-txt);
-                              font-family: 'Manrope', sans-serif; font-weight: 500; font-size: 14px; height: 44px; min-width: 44px;
+                              font-family: var(--font-sans); font-weight: 500; font-size: 14px; height: 44px; min-width: 44px;
                               padding: 0 10px; border-radius: 8px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; }
 .jm-iconbtn:hover, .jm-bar button:hover { background: var(--color-border-subtle); }
 .jm-bar { right: 20px; bottom: 20px; display: flex; align-items: center; gap: 2px; padding: 3px; }
 .jm-bar__list { display: inline-flex; align-items: center; gap: 6px; height: 44px; padding: 0 12px; border-radius: 8px;
-                font-family: 'Manrope', sans-serif; font-size: 13px; color: var(--color-txt); text-decoration: none; }
+                font-family: var(--font-sans); font-size: 13px; color: var(--color-txt); text-decoration: none; }
 .jm-bar__rule { width: 1px; height: 22px; background: var(--jm-glass-border); margin: 0 4px; }
 
 /* ── Popover (brief §5.2) ── */

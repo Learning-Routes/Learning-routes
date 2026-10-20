@@ -26,7 +26,7 @@ class JourneyCiruelaTest < ActiveSupport::TestCase
   test "reinforcement, upcoming and locked outlines and terrain are tokens, in both themes" do
     declares(".jm", "--jm-reinf", "var(--color-reinforce)")
     declares(".jm", "--jm-ring", "var(--color-muted)")
-    declares(".jm", "--jm-locked", "var(--color-faint)")
+    declares(".jm", "--jm-locked", "color-mix(in srgb, var(--color-muted) 85%, var(--color-card))")
     declares(".jm", "--jm-contour", "var(--color-border-subtle)")
     dark = rule('html[data-theme="dark"] .jm')
     %w[--jm-reinf --jm-ring --jm-locked --jm-contour].each do |token|
