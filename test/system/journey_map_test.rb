@@ -620,6 +620,30 @@ class JourneyMapTest < ApplicationSystemTestCase
     end
   end
 
+  # The owner's screenshot: a current step deep in a reinforcement fan opened
+  # with the route's title half under the blurred top bar. The title opens
+  # clear of it while the step stays in view; when both cannot fit, the step
+  # wins and the title is wholly off the top, never half under the bar.
+  [[1440, 1000, 3, :clear], [390, 844, 1, :clear], [1440, 1000, 30, :off]].each do |w, h, kid, expect|
+    test "at #{w} with the current step at reinforcement #{kid + 1}, the title opens #{expect} of the top bar" do
+      viewport(w, h, scale: w < 700 ? 3 : 1)
+      route = build_route(43)
+      current = route.route_steps.where("metadata->>'reinforcement' = 'true'").order(:position)[kid]
+      current.update!(status: :available)
+      route.update!(current_step: current.position)
+      open_journey(route, reduced_motion: true)
+
+      root = rect_of(".jm-root")
+      bar = rect_of("#journey-topbar")
+      if expect == :clear
+        assert_operator root["top"], :>=, bar["bottom"], "the title opens under the top bar: #{root.inspect}"
+      else
+        assert_operator root["bottom"], :<=, 0, "the title opens half under the top bar: #{root.inspect}"
+      end
+      assert_current_clear(route)
+    end
+  end
+
   test "on a phone the current step opens centred at the legible floor" do
     viewport(390, 844)
     route = build_route(:production)

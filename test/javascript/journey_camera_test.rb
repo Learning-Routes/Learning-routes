@@ -60,6 +60,30 @@ class JourneyCameraTest < ActiveSupport::TestCase
     assert_inside call("screenBox", cam, box), safe
   end
 
+  # The route's title is the root block at the top of the world.
+  TITLE = { x: -180, y: 0, w: 360, h: 76 }.freeze
+
+  test "revealTitle brings a title half under the bar clear of it when the step stays in view" do
+    safe = call("safeRect", DESKTOP, [TOPBAR])
+    step = { x: 0, y: 400, w: 40, h: 40 }
+    cam = call("revealTitle", { x: 0, y: 30, k: 1 }, TITLE, step, safe, 16)
+    assert_equal 52 + 16, TITLE[:y] + cam["y"]
+    assert_inside call("screenBox", cam, step), safe
+  end
+
+  test "revealTitle leaves a clear title alone" do
+    safe = call("safeRect", DESKTOP, [TOPBAR])
+    assert_equal({ "x" => 0, "y" => 100, "k" => 1 }, call("revealTitle", { x: 0, y: 100, k: 1 }, TITLE, { x: 0, y: 400, w: 40, h: 40 }, safe, 16))
+  end
+
+  test "when title and step cannot both fit, the step stays and the title goes wholly off the top" do
+    safe = call("safeRect", { left: 0, top: 0, width: 1440, height: 300 }, [TOPBAR])
+    step = { x: 0, y: 200, w: 40, h: 40 }
+    cam = call("revealTitle", { x: 0, y: -24, k: 1 }, TITLE, step, safe, 16)
+    assert_equal 0, TITLE[:y] + TITLE[:h] + cam["y"]
+    assert_inside call("screenBox", cam, step), safe
+  end
+
   private
 
   # STEP 38 §4, the leash: the content box plus a margin is the world; the
