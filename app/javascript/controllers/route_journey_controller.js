@@ -1,6 +1,6 @@
 import { Controller } from "@hotwired/stimulus"
 import { buildTree, layoutJourney, DEFAULTS } from "journey_map_layout"
-import { safeRect, fitCamera, centerOn, zoomAbout, ensureVisible, leashRange, clampCamera, clampScale } from "journey_camera"
+import { safeRect, fitCamera, centerOn, zoomAbout, ensureVisible, leashRange, clampCamera, clampScale, revealTitle } from "journey_camera"
 import { buildPaths } from "journey_map_paths"
 import { contours } from "journey_terrain"
 
@@ -489,8 +489,10 @@ export default class extends Controller {
   // STEP 38 §4: the page opens fitted to the world's width, the current step
   // (or, with nothing readable, the root) centred, inside the world.
   _opening(safe) {
-    const node = this.current || this.nodeById.get("root")
-    return clampCamera(centerOn({ x: node.cx, y: node.cy }, safe, this.zoomRange.min), this._world(), safe)
+    const root = this.nodeById.get("root")
+    const node = this.current || root
+    const centred = clampCamera(centerOn({ x: node.cx, y: node.cy }, safe, this.zoomRange.min), this._world(), safe)
+    return node === root ? centred : clampCamera(revealTitle(centred, root, node, safe), this._world(), safe)
   }
 
   _world() {

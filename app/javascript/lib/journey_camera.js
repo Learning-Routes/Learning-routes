@@ -83,6 +83,19 @@ export function ensureVisible(camera, box, safe, margin = 24) {
   return { ...camera, x: camera.x + dx, y: camera.y + dy };
 }
 
+// The opening shows the route's title below the top bar whenever the current
+// step stays in view too. When both cannot fit, the step wins and the title
+// goes wholly off the top (above y = 0), never half under the bar.
+export function revealTitle(camera, title, step, safe, margin = 16) {
+  const k = camera.k;
+  const want = safe.top + margin - (title.y * k + camera.y);
+  if (want <= 0) return camera;
+  const room = safe.top + safe.height - margin - ((step.y + step.h) * k + camera.y);
+  if (want <= room) return { ...camera, y: camera.y + want };
+  const under = (title.y + title.h) * k + camera.y;
+  const headroom = step.y * k + camera.y - (safe.top + margin);
+  return { ...camera, y: camera.y - Math.max(0, Math.min(under, headroom)) };
+}
 
 // STEP 38 §4, the leash. `world` is the content box plus a margin. Zoom runs
 // from the fitted scale to twice that; nothing beyond. The fitted scale is
