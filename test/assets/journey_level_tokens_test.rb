@@ -53,24 +53,35 @@ class JourneyLevelTokensTest < ActiveSupport::TestCase
   end
 
   # WP-37b brief §4.3. The terrain is texture, never a line competing with the
-  # route: its stroke stays at or under 10 % alpha in both themes.
+  # route. STEP 41 draws it in --color-border-subtle, opaque, so faint is
+  # measured: at most 1.4:1 on the map's background in each theme.
   JOURNEY_LIGHT = CSS[/^\.jm\s*\{(.*?)\}/m, 1].to_s
   JOURNEY_DARK = CSS[/^html\[data-theme="dark"\] \.jm\s*\{(.*?)\}/m, 1].to_s
 
-  test "--jm-contour is a faint rgba in both themes" do
-    { "light" => JOURNEY_LIGHT, "dark" => JOURNEY_DARK }.each do |theme, block|
-      value = block[/--jm-contour:\s*([^;]+);/, 1]
-      assert value, "no #{theme} value for --jm-contour"
-      alpha = value[/rgba\([^)]*,\s*([\d.]+)\s*\)/, 1]
-      assert alpha, "--jm-contour must be an rgba so its alpha is explicit, got #{value.inspect} (#{theme})"
-      assert_operator alpha.to_f, :<=, 0.1, "--jm-contour alpha #{alpha} on #{theme} turns the terrain into lines"
+  test "the terrain stays faint in both themes" do
+    assert_equal "var(--color-border-subtle)", JOURNEY_LIGHT[/--jm-contour:\s*([^;]+);/, 1]
+    { "light" => LIGHT, "dark" => DARK.to_s }.each do |theme, block|
+      line, bg = %w[border-subtle bg].map { |t| block.scan(/--color-#{t}:\s*(#\h{6})/).flatten.last }
+      ratio = contrast(line, bg)
+      assert_operator ratio, :<=, 1.4, "the terrain reads #{ratio.round(2)}:1 on #{theme}: lines, not texture"
     end
   end
 
+  # A token set to a --color-* token follows the theme through it (STEP 41);
+  # every other one needs its own dark value.
   test "every journey token is defined in both themes" do
-    light = JOURNEY_LIGHT.scan(/(--jm-[a-z-]+):/).flatten.uniq
+    light = JOURNEY_LIGHT.scan(/(--jm-[a-z-]+):\s*([^;]+);/).reject { |_, v| v.strip.match?(/\Avar\(--color-[a-z0-9-]+\)\z/) }.map(&:first)
     dark = JOURNEY_DARK.scan(/(--jm-[a-z-]+):/).flatten.uniq
     refute_empty light
     assert_equal light.sort, dark.sort, "a --jm- token exists in one theme only"
+  end
+
+  private
+
+  def contrast(a, b)
+    lum = ->(hex) { hex.delete("#").scan(/../).map { |c| c.to_i(16) / 255.0 }
+      .map { |c| c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055)**2.4 }.zip([0.2126, 0.7152, 0.0722]).sum { |c, w| c * w } }
+    hi, lo = [lum.(a), lum.(b)].sort.reverse
+    (hi + 0.05) / (lo + 0.05)
   end
 end
