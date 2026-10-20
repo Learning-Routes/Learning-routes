@@ -79,10 +79,34 @@ module LearningRoutesEngine
                                    metadata: { "reinforcement" => true, "triggering_step_id" => exam.id })
       end
 
+      latest = children_of(exam) - first
+
       assert_no_difference -> { RouteStep.where(learning_route_id: @route.id).count } do
         fail!(exam)
       end
       assert first.all? { |s| s.reload.completed? }, "only the latest trio reopens; the first is left alone"
+      assert latest.all? { |s| s.reload.available? }, "the latest trio reopens"
+    end
+
+    # Production's shape: every trio is inserted at current_step + 1, so a
+    # student who failed the same step again without moving on has the NEWER
+    # trio at LOWER positions. Most recent means created last, not placed last.
+    test "the most recent trio reopens by creation, not by position" do
+      exam = @steps[1]
+      trio = ->(positions, created_at) do
+        positions.map do |position|
+          @route.route_steps.create!(position: position, title: "Refuerzo #{position}", level: :nv1, bloom_level: 2,
+                                     content_type: :lesson, status: :completed, completed_at: created_at,
+                                     created_at: created_at, metadata: { "reinforcement" => true, "triggering_step_id" => exam.id })
+        end
+      end
+      older = trio.call([60, 61, 62], 2.days.ago)
+      newer = trio.call([40, 41, 42], 1.day.ago)
+
+      fail!(exam)
+
+      assert newer.all? { |s| s.reload.available? }, "the newer trio's completed steps are available again"
+      assert older.all? { |s| s.reload.completed? }, "the older trio is left completed"
     end
 
     private
