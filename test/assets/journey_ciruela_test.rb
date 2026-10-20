@@ -45,6 +45,20 @@ class JourneyCiruelaTest < ActiveSupport::TestCase
     declares(".jm-chip", "background", "var(--color-accent-soft)")
   end
 
+  test "in dark, the glass, the sheets and the halo are Ciruela's, not WP-37b's warm browns" do
+    dark = 'html[data-theme="dark"] .jm'
+    declares(dark, "--jm-glass", "color-mix(in srgb, var(--color-card) 78%, transparent)")
+    declares(dark, "--jm-panel", "color-mix(in srgb, var(--color-card) 62%, var(--color-bg-2))")
+    declares(dark, "--jm-halo-c", "var(--color-bg)")
+    assert_no_match(/rgba\(34, 31, 24|#1F1C16/i, rule(dark), "a warm brown is left in the dark map")
+  end
+
+  test "the route's title is Archivo at the display weight, as the reference's root label" do
+    declares(".jm-root__title", "font-family", "var(--font-sans)")
+    declares(".jm-root__title", "font-weight", "740")
+    declares(".jm-root__title", "font-stretch", "112%")
+  end
+
   test "the popover and the labels are in Archivo" do
     %w[.jm-pop__eyebrow .jm-pop__title .jm-pop__meta .jm-pop__act .jm-node__label].each do |selector|
       declares(selector, "font-family", "var(--font-sans)")
