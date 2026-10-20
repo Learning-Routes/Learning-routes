@@ -123,6 +123,8 @@ export default class extends Controller {
     vp.removeEventListener("dblclick", this.onDoubleClick)
     vp.removeEventListener("pointerover", this.onPointerOver)
     vp.removeEventListener("pointerout", this.onPointerOut)
+    this.popTarget.removeEventListener("pointerenter", this.onPopEnter)
+    this.popTarget.removeEventListener("pointerleave", this.onPopLeave)
   }
 
   // ── Actions ──────────────────────────────────────────────────────────
@@ -580,6 +582,16 @@ export default class extends Controller {
     vp.addEventListener("dblclick", this.onDoubleClick)
     vp.addEventListener("pointerover", this.onPointerOver)
     vp.addEventListener("pointerout", this.onPointerOut)
+    // The popover lives outside the viewport: a mouse on its way to the link
+    // keeps it open, and leaving it closes it like leaving the node.
+    this.onPopEnter = (e) => { if (e.pointerType !== "touch") clearTimeout(this.popTimer) }
+    this.onPopLeave = (e) => {
+      if (e.pointerType === "touch" || !this.popNode || this.popEl?.contains(e.relatedTarget)) return
+      clearTimeout(this.popTimer)
+      this.popTimer = setTimeout(() => this._hidePop(), HOVER_CLOSE_MS)
+    }
+    this.popTarget.addEventListener("pointerenter", this.onPopEnter)
+    this.popTarget.addEventListener("pointerleave", this.onPopLeave)
   }
 
   _local(e) {
@@ -692,7 +704,7 @@ export default class extends Controller {
   _onPointerOut(e) {
     if (e.pointerType === "touch") return
     const el = this._popCandidate(e.target)
-    if (!el || el.contains(e.relatedTarget)) return
+    if (!el || el.contains(e.relatedTarget) || this.popTarget.contains(e.relatedTarget)) return
     clearTimeout(this.popTimer)
     // Keyboard focus keeps it open; a link a mouse press happened to focus does not.
     if (!el.matches(":focus-visible")) this.popTimer = setTimeout(() => this._hidePop(), HOVER_CLOSE_MS)
