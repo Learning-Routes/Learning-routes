@@ -273,7 +273,7 @@ en:
         - - Projects
           - []
       gt:
-        title: Guitar to get started
+        title: Guitar for beginners
         modules:
         - - The basics
           - - Posture
@@ -320,7 +320,7 @@ en:
       ideas:
       - Portuguese for travel
       - Python from scratch
-      - Guitar to get started
+      - Guitar for beginners
       - Personal finance
       blueprint_title: Your route will appear here.
       blueprint_line: Modules in order, each with its topics. The first module is free.
