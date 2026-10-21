@@ -178,7 +178,14 @@ module Core
     end
 
     def after_sign_in_path(user = nil)
-      main_app.profile_path
+      pending_wizard_path || main_app.profile_path
+    end
+
+    # STEP 41 §2.3: the landing's topic, kept in the session until the wizard
+    # takes it (RouteWizardController#new), across sign-up and email verification.
+    def pending_wizard_path
+      topic = session[:wizard_topic]
+      main_app.new_route_wizard_path(topic: topic) if topic.present?
     end
 
     def start_session_for(user, remember: false)
@@ -186,7 +193,11 @@ module Core
       # against session fixation (an attacker who set the pre-login session
       # cookie can no longer use it). reset_session wipes everything in the
       # session hash, so we must re-create our own keys after.
+      # The landing's topic (STEP 41 §2.3) is the visitor's own text, not a
+      # privilege, so it is carried across the reset.
+      topic = session[:wizard_topic]
       reset_session
+      session[:wizard_topic] = topic if topic.present?
 
       sess = user.sessions.create!(
         ip_address: request.remote_ip,

@@ -29,6 +29,11 @@ class RouteWizardController < ApplicationController
     # StrictLoadingViolationError and 500'd this page in production. Same pattern and
     # same reason as AiOrchestrator::CurriculumBrain#initialize.
     @saved_profile = LearningRoutesEngine::LearningProfile.find_by(user_id: current_user.id)
+
+    # STEP 41 §2.3: the landing's "¿Qué quieres aprender?" arrives as ?topic= and
+    # fills the first question, within the field's 200 characters.
+    @prefill_topic = params[:topic].to_s.strip.first(200).presence
+    session.delete(:wizard_topic)
   end
 
   def create
