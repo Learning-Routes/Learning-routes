@@ -11,10 +11,7 @@
 
     <%# === Desktop links === %>
     <div class="hidden md:flex items-center gap-[clamp(1rem,3vw,2.5rem)]">
-      <a href="#features" class="font-sans text-[0.8rem] font-medium text-muted hover:text-txt focus-visible:text-txt focus-visible:outline-none focus-visible:underline transition-colors duration-200">
-        <%= t("nav.features") %>
-      </a>
-      <a href="#how-it-works" class="font-sans text-[0.8rem] font-medium text-muted hover:text-txt focus-visible:text-txt focus-visible:outline-none focus-visible:underline transition-colors duration-200">
+      <a href="<%= main_app.root_path(anchor: "como") %>" class="font-sans text-[0.8rem] font-medium text-muted hover:text-txt focus-visible:text-txt focus-visible:outline-none focus-visible:underline transition-colors duration-200">
         <%= t("nav.how_it_works") %>
       </a>
 
@@ -50,11 +47,7 @@
   <div id="navbar-mobile-menu" data-navbar-target="menu"
        class="hidden md:hidden bg-card border-b border-lr px-[clamp(1.5rem,5vw,4rem)] pb-5 pt-2">
     <div class="flex flex-col gap-3">
-      <a href="#features" data-action="navbar#closeMenu"
-         class="font-sans text-[0.88rem] font-medium text-sub hover:text-txt focus-visible:text-txt focus-visible:outline-none focus-visible:underline transition-colors py-1">
-        <%= t("nav.features") %>
-      </a>
-      <a href="#how-it-works" data-action="navbar#closeMenu"
+      <a href="<%= main_app.root_path(anchor: "como") %>" data-action="navbar#closeMenu"
          class="font-sans text-[0.88rem] font-medium text-sub hover:text-txt focus-visible:text-txt focus-visible:outline-none focus-visible:underline transition-colors py-1">
         <%= t("nav.how_it_works") %>
       </a>

@@ -10,7 +10,6 @@ en:
   # ── Navbar ──
   nav:
     home: "Home"
-    features: "Features"
     how_it_works: "How it works"
     sign_in: "Sign in"
     sign_up: "Get started"

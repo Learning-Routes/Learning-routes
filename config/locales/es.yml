@@ -10,7 +10,6 @@ es:
   # ── Navbar ──
   nav:
     home: "Inicio"
-    features: "Características"
     how_it_works: "Cómo funciona"
     sign_in: "Iniciar sesión"
     sign_up: "Empezar"
