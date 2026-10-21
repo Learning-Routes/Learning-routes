@@ -3644,7 +3644,8 @@ html[data-theme="dark"] .lp {
 }
 .lp { background: var(--color-bg); color: var(--color-txt); font-family: var(--font-sans); font-size: 17px; font-weight: 420; line-height: 1.55;
       -webkit-font-smoothing: antialiased; overflow-x: clip; }
-.lp a { color: inherit; }
+/* Unlayered, so it must not reach .btn3 (in @layer components): its text is --color-accent-text. */
+.lp a:not(.btn3) { color: inherit; }
 .lp :focus-visible { outline: 2px solid var(--color-accent); outline-offset: 3px; border-radius: 8px; }
 .lp-wrap { width: 100%; max-width: 1280px; margin: 0 auto; padding: 0 32px; }
 @media (max-width: 640px) { .lp-wrap { padding: 0 18px; } }
