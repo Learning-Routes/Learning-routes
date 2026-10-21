@@ -104,6 +104,7 @@ class LandingTest < ApplicationSystemTestCase
   test "an idea fills the field" do
     visit_landing
     idea = I18n.t("landing.close.ideas", locale: :es)[1]
+    show_closing
 
     find(".lp-ideas button", text: idea).click
 
@@ -182,9 +183,18 @@ class LandingTest < ApplicationSystemTestCase
   end
 
   def ask(topic)
-    page.execute_script("document.getElementById('empezar').scrollIntoView()")
+    show_closing
     fill_in "lp-want", with: topic
     click_button I18n.t("landing.close.button", locale: :es)
+  end
+
+  # The app scrolls smoothly (scroll-behavior: smooth): a click Selenium scrolls
+  # to lands where the button was, mid-scroll. Jump to the closing sheet at once.
+  def show_closing
+    page.execute_script("document.getElementById('empezar').scrollIntoView({ block: 'center', behavior: 'instant' })")
+    Timeout.timeout(3) do
+      sleep 0.05 until page.evaluate_script("(() => { const y = scrollY; return new Promise((r) => requestAnimationFrame(() => r(scrollY === y))) })()")
+    end
   end
 
   def reduce_motion
