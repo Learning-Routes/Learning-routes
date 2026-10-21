@@ -46,14 +46,13 @@ class LandingSignedInTest < ActionDispatch::IntegrationTest
     user
   end
 
-  # The visitor landing: its own nodes, every satellite labelled, and never a
-  # public cache entry. The page carries the signed-in navbar, so a shared cache
-  # would hand this person's navbar to the next visitor.
+  # The visitor landing (STEP 41's annotated map, its example routes from the
+  # locale), and never a public cache entry. The page carries the signed-in nav,
+  # so a shared cache would hand this person's nav to the next visitor.
   def assert_landing_for(_user)
     assert_response :success
-    nodes = @controller.instance_variable_get(:@route_nodes)
-    assert_equal 6, nodes.size
-    assert nodes.flat_map { |node| Array(node[:sats]) }.all? { |sat| sat[:topic].present? }
+    assert_select "section#como[data-controller='landing-stage']"
+    assert_select "form.lp-ask[action='#{new_route_wizard_path}']"
     assert_no_match(/public/, response.headers["Cache-Control"].to_s)
   end
 end

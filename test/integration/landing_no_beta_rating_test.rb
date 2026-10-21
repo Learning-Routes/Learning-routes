@@ -11,7 +11,7 @@ class LandingNoBetaRatingTest < ActionDispatch::IntegrationTest
       get root_path
 
       assert_response :success
-      assert_includes response.body, ERB::Util.html_escape(I18n.t("hero.cta", locale: locale))
+      assert_includes response.body, ERB::Util.html_escape(I18n.t("landing.hero.button", locale: locale))
       refute_includes response.body, "4.8"
       refute_match(/#{phrase}/i, response.body)
       refute_match(/satisf/i, response.body)

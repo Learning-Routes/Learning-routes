@@ -68,14 +68,7 @@ class LandingForEveryoneTest < ActionDispatch::IntegrationTest
   def assert_landing
     assert_response :success
     assert_nil response.location, "GET / must never redirect"
-    assert_select "section#how-it-works"
-
-    nodes = @controller.instance_variable_get(:@route_nodes)
-    assert_equal 6, nodes.size
-    nodes.each do |node|
-      Array(node[:sats]).each do |sat|
-        assert sat[:topic].present?, "a satellite was rendered with no topic — the empty-circle defect"
-      end
-    end
+    # STEP 41: the annotated map, with its six texts in the page.
+    assert_select "section#como[data-controller='landing-stage'] .lp-ann", 6
   end
 end
