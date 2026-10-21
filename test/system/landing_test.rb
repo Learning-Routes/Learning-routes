@@ -69,7 +69,11 @@ class LandingTest < ApplicationSystemTestCase
     test "#{theme}: every .btn3 on the landing reads at 4.5:1" do
       visit_landing
       page.execute_script("document.documentElement.setAttribute('data-theme', #{theme.to_json})")
-      sleep 0.4
+      # .btn3 eases its background over .15 s while its text colour switches at
+      # once: measure the settled colours, not a frame mid-transition.
+      Timeout.timeout(5) do
+        sleep 0.05 until page.evaluate_script("document.getAnimations().filter((a) => a.effect?.target?.classList?.contains('btn3')).length").zero?
+      end
 
       buttons = page.evaluate_script(<<~JS)
         (() => {
