@@ -22,119 +22,6 @@ es:
     sign_out: "Cerrar sesión"
     settings: "Ajustes"
 
-  # ── Hero ──
-  hero:
-    headline_html: "Aprende lo que quieras, bien."
-    headline_active_html: "Tu ruta en<br>%{topic}."
-    subtext: "Dinos qué quieres dominar y obtén una ruta de aprendizaje única, con evaluaciones que se adaptan a tu progreso real."
-    subtext_active: "Continúa tu ruta personalizada. %{progress}% completado con %{steps} pasos finalizados."
-    cta: "Mira cómo funciona"
-    cta_active: "Seguir aprendiendo"
-
-  # ── Product Preview ──
-  product_preview:
-    label: "Nueva ruta"
-    headline: "Aprende lo que quieras."
-    topics:
-      - "Inglés B1→B2"
-      - "Python"
-      - "Cálculo"
-      - "Diseño UX"
-      - "Fotografía"
-      - "Marketing"
-      - "Japonés"
-      - "Finanzas"
-      - "Machine Learning"
-      - "Guitarra"
-      - "Historia del Arte"
-    more: "Y mucho más..."
-    cta: "Generar mi ruta"
-
-  # ── How It Works ──
-  how_it_works:
-    label: "3 pasos"
-    step_label: "PASO %{n}"
-    headline: "De cero a dominar un tema."
-    steps:
-      - title: "Cuéntanos tu objetivo"
-        desc: "¿Inglés B2? ¿Cálculo diferencial? ¿Python desde cero? Dinos qué quieres lograr y cuánto sabes hoy."
-      - title: "Obtén tu ruta"
-        desc: "Generamos un camino de aprendizaje personalizado con etapas, evaluaciones y contenido adaptado a tu nivel."
-      - title: "Aprende y avanza"
-        desc: "Completa lecciones, recibe refuerzo donde lo necesitas y mide tu progreso en cada paso hasta dominar el tema."
-
-  # ── Path Section ──
-  path_section:
-    product_label: "Producto"
-    headline_active: "Tu ruta de aprendizaje."
-    headline_default: "Así se ve tu ruta."
-    desc_active: "Cada nodo es una etapa de tu ruta. Los satélites son los temas de cada nivel."
-    desc_default: "Cada nodo es una etapa. Haz clic en un satélite para explorar qué pasa en cada nivel."
-    footer_active: "%{completed}/%{total} pasos completados"
-    footer_default: "Cada ruta se genera de forma única"
-    aria_active: "Representación visual de tu ruta de aprendizaje de %{topic} con %{count} nodos conectados"
-    aria_default: "Visualización interactiva de una ruta de aprendizaje personalizada con 6 etapas conectadas. Haz clic en los satélites para más información."
-
-  # ── Outcomes ──
-  outcomes:
-    label: "Resultados"
-    headline_html: "De donde estás, <span class=\"text-sub\">a donde quieres llegar.</span>"
-    items:
-      - from: "No sé por dónde empezar"
-        to: "Ruta clara desde el día uno"
-      - from: "Contenido genérico para todos"
-        to: "Lecciones adaptadas a tu nivel"
-      - from: "Aprendo pero olvido rápido"
-        to: "Refuerzo que fija el aprendizaje"
-      - from: "No sé si estoy progresando"
-        to: "Progreso medible en cada etapa"
-
-  # ── Features ──
-  features:
-    label: "Bajo el capó"
-    headline: "Por qué funciona."
-    items:
-      - title: "Rutas hechas solo para ti"
-        desc: "Cada camino se genera según tus respuestas y evoluciona con tu progreso. Dos personas estudiando el mismo tema tendrán rutas diferentes."
-      - title: "Múltiples modelos, una experiencia"
-        desc: "Diferentes modelos especializados trabajan juntos para explicar cada concepto de la forma más clara posible."
-      - title: "Lecciones con voz natural"
-        desc: "Audio con voces humanas de alta calidad. Inmersión real en el idioma y tema que estás estudiando."
-      - title: "Refuerzo inteligente"
-        desc: "Detecta tus puntos débiles y diseña ejercicios específicos hasta que los domines por completo."
-
-  # ── Integrations ──
-  integrations:
-    label: "Integraciones"
-    headline_html: "Impulsado por las mejores <span class=\"text-sub\">herramientas.</span>"
-    items:
-      - name: "OpenAI"
-        desc: "Generación de contenido"
-      - name: "ElevenLabs"
-        desc: "Síntesis de voz"
-      - name: "GPT Image"
-        desc: "Generación de imágenes"
-
-  # ── CTA ──
-  cta:
-    headline: "Empieza tu ruta hoy."
-    headline_active: "Sigue adelante."
-    subtext: "Descubre una nueva forma de aprender."
-    subtext_active: "Tu ruta de %{topic} te espera."
-    button: "Empezar"
-    button_active: "Ir al panel"
-
-  # ── Footer ──
-  footer:
-    tagline: "Rutas de aprendizaje personalizadas con IA. Aprende lo que necesitas, a tu ritmo."
-    product: "Producto"
-    legal: "Legal"
-    account: "Cuenta"
-    terms: "Términos"
-    privacy: "Privacidad"
-    contact: "Contacto"
-    copyright: "© 2026 Learning Routes. Todos los derechos reservados."
-
   # ── Auth ──
   auth:
     register:
@@ -288,86 +175,163 @@ es:
     correct: "¡Correcto!"
     incorrect: "Incorrecto. %{explanation}"
 
-  # ── Path Visualization ──
-  path_viz:
-    back_button: "Volver a satélites"
-    nodes:
-      n1:
-        label: "Nivelación"
-        tag: "NV1"
-        note: "Diagnóstico inicial"
-        sats:
-          - topic: "Bases"
-            desc: "Empezamos mapeando lo que ya sabes — sin perder tiempo en lo que ya dominas."
-          - topic: "Conceptos"
-            desc: "Se identifican los conceptos clave para que tu ruta se enfoque en lo que realmente importa."
-          - topic: "Fundamentos"
-            desc: "Se evalúa tu conocimiento base para construir el resto de tu ruta sobre terreno sólido."
-      n2:
-        label: "Evaluación"
-        tag: "NV2"
-        note: "Primer checkpoint"
-        sats:
-          - topic: "Quiz"
-            desc: "Quizzes adaptativos cortos que ajustan la dificultad según tus respuestas en tiempo real."
-          - topic: "Práctica"
-            desc: "Ejercicios prácticos que evalúan comprensión, no solo memorización."
-      n3:
-        label: "Profundización"
-        tag: "MM"
-        note: "Contenido multi-modelo"
-        sats:
-          - topic: "Teoría"
-            desc: "Explicaciones generadas por IA adaptadas a tu nivel y estilo de aprendizaje."
-          - topic: "Ejemplos"
-            desc: "Ejemplos del mundo real y fragmentos de código que hacen que los conceptos abstractos encajen."
-          - topic: "Ejercicios"
-            desc: "Ejercicios progresivos que te desafían lo justo para seguir creciendo."
-      n4:
-        label: "Refuerzo"
-        tag: "NV3"
-        note: "Llenar vacíos"
-        sats:
-          - topic: "Repaso"
-            desc: "La repetición espaciada asegura que retengas lo aprendido a lo largo del tiempo."
-          - topic: "Vacíos"
-            desc: "Preguntamos qué no quedó claro y generamos micro-rutas nuevas para llenar esos vacíos."
-      n5:
-        label: "Examen Final"
-        tag: "EF"
-        note: "Repaso intensivo"
-        sats:
-          - topic: "Simulacro"
-            desc: "Exámenes de práctica completos que simulan lo real."
-          - topic: "Resumen"
-            desc: "Un repaso condensado de todo lo que has cubierto — tu guía de estudio personal."
-          - topic: "Temas clave"
-            desc: "Los temas más importantes resaltados para que sepas exactamente dónde enfocarte."
-      n6:
-        label: "Tu Meta"
-        tag: ""
-        note: "Lo lograste"
-        sats:
-          - topic: "Dominio"
-            desc: "Has demostrado comprensión real — no solo conocimiento superficial."
-          - topic: "Portafolio"
-            desc: "Tus ejercicios y proyectos completados son prueba de lo que puedes hacer."
-          - topic: "Siguiente nivel"
-            desc: "¿Listo para más? Genera una nueva ruta que construya sobre todo lo que has logrado."
-
-  # ── Landing status labels ──
+  # ── Landing (STEP 41 §2) ──
   landing:
     page_title: "Learning Routes — Aprende lo que quieras, de la forma correcta"
     meta_description: "Rutas de aprendizaje personalizadas con IA. Aprende programación, matemáticas, idiomas y más."
     og_title: "Learning Routes — Aprende lo que quieras, de la forma correcta"
     og_description: "Rutas de aprendizaje personalizadas con IA. Aprende programación, matemáticas, idiomas y más."
     twitter_description: "Rutas de aprendizaje personalizadas con IA."
-    status:
-      completed: "Completado"
-      in_progress: "En progreso"
-      available: "Disponible"
-      locked: "Bloqueado"
-
+    nav:
+      how: Cómo funciona
+      sign_in: Entrar
+      my_routes: Mis rutas
+      create: Crear mi ruta
+      label: Principal
+    stage_label: 'Learning Routes: cómo funciona una ruta'
+    hero:
+      title: Aprende lo que quieras, bien.
+      line: 'Learning Routes lo convierte en una ruta: módulos en orden, temas cortos
+        con práctica y un examen al cerrar cada módulo.'
+      button: Crear mi ruta
+      note: El primer módulo es gratis.
+    chapters:
+      c1:
+        title: Tu ruta, armada para ti
+        body: Nos dices qué quieres aprender y cuánto sabes. La ruta se arma en módulos,
+          cada uno con sus temas en orden.
+      c2:
+        title: Un tema a la vez
+        body: Lees, practicas y respondes una comprobación. Al acertar, el tema queda
+          hecho y la línea avanza contigo.
+      c3:
+        title: Si algo cuesta, aparece un refuerzo
+        body: Fallar una comprobación abre temas cortos de refuerzo debajo de ese tema.
+          Al terminarlos, sigues por la ruta.
+      c4:
+        title: Cada módulo cierra con un examen
+        body: Confirma lo que sabes y pasas al siguiente módulo de tu ruta.
+      c5:
+        title: Tu ruta entera, de un vistazo
+        body: Módulos en orden, cada uno con sus temas y sus refuerzos. El primer módulo
+          es gratis.
+    map:
+      example: Ruta de ejemplo
+      done: Hecho
+      here: Estás aquí
+      coming: Por llegar
+      reinforcement: Refuerzo
+      locked: Bloqueado
+      your_route: Tu ruta
+      module: Módulo %{n}
+      progress: "%{done} de %{total}"
+      topics: "%{count} temas"
+      free: Gratis
+      legend: Leyenda del mapa
+      chapters: Capítulos
+      fallback: Tu navegador no muestra el mapa en 3D. Este es el recorrido de una ruta,
+        paso a paso.
+    tabs:
+      pt: Portugués
+      py: Python
+      gt: Guitarra
+      fn: Finanzas
+    routes:
+      pt:
+        title: Portugués para viajar
+        modules:
+        - - Fundamentos
+          - - Saludos
+            - Pronombres
+            - Ser y estar
+            - Números
+            - Direcciones
+            - Examen del módulo
+        - - En el camino
+          - - Transporte
+            - En el hotel
+            - En el restaurante
+            - De compras
+            - Examen del módulo
+        - - Conversación real
+          - []
+      py:
+        title: Python desde cero
+        modules:
+        - - Primeros pasos
+          - - Variables
+            - Tipos de datos
+            - Condicionales
+            - Bucles
+            - Funciones
+            - Examen del módulo
+        - - Trabajar con datos
+          - - Listas
+            - Diccionarios
+            - Archivos
+            - Errores
+            - Examen del módulo
+        - - Proyectos
+          - []
+      gt:
+        title: Guitarra para empezar
+        modules:
+        - - Lo básico
+          - - Postura
+            - Afinar
+            - Primeros acordes
+            - Ritmo
+            - Cambios de acorde
+            - Examen del módulo
+        - - Tus canciones
+          - - Rasgueos
+            - Arpegios
+            - Tu primera canción
+            - La cejilla
+            - Examen del módulo
+        - - Tocar con otros
+          - []
+      fn:
+        title: Finanzas personales
+        modules:
+        - - Tu dinero hoy
+          - - Ingresos
+            - Gastos
+            - Presupuesto
+            - Ahorro
+            - Deudas
+            - Examen del módulo
+        - - Hacerlo crecer
+          - - Fondo de emergencia
+            - Invertir
+            - Impuestos
+            - Metas
+            - Examen del módulo
+        - - Largo plazo
+          - []
+    close:
+      title: "¿Qué quieres aprender?"
+      line: Escríbelo con tus palabras, como se lo contarías a un amigo. Con eso armamos
+        tu ruta, módulo a módulo.
+      label: Qué quieres aprender
+      placeholder: 'Por ejemplo: inglés para el trabajo'
+      button: Crear mi ruta
+      ideas_label: 'Ideas:'
+      ideas_group: Ideas para empezar
+      ideas:
+      - Portugués para viajar
+      - Python desde cero
+      - Guitarra para empezar
+      - Finanzas personales
+      blueprint_title: Tu ruta aparecerá aquí.
+      blueprint_line: Módulos en orden, cada uno con sus temas. El primer módulo es
+        gratis.
+    footer:
+      copyright: "© %{year} Learning Routes"
+      terms: Términos
+      privacy: Privacidad
+      contact: Contacto
+      label: Legal
   # ── Profile Page ──
   profile:
     title: "Mi Perfil — Learning Routes"

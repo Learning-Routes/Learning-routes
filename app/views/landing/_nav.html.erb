@@ -1,0 +1,19 @@
+<%# STEP 41 §2: the reference's bar. The theme and language switches are the app's own. %>
+<header class="lp-nav">
+  <div class="lp-wrap">
+    <%= link_to main_app.root_path, class: "lp-brand", data: { nav: "logo" } do %>
+      <%= render "shared/logo", size: 26 %>Learning Routes
+    <% end %>
+    <nav class="lp-nav-r" aria-label="<%= t("landing.nav.label") %>">
+      <%= render "shared/theme_toggle" %>
+      <%= render "shared/locale_toggle" %>
+      <a class="lp-lk" href="#como" data-landing-jump="1"><%= t("landing.nav.how") %></a>
+      <% if current_user %>
+        <%= link_to t("landing.nav.my_routes"), main_app.profile_path, class: "lp-lk" %>
+      <% else %>
+        <%= link_to t("landing.nav.sign_in"), core.sign_in_path, class: "lp-lk" %>
+      <% end %>
+      <a class="btn3 btn3--sm" href="#empezar"><%= t("landing.nav.create") %></a>
+    </nav>
+  </div>
+</header>
