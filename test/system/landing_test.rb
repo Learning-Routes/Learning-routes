@@ -63,6 +63,40 @@ class LandingTest < ApplicationSystemTestCase
     assert_equal "true", find(".lp-world", visible: :all)["aria-hidden"]
   end
 
+  # Every pressable button reads at 4.5:1 on its accent: an unlayered link rule
+  # once gave the anchor buttons the text colour (1.9:1 light, 2.4:1 dark).
+  %w[light dark].each do |theme|
+    test "#{theme}: every .btn3 on the landing reads at 4.5:1" do
+      visit_landing
+      page.execute_script("document.documentElement.setAttribute('data-theme', #{theme.to_json})")
+      sleep 0.4
+
+      buttons = page.evaluate_script(<<~JS)
+        (() => {
+          const rgb = (c) => c.match(/[0-9.]+/g).map(Number);
+          const lum = ([r, g, b]) => [r, g, b].map((v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4) })
+            .reduce((s, v, i) => s + v * [0.2126, 0.7152, 0.0722][i], 0);
+          return [...document.querySelectorAll(".btn3")].map((el) => {
+            const cs = getComputedStyle(el), a = lum(rgb(cs.color)), b = lum(rgb(cs.backgroundColor));
+            return { text: el.textContent.trim(), tag: el.tagName, ratio: (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05) };
+          });
+        })()
+      JS
+      assert_operator buttons.size, :>=, 4, "the bar's, the hero's, chapter 5's and the closing form's"
+      buttons.each do |b|
+        assert_operator b["ratio"], :>=, 4.5, "#{theme}: #{b['tag']} #{b['text'].inspect} reads at #{b['ratio'].round(2)}:1"
+      end
+    end
+  end
+
+  test "en: the guitar example reads Guitar for beginners, on its tab's route and as an idea" do
+    assert_equal "Guitar for beginners", I18n.t("landing.routes.gt.title", locale: :en)
+    visit_landing(locale: "en")
+
+    assert_selector ".lp-ideas button", text: "Guitar for beginners"
+    assert_includes find(".lp-journey", visible: :all)["data-landing-stage-routes-value"], "Guitar for beginners"
+  end
+
   test "an idea fills the field" do
     visit_landing
     idea = I18n.t("landing.close.ideas", locale: :es)[1]
