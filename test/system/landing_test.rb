@@ -101,6 +101,23 @@ class LandingTest < ApplicationSystemTestCase
     assert_includes find(".lp-journey", visible: :all)["data-landing-stage-routes-value"], "Guitar for beginners"
   end
 
+  # landing_test failed on CI twice (main at 6c22d298, #94's first run) with a
+  # Timeout::Error inside show_closing, and CI's screenshot shows the page already
+  # at the closing: the jump worked, the wait did not return. The wait asked for
+  # an animation frame, and at the closing the 3D journey's last pixels are still
+  # in view, so its render loop keeps drawing, in software on CI. A frame slower
+  # than the wait's 3 seconds and the wait expires. Burning 3.5s a frame here
+  # stands in for that renderer.
+  test "the closing is reached even while frames are slow" do
+    visit_landing
+    page.execute_script("window.__burn = true; (function burn() { if (!window.__burn) return; const t = performance.now(); while (performance.now() - t < 3500) {} requestAnimationFrame(burn) })()")
+
+    show_closing
+
+    page.execute_script("window.__burn = false")
+    assert_field "lp-want"
+  end
+
   test "an idea fills the field" do
     visit_landing
     idea = I18n.t("landing.close.ideas", locale: :es)[1]
