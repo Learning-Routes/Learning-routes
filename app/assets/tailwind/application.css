@@ -3469,8 +3469,8 @@ html[data-theme="dark"] .jm {
 .jm-node:hover .jm-node__dot, .jm-node--hot .jm-node__dot { transform: translateY(-1px) scale(1.06); }
 /* The journey keeps WP-37b's faces until STEP 41 PR 5b aligns it. */
 .jm-sans { font-family: var(--font-sans); }
-.jm-mono { font-family: 'JetBrains Mono', monospace; }
-.jm-node__num { font-family: 'JetBrains Mono', monospace; font-weight: 500; font-size: 15px; line-height: 1;
+.jm-mono { font-family: var(--font-mono); }
+.jm-node__num { font-family: var(--font-mono); font-weight: 500; font-size: 15px; line-height: 1;
                 font-variant-numeric: tabular-nums; color: var(--color-txt); }
 .jm-node--completed .jm-node__dot { background: var(--jm-line); border-color: var(--jm-line); color: var(--color-bg);
                                     background-image: linear-gradient(180deg, rgba(255, 255, 255, .22), rgba(255, 255, 255, 0) 55%); }
@@ -3511,7 +3511,7 @@ html[data-theme="dark"] .jm {
 /* ── Module chips and the unlock pill (brief §4.2) ── */
 .jm-chip { position: absolute; transform: translate(-50%, -50%); display: inline-flex; align-items: center; gap: 6px;
            height: 22px; padding: 0 10px; border-radius: 999px; background: var(--color-accent-soft); border: 1px solid var(--jm-line);
-           font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 400; color: var(--color-sub);
+           font-family: var(--font-mono); font-size: 11px; font-weight: 400; color: var(--color-sub);
            letter-spacing: .02em; white-space: nowrap; font-variant-numeric: tabular-nums; cursor: pointer; }
 .jm-chip:focus-visible { outline: 2px solid var(--jm-focus); outline-offset: 2px; }
 .jm-chip b { color: var(--jm-line); font-weight: 500; letter-spacing: .04em; }
@@ -3526,7 +3526,7 @@ html[data-theme="dark"] .jm {
 
 /* ── Root (brief §4.1) ── */
 .jm-root { position: absolute; text-align: left; color: var(--color-txt); white-space: nowrap; }
-.jm-root__eyebrow, .jm-root__meta { display: block; font-family: 'JetBrains Mono', monospace; font-size: 11px;
+.jm-root__eyebrow, .jm-root__meta { display: block; font-family: var(--font-mono); font-size: 11px;
                                     letter-spacing: .04em; color: var(--color-sub); font-weight: 400; font-variant-numeric: tabular-nums; }
 .jm-root__title { margin: 2px 0 0; font-family: var(--font-sans); font-weight: 740; font-stretch: 112%; font-size: 30px; line-height: 1.05;
                   letter-spacing: -.03em; overflow: hidden; text-overflow: ellipsis; }
@@ -3550,7 +3550,7 @@ html[data-theme="dark"] .jm {
 .jm-card { left: 50%; bottom: 20px; transform: translateX(-50%); z-index: 21; display: flex; align-items: center; gap: 14px;
            padding: 10px 10px 10px 16px; box-shadow: var(--jm-shadow); max-width: min(620px, calc(100vw - 40px)); }
 .jm-card__text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
-.jm-card__eyebrow { font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: .02em; color: var(--color-sub);
+.jm-card__eyebrow { font-family: var(--font-mono); font-size: 11px; letter-spacing: .02em; color: var(--color-sub);
                     white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .jm-card__title { font-family: var(--font-sans); font-weight: 700; font-size: 15px; letter-spacing: -.01em; color: var(--color-txt);
                   white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -3589,7 +3589,7 @@ html[data-theme="dark"] .jm {
 
 /* The top bar's counter lives in the layout, outside .jm: --color-* only. */
 .jm-counter { display: inline-flex; flex-direction: column; gap: 4px; align-items: stretch; }
-.jm-counter__text { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--color-sub); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.jm-counter__text { font-family: var(--font-mono); font-size: 11px; color: var(--color-sub); font-variant-numeric: tabular-nums; white-space: nowrap; }
 .jm-counter__track { display: block; height: 3px; border-radius: 999px; background: var(--color-border-subtle); overflow: hidden; }
 .jm-counter__fill { display: block; height: 100%; border-radius: 999px; background: var(--color-accent); }
 
