@@ -241,10 +241,10 @@
 
 /* Semi-transparent theme tokens (glassmorphic cards, subtle borders, tints) */
 :root {
-  --color-card-glass: rgba(255, 255, 255, 0.6);
+  --color-card-glass: color-mix(in srgb, var(--color-card) 60%, transparent);
   --color-border-subtle: #E4DCE8;
-  --color-tint: rgba(28, 24, 18, 0.04);
-  --color-tint-strong: rgba(28, 24, 18, 0.08);
+  --color-tint: color-mix(in srgb, var(--color-txt) 4%, transparent);
+  --color-tint-strong: color-mix(in srgb, var(--color-txt) 8%, transparent);
   --color-flash-notice-bg: rgba(91, 168, 128, 0.1);
   --color-flash-notice-border: rgba(91, 168, 128, 0.18);
   --color-flash-notice-text: #3D7A5A;
@@ -275,14 +275,14 @@
   --journey-alpha-mult: 5;
   --journey-opacity-mult: 2.5;
   /* Tint hover (for interactive controls like buttons) */
-  --color-tint-hover: rgba(28, 24, 18, 0.14);
+  --color-tint-hover: color-mix(in srgb, var(--color-txt) 14%, transparent);
   /* Step status icon colors */
   --color-step-completed-bg: rgba(34, 197, 94, 0.1);
   --color-step-completed-icon: #16A149;
   --color-step-progress-bg: rgba(99, 102, 241, 0.1);
   --color-step-progress-icon: #4F46E5;
-  --color-step-available-bg: rgba(28, 24, 18, 0.06);
-  --color-step-locked-bg: rgba(28, 24, 18, 0.03);
+  --color-step-available-bg: color-mix(in srgb, var(--color-txt) 6%, transparent);
+  --color-step-locked-bg: color-mix(in srgb, var(--color-txt) 3%, transparent);
   --color-step-locked-icon: #B5AD9F;
   /* Due reviews section */
   --color-due-bg: rgba(217, 119, 6, 0.06);
@@ -363,7 +363,7 @@ html[data-theme="dark"] {
   --color-shade: rgba(0, 0, 0, 0.55);
   --color-hi: rgba(255, 255, 255, 0.07);
 
-  --color-card-glass: rgba(34, 31, 24, 0.75);
+  --color-card-glass: color-mix(in srgb, var(--color-card) 75%, transparent);
   --color-border-subtle: #33263F;
   --color-tint: rgba(255, 255, 255, 0.06);
   --color-tint-strong: rgba(255, 255, 255, 0.1);
