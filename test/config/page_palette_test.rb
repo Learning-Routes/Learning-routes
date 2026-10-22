@@ -26,6 +26,10 @@ class PagePaletteTest < ActiveSupport::TestCase
     "exam" => {
       files: ["engines/assessments/app/views/assessments/**/*.erb",
               "app/javascript/controllers/{question_nav,exam_timer,voice_recorder}_controller.js"]
+    },
+    "notifications" => {
+      files: ["engines/community_engine/app/views/community_engine/notifications/*.erb",
+              "app/javascript/controllers/notifications_controller.js"]
     }
   }.freeze
 
