@@ -18,9 +18,10 @@ module RouteCardsHelper
   end
 
   # The module's stops along a soft wave: done ones filled with a check, the
-  # current one ringed in the highlight, the rest outlined. Tokens only.
+  # current one ringed in the highlight, the rest outlined. Tokens only, built
+  # with tag helpers (no html_safe outside svg_icon, STEP 37 §6).
   def mini_route_svg(total, done)
-    return "".html_safe if total.zero?
+    return "" if total.zero?
 
     xs = Array.new(total) { |i| total == 1 ? 150.0 : 18 + i * (264.0 / (total - 1)) }
     ys = Array.new(total) { |i| i.odd? ? 40 : 22 }
@@ -33,19 +34,23 @@ module RouteCardsHelper
     stops = xs.each_with_index.map do |x, i|
       y = ys[i]
       if i < done
-        %(<circle data-stop="done" cx="#{x}" cy="#{y}" r="8" fill="var(--color-accent)"/>) +
-          %(<path d="M#{x - 3.4} #{y}l2.3 2.3 4.4-4.6" fill="none" stroke="var(--color-accent-text)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>)
+        safe_join([tag.circle(data: { stop: "done" }, cx: x, cy: y, r: 8, fill: "var(--color-accent)"),
+                   tag.path(d: "M#{x - 3.4} #{y}l2.3 2.3 4.4-4.6", fill: "none", stroke: "var(--color-accent-text)",
+                            "stroke-width": 1.8, "stroke-linecap": "round", "stroke-linejoin": "round")])
       elsif i == done
-        %(<circle data-stop="current" cx="#{x}" cy="#{y}" r="8" fill="var(--color-card)" stroke="var(--color-highlight)" stroke-width="3"/>)
+        tag.circle(data: { stop: "current" }, cx: x, cy: y, r: 8, fill: "var(--color-card)", stroke: "var(--color-highlight)", "stroke-width": 3)
       else
-        %(<circle data-stop="todo" cx="#{x}" cy="#{y}" r="7" fill="var(--color-card)" stroke="var(--color-faint)" stroke-width="2"/>)
+        tag.circle(data: { stop: "todo" }, cx: x, cy: y, r: 7, fill: "var(--color-card)", stroke: "var(--color-faint)", "stroke-width": 2)
       end
     end
-    svg = %(<svg class="route-card__map" viewBox="0 0 300 62" aria-hidden="true">) +
-          %(<path d="#{wave.call(total - 1)}" fill="none" stroke="var(--color-faint)" stroke-width="2.4" stroke-dasharray=".5 7" stroke-linecap="round"/>) +
-          (done.positive? ? %(<path d="#{wave.call([done, total - 1].min)}" fill="none" stroke="var(--color-accent)" stroke-width="4" stroke-linecap="round"/>) : "") +
-          stops.join + "</svg>"
-    # Numbers and token names only: nothing from the user reaches this markup.
-    svg.html_safe # rubocop:disable Rails/OutputSafety
+    tag.svg(class: "route-card__map", viewBox: "0 0 300 62", aria: { hidden: true }) do
+      safe_join([
+        tag.path(d: wave.call(total - 1), fill: "none", stroke: "var(--color-faint)", "stroke-width": 2.4,
+                 "stroke-dasharray": ".5 7", "stroke-linecap": "round"),
+        (tag.path(d: wave.call([done, total - 1].min), fill: "none", stroke: "var(--color-accent)", "stroke-width": 4,
+                  "stroke-linecap": "round") if done.positive?),
+        *stops
+      ].compact)
+    end
   end
 end
