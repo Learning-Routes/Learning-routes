@@ -191,7 +191,7 @@ export default class extends Controller {
     const val = this.hasCustomInputTarget ? this.customInputTarget.value.trim() : ""
     if (this.hasCustomInputWrapTarget) {
       this.customInputWrapTarget.style.borderColor = val.length > 0
-        ? "#5BA88035"
+        ? "var(--color-accent)"
         : ""
     }
     this.validateStep()

@@ -62,6 +62,29 @@ class RouteCardAccentTest < ActionDispatch::IntegrationTest
     assert_includes html, "var(--color-faint)"
   end
 
+  # Owner, 22 Oct: a route that is not active says so in a small tag, with the
+  # dashboard's labels; a finished route's button reads Ver ruta.
+  { "completed" => "Completada", "paused" => "Pausada", "draft" => "Borrador" }.each do |status, label|
+    test "a #{status} route carries a #{label} tag" do
+      route = two_modules(done: 2)
+      route.update!(status: status)
+
+      get_profile
+
+      assert_select card(route) + " .route-card__status.tag", text: label
+      button = status == "completed" ? "Ver ruta" : "Continuar"
+      assert_select card(route) + " a.btn3", text: button
+    end
+  end
+
+  test "an active route carries no status tag" do
+    route = two_modules(done: 2)
+
+    get_profile
+
+    assert_select card(route) + " .route-card__status", 0
+  end
+
   test "Sigue donde lo dejaste: the latest active route's current topic, with its place and time" do
     route = two_modules(done: 2)
 

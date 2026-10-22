@@ -69,9 +69,8 @@ export default class extends Controller {
 
   _showError(input, message) {
     // Style the input border red — use CSS var for dark mode support
-    const alertColor = getComputedStyle(document.documentElement).getPropertyValue("--color-flash-alert-text").trim() || "#C0614D"
-    input.style.borderColor = alertColor
-    input.style.boxShadow = `0 0 0 3px ${alertColor}1A`
+    input.style.borderColor = "var(--color-flash-alert-text)"
+    input.style.boxShadow = "0 0 0 3px color-mix(in srgb, var(--color-flash-alert-text) 10%, transparent)"
 
     // Insert error message below input
     const errorEl = document.createElement("p")
@@ -98,7 +97,7 @@ export default class extends Controller {
     this._focusedError = false
     this.element.querySelectorAll(".auth-field-error").forEach(el => el.remove())
     this.inputTargets.forEach(input => {
-      input.style.borderColor = "var(--color-border-subtle, rgba(28,24,18,0.1))"
+      input.style.borderColor = "var(--color-border-subtle)"
       input.style.boxShadow = "none"
     })
   }
@@ -109,14 +108,14 @@ export default class extends Controller {
     // Clear error state on focus
     const errorEl = el.parentNode.querySelector(".auth-field-error")
     if (errorEl) errorEl.remove()
-    el.style.borderColor = "var(--color-faint, rgba(28,24,18,0.22))"
-    el.style.boxShadow = "0 0 0 3px var(--color-tint, rgba(28,24,18,0.04))"
+    el.style.borderColor = "var(--color-faint)"
+    el.style.boxShadow = "0 0 0 3px color-mix(in srgb, var(--color-accent) 15%, transparent)"
   }
 
   inputBlur(event) {
     const el = event.currentTarget
     if (!el.parentNode.querySelector(".auth-field-error")) {
-      el.style.borderColor = "var(--color-border-subtle, rgba(28,24,18,0.1))"
+      el.style.borderColor = "var(--color-border-subtle)"
       el.style.boxShadow = "none"
     }
   }
@@ -125,31 +124,31 @@ export default class extends Controller {
   submitOver(event) {
     const el = event.currentTarget
     el.style.transform = "translateY(-1px)"
-    el.style.boxShadow = "0 4px 14px var(--color-tint-strong, rgba(28,24,18,0.18)), 0 2px 4px var(--color-tint, rgba(28,24,18,0.08))"
+    el.style.boxShadow = "0 4px 14px var(--color-shade), 0 2px 4px color-mix(in srgb, var(--color-shade) 45%, transparent)"
   }
 
   submitOut(event) {
     const el = event.currentTarget
     el.style.transform = "translateY(0)"
-    el.style.boxShadow = "0 1px 3px var(--color-tint-strong, rgba(28,24,18,0.12)), 0 1px 2px var(--color-tint, rgba(28,24,18,0.06))"
+    el.style.boxShadow = "0 1px 3px color-mix(in srgb, var(--color-shade) 65%, transparent), 0 1px 2px color-mix(in srgb, var(--color-shade) 35%, transparent)"
   }
 
   // --- OAuth button hover ---
   oauthOver(event) {
     const el = event.currentTarget
-    el.style.borderColor = "var(--color-faint, rgba(28,24,18,0.22))"
-    el.style.boxShadow = "0 2px 8px var(--color-tint, rgba(28,24,18,0.06))"
+    el.style.borderColor = "var(--color-faint)"
+    el.style.boxShadow = "0 2px 8px color-mix(in srgb, var(--color-shade) 35%, transparent)"
   }
 
   oauthOut(event) {
     const el = event.currentTarget
-    el.style.borderColor = "var(--color-border-subtle, rgba(28,24,18,0.1))"
+    el.style.borderColor = "var(--color-border-subtle)"
     el.style.boxShadow = "none"
   }
 
   // --- Text link hover ---
-  linkOver(event) { event.currentTarget.style.color = "var(--color-txt, #1C1812)" }
-  linkOut(event) { event.currentTarget.style.color = "var(--color-muted, #A09889)" }
+  linkOver(event) { event.currentTarget.style.color = "var(--color-txt)" }
+  linkOut(event) { event.currentTarget.style.color = "var(--color-muted)" }
 
   // --- Inline link underline ---
   inlineLinkOver(event) { event.currentTarget.style.textDecoration = "underline" }

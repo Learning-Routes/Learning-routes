@@ -377,6 +377,7 @@ en:
     module: "Module %{n} of %{total}"
     topics: "%{module} · %{done} of %{total} topics"
     continue: "Continue"
+    view: "View route"
     continue_aria: "Continue %{route}"
     resume:
       eyebrow: "Pick up where you left off"

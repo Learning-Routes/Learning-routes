@@ -1,84 +1,50 @@
-<nav data-controller="navbar" class="fixed top-0 left-0 right-0 z-[100]">
-  <div data-navbar-target="bar"
-       class="flex items-center justify-between h-[58px] px-[clamp(1.5rem,5vw,4rem)] border-b border-transparent transition-all duration-300">
-
-    <%# === Logo === %>
-    <%= link_to main_app.root_path,
-        data: { nav: "logo" }, class: "flex items-center gap-[0.55rem] no-underline" do %>
-      <%= render "shared/logo", size: 28 %>
-      <span class="font-sans font-bold text-[0.92rem] tracking-[-0.5px] text-txt">Learning Routes</span>
+<%# STEP 41 §3.3: the reference's bar (as on the landing) for terms, privacy and
+    the app's pages signed out. The theme and language switches are the app's. %>
+<nav data-controller="navbar" class="site-nav">
+  <div data-navbar-target="bar" class="site-nav__bar">
+    <%= link_to main_app.root_path, data: { nav: "logo" }, class: "site-nav__brand" do %>
+      <%= render "shared/logo", size: 26 %><span>Learning Routes</span>
     <% end %>
 
-    <%# === Desktop links === %>
-    <div class="hidden md:flex items-center gap-[clamp(1rem,3vw,2.5rem)]">
-      <a href="<%= main_app.root_path(anchor: "como") %>" class="font-sans text-[0.8rem] font-medium text-muted hover:text-txt focus-visible:text-txt focus-visible:outline-none focus-visible:underline transition-colors duration-200">
-        <%= t("nav.how_it_works") %>
-      </a>
-
+    <div class="site-nav__links">
+      <a href="<%= main_app.root_path(anchor: "como") %>" class="site-nav__link"><%= t("nav.how_it_works") %></a>
       <% if current_user %>
-        <%= link_to t("nav.home"), main_app.root_path, data: { nav: "home" },
-            class: "font-sans text-[0.8rem] font-medium text-muted hover:text-txt focus-visible:text-txt focus-visible:outline-none focus-visible:underline transition-colors duration-200" %>
-        <%= link_to t("nav.dashboard"), main_app.dashboard_path,
-            class: "font-sans text-[0.8rem] font-medium text-muted hover:text-txt focus-visible:text-txt focus-visible:outline-none focus-visible:underline transition-colors duration-200" %>
+        <%= link_to t("nav.home"), main_app.root_path, data: { nav: "home" }, class: "site-nav__link" %>
+        <%= link_to t("nav.dashboard"), main_app.dashboard_path, class: "site-nav__link" %>
       <% else %>
-        <%= link_to t("nav.sign_in"), core.sign_in_path,
-            class: "font-sans text-[0.8rem] font-medium text-muted hover:text-txt focus-visible:text-txt focus-visible:outline-none focus-visible:underline transition-colors duration-200" %>
+        <%= link_to t("nav.sign_in"), core.sign_in_path, class: "site-nav__link" %>
       <% end %>
-
       <%= render "shared/theme_toggle" %>
       <%= render "shared/locale_toggle" %>
-
       <% if current_user %>
-        <%= link_to t("nav.profile"), main_app.profile_path,
-            class: "btn3 btn3--sm" %>
+        <%= link_to t("nav.profile"), main_app.profile_path, class: "btn3 btn3--sm" %>
       <% else %>
-        <%= link_to t("nav.sign_up"), core.sign_up_path,
-            class: "btn3 btn3--sm" %>
+        <%= link_to t("nav.sign_up"), core.sign_up_path, class: "btn3 btn3--sm" %>
       <% end %>
     </div>
 
-    <%# === Mobile hamburger === %>
-    <button data-action="navbar#toggleMenu" data-navbar-target="menuBtn" class="md:hidden p-2 -mr-2 text-txt" aria-label="<%= t("layout.menu_aria") %>" aria-expanded="false" aria-controls="navbar-mobile-menu">
+    <button data-action="navbar#toggleMenu" data-navbar-target="menuBtn" class="site-nav__menu-btn"
+            aria-label="<%= t("layout.menu_aria") %>" aria-expanded="false" aria-controls="navbar-mobile-menu">
       <%= svg_icon(:menu, size: 20) %>
     </button>
   </div>
 
-  <%# === Mobile menu === %>
-  <div id="navbar-mobile-menu" data-navbar-target="menu"
-       class="hidden md:hidden bg-card border-b border-lr px-[clamp(1.5rem,5vw,4rem)] pb-5 pt-2">
-    <div class="flex flex-col gap-3">
-      <a href="<%= main_app.root_path(anchor: "como") %>" data-action="navbar#closeMenu"
-         class="font-sans text-[0.88rem] font-medium text-sub hover:text-txt focus-visible:text-txt focus-visible:outline-none focus-visible:underline transition-colors py-1">
-        <%= t("nav.how_it_works") %>
-      </a>
-
-      <% if current_user %>
-        <%= link_to t("nav.home"), main_app.root_path,
-            data: { nav: "home", action: "navbar#closeMenu" },
-            class: "font-sans text-[0.88rem] font-medium text-sub hover:text-txt focus-visible:text-txt focus-visible:outline-none focus-visible:underline transition-colors py-1" %>
-        <%= link_to t("nav.dashboard"), main_app.dashboard_path,
-            data: { action: "navbar#closeMenu" },
-            class: "font-sans text-[0.88rem] font-medium text-sub hover:text-txt focus-visible:text-txt focus-visible:outline-none focus-visible:underline transition-colors py-1" %>
-      <% else %>
-        <%= link_to t("nav.sign_in"), core.sign_in_path,
-            data: { action: "navbar#closeMenu" },
-            class: "font-sans text-[0.88rem] font-medium text-sub hover:text-txt focus-visible:text-txt focus-visible:outline-none focus-visible:underline transition-colors py-1" %>
-      <% end %>
-
-      <div class="py-1 flex items-center gap-2">
-        <%= render "shared/theme_toggle" %>
-        <%= render "shared/locale_toggle" %>
-      </div>
-
-      <div class="pt-2">
-        <% if current_user %>
-          <%= link_to t("nav.profile"), main_app.profile_path,
-              class: "btn3 w-full" %>
-        <% else %>
-          <%= link_to t("nav.sign_up"), core.sign_up_path,
-              class: "btn3 w-full" %>
-        <% end %>
-      </div>
+  <div id="navbar-mobile-menu" data-navbar-target="menu" class="site-nav__menu hidden">
+    <a href="<%= main_app.root_path(anchor: "como") %>" data-action="navbar#closeMenu" class="site-nav__link"><%= t("nav.how_it_works") %></a>
+    <% if current_user %>
+      <%= link_to t("nav.home"), main_app.root_path, data: { nav: "home", action: "navbar#closeMenu" }, class: "site-nav__link" %>
+      <%= link_to t("nav.dashboard"), main_app.dashboard_path, data: { action: "navbar#closeMenu" }, class: "site-nav__link" %>
+    <% else %>
+      <%= link_to t("nav.sign_in"), core.sign_in_path, data: { action: "navbar#closeMenu" }, class: "site-nav__link" %>
+    <% end %>
+    <div class="site-nav__toggles">
+      <%= render "shared/theme_toggle" %>
+      <%= render "shared/locale_toggle" %>
     </div>
+    <% if current_user %>
+      <%= link_to t("nav.profile"), main_app.profile_path, class: "btn3 w-full" %>
+    <% else %>
+      <%= link_to t("nav.sign_up"), core.sign_up_path, class: "btn3 w-full" %>
+    <% end %>
   </div>
 </nav>

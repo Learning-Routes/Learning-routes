@@ -378,6 +378,7 @@ es:
     module: "Módulo %{n} de %{total}"
     topics: "%{module} · %{done} de %{total} temas"
     continue: "Continuar"
+    view: "Ver ruta"
     continue_aria: "Continuar %{route}"
     resume:
       eyebrow: "Sigue donde lo dejaste"

@@ -7,7 +7,7 @@
 
 <div id="voice_evaluation_<%= voice_response.id %>"
      class="rounded-[14px] p-5"
-     style="background: var(--color-tint-strong); border: 1px solid var(--color-border-subtle);">
+     style="background: color-mix(in srgb, var(--color-txt) 8%, transparent); border: 1px solid var(--color-border-subtle);">
 
   <p class="font-mono text-xs font-medium uppercase tracking-wider mb-4"
      style="color: var(--color-muted); ">
@@ -29,7 +29,7 @@
 
   <%# ── Feedback ── %>
   <% if voice_response.feedback_text.present? %>
-    <div class="rounded-[11px] p-4 mb-4" style="background: var(--color-tint-strong);">
+    <div class="rounded-[11px] p-4 mb-4" style="background: color-mix(in srgb, var(--color-txt) 8%, transparent);">
       <p class="text-sm leading-relaxed" style="color: var(--color-sub); ">
         <%= voice_response.feedback_text %>
       </p>
@@ -89,7 +89,7 @@
 
   <%# ── Transcript ── %>
   <% if voice_response.transcription.present? %>
-    <details class="rounded-[11px] mb-4" style="background: var(--color-tint-strong);">
+    <details class="rounded-[11px] mb-4" style="background: color-mix(in srgb, var(--color-txt) 8%, transparent);">
       <summary class="px-4 py-2 text-xs cursor-pointer transition-colors hover-text-muted"
                style="color: var(--color-faint); ">
         <%= t("voice_evaluation.your_transcript") %>
@@ -104,7 +104,7 @@
   <div class="text-center">
     <a href="" data-turbo-action="replace"
        class="text-sm transition-colors"
-       style="color: var(--color-highlight-violet); text-decoration: none;">
+       style="color: var(--color-accent); text-decoration: none;">
       <%= t("voice_evaluation.retry") %>
     </a>
   </div>

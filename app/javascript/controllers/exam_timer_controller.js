@@ -32,7 +32,7 @@ export default class extends Controller {
       this.displayTarget.textContent = `${minutes}:${seconds.toString().padStart(2, "0")}`
 
       if (remaining <= this.warningThresholdSecondsValue) {
-        this.displayTarget.classList.add("text-red-400", "animate-pulse")
+        this.displayTarget.classList.add("text-[var(--color-negative)]", "animate-pulse")
       }
     }
 

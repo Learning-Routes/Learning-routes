@@ -206,13 +206,13 @@ export default class extends Controller {
 
     if (strengthsEl && data.ai_evaluation?.strengths) {
       strengthsEl.innerHTML = data.ai_evaluation.strengths
-        .map(s => `<li class="text-sm text-gray-300">+ ${this._escapeHtml(s)}</li>`)
+        .map(s => `<li class="text-sm text-sub">+ ${this._escapeHtml(s)}</li>`)
         .join("")
     }
 
     if (improvementsEl && data.ai_evaluation?.improvements) {
       improvementsEl.innerHTML = data.ai_evaluation.improvements
-        .map(s => `<li class="text-sm text-gray-300">&rarr; ${this._escapeHtml(s)}</li>`)
+        .map(s => `<li class="text-sm text-sub">&rarr; ${this._escapeHtml(s)}</li>`)
         .join("")
     }
   }
