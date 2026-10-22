@@ -9,11 +9,12 @@
     <%# === Left: Logo === %>
     <%= link_to main_app.root_path, data: { nav: "logo" }, style: "display:flex; align-items:center; gap:0.5rem; text-decoration:none;" do %>
       <%= render "shared/logo", size: 28 %>
-      <span style="font-weight:800; font-size:0.95rem; letter-spacing:-0.6px; color:var(--color-txt);">Learning Routes</span>
+      <span style="font-weight:800; font-size:0.95rem; letter-spacing:-0.6px; color:var(--color-txt); white-space:nowrap;">Learning Routes</span>
     <% end %>
 
     <%# === Center: Nav links (desktop) === %>
-    <div style="display:flex; align-items:center; gap:1.8rem;" class="hidden md:flex">
+    <%# No inline display here: it would beat `hidden` and show these on a phone. %>
+    <div style="align-items:center; gap:1.8rem;" class="hidden md:flex">
       <%
         nav_links = [
           { label: t("nav.home"), path: main_app.root_path, match: "landing", nav: "home" },
