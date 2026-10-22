@@ -31,6 +31,13 @@ class CommunityFeedLookTest < ActionDispatch::IntegrationTest
     assert_select ".seg a[aria-current='page']", 1, text: I18n.t("community_engine.feed.tabs.all", locale: :es)
   end
 
+  # The share modal's controller froze the theme's resolved colours (and fell
+  # back to the cream palette): a theme switch with the modal open kept them.
+  test "the share controller sets tokens, never resolved or literal colours" do
+    js = Rails.root.join("app/javascript/controllers/share_controller.js").read
+    assert_no_match(/getPropertyValue|#\h{3,8}\b|rgba?\(/, js)
+  end
+
   test "the feed's markup carries no literal colour" do
     get community_engine.feed_path
 
