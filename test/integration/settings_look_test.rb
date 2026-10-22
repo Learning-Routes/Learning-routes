@@ -14,8 +14,9 @@ class SettingsLookTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select "h1.page-title", text: I18n.t("settings.heading", locale: :es)
     assert_select "section.card3", minimum: 4
-    %w[name email current_password new_password new_password_confirmation].each do |field|
-      assert_select "input.input3[name$='[#{field}]']", 1
+    %w[name email].each { |field| assert_select "input.input3[name$='[#{field}]']", 1 }
+    assert_select "form[action='#{settings_password_path}'] input[type='password']" do |fields|
+      fields.each { |f| assert_includes f["class"].to_s.split, "input3", "#{f['name']} is not an .input3" }
     end
     assert_select "[type='submit'].btn3:not(.btn3--secondary)", minimum: 1
     assert_select "[type='submit'].btn3.btn3--secondary", 1
