@@ -22,6 +22,10 @@ class PagePaletteTest < ActiveSupport::TestCase
     },
     "shared route" => {
       files: ["engines/community_engine/app/views/community_engine/{shared_routes,comments,likes,ratings,follows}/*.erb"]
+    },
+    "exam" => {
+      files: ["engines/assessments/app/views/assessments/**/*.erb",
+              "app/javascript/controllers/{question_nav,exam_timer,voice_recorder}_controller.js"]
     }
   }.freeze
 
