@@ -1,0 +1,15 @@
+<%#
+  STEP 41 §3.1: "Sigue donde lo dejaste" — the latest active route's current
+  topic, with its place among its module's topics and its time.
+%>
+<% card = route_card_for(route) %>
+<% if card.current %>
+  <article class="resume-card card3" data-controller="card-tilt">
+    <div>
+      <p class="resume-card__eyebrow"><%= t("route_card.resume.eyebrow") %></p>
+      <h3><%= card.current.localized_title %></h3>
+      <p class="resume-card__meta"><%= t("route_card.resume.meta", route: route.localized_topic, n: card.steps.index(card.current).to_i + 1, total: card.steps.size) %><% if card.current.estimated_minutes.to_i.positive? %><%= t("route_card.resume.minutes", count: card.current.estimated_minutes) %><% end %></p>
+    </div>
+    <%= link_to t("route_card.continue"), learning_routes_engine.route_step_path(route, card.current), class: "btn3" %>
+  </article>
+<% end %>

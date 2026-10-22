@@ -47,7 +47,7 @@
       </span>
 
       <%# Challenge card %>
-      <div style="background:var(--color-card); border:1px solid var(--color-border-subtle); border-left:4px solid var(--color-highlight-violet); border-radius:16px; padding:1.5rem 1.75rem; margin-top:0.875rem; box-shadow:0 1px 3px rgba(139,92,246,0.04), 0 4px 16px rgba(139,92,246,0.02);">
+      <div style="background:var(--color-card); border:1px solid var(--color-border-subtle); border-left:4px solid var(--color-accent); border-radius:16px; padding:1.5rem 1.75rem; margin-top:0.875rem; box-shadow:0 1px 3px color-mix(in srgb, var(--color-accent) 4%, transparent), 0 4px 16px color-mix(in srgb, var(--color-accent) 2%, transparent);">
         <%# Question + timer header %>
         <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:1rem; margin-bottom:0.75rem;">
           <%# Through MarkdownRenderer (which sanitizes): the question of a
@@ -89,7 +89,7 @@
 
         <%# Explanation (shown after answering) %>
         <% if section[:explanation].present? %>
-          <div class="lesson-check-explanation" data-lesson-check-target="explanation" style="display:none; margin-top:1.25rem; padding:1.125rem 1.25rem; border-radius:14px; background:linear-gradient(135deg, var(--color-tint-strong), var(--color-tint)); border:1px solid var(--color-border-subtle);">
+          <div class="lesson-check-explanation" data-lesson-check-target="explanation" style="display:none; margin-top:1.25rem; padding:1.125rem 1.25rem; border-radius:14px; background:linear-gradient(135deg, color-mix(in srgb, var(--color-txt) 8%, transparent), color-mix(in srgb, var(--color-txt) 4%, transparent)); border:1px solid var(--color-border-subtle);">
             <p style="font-size:0.8125rem; font-weight:500; color:var(--color-sub); margin:0; line-height:1.6;">
               <strong style="color:var(--color-txt);"><%= t("learning_engine.check.explanation_label") %></strong> <%= section[:explanation] %>
             </p>

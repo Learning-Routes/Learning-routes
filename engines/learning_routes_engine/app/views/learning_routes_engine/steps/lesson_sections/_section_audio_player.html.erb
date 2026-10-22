@@ -19,8 +19,8 @@
   <%# Generate button %>
   <div data-section-audio-target="generateBtn" style="<%= audio_url.present? ? 'display:none;' : '' %>">
     <button data-action="click->section-audio#generate"
-            style="display:inline-flex; align-items:center; gap:0.5rem; padding:0.5rem 1rem; border-radius:12px; font-size:0.8125rem; font-weight:600; color:var(--color-sub); background:var(--color-card); border:1px solid var(--color-border-subtle); cursor:pointer; transition:all 0.2s; box-shadow:0 1px 3px rgba(0,0,0,0.02);"
-            onmouseover="this.style.borderColor='rgba(99,102,241,0.3)'; this.style.color='var(--color-section-audio-active)';"
+            style="display:inline-flex; align-items:center; gap:0.5rem; padding:0.5rem 1rem; border-radius:12px; font-size:0.8125rem; font-weight:600; color:var(--color-sub); background:var(--color-card); border:1px solid var(--color-border-subtle); cursor:pointer; transition:all 0.2s; box-shadow:0 1px 3px color-mix(in srgb, var(--color-shade) 11%, transparent);"
+            onmouseover="this.style.borderColor='color-mix(in srgb, var(--color-accent) 30%, transparent)'; this.style.color='var(--color-section-audio-active)';"
             onmouseout="this.style.borderColor='var(--color-border-subtle)'; this.style.color='var(--color-sub)';">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 010 7.07"/></svg>
       <%= t('content_engine.audio.listen_button', default: 'Listen to explanation') %>
@@ -29,20 +29,20 @@
 
   <%# Player (shown when audio is ready) %>
   <div data-section-audio-target="playerWrap" style="display:<%= audio_url.present? ? '' : 'none' %>;">
-    <div style="display:flex; align-items:center; gap:0.75rem; padding:0.625rem 1rem; background:var(--color-card); border:1px solid var(--color-border-subtle); border-radius:14px; box-shadow:0 1px 3px rgba(0,0,0,0.02);">
+    <div style="display:flex; align-items:center; gap:0.75rem; padding:0.625rem 1rem; background:var(--color-card); border:1px solid var(--color-border-subtle); border-radius:14px; box-shadow:0 1px 3px color-mix(in srgb, var(--color-shade) 11%, transparent);">
       <button data-action="click->section-audio#playPause"
               data-section-audio-target="playBtn"
               aria-label="Play/Pause"
-              style="display:flex; align-items:center; justify-content:center; width:2.25rem; height:2.25rem; border-radius:50%; background:linear-gradient(135deg, var(--color-section-audio-active), var(--color-highlight-violet)); color:var(--color-accent-text); border:none; cursor:pointer; flex-shrink:0; transition:transform 0.15s; box-shadow:0 2px 6px rgba(99,102,241,0.25);">
+              style="display:flex; align-items:center; justify-content:center; width:2.25rem; height:2.25rem; border-radius:50%; background:linear-gradient(135deg, var(--color-section-audio-active), var(--color-accent)); color:var(--color-accent-text); border:none; cursor:pointer; flex-shrink:0; transition:transform 0.15s; box-shadow:0 2px 6px color-mix(in srgb, var(--color-accent) 25%, transparent);">
         <svg data-section-audio-target="playIcon" width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 3 20 12 6 21 6 3"/></svg>
         <svg data-section-audio-target="pauseIcon" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="display:none;"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
       </button>
 
       <div data-section-audio-target="progressBar"
            data-action="click->section-audio#seek"
-           style="flex:1; height:4px; border-radius:2px; background:var(--color-tint-strong); cursor:pointer; position:relative; overflow:hidden;">
+           style="flex:1; height:4px; border-radius:2px; background:color-mix(in srgb, var(--color-txt) 8%, transparent); cursor:pointer; position:relative; overflow:hidden;">
         <div data-section-audio-target="progressFill"
-             style="width:0%; height:100%; border-radius:2px; background:linear-gradient(to right, var(--color-section-audio-active), var(--color-highlight-violet)); transition:width 0.1s linear;"></div>
+             style="width:0%; height:100%; border-radius:2px; background:linear-gradient(to right, var(--color-section-audio-active), var(--color-accent)); transition:width 0.1s linear;"></div>
       </div>
 
       <span class="font-mono" data-section-audio-target="currentTime"
@@ -50,7 +50,7 @@
 
       <button class="font-mono" data-action="click->section-audio#cycleSpeed"
               data-section-audio-target="speedBtn"
-              style="font-size:0.625rem; font-weight:600; color:var(--color-muted); background:var(--color-tint-strong); border:1px solid var(--color-border-subtle); border-radius:9999px; padding:0.125rem 0.5rem; cursor:pointer; white-space:nowrap;">1x</button>
+              style="font-size:0.625rem; font-weight:600; color:var(--color-muted); background:color-mix(in srgb, var(--color-txt) 8%, transparent); border:1px solid var(--color-border-subtle); border-radius:9999px; padding:0.125rem 0.5rem; cursor:pointer; white-space:nowrap;">1x</button>
     </div>
   </div>
 
@@ -64,7 +64,7 @@
 
   <%# Error state %>
   <div data-section-audio-target="errorState" style="display:none;">
-    <div style="display:flex; align-items:center; gap:0.5rem; padding:0.625rem 1rem; background:var(--color-card); border:1px solid rgba(239,68,68,0.15); border-radius:14px;">
+    <div style="display:flex; align-items:center; gap:0.5rem; padding:0.625rem 1rem; background:var(--color-card); border:1px solid color-mix(in srgb, var(--color-negative) 15%, transparent); border-radius:14px;">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--color-negative)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15" stroke-linecap="round"/><line x1="9" y1="9" x2="15" y2="15" stroke-linecap="round"/></svg>
       <span style="font-size:0.8125rem; font-weight:500; color:var(--color-negative);"><%= t('content_engine.audio.error', default: 'Generation failed') %></span>
       <button data-action="click->section-audio#generate"

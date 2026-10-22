@@ -1,8 +1,8 @@
 <div class="space-y-3">
   <% Array(question.options).each_with_index do |option, opt_idx| %>
-    <label style="display:flex; align-items:center; gap:0.75rem; padding:0.75rem; border-radius:0.5rem; background:var(--color-tint-strong); border:1px solid var(--color-tint); cursor:pointer; transition:border-color 0.2s;">
+    <label style="display:flex; align-items:center; gap:0.75rem; padding:0.75rem; border-radius:0.5rem; background:color-mix(in srgb, var(--color-txt) 8%, transparent); border:1px solid color-mix(in srgb, var(--color-txt) 4%, transparent); cursor:pointer; transition:border-color 0.2s;">
       <input type="radio" name="answers[<%= question.id %>]" value="<%= option %>"
-             class="w-4 h-4 text-indigo-500 accent-indigo-500"
+             class="w-4 h-4 accent-[var(--color-accent)]"
              data-action="change->question-nav#markAnswered" data-index="<%= index %>">
       <span style="font-size:0.875rem; color:var(--color-sub);"><%= option %></span>
     </label>

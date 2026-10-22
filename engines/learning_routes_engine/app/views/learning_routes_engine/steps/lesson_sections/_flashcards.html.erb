@@ -1,7 +1,7 @@
 <%# engines/learning_routes_engine/app/views/learning_routes_engine/steps/lesson_sections/_flashcards.html.erb %>
 <div data-controller="flashcards" data-flashcards-total-value="<%= section[:cards]&.length || 0 %>" class="space-y-4">
   <!-- Badge -->
-  <div class="font-mono inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium tracking-wide uppercase" style="background: rgba(245, 158, 11, 0.1); color: var(--color-warning); ">
+  <div class="font-mono inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium tracking-wide uppercase" style="background: color-mix(in srgb, var(--color-highlight) 10%, transparent); color: var(--color-warning); ">
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
     <%= t('learning_engine.blocks.badge_flashcards') %>
   </div>
@@ -31,7 +31,7 @@
                data-action="keydown.enter->flashcards#flip keydown.space->flashcards#flip click->flashcards#flip">
             <!-- Front -->
             <div class="flashcard-face flashcard-front absolute inset-0 rounded-2xl p-6 flex items-center justify-center text-center"
-                 style="backface-visibility: hidden; background: var(--color-card); border: 2px solid rgba(245, 158, 11, 0.25); color: var(--color-txt);">
+                 style="backface-visibility: hidden; background: var(--color-card); border: 2px solid color-mix(in srgb, var(--color-highlight) 25%, transparent); color: var(--color-txt);">
               <p class="text-xl font-bold"><%= card[:front] %></p>
             </div>
             <!-- Back -->
@@ -48,13 +48,13 @@
   <!-- Difficulty buttons -->
   <div class="flex justify-center gap-3 mt-4" data-flashcards-target="buttons">
     <button class="px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200"
-            style="background: rgba(239, 68, 68, 0.1); color: var(--color-negative); border: 1px solid rgba(239, 68, 68, 0.2);"
+            style="background: color-mix(in srgb, var(--color-negative) 10%, transparent); color: var(--color-negative); border: 1px solid color-mix(in srgb, var(--color-negative) 20%, transparent);"
             data-action="click->flashcards#rate" data-difficulty="hard"><%= t('learning_engine.blocks.rating_hard') %></button>
     <button class="px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200"
-            style="background: rgba(245, 158, 11, 0.1); color: var(--color-warning); border: 1px solid rgba(245, 158, 11, 0.2);"
+            style="background: color-mix(in srgb, var(--color-highlight) 10%, transparent); color: var(--color-warning); border: 1px solid color-mix(in srgb, var(--color-highlight) 20%, transparent);"
             data-action="click->flashcards#rate" data-difficulty="normal"><%= t('learning_engine.blocks.rating_normal') %></button>
     <button class="px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200"
-            style="background: rgba(16, 185, 129, 0.1); color: var(--color-positive); border: 1px solid rgba(16, 185, 129, 0.2);"
+            style="background: color-mix(in srgb, var(--color-positive) 10%, transparent); color: var(--color-positive); border: 1px solid color-mix(in srgb, var(--color-positive) 20%, transparent);"
             data-action="click->flashcards#rate" data-difficulty="easy"><%= t('learning_engine.blocks.rating_easy') %></button>
   </div>
 

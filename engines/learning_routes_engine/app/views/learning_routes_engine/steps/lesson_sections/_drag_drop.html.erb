@@ -20,7 +20,7 @@
 %>
 <div data-controller="drag-drop" data-drag-drop-success-text-value="<%= t('learning_engine.blocks.all_matched') %>" class="space-y-4">
   <!-- Badge -->
-  <div class="font-mono inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium tracking-wide uppercase" style="background: rgba(139, 92, 246, 0.1); color: var(--color-highlight-violet); ">
+  <div class="font-mono inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium tracking-wide uppercase" style="background: color-mix(in srgb, var(--color-accent) 10%, transparent); color: var(--color-accent); ">
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
     <%= t('learning_engine.blocks.badge_match') %>
   </div>
@@ -37,7 +37,7 @@
     </div>
   <% end %>
 
-  <div class="rounded-2xl p-6" style="background: var(--color-card); border: 1px solid rgba(28, 24, 18, 0.06);">
+  <div class="rounded-2xl p-6" style="background: var(--color-card); border: 1px solid color-mix(in srgb, var(--color-txt) 6%, transparent);">
     <!-- Terms column -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
       <div>
@@ -45,7 +45,7 @@
         <div class="space-y-2" data-drag-drop-target="termsContainer">
           <% variant.permute(pairs, salt: "terms").each do |original_index, pair| %>
             <div class="drag-item px-4 py-3 rounded-xl cursor-grab active:cursor-grabbing select-none transition-all duration-200"
-                 style="background: rgba(139, 92, 246, 0.06); border: 2px solid rgba(139, 92, 246, 0.15); color: var(--color-txt);"
+                 style="background: color-mix(in srgb, var(--color-accent) 6%, transparent); border: 2px solid color-mix(in srgb, var(--color-accent) 15%, transparent); color: var(--color-txt);"
                  draggable="true"
                  data-drag-drop-target="term"
                  data-term-index="<%= original_index %>"
@@ -65,7 +65,7 @@
         <div class="space-y-2" data-drag-drop-target="defsContainer">
           <% variant.permute(pairs, salt: "definitions").each do |original_index, pair| %>
             <div class="drop-zone px-4 py-3 rounded-xl transition-all duration-200 min-h-[48px] flex items-center"
-                 style="background: rgba(28, 24, 18, 0.03); border: 2px dashed rgba(28, 24, 18, 0.12); color: var(--color-sub);"
+                 style="background: color-mix(in srgb, var(--color-txt) 3%, transparent); border: 2px dashed color-mix(in srgb, var(--color-txt) 12%, transparent); color: var(--color-sub);"
                  data-drag-drop-target="dropZone"
                  data-def-index="<%= original_index %>"
                  data-action="dragover->drag-drop#dragOver dragleave->drag-drop#dragLeave drop->drag-drop#drop keydown.enter->drag-drop#keySelect keydown.space->drag-drop#keySelect"

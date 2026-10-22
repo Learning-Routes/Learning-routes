@@ -15,8 +15,8 @@ export default class extends Controller {
   showTab(index) {
     this.tabTargets.forEach((tab, i) => {
       const isActive = i === index
-      const cs = getComputedStyle(document.documentElement)
-      tab.style.color = isActive ? (cs.getPropertyValue("--color-txt").trim() || "#1C1812") : (cs.getPropertyValue("--color-muted").trim() || "#887F72")
+      // The tokens, not their values: a theme switch must restyle the tabs too.
+      tab.style.color = isActive ? "var(--color-txt)" : "var(--color-muted)"
       tab.style.fontWeight = isActive ? "600" : "400"
       tab.setAttribute("aria-selected", isActive ? "true" : "false")
       tab.setAttribute("tabindex", isActive ? "0" : "-1")

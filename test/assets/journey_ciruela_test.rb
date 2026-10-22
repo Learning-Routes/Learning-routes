@@ -99,6 +99,17 @@ class JourneyCiruelaTest < ActiveSupport::TestCase
     end
   end
 
+  test "no journey rule names JetBrains Mono: the mono is the app's" do
+    offenders = CSS.scan(/^([^{}]*\.jm[^{}]*)\{([^{}]*)\}/).select { |_, body| body.include?("JetBrains") }.map { |sel, _| sel.strip }
+    assert_empty offenders
+  end
+
+  test "the journey layout's skip link uses the accent, not Tailwind's indigo" do
+    layout = Rails.root.join("app/views/layouts/journey.html.erb").read
+    assert_no_match(/indigo/, layout)
+    assert_match(/focus:bg-accent focus:text-accent-text/, layout)
+  end
+
   test "no journey rule names Manrope any more" do
     offenders = CSS.scan(/^([^{}]*\.jm[^{}]*)\{([^{}]*)\}/).select { |_, body| body.include?("Manrope") }.map { |sel, _| sel.strip }
     assert_empty offenders

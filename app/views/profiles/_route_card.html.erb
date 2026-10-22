@@ -1,98 +1,20 @@
 <%#
-  Route card with compact SVG visualization.
-  Locals: route (LearningRoute), accent_token (CSS custom property name, e.g. "--color-node-nv1")
-  Click navigates to the V4 journey page.
+  STEP 41 §3.1: the reference's route card. Locals: route (LearningRoute, with
+  its steps and modules preloaded).
 %>
-<%
-  # Use the already-eager-loaded association (sorted by position via has_many default scope)
-  steps = route.route_steps.sort_by(&:position)
-  completed_count = steps.count(&:completed?)
-  progress = route.progress_percentage
-  remaining_min = steps.reject(&:completed?).sum { |s| s.estimated_minutes.to_i }
-
-  # Build node data for compact SVG controller
-  nodes_data = steps.map { |s|
-    { label: s.localized_title, status: s.status }
-  }
-
-  # Color seed from UUID
-  color_seed = route.id.to_s.delete("-").last(8).to_i(16)
-%>
-
-<%= link_to learning_routes_engine.journey_route_path(route),
-    aria: { label: t("route_card_aria") },
-    style: "display:block; background:var(--color-card); border:1px solid var(--color-border-subtle); border-radius:18px; cursor:pointer; transition:all 0.25s cubic-bezier(0.22,1,0.36,1); overflow:hidden; text-decoration:none; color:inherit;",
-    class: "card-hover",
-    data: { turbo_action: "advance" } do %>
-
-  <%# === Compact Route SVG === %>
-  <div style="padding:20px 20px 8px;"
-       data-controller="compact-route"
-       data-compact-route-nodes-value="<%= nodes_data.to_json %>"
-       data-compact-route-seed-value="<%= color_seed %>"
-       data-compact-route-color-value="<%= accent_token %>">
+<% card = route_card_for(route) %>
+<article class="route-card card3" data-route-id="<%= route.id %>" data-controller="card-tilt">
+  <div class="route-card__top">
+    <span class="level-tag" data-route-level="<%= card.level %>"><%= t("route_card.level", n: card.level.delete("nv")) %></span>
+    <span class="route-card__module"><%= t("route_card.module", n: card.module_number, total: card.module_total) %></span>
   </div>
-
-  <%# === Route Info === %>
-  <div style="padding:10px 24px 20px;">
-
-    <%# Title + status badge row %>
-    <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:0.8rem; margin-bottom:0.45rem;">
-      <h3 style="font-weight:700; font-size:0.95rem; color:var(--color-txt); margin:0; letter-spacing:-0.3px; line-height:1.3;">
-        <span style="margin-right:0.3rem;"><%= topic_emoji_for(route.topic) %></span><%= route.localized_topic %>
-      </h3>
-      <% badge_style = case route.status
-                        when 'active' then "background:var(--color-status-active-bg); color:var(--color-status-active-text)"
-                        when 'completed' then "background:var(--color-status-completed-bg); color:var(--color-status-completed-text)"
-                        when 'paused' then "background:var(--color-status-paused-bg); color:var(--color-status-paused-text)"
-                        else "background:var(--color-tint); color:var(--color-sub)"
-                        end %>
-      <span class="font-mono" style="font-size:0.55rem; letter-spacing:0.5px; text-transform:uppercase; padding:0.2rem 0.55rem; border-radius:6px; flex-shrink:0; white-space:nowrap; <%= badge_style %>">
-        <%= t("dashboard.status.#{route.status}") %>
-      </span>
-    </div>
-
-    <%# Subtitle %>
-    <p style="font-size:0.72rem; color:var(--color-muted); margin:0 0 0.8rem; line-height:1.35;">
-      <%= route.localized_subject_area %>
-    </p>
-
-    <%# Progress row: badge + bar %>
-    <div style="display:flex; align-items:center; gap:0.7rem; margin-bottom:0.85rem;">
-      <% level = route_level(route) %>
-      <span class="font-mono" data-route-level title="<%= t("learning_engine.journey.#{level}_label") %>"
-            style="font-size:0.62rem; letter-spacing:1px; color:var(<%= accent_token %>); flex-shrink:0;"><%= level.upcase %></span>
-      <span class="font-mono" style="font-size:0.72rem; font-weight:500; color:var(<%= accent_token %>); background:color-mix(in srgb, var(<%= accent_token %>) 5%, transparent); padding:0.18rem 0.55rem; border-radius:7px; flex-shrink:0;">
-        <%= progress %>%
-      </span>
-      <div style="flex:1; height:3px; background:var(--color-tint-strong); border-radius:2px; overflow:hidden;">
-        <div style="width:<%= progress %>%; height:100%; background:var(<%= accent_token %>); border-radius:2px; transition:width 0.4s cubic-bezier(0.22,1,0.36,1);"></div>
-      </div>
-    </div>
-
-    <%# Stats row %>
-    <% stats = @route_stats&.dig(route.id) || {} %>
-    <div style="display:flex; align-items:center; gap:1.2rem;">
-      <div style="display:flex; flex-direction:column; align-items:flex-start;">
-        <span class="font-mono" style="font-size:0.78rem; font-weight:500; color:var(--color-txt); letter-spacing:-0.2px;">
-          <%= format_study_time(stats[:study_minutes] || 0) %>
-        </span>
-        <span style="font-size:0.62rem; color:var(--color-muted);"><%= t("route_card.time") %></span>
-      </div>
-      <div style="width:1px; height:22px; background:var(--color-border-subtle);"></div>
-      <div style="display:flex; flex-direction:column; align-items:flex-start;">
-        <span class="font-mono" style="font-size:0.78rem; font-weight:500; color:var(--color-txt); letter-spacing:-0.2px;">
-          <%= stats[:lessons_completed] || completed_count %>
-        </span>
-        <span style="font-size:0.62rem; color:var(--color-muted);"><%= t("route_card.lessons") %></span>
-      </div>
-      <div style="width:1px; height:22px; background:var(--color-border-subtle);"></div>
-      <div style="display:flex; flex-direction:column; align-items:flex-start;">
-        <span class="font-mono" data-stat="accuracy" style="font-size:0.78rem; font-weight:500; color:var(--color-txt); letter-spacing:-0.2px;">
-          <%= stats[:accuracy] ? "#{stats[:accuracy]}%" : "—" %>
-        </span>
-        <span style="font-size:0.62rem; color:var(--color-muted);"><%= t("route_card.accuracy") %></span>
-      </div>
-    </div>
+  <h3><%= route.localized_topic %></h3>
+  <p class="route-card__sub"><%= t("route_card.topics", module: card.module_title, done: card.done, total: card.steps.size) %></p>
+  <div class="tray"><%= mini_route_svg(card.steps.size, card.done) %></div>
+  <div class="route-card__foot">
+    <span class="groove" aria-hidden="true"><span style="width:<%= card.steps.empty? ? 0 : (100.0 * card.done / card.steps.size).round %>%"></span></span>
+    <%= link_to t("route_card.continue"), learning_routes_engine.journey_route_path(route),
+        class: "btn3 btn3--sm", aria: { label: t("route_card.continue_aria", route: route.localized_topic) },
+        data: { turbo_action: "advance" } %>
   </div>
-<% end %>
+</article>

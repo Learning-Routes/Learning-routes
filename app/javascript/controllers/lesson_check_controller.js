@@ -131,7 +131,7 @@ export default class extends Controller {
     if (!this._timers) this._timers = []
 
     btn.style.transition = "box-shadow 0.3s"
-    btn.style.boxShadow = "inset 0 0 0 2px rgba(91,168,128,0.4), 0 0 12px rgba(91,168,128,0.15)"
+    btn.style.boxShadow = "inset 0 0 0 2px color-mix(in srgb, var(--color-positive) 40%, transparent), 0 0 12px color-mix(in srgb, var(--color-positive) 15%, transparent)"
     this._timers.push(setTimeout(() => { btn.style.boxShadow = "" }, 600))
 
     // Floating XP
@@ -140,7 +140,7 @@ export default class extends Controller {
     span.style.cssText = `
       position:absolute; top:-0.3rem; right:0.5rem;
       font-family:var(--font-mono); font-size:0.78rem; font-weight:700;
-      color:#B09848; pointer-events:none; opacity:1; z-index:10;
+      color:var(--color-signal-text); pointer-events:none; opacity:1; z-index:10;
       transition:all 0.9s cubic-bezier(0.16,1,0.3,1);
     `
     const pos = getComputedStyle(btn.parentElement).position

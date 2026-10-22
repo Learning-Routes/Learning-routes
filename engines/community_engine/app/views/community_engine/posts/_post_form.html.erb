@@ -1,6 +1,5 @@
 <%# New post form. Appears at the top of the feed for logged-in users. %>
-<div id="post_form_container" class="feed-card" style="background:var(--color-card, rgba(255,255,255,0.6)); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px);
-            border:1px solid var(--color-faint, rgba(28,24,18,0.06)); border-radius:12px; padding:1rem 1.25rem; margin-bottom:0.75rem;">
+<div id="post_form_container" class="feed-card card3" style="padding:1rem 1.25rem; margin-bottom:0.75rem;">
   <div id="post_form_errors"></div>
   <%= form_with url: community_engine.posts_path, scope: :post, method: :post, data: { turbo_frame: "_top" } do |f| %>
     <div style="display:flex; align-items:flex-start; gap:0.75rem;">
@@ -15,18 +14,13 @@
         <%= f.text_area :body,
               placeholder: t("community_engine.posts.placeholder"),
               rows: 2,
-              style: "width:100%; border:none; background:transparent; resize:none; 
-                     font-size:0.9rem; color:var(--color-txt); line-height:1.55; outline:none;
-                     padding:0.2rem 0;",
+              class: "input3",
+              style: "width:100%; height:auto; resize:none; padding:0.6rem 0.8rem; line-height:1.55;",
               required: true,
               maxlength: 2000 %>
 
-        <div style="display:flex; align-items:center; justify-content:flex-end; margin-top:0.5rem; padding-top:0.5rem;
-                    border-top:1px solid var(--color-faint, rgba(28,24,18,0.06));">
-          <%= f.submit t("community_engine.posts.submit"),
-                style: "padding:0.45rem 1.25rem; border-radius:8px; background:var(--color-accent);
-                       color:var(--color-accent-text); font-size:0.8rem;
-                       font-weight:600; border:none; cursor:pointer; transition:opacity 0.15s;" %>
+        <div style="display:flex; align-items:center; justify-content:flex-end; margin-top:0.75rem;">
+          <%= f.submit t("community_engine.posts.submit"), class: "btn3 btn3--sm" %>
         </div>
       </div>
     </div>

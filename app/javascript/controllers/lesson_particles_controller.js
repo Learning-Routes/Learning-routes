@@ -23,10 +23,10 @@ export default class extends Controller {
   _spawnParticles() {
     const container = this.hasContainerTarget ? this.containerTarget : this.element
     const colors = [
-      "rgba(99,102,241,0.12)",
-      "rgba(16,185,129,0.1)",
-      "rgba(245,158,11,0.1)",
-      "rgba(236,72,153,0.08)"
+      "color-mix(in srgb, var(--color-accent) 12%, transparent)",
+      "color-mix(in srgb, var(--color-positive) 10%, transparent)",
+      "color-mix(in srgb, var(--color-highlight) 10%, transparent)",
+      "color-mix(in srgb, var(--color-accent) 8%, transparent)"
     ]
 
     for (let i = 0; i < 15; i++) {

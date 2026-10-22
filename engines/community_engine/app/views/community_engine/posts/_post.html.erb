@@ -1,6 +1,5 @@
 <%# Single post card — compact feed style. Locals: post %>
-<div id="post_<%= post.id %>" class="feed-card" style="background:var(--color-card, rgba(255,255,255,0.6)); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px);
-            border:1px solid var(--color-faint, rgba(28,24,18,0.06)); border-radius:12px; padding:1rem 1.25rem; transition:box-shadow 0.15s;">
+<div id="post_<%= post.id %>" class="feed-card card3" style="padding:1rem 1.25rem;">
   <div style="display:flex; align-items:flex-start; gap:0.75rem;">
     <%# Avatar %>
     <div style="width:36px; height:36px; border-radius:50%; background:var(--color-accent);
@@ -35,7 +34,7 @@
       <% best_comment = post.latest_comment %>
       <% if best_comment %>
         <div style="display:inline-flex; align-items:center; gap:0.4rem; margin-top:0.5rem; padding:0.3rem 0.55rem;
-                    background:var(--color-tint, rgba(28,24,18,0.03)); border-radius:8px; max-width:100%;">
+                    background:var(--color-tint); border-radius:8px; max-width:100%;">
           <div style="flex-shrink:0; width:20px; height:20px; border-radius:50%;
                       background:var(--color-accent); color:var(--color-accent-text);
                       display:flex; align-items:center; justify-content:center;

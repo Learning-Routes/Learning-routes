@@ -2,7 +2,7 @@
   <div class="sticky top-20" style="display:flex; flex-direction:column; gap:1rem;">
 
     <%# ── Step Info Card ── %>
-    <div style="background:var(--color-card); border:1px solid var(--color-border-subtle); border-radius:16px; padding:1.25rem; box-shadow:0 1px 3px rgba(0,0,0,0.02), 0 4px 12px rgba(0,0,0,0.01);">
+    <div style="background:var(--color-card); border:1px solid var(--color-border-subtle); border-radius:16px; padding:1.25rem; box-shadow:0 1px 3px color-mix(in srgb, var(--color-shade) 11%, transparent), 0 4px 12px color-mix(in srgb, var(--color-shade) 6%, transparent);">
       <h3 class="font-mono" style="font-size:0.625rem; font-weight:600; color:var(--color-muted); text-transform:uppercase; letter-spacing:0.1em; margin:0 0 1rem;"><%= t('learning_engine.sidebar.step_info') %></h3>
       <%# WP-15 §D. Four visually identical tinted pills, one per fact, made the card
           read as a list of buttons and gave 40% of its height to chrome. Same facts,
@@ -40,14 +40,14 @@
     <%= render "notes" %>
 
     <%# ── Progress Ring Card ── %>
-    <div style="background:var(--color-card); border:1px solid var(--color-border-subtle); border-radius:16px; padding:1.25rem; box-shadow:0 1px 3px rgba(0,0,0,0.02), 0 4px 12px rgba(0,0,0,0.01);">
+    <div style="background:var(--color-card); border:1px solid var(--color-border-subtle); border-radius:16px; padding:1.25rem; box-shadow:0 1px 3px color-mix(in srgb, var(--color-shade) 11%, transparent), 0 4px 12px color-mix(in srgb, var(--color-shade) 6%, transparent);">
       <h3 class="font-mono" style="font-size:0.625rem; font-weight:600; color:var(--color-muted); text-transform:uppercase; letter-spacing:0.1em; margin:0 0 1rem;"><%= t('learning_engine.sidebar.progress') %></h3>
 
       <%# SVG Progress Ring %>
       <div style="display:flex; flex-direction:column; align-items:center; gap:0.75rem;">
         <div style="position:relative; width:5.5rem; height:5.5rem;">
           <svg width="88" height="88" viewBox="0 0 88 88" style="transform:rotate(-90deg);">
-            <circle cx="44" cy="44" r="38" fill="none" stroke="var(--color-tint-strong)" stroke-width="6"/>
+            <circle cx="44" cy="44" r="38" fill="none" stroke="color-mix(in srgb, var(--color-txt) 8%, transparent)" stroke-width="6"/>
             <circle cx="44" cy="44" r="38" fill="none" stroke="url(#progressGrad)" stroke-width="6"
                     stroke-linecap="round"
                     stroke-dasharray="<%= (238.76 * @progress[:percentage] / 100.0).round(1) %> 238.76"
@@ -55,7 +55,7 @@
             <defs>
               <linearGradient id="progressGrad" x1="0%" y1="0%" x2="100%" y2="0%">
                 <stop offset="0%" stop-color="var(--color-section-audio-active)"/>
-                <stop offset="100%" stop-color="var(--color-highlight-violet)"/>
+                <stop offset="100%" stop-color="var(--color-accent)"/>
               </linearGradient>
             </defs>
           </svg>
@@ -70,7 +70,7 @@
 
       <%# Linear progress backup for accessibility %>
       <div style="height:0.25rem; background:var(--color-progress-track); border-radius:9999px; overflow:hidden; margin-top:0.75rem;" role="progressbar" aria-valuenow="<%= @progress[:percentage] %>" aria-valuemin="0" aria-valuemax="100" aria-label="<%= t('learning_engine.progress.aria', percent: @progress[:percentage]) %>">
-        <div style="height:100%; background:linear-gradient(to right, var(--color-section-audio-active), var(--color-highlight-violet)); border-radius:9999px; width:<%= @progress[:percentage] %>%; transition:width 0.8s ease;" aria-hidden="true"></div>
+        <div style="height:100%; background:linear-gradient(to right, var(--color-section-audio-active), var(--color-accent)); border-radius:9999px; width:<%= @progress[:percentage] %>%; transition:width 0.8s ease;" aria-hidden="true"></div>
       </div>
     </div>
   </div>

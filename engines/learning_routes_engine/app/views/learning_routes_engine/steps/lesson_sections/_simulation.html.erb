@@ -4,20 +4,20 @@
      data-simulation-formula-value="<%= section[:formula] %>"
      class="space-y-4">
   <!-- Badge -->
-  <div class="font-mono inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium tracking-wide uppercase" style="background: rgba(236, 72, 153, 0.1); color: var(--color-highlight-violet); ">
+  <div class="font-mono inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium tracking-wide uppercase" style="background: color-mix(in srgb, var(--color-accent) 10%, transparent); color: var(--color-accent); ">
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20V10"/><path d="M18 20V4"/><path d="M6 20v-4"/></svg>
     <%= t('learning_engine.blocks.badge_simulation') %>
   </div>
 
   <h2 class="text-2xl font-bold" style="color: var(--color-txt);"><%= block_title(section) %></h2>
 
-  <div class="rounded-2xl p-6" style="background: var(--color-card); border: 1px solid rgba(28, 24, 18, 0.06);">
+  <div class="rounded-2xl p-6" style="background: var(--color-card); border: 1px solid color-mix(in srgb, var(--color-txt) 6%, transparent);">
     <% if section[:body].present? %>
       <p class="text-sm mb-4" style="color: var(--color-sub);"><%= section[:body].to_s.truncate(300) %></p>
     <% end %>
 
     <!-- Canvas visualization -->
-    <div class="rounded-xl overflow-hidden mb-4" style="border: 1px solid rgba(28, 24, 18, 0.08);">
+    <div class="rounded-xl overflow-hidden mb-4" style="border: 1px solid color-mix(in srgb, var(--color-txt) 8%, transparent);">
       <canvas data-simulation-target="canvas" width="600" height="300" style="width: 100%; height: auto; background: var(--color-card);"></canvas>
     </div>
 
@@ -47,7 +47,7 @@
     </div>
 
     <% if section[:formula].present? %>
-      <div class="font-mono mt-4 px-3 py-2 rounded-lg text-sm" style="background: rgba(28, 24, 18, 0.04); color: var(--color-sub); ">
+      <div class="font-mono mt-4 px-3 py-2 rounded-lg text-sm" style="background: color-mix(in srgb, var(--color-txt) 4%, transparent); color: var(--color-sub); ">
         Formula: <span data-simulation-target="result"><%= section[:formula] %></span>
       </div>
     <% end %>

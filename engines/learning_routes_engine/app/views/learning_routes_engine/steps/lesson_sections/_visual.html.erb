@@ -19,7 +19,7 @@
   <%# ── Image display ── %>
   <div id="visual_image_<%= step.id %>_<%= section_index %>" style="margin-bottom:1.25rem;">
     <% if image_url.present? %>
-      <div style="border-radius:14px; overflow:hidden; border:1px solid var(--color-border-subtle); box-shadow:0 2px 8px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.02);">
+      <div style="border-radius:14px; overflow:hidden; border:1px solid var(--color-border-subtle); box-shadow:0 2px 8px color-mix(in srgb, var(--color-shade) 22%, transparent), 0 8px 24px color-mix(in srgb, var(--color-shade) 11%, transparent);">
         <img src="<%= image_url %>" alt="<%= alt_text %>"
              style="width:100%; max-width:100%; height:auto; display:block;"
              loading="lazy">
@@ -81,7 +81,7 @@
     <%
       body_html = ContentEngine::MarkdownRenderer.render(section[:body])
     %>
-    <div style="background:var(--color-card); border:1px solid var(--color-border-subtle); border-radius:16px; padding:1.5rem 1.75rem; box-shadow:0 1px 3px rgba(0,0,0,0.02), 0 4px 16px rgba(0,0,0,0.01);">
+    <div style="background:var(--color-card); border:1px solid var(--color-border-subtle); border-radius:16px; padding:1.5rem 1.75rem; box-shadow:0 1px 3px color-mix(in srgb, var(--color-shade) 11%, transparent), 0 4px 16px color-mix(in srgb, var(--color-shade) 6%, transparent);">
       <div class="lesson-content" data-controller="math-renderer" data-math-renderer-target="content">
         <%= body_html %>
       </div>

@@ -1,6 +1,6 @@
 <div>
   <textarea name="answers[<%= question.id %>]" rows="4"
-            style="width:100%; background:var(--color-tint-strong); border:1px solid var(--color-tint); border-radius:0.5rem; padding:0.75rem; font-size:0.875rem; color:var(--color-txt); resize:none; outline:none; "
+            style="width:100%; background:color-mix(in srgb, var(--color-txt) 8%, transparent); border:1px solid color-mix(in srgb, var(--color-txt) 4%, transparent); border-radius:0.5rem; padding:0.75rem; font-size:0.875rem; color:var(--color-txt); resize:none; outline:none; "
             placeholder="<%= t("assessments.exam.short_answer_placeholder") %>"
             data-action="input->question-nav#markAnswered" data-index="<%= index %>"></textarea>
 </div>

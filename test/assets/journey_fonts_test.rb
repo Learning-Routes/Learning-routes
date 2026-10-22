@@ -24,11 +24,11 @@ class JourneyFontsTest < ActiveSupport::TestCase
     # `font:` shorthand: the family list follows the size (and optional /line-height).
     lists += css.scan(/\bfont:\s*[^;}]*?\d+(?:\.\d+)?(?:px|rem|em|%)(?:\s*\/\s*[\d.]+(?:px|rem|em|%)?)?\s+([^;}]+)/).flatten
     lists.flat_map { |l| l.split(",") }.map { |f| f.strip.delete("'\"") }.reject(&:empty?)
-         .map { |f| f == "var(--font-sans)" ? sans : f }.uniq
+         .map { |f| f.match?(/\Avar\(--font-(sans|mono)\)\z/) ? token_family(f[/sans|mono/]) : f }.uniq
   end
 
-  # The token's first family: what var(--font-sans) asks the browser for.
-  def sans = CSS[/--font-sans:\s*["']?([^"',;]+)/, 1]
+  # The token's first family: what var(--font-sans) or var(--font-mono) asks the browser for.
+  def token_family(name) = CSS[/--font-#{name}:\s*["']?([^"',;]+)/, 1]
 
   def loaded_families
     link = LAYOUT[%r{https://fonts\.googleapis\.com/css2\?[^"]+}]
@@ -43,7 +43,8 @@ class JourneyFontsTest < ActiveSupport::TestCase
     assert_empty missing, "the journey CSS asks for #{missing.join(', ')}, which journey.html.erb never loads"
   end
 
-  test "the layout loads exactly the journey families" do
-    assert_equal ["JetBrains Mono", "Archivo"], loaded_families
+  # STEP 41 §3.2: the journey's mono is the app's, DM Mono, not WP-37b's JetBrains Mono.
+  test "the layout loads exactly the journey families: the app's sans and mono" do
+    assert_equal ["Archivo", "DM Mono"], loaded_families
   end
 end

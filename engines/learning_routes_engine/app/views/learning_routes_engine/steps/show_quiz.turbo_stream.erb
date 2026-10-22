@@ -1,6 +1,6 @@
 <%# Replace the complete button with "Quiz in progress" indicator %>
 <%= turbo_stream.replace "step_complete_btn" do %>
-  <div id="step_complete_btn" class="flex items-center gap-2 text-amber-400 text-sm font-medium">
+  <div id="step_complete_btn" class="flex items-center gap-2 text-[var(--color-signal-text)] text-sm font-medium">
     <svg aria-hidden="true" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
     </svg>
