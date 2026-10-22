@@ -17,7 +17,7 @@
         <%= time_ago_in_words(comment.created_at) %>
       </span>
       <% if comment.edited? %>
-        <span class="font-mono" style="font-size:0.55rem; color:var(--color-muted); background:var(--color-faint, rgba(28,24,18,0.06)); padding:0.15rem 0.4rem; border-radius:6px;">
+        <span class="font-mono" style="font-size:0.55rem; color:var(--color-muted); background:var(--color-faint); padding:0.15rem 0.4rem; border-radius:6px;">
           <%= t("community_engine.comments.edited") %>
         </span>
       <% end %>

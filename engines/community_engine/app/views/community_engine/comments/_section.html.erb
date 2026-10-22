@@ -15,9 +15,9 @@
   <%= turbo_stream_from "comments_#{commentable.class.name.parameterize}_#{commentable.id}" %>
 
   <div id="comments_<%= commentable.class.name.parameterize %>_<%= commentable.id %>"
-       style="border-top:1px solid var(--color-faint, rgba(28,24,18,0.06));">
+       style="border-top:1px solid var(--color-faint);">
     <% commentable.comments.top_level.includes(:user, replies: :user).recent.each do |comment| %>
-      <div style="border-bottom:1px solid var(--color-faint, rgba(28,24,18,0.06));">
+      <div style="border-bottom:1px solid var(--color-faint);">
         <%= render "community_engine/comments/comment", comment: comment %>
       </div>
     <% end %>
