@@ -14,7 +14,12 @@ class PagePaletteTest < ActiveSupport::TestCase
       files: ["app/views/route_wizard/*.erb", "app/javascript/controllers/route_wizard_controller.js"],
       css: [/ROUTE WIZARD/, /WP-37 journey map/]
     },
-    "settings" => { files: ["app/views/settings/*.erb", "app/javascript/controllers/auth_form_controller.js"] }
+    "settings" => { files: ["app/views/settings/*.erb", "app/javascript/controllers/auth_form_controller.js"] },
+    # The Google mark keeps Google's colours (core/shared/_google_logo.html.erb).
+    "sign in and sign up" => {
+      files: ["app/views/layouts/auth.html.erb", "engines/core/app/views/core/{sessions,registrations,passwords,email_verifications}/*.erb",
+              "app/javascript/controllers/auth_background_controller.js"]
+    }
   }.freeze
 
   PAGES.each do |page, spec|
