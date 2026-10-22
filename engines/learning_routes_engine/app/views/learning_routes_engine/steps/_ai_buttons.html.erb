@@ -65,7 +65,7 @@
 
   <%# ── Loading indicator ── %>
   <div data-ai-interaction-target="loadingIndicator" class="hidden">
-    <div style="display:inline-flex; align-items:center; gap:0.5rem; padding:0.5rem 1rem; font-size:0.8125rem; font-weight:500; color:var(--color-muted); background:var(--color-tint); border-radius:12px;">
+    <div style="display:inline-flex; align-items:center; gap:0.5rem; padding:0.5rem 1rem; font-size:0.8125rem; font-weight:500; color:var(--color-muted); background:color-mix(in srgb, var(--color-txt) 4%, transparent); border-radius:12px;">
       <svg aria-hidden="true" class="animate-spin" style="height:0.875rem; width:0.875rem;" fill="none" viewBox="0 0 24 24">
         <circle style="opacity:0.25;" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
         <path style="opacity:0.75;" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
@@ -90,15 +90,15 @@
     border: 1px solid var(--color-border-subtle);
     cursor: pointer;
     transition: all 0.25s;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+    box-shadow: 0 1px 3px color-mix(in srgb, var(--color-shade) 11%, transparent);
   }
   .ai-btn:hover { transform: translateY(-1px); }
   .ai-btn:disabled { opacity: 0.5; cursor: wait; transform: none; }
-  .hover-ai-btn-indigo:hover { border-color: rgba(99,102,241,0.3); color: var(--color-section-audio-active); box-shadow: 0 3px 10px rgba(99,102,241,0.08); }
-  .hover-ai-btn-emerald:hover { border-color: rgba(16,185,129,0.3); color: var(--color-badge-exercise-text); box-shadow: 0 3px 10px rgba(16,185,129,0.08); }
-  .hover-ai-btn-amber:hover { border-color: rgba(245,158,11,0.3); color: var(--color-badge-assessment-text); box-shadow: 0 3px 10px rgba(245,158,11,0.08); }
-  .hover-ai-btn-purple:hover { border-color: rgba(139,92,246,0.3); color: var(--color-highlight-violet); box-shadow: 0 3px 10px rgba(139,92,246,0.08); }
-  .hover-ai-btn-cyan:hover { border-color: rgba(6,182,212,0.3); color: var(--color-info); box-shadow: 0 3px 10px rgba(6,182,212,0.08); }
-  .hover-ai-btn-rose:hover { border-color: rgba(244,63,94,0.3); color: var(--color-negative); box-shadow: 0 3px 10px rgba(244,63,94,0.08); }
-  .hover-ai-btn-green:hover { border-color: rgba(34,197,94,0.3); color: var(--color-positive); box-shadow: 0 3px 10px rgba(34,197,94,0.08); }
+  .hover-ai-btn-indigo:hover { border-color: color-mix(in srgb, var(--color-accent) 30%, transparent); color: var(--color-section-audio-active); box-shadow: 0 3px 10px color-mix(in srgb, var(--color-accent) 8%, transparent); }
+  .hover-ai-btn-emerald:hover { border-color: color-mix(in srgb, var(--color-positive) 30%, transparent); color: var(--color-badge-exercise-text); box-shadow: 0 3px 10px color-mix(in srgb, var(--color-positive) 8%, transparent); }
+  .hover-ai-btn-amber:hover { border-color: color-mix(in srgb, var(--color-highlight) 30%, transparent); color: var(--color-badge-assessment-text); box-shadow: 0 3px 10px color-mix(in srgb, var(--color-highlight) 8%, transparent); }
+  .hover-ai-btn-purple:hover { border-color: color-mix(in srgb, var(--color-accent) 30%, transparent); color: var(--color-accent); box-shadow: 0 3px 10px color-mix(in srgb, var(--color-accent) 8%, transparent); }
+  .hover-ai-btn-cyan:hover { border-color: color-mix(in srgb, var(--color-reinforce) 30%, transparent); color: var(--color-info); box-shadow: 0 3px 10px color-mix(in srgb, var(--color-reinforce) 8%, transparent); }
+  .hover-ai-btn-rose:hover { border-color: color-mix(in srgb, var(--color-negative) 30%, transparent); color: var(--color-negative); box-shadow: 0 3px 10px color-mix(in srgb, var(--color-negative) 8%, transparent); }
+  .hover-ai-btn-green:hover { border-color: color-mix(in srgb, var(--color-positive) 30%, transparent); color: var(--color-positive); box-shadow: 0 3px 10px color-mix(in srgb, var(--color-positive) 8%, transparent); }
 </style>

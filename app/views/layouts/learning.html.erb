@@ -35,7 +35,7 @@
   </head>
 
   <body style="margin:0; min-height:100vh; background:var(--color-bg); color:var(--color-txt); transition:background-color 0.3s, color 0.3s;">
-    <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-4 focus:z-[200] focus:bg-indigo-500 focus:text-white focus:px-4 focus:py-2 focus:rounded-lg focus:text-sm focus:font-semibold"><%= t("layout.skip_to_content") %></a>
+    <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-4 focus:z-[200] focus:bg-accent focus:text-accent-text focus:px-4 focus:py-2 focus:rounded-lg focus:text-sm focus:font-semibold"><%= t("layout.skip_to_content") %></a>
     <%= turbo_stream_from "learning_route_#{@route.id}" if @route %>
     <%= turbo_stream_from "step_content_#{@step.id}" if @step %>
 
@@ -87,7 +87,7 @@
                   <%= button_to t("layout.learning.complete_step"),
                       learning_routes_engine.complete_route_step_path(@route, @step),
                       method: :post,
-                      style: "border-radius:0.5rem; padding:0.375rem 1rem; font-size:0.75rem; font-weight:600; color:var(--color-accent-text); border:none; cursor:pointer; background:linear-gradient(to right, var(--color-section-audio-active), var(--color-highlight-violet)); transition:opacity 0.2s;",
+                      class: "btn3 btn3--sm",
                       data: { lesson_target: "markCompleteBtn", turbo_frame: "_top" } %>
                 </div>
               <% end %>
@@ -103,7 +103,7 @@
       <!-- Progress bar -->
       <% if @progress %>
         <div style="height:4px; background:var(--color-progress-track);" role="progressbar" aria-valuenow="<%= @progress[:percentage] %>" aria-valuemin="0" aria-valuemax="100" aria-label="<%= t("layout.learning.progress_aria", percent: @progress[:percentage]) %>">
-          <div style="height:100%; background:linear-gradient(to right, var(--color-section-audio-active), var(--color-highlight-violet)); transition:width 0.5s; width:<%= @progress[:percentage] %>%;"
+          <div style="height:100%; background:var(--color-accent); transition:width 0.5s; width:<%= @progress[:percentage] %>%;"
                id="route_progress_bar"></div>
         </div>
       <% end %>
@@ -113,7 +113,7 @@
     <% if flash[:notice] || flash[:alert] %>
       <div style="max-width:80rem; margin:1rem auto 0; padding:0 1rem;">
         <% if flash[:notice] %>
-          <div style="border-radius:14px; background:var(--color-flash-notice-bg); border:1px solid var(--color-flash-notice-border); padding:0.875rem 1.25rem; font-size:0.875rem; font-weight:500; color:var(--color-flash-notice-text); box-shadow:0 2px 8px rgba(91,168,128,0.08); animation:flashSlideIn 0.3s ease;"
+          <div style="border-radius:14px; background:var(--color-flash-notice-bg); border:1px solid var(--color-flash-notice-border); padding:0.875rem 1.25rem; font-size:0.875rem; font-weight:500; color:var(--color-flash-notice-text); box-shadow:0 2px 8px color-mix(in srgb, var(--color-positive) 8%, transparent); animation:flashSlideIn 0.3s ease;"
                data-controller="flash">
             <div style="display:flex; align-items:center; gap:0.625rem;">
               <%= svg_icon(:check, size: 16, style: "flex-shrink:0;") %>
@@ -125,7 +125,7 @@
           </div>
         <% end %>
         <% if flash[:alert] %>
-          <div style="border-radius:14px; background:var(--color-flash-alert-bg); border:1px solid var(--color-flash-alert-border); padding:0.875rem 1.25rem; font-size:0.875rem; font-weight:500; color:var(--color-flash-alert-text); box-shadow:0 2px 8px rgba(176,96,80,0.08); animation:flashSlideIn 0.3s ease; <%= 'margin-top:0.5rem;' if flash[:notice] %>"
+          <div style="border-radius:14px; background:var(--color-flash-alert-bg); border:1px solid var(--color-flash-alert-border); padding:0.875rem 1.25rem; font-size:0.875rem; font-weight:500; color:var(--color-flash-alert-text); box-shadow:0 2px 8px color-mix(in srgb, var(--color-negative) 8%, transparent); animation:flashSlideIn 0.3s ease; <%= 'margin-top:0.5rem;' if flash[:notice] %>"
                data-controller="flash">
             <div style="display:flex; align-items:center; gap:0.625rem;">
               <%= svg_icon(:alert_circle, size: 16, style: "flex-shrink:0;") %>

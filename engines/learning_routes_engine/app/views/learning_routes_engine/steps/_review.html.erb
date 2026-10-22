@@ -1,7 +1,7 @@
 <div id="<%= dom_id(@step, :review) %>" style="max-width:var(--step-measure); margin:0 auto; padding:1rem;">
   <%# Header %>
   <div style="margin-bottom:2rem;">
-    <span class="lesson-section-badge" style="background:linear-gradient(135deg, rgba(139,92,246,0.12), rgba(139,92,246,0.06)); color:var(--color-highlight-violet); border:1px solid rgba(139,92,246,0.15);">
+    <span class="lesson-section-badge" style="background:linear-gradient(135deg, color-mix(in srgb, var(--color-accent) 12%, transparent), color-mix(in srgb, var(--color-accent) 6%, transparent)); color:var(--color-accent); border:1px solid color-mix(in srgb, var(--color-accent) 15%, transparent);">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20V10"/><path d="M18 20V4"/><path d="M6 20v-4"/></svg>
       <span><%= t('learning_engine.review.badge') %></span>
     </span>
@@ -18,38 +18,38 @@
       if @retrievability >= 0.7
         strength_color = "var(--color-positive)"
         strength_gradient = "linear-gradient(135deg, var(--color-positive), var(--color-badge-exercise-text))"
-        strength_bg = "rgba(16,185,129,0.06)"
+        strength_bg = "color-mix(in srgb, var(--color-positive) 6%, transparent)"
       elsif @retrievability >= 0.4
         strength_color = "var(--color-warning)"
         strength_gradient = "linear-gradient(135deg, var(--color-warning), var(--color-badge-assessment-text))"
-        strength_bg = "rgba(245,158,11,0.06)"
+        strength_bg = "color-mix(in srgb, var(--color-highlight) 6%, transparent)"
       else
         strength_color = "var(--color-negative)"
         strength_gradient = "linear-gradient(135deg, var(--color-negative), var(--color-negative))"
-        strength_bg = "rgba(239,68,68,0.06)"
+        strength_bg = "color-mix(in srgb, var(--color-negative) 6%, transparent)"
       end
     %>
-    <div style="background:var(--color-card); border:1px solid var(--color-border-subtle); border-radius:16px; padding:1.5rem; margin-bottom:1.25rem; box-shadow:0 1px 3px rgba(0,0,0,0.02), 0 4px 16px rgba(0,0,0,0.01);">
+    <div style="background:var(--color-card); border:1px solid var(--color-border-subtle); border-radius:16px; padding:1.5rem; margin-bottom:1.25rem; box-shadow:0 1px 3px color-mix(in srgb, var(--color-shade) 11%, transparent), 0 4px 16px color-mix(in srgb, var(--color-shade) 6%, transparent);">
       <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:1rem;">
         <h3 class="font-mono" style="font-size:0.625rem; font-weight:600; color:var(--color-muted); text-transform:uppercase; letter-spacing:0.1em; margin:0;"><%= t('learning_engine.review.memory_strength') %></h3>
         <span style="font-size:1.25rem; font-weight:800; color:<%= strength_color %>; letter-spacing:-0.5px;">
           <%= strength_pct %>%
         </span>
       </div>
-      <div style="height:0.625rem; background:var(--color-tint-strong); border-radius:9999px; overflow:hidden;">
+      <div style="height:0.625rem; background:color-mix(in srgb, var(--color-txt) 8%, transparent); border-radius:9999px; overflow:hidden;">
         <div style="height:100%; border-radius:9999px; transition:width 0.8s cubic-bezier(0.34,1.56,0.64,1); background:<%= strength_gradient %>; width:<%= strength_pct %>%; box-shadow:0 2px 6px color-mix(in srgb, <%= strength_color %> 20%, transparent);"></div>
       </div>
     </div>
   <% end %>
 
   <%# Concept map %>
-  <div style="background:var(--color-card); border:1px solid var(--color-border-subtle); border-radius:16px; padding:1.5rem; margin-bottom:1.25rem; box-shadow:0 1px 3px rgba(0,0,0,0.02), 0 4px 16px rgba(0,0,0,0.01);" data-controller="mind-map">
+  <div style="background:var(--color-card); border:1px solid var(--color-border-subtle); border-radius:16px; padding:1.5rem; margin-bottom:1.25rem; box-shadow:0 1px 3px color-mix(in srgb, var(--color-shade) 11%, transparent), 0 4px 16px color-mix(in srgb, var(--color-shade) 6%, transparent);" data-controller="mind-map">
     <h3 class="font-mono" style="font-size:0.625rem; font-weight:600; color:var(--color-muted); text-transform:uppercase; letter-spacing:0.1em; margin:0 0 1rem;"><%= t('learning_engine.review.concept_map') %></h3>
     <div data-mind-map-target="svg" style="width:100%; min-height:14rem; display:flex; align-items:center; justify-content:center;">
       <% if @review_steps.any? %>
         <div style="display:grid; grid-template-columns:repeat(2, 1fr); gap:0.75rem; width:100%;">
           <% @review_steps.each_with_index do |step, i| %>
-            <div class="animate-fade-in" style="background:var(--color-tint); border:1px solid var(--color-border-subtle); border-radius:14px; padding:1rem; text-align:center; transition:all 0.2s; animation-delay:<%= i * 0.08 %>s;">
+            <div class="animate-fade-in" style="background:color-mix(in srgb, var(--color-txt) 4%, transparent); border:1px solid var(--color-border-subtle); border-radius:14px; padding:1rem; text-align:center; transition:all 0.2s; animation-delay:<%= i * 0.08 %>s;">
               <div style="font-size:0.8125rem; font-weight:600; color:var(--color-txt); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"><%= step.localized_title %></div>
               <div class="font-mono" style="font-size:0.625rem; font-weight:500; color:var(--color-muted); margin-top:0.375rem; text-transform:uppercase; letter-spacing:0.05em;"><%= t("learning_engine.#{step.content_type}.badge") %></div>
             </div>
@@ -63,15 +63,15 @@
 
   <%# FSRS Rating buttons %>
   <% unless @step.completed? %>
-    <div style="background:var(--color-card); border:1px solid var(--color-border-subtle); border-radius:16px; padding:1.5rem; box-shadow:0 1px 3px rgba(0,0,0,0.02), 0 4px 16px rgba(0,0,0,0.01);">
+    <div style="background:var(--color-card); border:1px solid var(--color-border-subtle); border-radius:16px; padding:1.5rem; box-shadow:0 1px 3px color-mix(in srgb, var(--color-shade) 11%, transparent), 0 4px 16px color-mix(in srgb, var(--color-shade) 6%, transparent);">
       <h3 class="font-mono" style="font-size:0.625rem; font-weight:600; color:var(--color-muted); text-transform:uppercase; letter-spacing:0.1em; margin:0 0 1.25rem;"><%= t('learning_engine.review.prompt') %></h3>
       <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:0.75rem;">
         <%
           ratings = [
-            [1, t('learning_engine.review.again'), 'var(--color-negative)', 'rgba(239,68,68,0.06)', 'rgba(239,68,68,0.15)'],
-            [2, t('learning_engine.review.hard'), 'var(--color-warning)', 'rgba(245,158,11,0.06)', 'rgba(245,158,11,0.15)'],
-            [3, t('learning_engine.review.good'), 'var(--color-positive)', 'rgba(16,185,129,0.06)', 'rgba(16,185,129,0.15)'],
-            [4, t('learning_engine.review.easy'), 'var(--color-section-audio-active)', 'rgba(99,102,241,0.06)', 'rgba(99,102,241,0.15)']
+            [1, t('learning_engine.review.again'), 'var(--color-negative)', 'color-mix(in srgb, var(--color-negative) 6%, transparent)', 'color-mix(in srgb, var(--color-negative) 15%, transparent)'],
+            [2, t('learning_engine.review.hard'), 'var(--color-warning)', 'color-mix(in srgb, var(--color-highlight) 6%, transparent)', 'color-mix(in srgb, var(--color-highlight) 15%, transparent)'],
+            [3, t('learning_engine.review.good'), 'var(--color-positive)', 'color-mix(in srgb, var(--color-positive) 6%, transparent)', 'color-mix(in srgb, var(--color-positive) 15%, transparent)'],
+            [4, t('learning_engine.review.easy'), 'var(--color-section-audio-active)', 'color-mix(in srgb, var(--color-accent) 6%, transparent)', 'color-mix(in srgb, var(--color-accent) 15%, transparent)']
           ]
         %>
         <% ratings.each do |rating, label, text_color, bg_color, border_color| %>

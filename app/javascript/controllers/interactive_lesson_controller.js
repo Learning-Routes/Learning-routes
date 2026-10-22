@@ -13,6 +13,13 @@ import { Controller } from "@hotwired/stimulus"
 
 // Lazy-load canvas-confetti for micro-celebrations
 let _confettiModule = null
+// Confetti draws on a canvas, which needs colour values, not var(): the
+// theme's tokens, read when it fires.
+function tokenColors(...tokens) {
+  const cs = getComputedStyle(document.documentElement)
+  return tokens.map((t) => cs.getPropertyValue(t).trim()).filter(Boolean)
+}
+
 async function getConfetti() {
   if (!_confettiModule) {
     try {
@@ -933,7 +940,7 @@ export default class extends Controller {
       particleCount: 18,
       spread: 40,
       origin: { x: 0.5, y: 0.6 },
-      colors: ["#5BA880", "#B09848", "#6E9BC8", "#8B80C4"],
+      colors: tokenColors("--color-positive", "--color-highlight", "--color-reinforce", "--color-accent"),
       disableForReducedMotion: true,
       gravity: 1.2,
       ticks: 100
@@ -949,7 +956,7 @@ export default class extends Controller {
     float.style.cssText = `
       position:fixed; top:50%; left:50%; transform:translate(-50%,-50%) scale(0.5);
       font-family:var(--font-mono); font-size:1.5rem; font-weight:700;
-      color:#B09848; pointer-events:none; z-index:100;
+      color:var(--color-signal-text); pointer-events:none; z-index:100;
       opacity:0; transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1), opacity 0.4s ease;
     `
     document.body.appendChild(float)
@@ -1005,9 +1012,9 @@ export default class extends Controller {
       note.setAttribute("aria-live", "polite")
       note.style.cssText =
         "margin-top:12px; padding:9px 14px; border-radius:9px; font-size:0.8rem; text-align:center;" +
-        "background:var(--color-flash-alert-bg, rgba(176,96,80,0.08));" +
-        "border:1px solid var(--color-flash-alert-border, rgba(176,96,80,0.15));" +
-        "color:var(--color-flash-alert-text, #B06050);"
+        "background:var(--color-flash-alert-bg);" +
+        "border:1px solid var(--color-flash-alert-border);" +
+        "color:var(--color-flash-alert-text);"
       section.appendChild(note)
     }
     note.textContent = message
@@ -1243,7 +1250,7 @@ export default class extends Controller {
     if (xpGained > 0) {
       statsHtml += `
         <div class="lesson-completion-stat" style="--delay:0.1s">
-          <div class="lesson-completion-stat-icon" style="background:linear-gradient(135deg,#F5C842,#B09848);">⭐</div>
+          <div class="lesson-completion-stat-icon" style="background:var(--color-highlight);">⭐</div>
           <div class="lesson-completion-stat-value">+${xpGained}</div>
           <div class="lesson-completion-stat-label">${t.xp_gained || "XP earned"}</div>
         </div>
@@ -1252,7 +1259,7 @@ export default class extends Controller {
     if (quizScore) {
       statsHtml += `
         <div class="lesson-completion-stat" style="--delay:0.2s">
-          <div class="lesson-completion-stat-icon" style="background:linear-gradient(135deg,#6E9BC8,#5B7FC8);">✓</div>
+          <div class="lesson-completion-stat-icon" style="background:var(--color-reinforce);">✓</div>
           <div class="lesson-completion-stat-value">${quizPct}%</div>
           <div class="lesson-completion-stat-label">${quizScore} ${t.correct || "correct"}</div>
         </div>
@@ -1261,7 +1268,7 @@ export default class extends Controller {
     if (streak > 0) {
       statsHtml += `
         <div class="lesson-completion-stat" style="--delay:0.3s">
-          <div class="lesson-completion-stat-icon" style="background:linear-gradient(135deg,#F59E0B,#D97706);">🔥</div>
+          <div class="lesson-completion-stat-icon" style="background:var(--color-warning);">🔥</div>
           <div class="lesson-completion-stat-value">${streak}</div>
           <div class="lesson-completion-stat-label">${streak === 1 ? (t.day_streak || "day streak") : (t.days_streak || "days streak")}</div>
         </div>
@@ -1269,7 +1276,7 @@ export default class extends Controller {
     }
     statsHtml += `
       <div class="lesson-completion-stat" style="--delay:0.4s">
-        <div class="lesson-completion-stat-icon" style="background:linear-gradient(135deg,#8B80C4,#6E60B4);">⏱</div>
+        <div class="lesson-completion-stat-icon" style="background:var(--color-accent);">⏱</div>
         <div class="lesson-completion-stat-value">${timeStr}</div>
         <div class="lesson-completion-stat-label">${t.total_time || "Total time"}</div>
       </div>
@@ -1339,12 +1346,12 @@ export default class extends Controller {
 
     if (isEpic) {
       // Epic: multi-burst
-      confetti({ particleCount: 100, spread: 160, origin: { x: 0.3, y: 0.5 }, colors: ["#8B80C4", "#6E9BC8", "#5BA880", "#B09848", "#E8E4DC"], disableForReducedMotion: true })
+      confetti({ particleCount: 100, spread: 160, origin: { x: 0.3, y: 0.5 }, colors: tokenColors("--color-accent", "--color-reinforce", "--color-positive", "--color-highlight", "--color-accent-soft"), disableForReducedMotion: true })
       const t1 = setTimeout(() => {
-        confetti({ particleCount: 100, spread: 160, origin: { x: 0.7, y: 0.5 }, colors: ["#8B80C4", "#6E9BC8", "#5BA880", "#B09848", "#E8E4DC"], disableForReducedMotion: true })
+        confetti({ particleCount: 100, spread: 160, origin: { x: 0.7, y: 0.5 }, colors: tokenColors("--color-accent", "--color-reinforce", "--color-positive", "--color-highlight", "--color-accent-soft"), disableForReducedMotion: true })
       }, 300)
       const t2 = setTimeout(() => {
-        confetti({ particleCount: 50, angle: 90, spread: 120, origin: { y: 0 }, colors: ["#8B80C4", "#6E9BC8", "#5BA880", "#B09848", "#E8E4DC"], disableForReducedMotion: true })
+        confetti({ particleCount: 50, angle: 90, spread: 120, origin: { y: 0 }, colors: tokenColors("--color-accent", "--color-reinforce", "--color-positive", "--color-highlight", "--color-accent-soft"), disableForReducedMotion: true })
       }, 600)
       this._timers.push(t1, t2)
     } else {
@@ -1353,7 +1360,7 @@ export default class extends Controller {
         particleCount: 80,
         spread: 60,
         origin: { y: 0.7 },
-        colors: ["#8B80C4", "#6E9BC8", "#5BA880", "#B09848", "#E8E4DC"],
+        colors: tokenColors("--color-accent", "--color-reinforce", "--color-positive", "--color-highlight", "--color-accent-soft"),
         disableForReducedMotion: true
       })
     }
@@ -1362,7 +1369,7 @@ export default class extends Controller {
   _goldFlash() {
     const flash = document.createElement("div")
     flash.style.cssText = `
-      position:fixed; inset:0; background:rgba(176,152,72,0.08);
+      position:fixed; inset:0; background:color-mix(in srgb, var(--color-highlight) 8%, transparent);
       pointer-events:none; z-index:9997;
       animation:celebration-gold-flash 0.6s ease-out forwards;
     `
@@ -1378,7 +1385,7 @@ export default class extends Controller {
     if (xpCount) {
       xpCount.style.transition = "transform 0.3s cubic-bezier(0.34,1.56,0.64,1), color 0.3s"
       xpCount.style.transform = "scale(1.4)"
-      xpCount.style.color = "#5BA880"
+      xpCount.style.color = "var(--color-positive)"
       const t = setTimeout(() => {
         xpCount.style.transform = "scale(1)"
         xpCount.style.color = ""

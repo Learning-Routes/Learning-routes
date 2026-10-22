@@ -271,7 +271,7 @@ class VideoLessonTest < ApplicationSystemTestCase
 
     assert_equal "rgba(0, 0, 0, 0)", computed["color"],
       "the badge now has a real background-color; measuring only the gradient stops is no longer complete"
-    assert_equal 2, computed["image"].scan(/rgba?\([^)]*\)/).length,
+    assert_equal 2, computed["image"].scan(/(?:rgba?|color)\([^)]*\)/).length,
       "the badge gradient no longer has exactly two colour stops: #{computed['image']}"
   end
 
@@ -380,7 +380,14 @@ class VideoLessonTest < ApplicationSystemTestCase
   # colours the browser resolved.
   CONTRAST_JS = <<~JS.freeze
     (() => {
+      // Browsers report a color-mix() token as color(srgb r g b / a), in 0–1.
       const parse = (value) => {
+        const srgb = String(value).match(/color\\(srgb ([^)]+)\\)/)
+        if (srgb) {
+          const q = srgb[1].split(/[\\s/]+/).filter((s) => s.length).map(Number)
+          if (q.length < 3 || q.slice(0, 3).some(Number.isNaN)) return null
+          return { r: q[0] * 255, g: q[1] * 255, b: q[2] * 255, a: q.length > 3 ? q[3] : 1 }
+        }
         const m = String(value).match(/rgba?\\(([^)]+)\\)/)
         if (!m) return null
         const p = m[1].split(/[,\\s/]+/).filter((s) => s.length).map(Number)
@@ -443,7 +450,7 @@ class VideoLessonTest < ApplicationSystemTestCase
 
       let backings = [back]
       if (arguments[1]) {
-        const stops = [...style.backgroundImage.matchAll(/rgba?\\([^)]*\\)/g)].map((m) => parse(m[0]))
+        const stops = [...style.backgroundImage.matchAll(/(?:rgba?|color)\\([^)]*\\)/g)].map((m) => parse(m[0]))
         if (!stops.length || stops.some((s) => s === null)) {
           return { error: "no parsable rgba stops in background-image of " + arguments[0] +
                           ": " + style.backgroundImage }

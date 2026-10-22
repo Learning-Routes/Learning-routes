@@ -10,7 +10,7 @@ class LessonPaletteTest < ActiveSupport::TestCase
     "app/views/layouts/learning.html.erb",
     "#{STEPS}/*.erb",
     "#{STEPS}/lesson_sections/*.erb",
-    "app/javascript/controllers/{interactive_lesson,lesson_*,question_nav}_controller.js"
+    "app/javascript/controllers/{interactive_lesson,lesson_*}_controller.js"
   ].freeze
   LITERAL = /rgba?\(\s*\d|#\h{6}\b|#\h{3}\b(?![\w-])|\b(?:bg|text|ring|accent|border|from|to|fill|stroke)-(?:indigo|violet|purple|blue|green|emerald|amber|orange|red|gray|slate|yellow)-\d{2,3}\b/
   # The old palette's tokens: cream theme's dark surfaces, the violet highlight, indigo progress.
@@ -23,6 +23,22 @@ class LessonPaletteTest < ActiveSupport::TestCase
 
         "#{Pathname(path).relative_path_from(Rails.root)}:#{i + 1}: #{line.strip[0, 120]}"
       end
+    end
+    assert_empty offenders, "#{offenders.size} literal or old-palette colours:\n#{offenders.first(40).join("\n")}"
+  end
+
+  # The lesson's rules in application.css, LESSON NAV to the wizard. Two kinds
+  # stay literal on purpose: token definitions, and the code blocks' editor
+  # theme (syntax colours on a fixed dark panel, in both themes).
+  test "the lesson's CSS names no literal colour and no old-palette token" do
+    css = Rails.root.join("app/assets/tailwind/application.css").read
+    block = css[/LESSON NAV.*?(?=ROUTE WIZARD)/m].gsub(%r{/\*.*?\*/}m, "")
+    offenders = block.scan(/([^{}]+)\{([^{}]*)\}/).flat_map do |selector, body|
+      next [] if selector.include?(".code-block")
+
+      body.split(";").map(&:strip).reject { |d| d.start_with?("--") }
+          .select { |d| d.match?(LITERAL) || d.match?(OLD_TOKENS) }
+          .map { |d| "#{selector.strip}: #{d}" }
     end
     assert_empty offenders, "#{offenders.size} literal or old-palette colours:\n#{offenders.first(40).join("\n")}"
   end

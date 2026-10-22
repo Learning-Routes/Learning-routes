@@ -232,8 +232,8 @@ export default class extends Controller {
       if (this.hasTimerDisplayTarget) {
         this.timerDisplayTarget.textContent = `${this._secondsLeft}s`
         if (this.hasTimerWrapTarget) {
-          this.timerWrapTarget.style.color = "#059669"
-          this.timerWrapTarget.style.background = "linear-gradient(135deg, rgba(209,250,229,0.8), rgba(167,243,208,0.8))"
+          this.timerWrapTarget.style.color = "var(--color-positive)"
+          this.timerWrapTarget.style.background = "var(--color-positive-bg)"
           this.timerWrapTarget.classList.remove("urgent")
         }
       }

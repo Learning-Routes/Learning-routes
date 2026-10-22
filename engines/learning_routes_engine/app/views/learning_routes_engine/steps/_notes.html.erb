@@ -1,4 +1,4 @@
-<div style="background:var(--color-card); border:1px solid var(--color-border-subtle); border-radius:16px; padding:1.25rem; box-shadow:0 1px 3px rgba(0,0,0,0.02), 0 4px 12px rgba(0,0,0,0.01);" data-controller="note-taking"
+<div style="background:var(--color-card); border:1px solid var(--color-border-subtle); border-radius:16px; padding:1.25rem; box-shadow:0 1px 3px color-mix(in srgb, var(--color-shade) 11%, transparent), 0 4px 12px color-mix(in srgb, var(--color-shade) 6%, transparent);" data-controller="note-taking"
      data-note-taking-step-id-value="<%= @step.id %>"
      data-note-taking-save-url-value="<%= @notes.any? ? content_engine.note_path(@notes.first) : content_engine.notes_path %>">
   <h3 class="font-mono" style="font-size:0.625rem; font-weight:600; color:var(--color-muted); text-transform:uppercase; letter-spacing:0.1em; margin:0 0 1rem;"><%= t('learning_engine.notes.heading') %></h3>
@@ -9,8 +9,8 @@
         <div id="<%= dom_id(note) %>" style="margin-bottom:0.5rem;">
           <textarea data-action="input->note-taking#save"
                     data-note-id="<%= note.id %>"
-                    style="width:100%; background:var(--color-tint); border:1px solid var(--color-border-subtle); border-radius:12px; padding:0.875rem 1rem; font-size:0.875rem; color:var(--color-txt); resize:none; outline:none; line-height:1.6; transition:border-color 0.2s;"
-                    onfocus="this.style.borderColor='rgba(99,102,241,0.3)'"
+                    style="width:100%; background:color-mix(in srgb, var(--color-txt) 4%, transparent); border:1px solid var(--color-border-subtle); border-radius:12px; padding:0.875rem 1rem; font-size:0.875rem; color:var(--color-txt); resize:none; outline:none; line-height:1.6; transition:border-color 0.2s;"
+                    onfocus="this.style.borderColor='color-mix(in srgb, var(--color-accent) 30%, transparent)'"
                     onblur="this.style.borderColor='var(--color-border-subtle)'"
                     rows="4" placeholder="<%= t('learning_engine.notes.placeholder') %>"><%= note.body %></textarea>
         </div>
@@ -22,8 +22,8 @@
         <textarea name="body"
                   data-action="input->note-taking#save"
                   data-note-taking-target="textarea"
-                  style="width:100%; background:var(--color-tint); border:1px solid var(--color-border-subtle); border-radius:12px; padding:0.875rem 1rem; font-size:0.875rem; color:var(--color-txt); resize:none; outline:none; line-height:1.6; transition:border-color 0.2s;"
-                  onfocus="this.style.borderColor='rgba(99,102,241,0.3)'"
+                  style="width:100%; background:color-mix(in srgb, var(--color-txt) 4%, transparent); border:1px solid var(--color-border-subtle); border-radius:12px; padding:0.875rem 1rem; font-size:0.875rem; color:var(--color-txt); resize:none; outline:none; line-height:1.6; transition:border-color 0.2s;"
+                  onfocus="this.style.borderColor='color-mix(in srgb, var(--color-accent) 30%, transparent)'"
                   onblur="this.style.borderColor='var(--color-border-subtle)'"
                   rows="4" placeholder="<%= t('learning_engine.notes.placeholder') %>"></textarea>
       </form>
