@@ -19,6 +19,9 @@ class PagePaletteTest < ActiveSupport::TestCase
     "sign in and sign up" => {
       files: ["app/views/layouts/auth.html.erb", "engines/core/app/views/core/{sessions,registrations,passwords,email_verifications}/*.erb",
               "app/javascript/controllers/auth_background_controller.js"]
+    },
+    "shared route" => {
+      files: ["engines/community_engine/app/views/community_engine/{shared_routes,comments,likes,ratings,follows}/*.erb"]
     }
   }.freeze
 
