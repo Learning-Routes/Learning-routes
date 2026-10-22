@@ -141,4 +141,20 @@ class LearningRoutesEngine::ContentPrefetcherTest < ActiveSupport::TestCase
     end
     assert first.any?
   end
+
+  # The jobs test failed on CI with seed 9204: the same two pipelines, swapped.
+  # `claim` is an UPDATE ... RETURNING, and Postgres returns rows in the order
+  # it reaches them, which is their physical order in the table, not position.
+  # Any UPDATE to a step writes a new row version at the end of the table, so a
+  # nearer step that was touched after a farther one comes back second.
+  test "prefetch enqueues nearest-first whatever order the claim's UPDATE returns" do
+    near, far = @steps[1], @steps[2]
+    near.update!(title: "Touched after its neighbour")
+
+    enqueued = CP.prefetch(@route, [near.id, far.id])
+
+    assert_equal [near.id, far.id], enqueued
+    assert_equal [near.id, far.id],
+      enqueued_jobs.select { |j| j["job_class"] == PIPELINE.name }.map { |j| j["arguments"].first }
+  end
 end
