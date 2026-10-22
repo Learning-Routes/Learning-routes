@@ -50,14 +50,14 @@ class ExamStartTest < ApplicationSystemTestCase
 
     click_start
 
-    assert_current_path assessments.take_assessment_path(@assessment), wait: 10
+    assert_exam_opened
     assert_text @question.body, wait: 10
   end
 
   test "the exam page is reachable by GET, so a refresh does not re-POST" do
     visit assessments.assessment_path(@assessment)
     click_start
-    assert_current_path assessments.take_assessment_path(@assessment), wait: 10
+    assert_exam_opened
 
     before = Assessments::AssessmentResult.where(user: @user, assessment: @assessment).count
     visit current_path
@@ -80,11 +80,11 @@ class ExamStartTest < ApplicationSystemTestCase
   test "starting twice reuses the in-progress result" do
     visit assessments.assessment_path(@assessment)
     click_start
-    assert_current_path assessments.take_assessment_path(@assessment), wait: 10
+    assert_exam_opened
 
     visit assessments.assessment_path(@assessment)
     click_start
-    assert_current_path assessments.take_assessment_path(@assessment), wait: 10
+    assert_exam_opened
 
     assert_equal 1, Assessments::AssessmentResult.where(user: @user, assessment: @assessment).count
   end
@@ -96,7 +96,7 @@ class ExamStartTest < ApplicationSystemTestCase
   test "a refused answer save puts a visible message on the page" do
     visit assessments.assessment_path(@assessment)
     click_start
-    assert_current_path assessments.take_assessment_path(@assessment), wait: 10
+    assert_exam_opened
 
     # Answer normally, then close the attempt underneath the open page — exactly
     # the state that used to refuse every save with no sign of it.
@@ -116,6 +116,23 @@ class ExamStartTest < ApplicationSystemTestCase
   end
 
   private
+
+  # Once, locally on Oct 19 (seed 8853, a run twice as slow as usual), this wait
+  # expired with Turbo's progress bar still running: the click had fired and no
+  # response came back within 10s. It has not been reproduced since (the seed,
+  # 25 runs in a row, a throttled CPU, every core loaded) and has never failed on
+  # CI. If it comes back, the message says where the request stopped.
+  def assert_exam_opened
+    started = Process.clock_gettime(Process::CLOCK_MONOTONIC)
+    assert_current_path assessments.take_assessment_path(@assessment), wait: 10
+  rescue Minitest::Assertion
+    waited = ((Process.clock_gettime(Process::CLOCK_MONOTONIC) - started) * 1000).round
+    submitting = page.evaluate_script("!!document.querySelector('form[aria-busy=\"true\"]')")
+    progress = page.has_css?(".turbo-progress-bar", wait: 0)
+    attempts = Assessments::AssessmentResult.where(user: @user, assessment: @assessment, score: nil).count
+    flunk "the exam did not open after #{waited}ms: still at #{page.current_path}, form submitting: #{submitting}, " \
+          "Turbo progress bar: #{progress}, open attempts on the server: #{attempts}"
+  end
 
   def save_an_answer
     within "[data-question-nav-target='questionPanel']", match: :first do
