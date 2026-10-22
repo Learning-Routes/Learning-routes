@@ -46,6 +46,16 @@ class NavbarPhoneTest < ApplicationSystemTestCase
     assert_empty page.evaluate_script(OVERLAPS, "nav[data-controller='navbar']")
   end
 
+  test "signed out at 390, the shared bar's menu opens and closes" do
+    visit terms_path
+    assert_no_selector "#navbar-mobile-menu", visible: true
+
+    find(".site-nav__menu-btn").click
+    assert_selector "#navbar-mobile-menu a.site-nav__link", minimum: 2, visible: true
+    find(".site-nav__menu-btn").click
+    assert_no_selector "#navbar-mobile-menu", visible: true
+  end
+
   test "signed in at 390, the app navbar's items never overlap" do
     visit core.sign_in_path
     fill_in "email", with: @user.email
