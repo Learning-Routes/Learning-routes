@@ -207,11 +207,21 @@ class LandingTest < ApplicationSystemTestCase
 
   # The app scrolls smoothly (scroll-behavior: smooth): a click Selenium scrolls
   # to lands where the button was, mid-scroll. Jump to the closing sheet at once.
+  # An instant scrollIntoView is synchronous, so scrollY is final when the script
+  # returns and no frame is waited for: on CI one frame of the 3D journey, drawn
+  # in software, outlasted the 3-second wait for it. The stage sizes itself first,
+  # so nothing above the closing grows after the jump.
   def show_closing
-    page.execute_script("document.getElementById('empezar').scrollIntoView({ block: 'center', behavior: 'instant' })")
-    Timeout.timeout(3) do
-      sleep 0.05 until page.evaluate_script("(() => { const y = scrollY; return new Promise((r) => requestAnimationFrame(() => r(scrollY === y))) })()")
-    end
+    assert_selector ".lp-journey[style*='height'], .lp-journey.lp-no-gl", visible: :all
+    top, bottom, inner = page.evaluate_script(<<~JS)
+      (() => {
+        document.getElementById('empezar').scrollIntoView({ block: 'center', behavior: 'instant' })
+        const r = document.getElementById('lp-want').getBoundingClientRect()
+        return [r.top, r.bottom, innerHeight]
+      })()
+    JS
+    assert top >= 0 && bottom <= inner,
+      "the closing's field is not in view after the jump: top #{top}, bottom #{bottom}, viewport #{inner}"
   end
 
   def reduce_motion
