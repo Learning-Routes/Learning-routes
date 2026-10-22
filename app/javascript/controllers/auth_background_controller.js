@@ -14,10 +14,7 @@ export default class extends Controller {
     this.animId = null
     this.mouse = { x: -9999, y: -9999 }
 
-    this.nodeColors = [
-      "#8B80C4", "#6E9BC8", "#B5718E",
-      "#B09848", "#B06050", "#5BA880"
-    ]
+    this.nodeColors = this.tokenColors()
 
     this._boundLoop = this.loop.bind(this)
     this.resize()
@@ -31,9 +28,26 @@ export default class extends Controller {
     window.addEventListener("resize", this._onResize)
     window.addEventListener("mousemove", this._onMouseMove)
     window.addEventListener("mouseleave", this._onMouseLeave)
+    // A canvas paints colour values, not var(): read Ciruela's tokens again on a theme switch.
+    this.themeObserver = new MutationObserver(() => this.recolor())
+    this.themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] })
+  }
+
+  tokenColors() {
+    const cs = getComputedStyle(document.documentElement)
+    return ["--color-accent", "--color-reinforce", "--color-highlight", "--color-muted", "--color-accent-hover", "--color-positive"]
+      .map((t) => cs.getPropertyValue(t).trim()).filter((c) => /^#[0-9a-f]{6}$/i.test(c))
+  }
+
+  recolor() {
+    this.nodeColors = this.tokenColors()
+    if (!this.nodeColors.length) return
+    this.particles.forEach((p, i) => { p.color = this.nodeColors[i % this.nodeColors.length] })
+    this.circles.forEach((c, i) => { c.color = this.nodeColors[i % this.nodeColors.length] })
   }
 
   disconnect() {
+    this.themeObserver?.disconnect()
     if (this.animId) cancelAnimationFrame(this.animId)
     window.removeEventListener("resize", this._onResize)
     window.removeEventListener("mousemove", this._onMouseMove)
