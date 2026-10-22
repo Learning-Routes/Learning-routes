@@ -1,5 +1,7 @@
 class ProfilesController < ApplicationController
   before_action :authenticate_user!
+  # The app's controllers inherit Core's, whose views only get Core's helpers.
+  helper RouteCardsHelper
 
   def show
     @user = current_user
@@ -16,7 +18,7 @@ class ProfilesController < ApplicationController
     end
 
     # Full page load
-    @routes = @profile&.learning_routes&.includes(:route_steps)&.order(updated_at: :desc) || []
+    @routes = @profile&.learning_routes&.includes(:route_steps, :route_modules)&.order(updated_at: :desc) || []
     @active_routes = @routes.select(&:active?)
     @completed_routes = @routes.select(&:completed?)
 

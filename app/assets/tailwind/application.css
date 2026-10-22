@@ -3822,3 +3822,21 @@ html[data-theme="dark"] .lp {
   .lp-bp-route, .lp-bp-node, .lp-ann, .lp-ann .lp-wr, .lp-ann p, .lp-ann .lp-acts, .lp-lead path, .lp-lead circle, .lp-top, .lp-vdots,
   .lp-ml, .lp-mn, .lp-mc, .lp-mr, .lp-vdots button { transition: none; }
 }
+
+/* ==========================================================================
+   STEP 41 §3.1 — THE ROUTE CARD AND "SIGUE DONDE LO DEJASTE"
+   The reference's card on the foundations (.card3, .tray, .groove, .level-tag).
+   ========================================================================== */
+.route-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(340px, 100%), 1fr)); gap: 28px; }
+.route-card { padding: 22px 22px 20px; display: flex; flex-direction: column; gap: 6px; color: var(--color-txt); }
+.route-card__top { display: flex; justify-content: space-between; align-items: center; font-size: 13px; color: var(--color-muted); }
+.route-card h3, .resume-card h3 { margin: 6px 0 0; font: 720 22px/1.15 var(--font-sans); font-stretch: 108%; letter-spacing: -.012em; color: var(--color-txt); }
+.route-card__sub, .resume-card__meta { margin: 0; font-size: 14.5px; color: var(--color-sub); }
+.route-card .tray { margin: 12px 0 8px; }
+.route-card__map { display: block; width: 100%; height: auto; overflow: visible; }
+.route-card__foot { display: flex; align-items: center; gap: 14px; margin-top: 4px; }
+.route-card__foot .groove { flex: 1; }
+.resume-card { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 26px 28px; margin-bottom: 28px; color: var(--color-txt); }
+.resume-card__eyebrow { margin: 0; font-size: 13px; color: var(--color-muted); }
+.resume-card .btn3 { flex: none; }
+@media (max-width: 960px) { .resume-card { flex-direction: column; align-items: flex-start; } }

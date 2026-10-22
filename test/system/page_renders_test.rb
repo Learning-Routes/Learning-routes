@@ -76,7 +76,7 @@ class PageRendersTest < ApplicationSystemTestCase
     route = LearningRoutesEngine::LearningRoute.create!(learning_profile: profile, topic: topic, locale: "es",
                                                         status: :active, current_step: done)
     preview = LearningRoutesEngine::RouteModule.find_by!(learning_route_id: route.id, access_state: :preview)
-    preview.update!(title: "Fundamentos")
+    preview.update!(title: "Fundamentos", translations: {})
     second = route.route_modules.create!(position: 2, title: "En el camino", access_state: :locked, generation_state: :ready)
     [[preview, M1, 0], [second, M2, 10]].each do |mod, titles, base|
       titles.each_with_index do |title, i|

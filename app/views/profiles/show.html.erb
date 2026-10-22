@@ -190,9 +190,12 @@
 
   <%# === Panel 1: Mis Rutas === %>
   <div id="panel-routes" role="tabpanel" aria-labelledby="tab-0" data-profile-tabs-target="panel">
-    <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(min(340px, 100%), 1fr)); gap:0.8rem;">
+    <% if @active_routes.any? %>
+      <%= render "profiles/resume_card", route: @active_routes.first %>
+    <% end %>
+    <div class="route-grid">
       <% @routes.each do |route| %>
-        <%= render "profiles/route_card", route: route, accent_token: route_accent_token(route) %>
+        <%= render "profiles/route_card", route: route %>
       <% end %>
 
       <%# Always show the "create" card %>

@@ -374,9 +374,15 @@ es:
 
   # ── Route Card ──
   route_card:
-    time: "tiempo"
-    lessons: "lecciones"
-    accuracy: "precisión"
+    level: "Nivel %{n}"
+    module: "Módulo %{n} de %{total}"
+    topics: "%{module} · %{done} de %{total} temas"
+    continue: "Continuar"
+    continue_aria: "Continuar %{route}"
+    resume:
+      eyebrow: "Sigue donde lo dejaste"
+      meta: "%{route} · Tema %{n} de %{total}"
+      minutes: " · unos %{count} minutos"
 
   # ── Create Route Card ──
   create_route:
@@ -384,7 +390,6 @@ es:
     desc: "La IA crea un camino personalizado según tus objetivos"
 
   # ── Expanded Route Overlay ──
-  route_card_aria: "Abrir detalles de ruta"
   overlay_aria: "Detalles de ruta"
 
   expanded_route:

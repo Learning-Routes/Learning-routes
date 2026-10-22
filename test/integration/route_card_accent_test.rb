@@ -101,7 +101,7 @@ class RouteCardAccentTest < ActionDispatch::IntegrationTest
     route = LearningRoutesEngine::LearningRoute.create!(learning_profile: @profile, topic: "Portugués para viajar",
                                                         locale: "es", status: :active, current_step: done)
     preview = LearningRoutesEngine::RouteModule.find_by!(learning_route_id: route.id, access_state: :preview)
-    preview.update!(title: "Fundamentos")
+    preview.update!(title: "Fundamentos", translations: {})
     second = route.route_modules.create!(position: 2, title: "En el camino", access_state: :locked, generation_state: :ready)
     ["Saludos", "Pronombres", "Ser y estar", "Números", "Direcciones", "Examen"].each_with_index do |title, i|
       route.route_steps.create!(route_module: preview, title: title, position: i, level: :nv1, bloom_level: 1,
