@@ -13,7 +13,8 @@ class PagePaletteTest < ActiveSupport::TestCase
     "wizard" => {
       files: ["app/views/route_wizard/*.erb", "app/javascript/controllers/route_wizard_controller.js"],
       css: [/ROUTE WIZARD/, /WP-37 journey map/]
-    }
+    },
+    "settings" => { files: ["app/views/settings/*.erb", "app/javascript/controllers/auth_form_controller.js"] }
   }.freeze
 
   PAGES.each do |page, spec|
