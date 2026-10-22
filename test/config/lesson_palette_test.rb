@@ -12,7 +12,7 @@ class LessonPaletteTest < ActiveSupport::TestCase
     "#{STEPS}/lesson_sections/*.erb",
     "app/javascript/controllers/{interactive_lesson,lesson_*}_controller.js"
   ].freeze
-  LITERAL = /rgba?\(\s*\d|#\h{6}\b|#\h{3}\b(?![\w-])|\b(?:bg|text|ring|accent|border|from|to|fill|stroke)-(?:indigo|violet|purple|blue|green|emerald|amber|orange|red|gray|slate|yellow)-\d{2,3}\b/
+  LITERAL = /rgba?\(\s*\d|#(?:\h{8}|\h{6})\b|#\h{3}\b(?![\w-])|\b(?:bg|text|ring|accent|border|from|to|fill|stroke)-(?:indigo|violet|purple|blue|green|emerald|amber|orange|red|gray|slate|yellow)-\d{2,3}\b/
   # The old palette's tokens: cream theme's dark surfaces, the violet highlight, indigo progress.
   OLD_TOKENS = /--color-(?:dark(?:-[a-z]+)?|highlight-violet|step-progress-(?:bg|icon)|tint(?:-strong|-hover)?)\b/
 
