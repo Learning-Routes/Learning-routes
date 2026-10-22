@@ -29,6 +29,8 @@ class ExamQuestionNavTest < ApplicationSystemTestCase
     item = find("[data-question-nav-target='navItem'][data-index='0']")
     before = item.evaluate_script("getComputedStyle(this).backgroundColor")
     first("input[type='radio'][data-index='0']").click
+    # The button eases its colours (Tailwind's `transition`): read them settled.
+    Timeout.timeout(3) { sleep 0.05 until item.evaluate_script("this.getAnimations().length").zero? }
 
     positive = page.evaluate_script("getComputedStyle(document.documentElement).getPropertyValue('--color-positive').trim()")
     assert_not_equal before, item.evaluate_script("getComputedStyle(this).backgroundColor"), "the answered question's fill did not change"

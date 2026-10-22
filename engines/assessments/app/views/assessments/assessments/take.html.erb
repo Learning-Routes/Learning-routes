@@ -26,8 +26,8 @@
       <p data-question-nav-target="saveError" hidden
          role="status" aria-live="polite"
          style="margin:10px 0 0; padding:9px 14px; border-radius:9px; font-size:0.82rem;
-                background:var(--color-flash-alert-bg, rgba(176,96,80,0.08));
-                border:1px solid var(--color-flash-alert-border, rgba(176,96,80,0.15));
+                background:var(--color-flash-alert-bg);
+                border:1px solid var(--color-flash-alert-border);
                 color:var(--color-flash-alert-text);
                 "></p>
 
@@ -54,7 +54,7 @@
 
             <div class="flex items-center justify-between mb-4">
               <span class="text-xs" style="color:var(--color-muted);"><%= t("assessments.exam.question_of", current: index + 1, total: @questions.count) %></span>
-              <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium" style="background:var(--color-tint-strong); color:var(--color-sub);">
+              <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium" style="background:color-mix(in srgb, var(--color-txt) 8%, transparent); color:var(--color-sub);">
                 <%= t("question_types.#{question.question_type}", default: question.question_type.humanize) %>
               </span>
             </div>
@@ -93,20 +93,20 @@
         <div class="flex items-center justify-between mt-6">
           <button type="button" data-action="click->question-nav#previous"
                   class="rounded-lg px-4 py-2.5 text-sm font-medium transition"
-                  style="color:var(--color-sub); background:var(--color-tint-strong); border:1px solid var(--color-border-subtle);">
+                  style="color:var(--color-sub); background:color-mix(in srgb, var(--color-txt) 8%, transparent); border:1px solid var(--color-border-subtle);">
             <%= t("assessments.exam.previous") %>
           </button>
 
           <button type="button" data-action="click->question-nav#next"
                   class="rounded-lg px-4 py-2.5 text-sm font-medium transition"
-                  style="color:var(--color-sub); background:var(--color-tint-strong); border:1px solid var(--color-border-subtle);">
+                  style="color:var(--color-sub); background:color-mix(in srgb, var(--color-txt) 8%, transparent); border:1px solid var(--color-border-subtle);">
             <%= t("assessments.exam.next") %>
           </button>
         </div>
 
         <div class="mt-6 text-center">
           <%= f.submit t("assessments.exam.submit"),
-              class: "rounded-lg px-6 py-3 text-sm font-semibold text-white bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-400 hover:to-purple-400 transition cursor-pointer",
+              class: "btn3",
               data: { confirm: t("assessments.exam.confirm"),
                       question_nav_target: "submitButton" } %>
         </div>
@@ -123,7 +123,7 @@
                     data-question-nav-target="navItem"
                     data-index="<%= index %>"
                     class="w-8 h-8 rounded-lg text-xs font-medium transition flex items-center justify-center"
-                    style="background:var(--color-tint-strong); color:var(--color-sub);">
+                    style="background:color-mix(in srgb, var(--color-txt) 8%, transparent); color:var(--color-sub);">
               <%= index + 1 %>
             </button>
           <% end %>

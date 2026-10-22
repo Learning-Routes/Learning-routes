@@ -59,7 +59,7 @@ export default class extends Controller {
 
     this.navItemTargets.forEach((item, i) => {
       item.classList.toggle("ring-2", i === index)
-      item.classList.toggle("ring-indigo-500", i === index)
+      item.classList.toggle("ring-accent", i === index)
     })
   }
 
@@ -247,8 +247,9 @@ export default class extends Controller {
   updateNavItem(index) {
     const item = this.navItemTargets[index]
     if (item) {
-      item.classList.remove("bg-gray-800", "text-gray-400")
-      item.classList.add("bg-green-900/50", "text-green-400")
+      // The button's inline style is what it paints: set that, not classes it would override.
+      item.style.background = "var(--color-positive-bg)"
+      item.style.color = "var(--color-positive)"
     }
   }
 

@@ -4,8 +4,8 @@
   <div class="rounded-2xl p-8 text-center" style="background:var(--color-card); border:1px solid var(--color-border-subtle);">
 
     <%# Assessment icon %>
-    <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 mb-6">
-      <svg aria-hidden="true" class="w-8 h-8 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-[var(--color-accent-soft)] border border-[var(--color-faint)] mb-6">
+      <svg aria-hidden="true" class="w-8 h-8 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
       </svg>
     </div>
@@ -18,15 +18,15 @@
 
     <%# Stats grid %>
     <div class="grid grid-cols-3 gap-4 mb-8">
-      <div class="rounded-xl p-3" style="background:var(--color-tint-strong);">
+      <div class="rounded-xl p-3" style="background:color-mix(in srgb, var(--color-txt) 8%, transparent);">
         <div class="text-lg font-bold" style="color:var(--color-txt);"><%= @questions_count %></div>
         <div class="text-xs" style="color:var(--color-muted);"><%= t("assessments.show.questions") %></div>
       </div>
-      <div class="rounded-xl p-3" style="background:var(--color-tint-strong);">
+      <div class="rounded-xl p-3" style="background:color-mix(in srgb, var(--color-txt) 8%, transparent);">
         <div class="text-lg font-bold" style="color:var(--color-txt);"><%= @assessment.passing_score %>%</div>
         <div class="text-xs" style="color:var(--color-muted);"><%= t("assessments.show.to_pass") %></div>
       </div>
-      <div class="rounded-xl p-3" style="background:var(--color-tint-strong);">
+      <div class="rounded-xl p-3" style="background:color-mix(in srgb, var(--color-txt) 8%, transparent);">
         <div class="text-lg font-bold" style="color:var(--color-txt);"><%= @assessment.time_limit_minutes || "∞" %></div>
         <div class="text-xs" style="color:var(--color-muted);"><%= t("assessments.show.minutes") %></div>
       </div>
@@ -34,10 +34,10 @@
 
     <% if @existing_result&.score %>
       <%# Previous attempt %>
-      <div class="rounded-xl p-4 mb-6 text-left" style="background:var(--color-tint-strong);">
+      <div class="rounded-xl p-4 mb-6 text-left" style="background:color-mix(in srgb, var(--color-txt) 8%, transparent);">
         <p class="text-xs uppercase tracking-wider mb-2" style="color:var(--color-muted);"><%= t("assessments.show.last_attempt") %></p>
         <div class="flex items-center justify-between">
-          <span class="text-sm font-medium <%= @existing_result.passed? ? 'text-green-400' : 'text-red-400' %>">
+          <span class="text-sm font-medium <%= @existing_result.passed? ? 'text-[var(--color-positive)]' : 'text-[var(--color-negative)]' %>">
             <%= @existing_result.score.round(1) %>% — <%= @existing_result.passed? ? t("assessments.show.passed") : t("assessments.show.not_passed") %>
           </span>
           <span class="text-xs" style="color:var(--color-muted);"><%= l(@existing_result.created_at, format: "%d %b %Y") %></span>
@@ -49,14 +49,14 @@
     <div class="flex items-center justify-center gap-4">
       <%= link_to learning_routes_engine.route_path(@route),
           class: "rounded-lg px-4 py-3 text-sm font-medium transition",
-          style: "color:var(--color-sub); background:var(--color-tint-strong); border:1px solid var(--color-border-subtle);" do %>
+          style: "color:var(--color-sub); background:color-mix(in srgb, var(--color-txt) 8%, transparent); border:1px solid var(--color-border-subtle);" do %>
         <%= t("assessments.show.back_to_route") %>
       <% end %>
 
       <%= button_to t("assessments.show.start_exam"),
           assessments.start_assessment_path(@assessment),
           method: :post,
-          class: "rounded-lg px-6 py-3 text-sm font-semibold text-white bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-400 hover:to-purple-400 transition cursor-pointer" %>
+          class: "btn3" %>
     </div>
   </div>
 </div>
