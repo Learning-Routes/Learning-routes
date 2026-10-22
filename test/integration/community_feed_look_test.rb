@@ -28,7 +28,7 @@ class CommunityFeedLookTest < ActionDispatch::IntegrationTest
     get community_engine.feed_path
 
     assert_select ".seg a", 3
-    assert_select ".seg a[aria-current='page']", 1, text: I18n.t("community_engine.feed.tabs.all", locale: :es)
+    assert_select ".seg a[aria-current='page']", count: 1, text: I18n.t("community_engine.feed.tabs.all", locale: :es)
   end
 
   # The share modal's controller froze the theme's resolved colours (and fell

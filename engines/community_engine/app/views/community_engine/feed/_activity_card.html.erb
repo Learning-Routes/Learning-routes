@@ -7,8 +7,7 @@
   route_link = shared_route ? community_engine.shared_route_path(shared_route.share_token) : nil
 %>
 
-<div class="feed-card" style="background:var(--color-card, rgba(255,255,255,0.6)); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px);
-            border:1px solid var(--color-faint, rgba(28,24,18,0.06)); border-radius:12px; padding:0.85rem 1.25rem; transition:box-shadow 0.15s;">
+<div class="feed-card card3" style="padding:0.85rem 1.25rem;">
   <div style="display:flex; align-items:flex-start; gap:0.75rem;">
     <%# Avatar %>
     <div style="width:32px; height:32px; border-radius:50%; background:var(--color-accent);
@@ -27,7 +26,7 @@
           <% when CommunityEngine::SharedRoute %>
             <% if route_link %>
               <%= link_to community_engine.shared_route_path(shared_route.share_token),
-                    style: "font-weight:500; color:var(--color-txt); text-decoration:none; border-bottom:1px solid var(--color-faint, rgba(28,24,18,0.15));" do %>
+                    style: "font-weight:500; color:var(--color-txt); text-decoration:none; border-bottom:1px solid var(--color-faint);" do %>
                 <%= activity.trackable.learning_route&.localized_topic %>
               <% end %>
             <% else %>

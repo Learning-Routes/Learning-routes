@@ -2,7 +2,7 @@
      Shows best comments from shared routes as a horizontal ticker.
      Locals: thoughts (array of hashes: { comment:, route_topic:, author_name: }) %>
 <% if thoughts.present? && thoughts.any? %>
-<div style="background:var(--color-tint, rgba(28,24,18,0.03)); border:1px solid var(--color-faint, rgba(28,24,18,0.06));
+<div style="background:var(--color-tint); border:1px solid var(--color-faint);
             border-radius:10px; padding:0.65rem 1rem; overflow:hidden;">
   <div data-controller="floating-thoughts"
        data-floating-thoughts-interval-value="5000"
