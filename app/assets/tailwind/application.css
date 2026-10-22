@@ -3838,7 +3838,11 @@ html[data-theme="dark"] .lp {
    ========================================================================== */
 .route-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(340px, 100%), 1fr)); gap: 28px; }
 .route-card { padding: 22px 22px 20px; display: flex; flex-direction: column; gap: 6px; color: var(--color-txt); }
-.route-card__top { display: flex; justify-content: space-between; align-items: center; font-size: 13px; color: var(--color-muted); }
+.route-card__top { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: 13px; color: var(--color-muted); }
+.route-card__top .route-card__module { margin-left: auto; }
+.route-card__status--completed { background: var(--color-status-completed-bg); color: var(--color-status-completed-text); }
+.route-card__status--paused { background: var(--color-status-paused-bg); color: var(--color-status-paused-text); }
+.route-card__status--draft { background: var(--color-bg-2); color: var(--color-muted); }
 .route-card h3, .resume-card h3 { margin: 6px 0 0; font: 720 22px/1.15 var(--font-sans); font-stretch: 108%; letter-spacing: -.012em; color: var(--color-txt); }
 .route-card__sub, .resume-card__meta { margin: 0; font-size: 14.5px; color: var(--color-sub); }
 .route-card .tray { margin: 12px 0 8px; }

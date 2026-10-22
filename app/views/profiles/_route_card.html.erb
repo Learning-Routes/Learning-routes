@@ -6,6 +6,9 @@
 <article class="route-card card3" data-route-id="<%= route.id %>" data-controller="card-tilt">
   <div class="route-card__top">
     <span class="level-tag" data-route-level="<%= card.level %>"><%= t("route_card.level", n: card.level.delete("nv")) %></span>
+    <% unless route.active? %>
+      <span class="tag route-card__status route-card__status--<%= route.status %>"><%= t("dashboard.status.#{route.status}") %></span>
+    <% end %>
     <span class="route-card__module"><%= t("route_card.module", n: card.module_number, total: card.module_total) %></span>
   </div>
   <h3><%= route.localized_topic %></h3>
@@ -13,7 +16,7 @@
   <div class="tray"><%= mini_route_svg(card.steps.size, card.done) %></div>
   <div class="route-card__foot">
     <span class="groove" aria-hidden="true"><span style="width:<%= card.steps.empty? ? 0 : (100.0 * card.done / card.steps.size).round %>%"></span></span>
-    <%= link_to t("route_card.continue"), learning_routes_engine.journey_route_path(route),
+    <%= link_to t(route.completed? ? "route_card.view" : "route_card.continue"), learning_routes_engine.journey_route_path(route),
         class: "btn3 btn3--sm", aria: { label: t("route_card.continue_aria", route: route.localized_topic) },
         data: { turbo_action: "advance" } %>
   </div>
