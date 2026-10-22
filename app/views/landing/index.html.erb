@@ -31,13 +31,10 @@
   </script>
 <% end %>
 
-<%= render "landing/hero" %>
-<% cache "landing_static_v1_#{I18n.locale}", expires_in: 1.hour do %>
-  <%= render "landing/how_it_works" %>
-  <%= render "landing/path_section" %>
-  <%= render "landing/outcomes" %>
-  <%= render "landing/features" %>
-  <%= render "landing/integrations" %>
-<% end %>
-<%= render "landing/cta" %>
-<%= render "shared/footer" %>
+<% content_for(:body_class, "lp") %>
+<% content_for(:main_class, "lp-main") %>
+<% content_for(:nav) { render "landing/nav" } %>
+<% content_for(:footer) { render "landing/footer" } %>
+
+<%= render "landing/stage" %>
+<%= render "landing/close" %>

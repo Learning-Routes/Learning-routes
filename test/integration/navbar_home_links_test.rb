@@ -26,21 +26,24 @@ class NavbarHomeLinksTest < ActionDispatch::IntegrationTest
     assert_select "nav a[data-nav='logo'][href=?]", root_path
   end
 
-  test "a signed-in user on the landing: the logo and Home go to plain /" do
+  # STEP 41 §2: the landing's bar is the reference's (logo, How it works, sign in
+  # or My routes, Create my route). On the landing itself there is no Home link;
+  # the logo is the way to plain /, and so is any Home link anywhere.
+  test "a signed-in user on the landing: the logo goes to plain / and My routes to the routes" do
     sign_in_student
 
     get root_path
 
-    assert_select "nav a[data-nav='logo'][href=?]", root_path
-    assert_select "nav a[data-nav='home']", minimum: 1
-    assert_select "nav a[data-nav='home']:not([href='#{root_path}'])", count: 0
+    assert_select ".lp-nav a[data-nav='logo'][href=?]", root_path
+    assert_select "a[data-nav='home']:not([href='#{root_path}'])", count: 0
+    assert_select ".lp-nav a[href=?]", profile_path
   end
 
   test "a visitor: the logo goes to the landing, and there is no Home link" do
     get root_path
 
-    assert_select "nav a[data-nav='logo'][href=?]", root_path
-    assert_select "nav a[data-nav='home']", count: 0
+    assert_select ".lp-nav a[data-nav='logo'][href=?]", root_path
+    assert_select "a[data-nav='home']", count: 0
   end
 
   test "Home reads Inicio in Spanish and Home in English" do

@@ -1,0 +1,60 @@
+<%# STEP 41 §2.1–2.2: the pinned stage. The text is server HTML in reading order
+    and paints before three.js loads; landing_stage_controller.js pins each
+    chapter to a free spot of the map. The canvas and the names on the map are
+    aria-hidden. %>
+<%
+  map = t("landing.map")
+  labels = {
+    your_route: map[:your_route], here: map[:here], free: map[:free],
+    module: t("landing.map.module", n: "%{n}"), progress: t("landing.map.progress", done: "%{done}", total: "%{total}"),
+    topics: t("landing.map.topics", count: "%{count}"),
+    reinforcement_names: %w[review practice reassessment].map { |k| t("learning_engine.reinforcement.#{k}.short") }
+  }
+  routes = t("landing.routes").transform_values { |r| { title: r[:title], modules: r[:modules] } }
+  lead = capture do %><svg class="lp-lead" aria-hidden="true"><path pathLength="1"/><circle r="7"/><circle class="lp-c2" r="2.6"/></svg><% end
+%>
+<section class="lp-journey" id="como" aria-label="<%= t("landing.stage_label") %>"
+         data-controller="landing-stage"
+         data-landing-stage-routes-value="<%= routes.to_json %>"
+         data-landing-stage-labels-value="<%= labels.to_json %>">
+  <div class="lp-stage" data-landing-stage-target="stage">
+    <canvas class="lp-world" aria-hidden="true" data-landing-stage-target="canvas"></canvas>
+    <div class="lp-fade" aria-hidden="true"></div>
+    <div class="lp-labels" aria-hidden="true" data-landing-stage-target="labels"></div>
+    <div class="lp-texts">
+      <div class="lp-ann" data-ch="0" data-landing-stage-target="ann">
+        <div class="lp-in"><h1><span class="lp-wr"><%= t("landing.hero.title") %></span></h1></div>
+        <p><%= t("landing.hero.line") %></p>
+        <div class="lp-acts"><a class="btn3" href="#empezar"><%= t("landing.hero.button") %></a><span class="lp-fine"><%= t("landing.hero.note") %></span></div>
+      </div>
+      <% (1..5).each do |n| %>
+        <div class="lp-ann" data-ch="<%= n %>" data-landing-stage-target="ann">
+          <%= lead unless n == 5 %>
+          <div class="lp-in"><h2><span class="lp-wr"><%= t("landing.chapters.c#{n}.title") %></span></h2></div>
+          <p><%= t("landing.chapters.c#{n}.body") %></p>
+          <% if n == 5 %><div class="lp-acts"><a class="btn3" href="#empezar" tabindex="-1"><%= t("landing.hero.button") %></a></div><% end %>
+        </div>
+      <% end %>
+    </div>
+    <div class="lp-top" data-landing-stage-target="top">
+      <div class="lp-seg">
+        <span id="lp-seg-label"><%= map[:example] %></span>
+        <div class="lp-opts" role="group" aria-labelledby="lp-seg-label">
+          <% %w[pt py gt fn].each do |k| %>
+            <button type="button" data-topic="<%= k %>" aria-pressed="<%= k == "pt" %>"
+                    data-landing-stage-target="tab" data-action="landing-stage#pick"><%= t("landing.tabs.#{k}") %></button>
+          <% end %>
+        </div>
+      </div>
+      <div class="lp-legend" role="group" aria-label="<%= map[:legend] %>">
+        <span><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><circle cx="7" cy="7" r="6" fill="var(--color-accent)"/><path d="M4.4 7.2l1.8 1.8 3.4-3.6" fill="none" stroke="var(--color-accent-text)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg><%= map[:done] %></span>
+        <span><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><circle cx="7" cy="7" r="5.2" fill="none" stroke="var(--color-highlight)" stroke-width="2.2"/></svg><%= map[:here] %></span>
+        <span><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><circle cx="7" cy="7" r="5.4" fill="none" stroke="var(--color-muted)" stroke-width="1.4"/></svg><%= map[:coming] %></span>
+        <span><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><circle cx="7" cy="7" r="5.4" fill="none" stroke="var(--color-reinforce)" stroke-width="1.5" stroke-dasharray="1.6 2"/><circle cx="7" cy="7" r="1.8" fill="var(--color-reinforce)"/></svg><%= map[:reinforcement] %></span>
+        <span><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><circle cx="7" cy="7" r="5.4" fill="none" stroke="var(--color-muted)" stroke-width="1.4" stroke-dasharray="2.4 2.2"/></svg><%= map[:locked] %></span>
+      </div>
+    </div>
+    <nav class="lp-vdots" aria-label="<%= map[:chapters] %>" data-landing-stage-target="dots"><ol></ol></nav>
+    <p class="lp-fallback"><%= map[:fallback] %></p>
+  </div>
+</section>

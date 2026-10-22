@@ -62,6 +62,7 @@
              placeholder="<%= t("wizard.step0.custom_placeholder") %>"
              data-route-wizard-target="customInput"
              data-action="input->route-wizard#updateCustomTopic keydown.enter->route-wizard#preventEnterSubmit"
+             <% if @prefill_topic %>value="<%= @prefill_topic %>"<% end %>
              autocomplete="off" maxlength="200">
     </div>
 

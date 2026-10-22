@@ -1,0 +1,51 @@
+<%# STEP 41 §2.3: the closing sheet. The field goes to the wizard with the topic
+    when signed in; signed out, to sign-up, which keeps the topic for after. %>
+<section class="lp-final" id="empezar" aria-labelledby="lp-close-title" data-controller="landing-close">
+  <div class="lp-wrap">
+    <div class="lp-sheet card3">
+      <i class="lp-tick lp-tl" aria-hidden="true"></i><i class="lp-tick lp-tr" aria-hidden="true"></i><i class="lp-tick lp-bl" aria-hidden="true"></i><i class="lp-tick lp-br" aria-hidden="true"></i>
+      <div class="lp-close">
+        <div>
+          <h2 id="lp-close-title"><%= t("landing.close.title") %></h2>
+          <p class="lp-intro"><%= t("landing.close.line") %></p>
+          <form class="lp-ask" method="get" action="<%= current_user ? main_app.new_route_wizard_path : core.sign_up_path %>"
+                data-action="submit->landing-close#ask" data-turbo="false">
+            <label class="lp-sr" for="lp-want"><%= t("landing.close.label") %></label>
+            <input id="lp-want" name="topic" autocomplete="off" maxlength="200" placeholder="<%= t("landing.close.placeholder") %>"
+                   data-landing-close-target="field" data-action="focus->landing-close#wait blur->landing-close#rest">
+            <button class="btn3" type="submit"><%= t("landing.close.button") %></button>
+          </form>
+          <div class="lp-ideas" role="group" aria-label="<%= t("landing.close.ideas_group") %>">
+            <span><%= t("landing.close.ideas_label") %></span>
+            <% t("landing.close.ideas").each do |idea| %>
+              <button type="button" data-action="landing-close#fill"><%= idea %></button>
+            <% end %>
+          </div>
+        </div>
+        <figure class="lp-plan" data-landing-close-target="plan">
+          <div class="lp-bp"><svg viewBox="0 0 520 400" aria-hidden="true">
+            <rect class="lp-bp-sheet lp-one" x="8" y="50" width="504" height="104" rx="16"/>
+            <rect class="lp-bp-sheet" x="8" y="186" width="504" height="96" rx="16"/>
+            <rect class="lp-bp-sheet lp-three" x="8" y="314" width="504" height="78" rx="16"/>
+            <path class="lp-bp-line" d="M28 26 C 28 58, 52 66, 52 89"/>
+            <path class="lp-bp-line" d="M52 102 C 90 102, 96 92, 128 92 C 170 92, 172 112, 212 112 C 254 112, 256 90, 296 90 C 338 90, 340 110, 380 110 C 422 110, 424 94, 462 94"/>
+            <path class="lp-bp-line" d="M52 115 L 52 221"/>
+            <path class="lp-bp-line" d="M52 234 C 96 234, 100 226, 140 226 C 188 226, 190 244, 236 244 C 284 244, 286 224, 332 224 C 380 224, 382 240, 428 240"/>
+            <path class="lp-bp-line" d="M52 247 L 52 340"/>
+            <path class="lp-bp-line" d="M52 353 C 100 353, 104 348, 150 348 C 206 348, 206 360, 260 360 C 316 360, 316 346, 370 346"/>
+            <path class="lp-bp-route" pathLength="1" d="M28 26 C 28 58, 52 66, 52 89 L 52 102 C 90 102, 96 92, 128 92 C 170 92, 172 112, 212 112 C 254 112, 256 90, 296 90 C 338 90, 340 110, 380 110 C 422 110, 424 94, 462 94"/>
+            <polygon class="lp-bp-origin" points="28,12 37,24 28,36 19,24"/>
+            <circle class="lp-bp-disc lp-one" cx="52" cy="102" r="13"/><circle class="lp-bp-disc" cx="52" cy="234" r="13"/><circle class="lp-bp-disc" cx="52" cy="353" r="12" stroke-opacity=".6"/>
+            <g><circle class="lp-bp-node lp-n1" cx="128" cy="92" r="11"/><circle class="lp-bp-node lp-n1" cx="212" cy="112" r="11"/><circle class="lp-bp-node lp-n1" cx="296" cy="90" r="11"/><circle class="lp-bp-node lp-n1" cx="380" cy="110" r="11"/><circle class="lp-bp-node lp-n1" cx="462" cy="94" r="11"/></g>
+            <g><circle class="lp-bp-node" cx="140" cy="226" r="11"/><circle class="lp-bp-node" cx="236" cy="244" r="11"/><circle class="lp-bp-node" cx="332" cy="224" r="11"/><circle class="lp-bp-node" cx="428" cy="240" r="11"/></g>
+            <g opacity=".6"><circle class="lp-bp-node" cx="150" cy="348" r="10"/><circle class="lp-bp-node" cx="260" cy="360" r="10"/><circle class="lp-bp-node" cx="370" cy="346" r="10"/></g>
+          </svg>
+          <span class="lp-chip lp-c1"><i></i><b data-landing-close-target="chip"><%= t("landing.map.module", n: 1) %></b><em><%= t("landing.map.free") %></em></span>
+          <span class="lp-chip lp-c2 lp-mute"><i></i><b><%= t("landing.map.module", n: 2) %></b></span>
+          <span class="lp-chip lp-c3 lp-mute"><i></i><b><%= t("landing.map.module", n: 3) %></b></span></div>
+          <figcaption><b><%= t("landing.close.blueprint_title") %></b><%= t("landing.close.blueprint_line") %></figcaption>
+        </figure>
+      </div>
+    </div>
+  </div>
+</section>

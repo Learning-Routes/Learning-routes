@@ -8,6 +8,10 @@ module Core
 
     def new
       @user = Core::User.new
+      # STEP 41 §2.3: a visitor who asked the landing for a topic signs up first;
+      # the topic waits in the session for the first redirect after sign-in.
+      topic = params[:topic].to_s.strip.first(200)
+      session[:wizard_topic] = topic if topic.present?
     end
 
     def create

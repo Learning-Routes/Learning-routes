@@ -10,7 +10,6 @@ en:
   # ── Navbar ──
   nav:
     home: "Home"
-    features: "Features"
     how_it_works: "How it works"
     sign_in: "Sign in"
     sign_up: "Get started"
@@ -21,119 +20,6 @@ en:
     community: "Community"
     sign_out: "Sign out"
     settings: "Settings"
-
-  # ── Hero ──
-  hero:
-    headline_html: "Learn anything, the&nbsp;right way."
-    headline_active_html: "Your route in<br>%{topic}."
-    subtext: "Tell us what you want to master and get a unique learning route, with assessments that adapt to your real progress."
-    subtext_active: "Continue your personalized route. %{progress}% completed with %{steps} steps finished."
-    cta: "See how it works"
-    cta_active: "Continue learning"
-
-  # ── Product Preview ──
-  product_preview:
-    label: "New route"
-    headline: "Learn whatever you want."
-    topics:
-      - "English B1→B2"
-      - "Python"
-      - "Calculus"
-      - "UX Design"
-      - "Photography"
-      - "Marketing"
-      - "Japanese"
-      - "Finance"
-      - "Machine Learning"
-      - "Guitar"
-      - "Art History"
-    more: "And much more..."
-    cta: "Generate my route"
-
-  # ── How It Works ──
-  how_it_works:
-    label: "3 steps"
-    step_label: "STEP %{n}"
-    headline: "From zero to mastering a topic."
-    steps:
-      - title: "Tell us your goal"
-        desc: "English B2? Differential calculus? Python from scratch? Tell us what you want to achieve and how much you know today."
-      - title: "Get your route"
-        desc: "We generate a personalized learning path with stages, assessments, and content adapted to your level."
-      - title: "Learn and advance"
-        desc: "Complete lessons, get reinforcement where you need it, and measure your progress at every step until you master the topic."
-
-  # ── Path Section ──
-  path_section:
-    product_label: "Product"
-    headline_active: "Your learning route."
-    headline_default: "This is what your route looks like."
-    desc_active: "Each node is a stage of your route. Satellites are the topics at each level."
-    desc_default: "Each node is a stage. Click on a satellite to explore what happens at each level."
-    footer_active: "%{completed}/%{total} steps completed"
-    footer_default: "Each route is uniquely generated"
-    aria_active: "Visual representation of your %{topic} learning route with %{count} connected nodes"
-    aria_default: "Interactive visualization of a personalized learning route with 6 connected stages. Click on satellite nodes to learn more."
-
-  # ── Outcomes ──
-  outcomes:
-    label: "Outcomes"
-    headline_html: "From where you are, <span class=\"text-sub\">to where you want to be.</span>"
-    items:
-      - from: "I don't know where to start"
-        to: "Clear route from day one"
-      - from: "Generic content for everyone"
-        to: "Lessons adapted to your level"
-      - from: "I learn but forget quickly"
-        to: "Reinforcement that locks in learning"
-      - from: "I don't know if I'm progressing"
-        to: "Measurable progress at every stage"
-
-  # ── Features ──
-  features:
-    label: "Under the hood"
-    headline: "Why it works."
-    items:
-      - title: "Routes built just for you"
-        desc: "Each path is generated based on your answers and evolves with your progress. Two people studying the same topic will have different routes."
-      - title: "Multiple models, one experience"
-        desc: "Different specialized models work together to explain each concept in the clearest way possible."
-      - title: "Lessons with natural voice"
-        desc: "Audio with high-quality human voices. Real immersion in the language and topic you're studying."
-      - title: "Intelligent reinforcement"
-        desc: "Detects your weak points and designs specific exercises until you master them completely."
-
-  # ── Integrations ──
-  integrations:
-    label: "Integrations"
-    headline_html: "Powered by the best <span class=\"text-sub\">tools.</span>"
-    items:
-      - name: "OpenAI"
-        desc: "Content generation"
-      - name: "ElevenLabs"
-        desc: "Voice synthesis"
-      - name: "GPT Image"
-        desc: "Image generation"
-
-  # ── CTA ──
-  cta:
-    headline: "Start your route today."
-    headline_active: "Keep going."
-    subtext: "Discover a new way to learn."
-    subtext_active: "Your %{topic} route awaits."
-    button: "Get started"
-    button_active: "Go to dashboard"
-
-  # ── Footer ──
-  footer:
-    tagline: "AI-powered personalized learning routes. Learn what you need, at your own pace."
-    product: "Product"
-    legal: "Legal"
-    account: "Account"
-    terms: "Terms"
-    privacy: "Privacy"
-    contact: "Contact"
-    copyright: "© 2026 Learning Routes. All rights reserved."
 
   # ── Auth ──
   auth:
@@ -288,86 +174,162 @@ en:
     correct: "Correct!"
     incorrect: "Incorrect. %{explanation}"
 
-  # ── Path Visualization ──
-  path_viz:
-    back_button: "Back to satellites"
-    nodes:
-      n1:
-        label: "Leveling"
-        tag: "NV1"
-        note: "Initial diagnosis"
-        sats:
-          - topic: "Basics"
-            desc: "We start by mapping what you already know — no wasted time on things you've mastered."
-          - topic: "Concepts"
-            desc: "Core concepts are identified so your route focuses on what actually matters."
-          - topic: "Foundations"
-            desc: "Your foundational knowledge is assessed to build the rest of your route on solid ground."
-      n2:
-        label: "Assessment"
-        tag: "NV2"
-        note: "First checkpoint"
-        sats:
-          - topic: "Quiz"
-            desc: "Short adaptive quizzes that adjust difficulty based on your answers in real time."
-          - topic: "Practice"
-            desc: "Hands-on exercises that test understanding, not just memorization."
-      n3:
-        label: "Deep Dive"
-        tag: "MM"
-        note: "Multi-model content"
-        sats:
-          - topic: "Theory"
-            desc: "AI-generated explanations tailored to your level and learning style."
-          - topic: "Examples"
-            desc: "Real-world examples and code snippets that make abstract concepts click."
-          - topic: "Exercises"
-            desc: "Progressive exercises that challenge you just enough to keep growing."
-      n4:
-        label: "Reinforcement"
-        tag: "NV3"
-        note: "Fill knowledge gaps"
-        sats:
-          - topic: "Review"
-            desc: "Spaced repetition ensures you retain what you've learned over time."
-          - topic: "Gaps"
-            desc: "We ask what wasn't clear and generate new micro-routes to fill those gaps."
-      n5:
-        label: "Final Exam"
-        tag: "EF"
-        note: "Intensive review"
-        sats:
-          - topic: "Mock"
-            desc: "Full-length practice exams that simulate the real thing."
-          - topic: "Summary"
-            desc: "A condensed review of everything you've covered — your personal study guide."
-          - topic: "Key topics"
-            desc: "The most important topics highlighted so you know exactly where to focus."
-      n6:
-        label: "Your Goal"
-        tag: ""
-        note: "You made it"
-        sats:
-          - topic: "Mastery"
-            desc: "You've demonstrated real understanding — not just surface-level knowledge."
-          - topic: "Portfolio"
-            desc: "Your completed exercises and projects become proof of what you can do."
-          - topic: "Next level"
-            desc: "Ready for more? Generate a new route that builds on everything you've achieved."
-
-  # ── Landing status labels ──
+  # ── Landing (STEP 41 §2) ──
   landing:
     page_title: "Learning Routes — Learn anything, the right way"
     meta_description: "AI-powered personalized learning routes. Learn programming, math, languages, and more."
     og_title: "Learning Routes — Learn anything, the right way"
     og_description: "AI-powered personalized learning routes. Learn programming, math, languages, and more."
     twitter_description: "AI-powered personalized learning routes."
-    status:
-      completed: "Completed"
-      in_progress: "In progress"
-      available: "Available"
-      locked: "Locked"
-
+    nav:
+      how: How it works
+      sign_in: Sign in
+      my_routes: My routes
+      create: Create my route
+      label: Main
+    stage_label: 'Learning Routes: how a route works'
+    hero:
+      title: Learn anything, the right way.
+      line: 'Learning Routes turns it into a route: modules in order, short topics with
+        practice, and an exam to close each module.'
+      button: Create my route
+      note: The first module is free.
+    chapters:
+      c1:
+        title: Your route, built for you
+        body: Tell us what you want to learn and how much you know. The route is built
+          in modules, each with its topics in order.
+      c2:
+        title: One topic at a time
+        body: You read, practise and answer a check. Get it right and the topic is done;
+          the line moves on with you.
+      c3:
+        title: If something is hard, a reinforcement appears
+        body: Missing a check opens short reinforcement topics under that topic. Finish
+          them and you carry on along the route.
+      c4:
+        title: Every module ends with an exam
+        body: Confirm what you know and move on to the next module of your route.
+      c5:
+        title: Your whole route at a glance
+        body: Modules in order, each with its topics and reinforcements. The first module
+          is free.
+    map:
+      example: Example route
+      done: Done
+      here: You are here
+      coming: Coming up
+      reinforcement: Reinforcement
+      locked: Locked
+      your_route: Your route
+      module: Module %{n}
+      progress: "%{done} of %{total}"
+      topics: "%{count} topics"
+      free: Free
+      legend: Map legend
+      chapters: Chapters
+      fallback: Your browser can't show the 3D map. This is how a route goes, step by
+        step.
+    tabs:
+      pt: Portuguese
+      py: Python
+      gt: Guitar
+      fn: Finance
+    routes:
+      pt:
+        title: Portuguese for travel
+        modules:
+        - - Foundations
+          - - Greetings
+            - Pronouns
+            - Ser and estar
+            - Numbers
+            - Directions
+            - Module exam
+        - - On the road
+          - - Transport
+            - At the hotel
+            - At the restaurant
+            - Shopping
+            - Module exam
+        - - Real conversation
+          - []
+      py:
+        title: Python from scratch
+        modules:
+        - - First steps
+          - - Variables
+            - Data types
+            - Conditionals
+            - Loops
+            - Functions
+            - Module exam
+        - - Working with data
+          - - Lists
+            - Dictionaries
+            - Files
+            - Errors
+            - Module exam
+        - - Projects
+          - []
+      gt:
+        title: Guitar for beginners
+        modules:
+        - - The basics
+          - - Posture
+            - Tuning
+            - First chords
+            - Rhythm
+            - Chord changes
+            - Module exam
+        - - Your songs
+          - - Strumming
+            - Arpeggios
+            - Your first song
+            - The barre
+            - Module exam
+        - - Playing with others
+          - []
+      fn:
+        title: Personal finance
+        modules:
+        - - Your money today
+          - - Income
+            - Expenses
+            - Budget
+            - Saving
+            - Debt
+            - Module exam
+        - - Making it grow
+          - - Emergency fund
+            - Investing
+            - Taxes
+            - Goals
+            - Module exam
+        - - Long term
+          - []
+    close:
+      title: What do you want to learn?
+      line: Say it in your own words, the way you'd tell a friend. We build your route
+        from that, module by module.
+      label: What you want to learn
+      placeholder: 'For example: English for work'
+      button: Create my route
+      ideas_label: 'Ideas:'
+      ideas_group: Ideas to start with
+      ideas:
+      - Portuguese for travel
+      - Python from scratch
+      - Guitar for beginners
+      - Personal finance
+      blueprint_title: Your route will appear here.
+      blueprint_line: Modules in order, each with its topics. The first module is free.
+    footer:
+      copyright: "© %{year} Learning Routes"
+      terms: Terms
+      privacy: Privacy
+      contact: Contact
+      label: Legal
   # ── Profile Page ──
   profile:
     title: "My Profile — Learning Routes"

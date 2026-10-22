@@ -15,6 +15,12 @@ pin "journey_camera", to: "lib/journey_camera.js"
 pin "journey_map_paths", to: "lib/journey_map_paths.js"
 pin "journey_terrain", to: "lib/journey_terrain.js"
 pin "card_tilt", to: "lib/card_tilt.js"
+# STEP 41 §2: the landing's map and where its text sits, tested under node by
+# test/javascript/landing_placement_test.rb.
+pin "landing_placement", to: "lib/landing_placement.js"
+# three.js for the landing's map only. Exact version, the module build (one
+# self-contained file); landing_stage_controller.js imports it lazily.
+pin "three", to: "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.min.js", preload: false
 
 # Motion Canvas runtime — built by bin/motion-build, committed because the image
 # has no node. Lazy-imported (the mermaid_diagram_controller.js:13 idiom,

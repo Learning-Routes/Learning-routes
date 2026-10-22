@@ -11,7 +11,7 @@ module Core
 
       if user
         user.verify_email!
-        redirect_to main_app.dashboard_path, notice: t("flash.email_verified")
+        redirect_to pending_wizard_path || main_app.dashboard_path, notice: t("flash.email_verified")
       else
         redirect_to main_app.root_path, alert: t("flash.invalid_verification")
       end

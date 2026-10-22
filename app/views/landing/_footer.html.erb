@@ -1,0 +1,10 @@
+<footer class="lp-footer">
+  <div class="lp-wrap">
+    <span><%= t("landing.footer.copyright", year: Date.current.year) %></span>
+    <nav aria-label="<%= t("landing.footer.label") %>">
+      <%= link_to t("landing.footer.terms"), main_app.terms_path %>
+      <%= link_to t("landing.footer.privacy"), main_app.privacy_path %>
+      <a href="mailto:hello@learningroutes.com"><%= t("landing.footer.contact") %></a>
+    </nav>
+  </div>
+</footer>
