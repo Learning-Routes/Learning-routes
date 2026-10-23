@@ -9,20 +9,27 @@ Rails.application.configure do
   config.content_security_policy do |policy|
     policy.default_src :self
     policy.font_src    :self, "https://fonts.gstatic.com", "https://cdn.jsdelivr.net"
-    policy.img_src     :self, :data, :https
+    # https: already covers these; GTM, GA4, Clarity and Preview mode's hosts are
+    # named so the policy says what it serves.
+    policy.img_src     :self, :data, :https,
+      "https://www.googletagmanager.com", "https://*.google-analytics.com", "https://*.clarity.ms", "https://c.bing.com",
+      "https://ssl.gstatic.com", "https://www.gstatic.com"
     policy.object_src  :none
 
     # Scripts: self + jsdelivr for the exact-version importmap pins (katex, ace,
     # mermaid, canvas-confetti, dompurify, pyodide). jsdelivr is a broad CDN, so
     # every pin MUST use an exact version (see config/importmap.rb).
-    # Google Tag Manager's gtm.js (and the GA4 tag it loads) come from
-    # www.googletagmanager.com; the inline snippet runs under the nonce.
-    policy.script_src  :self, "https://cdn.jsdelivr.net", "https://www.googletagmanager.com"
+    # Google Tag Manager, and what the owner runs through it (GA4, Microsoft
+    # Clarity), per Google's CSP guide: the inline snippet runs under the nonce and
+    # hands it on to gtm.js. tagmanager.google.com is GTM's Preview mode.
+    policy.script_src  :self, "https://cdn.jsdelivr.net",
+      "https://www.googletagmanager.com", "https://www.clarity.ms", "https://*.clarity.ms", "https://tagmanager.google.com"
 
     # Styles: self + Google Fonts + jsdelivr (katex CSS). :unsafe_inline is
     # required by the server-rendered inline styles in lesson content and the
     # Turbo progress bar; it does not weaken script protection.
-    policy.style_src   :self, :unsafe_inline, "https://fonts.googleapis.com", "https://cdn.jsdelivr.net"
+    policy.style_src   :self, :unsafe_inline, "https://fonts.googleapis.com", "https://cdn.jsdelivr.net",
+      "https://tagmanager.google.com", "https://www.googletagmanager.com" # GTM's Preview mode
 
     # Connections: self + ActionCable websockets. Both production hostnames are
     # served (see config/deploy.yml proxy host), so allow both; dev uses ws.
@@ -34,11 +41,11 @@ Rails.application.configure do
       else
         ["wss://learningroutes.com", "wss://learning-routes.com"]
       end
-    # GA4 sends its hits to regional *.google-analytics.com and
-    # *.analytics.google.com hosts, and GTM's preview to *.googletagmanager.com.
-    # img-src already allows https:, which covers GA4's image fallback.
-    ga4_sources = ["https://*.google-analytics.com", "https://*.analytics.google.com", "https://*.googletagmanager.com"]
-    policy.connect_src :self, *ws_sources, *ga4_sources
+    # GTM, GA4's hits (regional *.google-analytics.com and *.google.com hosts)
+    # and Microsoft Clarity's uploads.
+    tag_sources = ["https://www.googletagmanager.com", "https://*.google-analytics.com", "https://*.google.com",
+      "https://*.clarity.ms", "https://c.bing.com"]
+    policy.connect_src :self, *ws_sources, *tag_sources
 
     # Media: lesson audio is same-origin (SectionAudioGenerator writes to
     # /storage/audio/sections/...), and `blob:` is the voice recorder's PREVIEW —
