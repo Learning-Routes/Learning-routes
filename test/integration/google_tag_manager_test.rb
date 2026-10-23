@@ -36,7 +36,8 @@ class GoogleTagManagerTest < ActionDispatch::IntegrationTest
     assert_equal "script", first.name, "GTM must be the first thing in <head>, found <#{first.name}>"
     assert_equal csp_nonce, first["nonce"]
     assert_includes first.text, "GTM-T2MH7XX4"
-    assert_includes first.text, %(setAttribute("nonce", "#{csp_nonce}")), "gtm.js must carry the nonce on"
+    # Google's line: copy the nonce of this very script onto gtm.js.
+    assert_includes first.text, 'n && j.setAttribute("nonce", n.nonce || n.getAttribute("nonce"))', "gtm.js must carry the nonce on"
   end
 
   test "Consent Mode's defaults are set before GTM loads" do
