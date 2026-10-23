@@ -13,7 +13,9 @@ class GoogleTagManagerLayoutsTest < ActiveSupport::TestCase
     name = path.delete_prefix("#{Rails.root}/")
     test "#{name} opens <head> and <body> with GTM" do
       html = File.read(path)
-      assert_match(/<head>\s*<%= render "shared\/gtm_head" %>/, html, "#{name}: the head snippet must come first in <head>")
+      # The charset must stay within the first 1024 bytes, so it alone comes before GTM.
+      assert_match(/<head>\s*<meta charset="utf-8">\s*<%= render "shared\/gtm_head" %>/, html,
+        "#{name}: <head> must open with the charset and then the GTM snippet")
       assert_match(/<body.*>\n\s*<%= render "shared\/gtm_body" %>/, html, "#{name}: the noscript must come right after <body>")
     end
   end

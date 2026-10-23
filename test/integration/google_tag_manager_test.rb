@@ -32,8 +32,9 @@ class GoogleTagManagerTest < ActionDispatch::IntegrationTest
     with_gtm { get "/" }
 
     head = Nokogiri::HTML(response.body).at("head")
-    first = head.element_children.first
-    assert_equal "script", first.name, "GTM must be the first thing in <head>, found <#{first.name}>"
+    charset, first = head.element_children.first(2)
+    assert_equal "utf-8", charset["charset"], "the charset must open <head>"
+    assert_equal "script", first.name, "GTM must come right after the charset, found <#{first.name}>"
     assert_equal csp_nonce, first["nonce"]
     assert_includes first.text, "GTM-T2MH7XX4"
     # Google's line: copy the nonce of this very script onto gtm.js.
