@@ -4,7 +4,9 @@ require "test_helper"
 # every way out of a public page into the app must be a full page load: the new
 # page then starts without it. The public pages are the one list page_area uses.
 class PublicPagesFullLoadTest < ActionDispatch::IntegrationTest
-  PUBLIC_PATHS = %w[/ /terms /privacy /sign_in /sign_up].freeze
+  BARE = %w[/ /terms /privacy /sign_in /sign_up].freeze
+  # Each public page also lives under /es and /en (STEP 36 §2); same pages, same list.
+  PUBLIC_PATHS = (BARE + %w[es en].flat_map { |l| BARE.map { |p| "/#{l}#{p.delete_suffix("/")}" } }).freeze
 
   # The controller#action a same-host path lands on; nil when no route (or a
   # redirect route) answers it, which is the app too.
@@ -45,7 +47,7 @@ class PublicPagesFullLoadTest < ActionDispatch::IntegrationTest
   test "signed in as a student, every link and form from a public page into the app is a full load" do
     student = create_test_user(email_verified_at: Time.current)
     post core.sign_in_path, params: { email: student.email, password: "password123" }
-    %w[/ /terms /privacy].each do |path|
+    PUBLIC_PATHS.grep_v(/sign_(in|up)/).each do |path|
       get path
       assert_response :success
       assert_empty offenders, "#{path} leads into the app with a Turbo visit"

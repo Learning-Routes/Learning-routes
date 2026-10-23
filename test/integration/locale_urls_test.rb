@@ -125,4 +125,16 @@ class LocaleUrlsTest < ActionDispatch::IntegrationTest
       assert_equal [1200, 630], png[16, 8].unpack("NN"), "og-#{locale}.png is not 1200x630"
     end
   end
+
+  # The forms post without a language (the cookie carries it), and only the bare
+  # POST routes exist: Rails' locale recall had them post to /es/sign_in, a 404.
+  %w[/es/sign_in /en/sign_in /es/sign_up /en/sign_up].each do |path|
+    test "the form on #{path} posts to a route that answers" do
+      get path
+      action = css_select("form[method=post]").map { |f| f["action"] }.reject { |a| a.start_with?("/auth/") }.sole
+      assert_equal path.sub(%r{\A/(es|en)}, ""), action
+      post action, params: { email: "nobody@example.com", password: "wrong-password" }
+      refute_equal 404, response.status, "#{path} posts to #{action}, which has no route"
+    end
+  end
 end

@@ -51,7 +51,8 @@
          data-auth-form-required-msg-value="<%= t('auth_alerts.validation_required') %>"
          data-auth-form-email-msg-value="<%= t('auth_alerts.validation_email') %>"
          data-auth-form-min-length-msg-value="<%= t('auth_alerts.validation_min_length') %>">
-      <%= form_with(model: @user, url: core.sign_up_path) do |f| %>
+      <%# Only the bare POST route exists; the language travels in the cookie (STEP 36 §2). %>
+      <%= form_with(model: @user, url: core.sign_up_path(locale: nil)) do |f| %>
 
         <%# Form errors %>
         <% if @user.errors.any? %>
