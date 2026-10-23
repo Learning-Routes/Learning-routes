@@ -101,6 +101,23 @@ class LandingTest < ApplicationSystemTestCase
     assert_includes find(".lp-journey", visible: :all)["data-landing-stage-routes-value"], "Guitar for beginners"
   end
 
+  # landing_test failed on CI twice (main at 6c22d298, #94's first run) with a
+  # Timeout::Error inside show_closing, and CI's screenshot shows the page already
+  # at the closing: the jump worked, the wait did not return. The wait asked for
+  # an animation frame, and at the closing the 3D journey's last pixels are still
+  # in view, so its render loop keeps drawing, in software on CI. A frame slower
+  # than the wait's 3 seconds and the wait expires. Burning 3.5s a frame here
+  # stands in for that renderer.
+  test "the closing is reached even while frames are slow" do
+    visit_landing
+    page.execute_script("window.__burn = true; (function burn() { if (!window.__burn) return; const t = performance.now(); while (performance.now() - t < 3500) {} requestAnimationFrame(burn) })()")
+
+    show_closing
+
+    page.execute_script("window.__burn = false")
+    assert_field "lp-want"
+  end
+
   test "an idea fills the field" do
     visit_landing
     idea = I18n.t("landing.close.ideas", locale: :es)[1]
@@ -190,11 +207,21 @@ class LandingTest < ApplicationSystemTestCase
 
   # The app scrolls smoothly (scroll-behavior: smooth): a click Selenium scrolls
   # to lands where the button was, mid-scroll. Jump to the closing sheet at once.
+  # An instant scrollIntoView is synchronous, so scrollY is final when the script
+  # returns and no frame is waited for: on CI one frame of the 3D journey, drawn
+  # in software, outlasted the 3-second wait for it. The stage sizes itself first,
+  # so nothing above the closing grows after the jump.
   def show_closing
-    page.execute_script("document.getElementById('empezar').scrollIntoView({ block: 'center', behavior: 'instant' })")
-    Timeout.timeout(3) do
-      sleep 0.05 until page.evaluate_script("(() => { const y = scrollY; return new Promise((r) => requestAnimationFrame(() => r(scrollY === y))) })()")
-    end
+    assert_selector ".lp-journey[style*='height'], .lp-journey.lp-no-gl", visible: :all
+    top, bottom, inner = page.evaluate_script(<<~JS)
+      (() => {
+        document.getElementById('empezar').scrollIntoView({ block: 'center', behavior: 'instant' })
+        const r = document.getElementById('lp-want').getBoundingClientRect()
+        return [r.top, r.bottom, innerHeight]
+      })()
+    JS
+    assert top >= 0 && bottom <= inner,
+      "the closing's field is not in view after the jump: top #{top}, bottom #{bottom}, viewport #{inner}"
   end
 
   def reduce_motion

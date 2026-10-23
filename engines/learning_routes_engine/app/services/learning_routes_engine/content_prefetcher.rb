@@ -84,7 +84,8 @@ module LearningRoutesEngine
       end
 
       # Flip content_generating on the given steps, but only for rows that are neither
-      # ready nor already generating. Returns the ids actually flipped.
+      # ready nor already generating. Returns the ids actually flipped, in the order
+      # the caller gave them: RETURNING follows the rows' physical order, not position.
       #
       # jsonb_set rather than update!: metadata can hold parsed_sections of 100-300KB and
       # rewriting the whole blob to flip one flag is wasteful. RETURNING makes the claim
@@ -113,7 +114,7 @@ module LearningRoutesEngine
           SQL
         ])
 
-        ActiveRecord::Base.connection.execute(sql).map { |row| row["id"] }
+        step_ids & ActiveRecord::Base.connection.execute(sql).map { |row| row["id"] }
       end
 
       # Give a claim back, atomically and without touching the rest of the blob.
