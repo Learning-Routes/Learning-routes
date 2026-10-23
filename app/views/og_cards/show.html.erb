@@ -1,0 +1,18 @@
+<%# The landing's first screen without its controls: the wordmark, the promise and
+    the annotated map of an example route (the locale's, never a student's). %>
+<% content_for(:title, t("landing.page_title")) %>
+<% content_for(:body_class, "lp og-card") %>
+<% content_for(:main_class, "lp-main") %>
+<% content_for(:head) do %>
+  <style>
+    .og-card .lp-top, .og-card .lp-vdots, .og-card .lp-acts .btn3, .og-card .lp-nav-r { display: none; }
+    .og-card .lp-nav { position: absolute; }
+  </style>
+<% end %>
+<% content_for(:nav) do %>
+  <header class="lp-nav">
+    <div class="lp-wrap"><span class="lp-brand"><%= render "shared/logo", size: 26 %>Learning Routes</span></div>
+  </header>
+<% end %>
+
+<%= render "landing/stage" %>
