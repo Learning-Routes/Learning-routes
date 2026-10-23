@@ -15,7 +15,9 @@ Rails.application.configure do
     # Scripts: self + jsdelivr for the exact-version importmap pins (katex, ace,
     # mermaid, canvas-confetti, dompurify, pyodide). jsdelivr is a broad CDN, so
     # every pin MUST use an exact version (see config/importmap.rb).
-    policy.script_src  :self, "https://cdn.jsdelivr.net"
+    # Google Tag Manager's gtm.js (and the GA4 tag it loads) come from
+    # www.googletagmanager.com; the inline snippet runs under the nonce.
+    policy.script_src  :self, "https://cdn.jsdelivr.net", "https://www.googletagmanager.com"
 
     # Styles: self + Google Fonts + jsdelivr (katex CSS). :unsafe_inline is
     # required by the server-rendered inline styles in lesson content and the
@@ -32,7 +34,11 @@ Rails.application.configure do
       else
         ["wss://learningroutes.com", "wss://learning-routes.com"]
       end
-    policy.connect_src :self, *ws_sources
+    # GA4 sends its hits to regional *.google-analytics.com and
+    # *.analytics.google.com hosts, and GTM's preview to *.googletagmanager.com.
+    # img-src already allows https:, which covers GA4's image fallback.
+    ga4_sources = ["https://*.google-analytics.com", "https://*.analytics.google.com", "https://*.googletagmanager.com"]
+    policy.connect_src :self, *ws_sources, *ga4_sources
 
     # Media: lesson audio is same-origin (SectionAudioGenerator writes to
     # /storage/audio/sections/...), and `blob:` is the voice recorder's PREVIEW —
@@ -51,7 +57,7 @@ Rails.application.configure do
     # Frames: allow same-origin so the code-playground sandbox iframe
     # (/sandbox.html) can load. It is additionally locked down with the
     # `sandbox="allow-scripts"` attribute (opaque origin).
-    policy.frame_src   :self
+    policy.frame_src   :self, "https://www.googletagmanager.com" # GTM's noscript iframe
 
     # Clickjacking: this app may not be framed by anyone.
     policy.frame_ancestors :none

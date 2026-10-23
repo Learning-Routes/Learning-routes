@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="<%= I18n.locale %>" data-controller="theme" data-theme-preference-value="<%= current_theme %>">
   <head>
+    <%= render "shared/gtm_head" %>
     <title><%= content_for(:title) || t("layout.onboarding.title") %></title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -41,6 +42,7 @@
   </head>
 
   <body style="margin:0; min-height:100vh; background:var(--color-bg); color:var(--color-txt);">
+    <%= render "shared/gtm_body" %>
     <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-[200] focus:px-4 focus:py-2 focus:rounded-lg focus:text-sm focus:font-semibold" style="background:var(--color-accent); color:var(--color-accent-text);"><%= t("layout.skip_to_content") %></a>
 
     <%# === Minimal onboarding navbar === %>

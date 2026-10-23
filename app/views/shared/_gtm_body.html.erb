@@ -1,0 +1,4 @@
+<%# Google Tag Manager without JavaScript, right after <body>; same conditions as shared/gtm_head. %>
+<% if (gtm_id = Rails.configuration.x.gtm_id) && !current_user&.owner? %>
+  <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=<%= gtm_id %>" height="0" width="0" style="display:none;visibility:hidden" title="Google Tag Manager"></iframe></noscript>
+<% end %>

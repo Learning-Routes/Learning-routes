@@ -67,5 +67,7 @@ module LearningRoutes
     # Canonical, og/twitter tags, JSON-LD, robots and the sitemap read it through
     # ApplicationHelper#public_url; development overrides it.
     config.x.public_host = "learningroutes.com"
+    # Google Tag Manager loads only where this is set: production.rb.
+    config.x.gtm_id = nil
   end
 end
