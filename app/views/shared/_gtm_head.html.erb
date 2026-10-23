@@ -9,8 +9,7 @@
     page's area, read from the meta below (Turbo swaps it). The guard keeps a
     re-run of this script from loading GTM twice. %>
 <% if (gtm_id = Rails.configuration.x.gtm_id) && !current_user&.owner? %>
-  <% public_pages = %w[landing#index pages#terms pages#privacy core/sessions#new core/sessions#create core/registrations#new core/registrations#create] %>
-  <% page_area = public_pages.include?("#{controller_path}##{action_name}") ? "public" : "app" %>
+  <% page_area = public_page? ? "public" : "app" %>
   <script nonce="<%= content_security_policy_nonce %>">
     if (!window.gtmLoaded) {
       window.gtmLoaded = true;
