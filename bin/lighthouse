@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+# Lighthouse SEO score for the public pages (STEP 36 §3), against a running server.
+#   bin/lighthouse                       # http://localhost:3000: /, /es, /en
+#   bin/lighthouse https://learningroutes.com
+# Prints each page's score and fails if any is under 95. Reports go to tmp/lighthouse/.
+set -euo pipefail
+
+base="${1:-http://localhost:3000}"
+out="tmp/lighthouse"
+mkdir -p "$out"
+status=0
+
+for path in / /es /en; do
+  name="$(echo "${path}" | tr -c 'a-z\n' '_')"
+  npx --yes lighthouse@13.5.0 "${base}${path}" --only-categories=seo --quiet \
+    --chrome-flags="--headless=new" --output=json --output=html --output-path="${out}/seo${name}" >/dev/null
+  score="$(node -e 'console.log(Math.round(require(process.argv[1]).categories.seo.score * 100))' "$(pwd)/${out}/seo${name}.report.json")"
+  echo "${path} SEO ${score}"
+  [ "$score" -ge 95 ] || status=1
+done
+
+exit "$status"
