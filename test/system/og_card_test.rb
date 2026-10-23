@@ -8,28 +8,51 @@ class OgCardTest < ApplicationSystemTestCase
 
   %w[es en].each do |locale|
     test "the #{locale} share card renders at #{WIDTH}x#{HEIGHT} with the promise and the map" do
-      page.driver.browser.execute_cdp("Emulation.setDeviceMetricsOverride",
-        width: WIDTH, height: HEIGHT, deviceScaleFactor: 1, mobile: false)
-      visit "/og-card/#{locale}"
-
-      assert_selector "html[data-theme=light]"
-      assert_selector "h1", text: I18n.t("landing.hero.title", locale: locale)
-      assert_selector ".lp-journey[style*='height']", visible: :all
-      # The map's names are placed once the scene has drawn; the fonts must be in too.
-      assert_selector ".lp-labels > *", minimum: 1, visible: :all
-      assert page.evaluate_async_script("document.fonts.ready.then(() => arguments[0](true))")
-      # The hero's lines fade in; shoot once every entrance animation has ended.
-      finished = page.evaluate_async_script(<<~JS)
-        const done = arguments[0]
-        Promise.all(document.getAnimations().filter((a) => a.effect?.getTiming().iterations !== Infinity).map((a) => a.finished))
-          .then(() => done(true), () => done(false))
-      JS
-      assert finished, "an entrance animation was cancelled before the shot"
-
       out = ENV["OG_WRITE"] ? Rails.root.join("app/assets/images/og/og-#{locale}.png") : Rails.root.join("tmp/og-#{locale}.png")
-      page.driver.browser.save_screenshot(out.to_s)
-      png = File.binread(out)
-      assert_equal [WIDTH, HEIGHT], png[16, 8].unpack("NN")
+      shoot(locale, out)
+      assert_equal [WIDTH, HEIGHT], File.binread(out)[16, 8].unpack("NN")
     end
+  end
+
+  # The browser is shared by every system test in this worker. A card left it at
+  # 1200×630 and with a 2 s script timeout, and tests after it failed on CI.
+  test "rendering a card leaves the browser as it found it" do
+    visit "/privacy"
+    before = { viewport: page.evaluate_script("[innerWidth, innerHeight]"), script_timeout: script_timeout }
+
+    shoot("es", Rails.root.join("tmp/og-es.png"))
+
+    visit "/privacy"
+    assert_equal before, { viewport: page.evaluate_script("[innerWidth, innerHeight]"), script_timeout: script_timeout }
+  end
+
+  private
+
+  def script_timeout = page.driver.browser.manage.timeouts.script_timeout
+
+  # Synchronous polls, not evaluate_async_script: Capybara sets the session's
+  # script timeout to default_max_wait_time for an async script and never puts
+  # it back. The override is cleared even when an assertion fails.
+  def shoot(locale, out)
+    page.driver.browser.execute_cdp("Emulation.setDeviceMetricsOverride",
+      width: WIDTH, height: HEIGHT, deviceScaleFactor: 1, mobile: false)
+    visit "/og-card/#{locale}"
+
+    assert_selector "html[data-theme=light]"
+    assert_selector "h1", text: I18n.t("landing.hero.title", locale: locale)
+    assert_selector ".lp-journey[style*='height']", visible: :all
+    # The map's names are placed once the scene has drawn; the fonts must be in too.
+    assert_selector ".lp-labels > *", minimum: 1, visible: :all
+    # The hero's lines fade in; shoot once every entrance animation has ended.
+    Timeout.timeout(10) do
+      sleep 0.05 until page.evaluate_script(<<~JS)
+        document.fonts.status === "loaded" &&
+          document.getAnimations().every((a) => a.effect?.getTiming().iterations === Infinity || a.playState === "finished")
+      JS
+    end
+
+    page.driver.browser.save_screenshot(out.to_s)
+  ensure
+    page.driver.browser.execute_cdp("Emulation.clearDeviceMetricsOverride")
   end
 end
