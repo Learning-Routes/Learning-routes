@@ -86,4 +86,17 @@ class GoogleTagManagerTest < ActionDispatch::IntegrationTest
     assert_equal "'self' data: https:", policy["img-src"]
     refute_includes policy["script-src"], "unsafe-inline"
   end
+
+  # Draft, waiting for the owner's approval: once GTM ships, the old "no third-party
+  # tracking cookies" sentence would be false.
+  test "the privacy page names Google Analytics, what it collects and its cookies, in both languages" do
+    %w[es en].each do |locale|
+      get "/privacy", headers: { "Cookie" => "locale=#{locale}" }
+      text = Nokogiri::HTML(response.body).at("main").text
+      assert_includes text, "Google Analytics"
+      assert_includes text, "_ga"
+      assert_includes text, "tools.google.com/dlpage/gaoptout"
+      refute_match(/third-party tracking cookies|cookies de seguimiento de terceros/, text)
+    end
+  end
 end
