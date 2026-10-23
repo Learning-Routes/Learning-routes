@@ -1,6 +1,10 @@
 require "active_support/core_ext/integer/time"
 
 Rails.application.configure do
+  # Google Tag Manager container (the owner's; the id is public). Unset elsewhere, so
+  # development and test load nothing (shared/gtm_head).
+  config.x.gtm_id = "GTM-T2MH7XX4"
+
   # Settings specified here will take precedence over those in config/application.rb.
 
   # Code is not reloaded between requests.

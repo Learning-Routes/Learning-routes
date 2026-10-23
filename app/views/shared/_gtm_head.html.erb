@@ -1,0 +1,38 @@
+<%# Google Tag Manager, first thing in <head>. config.x.gtm_id is set in production
+    only, and the owner's own visits are not counted. Consent Mode v2 defaults come
+    before gtm.js: the EEA, the UK and Switzerland start with everything denied;
+    elsewhere analytics is granted and the three ad signals denied. gtm.js gets the
+    request's nonce so the CSP needs no unsafe-inline. page_area ("public" on the
+    landing, legal pages, sign-in and sign-up, "app" elsewhere) is pushed first, so
+    the owner can fire Clarity on public pages only. A Turbo visit is no page
+    load, so each one after the first pushes one turbo_page_view with the new
+    page's area, read from the meta below (Turbo swaps it). The guard keeps a
+    re-run of this script from loading GTM twice. %>
+<% if (gtm_id = Rails.configuration.x.gtm_id) && !current_user&.owner? %>
+  <% public_pages = %w[landing#index pages#terms pages#privacy core/sessions#new core/sessions#create core/registrations#new core/registrations#create] %>
+  <% page_area = public_pages.include?("#{controller_path}##{action_name}") ? "public" : "app" %>
+  <script nonce="<%= content_security_policy_nonce %>">
+    if (!window.gtmLoaded) {
+      window.gtmLoaded = true;
+      window.dataLayer = window.dataLayer || [];
+      dataLayer.push({"page_area":"<%= page_area %>"});
+      function gtag() { dataLayer.push(arguments); }
+      gtag("consent", "default", {"ad_storage":"denied","ad_user_data":"denied","ad_personalization":"denied","analytics_storage":"denied","region":["AT","BE","BG","HR","CY","CZ","DK","EE","FI","FR","DE","GR","HU","IE","IT","LV","LT","LU","MT","NL","PL","PT","RO","SK","SI","ES","SE","IS","LI","NO","GB","CH"]});
+      gtag("consent", "default", {"ad_storage":"denied","ad_user_data":"denied","ad_personalization":"denied","analytics_storage":"granted"});
+      var firstLoad = true;
+      document.addEventListener("turbo:load", function () {
+        if (firstLoad) { firstLoad = false; return; }
+        var area = document.querySelector('meta[name="page-area"]');
+        dataLayer.push({ event: "turbo_page_view", page_location: location.href, page_title: document.title, page_area: area && area.content });
+      });
+      (function (w, d, s, l, i) {
+        w[l] = w[l] || []; w[l].push({ "gtm.start": new Date().getTime(), event: "gtm.js" });
+        var f = d.getElementsByTagName(s)[0], j = d.createElement(s), dl = l != "dataLayer" ? "&l=" + l : "";
+        j.async = true; j.src = "https://www.googletagmanager.com/gtm.js?id=" + i + dl;
+        var n = d.querySelector("[nonce]"); n && j.setAttribute("nonce", n.nonce || n.getAttribute("nonce"));
+        f.parentNode.insertBefore(j, f);
+      })(window, document, "script", "dataLayer", "<%= gtm_id %>");
+    }
+  </script>
+  <meta name="page-area" content="<%= page_area %>">
+<% end %>
