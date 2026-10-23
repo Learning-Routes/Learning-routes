@@ -9,7 +9,7 @@
       <%= render "shared/locale_toggle" %>
       <a class="lp-lk" href="#como" data-landing-jump="1"><%= t("landing.nav.how") %></a>
       <% if current_user %>
-        <%= link_to t("landing.nav.my_routes"), main_app.profile_path, class: "lp-lk" %>
+        <%= link_to t("landing.nav.my_routes"), main_app.profile_path, class: "lp-lk", data: { turbo: false } %>
       <% else %>
         <%= link_to t("landing.nav.sign_in"), core.sign_in_path, class: "lp-lk" %>
       <% end %>

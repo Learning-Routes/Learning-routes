@@ -1,4 +1,8 @@
 module ApplicationHelper
+  # Learning Routes' own profiles elsewhere, for the Organization JSON-LD's sameAs.
+  # Only ones that exist: add a profile the day it does.
+  SAME_AS = %w[https://github.com/Learning-Routes].freeze
+
   # The app's one icon language (STEP 41 §1.3): a 24px grid, round caps and
   # joins, a 1.75 stroke (2 at 18px and under, where thinner lines fade).
   # SVG_ICONS holds constant inner markup: the one place a view or helper marks

@@ -107,7 +107,7 @@ class LocaleUrlsTest < ActionDispatch::IntegrationTest
     types = graph.index_by { |n| n["@type"] }
     assert_equal %w[Organization WebApplication WebSite], types.keys.sort
     org = types["Organization"]
-    %w[name url logo sameAs].each { |k| assert org[k].present?, "Organization lacks #{k}" }
+    %w[name url logo].each { |k| assert org[k].present?, "Organization lacks #{k}" }
     assert org["logo"].start_with?(ORIGIN)
     assert_equal %w[en es], types["WebSite"]["inLanguage"].sort
     assert_equal "#{ORIGIN}/es", types["WebSite"]["url"]
@@ -124,5 +124,45 @@ class LocaleUrlsTest < ActionDispatch::IntegrationTest
       assert_equal "\x89PNG".b, png[0, 4]
       assert_equal [1200, 630], png[16, 8].unpack("NN"), "og-#{locale}.png is not 1200x630"
     end
+  end
+
+  # The forms post without a language (the cookie carries it), and only the bare
+  # POST routes exist: Rails' locale recall had them post to /es/sign_in, a 404.
+  %w[/es/sign_in /en/sign_in /es/sign_up /en/sign_up].each do |path|
+    test "the form on #{path} posts to a route that answers" do
+      get path
+      action = css_select("form[method=post]").map { |f| f["action"] }.reject { |a| a.start_with?("/auth/") }.sole
+      assert_equal path.sub(%r{\A/(es|en)}, ""), action
+      post action, params: { email: "nobody@example.com", password: "wrong-password" }
+      refute_equal 404, response.status, "#{path} posts to #{action}, which has no route"
+    end
+  end
+
+  # Reviewer's ruling on #96: the landing's own words, within 60 characters.
+  test "the Spanish landing's title is its hero line" do
+    get "/es"
+    title = css_select("title").first.text
+    assert_equal "Learning Routes — Aprende lo que quieras, bien", title
+    assert_equal 46, title.length
+  end
+
+  def organization
+    css_select("script[type='application/ld+json']").map { |s| JSON.parse(s.text) }.find { |n| n["@type"] == "Organization" }
+  end
+
+  test "the Organization lists only profiles that exist" do
+    get "/es"
+    assert_equal ["https://github.com/Learning-Routes"], organization["sameAs"]
+  end
+
+  test "with no profiles the Organization renders no sameAs at all" do
+    profiles = ApplicationHelper::SAME_AS
+    ApplicationHelper.send(:remove_const, :SAME_AS)
+    ApplicationHelper.const_set(:SAME_AS, [].freeze)
+    get "/es"
+    refute organization.key?("sameAs"), organization.inspect
+  ensure
+    ApplicationHelper.send(:remove_const, :SAME_AS)
+    ApplicationHelper.const_set(:SAME_AS, profiles)
   end
 end

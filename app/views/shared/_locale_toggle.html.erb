@@ -12,7 +12,7 @@
       style: style, class: "locale-toggle font-mono", title: title, hreflang: other_locale, lang: other_locale %>
 <% else %>
   <%= button_to main_app.locale_path, method: :patch, params: { locale: other_locale },
-      style: style, class: "locale-toggle font-mono", title: title, data: { turbo: false } do %>
+      style: style, class: "locale-toggle font-mono", title: title, data: { turbo: false }, form: { data: { turbo: false } } do %>
     <%= label %>
   <% end %>
 <% end %>
