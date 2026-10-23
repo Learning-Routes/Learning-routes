@@ -56,9 +56,12 @@ Rails.application.routes.draw do
   # Community
   get "community", to: "community#show", as: :community
 
-  # Legal pages
-  get "terms", to: "pages#terms", as: :terms
-  get "privacy", to: "pages#privacy", as: :privacy
+  # Public pages: one URL per language (STEP 36 §2); without one, the cookie decides.
+  scope "(:locale)", locale: /es|en/ do
+    get "terms", to: "pages#terms", as: :terms
+    get "privacy", to: "pages#privacy", as: :privacy
+    root "landing#index"
+  end
 
   # PWA
   get "manifest" => "rails/pwa#manifest", as: :pwa_manifest, defaults: { format: :json }
@@ -68,9 +71,9 @@ Rails.application.routes.draw do
   get "robots.txt", to: "sitemaps#robots", as: :robots, format: false
   get "sitemap.xml", to: "sitemaps#show", as: :sitemap, format: false
 
+  # The share card's source, rendered to app/assets/images/og/ (STEP 36 §3); never served.
+  get "og-card/:locale", to: "og_cards#show", locale: /es|en/ if Rails.env.local?
+
   # Health check endpoint for load balancers and uptime monitors
   get "up" => "rails/health#show", as: :rails_health_check
-
-  # Root path
-  root "landing#index"
 end

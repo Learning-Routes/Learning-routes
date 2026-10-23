@@ -1,24 +1,33 @@
 <% content_for(:title, t("landing.page_title")) %>
 
 <% content_for(:head) do %>
-  <meta name="description" content="<%= t('landing.meta_description') %>">
-  <link rel="canonical" href="<%= public_url %>">
-  <meta property="og:title" content="<%= t('landing.og_title') %>">
-  <meta property="og:description" content="<%= t('landing.og_description') %>">
-  <meta property="og:type" content="website">
-  <meta property="og:url" content="<%= public_url %>">
-  <meta property="og:site_name" content="Learning Routes">
-  <meta property="og:image" content="<%= public_url("/apple-touch-icon.png") %>">
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="<%= t('landing.og_title') %>">
-  <meta name="twitter:description" content="<%= t('landing.twitter_description') %>">
-  <meta name="twitter:image" content="<%= public_url("/apple-touch-icon.png") %>">
+  <%= render "shared/public_head", description: t("landing.meta_description") %>
+  <%# STEP 36 §3: who publishes the site, the site in both languages, and the app. %>
+  <script type="application/ld+json" nonce="<%= content_security_policy_nonce %>">
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "Learning Routes",
+      "url": "<%= j public_url %>",
+      "logo": "<%= j public_url("/icon.png") %>",
+      "sameAs": ["https://github.com/Learning-Routes"]
+    }
+  </script>
+  <script type="application/ld+json" nonce="<%= content_security_policy_nonce %>">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "Learning Routes",
+      "url": "<%= j public_url(main_app.root_path) %>",
+      "inLanguage": ["es", "en"]
+    }
+  </script>
   <script type="application/ld+json" nonce="<%= content_security_policy_nonce %>">
     {
       "@context": "https://schema.org",
       "@type": "WebApplication",
       "name": "Learning Routes",
-      "url": "<%= j public_url %>",
+      "url": "<%= j public_url(main_app.root_path) %>",
       "description": "<%= j t('landing.meta_description') %>",
       "applicationCategory": "EducationalApplication",
       "operatingSystem": "Web",

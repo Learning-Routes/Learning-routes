@@ -1,10 +1,13 @@
 Core::Engine.routes.draw do
   # Registration
-  get  "sign_up",  to: "registrations#new", as: :sign_up
+  # Public pages carry an optional language (STEP 36 §2); the forms post without one.
+  scope "(:locale)", locale: /es|en/ do
+    get "sign_up", to: "registrations#new", as: :sign_up
+    get "sign_in", to: "sessions#new", as: :sign_in
+  end
   post "sign_up",  to: "registrations#create"
 
   # Sessions
-  get    "sign_in",  to: "sessions#new", as: :sign_in
   post   "sign_in",  to: "sessions#create"
   delete "sign_out", to: "sessions#destroy", as: :sign_out
 

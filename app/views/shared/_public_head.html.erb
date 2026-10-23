@@ -1,0 +1,28 @@
+<%# STEP 36 §2–§3: what a crawler and a share preview read on a public page. The page
+    is its own canonical; its siblings in each language and the bare URL (x-default)
+    are named. A failed form post re-renders here, so only a GET names them. %>
+<% title = content_for(:title) %>
+<meta name="description" content="<%= description %>">
+<% if request.get? %>
+  <% here = request.path_parameters.except(:format) %>
+  <% url = ->(locale) { public_url(url_for(here.merge(locale: locale, only_path: true))) } %>
+  <link rel="canonical" href="<%= url.(here[:locale]) %>">
+  <% I18n.available_locales.each do |locale| %>
+    <link rel="alternate" hreflang="<%= locale %>" href="<%= url.(locale) %>">
+  <% end %>
+  <link rel="alternate" hreflang="x-default" href="<%= url.(nil) %>">
+  <meta property="og:url" content="<%= url.(here[:locale]) %>">
+<% end %>
+<% image = public_url(image_path("og/og-#{I18n.locale}.png")) %>
+<meta property="og:title" content="<%= title %>">
+<meta property="og:description" content="<%= description %>">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Learning Routes">
+<meta property="og:locale" content="<%= I18n.locale == :es ? "es_ES" : "en_US" %>">
+<meta property="og:image" content="<%= image %>">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="<%= title %>">
+<meta name="twitter:description" content="<%= description %>">
+<meta name="twitter:image" content="<%= image %>">
