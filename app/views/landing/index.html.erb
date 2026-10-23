@@ -9,8 +9,8 @@
       "@type": "Organization",
       "name": "Learning Routes",
       "url": "<%= j public_url %>",
-      "logo": "<%= j public_url("/icon.png") %>",
-      "sameAs": ["https://github.com/Learning-Routes"]
+      "logo": "<%= j public_url("/icon.png") %>"<% if ApplicationHelper::SAME_AS.any? %>,
+      "sameAs": [<% ApplicationHelper::SAME_AS.each_with_index do |profile, i| %><%= ", " if i.positive? %>"<%= j profile %>"<% end %>]<% end %>
     }
   </script>
   <script type="application/ld+json" nonce="<%= content_security_policy_nonce %>">

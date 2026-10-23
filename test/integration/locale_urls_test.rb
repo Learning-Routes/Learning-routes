@@ -107,7 +107,7 @@ class LocaleUrlsTest < ActionDispatch::IntegrationTest
     types = graph.index_by { |n| n["@type"] }
     assert_equal %w[Organization WebApplication WebSite], types.keys.sort
     org = types["Organization"]
-    %w[name url logo sameAs].each { |k| assert org[k].present?, "Organization lacks #{k}" }
+    %w[name url logo].each { |k| assert org[k].present?, "Organization lacks #{k}" }
     assert org["logo"].start_with?(ORIGIN)
     assert_equal %w[en es], types["WebSite"]["inLanguage"].sort
     assert_equal "#{ORIGIN}/es", types["WebSite"]["url"]
@@ -136,5 +136,33 @@ class LocaleUrlsTest < ActionDispatch::IntegrationTest
       post action, params: { email: "nobody@example.com", password: "wrong-password" }
       refute_equal 404, response.status, "#{path} posts to #{action}, which has no route"
     end
+  end
+
+  # Reviewer's ruling on #96: the landing's own words, within 60 characters.
+  test "the Spanish landing's title is its hero line" do
+    get "/es"
+    title = css_select("title").first.text
+    assert_equal "Learning Routes — Aprende lo que quieras, bien", title
+    assert_equal 46, title.length
+  end
+
+  def organization
+    css_select("script[type='application/ld+json']").map { |s| JSON.parse(s.text) }.find { |n| n["@type"] == "Organization" }
+  end
+
+  test "the Organization lists only profiles that exist" do
+    get "/es"
+    assert_equal ["https://github.com/Learning-Routes"], organization["sameAs"]
+  end
+
+  test "with no profiles the Organization renders no sameAs at all" do
+    profiles = ApplicationHelper::SAME_AS
+    ApplicationHelper.send(:remove_const, :SAME_AS)
+    ApplicationHelper.const_set(:SAME_AS, [].freeze)
+    get "/es"
+    refute organization.key?("sameAs"), organization.inspect
+  ensure
+    ApplicationHelper.send(:remove_const, :SAME_AS)
+    ApplicationHelper.const_set(:SAME_AS, profiles)
   end
 end
