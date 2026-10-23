@@ -777,7 +777,7 @@ en:
   privacy:
     title: "Privacy Policy"
     last_updated: "Last updated:"
-    last_updated_date: "February 19, 2026"
+    last_updated_date: "October 23, 2026"
     collection:
       heading: "1. Information We Collect"
       body: "We collect information you provide when creating an account (email address, name) and data about your learning preferences, progress, and interactions with the platform."
@@ -792,7 +792,8 @@ en:
       body: "Learning Routes uses third-party AI services to generate learning content and assessments. Your learning preferences and progress data may be sent to AI providers to generate personalized content. We do not share personally identifiable information with AI providers."
     cookies:
       heading: "5. Cookies"
-      body: "We use essential cookies to maintain your session and remember your preferences. We do not use third-party tracking cookies or advertising cookies."
+      body: "We use essential cookies to keep you signed in and to remember your language and theme. We do not use advertising cookies."
+      analytics: "We also use Google Analytics 4, loaded through Google Tag Manager, to see how the site is used. It records the pages you visit, the page that sent you here, your device, browser, screen size and language, and an approximate location (country and city) worked out from your IP address. Google Analytics does not store the IP address itself. It sets two cookies, _ga and one whose name starts with _ga_, which last up to two years and let it tell one visit from another without knowing who you are. In the European Economic Area, the United Kingdom and Switzerland these cookies are not set, and Google receives only measurements that carry no cookie or identifier. None of this data is used for advertising. You can block these cookies in your browser or install Google's opt-out add-on at tools.google.com/dlpage/gaoptout. Google explains how it handles the data at policies.google.com/privacy."
     rights:
       heading: "6. Your Rights"
       body: "You may request access to, correction of, or deletion of your personal data at any time by contacting us. You can delete your account and all associated data from your profile settings."

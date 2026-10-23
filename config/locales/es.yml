@@ -778,7 +778,7 @@ es:
   privacy:
     title: "Política de Privacidad"
     last_updated: "Última actualización:"
-    last_updated_date: "19 de febrero de 2026"
+    last_updated_date: "23 de octubre de 2026"
     collection:
       heading: "1. Información que Recopilamos"
       body: "Recopilamos la información que proporcionas al crear una cuenta (dirección de correo electrónico, nombre) y datos sobre tus preferencias de aprendizaje, progreso e interacciones con la plataforma."
@@ -793,7 +793,8 @@ es:
       body: "Learning Routes utiliza servicios de IA de terceros para generar contenido de aprendizaje y evaluaciones. Tus preferencias de aprendizaje y datos de progreso pueden enviarse a proveedores de IA para generar contenido personalizado. No compartimos información de identificación personal con proveedores de IA."
     cookies:
       heading: "5. Cookies"
-      body: "Utilizamos cookies esenciales para mantener tu sesión y recordar tus preferencias. No utilizamos cookies de seguimiento de terceros ni cookies publicitarias."
+      body: "Usamos cookies esenciales para mantener tu sesión iniciada y recordar tu idioma y tu tema. No usamos cookies publicitarias."
+      analytics: "También usamos Google Analytics 4, cargado a través de Google Tag Manager, para saber cómo se usa el sitio. Registra las páginas que visitas, la página desde la que llegaste, tu dispositivo, navegador, tamaño de pantalla e idioma, y una ubicación aproximada (país y ciudad) calculada a partir de tu dirección IP. Google Analytics no guarda la IP. Usa dos cookies, _ga y otra cuyo nombre empieza por _ga_, que duran hasta dos años y le permiten distinguir una visita de otra sin saber quién eres. En el Espacio Económico Europeo, el Reino Unido y Suiza estas cookies no se instalan, y Google solo recibe mediciones sin cookies ni identificadores. Ninguno de estos datos se usa para publicidad. Puedes bloquear estas cookies en tu navegador o instalar el complemento de inhabilitación de Google en tools.google.com/dlpage/gaoptout. Google explica cómo trata los datos en policies.google.com/privacy."
     rights:
       heading: "6. Tus Derechos"
       body: "Puedes solicitar acceso, corrección o eliminación de tus datos personales en cualquier momento contactándonos. Puedes eliminar tu cuenta y todos los datos asociados desde la configuración de tu perfil."
