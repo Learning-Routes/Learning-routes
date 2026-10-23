@@ -1,9 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-<% @paths.each do |path| %>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
+<% @pages.each do |path| %>
+<% I18n.available_locales.sort.reverse.each do |locale| %>
   <url>
-    <loc><%= public_url(path) %></loc>
+    <loc><%= public_url(path.(locale)) %></loc>
     <lastmod><%= @lastmod %></lastmod>
+<% I18n.available_locales.each do |alternate| %>
+    <xhtml:link rel="alternate" hreflang="<%= alternate %>" href="<%= public_url(path.(alternate)) %>"/>
+<% end %>
+    <xhtml:link rel="alternate" hreflang="x-default" href="<%= public_url(path.(nil)) %>"/>
   </url>
+<% end %>
 <% end %>
 </urlset>

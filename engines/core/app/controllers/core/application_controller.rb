@@ -1,6 +1,7 @@
 module Core
   class ApplicationController < ActionController::Base
     before_action :set_current_session
+    before_action :redirect_query_locale
     around_action :with_locale
     before_action :set_theme
     before_action :require_email_verification!
@@ -51,7 +52,15 @@ module Core
       I18n.with_locale(resolved_locale, &block)
     end
 
+    # STEP 36 §2: a public page's URL names its language and wins over the cookie;
+    # it also becomes the cookie, so the forms there (which post without one) keep it.
     def resolved_locale
+      url_locale = request.path_parameters[:locale]&.to_sym
+      if I18n.available_locales.include?(url_locale)
+        cookies[:locale] = { value: url_locale, expires: 1.year.from_now } unless cookies[:locale] == url_locale.to_s
+        return url_locale
+      end
+
       locale = if current_user
         current_user.locale&.to_sym
       else
@@ -64,6 +73,21 @@ module Core
       I18n.locale
     end
     helper_method :current_locale
+
+    # Only the public pages are drawn under the optional "(:locale)" scope.
+    def localized_route?
+      request.route_uri_pattern.to_s.include?(":locale)")
+    end
+    helper_method :localized_route?
+
+    # /?locale=es was the old way to ask for a language; it now has a URL of its own.
+    def redirect_query_locale
+      locale = request.query_parameters["locale"]
+      return unless request.get? && localized_route? && I18n.available_locales.map(&:to_s).include?(locale)
+
+      redirect_to url_for(request.path_parameters.merge(request.query_parameters).merge(locale: locale, only_path: true)),
+        status: :moved_permanently
+    end
 
     def set_theme
       @current_theme = if current_user

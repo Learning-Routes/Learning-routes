@@ -1,3 +1,6 @@
+<% content_for(:title, t("terms.page_title")) %>
+<% content_for(:head) { render "shared/public_head", description: t("terms.meta_description") } %>
+
 <section class="pt-40 pb-20 px-8 max-w-[720px] mx-auto">
   <h1 class="font-sans font-bold text-[2.2rem] tracking-[-1.5px] text-txt mb-8"><%= t("terms.title") %></h1>
 

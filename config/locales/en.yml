@@ -176,11 +176,8 @@ en:
 
   # ── Landing (STEP 41 §2) ──
   landing:
-    page_title: "Learning Routes — Learn anything, the right way"
-    meta_description: "AI-powered personalized learning routes. Learn programming, math, languages, and more."
-    og_title: "Learning Routes — Learn anything, the right way"
-    og_description: "AI-powered personalized learning routes. Learn programming, math, languages, and more."
-    twitter_description: "AI-powered personalized learning routes."
+    page_title: "Learning Routes — AI learning routes, step by step"
+    meta_description: "Learn English and other subjects with an AI-built route: lessons, exercises and exams at your pace. Start free."
     nav:
       how: How it works
       sign_in: Sign in
@@ -748,6 +745,8 @@ en:
 
   # ── Terms of Service ──
   terms:
+    page_title: "Terms of Service — Learning Routes"
+    meta_description: "The terms for using Learning Routes: your account, acceptable use, intellectual property and the limits of the service."
     title: "Terms of Service"
     last_updated: "Last updated:"
     last_updated_date: "February 19, 2026"
@@ -775,6 +774,8 @@ en:
 
   # ── Privacy Policy ──
   privacy:
+    page_title: "Privacy Policy — Learning Routes"
+    meta_description: "What data Learning Routes collects, how it is used and stored, how AI processes it, which cookies it sets and your rights."
     title: "Privacy Policy"
     last_updated: "Last updated:"
     last_updated_date: "February 19, 2026"

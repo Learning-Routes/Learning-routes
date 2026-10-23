@@ -1,13 +1,18 @@
 <%# Locale toggle — shows the OTHER language as the button label %>
 <% other_locale = current_locale == :es ? :en : :es %>
 <% label = current_locale == :es ? "EN" : "ES" %>
-<%= button_to main_app.locale_path, method: :patch, params: { locale: other_locale },
-    style: "font-size:0.65rem; font-weight:500; letter-spacing:0.8px;
+<% style = "font-size:0.65rem; font-weight:500; letter-spacing:0.8px;
             color:var(--color-muted); background:transparent; border:1px solid var(--color-border-subtle);
             border-radius:8px; padding:0.3rem 0.6rem; cursor:pointer; transition:all 0.2s;
-            line-height:1;",
-    class: "locale-toggle font-mono",
-    title: other_locale == :es ? t("locale_toggle.switch_to_es") : t("locale_toggle.switch_to_en"),
-    data: { turbo: false } do %>
-  <%= label %>
+            line-height:1;" %>
+<% title = other_locale == :es ? t("locale_toggle.switch_to_es") : t("locale_toggle.switch_to_en") %>
+<% if localized_route? %>
+  <%# A public page's language is its URL (STEP 36 §2): link to the sibling, so a crawler can follow it. %>
+  <%= link_to label, url_for(request.path_parameters.except(:format).merge(locale: other_locale, only_path: true)),
+      style: style, class: "locale-toggle font-mono", title: title, hreflang: other_locale, lang: other_locale %>
+<% else %>
+  <%= button_to main_app.locale_path, method: :patch, params: { locale: other_locale },
+      style: style, class: "locale-toggle font-mono", title: title, data: { turbo: false } do %>
+    <%= label %>
+  <% end %>
 <% end %>

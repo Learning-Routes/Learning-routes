@@ -1,8 +1,6 @@
 <% content_for(:title, t("auth.register.title")) %>
 
-<% content_for(:head) do %>
-  <meta name="description" content="<%= t('auth.register.meta_description') %>">
-<% end %>
+<% content_for(:head) { render "shared/public_head", description: t("auth.register.meta_description") } %>
 
 <% content_for(:auth_toggle) do %>
   <%= link_to core.sign_in_path,
