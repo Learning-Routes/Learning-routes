@@ -75,27 +75,61 @@ class GoogleTagManagerTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "googletagmanager.com/gtm.js"
   end
 
-  test "the CSP gains exactly GTM's and GA4's hosts, and no unsafe-inline for scripts" do
+  # Google's CSP guide for GTM, plus GA4, Microsoft Clarity and GTM's Preview mode:
+  # exactly these hosts, nothing broader, and no unsafe-inline or unsafe-eval for scripts.
+  test "the CSP gains exactly the hosts GTM, GA4, Clarity and Preview mode need" do
     get "/"
     policy = response.headers["Content-Security-Policy"].split(";").to_h { |d| d.strip.split(" ", 2) }
 
-    assert_equal "'self' https://cdn.jsdelivr.net https://www.googletagmanager.com", policy["script-src"].sub(/ 'nonce-[^']+'/, "")
-    assert_equal "'self' ws://localhost:3000 ws://127.0.0.1:3000 https://*.google-analytics.com https://*.analytics.google.com https://*.googletagmanager.com", policy["connect-src"]
+    assert_equal "'self' https://cdn.jsdelivr.net https://www.googletagmanager.com https://www.clarity.ms https://*.clarity.ms https://tagmanager.google.com",
+      policy["script-src"].sub(/ 'nonce-[^']+'/, "")
+    assert_equal "'self' data: https: https://www.googletagmanager.com https://*.google-analytics.com https://*.clarity.ms https://c.bing.com https://ssl.gstatic.com https://www.gstatic.com",
+      policy["img-src"]
+    assert_equal "'self' ws://localhost:3000 ws://127.0.0.1:3000 https://www.googletagmanager.com https://*.google-analytics.com https://*.google.com https://*.clarity.ms https://c.bing.com",
+      policy["connect-src"]
     assert_equal "'self' https://www.googletagmanager.com", policy["frame-src"]
-    # img-src already allows any https: image, which covers GA4's pixels; it is not widened.
-    assert_equal "'self' data: https:", policy["img-src"]
-    refute_includes policy["script-src"], "unsafe-inline"
+    assert_equal "'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net https://tagmanager.google.com https://www.googletagmanager.com",
+      policy["style-src"]
+    refute_match(/unsafe-inline|unsafe-eval/, policy["script-src"])
+  end
+
+  # The owner fires Clarity on the public pages only, so each page says which it is,
+  # before GTM loads.
+  def page_area
+    script = Nokogiri::HTML(response.body).at("head script").text
+    pushed = script.index('dataLayer.push({"page_area":')
+    assert pushed, "no page_area push in #{script}"
+    assert_operator pushed, :<, script.index("gtm.js"), "page_area must be pushed before GTM loads"
+    script[/dataLayer\.push\(\{"page_area":"(\w+)"\}\)/, 1]
+  end
+
+  test "the landing, legal pages, sign-in and sign-up are public" do
+    with_gtm do
+      %w[/ /terms /privacy /sign_in /sign_up].each do |path|
+        get path
+        assert_equal "public", page_area, path
+      end
+    end
+  end
+
+  test "pages behind the login are the app" do
+    student = create_test_user(email_verified_at: Time.current)
+    post core.sign_in_path, params: { email: student.email, password: "password123" }
+    with_gtm { get "/profile" }
+    assert_equal "app", page_area
   end
 
   # Draft, waiting for the owner's approval: once GTM ships, the old "no third-party
   # tracking cookies" sentence would be false.
-  test "the privacy page names Google Analytics, what it collects and its cookies, in both languages" do
+  test "the privacy page names Google Analytics and Microsoft Clarity, what they collect and their cookies, in both languages" do
     %w[es en].each do |locale|
       get "/privacy", headers: { "Cookie" => "locale=#{locale}" }
       text = Nokogiri::HTML(response.body).at("main").text
       assert_includes text, "Google Analytics"
       assert_includes text, "_ga"
       assert_includes text, "tools.google.com/dlpage/gaoptout"
+      assert_includes text, "Microsoft Clarity"
+      assert_includes text, "_clck"
       refute_match(/third-party tracking cookies|cookies de seguimiento de terceros/, text)
     end
   end
