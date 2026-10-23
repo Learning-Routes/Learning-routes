@@ -8,6 +8,6 @@
             line-height:1;",
     class: "locale-toggle font-mono",
     title: other_locale == :es ? t("locale_toggle.switch_to_es") : t("locale_toggle.switch_to_en"),
-    data: { turbo: false } do %>
+    data: { turbo: false }, form: { data: { turbo: false } } do %>
   <%= label %>
 <% end %>

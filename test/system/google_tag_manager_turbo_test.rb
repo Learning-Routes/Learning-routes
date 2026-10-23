@@ -45,4 +45,22 @@ class GoogleTagManagerTurboTest < ApplicationSystemTestCase
     assert_current_path "/"
     assert_equal %w[public], page_areas
   end
+
+  # Clarity follows Turbo visits, so leaving a public page for the app must
+  # load the page anew: the marker set on / is gone and the snippet ran again.
+  test "My routes on the landing leaves the public pages with a full page load" do
+    student = create_test_user(email_verified_at: Time.current)
+    visit "/sign_in"
+    fill_in "email", with: student.email
+    fill_in "password", with: "password123"
+    find("input[type='submit']").click
+    assert_current_path "/profile"
+
+    visit "/"
+    page.execute_script("window.stillTheSamePage = true")
+    find(".lp-nav a", text: I18n.t("landing.nav.my_routes")).click
+    assert_current_path "/profile"
+    assert_nil page.evaluate_script("window.stillTheSamePage"), "My routes was a Turbo visit, so Clarity would follow into the app"
+    assert page.evaluate_script("window.gtmLoaded === true"), "the new page did not load GTM afresh"
+  end
 end

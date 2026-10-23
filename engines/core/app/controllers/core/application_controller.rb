@@ -5,6 +5,14 @@ module Core
     before_action :set_theme
     before_action :require_email_verification!
 
+    # The pages anyone can read. GTM's page_area is "public" on them, and every way
+    # from them into the app is a full page load, so Clarity (fired on these only)
+    # does not follow a visitor in. test/integration/public_pages_full_load_test.rb
+    PUBLIC_PAGES = %w[
+      landing#index pages#terms pages#privacy
+      core/sessions#new core/sessions#create core/registrations#new core/registrations#create
+    ].freeze
+
     rescue_from ActiveRecord::RecordNotFound, with: :record_not_found
 
     private
@@ -64,6 +72,11 @@ module Core
       I18n.locale
     end
     helper_method :current_locale
+
+    def public_page?
+      PUBLIC_PAGES.include?("#{controller_path}##{action_name}")
+    end
+    helper_method :public_page?
 
     def set_theme
       @current_theme = if current_user

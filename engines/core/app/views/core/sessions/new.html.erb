@@ -73,7 +73,8 @@
           <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:0.45rem;">
             <%= f.label :password, t("auth.login.password_label"),
                 style: "display:block; font-size:0.78rem; font-weight:500; color:var(--color-sub); margin:0;" %>
-            <%= link_to t("auth.login.forgot"), core.forgot_password_path,
+            <%# A full load: Clarity, fired on this public page, must not follow into the app. %>
+            <%= link_to t("auth.login.forgot"), core.forgot_password_path, data: { turbo: false },
                 style: "font-size:0.72rem; color:var(--color-muted); text-decoration:none; transition:color 0.2s;" %>
           </div>
           <%= f.password_field :password,
