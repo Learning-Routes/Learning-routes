@@ -1,0 +1,1927 @@
+{
+  "unit": "spend_limits",
+  "source": "engines/ai_orchestrator/app/services/ai_orchestrator/spend_guard.rb:61",
+  "captured_at": "2026-10-26T12:00:00Z",
+  "cases": [
+    {
+      "input": {
+        "calls": 119,
+        "daily_over": false,
+        "limit": "rate_limit",
+        "model": "gpt-4.1-mini",
+        "pause_seconds": null
+      },
+      "output": {
+        "first_refused_call": null,
+        "runs": [
+          [
+            "allowed",
+            119
+          ]
+        ]
+      }
+    },
+    {
+      "input": {
+        "calls": 120,
+        "daily_over": false,
+        "limit": "rate_limit",
+        "model": "gpt-4.1-mini",
+        "pause_seconds": null
+      },
+      "output": {
+        "first_refused_call": null,
+        "runs": [
+          [
+            "allowed",
+            120
+          ]
+        ]
+      }
+    },
+    {
+      "input": {
+        "calls": 121,
+        "daily_over": false,
+        "limit": "rate_limit",
+        "model": "gpt-4.1-mini",
+        "pause_seconds": null
+      },
+      "output": {
+        "first_refused_call": 121,
+        "runs": [
+          [
+            "allowed",
+            120
+          ],
+          [
+            "rate_limit",
+            1
+          ]
+        ]
+      }
+    },
+    {
+      "input": {
+        "calls": 125,
+        "daily_over": false,
+        "limit": "rate_limit",
+        "model": "gpt-4.1-mini",
+        "pause_seconds": null
+      },
+      "output": {
+        "first_refused_call": 121,
+        "runs": [
+          [
+            "allowed",
+            120
+          ],
+          [
+            "rate_limit",
+            5
+          ]
+        ]
+      }
+    },
+    {
+      "input": {
+        "calls": 19,
+        "daily_over": false,
+        "limit": "rate_limit",
+        "model": "elevenlabs",
+        "pause_seconds": null
+      },
+      "output": {
+        "first_refused_call": null,
+        "runs": [
+          [
+            "allowed",
+            19
+          ]
+        ]
+      }
+    },
+    {
+      "input": {
+        "calls": 199,
+        "daily_over": false,
+        "limit": "rate_limit",
+        "model": "claude-haiku-4-5",
+        "pause_seconds": null
+      },
+      "output": {
+        "first_refused_call": null,
+        "runs": [
+          [
+            "allowed",
+            199
+          ]
+        ]
+      }
+    },
+    {
+      "input": {
+        "calls": 20,
+        "daily_over": false,
+        "limit": "rate_limit",
+        "model": "elevenlabs",
+        "pause_seconds": null
+      },
+      "output": {
+        "first_refused_call": null,
+        "runs": [
+          [
+            "allowed",
+            20
+          ]
+        ]
+      }
+    },
+    {
+      "input": {
+        "calls": 200,
+        "daily_over": false,
+        "limit": "rate_limit",
+        "model": "claude-haiku-4-5",
+        "pause_seconds": null
+      },
+      "output": {
+        "first_refused_call": null,
+        "runs": [
+          [
+            "allowed",
+            200
+          ]
+        ]
+      }
+    },
+    {
+      "input": {
+        "calls": 201,
+        "daily_over": false,
+        "limit": "rate_limit",
+        "model": "claude-haiku-4-5",
+        "pause_seconds": null
+      },
+      "output": {
+        "first_refused_call": 201,
+        "runs": [
+          [
+            "allowed",
+            200
+          ],
+          [
+            "rate_limit",
+            1
+          ]
+        ]
+      }
+    },
+    {
+      "input": {
+        "calls": 205,
+        "daily_over": false,
+        "limit": "rate_limit",
+        "model": "claude-haiku-4-5",
+        "pause_seconds": null
+      },
+      "output": {
+        "first_refused_call": 201,
+        "runs": [
+          [
+            "allowed",
+            200
+          ],
+          [
+            "rate_limit",
+            5
+          ]
+        ]
+      }
+    },
+    {
+      "input": {
+        "calls": 21,
+        "daily_over": false,
+        "limit": "rate_limit",
+        "model": "elevenlabs",
+        "pause_seconds": 59
+      },
+      "output": {
+        "first_refused_call": 21,
+        "runs": [
+          [
+            "allowed",
+            20
+          ],
+          [
+            "rate_limit",
+            2
+          ]
+        ]
+      }
+    },
+    {
+      "input": {
+        "calls": 21,
+        "daily_over": false,
+        "limit": "rate_limit",
+        "model": "elevenlabs",
+        "pause_seconds": 61
+      },
+      "output": {
+        "first_refused_call": 21,
+        "runs": [
+          [
+            "allowed",
+            20
+          ],
+          [
+            "rate_limit",
+            1
+          ],
+          [
+            "allowed",
+            1
+          ]
+        ]
+      }
+    },
+    {
+      "input": {
+        "calls": 21,
+        "daily_over": false,
+        "limit": "rate_limit",
+        "model": "elevenlabs",
+        "pause_seconds": null
+      },
+      "output": {
+        "first_refused_call": 21,
+        "runs": [
+          [
+            "allowed",
+            20
+          ],
+          [
+            "rate_limit",
+            1
+          ]
+        ]
+      }
+    },
+    {
+      "input": {
+        "calls": 21,
+        "daily_over": true,
+        "limit": "rate_limit",
+        "model": "elevenlabs",
+        "pause_seconds": 61
+      },
+      "output": {
+        "first_refused_call": 1,
+        "runs": [
+          [
+            "daily_budget",
+            20
+          ],
+          [
+            "rate_limit",
+            1
+          ],
+          [
+            "daily_budget",
+            1
+          ]
+        ]
+      }
+    },
+    {
+      "input": {
+        "calls": 24,
+        "daily_over": false,
+        "limit": "rate_limit",
+        "model": "eleven_multilingual_v2",
+        "pause_seconds": null
+      },
+      "output": {
+        "first_refused_call": null,
+        "runs": [
+          [
+            "allowed",
+            24
+          ]
+        ]
+      }
+    },
+    {
+      "input": {
+        "calls": 25,
+        "daily_over": false,
+        "limit": "rate_limit",
+        "model": "eleven_multilingual_v2",
+        "pause_seconds": null
+      },
+      "output": {
+        "first_refused_call": null,
+        "runs": [
+          [
+            "allowed",
+            25
+          ]
+        ]
+      }
+    },
+    {
+      "input": {
+        "calls": 25,
+        "daily_over": false,
+        "limit": "rate_limit",
+        "model": "elevenlabs",
+        "pause_seconds": null
+      },
+      "output": {
+        "first_refused_call": 21,
+        "runs": [
+          [
+            "allowed",
+            20
+          ],
+          [
+            "rate_limit",
+            5
+          ]
+        ]
+      }
+    },
+    {
+      "input": {
+        "calls": 25,
+        "daily_over": true,
+        "limit": "rate_limit",
+        "model": "elevenlabs",
+        "pause_seconds": null
+      },
+      "output": {
+        "first_refused_call": 1,
+        "runs": [
+          [
+            "daily_budget",
+            20
+          ],
+          [
+            "rate_limit",
+            5
+          ]
+        ]
+      }
+    },
+    {
+      "input": {
+        "calls": 26,
+        "daily_over": false,
+        "limit": "rate_limit",
+        "model": "eleven_multilingual_v2",
+        "pause_seconds": null
+      },
+      "output": {
+        "first_refused_call": null,
+        "runs": [
+          [
+            "allowed",
+            26
+          ]
+        ]
+      }
+    },
+    {
+      "input": {
+        "calls": 29,
+        "daily_over": false,
+        "limit": "rate_limit",
+        "model": "gpt-image-1",
+        "pause_seconds": null
+      },
+      "output": {
+        "first_refused_call": null,
+        "runs": [
+          [
+            "allowed",
+            29
+          ]
+        ]
+      }
+    },
+    {
+      "input": {
+        "calls": 30,
+        "daily_over": false,
+        "limit": "rate_limit",
+        "model": "eleven_multilingual_v2",
+        "pause_seconds": null
+      },
+      "output": {
+        "first_refused_call": null,
+        "runs": [
+          [
+            "allowed",
+            30
+          ]
+        ]
+      }
+    },
+    {
+      "input": {
+        "calls": 30,
+        "daily_over": false,
+        "limit": "rate_limit",
+        "model": "gpt-image-1",
+        "pause_seconds": null
+      },
+      "output": {
+        "first_refused_call": null,
+        "runs": [
+          [
+            "allowed",
+            30
+          ]
+        ]
+      }
+    },
+    {
+      "input": {
+        "calls": 31,
+        "daily_over": false,
+        "limit": "rate_limit",
+        "model": "gpt-image-1",
+        "pause_seconds": 59
+      },
+      "output": {
+        "first_refused_call": 31,
+        "runs": [
+          [
+            "allowed",
+            30
+          ],
+          [
+            "rate_limit",
+            2
+          ]
+        ]
+      }
+    },
+    {
+      "input": {
+        "calls": 31,
+        "daily_over": false,
+        "limit": "rate_limit",
+        "model": "gpt-image-1",
+        "pause_seconds": 61
+      },
+      "output": {
+        "first_refused_call": 31,
+        "runs": [
+          [
+            "allowed",
+            30
+          ],
+          [
+            "rate_limit",
+            1
+          ],
+          [
+            "allowed",
+            1
+          ]
+        ]
+      }
+    },
+    {
+      "input": {
+        "calls": 31,
+        "daily_over": false,
+        "limit": "rate_limit",
+        "model": "gpt-image-1",
+        "pause_seconds": null
+      },
+      "output": {
+        "first_refused_call": 31,
+        "runs": [
+          [
+            "allowed",
+            30
+          ],
+          [
+            "rate_limit",
+            1
+          ]
+        ]
+      }
+    },
+    {
+      "input": {
+        "calls": 31,
+        "daily_over": true,
+        "limit": "rate_limit",
+        "model": "gpt-image-1",
+        "pause_seconds": 61
+      },
+      "output": {
+        "first_refused_call": 1,
+        "runs": [
+          [
+            "daily_budget",
+            30
+          ],
+          [
+            "rate_limit",
+            1
+          ],
+          [
+            "daily_budget",
+            1
+          ]
+        ]
+      }
+    },
+    {
+      "input": {
+        "calls": 35,
+        "daily_over": false,
+        "limit": "rate_limit",
+        "model": "gpt-image-1",
+        "pause_seconds": null
+      },
+      "output": {
+        "first_refused_call": 31,
+        "runs": [
+          [
+            "allowed",
+            30
+          ],
+          [
+            "rate_limit",
+            5
+          ]
+        ]
+      }
+    },
+    {
+      "input": {
+        "calls": 35,
+        "daily_over": true,
+        "limit": "rate_limit",
+        "model": "gpt-image-1",
+        "pause_seconds": null
+      },
+      "output": {
+        "first_refused_call": 1,
+        "runs": [
+          [
+            "daily_budget",
+            30
+          ],
+          [
+            "rate_limit",
+            5
+          ]
+        ]
+      }
+    },
+    {
+      "input": {
+        "calls": 39,
+        "daily_over": false,
+        "limit": "rate_limit",
+        "model": "claude-opus-4-5",
+        "pause_seconds": null
+      },
+      "output": {
+        "first_refused_call": null,
+        "runs": [
+          [
+            "allowed",
+            39
+          ]
+        ]
+      }
+    },
+    {
+      "input": {
+        "calls": 40,
+        "daily_over": false,
+        "limit": "rate_limit",
+        "model": "claude-opus-4-5",
+        "pause_seconds": null
+      },
+      "output": {
+        "first_refused_call": null,
+        "runs": [
+          [
+            "allowed",
+            40
+          ]
+        ]
+      }
+    },
+    {
+      "input": {
+        "calls": 41,
+        "daily_over": false,
+        "limit": "rate_limit",
+        "model": "claude-opus-4-5",
+        "pause_seconds": null
+      },
+      "output": {
+        "first_refused_call": 41,
+        "runs": [
+          [
+            "allowed",
+            40
+          ],
+          [
+            "rate_limit",
+            1
+          ]
+        ]
+      }
+    },
+    {
+      "input": {
+        "calls": 45,
+        "daily_over": false,
+        "limit": "rate_limit",
+        "model": "claude-opus-4-5",
+        "pause_seconds": null
+      },
+      "output": {
+        "first_refused_call": 41,
+        "runs": [
+          [
+            "allowed",
+            40
+          ],
+          [
+            "rate_limit",
+            5
+          ]
+        ]
+      }
+    },
+    {
+      "input": {
+        "calls": 45,
+        "daily_over": true,
+        "limit": "rate_limit",
+        "model": "claude-opus-4-5",
+        "pause_seconds": null
+      },
+      "output": {
+        "first_refused_call": 1,
+        "runs": [
+          [
+            "daily_budget",
+            40
+          ],
+          [
+            "rate_limit",
+            5
+          ]
+        ]
+      }
+    },
+    {
+      "input": {
+        "delta_microcents": -1,
+        "limit": "daily_budget",
+        "noise": "cached"
+      },
+      "output": {
+        "allowed": true
+      }
+    },
+    {
+      "input": {
+        "delta_microcents": -1,
+        "limit": "daily_budget",
+        "noise": "failed"
+      },
+      "output": {
+        "allowed": true
+      }
+    },
+    {
+      "input": {
+        "delta_microcents": -1,
+        "limit": "daily_budget",
+        "noise": "midnight_today"
+      },
+      "output": {
+        "allowed": false,
+        "kind": "daily_budget",
+        "message": "We have reached today's limit for generating new content. Nothing has gone wrong — this resets tomorrow."
+      }
+    },
+    {
+      "input": {
+        "delta_microcents": -1,
+        "limit": "daily_budget",
+        "noise": "none"
+      },
+      "output": {
+        "allowed": true
+      }
+    },
+    {
+      "input": {
+        "delta_microcents": -1,
+        "limit": "daily_budget",
+        "noise": "other_user_today"
+      },
+      "output": {
+        "allowed": false,
+        "kind": "daily_budget",
+        "message": "We have reached today's limit for generating new content. Nothing has gone wrong — this resets tomorrow."
+      }
+    },
+    {
+      "input": {
+        "delta_microcents": -1,
+        "limit": "daily_budget",
+        "noise": "unpriced"
+      },
+      "output": {
+        "allowed": true
+      }
+    },
+    {
+      "input": {
+        "delta_microcents": -1,
+        "limit": "daily_budget",
+        "noise": "yesterday"
+      },
+      "output": {
+        "allowed": true
+      }
+    },
+    {
+      "input": {
+        "delta_microcents": -1,
+        "limit": "user_budget",
+        "noise": "cached"
+      },
+      "output": {
+        "allowed": true
+      }
+    },
+    {
+      "input": {
+        "delta_microcents": -1,
+        "limit": "user_budget",
+        "noise": "daily_also_over"
+      },
+      "output": {
+        "allowed": false,
+        "kind": "daily_budget",
+        "message": "We have reached today's limit for generating new content. Nothing has gone wrong — this resets tomorrow."
+      }
+    },
+    {
+      "input": {
+        "delta_microcents": -1,
+        "limit": "user_budget",
+        "noise": "failed"
+      },
+      "output": {
+        "allowed": true
+      }
+    },
+    {
+      "input": {
+        "delta_microcents": -1,
+        "limit": "user_budget",
+        "noise": "midnight_today"
+      },
+      "output": {
+        "allowed": false,
+        "kind": "user_budget",
+        "message": "You have reached your daily limit for generating new content. It resets tomorrow."
+      }
+    },
+    {
+      "input": {
+        "delta_microcents": -1,
+        "limit": "user_budget",
+        "noise": "no_user"
+      },
+      "output": {
+        "allowed": true
+      }
+    },
+    {
+      "input": {
+        "delta_microcents": -1,
+        "limit": "user_budget",
+        "noise": "none"
+      },
+      "output": {
+        "allowed": true
+      }
+    },
+    {
+      "input": {
+        "delta_microcents": -1,
+        "limit": "user_budget",
+        "noise": "other_user_today"
+      },
+      "output": {
+        "allowed": true
+      }
+    },
+    {
+      "input": {
+        "delta_microcents": -1,
+        "limit": "user_budget",
+        "noise": "unpriced"
+      },
+      "output": {
+        "allowed": true
+      }
+    },
+    {
+      "input": {
+        "delta_microcents": -1,
+        "limit": "user_budget",
+        "noise": "yesterday"
+      },
+      "output": {
+        "allowed": true
+      }
+    },
+    {
+      "input": {
+        "delta_microcents": -10000,
+        "limit": "daily_budget",
+        "noise": "cached"
+      },
+      "output": {
+        "allowed": true
+      }
+    },
+    {
+      "input": {
+        "delta_microcents": -10000,
+        "limit": "daily_budget",
+        "noise": "failed"
+      },
+      "output": {
+        "allowed": true
+      }
+    },
+    {
+      "input": {
+        "delta_microcents": -10000,
+        "limit": "daily_budget",
+        "noise": "midnight_today"
+      },
+      "output": {
+        "allowed": false,
+        "kind": "daily_budget",
+        "message": "We have reached today's limit for generating new content. Nothing has gone wrong — this resets tomorrow."
+      }
+    },
+    {
+      "input": {
+        "delta_microcents": -10000,
+        "limit": "daily_budget",
+        "noise": "none"
+      },
+      "output": {
+        "allowed": true
+      }
+    },
+    {
+      "input": {
+        "delta_microcents": -10000,
+        "limit": "daily_budget",
+        "noise": "other_user_today"
+      },
+      "output": {
+        "allowed": false,
+        "kind": "daily_budget",
+        "message": "We have reached today's limit for generating new content. Nothing has gone wrong — this resets tomorrow."
+      }
+    },
+    {
+      "input": {
+        "delta_microcents": -10000,
+        "limit": "daily_budget",
+        "noise": "unpriced"
+      },
+      "output": {
+        "allowed": true
+      }
+    },
+    {
+      "input": {
+        "delta_microcents": -10000,
+        "limit": "daily_budget",
+        "noise": "yesterday"
+      },
+      "output": {
+        "allowed": true
+      }
+    },
+    {
+      "input": {
+        "delta_microcents": -10000,
+        "limit": "user_budget",
+        "noise": "cached"
+      },
+      "output": {
+        "allowed": true
+      }
+    },
+    {
+      "input": {
+        "delta_microcents": -10000,
+        "limit": "user_budget",
+        "noise": "daily_also_over"
+      },
+      "output": {
+        "allowed": false,
+        "kind": "daily_budget",
+        "message": "We have reached today's limit for generating new content. Nothing has gone wrong — this resets tomorrow."
+      }
+    },
+    {
+      "input": {
+        "delta_microcents": -10000,
+        "limit": "user_budget",
+        "noise": "failed"
+      },
+      "output": {
+        "allowed": true
+      }
+    },
+    {
+      "input": {
+        "delta_microcents": -10000,
+        "limit": "user_budget",
+        "noise": "midnight_today"
+      },
+      "output": {
+        "allowed": false,
+        "kind": "user_budget",
+        "message": "You have reached your daily limit for generating new content. It resets tomorrow."
+      }
+    },
+    {
+      "input": {
+        "delta_microcents": -10000,
+        "limit": "user_budget",
+        "noise": "no_user"
+      },
+      "output": {
+        "allowed": true
+      }
+    },
+    {
+      "input": {
+        "delta_microcents": -10000,
+        "limit": "user_budget",
+        "noise": "none"
+      },
+      "output": {
+        "allowed": true
+      }
+    },
+    {
+      "input": {
+        "delta_microcents": -10000,
+        "limit": "user_budget",
+        "noise": "other_user_today"
+      },
+      "output": {
+        "allowed": true
+      }
+    },
+    {
+      "input": {
+        "delta_microcents": -10000,
+        "limit": "user_budget",
+        "noise": "unpriced"
+      },
+      "output": {
+        "allowed": true
+      }
+    },
+    {
+      "input": {
+        "delta_microcents": -10000,
+        "limit": "user_budget",
+        "noise": "yesterday"
+      },
+      "output": {
+        "allowed": true
+      }
+    },
+    {
+      "input": {
+        "delta_microcents": -1000000,
+        "limit": "daily_budget",
+        "noise": "cached"
+      },
+      "output": {
+        "allowed": true
+      }
+    },
+    {
+      "input": {
+        "delta_microcents": -1000000,
+        "limit": "daily_budget",
+        "noise": "failed"
+      },
+      "output": {
+        "allowed": true
+      }
+    },
+    {
+      "input": {
+        "delta_microcents": -1000000,
+        "limit": "daily_budget",
+        "noise": "midnight_today"
+      },
+      "output": {
+        "allowed": false,
+        "kind": "daily_budget",
+        "message": "We have reached today's limit for generating new content. Nothing has gone wrong — this resets tomorrow."
+      }
+    },
+    {
+      "input": {
+        "delta_microcents": -1000000,
+        "limit": "daily_budget",
+        "noise": "none"
+      },
+      "output": {
+        "allowed": true
+      }
+    },
+    {
+      "input": {
+        "delta_microcents": -1000000,
+        "limit": "daily_budget",
+        "noise": "other_user_today"
+      },
+      "output": {
+        "allowed": false,
+        "kind": "daily_budget",
+        "message": "We have reached today's limit for generating new content. Nothing has gone wrong — this resets tomorrow."
+      }
+    },
+    {
+      "input": {
+        "delta_microcents": -1000000,
+        "limit": "daily_budget",
+        "noise": "unpriced"
+      },
+      "output": {
+        "allowed": true
+      }
+    },
+    {
+      "input": {
+        "delta_microcents": -1000000,
+        "limit": "daily_budget",
+        "noise": "yesterday"
+      },
+      "output": {
+        "allowed": true
+      }
+    },
+    {
+      "input": {
+        "delta_microcents": -1000000,
+        "limit": "user_budget",
+        "noise": "cached"
+      },
+      "output": {
+        "allowed": true
+      }
+    },
+    {
+      "input": {
+        "delta_microcents": -1000000,
+        "limit": "user_budget",
+        "noise": "daily_also_over"
+      },
+      "output": {
+        "allowed": false,
+        "kind": "daily_budget",
+        "message": "We have reached today's limit for generating new content. Nothing has gone wrong — this resets tomorrow."
+      }
+    },
+    {
+      "input": {
+        "delta_microcents": -1000000,
+        "limit": "user_budget",
+        "noise": "failed"
+      },
+      "output": {
+        "allowed": true
+      }
+    },
+    {
+      "input": {
+        "delta_microcents": -1000000,
+        "limit": "user_budget",
+        "noise": "midnight_today"
+      },
+      "output": {
+        "allowed": false,
+        "kind": "user_budget",
+        "message": "You have reached your daily limit for generating new content. It resets tomorrow."
+      }
+    },
+    {
+      "input": {
+        "delta_microcents": -1000000,
+        "limit": "user_budget",
+        "noise": "no_user"
+      },
+      "output": {
+        "allowed": true
+      }
+    },
+    {
+      "input": {
+        "delta_microcents": -1000000,
+        "limit": "user_budget",
+        "noise": "none"
+      },
+      "output": {
+        "allowed": true
+      }
+    },
+    {
+      "input": {
+        "delta_microcents": -1000000,
+        "limit": "user_budget",
+        "noise": "other_user_today"
+      },
+      "output": {
+        "allowed": true
+      }
+    },
+    {
+      "input": {
+        "delta_microcents": -1000000,
+        "limit": "user_budget",
+        "noise": "unpriced"
+      },
+      "output": {
+        "allowed": true
+      }
+    },
+    {
+      "input": {
+        "delta_microcents": -1000000,
+        "limit": "user_budget",
+        "noise": "yesterday"
+      },
+      "output": {
+        "allowed": true
+      }
+    },
+    {
+      "input": {
+        "delta_microcents": -10000000,
+        "limit": "daily_budget",
+        "noise": "cached"
+      },
+      "output": {
+        "allowed": true
+      }
+    },
+    {
+      "input": {
+        "delta_microcents": -10000000,
+        "limit": "daily_budget",
+        "noise": "failed"
+      },
+      "output": {
+        "allowed": true
+      }
+    },
+    {
+      "input": {
+        "delta_microcents": -10000000,
+        "limit": "daily_budget",
+        "noise": "midnight_today"
+      },
+      "output": {
+        "allowed": true
+      }
+    },
+    {
+      "input": {
+        "delta_microcents": -10000000,
+        "limit": "daily_budget",
+        "noise": "none"
+      },
+      "output": {
+        "allowed": true
+      }
+    },
+    {
+      "input": {
+        "delta_microcents": -10000000,
+        "limit": "daily_budget",
+        "noise": "other_user_today"
+      },
+      "output": {
+        "allowed": true
+      }
+    },
+    {
+      "input": {
+        "delta_microcents": -10000000,
+        "limit": "daily_budget",
+        "noise": "unpriced"
+      },
+      "output": {
+        "allowed": true
+      }
+    },
+    {
+      "input": {
+        "delta_microcents": -10000000,
+        "limit": "daily_budget",
+        "noise": "yesterday"
+      },
+      "output": {
+        "allowed": true
+      }
+    },
+    {
+      "input": {
+        "delta_microcents": -10000000,
+        "limit": "user_budget",
+        "noise": "cached"
+      },
+      "output": {
+        "allowed": true
+      }
+    },
+    {
+      "input": {
+        "delta_microcents": -10000000,
+        "limit": "user_budget",
+        "noise": "daily_also_over"
+      },
+      "output": {
+        "allowed": true
+      }
+    },
+    {
+      "input": {
+        "delta_microcents": -10000000,
+        "limit": "user_budget",
+        "noise": "failed"
+      },
+      "output": {
+        "allowed": true
+      }
+    },
+    {
+      "input": {
+        "delta_microcents": -10000000,
+        "limit": "user_budget",
+        "noise": "midnight_today"
+      },
+      "output": {
+        "allowed": true
+      }
+    },
+    {
+      "input": {
+        "delta_microcents": -10000000,
+        "limit": "user_budget",
+        "noise": "no_user"
+      },
+      "output": {
+        "allowed": true
+      }
+    },
+    {
+      "input": {
+        "delta_microcents": -10000000,
+        "limit": "user_budget",
+        "noise": "none"
+      },
+      "output": {
+        "allowed": true
+      }
+    },
+    {
+      "input": {
+        "delta_microcents": -10000000,
+        "limit": "user_budget",
+        "noise": "other_user_today"
+      },
+      "output": {
+        "allowed": true
+      }
+    },
+    {
+      "input": {
+        "delta_microcents": -10000000,
+        "limit": "user_budget",
+        "noise": "unpriced"
+      },
+      "output": {
+        "allowed": true
+      }
+    },
+    {
+      "input": {
+        "delta_microcents": -10000000,
+        "limit": "user_budget",
+        "noise": "yesterday"
+      },
+      "output": {
+        "allowed": true
+      }
+    },
+    {
+      "input": {
+        "delta_microcents": 0,
+        "limit": "daily_budget",
+        "noise": "cached"
+      },
+      "output": {
+        "allowed": false,
+        "kind": "daily_budget",
+        "message": "We have reached today's limit for generating new content. Nothing has gone wrong — this resets tomorrow."
+      }
+    },
+    {
+      "input": {
+        "delta_microcents": 0,
+        "limit": "daily_budget",
+        "noise": "failed"
+      },
+      "output": {
+        "allowed": false,
+        "kind": "daily_budget",
+        "message": "We have reached today's limit for generating new content. Nothing has gone wrong — this resets tomorrow."
+      }
+    },
+    {
+      "input": {
+        "delta_microcents": 0,
+        "limit": "daily_budget",
+        "noise": "midnight_today"
+      },
+      "output": {
+        "allowed": false,
+        "kind": "daily_budget",
+        "message": "We have reached today's limit for generating new content. Nothing has gone wrong — this resets tomorrow."
+      }
+    },
+    {
+      "input": {
+        "delta_microcents": 0,
+        "limit": "daily_budget",
+        "noise": "none"
+      },
+      "output": {
+        "allowed": false,
+        "kind": "daily_budget",
+        "message": "We have reached today's limit for generating new content. Nothing has gone wrong — this resets tomorrow."
+      }
+    },
+    {
+      "input": {
+        "delta_microcents": 0,
+        "limit": "daily_budget",
+        "noise": "other_user_today"
+      },
+      "output": {
+        "allowed": false,
+        "kind": "daily_budget",
+        "message": "We have reached today's limit for generating new content. Nothing has gone wrong — this resets tomorrow."
+      }
+    },
+    {
+      "input": {
+        "delta_microcents": 0,
+        "limit": "daily_budget",
+        "noise": "unpriced"
+      },
+      "output": {
+        "allowed": false,
+        "kind": "daily_budget",
+        "message": "We have reached today's limit for generating new content. Nothing has gone wrong — this resets tomorrow."
+      }
+    },
+    {
+      "input": {
+        "delta_microcents": 0,
+        "limit": "daily_budget",
+        "noise": "yesterday"
+      },
+      "output": {
+        "allowed": false,
+        "kind": "daily_budget",
+        "message": "We have reached today's limit for generating new content. Nothing has gone wrong — this resets tomorrow."
+      }
+    },
+    {
+      "input": {
+        "delta_microcents": 0,
+        "limit": "user_budget",
+        "noise": "cached"
+      },
+      "output": {
+        "allowed": false,
+        "kind": "user_budget",
+        "message": "You have reached your daily limit for generating new content. It resets tomorrow."
+      }
+    },
+    {
+      "input": {
+        "delta_microcents": 0,
+        "limit": "user_budget",
+        "noise": "daily_also_over"
+      },
+      "output": {
+        "allowed": false,
+        "kind": "daily_budget",
+        "message": "We have reached today's limit for generating new content. Nothing has gone wrong — this resets tomorrow."
+      }
+    },
+    {
+      "input": {
+        "delta_microcents": 0,
+        "limit": "user_budget",
+        "noise": "failed"
+      },
+      "output": {
+        "allowed": false,
+        "kind": "user_budget",
+        "message": "You have reached your daily limit for generating new content. It resets tomorrow."
+      }
+    },
+    {
+      "input": {
+        "delta_microcents": 0,
+        "limit": "user_budget",
+        "noise": "midnight_today"
+      },
+      "output": {
+        "allowed": false,
+        "kind": "user_budget",
+        "message": "You have reached your daily limit for generating new content. It resets tomorrow."
+      }
+    },
+    {
+      "input": {
+        "delta_microcents": 0,
+        "limit": "user_budget",
+        "noise": "no_user"
+      },
+      "output": {
+        "allowed": true
+      }
+    },
+    {
+      "input": {
+        "delta_microcents": 0,
+        "limit": "user_budget",
+        "noise": "none"
+      },
+      "output": {
+        "allowed": false,
+        "kind": "user_budget",
+        "message": "You have reached your daily limit for generating new content. It resets tomorrow."
+      }
+    },
+    {
+      "input": {
+        "delta_microcents": 0,
+        "limit": "user_budget",
+        "noise": "other_user_today"
+      },
+      "output": {
+        "allowed": false,
+        "kind": "user_budget",
+        "message": "You have reached your daily limit for generating new content. It resets tomorrow."
+      }
+    },
+    {
+      "input": {
+        "delta_microcents": 0,
+        "limit": "user_budget",
+        "noise": "unpriced"
+      },
+      "output": {
+        "allowed": false,
+        "kind": "user_budget",
+        "message": "You have reached your daily limit for generating new content. It resets tomorrow."
+      }
+    },
+    {
+      "input": {
+        "delta_microcents": 0,
+        "limit": "user_budget",
+        "noise": "yesterday"
+      },
+      "output": {
+        "allowed": false,
+        "kind": "user_budget",
+        "message": "You have reached your daily limit for generating new content. It resets tomorrow."
+      }
+    },
+    {
+      "input": {
+        "delta_microcents": 1,
+        "limit": "daily_budget",
+        "noise": "cached"
+      },
+      "output": {
+        "allowed": false,
+        "kind": "daily_budget",
+        "message": "We have reached today's limit for generating new content. Nothing has gone wrong — this resets tomorrow."
+      }
+    },
+    {
+      "input": {
+        "delta_microcents": 1,
+        "limit": "daily_budget",
+        "noise": "failed"
+      },
+      "output": {
+        "allowed": false,
+        "kind": "daily_budget",
+        "message": "We have reached today's limit for generating new content. Nothing has gone wrong — this resets tomorrow."
+      }
+    },
+    {
+      "input": {
+        "delta_microcents": 1,
+        "limit": "daily_budget",
+        "noise": "midnight_today"
+      },
+      "output": {
+        "allowed": false,
+        "kind": "daily_budget",
+        "message": "We have reached today's limit for generating new content. Nothing has gone wrong — this resets tomorrow."
+      }
+    },
+    {
+      "input": {
+        "delta_microcents": 1,
+        "limit": "daily_budget",
+        "noise": "none"
+      },
+      "output": {
+        "allowed": false,
+        "kind": "daily_budget",
+        "message": "We have reached today's limit for generating new content. Nothing has gone wrong — this resets tomorrow."
+      }
+    },
+    {
+      "input": {
+        "delta_microcents": 1,
+        "limit": "daily_budget",
+        "noise": "other_user_today"
+      },
+      "output": {
+        "allowed": false,
+        "kind": "daily_budget",
+        "message": "We have reached today's limit for generating new content. Nothing has gone wrong — this resets tomorrow."
+      }
+    },
+    {
+      "input": {
+        "delta_microcents": 1,
+        "limit": "daily_budget",
+        "noise": "unpriced"
+      },
+      "output": {
+        "allowed": false,
+        "kind": "daily_budget",
+        "message": "We have reached today's limit for generating new content. Nothing has gone wrong — this resets tomorrow."
+      }
+    },
+    {
+      "input": {
+        "delta_microcents": 1,
+        "limit": "daily_budget",
+        "noise": "yesterday"
+      },
+      "output": {
+        "allowed": false,
+        "kind": "daily_budget",
+        "message": "We have reached today's limit for generating new content. Nothing has gone wrong — this resets tomorrow."
+      }
+    },
+    {
+      "input": {
+        "delta_microcents": 1,
+        "limit": "user_budget",
+        "noise": "cached"
+      },
+      "output": {
+        "allowed": false,
+        "kind": "user_budget",
+        "message": "You have reached your daily limit for generating new content. It resets tomorrow."
+      }
+    },
+    {
+      "input": {
+        "delta_microcents": 1,
+        "limit": "user_budget",
+        "noise": "daily_also_over"
+      },
+      "output": {
+        "allowed": false,
+        "kind": "daily_budget",
+        "message": "We have reached today's limit for generating new content. Nothing has gone wrong — this resets tomorrow."
+      }
+    },
+    {
+      "input": {
+        "delta_microcents": 1,
+        "limit": "user_budget",
+        "noise": "failed"
+      },
+      "output": {
+        "allowed": false,
+        "kind": "user_budget",
+        "message": "You have reached your daily limit for generating new content. It resets tomorrow."
+      }
+    },
+    {
+      "input": {
+        "delta_microcents": 1,
+        "limit": "user_budget",
+        "noise": "midnight_today"
+      },
+      "output": {
+        "allowed": false,
+        "kind": "user_budget",
+        "message": "You have reached your daily limit for generating new content. It resets tomorrow."
+      }
+    },
+    {
+      "input": {
+        "delta_microcents": 1,
+        "limit": "user_budget",
+        "noise": "no_user"
+      },
+      "output": {
+        "allowed": true
+      }
+    },
+    {
+      "input": {
+        "delta_microcents": 1,
+        "limit": "user_budget",
+        "noise": "none"
+      },
+      "output": {
+        "allowed": false,
+        "kind": "user_budget",
+        "message": "You have reached your daily limit for generating new content. It resets tomorrow."
+      }
+    },
+    {
+      "input": {
+        "delta_microcents": 1,
+        "limit": "user_budget",
+        "noise": "other_user_today"
+      },
+      "output": {
+        "allowed": false,
+        "kind": "user_budget",
+        "message": "You have reached your daily limit for generating new content. It resets tomorrow."
+      }
+    },
+    {
+      "input": {
+        "delta_microcents": 1,
+        "limit": "user_budget",
+        "noise": "unpriced"
+      },
+      "output": {
+        "allowed": false,
+        "kind": "user_budget",
+        "message": "You have reached your daily limit for generating new content. It resets tomorrow."
+      }
+    },
+    {
+      "input": {
+        "delta_microcents": 1,
+        "limit": "user_budget",
+        "noise": "yesterday"
+      },
+      "output": {
+        "allowed": false,
+        "kind": "user_budget",
+        "message": "You have reached your daily limit for generating new content. It resets tomorrow."
+      }
+    },
+    {
+      "input": {
+        "delta_microcents": 10000,
+        "limit": "daily_budget",
+        "noise": "cached"
+      },
+      "output": {
+        "allowed": false,
+        "kind": "daily_budget",
+        "message": "We have reached today's limit for generating new content. Nothing has gone wrong — this resets tomorrow."
+      }
+    },
+    {
+      "input": {
+        "delta_microcents": 10000,
+        "limit": "daily_budget",
+        "noise": "failed"
+      },
+      "output": {
+        "allowed": false,
+        "kind": "daily_budget",
+        "message": "We have reached today's limit for generating new content. Nothing has gone wrong — this resets tomorrow."
+      }
+    },
+    {
+      "input": {
+        "delta_microcents": 10000,
+        "limit": "daily_budget",
+        "noise": "midnight_today"
+      },
+      "output": {
+        "allowed": false,
+        "kind": "daily_budget",
+        "message": "We have reached today's limit for generating new content. Nothing has gone wrong — this resets tomorrow."
+      }
+    },
+    {
+      "input": {
+        "delta_microcents": 10000,
+        "limit": "daily_budget",
+        "noise": "none"
+      },
+      "output": {
+        "allowed": false,
+        "kind": "daily_budget",
+        "message": "We have reached today's limit for generating new content. Nothing has gone wrong — this resets tomorrow."
+      }
+    },
+    {
+      "input": {
+        "delta_microcents": 10000,
+        "limit": "daily_budget",
+        "noise": "other_user_today"
+      },
+      "output": {
+        "allowed": false,
+        "kind": "daily_budget",
+        "message": "We have reached today's limit for generating new content. Nothing has gone wrong — this resets tomorrow."
+      }
+    },
+    {
+      "input": {
+        "delta_microcents": 10000,
+        "limit": "daily_budget",
+        "noise": "unpriced"
+      },
+      "output": {
+        "allowed": false,
+        "kind": "daily_budget",
+        "message": "We have reached today's limit for generating new content. Nothing has gone wrong — this resets tomorrow."
+      }
+    },
+    {
+      "input": {
+        "delta_microcents": 10000,
+        "limit": "daily_budget",
+        "noise": "yesterday"
+      },
+      "output": {
+        "allowed": false,
+        "kind": "daily_budget",
+        "message": "We have reached today's limit for generating new content. Nothing has gone wrong — this resets tomorrow."
+      }
+    },
+    {
+      "input": {
+        "delta_microcents": 10000,
+        "limit": "user_budget",
+        "noise": "cached"
+      },
+      "output": {
+        "allowed": false,
+        "kind": "user_budget",
+        "message": "You have reached your daily limit for generating new content. It resets tomorrow."
+      }
+    },
+    {
+      "input": {
+        "delta_microcents": 10000,
+        "limit": "user_budget",
+        "noise": "daily_also_over"
+      },
+      "output": {
+        "allowed": false,
+        "kind": "daily_budget",
+        "message": "We have reached today's limit for generating new content. Nothing has gone wrong — this resets tomorrow."
+      }
+    },
+    {
+      "input": {
+        "delta_microcents": 10000,
+        "limit": "user_budget",
+        "noise": "failed"
+      },
+      "output": {
+        "allowed": false,
+        "kind": "user_budget",
+        "message": "You have reached your daily limit for generating new content. It resets tomorrow."
+      }
+    },
+    {
+      "input": {
+        "delta_microcents": 10000,
+        "limit": "user_budget",
+        "noise": "midnight_today"
+      },
+      "output": {
+        "allowed": false,
+        "kind": "user_budget",
+        "message": "You have reached your daily limit for generating new content. It resets tomorrow."
+      }
+    },
+    {
+      "input": {
+        "delta_microcents": 10000,
+        "limit": "user_budget",
+        "noise": "no_user"
+      },
+      "output": {
+        "allowed": true
+      }
+    },
+    {
+      "input": {
+        "delta_microcents": 10000,
+        "limit": "user_budget",
+        "noise": "none"
+      },
+      "output": {
+        "allowed": false,
+        "kind": "user_budget",
+        "message": "You have reached your daily limit for generating new content. It resets tomorrow."
+      }
+    },
+    {
+      "input": {
+        "delta_microcents": 10000,
+        "limit": "user_budget",
+        "noise": "other_user_today"
+      },
+      "output": {
+        "allowed": false,
+        "kind": "user_budget",
+        "message": "You have reached your daily limit for generating new content. It resets tomorrow."
+      }
+    },
+    {
+      "input": {
+        "delta_microcents": 10000,
+        "limit": "user_budget",
+        "noise": "unpriced"
+      },
+      "output": {
+        "allowed": false,
+        "kind": "user_budget",
+        "message": "You have reached your daily limit for generating new content. It resets tomorrow."
+      }
+    },
+    {
+      "input": {
+        "delta_microcents": 10000,
+        "limit": "user_budget",
+        "noise": "yesterday"
+      },
+      "output": {
+        "allowed": false,
+        "kind": "user_budget",
+        "message": "You have reached your daily limit for generating new content. It resets tomorrow."
+      }
+    }
+  ]
+}

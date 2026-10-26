@@ -1,0 +1,321 @@
+{
+  "unit": "block_registry",
+  "source": "engines/content_engine/app/services/content_engine/lesson_blocks.rb:35",
+  "captured_at": "2026-10-26T12:00:00Z",
+  "cases": [
+    {
+      "input": "ContentEngine::LessonBlocks",
+      "output": {
+        "authored_types": [
+          "check",
+          "code_playground",
+          "concept",
+          "drag_drop",
+          "example",
+          "fill_blank",
+          "flashcards",
+          "motion",
+          "scenario",
+          "simulation",
+          "summary",
+          "tip",
+          "visual"
+        ],
+        "blocks": {
+          "audio": {
+            "authored": false,
+            "chrome": null,
+            "fence": null,
+            "headings": [],
+            "partial": "audio"
+          },
+          "audio_explainer": {
+            "authored": false,
+            "chrome": null,
+            "fence": null,
+            "headings": [],
+            "partial": "audio_explainer"
+          },
+          "check": {
+            "chrome": {
+              "css": "lesson-block--check",
+              "icon": "❓"
+            },
+            "fence": "check",
+            "headings": [
+              "Pregunta",
+              "Question"
+            ],
+            "partial": "check"
+          },
+          "code_playground": {
+            "chrome": null,
+            "fence": "code_playground",
+            "headings": [
+              "Playground"
+            ],
+            "partial": "code_playground"
+          },
+          "concept": {
+            "chrome": {
+              "css": "lesson-block--concept",
+              "icon": "💡"
+            },
+            "fence": "concept",
+            "headings": [
+              "Concepto",
+              "Concept"
+            ],
+            "partial": "concept"
+          },
+          "drag_drop": {
+            "chrome": null,
+            "fence": "drag_drop",
+            "headings": [
+              "Match",
+              "Emparejar"
+            ],
+            "partial": "drag_drop"
+          },
+          "example": {
+            "chrome": {
+              "css": "lesson-block--example",
+              "icon": "🌍"
+            },
+            "fence": "example",
+            "headings": [
+              "Ejemplo",
+              "Example"
+            ],
+            "partial": "example"
+          },
+          "fill_blank": {
+            "chrome": null,
+            "fence": "fill_blank",
+            "headings": [
+              "Complete",
+              "Completa"
+            ],
+            "partial": "fill_blank"
+          },
+          "flashcards": {
+            "chrome": null,
+            "fence": "flashcards",
+            "headings": [
+              "Flashcards"
+            ],
+            "partial": "flashcards"
+          },
+          "motion": {
+            "chrome": null,
+            "fence": null,
+            "headings": [
+              "Motion"
+            ],
+            "partial": "motion"
+          },
+          "scenario": {
+            "chrome": null,
+            "fence": "scenario",
+            "headings": [
+              "Scenario",
+              "Escenario"
+            ],
+            "partial": "scenario"
+          },
+          "simulation": {
+            "chrome": null,
+            "fence": "simulation",
+            "headings": [
+              "Simulation",
+              "Simulacion"
+            ],
+            "partial": "simulation"
+          },
+          "summary": {
+            "chrome": {
+              "css": "lesson-block--summary",
+              "icon": "✅"
+            },
+            "fence": "summary",
+            "headings": [
+              "Resumen",
+              "Summary"
+            ],
+            "partial": "summary"
+          },
+          "tip": {
+            "chrome": {
+              "css": "lesson-block--tip",
+              "icon": "📝"
+            },
+            "fence": "tip",
+            "headings": [
+              "Tip",
+              "Consejo"
+            ],
+            "partial": "tip"
+          },
+          "video": {
+            "authored": false,
+            "chrome": null,
+            "fence": null,
+            "headings": [
+              "Video",
+              "Vídeo"
+            ],
+            "partial": "video"
+          },
+          "visual": {
+            "chrome": null,
+            "fence": null,
+            "headings": [
+              "Visual"
+            ],
+            "partial": "visual"
+          }
+        },
+        "default_titles": {
+          "en": {
+            "audio": "Audio",
+            "audio_explainer": "Audio explanation",
+            "check": "Check your understanding",
+            "code_playground": "Playground",
+            "concept": "Concept",
+            "drag_drop": "Match",
+            "example": "Example",
+            "fill_blank": "Complete",
+            "flashcards": "Flashcards",
+            "motion": "Motion",
+            "scenario": "Scenario",
+            "simulation": "Simulation",
+            "summary": "Summary",
+            "tip": "Tip",
+            "video": "Video",
+            "visual": "Visual"
+          },
+          "es": {
+            "audio": "Audio",
+            "audio_explainer": "Audio explicación",
+            "check": "Comprueba tu conocimiento",
+            "code_playground": "Práctica",
+            "concept": "Concepto",
+            "drag_drop": "Emparejar",
+            "example": "Ejemplo",
+            "fill_blank": "Completa",
+            "flashcards": "Tarjetas",
+            "motion": "Movimiento",
+            "scenario": "Escenario",
+            "simulation": "Simulación",
+            "summary": "Resumen",
+            "tip": "Consejo",
+            "video": "Vídeo",
+            "visual": "Visual"
+          }
+        },
+        "fence_types": [
+          "check",
+          "code_playground",
+          "concept",
+          "drag_drop",
+          "example",
+          "fill_blank",
+          "flashcards",
+          "scenario",
+          "simulation",
+          "summary",
+          "tip"
+        ],
+        "heading_map": {
+          "Completa": "fill_blank",
+          "Complete": "fill_blank",
+          "Concept": "concept",
+          "Concepto": "concept",
+          "Consejo": "tip",
+          "Ejemplo": "example",
+          "Emparejar": "drag_drop",
+          "Escenario": "scenario",
+          "Example": "example",
+          "Flashcards": "flashcards",
+          "Match": "drag_drop",
+          "Motion": "motion",
+          "Playground": "code_playground",
+          "Pregunta": "check",
+          "Question": "check",
+          "Resumen": "summary",
+          "Scenario": "scenario",
+          "Simulacion": "simulation",
+          "Simulation": "simulation",
+          "Summary": "summary",
+          "Tip": "tip",
+          "Video": "video",
+          "Visual": "visual",
+          "Vídeo": "video"
+        },
+        "known": {
+          "": false,
+          "CHECK": false,
+          "Concept": false,
+          "audio": true,
+          "audio_explainer": true,
+          "check": true,
+          "code_playground": true,
+          "concept": true,
+          "drag_drop": true,
+          "example": true,
+          "fill_blank": true,
+          "flashcards": true,
+          "motion": true,
+          "scenario": true,
+          "simulation": true,
+          "summary": true,
+          "tap_pairs": false,
+          "tip": true,
+          "video": true,
+          "visual": true
+        },
+        "partial_types": [
+          "audio",
+          "audio_explainer",
+          "check",
+          "code_playground",
+          "concept",
+          "drag_drop",
+          "example",
+          "fill_blank",
+          "flashcards",
+          "motion",
+          "scenario",
+          "simulation",
+          "summary",
+          "tip",
+          "video",
+          "visual"
+        ],
+        "system_types": [
+          "audio",
+          "audio_explainer",
+          "video"
+        ],
+        "types": [
+          "audio",
+          "audio_explainer",
+          "check",
+          "code_playground",
+          "concept",
+          "drag_drop",
+          "example",
+          "fill_blank",
+          "flashcards",
+          "motion",
+          "scenario",
+          "simulation",
+          "summary",
+          "tip",
+          "video",
+          "visual"
+        ]
+      }
+    }
+  ]
+}

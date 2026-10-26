@@ -1,0 +1,22 @@
+{
+  "name": "@learning-routes/api",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "build": "wrangler deploy --dry-run --outdir dist",
+    "test": "vitest run",
+    "typecheck": "wrangler types && tsc --noEmit",
+    "cf-typegen": "wrangler types",
+    "postinstall": "wrangler types"
+  },
+  "dependencies": {
+    "hono": "4.13.14"
+  },
+  "devDependencies": {
+    "typescript": "5.9.3",
+    "vitest": "5.0.5",
+    "wrangler": "4.153.0"
+  }
+}
