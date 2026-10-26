@@ -8,6 +8,9 @@ module ContentEngine
     ARTIFACT = "vendor/javascript/mc.js"
     TYPES    = "app/motion/src/generated/schemas.d.ts"
     EXCLUDED = %w[dist node_modules].freeze
+    # File names .gitignore keeps out of every checkout (OS and editor junk). They
+    # are never committed, so the committed digest never saw them either.
+    IGNORED_NAMES = %w[.DS_Store *.swp *.swo *~].freeze
 
     ARTIFACT_HEADER = "motion-src-sha256"
     SCHEMAS_HEADER  = "motion-schemas-sha256"
@@ -25,6 +28,7 @@ module ContentEngine
       Dir.glob(Rails.root.join(pattern), File::FNM_DOTMATCH)
         .select { |p| File.file?(p) }
         .reject { |p| EXCLUDED.any? { |d| p.include?("/#{d}/") } }
+        .reject { |p| IGNORED_NAMES.any? { |name| File.fnmatch?(name, File.basename(p), File::FNM_DOTMATCH) } }
         .sort
     end
 

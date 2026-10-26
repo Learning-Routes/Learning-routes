@@ -60,6 +60,31 @@ class MotionBuildFreshnessTest < ActiveSupport::TestCase
     end
   end
 
+  # The committed artifact was digested from a clean checkout. A file git ignores,
+  # such as the .DS_Store Finder drops on a developer's disk, is never committed,
+  # so it must not move the digest either.
+  test "a file git ignores is not an input" do
+    with_private_motion_tree do |root|
+      before = ContentEngine::MotionBuild.digest_for(:artifact)
+      junk = %w[app/motion/.DS_Store app/motion/src/.DS_Store app/motion/src/main.ts.swp
+                app/motion/src/main.ts.swo app/motion/src/main.ts~].map { |rel| root.join(rel) }
+      junk.each { |path| File.write(path, "junk\n") }
+
+      assert_empty ContentEngine::MotionBuild.input_files(:artifact) & junk.map(&:to_s)
+      assert_equal before, ContentEngine::MotionBuild.digest_for(:artifact)
+    end
+  end
+
+  # The digest cannot ask git (see MotionBuild), so its list must say what
+  # .gitignore says.
+  test "every name the digest ignores is ignored by git too" do
+    gitignore = File.readlines(Rails.root.join(".gitignore"), chomp: true)
+
+    ContentEngine::MotionBuild::IGNORED_NAMES.each do |name|
+      assert gitignore.include?(name) || gitignore.include?("**/#{name}"), "#{name} is not in .gitignore"
+    end
+  end
+
   test "a changed input changes the digest" do
     with_private_motion_tree do |root|
       before = ContentEngine::MotionBuild.digest_for(:artifact)

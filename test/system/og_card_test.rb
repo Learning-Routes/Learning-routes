@@ -8,7 +8,7 @@ class OgCardTest < ApplicationSystemTestCase
 
   %w[es en].each do |locale|
     test "the #{locale} share card renders at #{WIDTH}x#{HEIGHT} with the promise and the map" do
-      out = ENV["OG_WRITE"] ? Rails.root.join("app/assets/images/og/og-#{locale}.png") : Rails.root.join("tmp/og-#{locale}.png")
+      out = ENV["OG_WRITE"] ? Rails.root.join("app/assets/images/og/og-#{locale}.png") : scratch_png(locale)
       shoot(locale, out)
       assert_equal [WIDTH, HEIGHT], File.binread(out)[16, 8].unpack("NN")
     end
@@ -20,7 +20,7 @@ class OgCardTest < ApplicationSystemTestCase
     visit "/privacy"
     before = { viewport: page.evaluate_script("[innerWidth, innerHeight]"), script_timeout: script_timeout }
 
-    shoot("es", Rails.root.join("tmp/og-es.png"))
+    shoot("es", scratch_png("es"))
 
     visit "/privacy"
     assert_equal before, { viewport: page.evaluate_script("[innerWidth, innerHeight]"), script_timeout: script_timeout }
@@ -29,6 +29,11 @@ class OgCardTest < ApplicationSystemTestCase
   private
 
   def script_timeout = page.driver.browser.manage.timeouts.script_timeout
+
+  # One file per worker process. On CI the suite runs in parallel, and two tests
+  # sharing tmp/og-es.png let one worker truncate the file (save_screenshot opens
+  # it "wb") while another read it: binread returned "" and [16, 8] was nil.
+  def scratch_png(locale) = Rails.root.join("tmp/og-#{locale}-#{Process.pid}.png")
 
   # Synchronous polls, not evaluate_async_script: Capybara sets the session's
   # script timeout to default_max_wait_time for an async script and never puts
