@@ -20,7 +20,8 @@ module Characterization
   UNITS = {
     "block_registry" => -> { Object.const_source_location("ContentEngine::LessonBlocks::BLOCKS") },
     "block_grader" => -> { LearningRoutesEngine::BlockGrader.instance_method(:call).source_location },
-    "gating" => -> { Object.const_source_location("LearningRoutesEngine::BlockGrader::GATING_TYPES") }
+    "gating" => -> { Object.const_source_location("LearningRoutesEngine::BlockGrader::GATING_TYPES") },
+    "fsrs" => -> { LearningRoutesEngine::SpacedRepetition.instance_method(:review).source_location }
   }.freeze
 
   module_function
@@ -132,6 +133,80 @@ module Characterization
     (ContentEngine::LessonBlocks.types + ["tap_pairs", ""]).map do |type|
       gradable = grader.gradable?(type)
       { input: type, output: { gradable: gradable, gating: grader.gating?(type), engagement_only: !gradable } }
+    end
+  end
+
+  # The card attributes SpacedRepetition reads; a RouteStep carries them today.
+  FsrsCard = Struct.new(:fsrs_state, :fsrs_reps, :fsrs_lapses, :fsrs_stability, :fsrs_difficulty,
+                        :fsrs_last_review_at, keyword_init: true)
+
+  # Cards a sequence starts from: nil is a card never reviewed. `days_ago` places
+  # the last review before the frozen time.
+  FSRS_STARTS = [
+    nil,
+    { "fsrs_state" => "fsrs_new", "fsrs_reps" => 0 },
+    { "fsrs_state" => "fsrs_review", "fsrs_reps" => 0, "fsrs_stability" => 5.0, "fsrs_difficulty" => 5.0, "days_ago" => 3 },
+    { "fsrs_state" => "fsrs_learning", "fsrs_reps" => 1, "fsrs_lapses" => 0, "fsrs_stability" => 2.4,
+      "fsrs_difficulty" => 4.93, "days_ago" => 2 },
+    { "fsrs_state" => "fsrs_review", "fsrs_reps" => 3, "fsrs_lapses" => 0, "fsrs_stability" => 10.0,
+      "fsrs_difficulty" => 5.0, "days_ago" => 7 },
+    { "fsrs_state" => "fsrs_relearning", "fsrs_reps" => 5, "fsrs_lapses" => 2, "fsrs_stability" => 0.4,
+      "fsrs_difficulty" => 8.5, "days_ago" => 1 },
+    { "fsrs_state" => "fsrs_review", "fsrs_reps" => 12, "fsrs_lapses" => 1, "fsrs_stability" => 120.0,
+      "fsrs_difficulty" => 2.0, "days_ago" => 90 },
+    { "fsrs_state" => "fsrs_review", "fsrs_reps" => 2, "fsrs_lapses" => 0, "fsrs_stability" => 0.0,
+      "fsrs_difficulty" => 10.0, "days_ago" => nil }
+  ].freeze
+  FSRS_ELAPSED_DAYS = [0, 0.01, 0.5, 1, 2, 3, 5, 7, 10, 14, 21, 30, 45, 60, 90, 180, 365, 400].freeze
+  # 0 and 5 are out of range: review clamps them.
+  FSRS_RATINGS = [1, 2, 3, 4, 1, 2, 3, 4, 0, 5].freeze
+
+  def fsrs
+    srs = LearningRoutesEngine::SpacedRepetition.new
+    random = Random.new(44)
+    every_rating = FSRS_STARTS.product(FSRS_RATINGS.uniq).map { |start, rating| [start, [{ "elapsed_days" => 1, "rating" => rating }]] }
+    sampled = Array.new(100) do |i|
+      reviews = Array.new(1 + random.rand(12)) do
+        { "elapsed_days" => FSRS_ELAPSED_DAYS.sample(random: random), "rating" => FSRS_RATINGS.sample(random: random) }
+      end
+      [FSRS_STARTS[i % FSRS_STARTS.size], reviews]
+    end
+
+    sequences = (every_rating + sampled).map do |start, reviews|
+      { input: { kind: "review_sequence", start: start, reviews: reviews }, output: review_sequence(srs, start, reviews) }
+    end
+    sequences + retrievability_cases(srs) + [0, -1, 0.01, 0.05, 0.4, 0.5, 1, 1.5, 2.4, 2.5, 5.8, 10, 100, 364.5, 405.6, 1000].map do |s|
+      { input: { kind: "next_interval", stability: s }, output: srs.send(:next_interval, s) }
+    end
+  ensure
+    travel_to(FROZEN_AT)
+  end
+
+  def review_sequence(srs, start, reviews)
+    now = FROZEN_AT
+    travel_to(now)
+    card = FsrsCard.new(**(start || {}).except("days_ago").transform_keys(&:to_sym))
+    card.fsrs_last_review_at = now - start["days_ago"].days if start&.dig("days_ago")
+
+    reviews.each_with_object([]) do |review, results|
+      now += review["elapsed_days"].days
+      travel_to(now)
+      before = srs.retrievability(card)
+      result = srs.review(card, review["rating"])
+      card = FsrsCard.new(**result.slice(*FsrsCard.members))
+      results << result.merge(retrievability_before: before)
+    rescue FloatDomainError => e
+      # An existing card with stability 0 schedules NaN days: Ruby raises. Recorded, not hidden.
+      break results << { error: e.class.name, message: e.message }
+    end
+  end
+
+  def retrievability_cases(srs)
+    [0, -1, 0.4, 2.4, 10, 100].product([nil, -1, 0, 0.5, 1, 7, 30, 365]).map do |stability, elapsed|
+      travel_to(FROZEN_AT)
+      last = elapsed && FROZEN_AT - elapsed.days
+      card = FsrsCard.new(fsrs_stability: stability, fsrs_last_review_at: last)
+      { input: { kind: "retrievability", stability: stability, elapsed_days: elapsed }, output: srs.retrievability(card) }
     end
   end
 

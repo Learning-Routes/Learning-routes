@@ -49,6 +49,17 @@ class CharacterizeTest < ActiveSupport::TestCase
     assert_equal({ "engagement_only" => true, "gating" => false, "gradable" => false }, cases["simulation"])
   end
 
+  test "fsrs records review sequences, retrievability and intervals" do
+    cases = run_unit("fsrs").fetch("cases").group_by { |c| c.dig("input", "kind") }
+
+    assert_operator cases.fetch("review_sequence").size, :>=, 100
+    first_good = cases["review_sequence"].find { |c| c.dig("input", "start").nil? && c.dig("input", "reviews", 0, "rating") == 3 }
+    review = first_good.dig("output", 0)
+    assert_equal [2.4, "fsrs_review", 2], review.values_at("fsrs_stability", "fsrs_state", "fsrs_scheduled_days")
+    assert cases.fetch("retrievability").any?
+    assert_equal 1, cases.fetch("next_interval").find { |c| c.dig("input", "stability") == 0 }["output"]
+  end
+
   private
 
   def run_unit(unit, out: @out)
