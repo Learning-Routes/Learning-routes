@@ -101,6 +101,20 @@ class CharacterizeTest < ActiveSupport::TestCase
     assert_equal 21, eleven.dig("output", "first_refused_call")
   end
 
+  test "all writes every unit, byte-identical on a second run" do
+    second = Dir.mktmpdir("characterize-again")
+    [@out, second].each do |out|
+      Rake::Task.tasks.select { |t| t.name.start_with?("characterize:") }.each(&:reenable)
+      with_out(out) { Rake::Task["characterize:all"].invoke }
+    end
+
+    units = Characterization::UNITS.keys.map { |unit| "#{unit}.json" }
+    assert_equal units.sort, Dir.children(@out).sort
+    units.each { |file| assert_equal File.read(File.join(@out, file)), File.read(File.join(second, file)), file }
+  ensure
+    FileUtils.rm_rf(second)
+  end
+
   private
 
   def run_unit(unit, out: @out)
