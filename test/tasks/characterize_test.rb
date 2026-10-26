@@ -38,6 +38,8 @@ class CharacterizeTest < ActiveSupport::TestCase
     no_correct = cases.find { |c| c.dig("input", "section", "type") == "check" && c.dig("input", "section", "options") == [{ "label" => "A", "correct" => false }] }
     assert_equal false, no_correct.dig("output", "answerable")
     assert_equal "check has no option marked correct", no_correct.dig("output", "call", "reason")
+    assert_equal "edge", no_correct.dig("input", "origin")
+    assert_equal "normalize", normalized.dig("input", "origin")
   end
 
   test "gating covers every block type" do

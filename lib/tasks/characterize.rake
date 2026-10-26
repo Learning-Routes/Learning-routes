@@ -110,19 +110,23 @@ module Characterization
       .flat_map { |step| Array(step.metadata["parsed_sections"]) }.select { |s| s.is_a?(Hash) }
   end
 
+  # `origin` tells the platform which sections are real ("recorded") and which
+  # were built here to probe a rule ("edge", "normalize").
   def block_grader
     every_type = ContentEngine::LessonBlocks.types.map { |type| { "type" => type } }
-    sections = recorded_sections + every_type + GRADER_EDGE_SECTIONS
-    cases = sections.flat_map { |section| submissions_for(section).map { |payload| grade(section, payload) } }
+    sections = recorded_sections.map { |s| [s, "recorded"] } + (every_type + GRADER_EDGE_SECTIONS).map { |s| [s, "edge"] }
+    cases = sections.flat_map do |section, origin|
+      submissions_for(section).map { |payload| grade(section, payload, origin) }
+    end
     cases + NORMALIZE_PROBES.flat_map do |expected, answers|
-      answers.map { |answer| grade({ "type" => "fill_blank", "blanks" => [expected] }, { "answers" => [answer] }) }
+      answers.map { |answer| grade({ "type" => "fill_blank", "blanks" => [expected] }, { "answers" => [answer] }, "normalize") }
     end
   end
 
-  def grade(section, payload)
+  def grade(section, payload, origin)
     grader = LearningRoutesEngine::BlockGrader
     {
-      input: { section: section, payload: payload },
+      input: { origin: origin, section: section, payload: payload },
       output: {
         call: grader.new(section: section, payload: payload).call.to_h,
         answerable: grader.answerable?(section)
