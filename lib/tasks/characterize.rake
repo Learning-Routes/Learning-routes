@@ -21,7 +21,8 @@ module Characterization
     "block_registry" => -> { Object.const_source_location("ContentEngine::LessonBlocks::BLOCKS") },
     "block_grader" => -> { LearningRoutesEngine::BlockGrader.instance_method(:call).source_location },
     "gating" => -> { Object.const_source_location("LearningRoutesEngine::BlockGrader::GATING_TYPES") },
-    "fsrs" => -> { LearningRoutesEngine::SpacedRepetition.instance_method(:review).source_location }
+    "fsrs" => -> { LearningRoutesEngine::SpacedRepetition.instance_method(:review).source_location },
+    "attempt_rating" => -> { LearningRoutesEngine::BlockAttempt.instance_method(:fsrs_rating).source_location }
   }.freeze
 
   module_function
@@ -208,6 +209,73 @@ module Characterization
       card = FsrsCard.new(fsrs_stability: stability, fsrs_last_review_at: last)
       { input: { kind: "retrievability", stability: stability, elapsed_days: elapsed }, output: srs.retrievability(card) }
     end
+  end
+
+  FLASHCARD_PAYLOADS = [
+    nil, "easy", %w[easy], {}, { "ratings" => nil }, { "ratings" => [] }, { "ratings" => %w[easy hard] },
+    { "ratings" => %w[easy good] }, { "ratings" => %w[Easy NORMAL] }, { "ratings" => %w[meh] },
+    { "ratings" => %w[easy unknown normal] }, { "ratings" => { "0" => "easy", "1" => "hard" } },
+    { "ratings" => "easy" }, { "ratings" => [3, "easy"] }
+  ].freeze
+
+  CHECK_SECTION = { "type" => "check", "question" => "2 + 2?",
+                    "options" => [{ "label" => "3", "correct" => false }, { "label" => "4", "correct" => true }] }.freeze
+  RIGHT = { "option_index" => 1 }.freeze
+  WRONG = { "option_index" => 0 }.freeze
+
+  # name => [section, [[payload, complete], ...]], replayed through BlockAttemptRecorder.
+  SUBMISSIONS = {
+    "check: right first time" => [CHECK_SECTION, [[RIGHT, true]]],
+    "check: wrong, wrong, right" => [CHECK_SECTION, [[WRONG, true], [WRONG, true], [RIGHT, true]]],
+    "check: wrong three times" => [CHECK_SECTION, [[WRONG, true], [WRONG, true], [WRONG, true]]],
+    "check: wrong four times" => [CHECK_SECTION, Array.new(4) { [WRONG, true] }],
+    "check: released, then right" => [CHECK_SECTION, [[WRONG, true], [WRONG, true], [WRONG, true], [RIGHT, true]]],
+    "check: wrong three times, not complete" => [CHECK_SECTION, Array.new(3) { [WRONG, false] }],
+    "check: wrong, incomplete wrong, wrong, wrong" => [CHECK_SECTION, [[WRONG, true], [WRONG, false], [WRONG, true], [WRONG, true]]],
+    "check: right, then wrong" => [CHECK_SECTION, [[RIGHT, true], [WRONG, true]]],
+    "fill_blank: partial three times" => [{ "type" => "fill_blank", "blanks" => %w[uno dos] },
+                                          Array.new(3) { [{ "answers" => %w[uno tres] }, true] }],
+    "drag_drop: wrong twice, right" => [{ "type" => "drag_drop", "pairs" => [%w[a 1], %w[b 2]] },
+                                        [[{ "matches" => { "0" => 1, "1" => 0 } }, true]] * 2 +
+                                          [[{ "matches" => { "0" => 0, "1" => 1 } }, true]]],
+    "check without a correct option" => [CHECK_SECTION.merge("options" => [{ "label" => "3" }]), [[WRONG, true]] * 3],
+    "flashcards: rated" => [{ "type" => "flashcards", "cards" => [{ "front" => "a", "back" => "b" }] },
+                            [[{ "ratings" => %w[easy hard] }, true]]],
+    "concept: read" => [{ "type" => "concept", "body" => "text" }, [[{}, true]]]
+  }.freeze
+
+  # BlockAttempt#fsrs_rating over every branch, then whole submission histories
+  # replayed in memory through the recorder, where the release after 3 failures lives.
+  def attempt_rating
+    ratings = %w[check drag_drop fill_blank flashcards concept].product([true, false, nil], [nil, 0, 1, 2, 3], [false, true])
+      .map { |type, correct, attempts, released| rating_case(type, correct, attempts, released, nil) }
+    ratings += FLASHCARD_PAYLOADS.product([false, true]).map { |payload, released| rating_case("flashcards", nil, 1, released, payload) }
+    ratings + SUBMISSIONS.map { |name, (section, submissions)| submission_case(name, section, submissions) }
+  end
+
+  def rating_case(block_type, correct, attempts, released, payload)
+    attempt = LearningRoutesEngine::BlockAttempt.new(block_type: block_type, correct: correct, attempts: attempts,
+                                                     released_at: (FROZEN_AT if released), payload: payload)
+    { input: { kind: "fsrs_rating", block_type: block_type, correct: correct, attempts: attempts,
+               released: released, payload: payload },
+      output: attempt.fsrs_rating }
+  end
+
+  def submission_case(name, section, submissions)
+    attempt = LearningRoutesEngine::BlockAttempt.new(block_type: section["type"], section_index: 0)
+    step = Struct.new(:id, :learning_route_id).new("step", "route")
+    states = submissions.map do |payload, complete|
+      grading = LearningRoutesEngine::BlockGrader.new(section: section, payload: payload).call
+      LearningRoutesEngine::BlockAttemptRecorder.new(user: nil, route_step: step, section_index: 0,
+        block_type: section["type"], payload: payload, grading: grading, complete: complete)
+        .send(:record_submission!, attempt)
+      { attempts: attempt.attempts, correct: attempt.correct, score: attempt.score&.to_f,
+        completed: attempt.completed_at.present?, released: attempt.released?, passed: attempt.passed?,
+        engaged: attempt.engaged?, satisfied: attempt.satisfied?, fsrs_rating: attempt.fsrs_rating }
+    end
+    { input: { kind: "submissions", name: name, section: section,
+               submissions: submissions.map { |payload, complete| { payload: payload, complete: complete } } },
+      output: states }
   end
 
   # Right, wrong, partial, empty and malformed answers for one section.

@@ -60,6 +60,19 @@ class CharacterizeTest < ActiveSupport::TestCase
     assert_equal 1, cases.fetch("next_interval").find { |c| c.dig("input", "stability") == 0 }["output"]
   end
 
+  test "attempt_rating maps attempts to an FSRS rating, worst card and release included" do
+    cases = run_unit("attempt_rating").fetch("cases").group_by { |c| c.dig("input", "kind") }
+
+    worst = cases.fetch("fsrs_rating").find do |c|
+      c["input"].values_at("block_type", "released", "payload") == ["flashcards", false, { "ratings" => %w[easy hard] }]
+    end
+    assert_equal 2, worst["output"]
+
+    three_wrong = cases.fetch("submissions").find { |c| c.dig("input", "name") == "check: wrong three times" }
+    assert_equal [false, false, true], three_wrong["output"].map { |s| s["released"] }
+    assert_equal [nil], three_wrong["output"].last.values_at("fsrs_rating")
+  end
+
   private
 
   def run_unit(unit, out: @out)
