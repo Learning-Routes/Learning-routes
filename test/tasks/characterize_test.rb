@@ -82,6 +82,15 @@ class CharacterizeTest < ActiveSupport::TestCase
     assert(cases.all? { |c| c["output"].all? { |s| s.key?("type") } })
   end
 
+  test "cost_estimate covers every priced model with at least five mixes" do
+    cases = run_unit("cost_estimate").fetch("cases").group_by { |c| c.dig("input", "model") }
+
+    AiOrchestrator::CostTracker::PRICING.each_key { |model| assert_operator cases.fetch(model).size, :>=, 5, model }
+    million = cases["claude-sonnet-4-5"].find { |c| c["input"].except("model") == { "input_tokens" => 1_000_000 } }
+    assert_equal 3_000_000, million["output"]
+    assert_equal "ArgumentError", cases["tavily"].first.dig("output", "error")
+  end
+
   private
 
   def run_unit(unit, out: @out)

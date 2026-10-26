@@ -23,7 +23,8 @@ module Characterization
     "gating" => -> { Object.const_source_location("LearningRoutesEngine::BlockGrader::GATING_TYPES") },
     "fsrs" => -> { LearningRoutesEngine::SpacedRepetition.instance_method(:review).source_location },
     "attempt_rating" => -> { LearningRoutesEngine::BlockAttempt.instance_method(:fsrs_rating).source_location },
-    "lesson_parser" => -> { ContentEngine::LessonSectionParser.instance_method(:parse).source_location }
+    "lesson_parser" => -> { ContentEngine::LessonSectionParser.instance_method(:parse).source_location },
+    "cost_estimate" => -> { AiOrchestrator::CostTracker.method(:estimate_microcents).source_location }
   }.freeze
 
   module_function
@@ -277,6 +278,32 @@ module Characterization
     { input: { kind: "submissions", name: name, section: section,
                submissions: submissions.map { |payload, complete| { payload: payload, complete: complete } } },
       output: states }
+  end
+
+  # Token mixes for chat and image models, then the units speech models bill by.
+  COST_MIXES = [
+    {}, { input_tokens: 1 }, { input_tokens: 1_000_000 }, { output_tokens: 1_000_000 },
+    { input_tokens: 1234, output_tokens: 567 }, { cached_tokens: 1 }, { cached_tokens: 3 },
+    { input_tokens: 10_000, cached_tokens: 200_000, output_tokens: 800 },
+    { input_tokens: 2_000, cache_write_tokens: 50_000, output_tokens: 300 },
+    { input_tokens: 500, cached_tokens: 4_000, cache_write_tokens: 1_000, output_tokens: 250 },
+    { input_tokens: 200, image_input_tokens: 3_333, output_tokens: 4_160 },
+    { characters: 0 }, { characters: 1 }, { characters: 999 }, { characters: 1_000 }, { characters: 12_345 },
+    { audio_seconds: "0" }, { audio_seconds: "0.1" }, { audio_seconds: "59.5" }, { audio_seconds: 7.25 },
+    { audio_seconds: "3600" }
+  ].freeze
+
+  # Every model in the pricing table, and one it does not know, under every mix.
+  def cost_estimate
+    models = AiOrchestrator::CostTracker::PRICING.keys + ["unpriced-model"]
+    models.product(COST_MIXES).map do |model, mix|
+      output = begin
+        AiOrchestrator::CostTracker.estimate_microcents(model: model, **mix)
+      rescue StandardError => e
+        { error: e.class.name, message: e.message }
+      end
+      { input: mix.merge(model: model), output: output }
+    end
   end
 
   LESSON_BODY_CAP = 500
