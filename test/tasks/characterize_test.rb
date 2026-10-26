@@ -91,6 +91,16 @@ class CharacterizeTest < ActiveSupport::TestCase
     assert_equal "ArgumentError", cases["tavily"].first.dig("output", "error")
   end
 
+  test "spend_limits records thirty situations around each limit" do
+    cases = run_unit("spend_limits").fetch("cases").group_by { |c| c.dig("input", "limit") }
+
+    %w[daily_budget user_budget rate_limit].each { |limit| assert_operator cases.fetch(limit).size, :>=, 30, limit }
+    at_cap = cases["daily_budget"].find { |c| c.dig("input", "delta_microcents") == 0 && c.dig("input", "noise") == "none" }
+    assert_equal({ "allowed" => false, "kind" => "daily_budget" }, at_cap["output"].slice("allowed", "kind"))
+    eleven = cases["rate_limit"].find { |c| c.dig("input", "model") == "elevenlabs" && c.dig("input", "calls") == 21 && c.dig("input", "pause_seconds").nil? }
+    assert_equal 21, eleven.dig("output", "first_refused_call")
+  end
+
   private
 
   def run_unit(unit, out: @out)

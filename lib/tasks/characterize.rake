@@ -24,7 +24,8 @@ module Characterization
     "fsrs" => -> { LearningRoutesEngine::SpacedRepetition.instance_method(:review).source_location },
     "attempt_rating" => -> { LearningRoutesEngine::BlockAttempt.instance_method(:fsrs_rating).source_location },
     "lesson_parser" => -> { ContentEngine::LessonSectionParser.instance_method(:parse).source_location },
-    "cost_estimate" => -> { AiOrchestrator::CostTracker.method(:estimate_microcents).source_location }
+    "cost_estimate" => -> { AiOrchestrator::CostTracker.method(:estimate_microcents).source_location },
+    "spend_limits" => -> { AiOrchestrator::SpendGuard.instance_method(:call).source_location }
   }.freeze
 
   module_function
@@ -304,6 +305,116 @@ module Characterization
       end
       { input: mix.merge(model: model), output: output }
     end
+  end
+
+  SPEND_DELTAS = [-10_000_000, -1_000_000, -10_000, -1, 0, 1, 10_000].freeze
+  # Rows that must not count (or, at midnight, must) next to the billable spend.
+  SPEND_NOISE = {
+    "none" => nil,
+    "yesterday" => { at: :last_second_yesterday },
+    "unpriced" => { pricing_status: "unpriced" },
+    "cached" => { cached: true },
+    "failed" => { status: :failed },
+    "midnight_today" => { at: :midnight },
+    "other_user_today" => { user_id: :other }
+  }.freeze
+
+  # SpendGuard's verdicts around the daily cap, the per-user cap and the rate limit.
+  # Each situation starts from no spend, with a fresh in-memory rate counter.
+  def spend_limits
+    alerts = Rails.application.config.ai_cost_alerts
+    cent = AiOrchestrator::CostTracker::MICROCENTS_PER_CENT
+    daily_cap = alerts[:daily_limit] * cent
+    user_cap = alerts[:per_user_daily] * cent
+    # Two accounts, rolled back with the rest: SpendGuard tells the student from
+    # someone else by id, and no id is written out.
+    @spender, @other_spender = %w[one two].map do |n|
+      Core::User.create!(name: "Spender #{n}", email: "spender-#{n}@characterize.invalid", password: SecureRandom.hex(16))
+    end
+
+    daily = SPEND_DELTAS.product(SPEND_NOISE.keys).map do |delta, noise|
+      spend_case({ limit: "daily_budget", delta_microcents: delta, noise: noise }) do
+        spend!(daily_cap + delta, noise, user_id: nil)
+        guard_verdict(model: "gpt-4.1-mini", user: nil)
+      end
+    end
+
+    user = SPEND_DELTAS.product(SPEND_NOISE.keys + %w[no_user daily_also_over]).map do |delta, noise|
+      spend_case({ limit: "user_budget", delta_microcents: delta, noise: noise }) do
+        spend!(user_cap + delta, SPEND_NOISE.key?(noise) ? noise : nil, user_id: @spender.id)
+        spend!(daily_cap, "none", user_id: nil) if noise == "daily_also_over"
+        guard_verdict(model: "gpt-4.1-mini", user: noise == "no_user" ? nil : @spender)
+      end
+    end
+
+    limits = AiOrchestrator::ModelRouter::RATE_LIMITS
+    rate = %w[elevenlabs gpt-image-1 claude-opus-4-5 claude-haiku-4-5 gpt-4.1-mini eleven_multilingual_v2].flat_map do |model|
+      limit = limits.fetch(model, 25)
+      [limit - 1, limit, limit + 1, limit + 5].map { |calls| rate_case(model, calls) }
+    end
+    rate += [[59, false], [61, false], [61, true]].flat_map do |pause, over|
+      %w[elevenlabs gpt-image-1].map { |model| rate_case(model, limits[model] + 1, pause_seconds: pause, daily_over: over) }
+    end
+    rate += %w[elevenlabs gpt-image-1 claude-opus-4-5].map { |model| rate_case(model, limits[model] + 5, daily_over: true) }
+
+    daily + user + rate
+  end
+
+  def rate_case(model, calls, pause_seconds: nil, daily_over: false)
+    input = { limit: "rate_limit", model: model, calls: calls, pause_seconds: pause_seconds, daily_over: daily_over }
+    spend_case(input) do
+      cap = Rails.application.config.ai_cost_alerts[:daily_limit] * AiOrchestrator::CostTracker::MICROCENTS_PER_CENT
+      spend!(cap, "none", user_id: nil) if daily_over
+      verdicts = Array.new(calls) { guard_verdict(model: model, user: nil) }
+      if pause_seconds
+        travel_to(FROZEN_AT + pause_seconds.seconds)
+        verdicts << guard_verdict(model: model, user: nil)
+      end
+      kinds = verdicts.map { |v| v[:kind] || "allowed" }
+      { first_refused_call: kinds.index { |k| k != "allowed" }&.succ,
+        runs: kinds.chunk_while { |a, b| a == b }.map { |run| [run.first, run.size] } }
+    end
+  end
+
+  # One situation in its own savepoint, so the rows of one never leak into the next.
+  def spend_case(input)
+    output = nil
+    previous_cache = Rails.cache
+    Rails.cache = ActiveSupport::Cache::MemoryStore.new
+    ActiveRecord::Base.transaction(requires_new: true) do
+      AiOrchestrator::AiInteraction.delete_all
+      output = I18n.with_locale(:en) { yield }
+      raise ActiveRecord::Rollback
+    end
+    { input: input, output: output }
+  ensure
+    Rails.cache = previous_cache
+    travel_to(FROZEN_AT)
+  end
+
+  # `total` billable microcents today, in two rows, plus one row of the noise kind.
+  def spend!(total, noise, user_id:)
+    day = FROZEN_AT.beginning_of_day
+    record = lambda do |microcents, at: FROZEN_AT, **attributes|
+      AiOrchestrator::AiInteraction.create!(
+        { model: "gpt-4.1-mini", prompt: "characterize", status: :completed, cached: false, pricing_status: "priced",
+          user_id: user_id, cost_microcents: microcents, created_at: at }.merge(attributes)
+      )
+    end
+    record.call(total / 2)
+    record.call(total - (total / 2))
+    extra = SPEND_NOISE[noise] or return
+    at = { last_second_yesterday: day - 1.second, midnight: day }.fetch(extra[:at], FROZEN_AT)
+    attributes = extra.except(:at)
+    attributes[:user_id] = @other_spender.id if attributes[:user_id] == :other
+    record.call(1_000_000, at: at, **attributes)
+  end
+
+  def guard_verdict(model:, user:)
+    AiOrchestrator::SpendGuard.call(model: model, user: user)
+    { allowed: true }
+  rescue AiOrchestrator::SpendGuard::LimitExceeded => e
+    { allowed: false, kind: e.kind.to_s, message: e.message }
   end
 
   LESSON_BODY_CAP = 500
