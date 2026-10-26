@@ -18,7 +18,8 @@ module Characterization
 
   # unit => where its Ruby lives, resolved when the task runs.
   UNITS = {
-    "block_registry" => -> { Object.const_source_location("ContentEngine::LessonBlocks::BLOCKS") }
+    "block_registry" => -> { Object.const_source_location("ContentEngine::LessonBlocks::BLOCKS") },
+    "block_grader" => -> { LearningRoutesEngine::BlockGrader.instance_method(:call).source_location }
   }.freeze
 
   module_function
@@ -96,6 +97,93 @@ module Characterization
       }
     }]
   end
+
+  # Every section the dev database recorded, under a spread of submissions.
+  def recorded_sections
+    LearningRoutesEngine::RouteStep.where("metadata ? 'parsed_sections'").order(:id)
+      .flat_map { |step| Array(step.metadata["parsed_sections"]) }.select { |s| s.is_a?(Hash) }
+  end
+
+  def block_grader
+    every_type = ContentEngine::LessonBlocks.types.map { |type| { "type" => type } }
+    sections = recorded_sections + every_type + GRADER_EDGE_SECTIONS
+    cases = sections.flat_map { |section| submissions_for(section).map { |payload| grade(section, payload) } }
+    cases + NORMALIZE_PROBES.flat_map do |expected, answers|
+      answers.map { |answer| grade({ "type" => "fill_blank", "blanks" => [expected] }, { "answers" => [answer] }) }
+    end
+  end
+
+  def grade(section, payload)
+    grader = LearningRoutesEngine::BlockGrader
+    {
+      input: { section: section, payload: payload },
+      output: {
+        call: grader.new(section: section, payload: payload).call.to_h,
+        answerable: grader.answerable?(section)
+      }
+    }
+  end
+
+  # Right, wrong, partial, empty and malformed answers for one section.
+  def submissions_for(section)
+    section = (section || {}).with_indifferent_access
+    case section[:type].to_s
+    when "check"
+      count = Array(section[:options]).size
+      (0...count).map { |i| { "option_index" => i } } +
+        [{}, { "option_index" => "1" }, { "option_index" => count }, { "option_index" => -1 }]
+    when "drag_drop"
+      count = Array(section[:pairs]).size
+      identity = (0...count).to_h { |i| [i.to_s, i] }
+      [identity, identity.transform_values { |i| (i + 1) % count }, identity.first(1).to_h,
+       identity.transform_values(&:to_s), {}].map { |matches| { "matches" => matches } }
+    when "fill_blank"
+      blanks = Array(section[:blanks]).map(&:to_s)
+      [blanks, blanks.map(&:upcase), ["wrong"] + blanks.drop(1), blanks.take(1), []].map { |a| { "answers" => a } }
+    else
+      [{}]
+    end
+  end
+
+  # Sections a generation bug can produce, and the boundaries of each rule.
+  GRADER_EDGE_SECTIONS = [
+    nil,
+    {},
+    { "type" => "tap_pairs" },
+    { "type" => "check", "question" => "Q?", "options" => [] },
+    { "type" => "check", "question" => "Q?", "options" => [{ "label" => "A", "correct" => false }] },
+    { "type" => "check", "question" => "", "options" => [{ "label" => "A", "correct" => true }] },
+    { "type" => "check", "question" => "  ", "options" => [{ "label" => "A", "correct" => true }] },
+    { "type" => "check", "options" => [{ "label" => "A", "correct" => true }] },
+    { "type" => "check", "question" => "Q?",
+      "options" => [{ "label" => "A", "correct" => true }, { "label" => "B", "correct" => true }] },
+    { "type" => "check", "question" => "Q?", "options" => [{ "label" => "A", "correct" => "yes" }, { "label" => "B" }] },
+    { "type" => "drag_drop", "pairs" => [] },
+    { "type" => "drag_drop", "pairs" => [%w[uno one], %w[dos two], %w[tres three]] },
+    { "type" => "drag_drop", "pairs" => [{ "term" => "a", "definition" => "b" }] },
+    { "type" => "fill_blank", "blanks" => [] },
+    { "type" => "fill_blank", "blanks" => ["", "  "] },
+    { "type" => "fill_blank", "blanks" => ["", "gato"], "sentence" => "El ___ come ___." },
+    { "type" => "fill_blank", "blanks" => %w[uno dos tres] },
+    { "type" => "flashcards", "cards" => [] },
+    { "type" => "flashcards", "cards" => [{ "front" => "a", "back" => "b" }] },
+    { "type" => "scenario", "options" => [] },
+    { "type" => "scenario", "situation" => "S", "options" => [{ "label" => "A" }] }
+  ].freeze
+
+  # expected blank => answers probing normalize: accents, case, whitespace, punctuation.
+  NORMALIZE_PROBES = {
+    "Obrigado" => ["obrigado", "OBRIGADO", " obrigádo! ", "obri gado", "obrigada", ""],
+    "¿Qué tal?" => ["que tal", "Qué tal", "¿qué  tal?", "quetal", "que-tal"],
+    "São Paulo" => ["sao paulo", "SÃO\tPAULO", "Sao  Paulo.", "saopaulo"],
+    "Ñandú" => ["nandu", "ñandu", "NANDÚ", "nandú!!"],
+    "C++" => ["c", "C++", "c+", "c#"],
+    "l'eau" => ["leau", "l eau", "L'EAU", "l’eau"],
+    "café au lait" => ["cafe au lait", "café-au-lait", "cafe\nau lait", "cafeaulait"],
+    "naïve" => ["naive", "NAÏVE", "naıve"],
+    "3.14" => ["314", "3,14", "3.14", "3 14"],
+    "straße" => ["strasse", "STRASSE", "straße", "STRAẞE"]
+  }.freeze
 end
 
 namespace :characterize do

@@ -26,6 +26,20 @@ class CharacterizeTest < ActiveSupport::TestCase
     assert_equal %w[en es], output.fetch("default_titles").keys
   end
 
+  test "block_grader grades and checks answerability, edge cases included" do
+    cases = run_unit("block_grader").fetch("cases")
+
+    normalized = cases.find do |c|
+      c.dig("input", "section", "blanks") == ["Obrigado"] && c.dig("input", "payload", "answers") == [" obrigádo! "]
+    end
+    assert_equal({ "correct" => true, "gradable" => true, "reason" => nil, "score" => 100.0 },
+                 normalized.dig("output", "call"))
+
+    no_correct = cases.find { |c| c.dig("input", "section", "type") == "check" && c.dig("input", "section", "options") == [{ "label" => "A", "correct" => false }] }
+    assert_equal false, no_correct.dig("output", "answerable")
+    assert_equal "check has no option marked correct", no_correct.dig("output", "call", "reason")
+  end
+
   private
 
   def run_unit(unit, out: @out)
