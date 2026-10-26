@@ -19,7 +19,8 @@ module Characterization
   # unit => where its Ruby lives, resolved when the task runs.
   UNITS = {
     "block_registry" => -> { Object.const_source_location("ContentEngine::LessonBlocks::BLOCKS") },
-    "block_grader" => -> { LearningRoutesEngine::BlockGrader.instance_method(:call).source_location }
+    "block_grader" => -> { LearningRoutesEngine::BlockGrader.instance_method(:call).source_location },
+    "gating" => -> { Object.const_source_location("LearningRoutesEngine::BlockGrader::GATING_TYPES") }
   }.freeze
 
   module_function
@@ -122,6 +123,16 @@ module Characterization
         answerable: grader.answerable?(section)
       }
     }
+  end
+
+  # Per type: graded, a gate before the step completes, or engagement only (the
+  # default for any type not graded, so a new type can never trap a student).
+  def gating
+    grader = LearningRoutesEngine::BlockGrader
+    (ContentEngine::LessonBlocks.types + ["tap_pairs", ""]).map do |type|
+      gradable = grader.gradable?(type)
+      { input: type, output: { gradable: gradable, gating: grader.gating?(type), engagement_only: !gradable } }
+    end
   end
 
   # Right, wrong, partial, empty and malformed answers for one section.

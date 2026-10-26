@@ -40,6 +40,15 @@ class CharacterizeTest < ActiveSupport::TestCase
     assert_equal "check has no option marked correct", no_correct.dig("output", "call", "reason")
   end
 
+  test "gating covers every block type" do
+    cases = run_unit("gating").fetch("cases").to_h { |c| [c["input"], c["output"]] }
+
+    assert_equal ContentEngine::LessonBlocks.types.sort, (cases.keys & ContentEngine::LessonBlocks.types).sort
+    assert_equal({ "engagement_only" => false, "gating" => true, "gradable" => true }, cases["check"])
+    assert_equal({ "engagement_only" => true, "gating" => true, "gradable" => false }, cases["flashcards"])
+    assert_equal({ "engagement_only" => true, "gating" => false, "gradable" => false }, cases["simulation"])
+  end
+
   private
 
   def run_unit(unit, out: @out)
