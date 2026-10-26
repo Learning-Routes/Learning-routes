@@ -22,7 +22,8 @@ module Characterization
     "block_grader" => -> { LearningRoutesEngine::BlockGrader.instance_method(:call).source_location },
     "gating" => -> { Object.const_source_location("LearningRoutesEngine::BlockGrader::GATING_TYPES") },
     "fsrs" => -> { LearningRoutesEngine::SpacedRepetition.instance_method(:review).source_location },
-    "attempt_rating" => -> { LearningRoutesEngine::BlockAttempt.instance_method(:fsrs_rating).source_location }
+    "attempt_rating" => -> { LearningRoutesEngine::BlockAttempt.instance_method(:fsrs_rating).source_location },
+    "lesson_parser" => -> { ContentEngine::LessonSectionParser.instance_method(:parse).source_location }
   }.freeze
 
   module_function
@@ -276,6 +277,55 @@ module Characterization
     { input: { kind: "submissions", name: name, section: section,
                submissions: submissions.map { |payload, complete| { payload: payload, complete: complete } } },
       output: states }
+  end
+
+  LESSON_BODY_CAP = 500
+  # Stands in for a real audio file, whose URL may carry a signed token.
+  AUDIO_URL = "https://media.example/lesson-audio.mp3"
+  KNOWLEDGE_CHECKS = [
+    { "question" => "Q1?", "options" => %w[a b c], "correct_index" => 1, "explanation" => "b." },
+    { "question" => "Q2?", "options" => %w[x y], "correct_index" => 0 }
+  ].freeze
+
+  # Every lesson body in the database (capped), every markdown literal in the parser's
+  # tests, and the inputs that switch the metadata and audio injections on.
+  def lesson_parser
+    db = ContentEngine::AiContent.where(content_type: :text).where.not(body: [nil, ""])
+      .includes(:route_step).order(:id).limit(LESSON_BODY_CAP).map do |content|
+      checks = content.route_step&.metadata&.dig("knowledge_checks")
+      parse_case(content.body, checks, content.audio_url.present? ? AUDIO_URL : nil)
+    end
+    from_tests = test_suite_markdown.flat_map { |body| [parse_case(body, nil, nil), parse_case(body, nil, AUDIO_URL)] }
+    concepts = "## Concepto: Uno\nA.\n\n## Concepto: Dos\nB.\n\n## Concepto: Tres\nC.\n\n## Concepto: Cuatro\nD."
+    synthetic = [nil, "", "  \n", concepts].product([nil, KNOWLEDGE_CHECKS], [nil, AUDIO_URL])
+      .map { |body, checks, audio| parse_case(body, checks, audio) }
+    db + from_tests + synthetic
+  end
+
+  def parse_case(body, knowledge_checks, audio_url)
+    metadata = knowledge_checks ? { "knowledge_checks" => knowledge_checks } : {}
+    output = begin
+      ContentEngine::LessonSectionParser.call(body, metadata: metadata, audio_url: audio_url).map(&:as_json)
+    rescue StandardError => e
+      { error: e.class.name, message: e.message }
+    end
+    { input: { body: body, knowledge_checks: knowledge_checks, audio_url: audio_url }, output: output }
+  end
+
+  # String literals in the tests that exercise the parser and read as lesson
+  # markdown (a ::: fence or a ## heading at a line start). Interpolated strings
+  # are left out: their value is only known when the test runs.
+  def test_suite_markdown
+    files = Dir[Rails.root.join("{test,engines/*/test}/**/*_test.rb")].sort
+      .select { |file| File.read(file).include?("LessonSectionParser") }
+    files.flat_map { |file| string_literals(Prism.parse_file(file).value) }
+      .map { |s| s.dup.force_encoding(Encoding::UTF_8) }
+      .select { |s| s.valid_encoding? && s.match?(/^(:::\w|\#{2,3} )/) }.uniq
+  end
+
+  def string_literals(node)
+    found = node.is_a?(Prism::StringNode) ? [node.unescaped] : []
+    found + node.compact_child_nodes.flat_map { |child| string_literals(child) }
   end
 
   # Right, wrong, partial, empty and malformed answers for one section.

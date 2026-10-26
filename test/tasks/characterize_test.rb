@@ -73,6 +73,15 @@ class CharacterizeTest < ActiveSupport::TestCase
     assert_equal [nil], three_wrong["output"].last.values_at("fsrs_rating")
   end
 
+  test "lesson_parser parses the markdown in the test suite" do
+    cases = run_unit("lesson_parser").fetch("cases")
+
+    variables = cases.find { |c| c["input"] == { "audio_url" => nil, "body" => ":::concept\nVariables\nThey store data.\n:::", "knowledge_checks" => nil } }
+    assert_equal %w[concept summary], variables["output"].map { |s| s["type"] }
+    assert_operator cases.size, :>=, 50
+    assert(cases.all? { |c| c["output"].all? { |s| s.key?("type") } })
+  end
+
   private
 
   def run_unit(unit, out: @out)
