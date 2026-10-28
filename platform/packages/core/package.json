@@ -5,7 +5,9 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
-    "./locales": "./src/locales.ts"
+    "./locales": "./src/locales.ts",
+    "./actions/names": "./src/actions/names.ts",
+    "./actions/registry": "./src/actions/registry.ts"
   },
   "scripts": {
     "test": "vitest run",
