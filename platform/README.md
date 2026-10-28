@@ -43,6 +43,7 @@ Nothing is deployed yet. Local secrets, once there are any, go in `apps/*/.dev.v
 
 ## Docs
 
+- [Foundations](docs/FOUNDATIONS.md): read this first
 - [ADR 0001: the stack](docs/adr/0001-stack.md)
 - [ADR 0002: what goes in core](docs/adr/0002-core-boundary.md)
 - [ADR 0003: decisions from the v1 port](docs/adr/0003-v1-port-decisions.md)
