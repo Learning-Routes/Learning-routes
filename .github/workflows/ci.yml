@@ -5,6 +5,9 @@ on:
   push:
     branches: [main]
 
+permissions:
+  contents: read
+
 jobs:
   # Which parts this change touches (.github/scripts/changed-parts.sh). The jobs
   # below are skipped when Rails did not change; platform/ runs in platform.yml.
