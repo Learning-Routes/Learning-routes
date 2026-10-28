@@ -10,6 +10,10 @@ minimumReleaseAge: 20160
 # refuses it under minimumReleaseAge instead of taking an older release. Keep this
 # equal to apps/web's vite; drop it once pnpm picks a mature version for peers.
 overrides:
+  # drizzle-kit's TypeScript loader (@esbuild-kit) asks for esbuild ~0.18, three
+  # years old. It uses only esbuild's transform API, which 0.28 keeps; held at
+  # the newest release at least 14 days old, like the rest of the workspace.
+  "@esbuild-kit/core-utils>esbuild": 0.28.2
   vite: 8.3.4
   # magicast (under @vitest/coverage-v8) asks for ^7 Babel, and pnpm 10.33 takes
   # the newest release and then refuses it under minimumReleaseAge. Held at the

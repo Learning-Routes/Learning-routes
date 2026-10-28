@@ -14,6 +14,7 @@ const CHECKS = [
   ["file names", "pnpm", ["names"]],
   ["no personal data in fixtures", "pnpm", ["fixtures"]],
   ["versions: exact, at least 14 days old", "node", ["scripts/check-versions.mjs"]],
+  ["migrations (squawk)", "pnpm", ["--filter", "@learning-routes/api", "db:lint"]],
   ["tests, with coverage floors", "pnpm", ["turbo", "run", "test", "--continue"]],
   ["builds", "pnpm", ["turbo", "run", "build"]],
   [

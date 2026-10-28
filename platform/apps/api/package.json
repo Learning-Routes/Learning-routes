@@ -9,13 +9,20 @@
     "test": "vitest run",
     "typecheck": "wrangler types && tsc --noEmit",
     "cf-typegen": "wrangler types",
-    "postinstall": "wrangler types"
+    "postinstall": "wrangler types",
+    "db:migrate": "node scripts/migrate.ts",
+    "db:lint": "squawk -c .squawk.toml drizzle/*.sql"
   },
   "dependencies": {
     "@learning-routes/core": "workspace:*",
-    "hono": "4.13.13"
+    "drizzle-orm": "0.45.4",
+    "hono": "4.13.13",
+    "pg": "8.23.1"
   },
   "devDependencies": {
+    "@types/pg": "8.23.1",
+    "drizzle-kit": "0.31.11",
+    "squawk-cli": "2.69.0",
     "typescript": "5.9.3",
     "vitest": "5.0.4",
     "wrangler": "4.151.0"

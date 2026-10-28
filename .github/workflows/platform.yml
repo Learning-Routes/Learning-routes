@@ -47,6 +47,20 @@ jobs:
     defaults:
       run:
         working-directory: platform
+    # The same image as platform/docker-compose.yml (Platform STEP 2 §1.2). LOCAL
+    # ONLY: the password is the fixed development value, used nowhere else.
+    services:
+      postgres:
+        image: postgres:18.4
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: local-only-superuser
+          POSTGRES_DB: learning_routes
+        ports:
+          - 54318:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d learning_routes"
+          --health-interval 2s --health-timeout 3s --health-retries 30
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       # The pnpm version comes from packageManager in platform/package.json.
@@ -58,6 +72,10 @@ jobs:
           node-version-file: platform/.nvmrc
           cache: pnpm
           cache-dependency-path: platform/pnpm-lock.yaml
+      # The role script compose runs on first start; a service container cannot
+      # mount it, so it runs here, with the image's own psql.
+      - name: Create the database roles
+        run: docker exec -i ${{ job.services.postgres.id }} psql -v ON_ERROR_STOP=1 -U postgres -d learning_routes < db/init/01-roles.sql
       - run: pnpm install --frozen-lockfile
       # Every check a contributor runs, in the same command (Platform STEP 1 §4.6):
       # types, lint, boundaries, knip, sizes, shortcuts, names, fixtures, versions,

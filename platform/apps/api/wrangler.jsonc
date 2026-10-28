@@ -3,5 +3,24 @@
   "name": "learning-routes-api",
   "main": "src/index.ts",
   "compatibility_date": "2026-10-12",
-  "observability": { "enabled": true }
+  // pg needs Node's net and tls; Hyperdrive gives it a pooled Postgres connection.
+  "compatibility_flags": ["nodejs_compat"],
+  // Workers Logs and Traces: every log line kept, one trace in ten sampled.
+  "observability": {
+    "enabled": true,
+    "logs": { "enabled": true, "head_sampling_rate": 1 },
+    "traces": { "enabled": true, "head_sampling_rate": 0.1 }
+  },
+  // The database is regional: run next to it (ADR 0005).
+  "placement": { "mode": "targeted", "region": "aws:us-east-1" },
+  "hyperdrive": [
+    {
+      "binding": "DB",
+      // A placeholder until the owner creates the Hyperdrive config
+      // (docs/runbooks/database.md); a dry-run deploy needs no real one.
+      "id": "00000000000000000000000000000000",
+      // LOCAL ONLY: the lr_app role of platform/docker-compose.yml, never the migrator.
+      "localConnectionString": "postgres://lr_app:local-only-app@localhost:54318/learning_routes"
+    }
+  ]
 }

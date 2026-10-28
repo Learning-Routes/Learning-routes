@@ -74,15 +74,36 @@ module.exports = {
     {
       name: "only-the-db-module-reaches-the-database",
       comment:
-        "Drizzle and the Postgres drivers belong to apps/api/src/db/ alone (FOUNDATIONS.md §4); everything else goes through it.",
+        "Drizzle, drizzle-kit and the Postgres drivers belong to apps/api/src/db/ (FOUNDATIONS.md §4, Platform STEP 2 §1.8). Its tooling may use them too: the migration script, drizzle.config.ts and the database tests.",
       severity: "error",
-      from: { pathNot: "^apps/api/src/db/" },
-      to: {
-        path: [
-          "^(drizzle-orm|pg|postgres|@planetscale/|@neondatabase/)($|/)",
-          "node_modules/(drizzle-orm|pg|postgres|@planetscale|@neondatabase)/",
+      from: {
+        pathNot: [
+          "^apps/api/src/db/",
+          "^apps/api/scripts/",
+          "^apps/api/drizzle\\.config\\.ts$",
+          "^apps/api/test/db/",
         ],
       },
+      to: {
+        path: [
+          "^(drizzle-orm|drizzle-kit|pg|postgres|@planetscale/|@neondatabase/)($|/)",
+          "node_modules/(drizzle-orm|drizzle-kit|pg|postgres|@planetscale|@neondatabase)/",
+        ],
+      },
+    },
+    {
+      name: "only-auth-touches-better-auth-tables",
+      comment:
+        "Better Auth's tables (user, session, account, verification) are read and written only by apps/api/src/auth/ (Platform STEP 2 §1.8).",
+      severity: "error",
+      from: {
+        pathNot: [
+          "^apps/api/src/auth/",
+          "^apps/api/src/db/schema/",
+          "^apps/api/drizzle\\.config\\.ts$",
+        ],
+      },
+      to: { path: "^apps/api/src/db/schema/auth\\.ts$" },
     },
     {
       name: "web-and-api-stay-apart",

@@ -67,7 +67,17 @@ Everything runs against a local Postgres 18. Do **not** create PlanetScale, Hype
    - Rule, written in the working agreement: migrations are forward-only and expand/contract. They run before the Worker deploys, and each one works with the previous Worker.
    - Configure squawk to accept an index created on a table made in the same file.
 6. **The request's database scope.** `withDb(env, fn)` creates a `pg` client from `env.DB.connectionString`. A mutation runs in one transaction, in three steps: load, a pure decide step in `core`, commit. The **commit is awaited before the response is built**, and only closing the client goes in `waitUntil`. No outside call (AI, email, payments) ever runs inside the transaction. Add a lint or a test that fails if an action's `run` receives anything that can make a network call.
-7. **dependency-cruiser:** only `apps/api/src/db/**` may import `drizzle-orm`, `pg` or `drizzle-kit`. Only `apps/api/src/auth/**` may touch Better Auth's tables.
+7. **Workers practices** (Cloudflare's Workers best-practices guide; verify against it):
+   - **Observability:**
+     - set `observability.traces.enabled: true` next to `observability.enabled` in both Workers;
+     - logs are structured JSON carrying ids, never emails, tokens or answers;
+     - sampling is set in the config.
+   - **Compatibility date:** today's date on any Worker this STEP touches, with the compatibility changes reviewed in the PR.
+   - **No module-level request state:** the `pg` client, the session and the actor are created per request and passed explicitly, never cached in a module variable.
+   - **Secret comparison:** any comparison of a secret or token uses a constant-time comparison from Web Crypto, never `===`.
+   - **Background work:** never destructure `ctx`. Every background promise goes to `ctx.waitUntil(...)`, and the floating-promise lint guards it.
+   - **Bindings:** `Env` comes only from `wrangler types`.
+8. **dependency-cruiser:** only `apps/api/src/db/**` may import `drizzle-orm`, `pg` or `drizzle-kit`. Only `apps/api/src/auth/**` may touch Better Auth's tables.
 
 ## §2. The schema
 
