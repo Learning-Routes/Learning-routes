@@ -1,0 +1,8 @@
+name: Proof
+on:
+  pull_request_target:
+jobs:
+  x:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
