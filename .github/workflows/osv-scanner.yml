@@ -16,6 +16,8 @@ permissions:
 jobs:
   scan-scheduled:
     if: ${{ github.event_name != 'pull_request' }}
+    # The reusable workflow uploads its findings to code scanning (security-events)
+    # and reads the run it belongs to (actions).
     permissions:
       actions: read
       security-events: write
@@ -28,6 +30,8 @@ jobs:
 
   scan-pr:
     if: ${{ github.event_name == 'pull_request' }}
+    # The reusable workflow uploads its findings to code scanning (security-events)
+    # and reads the run it belongs to (actions).
     permissions:
       actions: read
       security-events: write
