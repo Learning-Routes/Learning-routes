@@ -20,8 +20,8 @@ export async function withDb<T>(
   fn: (tx: Transaction) => Promise<T>,
 ): Promise<T> {
   const client = new pg.Client({ connectionString: env.DB.connectionString });
-  await client.connect();
   try {
+    await client.connect();
     return await drizzle(client).transaction(async (tx) => {
       // First statement, local to this transaction: RLS reads the acting user here,
       // and a pooled connection's next transaction starts with nobody.

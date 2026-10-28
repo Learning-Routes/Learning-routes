@@ -1,14 +1,9 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
+import { parseJsonc } from "./jsonc";
 
-// wrangler.jsonc, with its whole-line comments removed (a // inside a string, as in
-// a connection URL, stays).
-const config = JSON.parse(
-  readFileSync(new URL("../wrangler.jsonc", import.meta.url), "utf8")
-    .split("\n")
-    .filter((line) => !line.trimStart().startsWith("//"))
-    .join("\n"),
-);
+// biome-ignore lint/suspicious/noExplicitAny: a parsed config, checked field by field below
+const config: any = parseJsonc(readFileSync(new URL("../wrangler.jsonc", import.meta.url), "utf8"));
 
 const LR_APP_LOCAL = /^postgres:\/\/lr_app:[^@]+@localhost:54318\//;
 const HYPERDRIVE_ID = /^[0-9a-f]{32}$/;

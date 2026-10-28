@@ -6,5 +6,5 @@ pg_version = "18.0"
 assume_in_transaction = true
 
 # pnpm db:migrate sets lock_timeout and statement_timeout before every file
-# (scripts/migrate.mjs; a test checks it), so a file need not set them itself.
+# (scripts/migrate.ts; a test checks it), so a file need not set them itself.
 excluded_rules = ["require-lock-timeout", "require-statement-timeout"]

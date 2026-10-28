@@ -1,5 +1,6 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
+import { parseJsonc } from "./jsonc";
 
 // Platform STEP 2 §1.7: Cloudflare's Workers practices, held by tests over both
 // Workers' source and configuration.
@@ -20,14 +21,13 @@ function offenders(pattern: RegExp) {
     .map(([file]) => file);
 }
 
+interface WorkerConfig {
+  observability: { enabled: boolean; logs: unknown; traces: unknown };
+}
+
 function wrangler(app: "api" | "web") {
   const text = readFileSync(new URL(`../../${app}/wrangler.jsonc`, import.meta.url), "utf8");
-  return JSON.parse(
-    text
-      .split("\n")
-      .filter((line) => !line.trimStart().startsWith("//"))
-      .join("\n"),
-  );
+  return parseJsonc(text) as WorkerConfig;
 }
 
 describe("Workers practices", () => {

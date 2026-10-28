@@ -58,4 +58,17 @@ describe("withDb (Platform STEP 2 §1.6)", () => {
     expect(await status(txid)).toBe("aborted");
     await Promise.all(background);
   });
+
+  it("still closes the client when it cannot connect", async () => {
+    const { ctx, background } = worker();
+    const env = {
+      DB: {
+        connectionString: "postgres://lr_app:wrong@localhost:54318/learning_routes",
+      } as Hyperdrive,
+    };
+    await expect(withDb(env, ctx, null, async () => "unreachable")).rejects.toThrow();
+
+    expect(background).toHaveLength(1);
+    await Promise.allSettled(background);
+  });
 });

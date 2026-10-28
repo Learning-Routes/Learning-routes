@@ -59,12 +59,15 @@ describe("the local database's roles", () => {
     expect(role).toEqual({ rolbypassrls: true, rolsuper: false, public_owner: "lr_migrator" });
   });
 
-  it("a new table gives lr_app nothing until a migration grants it", async () => {
+  it("a new table gives lr_app nothing until a migration grants it: no default privileges name it", async () => {
+    // ALTER DEFAULT PRIVILEGES ... TO lr_app would grant every future table at once;
+    // pg_default_acl is where it would show, in any schema.
     const rows = await query(
       URLS.migrator,
-      `create temp table default_privileges_probe (id int);
-       select has_table_privilege('lr_app', 'default_privileges_probe', 'select, insert, update, delete') as granted`,
+      `select count(*)::int as defaults
+         from pg_default_acl, aclexplode(defaclacl) as entry
+        where entry.grantee = 'lr_app'::regrole`,
     );
-    expect(rows).toEqual([{ granted: false }]);
+    expect(rows).toEqual([{ defaults: 0 }]);
   });
 });

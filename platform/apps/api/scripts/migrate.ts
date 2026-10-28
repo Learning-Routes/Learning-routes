@@ -12,8 +12,9 @@ export const TIMEOUTS = { lock: "5s", statement: "5min" } as const;
 const BREAKPOINT = "--> statement-breakpoint";
 const NO_TRANSACTION = "-- no-transaction";
 const TAG = /^\d{4}_[a-z0-9_]+$/;
-// One run at a time, across machines: pg_advisory_lock on a fixed key.
-const LOCK_KEY = 4_602_010;
+// One run at a time, across machines: an advisory lock on a fixed key. A second run
+// fails at once rather than queueing behind a hung one.
+export const LOCK_KEY = 4_602_010;
 
 const LOCAL = "postgres://lr_migrator:local-only-migrator@localhost:54318/learning_routes";
 
@@ -28,6 +29,11 @@ export function plan(tag: string, sql: string): string[] {
     .filter((statement) => statement !== "");
   const record = `insert into meta.migrations (tag) values ('${tag}')`;
   if (sql.startsWith(NO_TRANSACTION)) {
+    // Outside a transaction a failure after the first statement would leave it
+    // applied but unrecorded, and every later run would repeat it and fail.
+    if (statements.length !== 1) {
+      throw new Error(`${tag}: a -- no-transaction migration holds exactly one statement`);
+    }
     return [
       `set lock_timeout = '${TIMEOUTS.lock}'`,
       `set statement_timeout = '${TIMEOUTS.statement}'`,
@@ -58,7 +64,13 @@ export async function migrate(url: string, dir: URL): Promise<string[]> {
   const client = new pg.Client({ connectionString: url });
   await client.connect();
   try {
-    await client.query("select pg_advisory_lock($1)", [LOCK_KEY]);
+    const { rows } = await client.query<{ locked: boolean }>(
+      "select pg_try_advisory_lock($1) as locked",
+      [LOCK_KEY],
+    );
+    if (!rows[0]?.locked) {
+      throw new Error("another migration is running; try again when it finishes");
+    }
     await client.query("create schema if not exists meta");
     await client.query(
       "create table if not exists meta.migrations (tag text primary key, applied_at timestamptz not null default now())",

@@ -1,5 +1,6 @@
+import pg from "pg";
 import { describe, expect, it } from "vitest";
-import { migrate, plan, TIMEOUTS } from "../../scripts/migrate";
+import { LOCK_KEY, migrate, plan, TIMEOUTS } from "../../scripts/migrate";
 import { query, URLS } from "./connect";
 
 const DRIZZLE = new URL("../../drizzle", import.meta.url);
@@ -27,6 +28,12 @@ describe("planning one migration file", () => {
       "insert into meta.migrations (tag) values ('0002_index')",
     ]);
   });
+
+  it("refuses a no-transaction file with more than one statement, which could half-apply", () => {
+    const sql =
+      "-- no-transaction\ncreate index concurrently a_id on a (id);\n--> statement-breakpoint\ncreate index concurrently a_x on a (x);\n";
+    expect(() => plan("0003_indexes", sql)).toThrow("one statement");
+  });
 });
 
 describe("pnpm db:migrate on the local database", () => {
@@ -41,5 +48,16 @@ describe("pnpm db:migrate on the local database", () => {
       "select has_schema_privilege('app', 'usage') as usage, has_schema_privilege('app', 'create') as create",
     );
     expect(privileges).toEqual({ usage: true, create: false });
+  });
+
+  it("fails at once while another run holds the lock, instead of waiting", async () => {
+    const other = new pg.Client({ connectionString: URLS.migrator });
+    await other.connect();
+    try {
+      await other.query("select pg_advisory_lock($1)", [LOCK_KEY]);
+      await expect(migrate(URLS.migrator, DRIZZLE)).rejects.toThrow("another migration is running");
+    } finally {
+      await other.end();
+    }
   });
 });

@@ -1,6 +1,7 @@
+import { Hono } from "hono";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import app from "../src/index";
-import { logEvent } from "../src/log";
+import { logEvent, requestLog } from "../src/log";
 
 describe("the API's request log (Platform STEP 2 §1.7)", () => {
   afterEach(() => vi.restoreAllMocks());
@@ -30,5 +31,16 @@ describe("the API's request log (Platform STEP 2 §1.7)", () => {
     // @ts-expect-error a token is a secret
     logEvent({ message: "signed in", token: "abc" });
     logEvent({ message: "signed in", user_id: "0190f3a0-0000-7000-8000-000000000001" });
+  });
+
+  it("logs the route's pattern, so a token in the path never reaches the log", async () => {
+    const lines: string[] = [];
+    vi.spyOn(console, "log").mockImplementation((line: string) => lines.push(line));
+    const invites = new Hono().use(requestLog).get("/invite/:code", (c) => c.text("ok"));
+
+    await invites.request("/invite/secret-invite-code");
+
+    expect(JSON.parse(lines[0] as string)).toMatchObject({ path: "/invite/:code", status: 200 });
+    expect(lines[0]).not.toContain("secret-invite-code");
   });
 });
