@@ -1,29 +1,11 @@
-import type pg from "pg";
 import { describe, expect, it } from "vitest";
 import { attempt, rolledBack, URLS } from "./connect";
+import { newRoute, newSpace } from "./fixtures";
 
 const CHECK = /violates check constraint/;
 const UNIQUE = /duplicate key value violates unique constraint/;
 const FOREIGN_KEY = /violates foreign key constraint/;
 const RESTRICT = /violates RESTRICT setting of foreign key constraint/;
-
-async function newSpace(db: pg.Client, slug: string): Promise<string> {
-  const { rows } = await db.query(
-    `insert into spaces (slug, name, default_locale, locales)
-     values ($1, '{"en": "A space"}', 'en', '{en}') returning id`,
-    [slug],
-  );
-  return rows[0]?.id;
-}
-
-async function newRoute(db: pg.Client, spaceId: string, slug = "first-route"): Promise<string> {
-  const { rows } = await db.query(
-    `insert into routes (space_id, slug, title, source_locale, access, pricing)
-     values ($1, $2, '{"en": "A route"}', 'en', 'open', 'free') returning id`,
-    [spaceId, slug],
-  );
-  return rows[0]?.id;
-}
 
 describe("the content tables (Platform STEP 2 §2.6–§2.8)", () => {
   it("routes: a slug unique per space, localized text, a draft revision from 0, no fork link", async () => {

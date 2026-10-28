@@ -22,6 +22,8 @@ const EXPECTED: Record<string, string[]> = {
   lessons: ["INSERT", "SELECT", "UPDATE"],
   modules: ["INSERT", "SELECT", "UPDATE"],
   routes: ["INSERT", "SELECT", "UPDATE"],
+  // Append-only, enforced by triggers too.
+  route_versions: ["INSERT", "SELECT"],
 };
 
 describe("lr_app's table privileges", () => {
