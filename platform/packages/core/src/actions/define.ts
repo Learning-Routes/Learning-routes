@@ -5,7 +5,8 @@ import { z } from "zod";
 // an agent can only ever do the same things. Pure: the caller supplies the store,
 // the time and the id maker.
 
-export type ActorKind = "ui" | "mcp" | "agent";
+export const ACTOR_KINDS = ["ui", "mcp", "agent"] as const;
+export type ActorKind = (typeof ACTOR_KINDS)[number];
 export interface Actor {
   via: ActorKind;
   userId: string;

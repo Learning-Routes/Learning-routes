@@ -1,15 +1,7 @@
 import { z } from "zod";
 import { type Card, review } from "../learning/fsrs";
+import { NEW_CARD } from "../learning/replay";
 import { defineAction } from "./define";
-
-const NEW_CARD: Card = {
-  state: null,
-  reps: 0,
-  lapses: 0,
-  stability: 0,
-  difficulty: 0,
-  lastReviewAt: null,
-};
 
 interface ReviewOutput {
   reviewId: string;

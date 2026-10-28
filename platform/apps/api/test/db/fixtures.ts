@@ -34,3 +34,17 @@ export async function newVersion(db: pg.Client, spaceId: string, routeId: string
   );
   return rows[0]?.id as string;
 }
+
+export async function newEnrollment(
+  db: pg.Client,
+  spaceId: string,
+  routeId: string,
+  userId: string,
+) {
+  const { rows } = await db.query(
+    `insert into enrollments (space_id, route_id, user_id, pinned_version, status)
+     values ($1, $2, $3, 1, 'active') returning id`,
+    [spaceId, routeId, userId],
+  );
+  return rows[0]?.id as string;
+}
