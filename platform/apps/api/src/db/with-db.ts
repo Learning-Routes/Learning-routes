@@ -22,7 +22,7 @@ export async function withDb<T>(
   const client = new pg.Client({ connectionString: env.DB.connectionString });
   try {
     await client.connect();
-    return await drizzle(client).transaction(async (tx) => {
+    return await drizzle(client, { casing: "snake_case" }).transaction(async (tx) => {
       // First statement, local to this transaction: RLS reads the acting user here,
       // and a pooled connection's next transaction starts with nobody.
       await tx.execute(sql`select set_config('app.user_id', ${userId ?? ""}, true)`);

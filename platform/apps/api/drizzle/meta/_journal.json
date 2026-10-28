@@ -22,6 +22,20 @@
       "when": 1793230461572,
       "tag": "0002_shared_checks_and_auth_grants",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1793230552007,
+      "tag": "0003_tenancy",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1793230558801,
+      "tag": "0004_tenancy_grants",
+      "breakpoints": true
     }
   ]
 }
