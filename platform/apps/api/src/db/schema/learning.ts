@@ -49,8 +49,8 @@ export const enrollments = pgTable(
     }).onDelete("restrict"),
     foreignKey({
       name: "enrollments_pinned_version_fkey",
-      columns: [t.routeId, t.pinnedVersion],
-      foreignColumns: [routeVersions.routeId, routeVersions.version],
+      columns: [t.routeId, t.spaceId, t.pinnedVersion],
+      foreignColumns: [routeVersions.routeId, routeVersions.spaceId, routeVersions.version],
     }).onDelete("restrict"),
     unique("enrollments_user_id_route_id_key").on(t.userId, t.routeId),
     unique("enrollments_id_space_id_user_id_key").on(t.id, t.spaceId, t.userId),
@@ -110,7 +110,7 @@ export const cards = pgTable(
   },
   (t) => [
     unique("cards_user_id_item_id_key").on(t.userId, t.itemId),
-    unique("cards_id_user_id_key").on(t.id, t.userId),
+    unique("cards_id_user_id_space_id_key").on(t.id, t.userId, t.spaceId),
     check("cards_state", sql`${t.state} in (${oneOf(ReviewCard.shape.state.options)})`),
   ],
 );
@@ -137,8 +137,8 @@ export const reviews = pgTable(
     // No action, not restrict: erasing a user removes the card and its reviews together.
     foreignKey({
       name: "reviews_card_id_fkey",
-      columns: [t.cardId, t.userId],
-      foreignColumns: [cards.id, cards.userId],
+      columns: [t.cardId, t.userId, t.spaceId],
+      foreignColumns: [cards.id, cards.userId, cards.spaceId],
     }),
     unique("reviews_user_id_review_id_key").on(t.userId, t.reviewId),
     index("reviews_user_id_card_id_reviewed_at_idx").on(t.userId, t.cardId, t.reviewedAt),

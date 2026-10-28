@@ -34,7 +34,7 @@ AI tokens are most of what the platform spends, at every size. Every model call 
 
 The database changes only through migrations in `apps/api/drizzle/`, applied with `pnpm db:migrate` as the migrator, over a direct connection, never through Hyperdrive.
 
-- **Forward-only.** An applied migration is never edited, rerun or undone. A mistake is fixed by the next migration.
+- **Forward-only.** An applied migration is never edited, rerun or undone. A mistake is fixed by the next migration. Forward-only starts when a migration reaches `main`; until then its pull request may still change it.
 - **Expand, then contract.** A change that would break the running Worker is split: first add (a column, a table, a function), deploy the Worker that uses it, then remove the old shape in a later migration.
 - **Migrations run before the Worker deploys,** and each one works with the previous Worker.
 - **drizzle-kit generates** tables, columns and indexes. Grants, revokes, triggers and functions go in `drizzle-kit generate --custom` files, so the next generate never loses or duplicates them.

@@ -39,6 +39,7 @@ export const routeVersions = pgTable(
       foreignColumns: [routes.id, routes.spaceId],
     }).onDelete("restrict"),
     unique("route_versions_route_id_version_key").on(t.routeId, t.version),
+    unique("route_versions_route_id_space_id_version_key").on(t.routeId, t.spaceId, t.version),
     check("route_versions_version", sql`${t.version} > 0`),
     check("route_versions_snapshot_format", sql`${t.snapshotFormat} > 0`),
     check("route_versions_content_hash", sql`${t.contentHash} ~ '^[0-9a-f]{64}$'`),
