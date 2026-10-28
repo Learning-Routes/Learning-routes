@@ -16,8 +16,8 @@
     "golden:check": "scripts/check-golden.sh"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.6.3",
-    "turbo": "2.11.10",
+    "@biomejs/biome": "2.5.15",
+    "turbo": "2.11.8",
     "typescript": "5.9.3"
   }
 }

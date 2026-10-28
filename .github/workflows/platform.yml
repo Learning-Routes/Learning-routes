@@ -59,9 +59,20 @@ jobs:
           cache: pnpm
           cache-dependency-path: platform/pnpm-lock.yaml
       - run: pnpm install --frozen-lockfile
+      # Every check below runs even when one before it failed, so one run shows
+      # every guardrail that broke.
       - run: pnpm typecheck
+        if: ${{ !cancelled() }}
       - run: pnpm lint
+        if: ${{ !cancelled() }}
       - run: pnpm test
+        if: ${{ !cancelled() }}
       - run: pnpm build
+        id: build
+        if: ${{ !cancelled() }}
       # Browser tests against the built Worker, in the runner's installed Chrome.
       - run: pnpm --filter @learning-routes/web e2e
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+      - name: Versions are exact and at least 14 days old
+        run: node scripts/check-versions.mjs
+        if: ${{ !cancelled() }}
