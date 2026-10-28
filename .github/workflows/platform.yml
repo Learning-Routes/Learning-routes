@@ -70,6 +70,9 @@ jobs:
       - run: pnpm build
         id: build
         if: ${{ !cancelled() }}
+      - name: JavaScript budgets (size-limit)
+        run: pnpm --filter @learning-routes/web size
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
       # Browser tests against the built Worker, in the runner's installed Chrome.
       - run: pnpm --filter @learning-routes/web e2e
         if: ${{ !cancelled() && steps.build.outcome == 'success' }}
