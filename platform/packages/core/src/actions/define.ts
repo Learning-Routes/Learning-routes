@@ -85,10 +85,13 @@ export async function runAction(
   }
 }
 
-/** New: the MCP tool descriptors, generated from the same registry. */
+/**
+ * New: the MCP tool descriptors, generated from the same registry. Each tool is
+ * named by its registry key, the name runAction answers to.
+ */
 export function mcpTools(registry: Registry) {
-  return Object.values(registry).map((action) => ({
-    name: action.name,
+  return Object.entries(registry).map(([name, action]) => ({
+    name,
     description: action.description,
     inputSchema: z.toJSONSchema(action.input, { io: "input" }),
     annotations: { readOnlyHint: action.kind === "query" },

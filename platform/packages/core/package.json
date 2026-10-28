@@ -6,6 +6,7 @@
   "exports": {
     ".": "./src/index.ts",
     "./locales": "./src/locales.ts",
+    "./actions/define": "./src/actions/define.ts",
     "./actions/names": "./src/actions/names.ts",
     "./actions/registry": "./src/actions/registry.ts"
   },
