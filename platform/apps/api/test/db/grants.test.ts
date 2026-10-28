@@ -9,7 +9,8 @@ const EXPECTED: Record<string, string[]> = {
   account: READ_WRITE,
   rate_limit: READ_WRITE,
   session: READ_WRITE,
-  user: READ_WRITE,
+  // Only user.erase, as the migrator, deletes a user.
+  user: ["INSERT", "SELECT", "UPDATE"],
   verification: READ_WRITE,
   // Tenancy. RLS (§3) narrows each to the rows a user may see.
   memberships: READ_WRITE,

@@ -78,6 +78,13 @@
       "when": 1793231362128,
       "tag": "0010_learning_and_log_rules",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1793231470646,
+      "tag": "0011_user_erase",
+      "breakpoints": true
     }
   ]
 }
