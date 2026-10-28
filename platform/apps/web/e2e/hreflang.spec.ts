@@ -10,7 +10,7 @@ const LINES = {
 } as const;
 
 for (const [locale, line] of Object.entries(LINES)) {
-  test(`/${locale} is the landing in its language, linked to every other one`, async ({
+  test(`/${locale} is the storefront home in its language, linked to every other one`, async ({
     request,
     baseURL,
   }) => {
