@@ -2,7 +2,7 @@ import { expect, type Page, test } from "@playwright/test";
 
 const POLICY =
   /^default-src 'self'; script-src 'self' 'nonce-([A-Za-z0-9+/=]{24})'; style-src 'self'; img-src 'self' data:; connect-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'$/;
-const PAGES = ["/"];
+const PAGES = ["/", "/studio"];
 
 function nonceOf(policy: string | undefined): string {
   const match = POLICY.exec(policy ?? "");

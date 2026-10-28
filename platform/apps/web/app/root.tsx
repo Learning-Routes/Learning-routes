@@ -5,12 +5,15 @@ import {
   Outlet,
   Scripts,
   ScrollRestoration,
+  useMatches,
   useRouteLoaderData,
 } from "react-router";
 
 import type { Route } from "./+types/root";
 import "./app.css";
+import { useEffect } from "react";
 import { pageContext } from "./context";
+import { isStorefront } from "./surface";
 
 export function loader({ context }: Route.LoaderArgs) {
   return { nonce: context.get(pageContext).nonce };
@@ -18,6 +21,7 @@ export function loader({ context }: Route.LoaderArgs) {
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const nonce = useRouteLoaderData<typeof loader>("root")?.nonce;
+  const storefront = isStorefront(useMatches());
   return (
     <html lang="es">
       <head>
@@ -29,14 +33,23 @@ export function Layout({ children }: { children: React.ReactNode }) {
       </head>
       <body>
         {children}
-        <ScrollRestoration nonce={nonce} />
-        <Scripts nonce={nonce} />
+        {/* The storefront is server HTML: no React runtime, no hydration. */}
+        {storefront ? null : (
+          <>
+            <ScrollRestoration nonce={nonce} />
+            <Scripts nonce={nonce} />
+          </>
+        )}
       </body>
     </html>
   );
 }
 
 export default function App() {
+  // Runs only in a hydrated page; the browser tests read it.
+  useEffect(() => {
+    document.documentElement.dataset.hydrated = "true";
+  }, []);
   return <Outlet />;
 }
 

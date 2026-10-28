@@ -1,3 +1,7 @@
+import { storefront } from "../surface";
+
+export const handle = storefront;
+
 export function meta() {
   return [
     { title: "Learning Routes" },
