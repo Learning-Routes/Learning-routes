@@ -12,7 +12,7 @@ Learning Routes becomes a platform where creators build routes by talking to age
 - Cloudflare is the one platform: Workers for every app, a Durable Object per agent session, Workflows for long jobs, Queues, R2 for files, Stream for video, and Cloudflare for SaaS for creator domains.
 - React Router 8 in framework mode, on Workers through `@cloudflare/vite-plugin`, for every page: the landing, the creator studio, creator pages and the student's route. `apps/web` started from Cloudflare's official React Router template. The pinned version is 8.4.0, the newest 8.x release that was at least two weeks old when it was chosen.
 - Hono for the API, the MCP endpoint, the CLI's endpoint and payment webhooks (`apps/api`). We did not pick Elysia because its own documentation marks its Cloudflare adapter as experimental.
-- Postgres on Neon, reached through Hyperdrive, with Drizzle as the query layer.
+- Postgres on PlanetScale (ADR 0005), reached through Hyperdrive, with Drizzle as the query layer.
 - Better Auth for accounts.
 - OpenRouter for every model call: text, image and speech.
 - Stripe Connect for payments, later.
@@ -20,7 +20,7 @@ Learning Routes becomes a platform where creators build routes by talking to age
 
 ## Why
 
-One language from the database schema to the page means one set of types, and the Zod schemas in `core` are checked at every boundary. Workers, Durable Objects and Workflows give an agent session a home with its own state and a way to run long jobs without a separate server, a queue broker or a job database. Neon and Hyperdrive keep Postgres, which v1 already uses, without running it ourselves. OpenRouter puts every provider behind one key and one bill, which makes the single spending gate in LESSONS_FROM_V1.md (lesson 2) easier to hold.
+One language from the database schema to the page means one set of types, and the Zod schemas in `core` are checked at every boundary. Workers, Durable Objects and Workflows give an agent session a home with its own state and a way to run long jobs without a separate server, a queue broker or a job database. PlanetScale (ADR 0005) and Hyperdrive keep Postgres, which v1 already uses, without running it ourselves. OpenRouter puts every provider behind one key and one bill, which makes the single spending gate in LESSONS_FROM_V1.md (lesson 2) easier to hold.
 
 ## Fallback
 

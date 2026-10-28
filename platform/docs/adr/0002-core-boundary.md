@@ -14,7 +14,7 @@ Code in `core` takes data in and returns data or a decision. It never does input
 - `hono`
 - `react`, `react-dom` or `react-router`
 - `drizzle-orm`
-- a database driver: `pg`, `postgres`, `@neondatabase/*`, `mysql2`, `better-sqlite3`, `@libsql/*`
+- a database driver: `pg`, `postgres`, `@neondatabase/*`, `@planetscale/*`, `mysql2`, `better-sqlite3`, `@libsql/*`
 
 Its only runtime dependency today is `zod`.
 
