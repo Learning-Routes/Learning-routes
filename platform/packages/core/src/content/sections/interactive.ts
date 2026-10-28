@@ -1,6 +1,6 @@
-import { isBlank, presence, strip } from "../../coerce";
-import { linesOutsideFences, splitAftermath } from "../aftermath";
-import { lines, round1, splitOnce, WS } from "../text";
+import { isBlank, presence, strip } from "../../v1-import/loose-json";
+import { lines, round1, splitOnce, WS } from "../ruby-text";
+import { linesOutsideFences, splitAftermath } from "../trailing-content";
 import type { Section } from "./types";
 
 const CODE_FENCE = /```(\w+)\n([\s\S]*?)```/;

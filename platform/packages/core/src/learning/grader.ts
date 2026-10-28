@@ -1,5 +1,5 @@
-import { asArray, asObject, asText, isBlank, round2, strip, truthy } from "../coerce";
-import { blockRole, isKnownBlockType } from "./registry";
+import { blockRole, isKnownBlockType } from "../blocks/types";
+import { asArray, asObject, asText, isBlank, round2, strip, truthy } from "../v1-import/loose-json";
 
 const INDEX_TEXT = /^(0|[1-9][0-9]*)$/;
 

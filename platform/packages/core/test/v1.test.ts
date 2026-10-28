@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { Block } from "../src/blocks";
-import { importV1Block, v1BlockId } from "../src/v1";
+import { Block } from "../src/blocks/schema";
+import { importV1Block, v1BlockId } from "../src/v1-import/import";
 
 const UUID_V7 = /^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
 

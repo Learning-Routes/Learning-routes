@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { Block } from "../../src/blocks";
-import { importV1Lesson } from "../../src/v1";
+import { Block } from "../../src/blocks/schema";
+import { importV1Lesson } from "../../src/v1-import/import";
 import fixture from "../golden/lesson_parser.json" with { type: "json" };
 
 const lessons = fixture.cases.map((c, i) => ({

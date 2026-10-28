@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { asArray, asText, round2 } from "../src/coerce";
+import { asArray, asText, round2 } from "../src/v1-import/loose-json";
 
 describe("v1 coercions", () => {
   it("rounds like Ruby's Float#round(2)", () => {

@@ -1,7 +1,7 @@
 import { z } from "zod";
-import { Block, blockSchemas } from "./blocks";
-import { deterministicId } from "./ids";
-import type { Locale } from "./text";
+import { Block, blockSchemas } from "../blocks/schema";
+import { deterministicId } from "../ids";
+import type { Locale } from "../localized-text";
 
 // The v1 import boundary: the only place a plain string becomes localized text,
 // and a [term, definition] pair becomes an object (ADR 0003).
