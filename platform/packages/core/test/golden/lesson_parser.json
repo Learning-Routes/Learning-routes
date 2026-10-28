@@ -8466,6 +8466,454 @@
           "type": "summary"
         }
       ]
+    },
+    {
+      "input": {
+        "body": "Paragraph 1 of the lesson.\n\nParagraph 2 of the lesson.\n\nParagraph 3 of the lesson.\n\nParagraph 4 of the lesson.\n\nParagraph 5 of the lesson.\n\nParagraph 6 of the lesson.\n\nParagraph 7 of the lesson.",
+        "knowledge_checks": null,
+        "audio_url": null,
+        "locale": "en"
+      },
+      "output": [
+        {
+          "type": "concept",
+          "title": "Lesson",
+          "body": "Paragraph 1 of the lesson.\n\nParagraph 2 of the lesson.\n\nParagraph 3 of the lesson."
+        },
+        {
+          "type": "concept",
+          "title": "Continuation",
+          "body": "Paragraph 4 of the lesson.\n\nParagraph 5 of the lesson.\n\nParagraph 6 of the lesson."
+        },
+        {
+          "type": "concept",
+          "title": "Continuation",
+          "body": "Paragraph 7 of the lesson."
+        },
+        {
+          "type": "summary",
+          "title": null,
+          "key_points": [],
+          "body": null
+        }
+      ]
+    },
+    {
+      "input": {
+        "body": "Some opening words before any heading.\n\n## Reading a timetable\nTrains leave on the hour.\n\n## Pregunta: When does the next train leave?\nA) On the hour\nB) Never\nCORRECTA: A",
+        "knowledge_checks": null,
+        "audio_url": null,
+        "locale": "en"
+      },
+      "output": [
+        {
+          "type": "concept",
+          "title": "Introduction",
+          "body": "Some opening words before any heading."
+        },
+        {
+          "type": "concept",
+          "title": "Reading a timetable",
+          "body": "Trains leave on the hour."
+        },
+        {
+          "type": "check",
+          "title": null,
+          "question": "When does the next train leave?",
+          "options": [
+            {
+              "label": "On the hour",
+              "correct": true
+            },
+            {
+              "label": "Never",
+              "correct": false
+            }
+          ],
+          "explanation": null,
+          "aftermath": null,
+          "xp": 15
+        },
+        {
+          "type": "summary",
+          "title": null,
+          "key_points": [
+            "Reading a timetable"
+          ],
+          "body": null
+        }
+      ]
+    },
+    {
+      "input": {
+        "body": "Paragraph 1 of the lesson.\n\nParagraph 2 of the lesson.\n\nParagraph 3 of the lesson.\n\nParagraph 4 of the lesson.\n\nParagraph 5 of the lesson.\n\nParagraph 6 of the lesson.\n\nParagraph 7 of the lesson.",
+        "knowledge_checks": null,
+        "audio_url": null,
+        "locale": "pt"
+      },
+      "output": [
+        {
+          "type": "concept",
+          "title": "Lição",
+          "body": "Paragraph 1 of the lesson.\n\nParagraph 2 of the lesson.\n\nParagraph 3 of the lesson."
+        },
+        {
+          "type": "concept",
+          "title": "Continuação",
+          "body": "Paragraph 4 of the lesson.\n\nParagraph 5 of the lesson.\n\nParagraph 6 of the lesson."
+        },
+        {
+          "type": "concept",
+          "title": "Continuação",
+          "body": "Paragraph 7 of the lesson."
+        },
+        {
+          "type": "summary",
+          "title": null,
+          "key_points": [],
+          "body": null
+        }
+      ]
+    },
+    {
+      "input": {
+        "body": "Some opening words before any heading.\n\n## Reading a timetable\nTrains leave on the hour.\n\n## Pregunta: When does the next train leave?\nA) On the hour\nB) Never\nCORRECTA: A",
+        "knowledge_checks": null,
+        "audio_url": null,
+        "locale": "pt"
+      },
+      "output": [
+        {
+          "type": "concept",
+          "title": "Introdução",
+          "body": "Some opening words before any heading."
+        },
+        {
+          "type": "concept",
+          "title": "Reading a timetable",
+          "body": "Trains leave on the hour."
+        },
+        {
+          "type": "check",
+          "title": null,
+          "question": "When does the next train leave?",
+          "options": [
+            {
+              "label": "On the hour",
+              "correct": true
+            },
+            {
+              "label": "Never",
+              "correct": false
+            }
+          ],
+          "explanation": null,
+          "aftermath": null,
+          "xp": 15
+        },
+        {
+          "type": "summary",
+          "title": null,
+          "key_points": [
+            "Reading a timetable"
+          ],
+          "body": null
+        }
+      ]
+    },
+    {
+      "input": {
+        "body": "Paragraph 1 of the lesson.\n\nParagraph 2 of the lesson.\n\nParagraph 3 of the lesson.\n\nParagraph 4 of the lesson.\n\nParagraph 5 of the lesson.\n\nParagraph 6 of the lesson.\n\nParagraph 7 of the lesson.",
+        "knowledge_checks": null,
+        "audio_url": null,
+        "locale": "fr"
+      },
+      "output": [
+        {
+          "type": "concept",
+          "title": "Leçon",
+          "body": "Paragraph 1 of the lesson.\n\nParagraph 2 of the lesson.\n\nParagraph 3 of the lesson."
+        },
+        {
+          "type": "concept",
+          "title": "Suite",
+          "body": "Paragraph 4 of the lesson.\n\nParagraph 5 of the lesson.\n\nParagraph 6 of the lesson."
+        },
+        {
+          "type": "concept",
+          "title": "Suite",
+          "body": "Paragraph 7 of the lesson."
+        },
+        {
+          "type": "summary",
+          "title": null,
+          "key_points": [],
+          "body": null
+        }
+      ]
+    },
+    {
+      "input": {
+        "body": "Some opening words before any heading.\n\n## Reading a timetable\nTrains leave on the hour.\n\n## Pregunta: When does the next train leave?\nA) On the hour\nB) Never\nCORRECTA: A",
+        "knowledge_checks": null,
+        "audio_url": null,
+        "locale": "fr"
+      },
+      "output": [
+        {
+          "type": "concept",
+          "title": "Introduction",
+          "body": "Some opening words before any heading."
+        },
+        {
+          "type": "concept",
+          "title": "Reading a timetable",
+          "body": "Trains leave on the hour."
+        },
+        {
+          "type": "check",
+          "title": null,
+          "question": "When does the next train leave?",
+          "options": [
+            {
+              "label": "On the hour",
+              "correct": true
+            },
+            {
+              "label": "Never",
+              "correct": false
+            }
+          ],
+          "explanation": null,
+          "aftermath": null,
+          "xp": 15
+        },
+        {
+          "type": "summary",
+          "title": null,
+          "key_points": [
+            "Reading a timetable"
+          ],
+          "body": null
+        }
+      ]
+    },
+    {
+      "input": {
+        "body": "Paragraph 1 of the lesson.\n\nParagraph 2 of the lesson.\n\nParagraph 3 of the lesson.\n\nParagraph 4 of the lesson.\n\nParagraph 5 of the lesson.\n\nParagraph 6 of the lesson.\n\nParagraph 7 of the lesson.",
+        "knowledge_checks": null,
+        "audio_url": null,
+        "locale": "it"
+      },
+      "output": [
+        {
+          "type": "concept",
+          "title": "Lezione",
+          "body": "Paragraph 1 of the lesson.\n\nParagraph 2 of the lesson.\n\nParagraph 3 of the lesson."
+        },
+        {
+          "type": "concept",
+          "title": "Continuazione",
+          "body": "Paragraph 4 of the lesson.\n\nParagraph 5 of the lesson.\n\nParagraph 6 of the lesson."
+        },
+        {
+          "type": "concept",
+          "title": "Continuazione",
+          "body": "Paragraph 7 of the lesson."
+        },
+        {
+          "type": "summary",
+          "title": null,
+          "key_points": [],
+          "body": null
+        }
+      ]
+    },
+    {
+      "input": {
+        "body": "Some opening words before any heading.\n\n## Reading a timetable\nTrains leave on the hour.\n\n## Pregunta: When does the next train leave?\nA) On the hour\nB) Never\nCORRECTA: A",
+        "knowledge_checks": null,
+        "audio_url": null,
+        "locale": "it"
+      },
+      "output": [
+        {
+          "type": "concept",
+          "title": "Introduzione",
+          "body": "Some opening words before any heading."
+        },
+        {
+          "type": "concept",
+          "title": "Reading a timetable",
+          "body": "Trains leave on the hour."
+        },
+        {
+          "type": "check",
+          "title": null,
+          "question": "When does the next train leave?",
+          "options": [
+            {
+              "label": "On the hour",
+              "correct": true
+            },
+            {
+              "label": "Never",
+              "correct": false
+            }
+          ],
+          "explanation": null,
+          "aftermath": null,
+          "xp": 15
+        },
+        {
+          "type": "summary",
+          "title": null,
+          "key_points": [
+            "Reading a timetable"
+          ],
+          "body": null
+        }
+      ]
+    },
+    {
+      "input": {
+        "audio_url": null,
+        "body": ":::concept\n:::\n\n## Las fracciones\nUna fracción es una parte de un todo.",
+        "knowledge_checks": null,
+        "locale": "es"
+      },
+      "output": [
+        {
+          "body": "",
+          "title": "Concepto",
+          "type": "concept"
+        },
+        {
+          "body": "Una fracción es una parte de un todo.",
+          "title": "Las fracciones",
+          "type": "concept"
+        },
+        {
+          "body": null,
+          "key_points": [
+            "Las fracciones"
+          ],
+          "title": null,
+          "type": "summary"
+        }
+      ]
+    },
+    {
+      "input": {
+        "audio_url": null,
+        "body": ":::concept\n:::\n\n## Las fracciones\nUna fracción es una parte de un todo.",
+        "knowledge_checks": null,
+        "locale": "en"
+      },
+      "output": [
+        {
+          "body": "",
+          "title": "Concept",
+          "type": "concept"
+        },
+        {
+          "body": "Una fracción es una parte de un todo.",
+          "title": "Las fracciones",
+          "type": "concept"
+        },
+        {
+          "body": null,
+          "key_points": [
+            "Las fracciones"
+          ],
+          "title": null,
+          "type": "summary"
+        }
+      ]
+    },
+    {
+      "input": {
+        "audio_url": null,
+        "body": ":::concept\n:::\n\n## Las fracciones\nUna fracción es una parte de un todo.",
+        "knowledge_checks": null,
+        "locale": "pt"
+      },
+      "output": [
+        {
+          "body": "",
+          "title": "Conceito",
+          "type": "concept"
+        },
+        {
+          "body": "Una fracción es una parte de un todo.",
+          "title": "Las fracciones",
+          "type": "concept"
+        },
+        {
+          "body": null,
+          "key_points": [
+            "Las fracciones"
+          ],
+          "title": null,
+          "type": "summary"
+        }
+      ]
+    },
+    {
+      "input": {
+        "audio_url": null,
+        "body": ":::concept\n:::\n\n## Las fracciones\nUna fracción es una parte de un todo.",
+        "knowledge_checks": null,
+        "locale": "fr"
+      },
+      "output": [
+        {
+          "body": "",
+          "title": "Concept",
+          "type": "concept"
+        },
+        {
+          "body": "Una fracción es una parte de un todo.",
+          "title": "Las fracciones",
+          "type": "concept"
+        },
+        {
+          "body": null,
+          "key_points": [
+            "Las fracciones"
+          ],
+          "title": null,
+          "type": "summary"
+        }
+      ]
+    },
+    {
+      "input": {
+        "audio_url": null,
+        "body": ":::concept\n:::\n\n## Las fracciones\nUna fracción es una parte de un todo.",
+        "knowledge_checks": null,
+        "locale": "it"
+      },
+      "output": [
+        {
+          "body": "",
+          "title": "Concetto",
+          "type": "concept"
+        },
+        {
+          "body": "Una fracción es una parte de un todo.",
+          "title": "Las fracciones",
+          "type": "concept"
+        },
+        {
+          "body": null,
+          "key_points": [
+            "Las fracciones"
+          ],
+          "title": null,
+          "type": "summary"
+        }
+      ]
     }
   ]
 }

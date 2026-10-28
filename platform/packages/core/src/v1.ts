@@ -31,11 +31,12 @@ function v1BlockSchema(locale: Locale) {
   return blockSchemas(v1Text(locale), v1Pair, {});
 }
 
-// The same v1 block gets the same id on every import.
+/** The id a v1 block gets on import, from its route, lesson and position. New: the v1 import boundary (ADR 0003). */
 export function v1BlockId({ routeId, lessonId, position }: Omit<V1Source, "locale">) {
   return deterministicId(`learning-routes-v1:${routeId}:${lessonId}:${position}`);
 }
 
+/** One v1 section as a stored Block. New: the v1 import boundary (ADR 0003). */
 export async function importV1Block(section: unknown, source: V1Source): Promise<Block> {
   let schema = v1Schemas.get(source.locale);
   if (!schema) {
@@ -43,5 +44,17 @@ export async function importV1Block(section: unknown, source: V1Source): Promise
     v1Schemas.set(source.locale, schema);
   }
   const fields = schema.parse(section);
-  return Block.parse({ ...fields, id: await v1BlockId(source) });
+  // v1 graded every blank as text (ADR 0003).
+  const match = fields.type === "fill_blank" ? { match: "text" } : {};
+  return Block.parse({ ...fields, ...match, id: await v1BlockId(source) });
+}
+
+/** A whole v1 lesson: each section becomes a stored Block, its id taken from its position. */
+export function importV1Lesson(
+  sections: readonly unknown[],
+  source: Omit<V1Source, "position">,
+): Promise<Block[]> {
+  return Promise.all(
+    sections.map((section, position) => importV1Block(section, { ...source, position })),
+  );
 }

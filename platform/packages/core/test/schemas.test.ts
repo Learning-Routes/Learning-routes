@@ -67,8 +67,11 @@ describe("Block", () => {
     expect(Block.safeParse({ ...tip, id: "0192f6d0-7c3e-4cc0-8a1b-2b3c4d5e6f70" }).success).toBe(
       false,
     );
-    expect(Block.safeParse({ ...tip, id: newBlockId() }).success).toBe(true);
-    expect(newBlockId()).not.toBe(newBlockId());
+    const now = Date.parse("2026-10-26T12:00:00Z");
+    expect(Block.safeParse({ ...tip, id: newBlockId(now, new Uint8Array(10)) }).success).toBe(true);
+    expect(newBlockId(now, new Uint8Array(10))).not.toBe(
+      newBlockId(now, new Uint8Array(10).fill(1)),
+    );
   });
 
   it("stores drag_drop pairs as objects only", () => {

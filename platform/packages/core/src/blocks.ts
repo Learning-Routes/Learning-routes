@@ -8,6 +8,10 @@ import { LocalizedText } from "./text";
 // biome-ignore lint/suspicious/noExplicitAny: the builder takes any text schema
 type TextSchema = z.ZodType<any, any>;
 
+/**
+ * Builds the block union for one text schema, so the stored Block and the v1
+ * import share their fields. New: v1 sections were untyped hashes.
+ */
 export function blockSchemas<T extends TextSchema, P extends z.ZodType, I extends z.ZodRawShape>(
   text: T,
   pairOf: (text: T) => P,
@@ -53,6 +57,9 @@ export function blockSchemas<T extends TextSchema, P extends z.ZodType, I extend
       sentence: optionalText,
       body: optionalText,
       blanks: z.array(text),
+      // "text" (the default) forgives case, accents and punctuation; "exact" only
+      // the surrounding whitespace, for code, formulas and symbols (ADR 0003).
+      match: z.enum(["text", "exact"]).optional(),
     }),
     z.strictObject({
       type: z.literal("code_playground"),
@@ -143,22 +150,3 @@ export const Block = blockSchemas(
 );
 export type Block = z.infer<typeof Block>;
 export type BlockType = Block["type"];
-
-export const AUTHORED_BLOCK_TYPES = [
-  "concept",
-  "check",
-  "tip",
-  "example",
-  "summary",
-  "drag_drop",
-  "fill_blank",
-  "code_playground",
-  "simulation",
-  "scenario",
-  "flashcards",
-  "visual",
-  "motion",
-] as const;
-// Added by the platform, never written by an author.
-export const SYSTEM_BLOCK_TYPES = ["audio", "audio_explainer", "video"] as const;
-export const BLOCK_TYPES = [...AUTHORED_BLOCK_TYPES, ...SYSTEM_BLOCK_TYPES] as const;

@@ -29,14 +29,20 @@
         "audio_seconds": "0",
         "model": "eleven_flash_v2_5"
       },
-      "output": 0
+      "output": {
+        "kind": "unknown",
+        "reason": "missing_characters"
+      }
     },
     {
       "input": {
         "audio_seconds": "0",
         "model": "eleven_multilingual_v2"
       },
-      "output": 0
+      "output": {
+        "kind": "unknown",
+        "reason": "missing_characters"
+      }
     },
     {
       "input": {
@@ -79,8 +85,8 @@
         "model": "tavily"
       },
       "output": {
-        "error": "ArgumentError",
-        "message": "tavily requires provider-reported usage and a rate snapshot"
+        "kind": "unknown",
+        "reason": "provider_reported_usage_required"
       }
     },
     {
@@ -88,7 +94,10 @@
         "audio_seconds": "0",
         "model": "unpriced-model"
       },
-      "output": 0
+      "output": {
+        "kind": "unknown",
+        "reason": "unknown_model"
+      }
     },
     {
       "input": {
@@ -116,14 +125,20 @@
         "audio_seconds": "0.1",
         "model": "eleven_flash_v2_5"
       },
-      "output": 0
+      "output": {
+        "kind": "unknown",
+        "reason": "missing_characters"
+      }
     },
     {
       "input": {
         "audio_seconds": "0.1",
         "model": "eleven_multilingual_v2"
       },
-      "output": 0
+      "output": {
+        "kind": "unknown",
+        "reason": "missing_characters"
+      }
     },
     {
       "input": {
@@ -166,8 +181,8 @@
         "model": "tavily"
       },
       "output": {
-        "error": "ArgumentError",
-        "message": "tavily requires provider-reported usage and a rate snapshot"
+        "kind": "unknown",
+        "reason": "provider_reported_usage_required"
       }
     },
     {
@@ -175,7 +190,10 @@
         "audio_seconds": "0.1",
         "model": "unpriced-model"
       },
-      "output": 0
+      "output": {
+        "kind": "unknown",
+        "reason": "unknown_model"
+      }
     },
     {
       "input": {
@@ -203,14 +221,20 @@
         "audio_seconds": "3600",
         "model": "eleven_flash_v2_5"
       },
-      "output": 0
+      "output": {
+        "kind": "unknown",
+        "reason": "missing_characters"
+      }
     },
     {
       "input": {
         "audio_seconds": "3600",
         "model": "eleven_multilingual_v2"
       },
-      "output": 0
+      "output": {
+        "kind": "unknown",
+        "reason": "missing_characters"
+      }
     },
     {
       "input": {
@@ -253,8 +277,8 @@
         "model": "tavily"
       },
       "output": {
-        "error": "ArgumentError",
-        "message": "tavily requires provider-reported usage and a rate snapshot"
+        "kind": "unknown",
+        "reason": "provider_reported_usage_required"
       }
     },
     {
@@ -262,7 +286,10 @@
         "audio_seconds": "3600",
         "model": "unpriced-model"
       },
-      "output": 0
+      "output": {
+        "kind": "unknown",
+        "reason": "unknown_model"
+      }
     },
     {
       "input": {
@@ -290,14 +317,20 @@
         "audio_seconds": "59.5",
         "model": "eleven_flash_v2_5"
       },
-      "output": 0
+      "output": {
+        "kind": "unknown",
+        "reason": "missing_characters"
+      }
     },
     {
       "input": {
         "audio_seconds": "59.5",
         "model": "eleven_multilingual_v2"
       },
-      "output": 0
+      "output": {
+        "kind": "unknown",
+        "reason": "missing_characters"
+      }
     },
     {
       "input": {
@@ -340,8 +373,8 @@
         "model": "tavily"
       },
       "output": {
-        "error": "ArgumentError",
-        "message": "tavily requires provider-reported usage and a rate snapshot"
+        "kind": "unknown",
+        "reason": "provider_reported_usage_required"
       }
     },
     {
@@ -349,7 +382,10 @@
         "audio_seconds": "59.5",
         "model": "unpriced-model"
       },
-      "output": 0
+      "output": {
+        "kind": "unknown",
+        "reason": "unknown_model"
+      }
     },
     {
       "input": {
@@ -377,14 +413,20 @@
         "audio_seconds": 7.25,
         "model": "eleven_flash_v2_5"
       },
-      "output": 0
+      "output": {
+        "kind": "unknown",
+        "reason": "missing_characters"
+      }
     },
     {
       "input": {
         "audio_seconds": 7.25,
         "model": "eleven_multilingual_v2"
       },
-      "output": 0
+      "output": {
+        "kind": "unknown",
+        "reason": "missing_characters"
+      }
     },
     {
       "input": {
@@ -427,8 +469,8 @@
         "model": "tavily"
       },
       "output": {
-        "error": "ArgumentError",
-        "message": "tavily requires provider-reported usage and a rate snapshot"
+        "kind": "unknown",
+        "reason": "provider_reported_usage_required"
       }
     },
     {
@@ -436,7 +478,10 @@
         "audio_seconds": 7.25,
         "model": "unpriced-model"
       },
-      "output": 0
+      "output": {
+        "kind": "unknown",
+        "reason": "unknown_model"
+      }
     },
     {
       "input": {
@@ -476,7 +521,10 @@
         "model": "eleven_flash_v2_5",
         "output_tokens": 250
       },
-      "output": 0
+      "output": {
+        "kind": "unknown",
+        "reason": "missing_characters"
+      }
     },
     {
       "input": {
@@ -486,7 +534,10 @@
         "model": "eleven_multilingual_v2",
         "output_tokens": 250
       },
-      "output": 0
+      "output": {
+        "kind": "unknown",
+        "reason": "missing_characters"
+      }
     },
     {
       "input": {
@@ -537,8 +588,8 @@
         "output_tokens": 250
       },
       "output": {
-        "error": "ArgumentError",
-        "message": "invalid value for convert(): \"\""
+        "kind": "unknown",
+        "reason": "missing_audio_seconds"
       }
     },
     {
@@ -550,8 +601,8 @@
         "output_tokens": 250
       },
       "output": {
-        "error": "ArgumentError",
-        "message": "tavily requires provider-reported usage and a rate snapshot"
+        "kind": "unknown",
+        "reason": "provider_reported_usage_required"
       }
     },
     {
@@ -562,7 +613,10 @@
         "model": "unpriced-model",
         "output_tokens": 250
       },
-      "output": 0
+      "output": {
+        "kind": "unknown",
+        "reason": "unknown_model"
+      }
     },
     {
       "input": {
@@ -598,7 +652,10 @@
         "model": "eleven_flash_v2_5",
         "output_tokens": 300
       },
-      "output": 0
+      "output": {
+        "kind": "unknown",
+        "reason": "missing_characters"
+      }
     },
     {
       "input": {
@@ -607,7 +664,10 @@
         "model": "eleven_multilingual_v2",
         "output_tokens": 300
       },
-      "output": 0
+      "output": {
+        "kind": "unknown",
+        "reason": "missing_characters"
+      }
     },
     {
       "input": {
@@ -653,8 +713,8 @@
         "output_tokens": 300
       },
       "output": {
-        "error": "ArgumentError",
-        "message": "invalid value for convert(): \"\""
+        "kind": "unknown",
+        "reason": "missing_audio_seconds"
       }
     },
     {
@@ -665,8 +725,8 @@
         "output_tokens": 300
       },
       "output": {
-        "error": "ArgumentError",
-        "message": "tavily requires provider-reported usage and a rate snapshot"
+        "kind": "unknown",
+        "reason": "provider_reported_usage_required"
       }
     },
     {
@@ -676,7 +736,10 @@
         "model": "unpriced-model",
         "output_tokens": 300
       },
-      "output": 0
+      "output": {
+        "kind": "unknown",
+        "reason": "unknown_model"
+      }
     },
     {
       "input": {
@@ -704,14 +767,20 @@
         "cached_tokens": 1,
         "model": "eleven_flash_v2_5"
       },
-      "output": 0
+      "output": {
+        "kind": "unknown",
+        "reason": "missing_characters"
+      }
     },
     {
       "input": {
         "cached_tokens": 1,
         "model": "eleven_multilingual_v2"
       },
-      "output": 0
+      "output": {
+        "kind": "unknown",
+        "reason": "missing_characters"
+      }
     },
     {
       "input": {
@@ -747,8 +816,8 @@
         "model": "scribe_v2"
       },
       "output": {
-        "error": "ArgumentError",
-        "message": "invalid value for convert(): \"\""
+        "kind": "unknown",
+        "reason": "missing_audio_seconds"
       }
     },
     {
@@ -757,8 +826,8 @@
         "model": "tavily"
       },
       "output": {
-        "error": "ArgumentError",
-        "message": "tavily requires provider-reported usage and a rate snapshot"
+        "kind": "unknown",
+        "reason": "provider_reported_usage_required"
       }
     },
     {
@@ -766,7 +835,10 @@
         "cached_tokens": 1,
         "model": "unpriced-model"
       },
-      "output": 0
+      "output": {
+        "kind": "unknown",
+        "reason": "unknown_model"
+      }
     },
     {
       "input": {
@@ -802,7 +874,10 @@
         "model": "eleven_flash_v2_5",
         "output_tokens": 800
       },
-      "output": 0
+      "output": {
+        "kind": "unknown",
+        "reason": "missing_characters"
+      }
     },
     {
       "input": {
@@ -811,7 +886,10 @@
         "model": "eleven_multilingual_v2",
         "output_tokens": 800
       },
-      "output": 0
+      "output": {
+        "kind": "unknown",
+        "reason": "missing_characters"
+      }
     },
     {
       "input": {
@@ -857,8 +935,8 @@
         "output_tokens": 800
       },
       "output": {
-        "error": "ArgumentError",
-        "message": "invalid value for convert(): \"\""
+        "kind": "unknown",
+        "reason": "missing_audio_seconds"
       }
     },
     {
@@ -869,8 +947,8 @@
         "output_tokens": 800
       },
       "output": {
-        "error": "ArgumentError",
-        "message": "tavily requires provider-reported usage and a rate snapshot"
+        "kind": "unknown",
+        "reason": "provider_reported_usage_required"
       }
     },
     {
@@ -880,7 +958,10 @@
         "model": "unpriced-model",
         "output_tokens": 800
       },
-      "output": 0
+      "output": {
+        "kind": "unknown",
+        "reason": "unknown_model"
+      }
     },
     {
       "input": {
@@ -908,14 +989,20 @@
         "cached_tokens": 3,
         "model": "eleven_flash_v2_5"
       },
-      "output": 0
+      "output": {
+        "kind": "unknown",
+        "reason": "missing_characters"
+      }
     },
     {
       "input": {
         "cached_tokens": 3,
         "model": "eleven_multilingual_v2"
       },
-      "output": 0
+      "output": {
+        "kind": "unknown",
+        "reason": "missing_characters"
+      }
     },
     {
       "input": {
@@ -951,8 +1038,8 @@
         "model": "scribe_v2"
       },
       "output": {
-        "error": "ArgumentError",
-        "message": "invalid value for convert(): \"\""
+        "kind": "unknown",
+        "reason": "missing_audio_seconds"
       }
     },
     {
@@ -961,8 +1048,8 @@
         "model": "tavily"
       },
       "output": {
-        "error": "ArgumentError",
-        "message": "tavily requires provider-reported usage and a rate snapshot"
+        "kind": "unknown",
+        "reason": "provider_reported_usage_required"
       }
     },
     {
@@ -970,7 +1057,10 @@
         "cached_tokens": 3,
         "model": "unpriced-model"
       },
-      "output": 0
+      "output": {
+        "kind": "unknown",
+        "reason": "unknown_model"
+      }
     },
     {
       "input": {
@@ -1041,8 +1131,8 @@
         "model": "scribe_v2"
       },
       "output": {
-        "error": "ArgumentError",
-        "message": "invalid value for convert(): \"\""
+        "kind": "unknown",
+        "reason": "missing_audio_seconds"
       }
     },
     {
@@ -1051,8 +1141,8 @@
         "model": "tavily"
       },
       "output": {
-        "error": "ArgumentError",
-        "message": "tavily requires provider-reported usage and a rate snapshot"
+        "kind": "unknown",
+        "reason": "provider_reported_usage_required"
       }
     },
     {
@@ -1060,7 +1150,10 @@
         "characters": 0,
         "model": "unpriced-model"
       },
-      "output": 0
+      "output": {
+        "kind": "unknown",
+        "reason": "unknown_model"
+      }
     },
     {
       "input": {
@@ -1131,8 +1224,8 @@
         "model": "scribe_v2"
       },
       "output": {
-        "error": "ArgumentError",
-        "message": "invalid value for convert(): \"\""
+        "kind": "unknown",
+        "reason": "missing_audio_seconds"
       }
     },
     {
@@ -1141,8 +1234,8 @@
         "model": "tavily"
       },
       "output": {
-        "error": "ArgumentError",
-        "message": "tavily requires provider-reported usage and a rate snapshot"
+        "kind": "unknown",
+        "reason": "provider_reported_usage_required"
       }
     },
     {
@@ -1150,7 +1243,10 @@
         "characters": 1,
         "model": "unpriced-model"
       },
-      "output": 0
+      "output": {
+        "kind": "unknown",
+        "reason": "unknown_model"
+      }
     },
     {
       "input": {
@@ -1221,8 +1317,8 @@
         "model": "scribe_v2"
       },
       "output": {
-        "error": "ArgumentError",
-        "message": "invalid value for convert(): \"\""
+        "kind": "unknown",
+        "reason": "missing_audio_seconds"
       }
     },
     {
@@ -1231,8 +1327,8 @@
         "model": "tavily"
       },
       "output": {
-        "error": "ArgumentError",
-        "message": "tavily requires provider-reported usage and a rate snapshot"
+        "kind": "unknown",
+        "reason": "provider_reported_usage_required"
       }
     },
     {
@@ -1240,7 +1336,10 @@
         "characters": 1000,
         "model": "unpriced-model"
       },
-      "output": 0
+      "output": {
+        "kind": "unknown",
+        "reason": "unknown_model"
+      }
     },
     {
       "input": {
@@ -1311,8 +1410,8 @@
         "model": "scribe_v2"
       },
       "output": {
-        "error": "ArgumentError",
-        "message": "invalid value for convert(): \"\""
+        "kind": "unknown",
+        "reason": "missing_audio_seconds"
       }
     },
     {
@@ -1321,8 +1420,8 @@
         "model": "tavily"
       },
       "output": {
-        "error": "ArgumentError",
-        "message": "tavily requires provider-reported usage and a rate snapshot"
+        "kind": "unknown",
+        "reason": "provider_reported_usage_required"
       }
     },
     {
@@ -1330,7 +1429,10 @@
         "characters": 12345,
         "model": "unpriced-model"
       },
-      "output": 0
+      "output": {
+        "kind": "unknown",
+        "reason": "unknown_model"
+      }
     },
     {
       "input": {
@@ -1401,8 +1503,8 @@
         "model": "scribe_v2"
       },
       "output": {
-        "error": "ArgumentError",
-        "message": "invalid value for convert(): \"\""
+        "kind": "unknown",
+        "reason": "missing_audio_seconds"
       }
     },
     {
@@ -1411,8 +1513,8 @@
         "model": "tavily"
       },
       "output": {
-        "error": "ArgumentError",
-        "message": "tavily requires provider-reported usage and a rate snapshot"
+        "kind": "unknown",
+        "reason": "provider_reported_usage_required"
       }
     },
     {
@@ -1420,7 +1522,10 @@
         "characters": 999,
         "model": "unpriced-model"
       },
-      "output": 0
+      "output": {
+        "kind": "unknown",
+        "reason": "unknown_model"
+      }
     },
     {
       "input": {
@@ -1456,7 +1561,10 @@
         "model": "eleven_flash_v2_5",
         "output_tokens": 4160
       },
-      "output": 0
+      "output": {
+        "kind": "unknown",
+        "reason": "missing_characters"
+      }
     },
     {
       "input": {
@@ -1465,7 +1573,10 @@
         "model": "eleven_multilingual_v2",
         "output_tokens": 4160
       },
-      "output": 0
+      "output": {
+        "kind": "unknown",
+        "reason": "missing_characters"
+      }
     },
     {
       "input": {
@@ -1511,8 +1622,8 @@
         "output_tokens": 4160
       },
       "output": {
-        "error": "ArgumentError",
-        "message": "invalid value for convert(): \"\""
+        "kind": "unknown",
+        "reason": "missing_audio_seconds"
       }
     },
     {
@@ -1523,8 +1634,8 @@
         "output_tokens": 4160
       },
       "output": {
-        "error": "ArgumentError",
-        "message": "tavily requires provider-reported usage and a rate snapshot"
+        "kind": "unknown",
+        "reason": "provider_reported_usage_required"
       }
     },
     {
@@ -1534,7 +1645,10 @@
         "model": "unpriced-model",
         "output_tokens": 4160
       },
-      "output": 0
+      "output": {
+        "kind": "unknown",
+        "reason": "unknown_model"
+      }
     },
     {
       "input": {
@@ -1562,14 +1676,20 @@
         "input_tokens": 1,
         "model": "eleven_flash_v2_5"
       },
-      "output": 0
+      "output": {
+        "kind": "unknown",
+        "reason": "missing_characters"
+      }
     },
     {
       "input": {
         "input_tokens": 1,
         "model": "eleven_multilingual_v2"
       },
-      "output": 0
+      "output": {
+        "kind": "unknown",
+        "reason": "missing_characters"
+      }
     },
     {
       "input": {
@@ -1605,8 +1725,8 @@
         "model": "scribe_v2"
       },
       "output": {
-        "error": "ArgumentError",
-        "message": "invalid value for convert(): \"\""
+        "kind": "unknown",
+        "reason": "missing_audio_seconds"
       }
     },
     {
@@ -1615,8 +1735,8 @@
         "model": "tavily"
       },
       "output": {
-        "error": "ArgumentError",
-        "message": "tavily requires provider-reported usage and a rate snapshot"
+        "kind": "unknown",
+        "reason": "provider_reported_usage_required"
       }
     },
     {
@@ -1624,7 +1744,10 @@
         "input_tokens": 1,
         "model": "unpriced-model"
       },
-      "output": 0
+      "output": {
+        "kind": "unknown",
+        "reason": "unknown_model"
+      }
     },
     {
       "input": {
@@ -1652,14 +1775,20 @@
         "input_tokens": 1000000,
         "model": "eleven_flash_v2_5"
       },
-      "output": 0
+      "output": {
+        "kind": "unknown",
+        "reason": "missing_characters"
+      }
     },
     {
       "input": {
         "input_tokens": 1000000,
         "model": "eleven_multilingual_v2"
       },
-      "output": 0
+      "output": {
+        "kind": "unknown",
+        "reason": "missing_characters"
+      }
     },
     {
       "input": {
@@ -1695,8 +1824,8 @@
         "model": "scribe_v2"
       },
       "output": {
-        "error": "ArgumentError",
-        "message": "invalid value for convert(): \"\""
+        "kind": "unknown",
+        "reason": "missing_audio_seconds"
       }
     },
     {
@@ -1705,8 +1834,8 @@
         "model": "tavily"
       },
       "output": {
-        "error": "ArgumentError",
-        "message": "tavily requires provider-reported usage and a rate snapshot"
+        "kind": "unknown",
+        "reason": "provider_reported_usage_required"
       }
     },
     {
@@ -1714,7 +1843,10 @@
         "input_tokens": 1000000,
         "model": "unpriced-model"
       },
-      "output": 0
+      "output": {
+        "kind": "unknown",
+        "reason": "unknown_model"
+      }
     },
     {
       "input": {
@@ -1746,7 +1878,10 @@
         "model": "eleven_flash_v2_5",
         "output_tokens": 567
       },
-      "output": 0
+      "output": {
+        "kind": "unknown",
+        "reason": "missing_characters"
+      }
     },
     {
       "input": {
@@ -1754,7 +1889,10 @@
         "model": "eleven_multilingual_v2",
         "output_tokens": 567
       },
-      "output": 0
+      "output": {
+        "kind": "unknown",
+        "reason": "missing_characters"
+      }
     },
     {
       "input": {
@@ -1795,8 +1933,8 @@
         "output_tokens": 567
       },
       "output": {
-        "error": "ArgumentError",
-        "message": "invalid value for convert(): \"\""
+        "kind": "unknown",
+        "reason": "missing_audio_seconds"
       }
     },
     {
@@ -1806,8 +1944,8 @@
         "output_tokens": 567
       },
       "output": {
-        "error": "ArgumentError",
-        "message": "tavily requires provider-reported usage and a rate snapshot"
+        "kind": "unknown",
+        "reason": "provider_reported_usage_required"
       }
     },
     {
@@ -1816,7 +1954,10 @@
         "model": "unpriced-model",
         "output_tokens": 567
       },
-      "output": 0
+      "output": {
+        "kind": "unknown",
+        "reason": "unknown_model"
+      }
     },
     {
       "input": {
@@ -1862,26 +2003,38 @@
         "model": "eleven_flash_v2_5",
         "output_tokens": 1000000
       },
-      "output": 0
+      "output": {
+        "kind": "unknown",
+        "reason": "missing_characters"
+      }
     },
     {
       "input": {
         "model": "eleven_flash_v2_5"
       },
-      "output": 0
+      "output": {
+        "kind": "unknown",
+        "reason": "missing_characters"
+      }
     },
     {
       "input": {
         "model": "eleven_multilingual_v2",
         "output_tokens": 1000000
       },
-      "output": 0
+      "output": {
+        "kind": "unknown",
+        "reason": "missing_characters"
+      }
     },
     {
       "input": {
         "model": "eleven_multilingual_v2"
       },
-      "output": 0
+      "output": {
+        "kind": "unknown",
+        "reason": "missing_characters"
+      }
     },
     {
       "input": {
@@ -1941,8 +2094,8 @@
         "output_tokens": 1000000
       },
       "output": {
-        "error": "ArgumentError",
-        "message": "invalid value for convert(): \"\""
+        "kind": "unknown",
+        "reason": "missing_audio_seconds"
       }
     },
     {
@@ -1950,8 +2103,8 @@
         "model": "scribe_v2"
       },
       "output": {
-        "error": "ArgumentError",
-        "message": "invalid value for convert(): \"\""
+        "kind": "unknown",
+        "reason": "missing_audio_seconds"
       }
     },
     {
@@ -1960,8 +2113,8 @@
         "output_tokens": 1000000
       },
       "output": {
-        "error": "ArgumentError",
-        "message": "tavily requires provider-reported usage and a rate snapshot"
+        "kind": "unknown",
+        "reason": "provider_reported_usage_required"
       }
     },
     {
@@ -1969,8 +2122,8 @@
         "model": "tavily"
       },
       "output": {
-        "error": "ArgumentError",
-        "message": "tavily requires provider-reported usage and a rate snapshot"
+        "kind": "unknown",
+        "reason": "provider_reported_usage_required"
       }
     },
     {
@@ -1978,13 +2131,19 @@
         "model": "unpriced-model",
         "output_tokens": 1000000
       },
-      "output": 0
+      "output": {
+        "kind": "unknown",
+        "reason": "unknown_model"
+      }
     },
     {
       "input": {
         "model": "unpriced-model"
       },
-      "output": 0
+      "output": {
+        "kind": "unknown",
+        "reason": "unknown_model"
+      }
     }
   ]
 }

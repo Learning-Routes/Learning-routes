@@ -52,13 +52,3 @@ describe("golden fixtures", () => {
     expect(registry?.system_types).toEqual([...SYSTEM_BLOCK_TYPES].sort());
   });
 });
-
-describe("ports (STEP 45)", () => {
-  it.skip("BlockGrader#call and .answerable? match block_grader.json (STEP 45)", () => {});
-  it.skip("gradable, gating and engagement-only match gating.json (STEP 45)", () => {});
-  it.skip("FSRS review, retrievability and intervals match fsrs.json (STEP 45)", () => {});
-  it.skip("attempt to FSRS rating and release match attempt_rating.json (STEP 45)", () => {});
-  it.skip("the lesson parser matches lesson_parser.json (STEP 45)", () => {});
-  it.skip("cost estimates match cost_estimate.json (STEP 45)", () => {});
-  it.skip("spend guard verdicts match spend_limits.json (STEP 45)", () => {});
-});

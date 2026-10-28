@@ -157,3 +157,10 @@ The header's "Completar paso" button completed an exam step the student had just
 The platform ports v1 rules (grading, review scheduling, cost, spend limits) against fixtures recorded from the Ruby code, not from memory. Capturing them already found behaviour nobody had written down: a review of an existing card with stability 0 raises in Ruby, and a call refused by the daily budget still uses up a rate-limit slot. Each such case is a decision to keep or fix, made on purpose.
 
 - `lib/tasks/characterize.rake` in v1, `packages/core/test/golden/` here
+
+## 24. A rule that feeds its output back into itself is tested over long runs
+
+v1's lapse formula multiplies stability by a factor far below 1. Each review looks fine on its own, but a card that lapses again and again drifts toward zero until the float underflows, and the next correct answer crashed. Two of the 18 crashing sequences in the fixtures got there this way, from cards that started healthy. The port clamps stability to a floor, and a property test runs random cards through up to 60 reviews in a row.
+
+- `engines/learning_routes_engine/app/services/learning_routes_engine/spaced_repetition.rb` (`next_stability`)
+- `packages/core/test/golden/DIVERGENCES.md` (FSRS) and `packages/core/test/fsrs-floor.test.ts` here

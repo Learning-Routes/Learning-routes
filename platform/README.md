@@ -28,6 +28,8 @@ pnpm build
 
 Nothing is deployed yet. Local secrets, once there are any, go in `apps/*/.dev.vars`, which git ignores.
 
+`packages/core` is checked against fixtures captured from the v1 Rails app. With Learning-routes cloned next to this repository and its database migrated, `pnpm golden:check` confirms v1 still produces them (see `packages/core/test/golden/README.md`).
+
 ## Docs
 
 - [ADR 0001: the stack](docs/adr/0001-stack.md)

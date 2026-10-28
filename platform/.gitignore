@@ -12,3 +12,4 @@ coverage/
 .DS_Store
 worker-configuration.d.ts
 *.tsbuildinfo
+.vitest/

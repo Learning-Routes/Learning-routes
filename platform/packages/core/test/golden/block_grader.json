@@ -21,7 +21,7 @@
         }
       },
       "output": {
-        "answerable": true,
+        "answerable": false,
         "call": {
           "correct": null,
           "gradable": false,
@@ -51,10 +51,10 @@
       "output": {
         "answerable": true,
         "call": {
-          "correct": false,
+          "correct": true,
           "gradable": true,
           "reason": null,
-          "score": 0.0
+          "score": 100.0
         }
       }
     },
@@ -79,10 +79,10 @@
       "output": {
         "answerable": true,
         "call": {
-          "correct": false,
+          "correct": true,
           "gradable": true,
           "reason": null,
-          "score": 0.0
+          "score": 100.0
         }
       }
     },
@@ -103,7 +103,7 @@
         }
       },
       "output": {
-        "answerable": true,
+        "answerable": false,
         "call": {
           "correct": null,
           "gradable": false,
@@ -242,7 +242,7 @@
         }
       },
       "output": {
-        "answerable": true,
+        "answerable": false,
         "call": {
           "correct": null,
           "gradable": false,
@@ -301,10 +301,10 @@
       "output": {
         "answerable": true,
         "call": {
-          "correct": false,
+          "correct": true,
           "gradable": true,
           "reason": null,
-          "score": 0.0
+          "score": 100.0
         }
       }
     },
@@ -368,7 +368,7 @@
         }
       },
       "output": {
-        "answerable": true,
+        "answerable": false,
         "call": {
           "correct": null,
           "gradable": false,
@@ -2616,10 +2616,10 @@
       "output": {
         "answerable": true,
         "call": {
-          "correct": true,
+          "correct": false,
           "gradable": true,
           "reason": null,
-          "score": 100.0
+          "score": 0.0
         }
       }
     },
@@ -2641,10 +2641,10 @@
       "output": {
         "answerable": true,
         "call": {
-          "correct": true,
+          "correct": false,
           "gradable": true,
           "reason": null,
-          "score": 100.0
+          "score": 0.0
         }
       }
     },
@@ -2666,10 +2666,10 @@
       "output": {
         "answerable": true,
         "call": {
-          "correct": true,
+          "correct": false,
           "gradable": true,
           "reason": null,
-          "score": 100.0
+          "score": 0.0
         }
       }
     },
@@ -19396,6 +19396,493 @@
           "gradable": true,
           "reason": null,
           "score": 0
+        }
+      }
+    },
+    {
+      "input": {
+        "origin": "edge",
+        "payload": {
+          "option_index": "abc"
+        },
+        "section": {
+          "options": [
+            {
+              "correct": true,
+              "label": "París"
+            },
+            {
+              "correct": false,
+              "label": "Lyon"
+            }
+          ],
+          "question": "¿Cuál es la capital de Francia?",
+          "type": "check"
+        }
+      },
+      "output": {
+        "answerable": true,
+        "call": {
+          "correct": false,
+          "gradable": true,
+          "reason": null,
+          "score": 0.0
+        }
+      }
+    },
+    {
+      "input": {
+        "origin": "edge",
+        "payload": {
+          "option_index": "0abc"
+        },
+        "section": {
+          "options": [
+            {
+              "correct": true,
+              "label": "París"
+            },
+            {
+              "correct": false,
+              "label": "Lyon"
+            }
+          ],
+          "question": "¿Cuál es la capital de Francia?",
+          "type": "check"
+        }
+      },
+      "output": {
+        "answerable": true,
+        "call": {
+          "correct": false,
+          "gradable": true,
+          "reason": null,
+          "score": 0.0
+        }
+      }
+    },
+    {
+      "input": {
+        "origin": "edge",
+        "payload": {
+          "option_index": ""
+        },
+        "section": {
+          "options": [
+            {
+              "correct": true,
+              "label": "París"
+            },
+            {
+              "correct": false,
+              "label": "Lyon"
+            }
+          ],
+          "question": "¿Cuál es la capital de Francia?",
+          "type": "check"
+        }
+      },
+      "output": {
+        "answerable": true,
+        "call": {
+          "correct": false,
+          "gradable": true,
+          "reason": null,
+          "score": 0.0
+        }
+      }
+    },
+    {
+      "input": {
+        "origin": "edge",
+        "payload": {
+          "option_index": 0.5
+        },
+        "section": {
+          "options": [
+            {
+              "correct": true,
+              "label": "París"
+            },
+            {
+              "correct": false,
+              "label": "Lyon"
+            }
+          ],
+          "question": "¿Cuál es la capital de Francia?",
+          "type": "check"
+        }
+      },
+      "output": {
+        "answerable": true,
+        "call": {
+          "correct": false,
+          "gradable": true,
+          "reason": null,
+          "score": 0.0
+        }
+      }
+    },
+    {
+      "input": {
+        "origin": "edge",
+        "payload": {
+          "option_index": true
+        },
+        "section": {
+          "options": [
+            {
+              "correct": true,
+              "label": "París"
+            },
+            {
+              "correct": false,
+              "label": "Lyon"
+            }
+          ],
+          "question": "¿Cuál es la capital de Francia?",
+          "type": "check"
+        }
+      },
+      "output": {
+        "answerable": true,
+        "call": {
+          "correct": false,
+          "gradable": true,
+          "reason": null,
+          "score": 0.0
+        }
+      }
+    },
+    {
+      "input": {
+        "origin": "edge",
+        "payload": {
+          "option_index": "0"
+        },
+        "section": {
+          "options": [
+            {
+              "correct": true,
+              "label": "París"
+            },
+            {
+              "correct": false,
+              "label": "Lyon"
+            }
+          ],
+          "question": "¿Cuál es la capital de Francia?",
+          "type": "check"
+        }
+      },
+      "output": {
+        "answerable": true,
+        "call": {
+          "correct": true,
+          "gradable": true,
+          "reason": null,
+          "score": 100.0
+        }
+      }
+    },
+    {
+      "input": {
+        "origin": "edge",
+        "payload": {
+          "option_index": 2
+        },
+        "section": {
+          "options": [
+            {
+              "correct": false,
+              "label": "París"
+            },
+            {
+              "correct": true,
+              "label": "Lyon"
+            }
+          ],
+          "question": "¿Cuál es la capital de Francia?",
+          "type": "check"
+        }
+      },
+      "output": {
+        "answerable": true,
+        "call": {
+          "correct": false,
+          "gradable": true,
+          "reason": null,
+          "score": 0.0
+        }
+      }
+    },
+    {
+      "input": {
+        "origin": "edge",
+        "payload": {
+          "answers": [
+            "C++"
+          ]
+        },
+        "section": {
+          "blanks": [
+            "C++"
+          ],
+          "match": "text",
+          "sentence": "El lenguaje ___ extiende C.",
+          "type": "fill_blank"
+        }
+      },
+      "output": {
+        "answerable": true,
+        "call": {
+          "correct": true,
+          "gradable": true,
+          "reason": null,
+          "score": 100.0
+        }
+      }
+    },
+    {
+      "input": {
+        "origin": "edge",
+        "payload": {
+          "answers": [
+            "c++"
+          ]
+        },
+        "section": {
+          "blanks": [
+            "C++"
+          ],
+          "match": "text",
+          "sentence": "El lenguaje ___ extiende C.",
+          "type": "fill_blank"
+        }
+      },
+      "output": {
+        "answerable": true,
+        "call": {
+          "correct": true,
+          "gradable": true,
+          "reason": null,
+          "score": 100.0
+        }
+      }
+    },
+    {
+      "input": {
+        "origin": "edge",
+        "payload": {
+          "answers": [
+            "c+"
+          ]
+        },
+        "section": {
+          "blanks": [
+            "C++"
+          ],
+          "match": "text",
+          "sentence": "El lenguaje ___ extiende C.",
+          "type": "fill_blank"
+        }
+      },
+      "output": {
+        "answerable": true,
+        "call": {
+          "correct": false,
+          "gradable": true,
+          "reason": null,
+          "score": 0.0
+        }
+      }
+    },
+    {
+      "input": {
+        "origin": "edge",
+        "payload": {
+          "answers": [
+            "c"
+          ]
+        },
+        "section": {
+          "blanks": [
+            "C++"
+          ],
+          "match": "text",
+          "sentence": "El lenguaje ___ extiende C.",
+          "type": "fill_blank"
+        }
+      },
+      "output": {
+        "answerable": true,
+        "call": {
+          "correct": false,
+          "gradable": true,
+          "reason": null,
+          "score": 0.0
+        }
+      }
+    },
+    {
+      "input": {
+        "origin": "edge",
+        "payload": {
+          "answers": [
+            "c#"
+          ]
+        },
+        "section": {
+          "blanks": [
+            "C++"
+          ],
+          "match": "text",
+          "sentence": "El lenguaje ___ extiende C.",
+          "type": "fill_blank"
+        }
+      },
+      "output": {
+        "answerable": true,
+        "call": {
+          "correct": false,
+          "gradable": true,
+          "reason": null,
+          "score": 0.0
+        }
+      }
+    },
+    {
+      "input": {
+        "origin": "edge",
+        "payload": {
+          "answers": [
+            "C++"
+          ]
+        },
+        "section": {
+          "blanks": [
+            "C++"
+          ],
+          "match": "exact",
+          "sentence": "El lenguaje ___ extiende C.",
+          "type": "fill_blank"
+        }
+      },
+      "output": {
+        "answerable": true,
+        "call": {
+          "correct": true,
+          "gradable": true,
+          "reason": null,
+          "score": 100.0
+        }
+      }
+    },
+    {
+      "input": {
+        "origin": "edge",
+        "payload": {
+          "answers": [
+            "c++"
+          ]
+        },
+        "section": {
+          "blanks": [
+            "C++"
+          ],
+          "match": "exact",
+          "sentence": "El lenguaje ___ extiende C.",
+          "type": "fill_blank"
+        }
+      },
+      "output": {
+        "answerable": true,
+        "call": {
+          "correct": false,
+          "gradable": true,
+          "reason": null,
+          "score": 0.0
+        }
+      }
+    },
+    {
+      "input": {
+        "origin": "edge",
+        "payload": {
+          "answers": [
+            "c+"
+          ]
+        },
+        "section": {
+          "blanks": [
+            "C++"
+          ],
+          "match": "exact",
+          "sentence": "El lenguaje ___ extiende C.",
+          "type": "fill_blank"
+        }
+      },
+      "output": {
+        "answerable": true,
+        "call": {
+          "correct": false,
+          "gradable": true,
+          "reason": null,
+          "score": 0.0
+        }
+      }
+    },
+    {
+      "input": {
+        "origin": "edge",
+        "payload": {
+          "answers": [
+            "c"
+          ]
+        },
+        "section": {
+          "blanks": [
+            "C++"
+          ],
+          "match": "exact",
+          "sentence": "El lenguaje ___ extiende C.",
+          "type": "fill_blank"
+        }
+      },
+      "output": {
+        "answerable": true,
+        "call": {
+          "correct": false,
+          "gradable": true,
+          "reason": null,
+          "score": 0.0
+        }
+      }
+    },
+    {
+      "input": {
+        "origin": "edge",
+        "payload": {
+          "answers": [
+            "c#"
+          ]
+        },
+        "section": {
+          "blanks": [
+            "C++"
+          ],
+          "match": "exact",
+          "sentence": "El lenguaje ___ extiende C.",
+          "type": "fill_blank"
+        }
+      },
+      "output": {
+        "answerable": true,
+        "call": {
+          "correct": false,
+          "gradable": true,
+          "reason": null,
+          "score": 0.0
         }
       }
     }
