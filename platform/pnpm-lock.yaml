@@ -29,6 +29,9 @@ importers:
 
   apps/api:
     dependencies:
+      '@learning-routes/core':
+        specifier: workspace:*
+        version: link:../../packages/core
       hono:
         specifier: 4.13.13
         version: 4.13.13

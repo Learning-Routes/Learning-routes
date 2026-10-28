@@ -26,6 +26,10 @@ A rule that v1 already has (grading, review scheduling, cost, spend limits, pars
 
 Every dependency is pinned to an exact version (`.npmrc` has `save-exact=true`). Adding one is a decision: say in the pull request why the platform or an existing package does not already do the job.
 
+## AI calls
+
+AI tokens are most of what the platform spends, at every size. Every model call goes through `packages/core/src/ai/gate.ts`, with a model from `ai/models.ts`, a `max_tokens` and a prompt-cache setting, and through the spend gate in `credits/`. Only the one adapter in `apps/api` sends it. A student-facing feature uses the cheapest model in the table that passes the feature's own test cases; a more expensive model needs a failing case that shows why.
+
 ## Authorship
 
 Commits, pull requests, code comments and docs never say they were made with an AI tool: no co-author trailers, no "generated with" lines. Files that instruct automated agents are named for the work they describe (like this one), not for a tool.

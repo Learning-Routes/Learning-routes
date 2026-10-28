@@ -12,6 +12,7 @@
     "postinstall": "wrangler types"
   },
   "dependencies": {
+    "@learning-routes/core": "workspace:*",
     "hono": "4.13.13"
   },
   "devDependencies": {

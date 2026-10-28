@@ -1,0 +1,74 @@
+import { describe, expect, it } from "vitest";
+import { type CallSpec, estimateInputTokens, type GateContext, gate } from "../../src/ai/gate";
+import { MODELS } from "../../src/ai/models";
+import { V1_LIMITS } from "../../src/credits/spend";
+
+const NOW = Date.parse("2026-10-28T12:00:00Z");
+const ctx: GateContext = {
+  limits: { ...V1_LIMITS, ratePerMinute: null },
+  spend: { globalToday: 0, userToday: 0 },
+  consumedAt: [],
+  now: NOW,
+};
+const spec: CallSpec = {
+  model: "openai/gpt-5-nano",
+  maxTokens: 300,
+  promptCache: false,
+  system: "x".repeat(400),
+  messages: [{ role: "user", content: "y".repeat(400) }],
+};
+
+describe("the AI gate", () => {
+  it("refuses a model missing from the table", () => {
+    expect(gate({ ...spec, model: "openai/gpt-4o" }, ctx)).toEqual({
+      verdict: "refused",
+      reason: "unknown_model",
+    });
+  });
+
+  it("refuses a call without a usable max_tokens: its cost has no ceiling", () => {
+    for (const maxTokens of [0, -1, 1.5, Number.NaN]) {
+      expect(gate({ ...spec, maxTokens }, ctx)).toEqual({
+        verdict: "refused",
+        reason: "unknown_cost",
+      });
+    }
+  });
+
+  it("estimates the worst case: the prompt at 4 characters a token, plus max_tokens out", () => {
+    const decision = gate(spec, ctx);
+    const { input, output } = MODELS["openai/gpt-5-nano"];
+    // 200 input tokens and 300 output tokens, rounded up to a whole microcent.
+    expect(decision).toMatchObject({
+      verdict: "allowed",
+      estimateMicrocents: Math.ceil((200 * input + 300 * output) / 1_000_000),
+    });
+  });
+
+  it("goes through the spend gate in credits/", () => {
+    const spent = { ...ctx, spend: { globalToday: V1_LIMITS.dailyMicrocents, userToday: 0 } };
+    expect(gate(spec, spent)).toEqual({ verdict: "refused", reason: "daily_budget" });
+  });
+
+  it("describes the request: the model, max_tokens and the prompt cache", () => {
+    const decision = gate({ ...spec, model: "anthropic/claude-haiku-5.5", promptCache: true }, ctx);
+    expect(decision.verdict).toBe("allowed");
+    if (decision.verdict !== "allowed") return;
+    expect(decision.request).toEqual({
+      model: "anthropic/claude-haiku-5.5",
+      max_tokens: 300,
+      messages: [
+        {
+          role: "system",
+          content: [{ type: "text", text: spec.system, cache_control: { type: "ephemeral" } }],
+        },
+        { role: "user", content: spec.messages[0]?.content },
+      ],
+    });
+  });
+
+  it("counts tokens at 4 characters each, rounded up", () => {
+    expect(estimateInputTokens("")).toBe(0);
+    expect(estimateInputTokens("abcde")).toBe(2);
+  });
+});
