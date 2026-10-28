@@ -1,0 +1,26 @@
+# The local Postgres 18 for development and tests (Platform STEP 2 §1.1). Its roles
+# mirror PlanetScale's (ADR 0005); see db/init/01-roles.sql. Start it with
+# `docker compose up -d` from platform/.
+#
+# LOCAL ONLY: the passwords below are fixed development values for this container
+# and are used nowhere else.
+services:
+  postgres:
+    image: postgres:18.4
+    ports:
+      - "54318:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: local-only-superuser
+      POSTGRES_DB: learning_routes
+    volumes:
+      - lr-postgres:/var/lib/postgresql
+      - ./db/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d learning_routes"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+volumes:
+  lr-postgres:
