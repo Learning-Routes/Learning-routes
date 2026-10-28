@@ -24,10 +24,15 @@ type SystemContent =
   | string
   | { type: "text"; text: string; cache_control: { type: "ephemeral" } }[];
 
+// Student data never reaches a provider that keeps it: only zero-data-retention
+// endpoints, and none that stores or trains on requests (OpenRouter provider routing).
+const NO_RETENTION = { zdr: true, data_collection: "deny" } as const;
+
 /** The OpenRouter chat completions body. */
 export interface ModelRequest {
   model: ModelId;
   max_tokens: number;
+  provider: typeof NO_RETENTION;
   messages: ({ role: "system"; content: SystemContent } | CallSpec["messages"][number])[];
 }
 
@@ -69,6 +74,7 @@ function requestOf(spec: CallSpec, model: ModelId): ModelRequest {
   return {
     model,
     max_tokens: spec.maxTokens,
+    provider: NO_RETENTION,
     messages: [{ role: "system", content: system }, ...spec.messages],
   };
 }

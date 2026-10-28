@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { type CallSpec, estimateInputTokens, type GateContext, gate } from "../../src/ai/gate";
-import { MODELS } from "../../src/ai/models";
+import { MODELS, type ModelId } from "../../src/ai/models";
 import { V1_LIMITS } from "../../src/credits/spend";
 
 const NOW = Date.parse("2026-10-28T12:00:00Z");
@@ -57,6 +57,7 @@ describe("the AI gate", () => {
     expect(decision.request).toEqual({
       model: "anthropic/claude-haiku-5.5",
       max_tokens: 300,
+      provider: { zdr: true, data_collection: "deny" },
       messages: [
         {
           role: "system",
@@ -65,6 +66,14 @@ describe("the AI gate", () => {
         { role: "user", content: spec.messages[0]?.content },
       ],
     });
+  });
+
+  it("never sends a call to a provider that keeps or trains on the data, whatever the model", () => {
+    for (const model of Object.keys(MODELS) as ModelId[]) {
+      const decision = gate({ ...spec, model }, ctx);
+      if (decision.verdict !== "allowed") throw new Error(`${model}: ${decision.reason}`);
+      expect(decision.request.provider).toEqual({ zdr: true, data_collection: "deny" });
+    }
   });
 
   it("counts tokens at 4 characters each, rounded up", () => {
