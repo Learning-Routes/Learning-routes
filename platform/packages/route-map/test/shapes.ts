@@ -1,7 +1,7 @@
-// The named route shapes the journey's pure modules are tested over: the layout
-// (journey_map_layout.test.ts) and the drawn paths (journey_map_paths.test.ts).
+// The named route shapes the route map's pure modules are tested over: the layout
+// (layout.test.ts) and the drawn paths (paths.test.ts).
 // One list, so a shape added for one is checked by both.
-import type { Stage, Topic } from "../src/journey_map_layout";
+import type { Stage, Topic } from "../src/layout";
 
 interface ShapeTopic extends Topic {
   id: string;

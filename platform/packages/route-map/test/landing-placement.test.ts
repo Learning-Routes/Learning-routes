@@ -1,12 +1,12 @@
 import { expect, test } from "vitest";
-import { buildModel, camera, camFor, layoutChapter, restFor } from "../src/landing_placement";
-import SHAPES from "./fixtures/landing_text_shapes.json" with { type: "json" };
+import { buildModel, camera, camFor, layoutChapter, restFor } from "../src/landing-placement";
+import SHAPES from "./fixtures/landing-text-shapes.json" with { type: "json" };
 
 // STEP 41 §2.2, the owner's main point: each chapter's text sits on a free spot of
 // the map — never over a stop or its name, a leg, the fan, a sheet's edge, a
 // module chip, the root title or the stage's controls. Run against the real
 // geometry, with the text shapes the landing measures (headline over body), in
-// both locales; fixtures/landing_text_shapes.json is re-measured whenever the
+// both locales; fixtures/landing-text-shapes.json is re-measured whenever the
 // landing's copy or type changes (a system test reading each text's data-lay).
 const VIEWPORTS = ["1440x900", "1280x720", "1024x768", "1920x1080", "768x1024", "390x844"];
 

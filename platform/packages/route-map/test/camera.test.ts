@@ -10,7 +10,7 @@ import {
   safeRect,
   screenBox,
   zoomAbout,
-} from "../src/journey_camera";
+} from "../src/camera";
 
 // WP-37 §3.2-3.4. Camera math, pure. ONE safe area — the viewport minus the
 // overlays — is what (c), Fit, the rail and focus-follows-camera all mean.

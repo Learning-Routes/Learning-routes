@@ -1,8 +1,8 @@
 import { expect, test } from "vitest";
-import { tiltFor } from "../src/card_tilt";
+import { tiltFor } from "../src/card-tilt";
 
 // STEP 41 §1.3: a card you can act on tilts towards the pointer, at most 3°,
-// and its highlight follows the pointer. Pure, like the journey modules.
+// and its highlight follows the pointer. Pure, like the route map modules.
 
 test("the centre is flat, with the highlight on it", () => {
   expect(tiltFor(0.5, 0.5)).toEqual({ rx: 0, ry: 0, mx: 50, my: 50 });

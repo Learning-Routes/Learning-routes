@@ -1,5 +1,5 @@
-// WP-37b §4.3 — the faint contour lines behind the journey map. Pure: no DOM, so
-// test/javascript/journey_terrain_test.rb asserts it under node.
+// WP-37b §4.3 — the faint contour lines behind the route map. Pure: no DOM. Ported
+// from v1's app/javascript/lib/journey_terrain.js; tested in test/terrain.test.ts.
 //
 // Seeded 2-D Perlin noise (three octaves), then marching squares at each level,
 // so the same route always lies on the same terrain. Each level is ONE path

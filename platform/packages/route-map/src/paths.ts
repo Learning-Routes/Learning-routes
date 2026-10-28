@@ -1,6 +1,6 @@
-// WP-37b — what the journey map DRAWS, from what the layout PLACES. Pure: no DOM,
-// no Stimulus, no CSS, so every rule is asserted under node by
-// test/javascript/journey_map_paths_test.rb.
+// WP-37b — what the route map DRAWS, from what the layout PLACES. Pure: no DOM,
+// no Stimulus, no CSS. Ported from v1's app/javascript/lib/journey_map_paths.js;
+// every rule is asserted in test/paths.test.ts.
 //
 // THE PICTURE. Each module's route is ONE continuous path: out of the module disc,
 // through every head in route order. Within a row it runs on cubics with horizontal
@@ -17,7 +17,7 @@
 // GRAMMAR. Absolute M L C Q A only, numbers separated by single spaces, one M per
 // path. samplePath reads exactly this grammar and throws on anything else.
 
-import type { Layout, LayoutNode, Tree, XY } from "./journey_map_layout";
+import type { Layout, LayoutNode, Tree, XY } from "./layout";
 
 const WHITESPACE = /\s+/;
 
@@ -56,7 +56,7 @@ function options(opts: Partial<PathOptions>): PathOptions {
   const o = { ...PATH_DEFAULTS, ...opts } as PathOptions;
   for (const key of REQUIRED) {
     if (!Number.isFinite(o[key]))
-      throw new Error(`journey paths option ${key} must be a finite number, got ${o[key]}`);
+      throw new Error(`route map paths option ${key} must be a finite number, got ${o[key]}`);
   }
   // A U-turn's radius: half the gutter less 4 px keeps the arc out of the row-end label.
   if (o.bendRadius == null) o.bendRadius = o.gutter / 2 - 4;
