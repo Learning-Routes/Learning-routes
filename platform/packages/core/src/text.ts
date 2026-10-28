@@ -1,6 +1,6 @@
 import { z } from "zod";
+import { LOCALES } from "./locales";
 
-export const LOCALES = ["es", "en", "pt", "fr", "it"] as const;
 export const Locale = z.enum(LOCALES);
 export type Locale = z.infer<typeof Locale>;
 

@@ -36,6 +36,9 @@ importers:
 
   apps/web:
     dependencies:
+      '@learning-routes/core':
+        specifier: workspace:*
+        version: link:../../packages/core
       '@learning-routes/ui-tokens':
         specifier: workspace:*
         version: link:../../packages/ui-tokens

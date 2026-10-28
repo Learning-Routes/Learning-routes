@@ -13,6 +13,7 @@
     "e2e": "playwright test"
   },
   "dependencies": {
+    "@learning-routes/core": "workspace:*",
     "@learning-routes/ui-tokens": "workspace:*",
     "isbot": "5.2.2",
     "react": "19.3.1",

@@ -8,5 +8,6 @@ export * from "./learning/attempt";
 export * from "./learning/fsrs";
 export * from "./learning/grader";
 export * from "./learning/registry";
+export * from "./locales";
 export * from "./text";
 export * from "./v1";

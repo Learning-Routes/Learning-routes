@@ -2,7 +2,7 @@ import { expect, type Page, test } from "@playwright/test";
 
 const POLICY =
   /^default-src 'self'; script-src 'self' 'nonce-([A-Za-z0-9+/=]{24})'; style-src 'self'; img-src 'self' data:; connect-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'$/;
-const PAGES = ["/", "/studio"];
+const PAGES = ["/es", "/studio"];
 
 function nonceOf(policy: string | undefined): string {
   const match = POLICY.exec(policy ?? "");
@@ -47,7 +47,7 @@ for (const path of PAGES) {
 test("the browser refuses an inline script without the nonce, and runs one with it", async ({
   page,
 }) => {
-  await page.route("http://localhost:4173/", async (route) => {
+  await page.route("**/studio", async (route) => {
     const response = await route.fetch();
     const nonce = nonceOf(response.headers()["content-security-policy"]);
     const body = (await response.text()).replace(
@@ -56,7 +56,7 @@ test("the browser refuses an inline script without the nonce, and runs one with 
     );
     await route.fulfill({ response, body });
   });
-  await page.goto("/");
+  await page.goto("/studio");
 
   expect(await page.evaluate(() => "__unsigned" in window)).toBe(false);
   expect(await page.evaluate(() => "__signed" in window)).toBe(true);
