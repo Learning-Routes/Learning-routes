@@ -18,7 +18,8 @@
     "deps": "depcruise apps packages --config .dependency-cruiser.cjs",
     "worker-size": "scripts/check-worker-size.mjs",
     "bench": "pnpm --filter @learning-routes/core bench",
-    "fixtures": "node scripts/check-fixtures.mjs"
+    "fixtures": "node scripts/check-fixtures.mjs",
+    "names": "node scripts/check-names.mjs"
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.15",
