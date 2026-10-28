@@ -43,6 +43,14 @@ STEP 46 §2 made these CI steps, each proven once by breaking it:
 - size-limit, for JavaScript budgets;
 - a Worker size budget;
 - the 14-day version rule, with Dependabot and osv-scanner;
-- the AI cost guard: every model call goes through `core/ai/gate.ts`, with a model from the price table, a `max_tokens` and the spend gate.
+- the AI cost guard: every model call goes through `core/ai/gate.ts`, with a model from the price table, a `max_tokens`, a prompt within the model's limit and the spend gate, only to zero-data-retention providers, with a `session_id` so a session keeps its prompt cache.
 
 Benchmarks of the hot functions are printed but do not fail yet.
+
+## Departures from STEP 46, accepted by the reviewer
+
+- **The move rewrote the history:** the old commits were rewritten into `platform/` and merged, since a plain `git subtree add` left `git log --follow` empty.
+- **CI filters paths per job, not per workflow:** a skipped job satisfies a required check, while a workflow that never runs blocks the pull request.
+- **Ruby jobs pin Ubuntu 24.04:** `setup-ruby` had no Ruby 3.3.8 for the newer `ubuntu-latest`.
+- **net-ssh 7.3.6 and rubocop 1.92.0:** bundler-audit's new advisories failed every pull request.
+- **The benchmark baseline is recorded on a GitHub runner:** a laptop's numbers differ from a runner's by more than the 30% we watch.
