@@ -15,6 +15,13 @@
       "when": 1793230345735,
       "tag": "0001_auth",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1793230461572,
+      "tag": "0002_shared_checks_and_auth_grants",
+      "breakpoints": true
     }
   ]
 }
