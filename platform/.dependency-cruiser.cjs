@@ -59,6 +59,19 @@ module.exports = {
       },
     },
     {
+      name: "ai-sdks-only-in-the-adapter",
+      comment:
+        "Every model call goes through core's AI gate (ai/gate.ts) and its one platform adapter; nothing else imports an AI SDK. A test in apps/api keeps the OpenRouter endpoint in the adapter too.",
+      severity: "error",
+      from: { pathNot: "^apps/api/src/ai/openrouter\\.ts$" },
+      to: {
+        path: [
+          "^(openai|@anthropic-ai/|@openrouter/|@ai-sdk/|ai$|ai/)",
+          "node_modules/(openai|@anthropic-ai|@openrouter|@ai-sdk|ai)/",
+        ],
+      },
+    },
+    {
       name: "web-and-api-stay-apart",
       severity: "error",
       from: { path: "^apps/(web|api)/" },

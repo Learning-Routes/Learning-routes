@@ -76,7 +76,9 @@ export type UnknownCostReason =
   | "unknown_model"
   | "missing_audio_seconds"
   | "missing_characters"
-  | "provider_reported_usage_required";
+  | "provider_reported_usage_required"
+  // A model call with no max_tokens has no ceiling on its output (ai/gate.ts).
+  | "missing_max_tokens";
 
 /** A price, or an explicit unknown: never a guessed 0 (lesson 10, ADR 0003). */
 export type CostEstimate =
