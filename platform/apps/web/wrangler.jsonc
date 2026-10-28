@@ -3,6 +3,11 @@
   "name": "learning-routes-web",
   "compatibility_date": "2026-10-12",
   "main": "./workers/app.ts",
-  "observability": { "enabled": true },
+  // Workers Logs and Traces: every log line kept, one trace in ten sampled.
+  "observability": {
+    "enabled": true,
+    "logs": { "enabled": true, "head_sampling_rate": 1 },
+    "traces": { "enabled": true, "head_sampling_rate": 0.1 }
+  },
   "upload_source_maps": true
 }
