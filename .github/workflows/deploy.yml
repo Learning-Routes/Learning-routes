@@ -14,7 +14,8 @@ concurrency:
 jobs:
   deploy:
     name: Deploy with Kamal
-    runs-on: ubuntu-latest
+    # Pinned: setup-ruby has no Ruby 3.3.8 build for a newer ubuntu-latest.
+    runs-on: ubuntu-24.04
 
     env:
       DOCKER_BUILDKIT: 1

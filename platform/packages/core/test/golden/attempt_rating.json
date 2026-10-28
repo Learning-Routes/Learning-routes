@@ -1,0 +1,2927 @@
+{
+  "unit": "attempt_rating",
+  "source": "engines/learning_routes_engine/app/models/learning_routes_engine/block_attempt.rb:51",
+  "captured_at": "2026-10-26T12:00:00Z",
+  "cases": [
+    {
+      "input": {
+        "attempts": 0,
+        "block_type": "check",
+        "correct": false,
+        "kind": "fsrs_rating",
+        "payload": null,
+        "released": false
+      },
+      "output": 1
+    },
+    {
+      "input": {
+        "attempts": 0,
+        "block_type": "check",
+        "correct": false,
+        "kind": "fsrs_rating",
+        "payload": null,
+        "released": true
+      },
+      "output": null
+    },
+    {
+      "input": {
+        "attempts": 0,
+        "block_type": "check",
+        "correct": null,
+        "kind": "fsrs_rating",
+        "payload": null,
+        "released": false
+      },
+      "output": null
+    },
+    {
+      "input": {
+        "attempts": 0,
+        "block_type": "check",
+        "correct": null,
+        "kind": "fsrs_rating",
+        "payload": null,
+        "released": true
+      },
+      "output": null
+    },
+    {
+      "input": {
+        "attempts": 0,
+        "block_type": "check",
+        "correct": true,
+        "kind": "fsrs_rating",
+        "payload": null,
+        "released": false
+      },
+      "output": 3
+    },
+    {
+      "input": {
+        "attempts": 0,
+        "block_type": "check",
+        "correct": true,
+        "kind": "fsrs_rating",
+        "payload": null,
+        "released": true
+      },
+      "output": null
+    },
+    {
+      "input": {
+        "attempts": 0,
+        "block_type": "concept",
+        "correct": false,
+        "kind": "fsrs_rating",
+        "payload": null,
+        "released": false
+      },
+      "output": 1
+    },
+    {
+      "input": {
+        "attempts": 0,
+        "block_type": "concept",
+        "correct": false,
+        "kind": "fsrs_rating",
+        "payload": null,
+        "released": true
+      },
+      "output": null
+    },
+    {
+      "input": {
+        "attempts": 0,
+        "block_type": "concept",
+        "correct": null,
+        "kind": "fsrs_rating",
+        "payload": null,
+        "released": false
+      },
+      "output": null
+    },
+    {
+      "input": {
+        "attempts": 0,
+        "block_type": "concept",
+        "correct": null,
+        "kind": "fsrs_rating",
+        "payload": null,
+        "released": true
+      },
+      "output": null
+    },
+    {
+      "input": {
+        "attempts": 0,
+        "block_type": "concept",
+        "correct": true,
+        "kind": "fsrs_rating",
+        "payload": null,
+        "released": false
+      },
+      "output": 3
+    },
+    {
+      "input": {
+        "attempts": 0,
+        "block_type": "concept",
+        "correct": true,
+        "kind": "fsrs_rating",
+        "payload": null,
+        "released": true
+      },
+      "output": null
+    },
+    {
+      "input": {
+        "attempts": 0,
+        "block_type": "drag_drop",
+        "correct": false,
+        "kind": "fsrs_rating",
+        "payload": null,
+        "released": false
+      },
+      "output": 1
+    },
+    {
+      "input": {
+        "attempts": 0,
+        "block_type": "drag_drop",
+        "correct": false,
+        "kind": "fsrs_rating",
+        "payload": null,
+        "released": true
+      },
+      "output": null
+    },
+    {
+      "input": {
+        "attempts": 0,
+        "block_type": "drag_drop",
+        "correct": null,
+        "kind": "fsrs_rating",
+        "payload": null,
+        "released": false
+      },
+      "output": null
+    },
+    {
+      "input": {
+        "attempts": 0,
+        "block_type": "drag_drop",
+        "correct": null,
+        "kind": "fsrs_rating",
+        "payload": null,
+        "released": true
+      },
+      "output": null
+    },
+    {
+      "input": {
+        "attempts": 0,
+        "block_type": "drag_drop",
+        "correct": true,
+        "kind": "fsrs_rating",
+        "payload": null,
+        "released": false
+      },
+      "output": 3
+    },
+    {
+      "input": {
+        "attempts": 0,
+        "block_type": "drag_drop",
+        "correct": true,
+        "kind": "fsrs_rating",
+        "payload": null,
+        "released": true
+      },
+      "output": null
+    },
+    {
+      "input": {
+        "attempts": 0,
+        "block_type": "fill_blank",
+        "correct": false,
+        "kind": "fsrs_rating",
+        "payload": null,
+        "released": false
+      },
+      "output": 1
+    },
+    {
+      "input": {
+        "attempts": 0,
+        "block_type": "fill_blank",
+        "correct": false,
+        "kind": "fsrs_rating",
+        "payload": null,
+        "released": true
+      },
+      "output": null
+    },
+    {
+      "input": {
+        "attempts": 0,
+        "block_type": "fill_blank",
+        "correct": null,
+        "kind": "fsrs_rating",
+        "payload": null,
+        "released": false
+      },
+      "output": null
+    },
+    {
+      "input": {
+        "attempts": 0,
+        "block_type": "fill_blank",
+        "correct": null,
+        "kind": "fsrs_rating",
+        "payload": null,
+        "released": true
+      },
+      "output": null
+    },
+    {
+      "input": {
+        "attempts": 0,
+        "block_type": "fill_blank",
+        "correct": true,
+        "kind": "fsrs_rating",
+        "payload": null,
+        "released": false
+      },
+      "output": 3
+    },
+    {
+      "input": {
+        "attempts": 0,
+        "block_type": "fill_blank",
+        "correct": true,
+        "kind": "fsrs_rating",
+        "payload": null,
+        "released": true
+      },
+      "output": null
+    },
+    {
+      "input": {
+        "attempts": 0,
+        "block_type": "flashcards",
+        "correct": false,
+        "kind": "fsrs_rating",
+        "payload": null,
+        "released": false
+      },
+      "output": null
+    },
+    {
+      "input": {
+        "attempts": 0,
+        "block_type": "flashcards",
+        "correct": false,
+        "kind": "fsrs_rating",
+        "payload": null,
+        "released": true
+      },
+      "output": null
+    },
+    {
+      "input": {
+        "attempts": 0,
+        "block_type": "flashcards",
+        "correct": null,
+        "kind": "fsrs_rating",
+        "payload": null,
+        "released": false
+      },
+      "output": null
+    },
+    {
+      "input": {
+        "attempts": 0,
+        "block_type": "flashcards",
+        "correct": null,
+        "kind": "fsrs_rating",
+        "payload": null,
+        "released": true
+      },
+      "output": null
+    },
+    {
+      "input": {
+        "attempts": 0,
+        "block_type": "flashcards",
+        "correct": true,
+        "kind": "fsrs_rating",
+        "payload": null,
+        "released": false
+      },
+      "output": null
+    },
+    {
+      "input": {
+        "attempts": 0,
+        "block_type": "flashcards",
+        "correct": true,
+        "kind": "fsrs_rating",
+        "payload": null,
+        "released": true
+      },
+      "output": null
+    },
+    {
+      "input": {
+        "attempts": 1,
+        "block_type": "check",
+        "correct": false,
+        "kind": "fsrs_rating",
+        "payload": null,
+        "released": false
+      },
+      "output": 1
+    },
+    {
+      "input": {
+        "attempts": 1,
+        "block_type": "check",
+        "correct": false,
+        "kind": "fsrs_rating",
+        "payload": null,
+        "released": true
+      },
+      "output": null
+    },
+    {
+      "input": {
+        "attempts": 1,
+        "block_type": "check",
+        "correct": null,
+        "kind": "fsrs_rating",
+        "payload": null,
+        "released": false
+      },
+      "output": null
+    },
+    {
+      "input": {
+        "attempts": 1,
+        "block_type": "check",
+        "correct": null,
+        "kind": "fsrs_rating",
+        "payload": null,
+        "released": true
+      },
+      "output": null
+    },
+    {
+      "input": {
+        "attempts": 1,
+        "block_type": "check",
+        "correct": true,
+        "kind": "fsrs_rating",
+        "payload": null,
+        "released": false
+      },
+      "output": 3
+    },
+    {
+      "input": {
+        "attempts": 1,
+        "block_type": "check",
+        "correct": true,
+        "kind": "fsrs_rating",
+        "payload": null,
+        "released": true
+      },
+      "output": null
+    },
+    {
+      "input": {
+        "attempts": 1,
+        "block_type": "concept",
+        "correct": false,
+        "kind": "fsrs_rating",
+        "payload": null,
+        "released": false
+      },
+      "output": 1
+    },
+    {
+      "input": {
+        "attempts": 1,
+        "block_type": "concept",
+        "correct": false,
+        "kind": "fsrs_rating",
+        "payload": null,
+        "released": true
+      },
+      "output": null
+    },
+    {
+      "input": {
+        "attempts": 1,
+        "block_type": "concept",
+        "correct": null,
+        "kind": "fsrs_rating",
+        "payload": null,
+        "released": false
+      },
+      "output": null
+    },
+    {
+      "input": {
+        "attempts": 1,
+        "block_type": "concept",
+        "correct": null,
+        "kind": "fsrs_rating",
+        "payload": null,
+        "released": true
+      },
+      "output": null
+    },
+    {
+      "input": {
+        "attempts": 1,
+        "block_type": "concept",
+        "correct": true,
+        "kind": "fsrs_rating",
+        "payload": null,
+        "released": false
+      },
+      "output": 3
+    },
+    {
+      "input": {
+        "attempts": 1,
+        "block_type": "concept",
+        "correct": true,
+        "kind": "fsrs_rating",
+        "payload": null,
+        "released": true
+      },
+      "output": null
+    },
+    {
+      "input": {
+        "attempts": 1,
+        "block_type": "drag_drop",
+        "correct": false,
+        "kind": "fsrs_rating",
+        "payload": null,
+        "released": false
+      },
+      "output": 1
+    },
+    {
+      "input": {
+        "attempts": 1,
+        "block_type": "drag_drop",
+        "correct": false,
+        "kind": "fsrs_rating",
+        "payload": null,
+        "released": true
+      },
+      "output": null
+    },
+    {
+      "input": {
+        "attempts": 1,
+        "block_type": "drag_drop",
+        "correct": null,
+        "kind": "fsrs_rating",
+        "payload": null,
+        "released": false
+      },
+      "output": null
+    },
+    {
+      "input": {
+        "attempts": 1,
+        "block_type": "drag_drop",
+        "correct": null,
+        "kind": "fsrs_rating",
+        "payload": null,
+        "released": true
+      },
+      "output": null
+    },
+    {
+      "input": {
+        "attempts": 1,
+        "block_type": "drag_drop",
+        "correct": true,
+        "kind": "fsrs_rating",
+        "payload": null,
+        "released": false
+      },
+      "output": 3
+    },
+    {
+      "input": {
+        "attempts": 1,
+        "block_type": "drag_drop",
+        "correct": true,
+        "kind": "fsrs_rating",
+        "payload": null,
+        "released": true
+      },
+      "output": null
+    },
+    {
+      "input": {
+        "attempts": 1,
+        "block_type": "fill_blank",
+        "correct": false,
+        "kind": "fsrs_rating",
+        "payload": null,
+        "released": false
+      },
+      "output": 1
+    },
+    {
+      "input": {
+        "attempts": 1,
+        "block_type": "fill_blank",
+        "correct": false,
+        "kind": "fsrs_rating",
+        "payload": null,
+        "released": true
+      },
+      "output": null
+    },
+    {
+      "input": {
+        "attempts": 1,
+        "block_type": "fill_blank",
+        "correct": null,
+        "kind": "fsrs_rating",
+        "payload": null,
+        "released": false
+      },
+      "output": null
+    },
+    {
+      "input": {
+        "attempts": 1,
+        "block_type": "fill_blank",
+        "correct": null,
+        "kind": "fsrs_rating",
+        "payload": null,
+        "released": true
+      },
+      "output": null
+    },
+    {
+      "input": {
+        "attempts": 1,
+        "block_type": "fill_blank",
+        "correct": true,
+        "kind": "fsrs_rating",
+        "payload": null,
+        "released": false
+      },
+      "output": 3
+    },
+    {
+      "input": {
+        "attempts": 1,
+        "block_type": "fill_blank",
+        "correct": true,
+        "kind": "fsrs_rating",
+        "payload": null,
+        "released": true
+      },
+      "output": null
+    },
+    {
+      "input": {
+        "attempts": 1,
+        "block_type": "flashcards",
+        "correct": false,
+        "kind": "fsrs_rating",
+        "payload": null,
+        "released": false
+      },
+      "output": null
+    },
+    {
+      "input": {
+        "attempts": 1,
+        "block_type": "flashcards",
+        "correct": false,
+        "kind": "fsrs_rating",
+        "payload": null,
+        "released": true
+      },
+      "output": null
+    },
+    {
+      "input": {
+        "attempts": 1,
+        "block_type": "flashcards",
+        "correct": null,
+        "kind": "fsrs_rating",
+        "payload": "easy",
+        "released": false
+      },
+      "output": null
+    },
+    {
+      "input": {
+        "attempts": 1,
+        "block_type": "flashcards",
+        "correct": null,
+        "kind": "fsrs_rating",
+        "payload": "easy",
+        "released": true
+      },
+      "output": null
+    },
+    {
+      "input": {
+        "attempts": 1,
+        "block_type": "flashcards",
+        "correct": null,
+        "kind": "fsrs_rating",
+        "payload": [
+          "easy"
+        ],
+        "released": false
+      },
+      "output": null
+    },
+    {
+      "input": {
+        "attempts": 1,
+        "block_type": "flashcards",
+        "correct": null,
+        "kind": "fsrs_rating",
+        "payload": [
+          "easy"
+        ],
+        "released": true
+      },
+      "output": null
+    },
+    {
+      "input": {
+        "attempts": 1,
+        "block_type": "flashcards",
+        "correct": null,
+        "kind": "fsrs_rating",
+        "payload": null,
+        "released": false
+      },
+      "output": null
+    },
+    {
+      "input": {
+        "attempts": 1,
+        "block_type": "flashcards",
+        "correct": null,
+        "kind": "fsrs_rating",
+        "payload": null,
+        "released": true
+      },
+      "output": null
+    },
+    {
+      "input": {
+        "attempts": 1,
+        "block_type": "flashcards",
+        "correct": null,
+        "kind": "fsrs_rating",
+        "payload": {
+          "ratings": "easy"
+        },
+        "released": false
+      },
+      "output": 4
+    },
+    {
+      "input": {
+        "attempts": 1,
+        "block_type": "flashcards",
+        "correct": null,
+        "kind": "fsrs_rating",
+        "payload": {
+          "ratings": "easy"
+        },
+        "released": true
+      },
+      "output": null
+    },
+    {
+      "input": {
+        "attempts": 1,
+        "block_type": "flashcards",
+        "correct": null,
+        "kind": "fsrs_rating",
+        "payload": {
+          "ratings": [
+            "Easy",
+            "NORMAL"
+          ]
+        },
+        "released": false
+      },
+      "output": 3
+    },
+    {
+      "input": {
+        "attempts": 1,
+        "block_type": "flashcards",
+        "correct": null,
+        "kind": "fsrs_rating",
+        "payload": {
+          "ratings": [
+            "Easy",
+            "NORMAL"
+          ]
+        },
+        "released": true
+      },
+      "output": null
+    },
+    {
+      "input": {
+        "attempts": 1,
+        "block_type": "flashcards",
+        "correct": null,
+        "kind": "fsrs_rating",
+        "payload": {
+          "ratings": [
+            "easy",
+            "good"
+          ]
+        },
+        "released": false
+      },
+      "output": 3
+    },
+    {
+      "input": {
+        "attempts": 1,
+        "block_type": "flashcards",
+        "correct": null,
+        "kind": "fsrs_rating",
+        "payload": {
+          "ratings": [
+            "easy",
+            "good"
+          ]
+        },
+        "released": true
+      },
+      "output": null
+    },
+    {
+      "input": {
+        "attempts": 1,
+        "block_type": "flashcards",
+        "correct": null,
+        "kind": "fsrs_rating",
+        "payload": {
+          "ratings": [
+            "easy",
+            "hard"
+          ]
+        },
+        "released": false
+      },
+      "output": 2
+    },
+    {
+      "input": {
+        "attempts": 1,
+        "block_type": "flashcards",
+        "correct": null,
+        "kind": "fsrs_rating",
+        "payload": {
+          "ratings": [
+            "easy",
+            "hard"
+          ]
+        },
+        "released": true
+      },
+      "output": null
+    },
+    {
+      "input": {
+        "attempts": 1,
+        "block_type": "flashcards",
+        "correct": null,
+        "kind": "fsrs_rating",
+        "payload": {
+          "ratings": [
+            "easy",
+            "unknown",
+            "normal"
+          ]
+        },
+        "released": false
+      },
+      "output": 3
+    },
+    {
+      "input": {
+        "attempts": 1,
+        "block_type": "flashcards",
+        "correct": null,
+        "kind": "fsrs_rating",
+        "payload": {
+          "ratings": [
+            "easy",
+            "unknown",
+            "normal"
+          ]
+        },
+        "released": true
+      },
+      "output": null
+    },
+    {
+      "input": {
+        "attempts": 1,
+        "block_type": "flashcards",
+        "correct": null,
+        "kind": "fsrs_rating",
+        "payload": {
+          "ratings": [
+            "meh"
+          ]
+        },
+        "released": false
+      },
+      "output": null
+    },
+    {
+      "input": {
+        "attempts": 1,
+        "block_type": "flashcards",
+        "correct": null,
+        "kind": "fsrs_rating",
+        "payload": {
+          "ratings": [
+            "meh"
+          ]
+        },
+        "released": true
+      },
+      "output": null
+    },
+    {
+      "input": {
+        "attempts": 1,
+        "block_type": "flashcards",
+        "correct": null,
+        "kind": "fsrs_rating",
+        "payload": {
+          "ratings": [
+            3,
+            "easy"
+          ]
+        },
+        "released": false
+      },
+      "output": 4
+    },
+    {
+      "input": {
+        "attempts": 1,
+        "block_type": "flashcards",
+        "correct": null,
+        "kind": "fsrs_rating",
+        "payload": {
+          "ratings": [
+            3,
+            "easy"
+          ]
+        },
+        "released": true
+      },
+      "output": null
+    },
+    {
+      "input": {
+        "attempts": 1,
+        "block_type": "flashcards",
+        "correct": null,
+        "kind": "fsrs_rating",
+        "payload": {
+          "ratings": []
+        },
+        "released": false
+      },
+      "output": null
+    },
+    {
+      "input": {
+        "attempts": 1,
+        "block_type": "flashcards",
+        "correct": null,
+        "kind": "fsrs_rating",
+        "payload": {
+          "ratings": []
+        },
+        "released": true
+      },
+      "output": null
+    },
+    {
+      "input": {
+        "attempts": 1,
+        "block_type": "flashcards",
+        "correct": null,
+        "kind": "fsrs_rating",
+        "payload": {
+          "ratings": null
+        },
+        "released": false
+      },
+      "output": null
+    },
+    {
+      "input": {
+        "attempts": 1,
+        "block_type": "flashcards",
+        "correct": null,
+        "kind": "fsrs_rating",
+        "payload": {
+          "ratings": null
+        },
+        "released": true
+      },
+      "output": null
+    },
+    {
+      "input": {
+        "attempts": 1,
+        "block_type": "flashcards",
+        "correct": null,
+        "kind": "fsrs_rating",
+        "payload": {
+          "ratings": {
+            "0": "easy",
+            "1": "hard"
+          }
+        },
+        "released": false
+      },
+      "output": 2
+    },
+    {
+      "input": {
+        "attempts": 1,
+        "block_type": "flashcards",
+        "correct": null,
+        "kind": "fsrs_rating",
+        "payload": {
+          "ratings": {
+            "0": "easy",
+            "1": "hard"
+          }
+        },
+        "released": true
+      },
+      "output": null
+    },
+    {
+      "input": {
+        "attempts": 1,
+        "block_type": "flashcards",
+        "correct": null,
+        "kind": "fsrs_rating",
+        "payload": {},
+        "released": false
+      },
+      "output": null
+    },
+    {
+      "input": {
+        "attempts": 1,
+        "block_type": "flashcards",
+        "correct": null,
+        "kind": "fsrs_rating",
+        "payload": {},
+        "released": true
+      },
+      "output": null
+    },
+    {
+      "input": {
+        "attempts": 1,
+        "block_type": "flashcards",
+        "correct": true,
+        "kind": "fsrs_rating",
+        "payload": null,
+        "released": false
+      },
+      "output": null
+    },
+    {
+      "input": {
+        "attempts": 1,
+        "block_type": "flashcards",
+        "correct": true,
+        "kind": "fsrs_rating",
+        "payload": null,
+        "released": true
+      },
+      "output": null
+    },
+    {
+      "input": {
+        "attempts": 2,
+        "block_type": "check",
+        "correct": false,
+        "kind": "fsrs_rating",
+        "payload": null,
+        "released": false
+      },
+      "output": 1
+    },
+    {
+      "input": {
+        "attempts": 2,
+        "block_type": "check",
+        "correct": false,
+        "kind": "fsrs_rating",
+        "payload": null,
+        "released": true
+      },
+      "output": null
+    },
+    {
+      "input": {
+        "attempts": 2,
+        "block_type": "check",
+        "correct": null,
+        "kind": "fsrs_rating",
+        "payload": null,
+        "released": false
+      },
+      "output": null
+    },
+    {
+      "input": {
+        "attempts": 2,
+        "block_type": "check",
+        "correct": null,
+        "kind": "fsrs_rating",
+        "payload": null,
+        "released": true
+      },
+      "output": null
+    },
+    {
+      "input": {
+        "attempts": 2,
+        "block_type": "check",
+        "correct": true,
+        "kind": "fsrs_rating",
+        "payload": null,
+        "released": false
+      },
+      "output": 2
+    },
+    {
+      "input": {
+        "attempts": 2,
+        "block_type": "check",
+        "correct": true,
+        "kind": "fsrs_rating",
+        "payload": null,
+        "released": true
+      },
+      "output": null
+    },
+    {
+      "input": {
+        "attempts": 2,
+        "block_type": "concept",
+        "correct": false,
+        "kind": "fsrs_rating",
+        "payload": null,
+        "released": false
+      },
+      "output": 1
+    },
+    {
+      "input": {
+        "attempts": 2,
+        "block_type": "concept",
+        "correct": false,
+        "kind": "fsrs_rating",
+        "payload": null,
+        "released": true
+      },
+      "output": null
+    },
+    {
+      "input": {
+        "attempts": 2,
+        "block_type": "concept",
+        "correct": null,
+        "kind": "fsrs_rating",
+        "payload": null,
+        "released": false
+      },
+      "output": null
+    },
+    {
+      "input": {
+        "attempts": 2,
+        "block_type": "concept",
+        "correct": null,
+        "kind": "fsrs_rating",
+        "payload": null,
+        "released": true
+      },
+      "output": null
+    },
+    {
+      "input": {
+        "attempts": 2,
+        "block_type": "concept",
+        "correct": true,
+        "kind": "fsrs_rating",
+        "payload": null,
+        "released": false
+      },
+      "output": 2
+    },
+    {
+      "input": {
+        "attempts": 2,
+        "block_type": "concept",
+        "correct": true,
+        "kind": "fsrs_rating",
+        "payload": null,
+        "released": true
+      },
+      "output": null
+    },
+    {
+      "input": {
+        "attempts": 2,
+        "block_type": "drag_drop",
+        "correct": false,
+        "kind": "fsrs_rating",
+        "payload": null,
+        "released": false
+      },
+      "output": 1
+    },
+    {
+      "input": {
+        "attempts": 2,
+        "block_type": "drag_drop",
+        "correct": false,
+        "kind": "fsrs_rating",
+        "payload": null,
+        "released": true
+      },
+      "output": null
+    },
+    {
+      "input": {
+        "attempts": 2,
+        "block_type": "drag_drop",
+        "correct": null,
+        "kind": "fsrs_rating",
+        "payload": null,
+        "released": false
+      },
+      "output": null
+    },
+    {
+      "input": {
+        "attempts": 2,
+        "block_type": "drag_drop",
+        "correct": null,
+        "kind": "fsrs_rating",
+        "payload": null,
+        "released": true
+      },
+      "output": null
+    },
+    {
+      "input": {
+        "attempts": 2,
+        "block_type": "drag_drop",
+        "correct": true,
+        "kind": "fsrs_rating",
+        "payload": null,
+        "released": false
+      },
+      "output": 2
+    },
+    {
+      "input": {
+        "attempts": 2,
+        "block_type": "drag_drop",
+        "correct": true,
+        "kind": "fsrs_rating",
+        "payload": null,
+        "released": true
+      },
+      "output": null
+    },
+    {
+      "input": {
+        "attempts": 2,
+        "block_type": "fill_blank",
+        "correct": false,
+        "kind": "fsrs_rating",
+        "payload": null,
+        "released": false
+      },
+      "output": 1
+    },
+    {
+      "input": {
+        "attempts": 2,
+        "block_type": "fill_blank",
+        "correct": false,
+        "kind": "fsrs_rating",
+        "payload": null,
+        "released": true
+      },
+      "output": null
+    },
+    {
+      "input": {
+        "attempts": 2,
+        "block_type": "fill_blank",
+        "correct": null,
+        "kind": "fsrs_rating",
+        "payload": null,
+        "released": false
+      },
+      "output": null
+    },
+    {
+      "input": {
+        "attempts": 2,
+        "block_type": "fill_blank",
+        "correct": null,
+        "kind": "fsrs_rating",
+        "payload": null,
+        "released": true
+      },
+      "output": null
+    },
+    {
+      "input": {
+        "attempts": 2,
+        "block_type": "fill_blank",
+        "correct": true,
+        "kind": "fsrs_rating",
+        "payload": null,
+        "released": false
+      },
+      "output": 2
+    },
+    {
+      "input": {
+        "attempts": 2,
+        "block_type": "fill_blank",
+        "correct": true,
+        "kind": "fsrs_rating",
+        "payload": null,
+        "released": true
+      },
+      "output": null
+    },
+    {
+      "input": {
+        "attempts": 2,
+        "block_type": "flashcards",
+        "correct": false,
+        "kind": "fsrs_rating",
+        "payload": null,
+        "released": false
+      },
+      "output": null
+    },
+    {
+      "input": {
+        "attempts": 2,
+        "block_type": "flashcards",
+        "correct": false,
+        "kind": "fsrs_rating",
+        "payload": null,
+        "released": true
+      },
+      "output": null
+    },
+    {
+      "input": {
+        "attempts": 2,
+        "block_type": "flashcards",
+        "correct": null,
+        "kind": "fsrs_rating",
+        "payload": null,
+        "released": false
+      },
+      "output": null
+    },
+    {
+      "input": {
+        "attempts": 2,
+        "block_type": "flashcards",
+        "correct": null,
+        "kind": "fsrs_rating",
+        "payload": null,
+        "released": true
+      },
+      "output": null
+    },
+    {
+      "input": {
+        "attempts": 2,
+        "block_type": "flashcards",
+        "correct": true,
+        "kind": "fsrs_rating",
+        "payload": null,
+        "released": false
+      },
+      "output": null
+    },
+    {
+      "input": {
+        "attempts": 2,
+        "block_type": "flashcards",
+        "correct": true,
+        "kind": "fsrs_rating",
+        "payload": null,
+        "released": true
+      },
+      "output": null
+    },
+    {
+      "input": {
+        "attempts": 3,
+        "block_type": "check",
+        "correct": false,
+        "kind": "fsrs_rating",
+        "payload": null,
+        "released": false
+      },
+      "output": 1
+    },
+    {
+      "input": {
+        "attempts": 3,
+        "block_type": "check",
+        "correct": false,
+        "kind": "fsrs_rating",
+        "payload": null,
+        "released": true
+      },
+      "output": null
+    },
+    {
+      "input": {
+        "attempts": 3,
+        "block_type": "check",
+        "correct": null,
+        "kind": "fsrs_rating",
+        "payload": null,
+        "released": false
+      },
+      "output": null
+    },
+    {
+      "input": {
+        "attempts": 3,
+        "block_type": "check",
+        "correct": null,
+        "kind": "fsrs_rating",
+        "payload": null,
+        "released": true
+      },
+      "output": null
+    },
+    {
+      "input": {
+        "attempts": 3,
+        "block_type": "check",
+        "correct": true,
+        "kind": "fsrs_rating",
+        "payload": null,
+        "released": false
+      },
+      "output": 2
+    },
+    {
+      "input": {
+        "attempts": 3,
+        "block_type": "check",
+        "correct": true,
+        "kind": "fsrs_rating",
+        "payload": null,
+        "released": true
+      },
+      "output": null
+    },
+    {
+      "input": {
+        "attempts": 3,
+        "block_type": "concept",
+        "correct": false,
+        "kind": "fsrs_rating",
+        "payload": null,
+        "released": false
+      },
+      "output": 1
+    },
+    {
+      "input": {
+        "attempts": 3,
+        "block_type": "concept",
+        "correct": false,
+        "kind": "fsrs_rating",
+        "payload": null,
+        "released": true
+      },
+      "output": null
+    },
+    {
+      "input": {
+        "attempts": 3,
+        "block_type": "concept",
+        "correct": null,
+        "kind": "fsrs_rating",
+        "payload": null,
+        "released": false
+      },
+      "output": null
+    },
+    {
+      "input": {
+        "attempts": 3,
+        "block_type": "concept",
+        "correct": null,
+        "kind": "fsrs_rating",
+        "payload": null,
+        "released": true
+      },
+      "output": null
+    },
+    {
+      "input": {
+        "attempts": 3,
+        "block_type": "concept",
+        "correct": true,
+        "kind": "fsrs_rating",
+        "payload": null,
+        "released": false
+      },
+      "output": 2
+    },
+    {
+      "input": {
+        "attempts": 3,
+        "block_type": "concept",
+        "correct": true,
+        "kind": "fsrs_rating",
+        "payload": null,
+        "released": true
+      },
+      "output": null
+    },
+    {
+      "input": {
+        "attempts": 3,
+        "block_type": "drag_drop",
+        "correct": false,
+        "kind": "fsrs_rating",
+        "payload": null,
+        "released": false
+      },
+      "output": 1
+    },
+    {
+      "input": {
+        "attempts": 3,
+        "block_type": "drag_drop",
+        "correct": false,
+        "kind": "fsrs_rating",
+        "payload": null,
+        "released": true
+      },
+      "output": null
+    },
+    {
+      "input": {
+        "attempts": 3,
+        "block_type": "drag_drop",
+        "correct": null,
+        "kind": "fsrs_rating",
+        "payload": null,
+        "released": false
+      },
+      "output": null
+    },
+    {
+      "input": {
+        "attempts": 3,
+        "block_type": "drag_drop",
+        "correct": null,
+        "kind": "fsrs_rating",
+        "payload": null,
+        "released": true
+      },
+      "output": null
+    },
+    {
+      "input": {
+        "attempts": 3,
+        "block_type": "drag_drop",
+        "correct": true,
+        "kind": "fsrs_rating",
+        "payload": null,
+        "released": false
+      },
+      "output": 2
+    },
+    {
+      "input": {
+        "attempts": 3,
+        "block_type": "drag_drop",
+        "correct": true,
+        "kind": "fsrs_rating",
+        "payload": null,
+        "released": true
+      },
+      "output": null
+    },
+    {
+      "input": {
+        "attempts": 3,
+        "block_type": "fill_blank",
+        "correct": false,
+        "kind": "fsrs_rating",
+        "payload": null,
+        "released": false
+      },
+      "output": 1
+    },
+    {
+      "input": {
+        "attempts": 3,
+        "block_type": "fill_blank",
+        "correct": false,
+        "kind": "fsrs_rating",
+        "payload": null,
+        "released": true
+      },
+      "output": null
+    },
+    {
+      "input": {
+        "attempts": 3,
+        "block_type": "fill_blank",
+        "correct": null,
+        "kind": "fsrs_rating",
+        "payload": null,
+        "released": false
+      },
+      "output": null
+    },
+    {
+      "input": {
+        "attempts": 3,
+        "block_type": "fill_blank",
+        "correct": null,
+        "kind": "fsrs_rating",
+        "payload": null,
+        "released": true
+      },
+      "output": null
+    },
+    {
+      "input": {
+        "attempts": 3,
+        "block_type": "fill_blank",
+        "correct": true,
+        "kind": "fsrs_rating",
+        "payload": null,
+        "released": false
+      },
+      "output": 2
+    },
+    {
+      "input": {
+        "attempts": 3,
+        "block_type": "fill_blank",
+        "correct": true,
+        "kind": "fsrs_rating",
+        "payload": null,
+        "released": true
+      },
+      "output": null
+    },
+    {
+      "input": {
+        "attempts": 3,
+        "block_type": "flashcards",
+        "correct": false,
+        "kind": "fsrs_rating",
+        "payload": null,
+        "released": false
+      },
+      "output": null
+    },
+    {
+      "input": {
+        "attempts": 3,
+        "block_type": "flashcards",
+        "correct": false,
+        "kind": "fsrs_rating",
+        "payload": null,
+        "released": true
+      },
+      "output": null
+    },
+    {
+      "input": {
+        "attempts": 3,
+        "block_type": "flashcards",
+        "correct": null,
+        "kind": "fsrs_rating",
+        "payload": null,
+        "released": false
+      },
+      "output": null
+    },
+    {
+      "input": {
+        "attempts": 3,
+        "block_type": "flashcards",
+        "correct": null,
+        "kind": "fsrs_rating",
+        "payload": null,
+        "released": true
+      },
+      "output": null
+    },
+    {
+      "input": {
+        "attempts": 3,
+        "block_type": "flashcards",
+        "correct": true,
+        "kind": "fsrs_rating",
+        "payload": null,
+        "released": false
+      },
+      "output": null
+    },
+    {
+      "input": {
+        "attempts": 3,
+        "block_type": "flashcards",
+        "correct": true,
+        "kind": "fsrs_rating",
+        "payload": null,
+        "released": true
+      },
+      "output": null
+    },
+    {
+      "input": {
+        "attempts": null,
+        "block_type": "check",
+        "correct": false,
+        "kind": "fsrs_rating",
+        "payload": null,
+        "released": false
+      },
+      "output": 1
+    },
+    {
+      "input": {
+        "attempts": null,
+        "block_type": "check",
+        "correct": false,
+        "kind": "fsrs_rating",
+        "payload": null,
+        "released": true
+      },
+      "output": null
+    },
+    {
+      "input": {
+        "attempts": null,
+        "block_type": "check",
+        "correct": null,
+        "kind": "fsrs_rating",
+        "payload": null,
+        "released": false
+      },
+      "output": null
+    },
+    {
+      "input": {
+        "attempts": null,
+        "block_type": "check",
+        "correct": null,
+        "kind": "fsrs_rating",
+        "payload": null,
+        "released": true
+      },
+      "output": null
+    },
+    {
+      "input": {
+        "attempts": null,
+        "block_type": "check",
+        "correct": true,
+        "kind": "fsrs_rating",
+        "payload": null,
+        "released": false
+      },
+      "output": 3
+    },
+    {
+      "input": {
+        "attempts": null,
+        "block_type": "check",
+        "correct": true,
+        "kind": "fsrs_rating",
+        "payload": null,
+        "released": true
+      },
+      "output": null
+    },
+    {
+      "input": {
+        "attempts": null,
+        "block_type": "concept",
+        "correct": false,
+        "kind": "fsrs_rating",
+        "payload": null,
+        "released": false
+      },
+      "output": 1
+    },
+    {
+      "input": {
+        "attempts": null,
+        "block_type": "concept",
+        "correct": false,
+        "kind": "fsrs_rating",
+        "payload": null,
+        "released": true
+      },
+      "output": null
+    },
+    {
+      "input": {
+        "attempts": null,
+        "block_type": "concept",
+        "correct": null,
+        "kind": "fsrs_rating",
+        "payload": null,
+        "released": false
+      },
+      "output": null
+    },
+    {
+      "input": {
+        "attempts": null,
+        "block_type": "concept",
+        "correct": null,
+        "kind": "fsrs_rating",
+        "payload": null,
+        "released": true
+      },
+      "output": null
+    },
+    {
+      "input": {
+        "attempts": null,
+        "block_type": "concept",
+        "correct": true,
+        "kind": "fsrs_rating",
+        "payload": null,
+        "released": false
+      },
+      "output": 3
+    },
+    {
+      "input": {
+        "attempts": null,
+        "block_type": "concept",
+        "correct": true,
+        "kind": "fsrs_rating",
+        "payload": null,
+        "released": true
+      },
+      "output": null
+    },
+    {
+      "input": {
+        "attempts": null,
+        "block_type": "drag_drop",
+        "correct": false,
+        "kind": "fsrs_rating",
+        "payload": null,
+        "released": false
+      },
+      "output": 1
+    },
+    {
+      "input": {
+        "attempts": null,
+        "block_type": "drag_drop",
+        "correct": false,
+        "kind": "fsrs_rating",
+        "payload": null,
+        "released": true
+      },
+      "output": null
+    },
+    {
+      "input": {
+        "attempts": null,
+        "block_type": "drag_drop",
+        "correct": null,
+        "kind": "fsrs_rating",
+        "payload": null,
+        "released": false
+      },
+      "output": null
+    },
+    {
+      "input": {
+        "attempts": null,
+        "block_type": "drag_drop",
+        "correct": null,
+        "kind": "fsrs_rating",
+        "payload": null,
+        "released": true
+      },
+      "output": null
+    },
+    {
+      "input": {
+        "attempts": null,
+        "block_type": "drag_drop",
+        "correct": true,
+        "kind": "fsrs_rating",
+        "payload": null,
+        "released": false
+      },
+      "output": 3
+    },
+    {
+      "input": {
+        "attempts": null,
+        "block_type": "drag_drop",
+        "correct": true,
+        "kind": "fsrs_rating",
+        "payload": null,
+        "released": true
+      },
+      "output": null
+    },
+    {
+      "input": {
+        "attempts": null,
+        "block_type": "fill_blank",
+        "correct": false,
+        "kind": "fsrs_rating",
+        "payload": null,
+        "released": false
+      },
+      "output": 1
+    },
+    {
+      "input": {
+        "attempts": null,
+        "block_type": "fill_blank",
+        "correct": false,
+        "kind": "fsrs_rating",
+        "payload": null,
+        "released": true
+      },
+      "output": null
+    },
+    {
+      "input": {
+        "attempts": null,
+        "block_type": "fill_blank",
+        "correct": null,
+        "kind": "fsrs_rating",
+        "payload": null,
+        "released": false
+      },
+      "output": null
+    },
+    {
+      "input": {
+        "attempts": null,
+        "block_type": "fill_blank",
+        "correct": null,
+        "kind": "fsrs_rating",
+        "payload": null,
+        "released": true
+      },
+      "output": null
+    },
+    {
+      "input": {
+        "attempts": null,
+        "block_type": "fill_blank",
+        "correct": true,
+        "kind": "fsrs_rating",
+        "payload": null,
+        "released": false
+      },
+      "output": 3
+    },
+    {
+      "input": {
+        "attempts": null,
+        "block_type": "fill_blank",
+        "correct": true,
+        "kind": "fsrs_rating",
+        "payload": null,
+        "released": true
+      },
+      "output": null
+    },
+    {
+      "input": {
+        "attempts": null,
+        "block_type": "flashcards",
+        "correct": false,
+        "kind": "fsrs_rating",
+        "payload": null,
+        "released": false
+      },
+      "output": null
+    },
+    {
+      "input": {
+        "attempts": null,
+        "block_type": "flashcards",
+        "correct": false,
+        "kind": "fsrs_rating",
+        "payload": null,
+        "released": true
+      },
+      "output": null
+    },
+    {
+      "input": {
+        "attempts": null,
+        "block_type": "flashcards",
+        "correct": null,
+        "kind": "fsrs_rating",
+        "payload": null,
+        "released": false
+      },
+      "output": null
+    },
+    {
+      "input": {
+        "attempts": null,
+        "block_type": "flashcards",
+        "correct": null,
+        "kind": "fsrs_rating",
+        "payload": null,
+        "released": true
+      },
+      "output": null
+    },
+    {
+      "input": {
+        "attempts": null,
+        "block_type": "flashcards",
+        "correct": true,
+        "kind": "fsrs_rating",
+        "payload": null,
+        "released": false
+      },
+      "output": null
+    },
+    {
+      "input": {
+        "attempts": null,
+        "block_type": "flashcards",
+        "correct": true,
+        "kind": "fsrs_rating",
+        "payload": null,
+        "released": true
+      },
+      "output": null
+    },
+    {
+      "input": {
+        "kind": "submissions",
+        "name": "check without a correct option",
+        "section": {
+          "options": [
+            {
+              "label": "3"
+            }
+          ],
+          "question": "2 + 2?",
+          "type": "check"
+        },
+        "submissions": [
+          {
+            "complete": true,
+            "payload": {
+              "option_index": 0
+            }
+          },
+          {
+            "complete": true,
+            "payload": {
+              "option_index": 0
+            }
+          },
+          {
+            "complete": true,
+            "payload": {
+              "option_index": 0
+            }
+          }
+        ]
+      },
+      "output": [
+        {
+          "attempts": 1,
+          "completed": true,
+          "correct": null,
+          "engaged": true,
+          "fsrs_rating": null,
+          "passed": false,
+          "released": false,
+          "satisfied": true,
+          "score": null
+        },
+        {
+          "attempts": 2,
+          "completed": true,
+          "correct": null,
+          "engaged": true,
+          "fsrs_rating": null,
+          "passed": false,
+          "released": false,
+          "satisfied": true,
+          "score": null
+        },
+        {
+          "attempts": 3,
+          "completed": true,
+          "correct": null,
+          "engaged": true,
+          "fsrs_rating": null,
+          "passed": false,
+          "released": false,
+          "satisfied": true,
+          "score": null
+        }
+      ]
+    },
+    {
+      "input": {
+        "kind": "submissions",
+        "name": "check: released, then right",
+        "section": {
+          "options": [
+            {
+              "correct": false,
+              "label": "3"
+            },
+            {
+              "correct": true,
+              "label": "4"
+            }
+          ],
+          "question": "2 + 2?",
+          "type": "check"
+        },
+        "submissions": [
+          {
+            "complete": true,
+            "payload": {
+              "option_index": 0
+            }
+          },
+          {
+            "complete": true,
+            "payload": {
+              "option_index": 0
+            }
+          },
+          {
+            "complete": true,
+            "payload": {
+              "option_index": 0
+            }
+          },
+          {
+            "complete": true,
+            "payload": {
+              "option_index": 1
+            }
+          }
+        ]
+      },
+      "output": [
+        {
+          "attempts": 1,
+          "completed": false,
+          "correct": false,
+          "engaged": false,
+          "fsrs_rating": 1,
+          "passed": false,
+          "released": false,
+          "satisfied": false,
+          "score": 0.0
+        },
+        {
+          "attempts": 2,
+          "completed": false,
+          "correct": false,
+          "engaged": false,
+          "fsrs_rating": 1,
+          "passed": false,
+          "released": false,
+          "satisfied": false,
+          "score": 0.0
+        },
+        {
+          "attempts": 3,
+          "completed": true,
+          "correct": false,
+          "engaged": false,
+          "fsrs_rating": null,
+          "passed": false,
+          "released": true,
+          "satisfied": true,
+          "score": 0.0
+        },
+        {
+          "attempts": 4,
+          "completed": true,
+          "correct": true,
+          "engaged": false,
+          "fsrs_rating": null,
+          "passed": true,
+          "released": true,
+          "satisfied": true,
+          "score": 100.0
+        }
+      ]
+    },
+    {
+      "input": {
+        "kind": "submissions",
+        "name": "check: right first time",
+        "section": {
+          "options": [
+            {
+              "correct": false,
+              "label": "3"
+            },
+            {
+              "correct": true,
+              "label": "4"
+            }
+          ],
+          "question": "2 + 2?",
+          "type": "check"
+        },
+        "submissions": [
+          {
+            "complete": true,
+            "payload": {
+              "option_index": 1
+            }
+          }
+        ]
+      },
+      "output": [
+        {
+          "attempts": 1,
+          "completed": true,
+          "correct": true,
+          "engaged": false,
+          "fsrs_rating": 3,
+          "passed": true,
+          "released": false,
+          "satisfied": true,
+          "score": 100.0
+        }
+      ]
+    },
+    {
+      "input": {
+        "kind": "submissions",
+        "name": "check: right, then wrong",
+        "section": {
+          "options": [
+            {
+              "correct": false,
+              "label": "3"
+            },
+            {
+              "correct": true,
+              "label": "4"
+            }
+          ],
+          "question": "2 + 2?",
+          "type": "check"
+        },
+        "submissions": [
+          {
+            "complete": true,
+            "payload": {
+              "option_index": 1
+            }
+          },
+          {
+            "complete": true,
+            "payload": {
+              "option_index": 0
+            }
+          }
+        ]
+      },
+      "output": [
+        {
+          "attempts": 1,
+          "completed": true,
+          "correct": true,
+          "engaged": false,
+          "fsrs_rating": 3,
+          "passed": true,
+          "released": false,
+          "satisfied": true,
+          "score": 100.0
+        },
+        {
+          "attempts": 2,
+          "completed": true,
+          "correct": false,
+          "engaged": false,
+          "fsrs_rating": 1,
+          "passed": false,
+          "released": false,
+          "satisfied": true,
+          "score": 0.0
+        }
+      ]
+    },
+    {
+      "input": {
+        "kind": "submissions",
+        "name": "check: wrong four times",
+        "section": {
+          "options": [
+            {
+              "correct": false,
+              "label": "3"
+            },
+            {
+              "correct": true,
+              "label": "4"
+            }
+          ],
+          "question": "2 + 2?",
+          "type": "check"
+        },
+        "submissions": [
+          {
+            "complete": true,
+            "payload": {
+              "option_index": 0
+            }
+          },
+          {
+            "complete": true,
+            "payload": {
+              "option_index": 0
+            }
+          },
+          {
+            "complete": true,
+            "payload": {
+              "option_index": 0
+            }
+          },
+          {
+            "complete": true,
+            "payload": {
+              "option_index": 0
+            }
+          }
+        ]
+      },
+      "output": [
+        {
+          "attempts": 1,
+          "completed": false,
+          "correct": false,
+          "engaged": false,
+          "fsrs_rating": 1,
+          "passed": false,
+          "released": false,
+          "satisfied": false,
+          "score": 0.0
+        },
+        {
+          "attempts": 2,
+          "completed": false,
+          "correct": false,
+          "engaged": false,
+          "fsrs_rating": 1,
+          "passed": false,
+          "released": false,
+          "satisfied": false,
+          "score": 0.0
+        },
+        {
+          "attempts": 3,
+          "completed": true,
+          "correct": false,
+          "engaged": false,
+          "fsrs_rating": null,
+          "passed": false,
+          "released": true,
+          "satisfied": true,
+          "score": 0.0
+        },
+        {
+          "attempts": 4,
+          "completed": true,
+          "correct": false,
+          "engaged": false,
+          "fsrs_rating": null,
+          "passed": false,
+          "released": true,
+          "satisfied": true,
+          "score": 0.0
+        }
+      ]
+    },
+    {
+      "input": {
+        "kind": "submissions",
+        "name": "check: wrong three times",
+        "section": {
+          "options": [
+            {
+              "correct": false,
+              "label": "3"
+            },
+            {
+              "correct": true,
+              "label": "4"
+            }
+          ],
+          "question": "2 + 2?",
+          "type": "check"
+        },
+        "submissions": [
+          {
+            "complete": true,
+            "payload": {
+              "option_index": 0
+            }
+          },
+          {
+            "complete": true,
+            "payload": {
+              "option_index": 0
+            }
+          },
+          {
+            "complete": true,
+            "payload": {
+              "option_index": 0
+            }
+          }
+        ]
+      },
+      "output": [
+        {
+          "attempts": 1,
+          "completed": false,
+          "correct": false,
+          "engaged": false,
+          "fsrs_rating": 1,
+          "passed": false,
+          "released": false,
+          "satisfied": false,
+          "score": 0.0
+        },
+        {
+          "attempts": 2,
+          "completed": false,
+          "correct": false,
+          "engaged": false,
+          "fsrs_rating": 1,
+          "passed": false,
+          "released": false,
+          "satisfied": false,
+          "score": 0.0
+        },
+        {
+          "attempts": 3,
+          "completed": true,
+          "correct": false,
+          "engaged": false,
+          "fsrs_rating": null,
+          "passed": false,
+          "released": true,
+          "satisfied": true,
+          "score": 0.0
+        }
+      ]
+    },
+    {
+      "input": {
+        "kind": "submissions",
+        "name": "check: wrong three times, not complete",
+        "section": {
+          "options": [
+            {
+              "correct": false,
+              "label": "3"
+            },
+            {
+              "correct": true,
+              "label": "4"
+            }
+          ],
+          "question": "2 + 2?",
+          "type": "check"
+        },
+        "submissions": [
+          {
+            "complete": false,
+            "payload": {
+              "option_index": 0
+            }
+          },
+          {
+            "complete": false,
+            "payload": {
+              "option_index": 0
+            }
+          },
+          {
+            "complete": false,
+            "payload": {
+              "option_index": 0
+            }
+          }
+        ]
+      },
+      "output": [
+        {
+          "attempts": 0,
+          "completed": false,
+          "correct": false,
+          "engaged": false,
+          "fsrs_rating": 1,
+          "passed": false,
+          "released": false,
+          "satisfied": false,
+          "score": 0.0
+        },
+        {
+          "attempts": 0,
+          "completed": false,
+          "correct": false,
+          "engaged": false,
+          "fsrs_rating": 1,
+          "passed": false,
+          "released": false,
+          "satisfied": false,
+          "score": 0.0
+        },
+        {
+          "attempts": 0,
+          "completed": false,
+          "correct": false,
+          "engaged": false,
+          "fsrs_rating": 1,
+          "passed": false,
+          "released": false,
+          "satisfied": false,
+          "score": 0.0
+        }
+      ]
+    },
+    {
+      "input": {
+        "kind": "submissions",
+        "name": "check: wrong, incomplete wrong, wrong, wrong",
+        "section": {
+          "options": [
+            {
+              "correct": false,
+              "label": "3"
+            },
+            {
+              "correct": true,
+              "label": "4"
+            }
+          ],
+          "question": "2 + 2?",
+          "type": "check"
+        },
+        "submissions": [
+          {
+            "complete": true,
+            "payload": {
+              "option_index": 0
+            }
+          },
+          {
+            "complete": false,
+            "payload": {
+              "option_index": 0
+            }
+          },
+          {
+            "complete": true,
+            "payload": {
+              "option_index": 0
+            }
+          },
+          {
+            "complete": true,
+            "payload": {
+              "option_index": 0
+            }
+          }
+        ]
+      },
+      "output": [
+        {
+          "attempts": 1,
+          "completed": false,
+          "correct": false,
+          "engaged": false,
+          "fsrs_rating": 1,
+          "passed": false,
+          "released": false,
+          "satisfied": false,
+          "score": 0.0
+        },
+        {
+          "attempts": 1,
+          "completed": false,
+          "correct": false,
+          "engaged": false,
+          "fsrs_rating": 1,
+          "passed": false,
+          "released": false,
+          "satisfied": false,
+          "score": 0.0
+        },
+        {
+          "attempts": 2,
+          "completed": false,
+          "correct": false,
+          "engaged": false,
+          "fsrs_rating": 1,
+          "passed": false,
+          "released": false,
+          "satisfied": false,
+          "score": 0.0
+        },
+        {
+          "attempts": 3,
+          "completed": true,
+          "correct": false,
+          "engaged": false,
+          "fsrs_rating": null,
+          "passed": false,
+          "released": true,
+          "satisfied": true,
+          "score": 0.0
+        }
+      ]
+    },
+    {
+      "input": {
+        "kind": "submissions",
+        "name": "check: wrong, wrong, right",
+        "section": {
+          "options": [
+            {
+              "correct": false,
+              "label": "3"
+            },
+            {
+              "correct": true,
+              "label": "4"
+            }
+          ],
+          "question": "2 + 2?",
+          "type": "check"
+        },
+        "submissions": [
+          {
+            "complete": true,
+            "payload": {
+              "option_index": 0
+            }
+          },
+          {
+            "complete": true,
+            "payload": {
+              "option_index": 0
+            }
+          },
+          {
+            "complete": true,
+            "payload": {
+              "option_index": 1
+            }
+          }
+        ]
+      },
+      "output": [
+        {
+          "attempts": 1,
+          "completed": false,
+          "correct": false,
+          "engaged": false,
+          "fsrs_rating": 1,
+          "passed": false,
+          "released": false,
+          "satisfied": false,
+          "score": 0.0
+        },
+        {
+          "attempts": 2,
+          "completed": false,
+          "correct": false,
+          "engaged": false,
+          "fsrs_rating": 1,
+          "passed": false,
+          "released": false,
+          "satisfied": false,
+          "score": 0.0
+        },
+        {
+          "attempts": 3,
+          "completed": true,
+          "correct": true,
+          "engaged": false,
+          "fsrs_rating": 2,
+          "passed": true,
+          "released": false,
+          "satisfied": true,
+          "score": 100.0
+        }
+      ]
+    },
+    {
+      "input": {
+        "kind": "submissions",
+        "name": "concept: read",
+        "section": {
+          "body": "text",
+          "type": "concept"
+        },
+        "submissions": [
+          {
+            "complete": true,
+            "payload": {}
+          }
+        ]
+      },
+      "output": [
+        {
+          "attempts": 1,
+          "completed": true,
+          "correct": null,
+          "engaged": true,
+          "fsrs_rating": null,
+          "passed": false,
+          "released": false,
+          "satisfied": true,
+          "score": null
+        }
+      ]
+    },
+    {
+      "input": {
+        "kind": "submissions",
+        "name": "drag_drop: wrong twice, right",
+        "section": {
+          "pairs": [
+            [
+              "a",
+              "1"
+            ],
+            [
+              "b",
+              "2"
+            ]
+          ],
+          "type": "drag_drop"
+        },
+        "submissions": [
+          {
+            "complete": true,
+            "payload": {
+              "matches": {
+                "0": 1,
+                "1": 0
+              }
+            }
+          },
+          {
+            "complete": true,
+            "payload": {
+              "matches": {
+                "0": 1,
+                "1": 0
+              }
+            }
+          },
+          {
+            "complete": true,
+            "payload": {
+              "matches": {
+                "0": 0,
+                "1": 1
+              }
+            }
+          }
+        ]
+      },
+      "output": [
+        {
+          "attempts": 1,
+          "completed": false,
+          "correct": false,
+          "engaged": false,
+          "fsrs_rating": 1,
+          "passed": false,
+          "released": false,
+          "satisfied": false,
+          "score": 0.0
+        },
+        {
+          "attempts": 2,
+          "completed": false,
+          "correct": false,
+          "engaged": false,
+          "fsrs_rating": 1,
+          "passed": false,
+          "released": false,
+          "satisfied": false,
+          "score": 0.0
+        },
+        {
+          "attempts": 3,
+          "completed": true,
+          "correct": true,
+          "engaged": false,
+          "fsrs_rating": 2,
+          "passed": true,
+          "released": false,
+          "satisfied": true,
+          "score": 100.0
+        }
+      ]
+    },
+    {
+      "input": {
+        "kind": "submissions",
+        "name": "fill_blank: partial three times",
+        "section": {
+          "blanks": [
+            "uno",
+            "dos"
+          ],
+          "type": "fill_blank"
+        },
+        "submissions": [
+          {
+            "complete": true,
+            "payload": {
+              "answers": [
+                "uno",
+                "tres"
+              ]
+            }
+          },
+          {
+            "complete": true,
+            "payload": {
+              "answers": [
+                "uno",
+                "tres"
+              ]
+            }
+          },
+          {
+            "complete": true,
+            "payload": {
+              "answers": [
+                "uno",
+                "tres"
+              ]
+            }
+          }
+        ]
+      },
+      "output": [
+        {
+          "attempts": 1,
+          "completed": false,
+          "correct": false,
+          "engaged": false,
+          "fsrs_rating": 1,
+          "passed": false,
+          "released": false,
+          "satisfied": false,
+          "score": 50.0
+        },
+        {
+          "attempts": 2,
+          "completed": false,
+          "correct": false,
+          "engaged": false,
+          "fsrs_rating": 1,
+          "passed": false,
+          "released": false,
+          "satisfied": false,
+          "score": 50.0
+        },
+        {
+          "attempts": 3,
+          "completed": true,
+          "correct": false,
+          "engaged": false,
+          "fsrs_rating": null,
+          "passed": false,
+          "released": true,
+          "satisfied": true,
+          "score": 50.0
+        }
+      ]
+    },
+    {
+      "input": {
+        "kind": "submissions",
+        "name": "flashcards: rated",
+        "section": {
+          "cards": [
+            {
+              "back": "b",
+              "front": "a"
+            }
+          ],
+          "type": "flashcards"
+        },
+        "submissions": [
+          {
+            "complete": true,
+            "payload": {
+              "ratings": [
+                "easy",
+                "hard"
+              ]
+            }
+          }
+        ]
+      },
+      "output": [
+        {
+          "attempts": 1,
+          "completed": true,
+          "correct": null,
+          "engaged": true,
+          "fsrs_rating": 2,
+          "passed": false,
+          "released": false,
+          "satisfied": true,
+          "score": null
+        }
+      ]
+    }
+  ]
+}

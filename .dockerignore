@@ -25,6 +25,9 @@ storage/*
 test/
 spec/
 
+# The new platform (STEP 46) builds and ships on its own; the Rails image never needs it.
+/platform
+
 # Ignore development files
 docker-compose.yml
 Dockerfile.dev
