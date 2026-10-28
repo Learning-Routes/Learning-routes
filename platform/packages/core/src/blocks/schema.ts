@@ -87,7 +87,7 @@ function exerciseBlocks<T extends TextSchema, C extends z.ZodRawShape, P extends
       options: z.array(z.strictObject({ label: text, consequence: text })),
     }),
     z.strictObject({
-      type: z.literal("flashcards"),
+      type: z.literal("cards"),
       ...common,
       body: optionalText,
       cards: z.array(z.strictObject({ front: text, back: text })),
@@ -159,7 +159,7 @@ export function blockSchemas<T extends TextSchema, P extends z.ZodType, I extend
   idShape: I,
 ) {
   // Fields every block may carry: its heading, and what the author wrote after it.
-  const common = { ...idShape, title: text.nullish(), aftermath: text.nullish() };
+  const common = { ...idShape, title: text.nullish(), trailing_content: text.nullish() };
   return z.discriminatedUnion("type", [
     ...textBlocks(text, common),
     ...exerciseBlocks(text, common, pairOf),

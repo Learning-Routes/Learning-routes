@@ -98,7 +98,8 @@ const BLOCKS = {
     gating: true,
     defaultTitle: { en: "Scenario", es: "Escenario" },
   },
-  flashcards: {
+  // Authors still write :::flashcards and "## Flashcards:" (v1's lesson syntax).
+  cards: {
     fence: "flashcards",
     headings: ["Flashcards"],
     authored: true,
