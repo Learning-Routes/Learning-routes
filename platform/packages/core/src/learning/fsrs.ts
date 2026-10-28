@@ -50,8 +50,12 @@ const clamp = (value: number, min: number, max: number) => Math.min(Math.max(val
 
 /** Ruby `Float#round` for scheduling: half away from zero, and raises on NaN or infinity. */
 function roundDays(value: number): number {
-  if (Number.isNaN(value)) throw new FsrsDomainError("NaN");
-  if (!Number.isFinite(value)) throw new FsrsDomainError(value > 0 ? "Infinity" : "-Infinity");
+  if (Number.isNaN(value)) {
+    throw new FsrsDomainError("NaN");
+  }
+  if (!Number.isFinite(value)) {
+    throw new FsrsDomainError(value > 0 ? "Infinity" : "-Infinity");
+  }
   return Math.sign(value) * Math.round(Math.abs(value));
 }
 
@@ -62,13 +66,17 @@ export function interval(stability: number): number {
 }
 
 function recallAt(elapsedDays: number, stability: number): number {
-  if (stability <= 0 || elapsedDays <= 0) return 1.0;
+  if (stability <= 0 || elapsedDays <= 0) {
+    return 1.0;
+  }
   return (1.0 + elapsedDays / (9.0 * stability)) ** -1;
 }
 
 /** Probability of recall now, on a power-law curve: v1 `SpacedRepetition#retrievability`. */
 export function retrievability(card: Card, now: number): number {
-  if (card.stability <= 0 || card.lastReviewAt === null) return 1.0;
+  if (card.stability <= 0 || card.lastReviewAt === null) {
+    return 1.0;
+  }
   return recallAt((now - card.lastReviewAt) / DAY_MS, card.stability);
 }
 
@@ -108,9 +116,11 @@ function reviewExisting(card: Card, rating: number, now: number): Review {
   const stability = floored(nextStability(incoming, difficulty, recall, rating));
 
   let state: CardState = "review";
-  if (rating === AGAIN) state = "relearning";
-  else if (card.state === "learning" || card.state === "relearning")
+  if (rating === AGAIN) {
+    state = "relearning";
+  } else if (card.state === "learning" || card.state === "relearning") {
     state = rating >= GOOD ? "review" : card.state;
+  }
 
   return scheduled(
     {
@@ -127,10 +137,16 @@ function reviewExisting(card: Card, rating: number, now: number): Review {
 
 function nextStability(s: number, d: number, recall: number, rating: number): number {
   // v1's lapse formula, another departure from FSRS v4 (ADR 0003).
-  if (rating === AGAIN) return s * w(7) * d ** -0.2 * ((s + 1) ** 0.2 - 1);
+  if (rating === AGAIN) {
+    return s * w(7) * d ** -0.2 * ((s + 1) ** 0.2 - 1);
+  }
   let factor = Math.exp(w(6)) * (11 - d) * s ** -w(9) * (Math.exp((1 - recall) * w(10)) - 1);
-  if (rating === HARD) factor *= w(11);
-  if (rating === EASY) factor *= w(12);
+  if (rating === HARD) {
+    factor *= w(11);
+  }
+  if (rating === EASY) {
+    factor *= w(12);
+  }
   return s * (1 + factor);
 }
 

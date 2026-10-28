@@ -8,20 +8,10 @@ import { LocalizedText } from "../localized-text";
 // biome-ignore lint/suspicious/noExplicitAny: the builder takes any text schema
 type TextSchema = z.ZodType<any, any>;
 
-/**
- * Builds the block union for one text schema, so the stored Block and the v1
- * import share their fields. New: v1 sections were untyped hashes.
- */
-export function blockSchemas<T extends TextSchema, P extends z.ZodType, I extends z.ZodRawShape>(
-  text: T,
-  pairOf: (text: T) => P,
-  idShape: I,
-) {
+// What a student reads, and the check of what they read.
+function textBlocks<T extends TextSchema, C extends z.ZodRawShape>(text: T, common: C) {
   const optionalText = text.nullish();
-  // Fields every block may carry: its heading, and what the author wrote after it.
-  const common = { ...idShape, title: optionalText, aftermath: optionalText };
-
-  return z.discriminatedUnion("type", [
+  return [
     z.strictObject({
       type: z.literal("concept"),
       ...common,
@@ -44,6 +34,17 @@ export function blockSchemas<T extends TextSchema, P extends z.ZodType, I extend
       key_points: z.array(text),
       body: optionalText,
     }),
+  ] as const;
+}
+
+// What a student practises with.
+function exerciseBlocks<T extends TextSchema, C extends z.ZodRawShape, P extends z.ZodType>(
+  text: T,
+  common: C,
+  pairOf: (text: T) => P,
+) {
+  const optionalText = text.nullish();
+  return [
     z.strictObject({
       type: z.literal("drag_drop"),
       ...common,
@@ -91,6 +92,13 @@ export function blockSchemas<T extends TextSchema, P extends z.ZodType, I extend
       body: optionalText,
       cards: z.array(z.strictObject({ front: text, back: text })),
     }),
+  ] as const;
+}
+
+// Pictures, scenes, sound and video.
+function mediaBlocks<T extends TextSchema, C extends z.ZodRawShape>(text: T, common: C) {
+  const optionalText = text.nullish();
+  return [
     z.strictObject({
       type: z.literal("visual"),
       ...common,
@@ -138,6 +146,24 @@ export function blockSchemas<T extends TextSchema, P extends z.ZodType, I extend
       source: z.string().nullish(),
       voice: z.string().nullish(),
     }),
+  ] as const;
+}
+
+/**
+ * Builds the block union for one text schema, so the stored Block and the v1
+ * import share their fields. New: v1 sections were untyped hashes.
+ */
+export function blockSchemas<T extends TextSchema, P extends z.ZodType, I extends z.ZodRawShape>(
+  text: T,
+  pairOf: (text: T) => P,
+  idShape: I,
+) {
+  // Fields every block may carry: its heading, and what the author wrote after it.
+  const common = { ...idShape, title: text.nullish(), aftermath: text.nullish() };
+  return z.discriminatedUnion("type", [
+    ...textBlocks(text, common),
+    ...exerciseBlocks(text, common, pairOf),
+    ...mediaBlocks(text, common),
   ]);
 }
 

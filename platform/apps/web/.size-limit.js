@@ -5,7 +5,9 @@ const CLIENT = "build/client";
 const MANIFEST_PREFIX = /^window\.__reactRouterManifest=/;
 
 const manifestFile = readdirSync(`${CLIENT}/assets`).find((file) => file.startsWith("manifest-"));
-if (!manifestFile) throw new Error("no React Router manifest: build apps/web first");
+if (!manifestFile) {
+  throw new Error("no React Router manifest: build apps/web first");
+}
 const manifest = JSON.parse(
   readFileSync(`${CLIENT}/assets/${manifestFile}`, "utf8")
     .replace(MANIFEST_PREFIX, "")
@@ -15,7 +17,9 @@ const manifest = JSON.parse(
 // What a page of these routes loads: the manifest, the entry, and each route's module and imports.
 function pageScripts(routeIds) {
   const paths = [`/assets/${manifestFile}`, manifest.entry.module, ...manifest.entry.imports];
-  for (const id of routeIds) paths.push(manifest.routes[id].module, ...manifest.routes[id].imports);
+  for (const id of routeIds) {
+    paths.push(manifest.routes[id].module, ...manifest.routes[id].imports);
+  }
   return [...new Set(paths)].map((path) => `${CLIENT}${path}`);
 }
 

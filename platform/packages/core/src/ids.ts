@@ -14,7 +14,9 @@ function format(bytes: Uint8Array): string {
  * bytes, both supplied by the caller so core stays pure. New: v1 blocks had no id.
  */
 export function newBlockId(now: number, random: Uint8Array): string {
-  if (random.length < 10) throw new RangeError("a UUIDv7 needs 10 random bytes");
+  if (random.length < 10) {
+    throw new RangeError("a UUIDv7 needs 10 random bytes");
+  }
   const bytes = new Uint8Array(16);
   let ms = now;
   for (let i = 5; i >= 0; i--) {

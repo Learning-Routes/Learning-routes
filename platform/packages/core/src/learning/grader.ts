@@ -34,22 +34,36 @@ export function grade(block: unknown, submission: unknown): GradeResult {
   const section = asObject(block);
   const payload = asObject(submission);
   const type = asText(section.type);
-  if (!isKnownBlockType(type)) return ungradable(`unknown block type ${JSON.stringify(type)}`);
-  if (!blockRole(type).gradable) return ungradable(`${type} is engagement-only`);
+  if (!isKnownBlockType(type)) {
+    return ungradable(`unknown block type ${JSON.stringify(type)}`);
+  }
+  if (!blockRole(type).gradable) {
+    return ungradable(`${type} is engagement-only`);
+  }
 
-  if (type === "check") return gradeCheck(section, payload);
-  if (type === "drag_drop") return gradeDragDrop(section, payload);
+  if (type === "check") {
+    return gradeCheck(section, payload);
+  }
+  if (type === "drag_drop") {
+    return gradeDragDrop(section, payload);
+  }
   return gradeFillBlank(section, payload);
 }
 
 function gradeCheck(section: Record<string, unknown>, payload: Record<string, unknown>) {
   const options = asArray(section.options);
-  if (options.length === 0) return ungradable("check has no options");
+  if (options.length === 0) {
+    return ungradable("check has no options");
+  }
   const correctIndex = options.findIndex((option) => truthy(asObject(option).correct));
-  if (correctIndex === -1) return ungradable("check has no option marked correct");
+  if (correctIndex === -1) {
+    return ungradable("check has no option marked correct");
+  }
 
   const chosen = payload.option_index;
-  if (chosen === null || chosen === undefined) return graded(false, 0);
+  if (chosen === null || chosen === undefined) {
+    return graded(false, 0);
+  }
   const hit = optionIndex(chosen) === correctIndex;
   return graded(hit, hit ? 100 : 0);
 }
@@ -57,17 +71,25 @@ function gradeCheck(section: Record<string, unknown>, payload: Record<string, un
 // Strict, unlike v1's to_i: anything but an integer or its plain digits is no
 // option at all, never option 0 (ADR 0003).
 function optionIndex(value: unknown): number | null {
-  if (typeof value === "number") return Number.isInteger(value) ? value : null;
-  if (typeof value === "string" && INDEX_TEXT.test(value)) return Number(value);
+  if (typeof value === "number") {
+    return Number.isInteger(value) ? value : null;
+  }
+  if (typeof value === "string" && INDEX_TEXT.test(value)) {
+    return Number(value);
+  }
   return null;
 }
 
 // Term i pairs with definition i; the submission maps term index to definition index.
 function gradeDragDrop(section: Record<string, unknown>, payload: Record<string, unknown>) {
   const pairs = asArray(section.pairs);
-  if (pairs.length === 0) return ungradable("drag_drop has no pairs");
+  if (pairs.length === 0) {
+    return ungradable("drag_drop has no pairs");
+  }
   const matches = asObject(payload.matches);
-  if (Object.keys(matches).length === 0) return graded(false, 0);
+  if (Object.keys(matches).length === 0) {
+    return graded(false, 0);
+  }
 
   const hits = pairs.filter((_, i) => asText(matches[String(i)]) === String(i)).length;
   return graded(hits === pairs.length, round2((hits / pairs.length) * 100));
@@ -78,13 +100,18 @@ function gradeDragDrop(section: Record<string, unknown>, payload: Record<string,
 function gradeFillBlank(section: Record<string, unknown>, payload: Record<string, unknown>) {
   const blanks = asArray(section.blanks).map(asText);
   const positions = blanks.flatMap((blank, i) => (isBlank(blank) ? [] : [i]));
-  if (positions.length === 0) return ungradable("fill_blank has no blanks");
+  if (positions.length === 0) {
+    return ungradable("fill_blank has no blanks");
+  }
   const match = section.match ?? "text";
-  if (match !== "text" && match !== "exact")
+  if (match !== "text" && match !== "exact") {
     return ungradable(`unknown match ${JSON.stringify(match)}`);
+  }
   const same = match === "exact" ? sameExact : sameText;
   const answers = asArray(payload.answers).map(asText);
-  if (answers.length === 0) return graded(false, 0);
+  if (answers.length === 0) {
+    return graded(false, 0);
+  }
 
   const hits = positions.filter((i) => same(answers[i] ?? "", blanks[i] as string)).length;
   return graded(hits === positions.length, round2((hits / positions.length) * 100));
@@ -119,13 +146,19 @@ export function normalize(value: string): string {
 export function answerable(block: unknown): boolean {
   const section = asObject(block);
   const type = asText(section.type);
-  if (!blockRole(type).gating) return true;
+  if (!blockRole(type).gating) {
+    return true;
+  }
 
   switch (type) {
     case "check": {
       const options = asArray(section.options);
-      if (strip(asText(section.question)) === "") return false;
-      if (options.length === 0) return false;
+      if (strip(asText(section.question)) === "") {
+        return false;
+      }
+      if (options.length === 0) {
+        return false;
+      }
       return options.some((option) => truthy(asObject(option).correct));
     }
     case "drag_drop":

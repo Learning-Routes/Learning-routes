@@ -42,7 +42,9 @@ const iso = (ms: number | null) => (ms === null ? null : new Date(ms).toISOStrin
 
 export function runFsrs(input: unknown): unknown {
   const { kind } = input as { kind: string };
-  if (kind === "next_interval") return interval((input as { stability: number }).stability);
+  if (kind === "next_interval") {
+    return interval((input as { stability: number }).stability);
+  }
   if (kind === "retrievability") {
     const { stability, elapsed_days } = input as { stability: number; elapsed_days: number | null };
     return retrievability(cardFrom({ fsrs_stability: stability, days_ago: elapsed_days }), FROZEN);
@@ -74,7 +76,9 @@ export function runFsrs(input: unknown): unknown {
       });
       card = next.card;
     } catch (error) {
-      if (!(error instanceof FsrsDomainError)) throw error;
+      if (!(error instanceof FsrsDomainError)) {
+        throw error;
+      }
       results.push({ error: "FloatDomainError", message: error.message });
       break;
     }
@@ -151,7 +155,9 @@ const limitsFor = (model: string) => ({ ...V1_LIMITS, ratePerMinute: rateLimitPe
 const V1_ESTIMATE: CostEstimate = { kind: "known", microcents: 0 };
 
 function v1Verdict(decision: SpendDecision, model: string) {
-  if (decision.verdict === "allowed") return { allowed: true };
+  if (decision.verdict === "allowed") {
+    return { allowed: true };
+  }
   const message = MESSAGES[decision.reason as string];
   return message
     ? { allowed: false, kind: decision.reason, message: message(model) }
@@ -196,7 +202,9 @@ function budgetCase(input: SpendInput) {
   }
   const spent = V1_LIMITS.userDailyMicrocents + delta;
   let globalToday = spent + (COUNTS_GLOBALLY.has(noise) ? NOISE : 0);
-  if (noise === "daily_also_over") globalToday += V1_LIMITS.dailyMicrocents;
+  if (noise === "daily_also_over") {
+    globalToday += V1_LIMITS.dailyMicrocents;
+  }
   const userToday = noise === "no_user" ? null : spent + (COUNTS_FOR_USER.has(noise) ? NOISE : 0);
   return decide(globalToday, userToday);
 }
@@ -213,7 +221,9 @@ function rateCase(input: SpendInput) {
       estimate: V1_ESTIMATE,
       now,
     });
-    if (decision.consumesRateSlot) consumedAt.push(now);
+    if (decision.consumesRateSlot) {
+      consumedAt.push(now);
+    }
     return decision.verdict === "allowed" ? "allowed" : (decision.reason as string);
   };
 
@@ -229,15 +239,20 @@ function rateCase(input: SpendInput) {
   const runs: [string, number][] = [];
   for (const kind of kinds) {
     const last = runs.at(-1);
-    if (last && last[0] === kind) last[1] += 1;
-    else runs.push([kind, 1]);
+    if (last && last[0] === kind) {
+      last[1] += 1;
+    } else {
+      runs.push([kind, 1]);
+    }
   }
   return { first_refused_call: firstRefused === -1 ? null : firstRefused + 1, runs };
 }
 
 export function runSpend(input: unknown): unknown {
   const spend = input as SpendInput;
-  if (spend.limit === "unknown_cost") return unknownCostCase(spend);
+  if (spend.limit === "unknown_cost") {
+    return unknownCostCase(spend);
+  }
   return spend.limit === "rate_limit" ? rateCase(spend) : budgetCase(spend);
 }
 

@@ -23,7 +23,9 @@ for (const [app, budget] of Object.entries(BUDGETS_KIB)) {
       },
     );
     const match = GZIP.exec(output);
-    if (!match) throw new Error(`${app}: wrangler printed no gzip size`);
+    if (!match) {
+      throw new Error(`${app}: wrangler printed no gzip size`);
+    }
     const size = Number(match[1]);
     const over = size > budget;
     failed ||= over;
@@ -34,4 +36,6 @@ for (const [app, budget] of Object.entries(BUDGETS_KIB)) {
     rmSync(outdir, { recursive: true, force: true });
   }
 }
-if (failed) process.exit(1);
+if (failed) {
+  process.exit(1);
+}

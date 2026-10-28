@@ -68,7 +68,9 @@ export async function runAction(
   ctx: Ctx,
 ): Promise<ActionResult> {
   const action = Object.hasOwn(registry, name) ? registry[name] : undefined;
-  if (!action) return { ok: false, code: "unknown_action" };
+  if (!action) {
+    return { ok: false, code: "unknown_action" };
+  }
   const parsed = action.input.safeParse(rawInput);
   if (!parsed.success) {
     const issues = parsed.error.issues.map((issue) => ({
@@ -80,7 +82,9 @@ export async function runAction(
   try {
     return { ok: true, output: await action.run(ctx, parsed.data) };
   } catch (error) {
-    if (!(error instanceof ActionError)) throw error;
+    if (!(error instanceof ActionError)) {
+      throw error;
+    }
     return { ok: false, code: error.code, message: error.message };
   }
 }

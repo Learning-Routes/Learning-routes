@@ -21,8 +21,12 @@ const withHeading = "Opening words.\n\n## A real title\nThe body.";
 const untitledConcept = ":::concept\n:::\n\n## A real title\nThe body.";
 
 function translate(value: unknown, from: string[], to: string[]): unknown {
-  if (typeof value === "string") return from.includes(value) ? to[from.indexOf(value)] : value;
-  if (Array.isArray(value)) return value.map((item) => translate(item, from, to));
+  if (typeof value === "string") {
+    return from.includes(value) ? to[from.indexOf(value)] : value;
+  }
+  if (Array.isArray(value)) {
+    return value.map((item) => translate(item, from, to));
+  }
   if (value !== null && typeof value === "object") {
     return Object.fromEntries(Object.entries(value).map(([k, v]) => [k, translate(v, from, to)]));
   }

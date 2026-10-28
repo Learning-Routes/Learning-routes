@@ -16,8 +16,11 @@ export function dragDrop(title: string, body: string): Section {
   const all = lines(body);
   const pairIndexes: number[] = [];
   for (const [stripped, i] of linesOutsideFences(all)) {
-    if ((all[i] as string).includes("==>")) pairIndexes.push(i);
-    else if (!isBlank(stripped) && pairIndexes.length > 0) break;
+    if ((all[i] as string).includes("==>")) {
+      pairIndexes.push(i);
+    } else if (!isBlank(stripped) && pairIndexes.length > 0) {
+      break;
+    }
   }
 
   const pairs = pairIndexes.map((i) => {
@@ -119,11 +122,15 @@ export function scenario(title: string, body: string): Section {
   for (const line of lines(content)) {
     const stripped = strip(line);
     const current = options.at(-1);
-    if (OPTION.test(stripped))
+    if (OPTION.test(stripped)) {
       options.push({ label: strip(stripped.replace(OPTION, "")), lines: [] });
+    }
     // Blank lines are kept in a consequence: it renders as markdown paragraphs.
-    else if (current) current.lines.push(stripped);
-    else situation.push(stripped);
+    else if (current) {
+      current.lines.push(stripped);
+    } else {
+      situation.push(stripped);
+    }
   }
 
   return {
@@ -155,7 +162,9 @@ export function flashcards(title: string, body: string): Section {
   let back: string | null = null;
   let side: "front" | "back" = "front";
   const finishCard = () => {
-    if (front !== null && back !== null) cards.push({ front: strip(front), back: strip(back) });
+    if (front !== null && back !== null) {
+      cards.push({ front: strip(front), back: strip(back) });
+    }
   };
 
   for (const line of lines(content)) {

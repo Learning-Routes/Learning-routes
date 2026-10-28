@@ -54,7 +54,9 @@ describe("action parity", () => {
       ACTORS.map((via) => runAction(ACTIONS, "review.submit", REVIEW, ctx(via))),
     );
     expect(results[0]).toMatchObject({ ok: true });
-    for (const result of results) expect(result).toEqual(results[0]);
+    for (const result of results) {
+      expect(result).toEqual(results[0]);
+    }
   });
 
   it("refuses invalid input the same way for every actor", async () => {
@@ -63,13 +65,17 @@ describe("action parity", () => {
       ACTORS.map((via) => runAction(ACTIONS, "review.submit", invalid, ctx(via))),
     );
     expect(results[0]).toMatchObject({ ok: false, code: "invalid_input" });
-    for (const result of results) expect(result).toEqual(results[0]);
+    for (const result of results) {
+      expect(result).toEqual(results[0]);
+    }
   });
 
   it("refuses an unknown action the same way for every actor", async () => {
     const results = await Promise.all(
       ACTORS.map((via) => runAction(ACTIONS, "route.delete", {}, ctx(via))),
     );
-    for (const result of results) expect(result).toEqual({ ok: false, code: "unknown_action" });
+    for (const result of results) {
+      expect(result).toEqual({ ok: false, code: "unknown_action" });
+    }
   });
 });

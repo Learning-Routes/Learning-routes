@@ -39,7 +39,9 @@ describe("the OpenRouter adapter", () => {
       },
       context,
     );
-    if (decision.verdict !== "allowed") throw new Error(`refused: ${decision.reason}`);
+    if (decision.verdict !== "allowed") {
+      throw new Error(`refused: ${decision.reason}`);
+    }
 
     const sent: { url: string; init: RequestInit }[] = [];
     const stub = async (url: string | URL | Request, init?: RequestInit) => {

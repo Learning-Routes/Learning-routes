@@ -11,7 +11,9 @@ const MINUTES = /^minimumReleaseAge:\s*(\d+)\s*$/m;
 const SECTIONS = ["dependencies", "devDependencies", "optionalDependencies", "peerDependencies"];
 
 const minutes = Number(MINUTES.exec(readFileSync("pnpm-workspace.yaml", "utf8"))?.[1]);
-if (!minutes) throw new Error("pnpm-workspace.yaml sets no minimumReleaseAge");
+if (!minutes) {
+  throw new Error("pnpm-workspace.yaml sets no minimumReleaseAge");
+}
 const cutoff = Date.now() - minutes * 60_000;
 
 const files = execFileSync("git", ["ls-files", "package.json", "**/package.json"], {
@@ -29,13 +31,17 @@ const pins = files.flatMap((file) => {
 
 const problems = [];
 for (const { file, name, spec } of pins) {
-  if (spec.startsWith("workspace:")) continue;
+  if (spec.startsWith("workspace:")) {
+    continue;
+  }
   if (!EXACT.test(spec)) {
     problems.push(`${file}: ${name} is "${spec}", not an exact version`);
     continue;
   }
   const response = await fetch(`https://registry.npmjs.org/${name.replace("/", "%2F")}`);
-  if (!response.ok) throw new Error(`the registry answered ${response.status} for ${name}`);
+  if (!response.ok) {
+    throw new Error(`the registry answered ${response.status} for ${name}`);
+  }
   const published = Date.parse((await response.json()).time?.[spec]);
   if (!(published <= cutoff)) {
     const days = ((Date.now() - published) / 86_400_000).toFixed(1);
@@ -43,6 +49,10 @@ for (const { file, name, spec } of pins) {
   }
 }
 
-for (const problem of problems) console.error(problem);
-if (problems.length > 0) process.exit(1);
+for (const problem of problems) {
+  console.error(problem);
+}
+if (problems.length > 0) {
+  process.exit(1);
+}
 console.log(`${pins.length} pins: all exact, all at least ${minutes / 1440} days old`);

@@ -39,7 +39,9 @@ export default async function handleRequest(
       signal: AbortSignal.timeout(streamTimeout + 1000),
       onError(error: unknown) {
         responseStatusCode = 500;
-        if (shellRendered) console.error(error);
+        if (shellRendered) {
+          console.error(error);
+        }
       },
     },
   );

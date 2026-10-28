@@ -1,6 +1,7 @@
 import { fenceTypes, headingMap } from "../blocks/types";
 import type { Locale } from "../localized-text";
-import { asObject, isBlank, presence, strip } from "../v1-import/loose-json";
+import { isBlank, presence, strip } from "../v1-import/loose-json";
+import { ensureSummary, insertAudio, insertKnowledgeChecks } from "./lesson-additions";
 import { LINE_START, lines, WS } from "./ruby-text";
 import { fencedCheck, headingCheck } from "./sections/check";
 import {
@@ -29,7 +30,6 @@ export interface ParseOptions {
 }
 
 const PARAGRAPHS_PER_SECTION = 3;
-const CONCEPTS_PER_CHECK = 3;
 type Titles = { intro: string; lesson: string; continuation: string; concept: string };
 
 // Names for freeform sections and :::concept fences the author left untitled. v1
@@ -71,7 +71,7 @@ export function parseLesson(body: string | null | undefined, options: ParseOptio
   );
   return ensureSummary(
     insertAudio(insertKnowledgeChecks(sections, options.knowledgeChecks), options.audioUrl),
-    titles,
+    Object.values(titles),
   );
 }
 
@@ -88,13 +88,18 @@ function splitAroundFences(body: string, titles: Titles): (string | Section)[] {
   let remaining = body;
   for (let match = FENCED_BLOCK.exec(remaining); match; match = FENCED_BLOCK.exec(remaining)) {
     const before = remaining.slice(0, match.index);
-    if (!isBlank(before)) segments.push(before);
+    if (!isBlank(before)) {
+      segments.push(before);
+    }
     const type = (match[1] as string).toLowerCase();
-    if (fences.includes(type))
+    if (fences.includes(type)) {
       segments.push(parseFence(type, strip(match[2] as string), strip(match[3] as string), titles));
+    }
     remaining = remaining.slice(match.index + match[0].length);
   }
-  if (!isBlank(remaining)) segments.push(remaining);
+  if (!isBlank(remaining)) {
+    segments.push(remaining);
+  }
   return segments;
 }
 
@@ -128,7 +133,9 @@ function parseFence(type: string, titleLine: string, body: string, titles: Title
 
 function parseFreeform(text: string, titles: Titles): Section[] {
   const stripped = strip(text);
-  if (stripped === "") return [];
+  if (stripped === "") {
+    return [];
+  }
   const sections = splitByHeadings(stripped, titles);
   return sections.length > 0 ? sections : splitByParagraphs(stripped, titles);
 }
@@ -139,11 +146,15 @@ const HEADING_START = new RegExp(`^##${WS}`);
 const HEADING_PREFIX = new RegExp(`${LINE_START}##${WS}+`);
 
 function splitByHeadings(text: string, titles: Titles): Section[] {
-  if (!HEADING_LINE.test(text)) return [];
+  if (!HEADING_LINE.test(text)) {
+    return [];
+  }
   const sections: Section[] = [];
   for (const rawPart of text.split(HEADING_SPLIT)) {
     const part = strip(rawPart);
-    if (part === "") continue;
+    if (part === "") {
+      continue;
+    }
     if (!HEADING_START.test(part)) {
       // Content before the first heading.
       sections.push(conceptOrVisual(titles.intro, part));
@@ -160,7 +171,9 @@ function splitByHeadings(text: string, titles: Titles): Section[] {
 function headingSection(rawTitle: string, body: string): Section {
   const map = headingMap();
   const prefix = Object.keys(map).find((candidate) => rawTitle.startsWith(`${candidate}:`));
-  if (prefix === undefined) return conceptOrVisual(rawTitle, body);
+  if (prefix === undefined) {
+    return conceptOrVisual(rawTitle, body);
+  }
   const title = rawTitle.slice(prefix.length + 1).replace(new RegExp(`^${WS}*`), "");
 
   switch (map[prefix]) {
@@ -201,8 +214,9 @@ function splitByParagraphs(text: string, titles: Titles): Section[] {
     .split(PARAGRAPH_BREAK)
     .map(strip)
     .filter((paragraph) => paragraph !== "");
-  if (paragraphs.length <= PARAGRAPHS_PER_SECTION)
+  if (paragraphs.length <= PARAGRAPHS_PER_SECTION) {
     return [conceptOrVisual(titles.lesson, strip(text))];
+  }
 
   const sections: Section[] = [];
   for (let i = 0; i < paragraphs.length; i += PARAGRAPHS_PER_SECTION) {
@@ -212,66 +226,4 @@ function splitByParagraphs(text: string, titles: Titles): Section[] {
     );
   }
   return sections;
-}
-
-// ── What the platform adds ─────────────────────────────────────────
-
-const isConcept = (section: Section) => section.type === "concept" || section.type === "visual";
-
-function knowledgeCheck(raw: unknown): Section {
-  const check = asObject(raw);
-  const options = Array.isArray(check.options) ? check.options : [];
-  return {
-    type: "check",
-    title: null,
-    question: check.question ?? null,
-    options: options.map((label, i) => ({ label, correct: i === check.correct_index })),
-    explanation: check.explanation ?? null,
-  };
-}
-
-/** One check after every third concept, while the lesson has fewer than that; the rest at the end. */
-function insertKnowledgeChecks(sections: Section[], knowledgeChecks: unknown): Section[] {
-  if (!Array.isArray(knowledgeChecks) || knowledgeChecks.length === 0) return sections;
-  const conceptCount = sections.filter(isConcept).length;
-  const checkCount = sections.filter((section) => section.type === "check").length;
-  if (conceptCount === 0 || checkCount * CONCEPTS_PER_CHECK >= conceptCount) return sections;
-
-  const result: Section[] = [];
-  let conceptsSeen = 0;
-  let next = 0;
-  for (const section of sections) {
-    result.push(section);
-    if (!isConcept(section)) continue;
-    conceptsSeen += 1;
-    if (conceptsSeen % CONCEPTS_PER_CHECK === 0 && next < knowledgeChecks.length) {
-      result.push(knowledgeCheck(knowledgeChecks[next]));
-      next += 1;
-    }
-  }
-  for (; next < knowledgeChecks.length; next += 1)
-    result.push(knowledgeCheck(knowledgeChecks[next]));
-  return result;
-}
-
-function insertAudio(sections: Section[], audioUrl: string | null | undefined): Section[] {
-  if (isBlank(audioUrl)) return sections;
-  const first = sections.findIndex(isConcept);
-  if (first === -1) return sections;
-  const audio: Section = { type: "audio", title: null, audio_url: audioUrl, transcript: null };
-  return [...sections.slice(0, first + 1), audio, ...sections.slice(first + 1)];
-}
-
-/** A lesson always ends with a summary; v1 built one from the concept titles. */
-function ensureSummary(sections: Section[], titles: Titles): Section[] {
-  if (sections.some((section) => section.type === "summary")) return sections;
-  const generated = new Set(Object.values(titles));
-  const keyPoints = sections
-    .filter(isConcept)
-    .map((section) => section.title)
-    .filter(
-      (title): title is string =>
-        typeof title === "string" && !isBlank(title) && !generated.has(title),
-    );
-  return [...sections, { type: "summary", title: null, key_points: keyPoints, body: null }];
 }

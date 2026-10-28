@@ -44,11 +44,15 @@ export function recordSubmission(
   const { payload, grading, complete, now } = submission;
   const next: Attempt = { ...attempt, payload, attempts: attempt.attempts + (complete ? 1 : 0) };
 
-  if (!grading.gradable) return { ...next, correct: null, score: null, completedAt: now };
+  if (!grading.gradable) {
+    return { ...next, correct: null, score: null, completedAt: now };
+  }
 
   next.correct = grading.correct;
   next.score = grading.score;
-  if (grading.correct) next.completedAt = now;
+  if (grading.correct) {
+    next.completedAt = now;
+  }
   if (complete && !next.correct && next.releasedAt === null && next.attempts >= RELEASE_AFTER) {
     next.releasedAt = now;
     next.completedAt = now;
@@ -69,10 +73,18 @@ const FLASHCARD_RATINGS: Record<string, number> = {
  * would claim mastery, and calling it wrong would punish our bad answer key.
  */
 export function fsrsRating(attempt: Attempt): number | null {
-  if (attempt.releasedAt !== null) return null;
-  if (attempt.blockType === "flashcards") return flashcardRating(attempt.payload);
-  if (attempt.correct === null) return null;
-  if (attempt.correct) return attempt.attempts <= 1 ? GOOD : HARD;
+  if (attempt.releasedAt !== null) {
+    return null;
+  }
+  if (attempt.blockType === "flashcards") {
+    return flashcardRating(attempt.payload);
+  }
+  if (attempt.correct === null) {
+    return null;
+  }
+  if (attempt.correct) {
+    return attempt.attempts <= 1 ? GOOD : HARD;
+  }
   return AGAIN;
 }
 

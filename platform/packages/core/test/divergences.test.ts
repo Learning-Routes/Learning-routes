@@ -30,7 +30,9 @@ const FILES: Record<string, Fixture> = {
 };
 
 function canonical(value: unknown): string {
-  if (Array.isArray(value)) return `[${value.map(canonical).join(",")}]`;
+  if (Array.isArray(value)) {
+    return `[${value.map(canonical).join(",")}]`;
+  }
   if (value !== null && typeof value === "object") {
     const entries = Object.entries(value).sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0));
     return `{${entries.map(([k, v]) => `${JSON.stringify(k)}:${canonical(v)}`).join(",")}}`;
@@ -56,8 +58,9 @@ describe("divergences from v1", () => {
     );
     expect(new Set(keys).size).toBe(keys.length);
     for (const fix of fixes) {
-      for (const change of fix.changed)
+      for (const change of fix.changed) {
         expect(canonical(change.new), fix.id).not.toBe(canonical(change.v1));
+      }
     }
   });
 
@@ -81,7 +84,9 @@ describe("divergences from v1", () => {
         return [];
       }
       const change = changed.get(canonical(c.input));
-      if (!change) return [c];
+      if (!change) {
+        return [c];
+      }
       expect(canonical(c.output), "the fixture holds the new output").toBe(canonical(change.new));
       seen.add(`changed ${canonical(c.input)}`);
       return [{ input: c.input, output: change.v1 }];

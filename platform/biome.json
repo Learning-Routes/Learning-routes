@@ -28,6 +28,12 @@
           "options": {
             "maxAllowedComplexity": 15
           }
+        },
+        "noExcessiveLinesPerFunction": {
+          "level": "error",
+          "options": {
+            "maxLines": 60
+          }
         }
       },
       "correctness": {
@@ -47,7 +53,16 @@
             "filenameCases": ["kebab-case"],
             "requireAscii": true
           }
-        }
+        },
+        "noNonNullAssertion": "error",
+        "useBlockStatements": "error"
+      },
+      "suspicious": {
+        "noExplicitAny": "error"
+      },
+      "nursery": {
+        "noFloatingPromises": "error",
+        "useExhaustiveSwitchCases": "error"
       }
     }
   },
@@ -93,6 +108,16 @@
           },
           "suspicious": {
             "noConsole": "error"
+          }
+        }
+      }
+    },
+    {
+      "includes": ["**/test/**", "**/e2e/**", "**/bench/**"],
+      "linter": {
+        "rules": {
+          "complexity": {
+            "noExcessiveLinesPerFunction": "off"
           }
         }
       }

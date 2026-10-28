@@ -11,7 +11,9 @@ describe("prompt templates", () => {
 
   it("catches a model missing from the table and a prompt over its budget", () => {
     const [template] = TEMPLATES;
-    if (!template) throw new Error("no templates");
+    if (!template) {
+      throw new Error("no templates");
+    }
     expect(templateProblems({ ...template, model: "openai/gpt-4o" })).toEqual([
       `${template.name}: openai/gpt-4o is not in ai/models.ts`,
     ]);

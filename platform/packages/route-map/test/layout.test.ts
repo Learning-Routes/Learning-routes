@@ -1,14 +1,9 @@
 import { createHash } from "node:crypto";
 import { expect, test } from "vitest";
-import {
-  buildTree,
-  type Layout,
-  type LayoutCell,
-  type LayoutNode,
-  type LayoutOptions,
-  layoutRouteMap,
-  type XY,
-} from "../src/layout";
+import { at } from "../src/at-index";
+import { layoutRouteMap } from "../src/layout";
+import type { Layout, LayoutCell, LayoutNode, LayoutOptions, XY } from "../src/layout-model";
+import { buildTree } from "../src/route-tree";
 import { SHAPES, type ShapeStage, stage, VIEW } from "./shapes";
 
 // WP-37 §2. The map's geometry is a pure module, asserted without a browser.
@@ -94,8 +89,12 @@ function intersect(a: Rectish, b: Rectish): boolean {
 }
 
 function firstPair<T>(items: T[], match: (a: T, b: T) => boolean): [T, T] | null {
-  for (let i = 0; i < items.length; i++) {
-    for (const b of items.slice(i + 1)) if (match(items[i], b)) return [items[i], b];
+  for (const [i, a] of items.entries()) {
+    for (const b of items.slice(i + 1)) {
+      if (match(a, b)) {
+        return [a, b];
+      }
+    }
   }
   return null;
 }
@@ -112,14 +111,21 @@ function segmentHits(p: XY, q: XY, box: Rectish): boolean {
     [dx, box.x + box.w - EPS - x0],
     [-dy, y0 - (box.y + EPS)],
     [dy, box.y + box.h - EPS - y0],
-  ]) {
+  ] as const) {
     if (pp === 0) {
-      if (qq < 0) return false;
+      if (qq < 0) {
+        return false;
+      }
     } else {
       const r = qq / pp;
-      if (pp < 0) t0 = Math.max(t0, r);
-      else t1 = Math.min(t1, r);
-      if (t0 > t1) return false;
+      if (pp < 0) {
+        t0 = Math.max(t0, r);
+      } else {
+        t1 = Math.min(t1, r);
+      }
+      if (t0 > t1) {
+        return false;
+      }
     }
   }
   return true;
@@ -168,8 +174,8 @@ for (const [set, opts] of Object.entries(OPTION_SETS)) {
       const boxes = solidNodes(result);
       for (const edge of result.edges) {
         for (let i = 0; i + 1 < edge.points.length; i++) {
-          const p = edge.points[i];
-          const q = edge.points[i + 1];
+          const p = at(edge.points, i);
+          const q = at(edge.points, i + 1);
           const hit = boxes.find(
             (b) => b.id !== edge.from && b.id !== edge.to && segmentHits(p, q, b),
           );
@@ -219,7 +225,7 @@ for (const [set, opts] of Object.entries(OPTION_SETS)) {
       const steps = result.nodes.filter(isStepOrReinforcement);
       for (const mod of result.modules) {
         const half = mod.spineHalf;
-        const lanes = [[-half, half], mod.gutters.left, mod.gutters.right];
+        const lanes: [number, number][] = [[-half, half], mod.gutters.left, mod.gutters.right];
         // The spine column is every module's; a module's gutters are its own (a
         // wider module below may legitimately put cells at that x).
         for (const node of steps.filter((n) => n.moduleId === mod.id)) {
@@ -237,7 +243,7 @@ for (const [set, opts] of Object.entries(OPTION_SETS)) {
       const result = layout(stages, opts);
       const nodes = indexBy(result.nodes);
       for (const edge of result.edges.filter((e) => e.kind === "route" && e.points.length > 2)) {
-        const x = edge.points[1][0];
+        const x = at(edge.points, 1)[0];
         const boxes = result.nodes.filter(
           (n) => n.moduleId === nodes.get(edge.from)?.moduleId && isStepOrReinforcement(n),
         );
@@ -258,13 +264,13 @@ for (const [set, opts] of Object.entries(OPTION_SETS)) {
       };
       for (const mod of result.modules) {
         for (let i = 0; i + 1 < mod.rows.length; i++) {
-          const lowest = Math.max(...mod.rows[i].heads.map(cellBottom));
-          expect(mod.rows[i + 1].top).toBeGreaterThanOrEqual(lowest - EPS);
+          const lowest = Math.max(...at(mod.rows, i).heads.map(cellBottom));
+          expect(at(mod.rows, i + 1).top).toBeGreaterThanOrEqual(lowest - EPS);
         }
       }
       for (let i = 0; i + 1 < result.modules.length; i++) {
-        const a = result.modules[i];
-        const b = result.modules[i + 1];
+        const a = at(result.modules, i);
+        const b = at(result.modules, i + 1);
         expect(b.box.y).toBeGreaterThanOrEqual(a.box.y + a.box.h - EPS);
       }
     });
@@ -275,20 +281,22 @@ for (const [set, opts] of Object.entries(OPTION_SETS)) {
 test("four steps lie in one row beside the module; five wrap below it", () => {
   const four = layout([stage("m0", { primaries: 4 })]);
   const mod = four.nodes.find((n) => n.kind === "module") as LayoutNode;
-  expect(four.modules[0].rows.length).toBe(1);
-  for (const n of four.nodes.filter((n) => n.kind === "step")) expectNear(mod.cy, n.cy, 0.01);
+  expect(at(four.modules, 0).rows.length).toBe(1);
+  for (const n of four.nodes.filter((n) => n.kind === "step")) {
+    expectNear(mod.cy, n.cy, 0.01);
+  }
 
   const five = layout([stage("m0", { primaries: 5 })]);
   const mod5 = five.nodes.find((n) => n.kind === "module") as LayoutNode;
-  const rows = five.modules[0].rows;
+  const rows = at(five.modules, 0).rows;
   expect(rows.length).toBe(2);
-  expect(rows[0].top).toBeGreaterThanOrEqual(mod5.y + mod5.h);
+  expect(at(rows, 0).top).toBeGreaterThanOrEqual(mod5.y + mod5.h);
 });
 
 test("rows alternate direction, so route order reads as one path", () => {
   const result = layout([stage("m0", { primaries: 20 })]);
   const nodes = indexBy(result.nodes);
-  result.modules[0].rows.forEach((row, i) => {
+  at(result.modules, 0).rows.forEach((row, i) => {
     const xs = row.heads.map((id) => (nodes.get(id) as LayoutNode).cx);
     const even = i % 2 === 0;
     expect(row.direction).toBe(even ? "ltr" : "rtl");
@@ -304,8 +312,11 @@ test("a reinforcement is drawn as a child, not a peer", () => {
   expect(steps.length).toBe(1);
   expect(kids.length).toBe(3);
   const fanEdges = result.edges.filter((e) => e.kind === "fan");
-  expect(fanEdges.map((e) => e.from)).toEqual([steps[0].id, steps[0].id, steps[0].id]);
-  for (const k of kids) expect(k.y).toBeGreaterThan(steps[0].y + steps[0].h);
+  const step = at(steps, 0);
+  expect(fanEdges.map((e) => e.from)).toEqual([step.id, step.id, step.id]);
+  for (const k of kids) {
+    expect(k.y).toBeGreaterThan(step.y + step.h);
+  }
 });
 
 test("a parent is centred over its fan, and identical subtrees are identical", () => {
@@ -314,15 +325,24 @@ test("a parent is centred over its fan, and identical subtrees are identical", (
   for (const pid of ["m0-p0", "m0-p3"]) {
     const parent = nodes.find((n) => n.id === `s:${pid}`) as LayoutNode;
     const kids = nodes.filter((n) => n.id.startsWith(`s:${pid}-r`));
-    const span = [Math.min(...kids.map((k) => k.x)), Math.max(...kids.map((k) => k.x + k.w))];
+    const span: [number, number] = [
+      Math.min(...kids.map((k) => k.x)),
+      Math.max(...kids.map((k) => k.x + k.w)),
+    ];
     expectNear((span[0] + span[1]) / 2.0, parent.cx, 0.01);
   }
-  const [a, b] = result.cells.filter((c) => c.children === 3);
+  const fanned = result.cells.filter((c) => c.children === 3);
+  const a = at(fanned, 0);
+  const b = at(fanned, 1);
   expect([a.w, a.h]).toEqual([b.w, b.h]);
 });
 
 test("thirty-six reinforcement steps wrap into a fan, not a line", () => {
-  const result = layout(SHAPES["7 + 36 behind one step"]);
+  const stages = SHAPES["7 + 36 behind one step"];
+  if (!stages) {
+    throw new Error("no shape named 7 + 36 behind one step");
+  }
+  const result = layout(stages);
   const kids = result.nodes.filter((n) => n.kind === "reinforcement");
   expect(new Set(kids.map((k) => k.x)).size).toBe(3);
   expect(new Set(kids.map((k) => k.y)).size).toBe(12);
@@ -357,7 +377,9 @@ test("a label width is an option, and the box the layout spaces by includes it",
 test("a module label width is reserved in the spine column", () => {
   const stages = [stage("m0", { primaries: 9, fans: { 2: 3 } }), stage("m1", { primaries: 3 })];
   const result = layout(stages, { moduleLabelWidth: 160, labelWidth: 124 });
-  for (const mod of result.modules) expect(mod.spineHalf).toBe(80);
+  for (const mod of result.modules) {
+    expect(mod.spineHalf).toBe(80);
+  }
   for (const mod of result.nodes.filter((n) => n.kind === "module")) {
     expect(mod.w).toBe(160);
     expect(mod.x).toBe(-80);
@@ -377,18 +399,20 @@ for (const [name, stages] of Object.entries(SHAPES)) {
     const cy = (nodes: Map<string, LayoutNode>, id: string): number =>
       (nodes.get(id) as LayoutNode).cy;
     flat.modules.forEach((fm, m) => {
-      const wm = wavy.modules[m];
+      const wm = at(wavy.modules, m);
       fm.rows.forEach((frow, r) => {
-        const wrow = wm.rows[r];
+        const wrow = at(wm.rows, r);
         expectNear(frow.bottom - frow.top + 32, wrow.bottom - wrow.top, 1e-9);
         for (let i = 0; i + 1 < wrow.heads.length; i++) {
-          const a = wrow.heads[i];
-          const b = wrow.heads[i + 1];
+          const a = at(wrow.heads, i);
+          const b = at(wrow.heads, i + 1);
           expectNear(32, Math.abs(cy(wavyNodes, a) - cy(wavyNodes, b)), 1e-9, `${a} -> ${b}`);
         }
         // Even cells sit on the row's top, exactly where wave 0 puts them.
         wrow.heads.forEach((id, i) => {
-          if (i % 2 !== 0) return;
+          if (i % 2 !== 0) {
+            return;
+          }
           expectNear(cy(flatNodes, id) - frow.top, cy(wavyNodes, id) - wrow.top, 1e-9);
         });
       });
@@ -406,8 +430,9 @@ test("rootX places the root's left edge; the spine still starts at x = 0", () =>
   expect(spine?.points.map((p) => p[0])).toEqual([0, 0]);
 });
 
-// One layout module, not two: the old satellite layout was not carried over, and
-// the package is these six modules and nothing else.
+// One layout, not two: the old satellite layout was not carried over, and the
+// package is these modules and nothing else (Platform STEP 1 §4 split the larger
+// ones along their responsibilities; none of them is a second layout).
 const OLD_LAYOUT = "../src/journey_layout";
 
 test("the old satellite layout is gone", async () => {
@@ -419,11 +444,21 @@ test("the old satellite layout is gone", async () => {
     import.meta.glob("../src/*.ts", { query: "?raw", import: "default", eager: true }),
   ).sort();
   expect(files).toEqual([
+    "../src/at-index.ts",
     "../src/camera.ts",
     "../src/card-tilt.ts",
+    "../src/cell-placement.ts",
+    "../src/fan-traces.ts",
+    "../src/landing-camera.ts",
+    "../src/landing-curves.ts",
+    "../src/landing-model.ts",
+    "../src/landing-obstacles.ts",
     "../src/landing-placement.ts",
+    "../src/layout-model.ts",
     "../src/layout.ts",
+    "../src/path-sampling.ts",
     "../src/paths.ts",
+    "../src/route-tree.ts",
     "../src/terrain.ts",
   ]);
 });

@@ -40,7 +40,9 @@ for (const path of PAGES) {
     const response = await request.get(path);
     const nonce = nonceOf(response.headers()["content-security-policy"]);
     const inline = [...(await response.text()).matchAll(/<script(?![^>]*\ssrc=)([^>]*)>/g)];
-    for (const [, attributes] of inline) expect(attributes).toContain(`nonce="${nonce}"`);
+    for (const [, attributes] of inline) {
+      expect(attributes).toContain(`nonce="${nonce}"`);
+    }
   });
 }
 

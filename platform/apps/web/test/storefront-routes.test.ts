@@ -11,6 +11,8 @@ const routes = import.meta.glob<unknown>("../app/routes/storefront/*.tsx", {
 describe("storefront routes", () => {
   it("are all served as plain HTML", () => {
     expect(Object.keys(routes).length).toBeGreaterThan(0);
-    for (const [file, handle] of Object.entries(routes)) expect(handle, file).toBe(storefront);
+    for (const [file, handle] of Object.entries(routes)) {
+      expect(handle, file).toBe(storefront);
+    }
   });
 });
