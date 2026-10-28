@@ -8,7 +8,7 @@ The reviewer writes each piece of work as a STEP file in `platform/docs/steps/`,
 
 ## One pull request per section
 
-A STEP is one batch: one pull request per section, stacked, with one commit per item, in the STEP's order. Pull request and commit titles start with `Platform STEP <n>`, as in `Platform STEP 1 §2: …`. The description lists what changed, how it was verified, anything that surprised us, and every question for the owner.
+A STEP is one batch: one pull request per section, stacked, with one commit per item, in the STEP's order. Branches are `platform/step-<n>-<slug>`; pull request and commit titles start with `Platform STEP <n>`, as in `Platform STEP 1 §2: …`. The description lists what changed, how it was verified, anything that surprised us, and every question for the owner.
 
 ## Tests first
 
@@ -45,6 +45,10 @@ Each rule has a tool that fails the build when it breaks. `pnpm check` runs them
 | The boundaries in FOUNDATIONS.md §4 | dependency-cruiser |
 | A shortcut names the STEP that removes it: `shortcut(Platform STEP <n>): …` | `scripts/check-shortcuts.mjs` |
 | No personal data in fixtures | `scripts/check-fixtures.mjs` |
+| Names follow FOUNDATIONS.md §4b: files and folders in kebab-case | Biome `useFilenamingConvention` |
+| No file named `utils`, `helpers`, `misc` or `common` | `scripts/check-names.mjs` |
+| Action names are `noun.verb`, lower case | a test in `packages/core` |
+| Database names (tables, keys, times, booleans) | a test on the Drizzle schema (Platform STEP 2) |
 
 An `as` cast that remains carries a one-line comment saying why it is safe.
 
