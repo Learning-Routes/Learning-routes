@@ -3,6 +3,10 @@ import { linesOutsideFences, splitAftermath } from "../aftermath";
 import { lines, round1, splitOnce, WS } from "../text";
 import type { Section } from "./types";
 
+const CODE_FENCE = /```(\w+)\n([\s\S]*?)```/;
+const LABEL_SEPARATOR = /[:=]/;
+const FORMULA_WORD = /formula|equation|f\(/i;
+
 /**
  * `## Match:`: pairs written `term ==> definition`, as one contiguous run outside
  * fenced code. Prose before the first pair is the intro; after the last, the
@@ -50,7 +54,7 @@ export function fillBlank(title: string, body: string): Section {
  */
 export function codePlayground(title: string, body: string): Section {
   const text = strip(body);
-  const match = /```(\w+)\n([\s\S]*?)```/.exec(text);
+  const match = CODE_FENCE.exec(text);
   const language = match ? (match[1] as string) : "python";
   const code = match ? strip(match[2] as string) : text;
   // Split what follows the code: the block's own fence is not its terminator.
@@ -82,7 +86,7 @@ export function simulation(title: string, body: string): Section {
   for (const line of lines(content)) {
     const stripped = strip(line);
     if (VARIABLE.test(stripped)) {
-      const at = stripped.search(/[:=]/);
+      const at = stripped.search(LABEL_SEPARATOR);
       const range = RANGE.exec(stripped.slice(at + 1));
       if (range) {
         const min = Number.parseFloat(range[1] as string);
@@ -94,7 +98,7 @@ export function simulation(title: string, body: string): Section {
           default: round1((min + max) / 2),
         });
       }
-    } else if (/formula|equation|f\(/i.test(stripped) || stripped.includes("=")) {
+    } else if (FORMULA_WORD.test(stripped) || stripped.includes("=")) {
       formula ??= stripped;
     }
   }
@@ -138,6 +142,8 @@ export function scenario(title: string, body: string): Section {
 const FRONT = new RegExp(`^FRONT[:.]?${WS}*`, "i");
 const BACK = new RegExp(`^BACK[:.]?${WS}*`, "i");
 
+const joinLine = (text: string | null, line: string) => (text === null ? line : `${text} ${line}`);
+
 /**
  * `## Flashcards:`: FRONT / BACK pairs separated by `---`, which here belongs to
  * the block rather than ending it. Replaces v1 `LessonSectionParser#parse_heading_flashcards`.
@@ -166,9 +172,9 @@ export function flashcards(title: string, body: string): Section {
       back = stripped.replace(BACK, "");
       side = "back";
     } else if (side === "front") {
-      front = front === null ? stripped : `${front} ${stripped}`;
+      front = joinLine(front, stripped);
     } else {
-      back = back === null ? stripped : `${back} ${stripped}`;
+      back = joinLine(back, stripped);
     }
   }
   finishCard();

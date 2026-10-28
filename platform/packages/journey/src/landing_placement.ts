@@ -587,6 +587,18 @@ const nearAnchor = (
   Y1: number,
 ) => anc && anc.x > X0 - 30 && anc.x < X1 + 30 && anc.y > Y0 - 30 && anc.y < Y1 + 30;
 
+// Where bestSlot looks: the margins, the padding, and the columns it tries.
+function searchArea(i: number, mobile: boolean, Wd: number, w: number) {
+  const m = mobile ? 20 : 32;
+  const top = i === 0 || mobile ? 20 : 80;
+  const bot = mobile && i ? 84 : 24;
+  const pad = mobile ? 10 : 18;
+  const xs: number[] = [];
+  if (mobile) xs.push(20);
+  else for (let x = m; x <= Wd - m - w; x += 12) xs.push(x);
+  return { top, bot, pad, xs };
+}
+
 // The free slot nearest the designed one: { x, y, hits, sc }.
 export function bestSlot(
   model: Model,
@@ -601,24 +613,24 @@ export function bestSlot(
 ): Slot | null {
   const O = obstaclesFor(model, i, cam, mobile, Wd, H);
   const L = layFor(i, mobile);
-  const m = mobile ? 20 : 32;
-  const top = i === 0 || mobile ? 20 : 80;
-  const bot = mobile && i ? 84 : 24;
-  const pad = mobile ? 10 : 18;
+  const { top, bot, pad, xs } = searchArea(i, mobile, Wd, w);
   const dx = mobile ? 20 : L.r[0] * Wd;
   const dy = L.r[1] * H;
   const anc = L.a ? cam.project(anchorOf(model, L.a)) : null;
-  const xs: number[] = [];
-  if (mobile) xs.push(20);
-  else for (let x = m; x <= Wd - m - w; x += 12) xs.push(x);
+  // A slot's score: what it covers, how far it drifts from the design, and how far
+  // the text strays from its anchor.
+  const slot = (x: number, y: number): Slot => {
+    let hits = shapeHits(O, shape, x, y, pad);
+    if (nearAnchor(anc, x - pad, y - pad, x + w + pad, y + h + pad)) hits += 20;
+    let sc = hits * 1000 + Math.hypot(x - dx, (y - dy) * 1.3) * 0.6;
+    if (anc) sc += Math.max(0, Math.hypot(anc.x - (x + w / 2), anc.y - (y + h / 2)) - 300) * 0.3;
+    return { sc, x, y, hits };
+  };
   let best: Slot | null = null;
   for (const x of xs) {
     for (let y = top; y <= Math.max(top, H - bot - h); y += 8) {
-      let hits = shapeHits(O, shape, x, y, pad);
-      if (nearAnchor(anc, x - pad, y - pad, x + w + pad, y + h + pad)) hits += 20;
-      let sc = hits * 1000 + Math.hypot(x - dx, (y - dy) * 1.3) * 0.6;
-      if (anc) sc += Math.max(0, Math.hypot(anc.x - (x + w / 2), anc.y - (y + h / 2)) - 300) * 0.3;
-      if (!best || sc < best.sc) best = { sc, x, y, hits };
+      const candidate = slot(x, y);
+      if (!best || candidate.sc < best.sc) best = candidate;
     }
   }
   return best;

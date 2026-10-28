@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { validateScene } from "../src/content/motion-scenes";
-import { parseLesson } from "../src/index";
+import { parseLesson } from "../src/content/parser";
 
 const agreement = {
   tokens: ["Ele", "tenho", "café", "."],

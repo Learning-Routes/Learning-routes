@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { AUTHORED_BLOCK_TYPES, BLOCK_TYPES, importV1Block, SYSTEM_BLOCK_TYPES } from "../src/index";
+import { AUTHORED_BLOCK_TYPES, BLOCK_TYPES, SYSTEM_BLOCK_TYPES } from "../src/learning/registry";
+import { importV1Block } from "../src/v1";
 import blockGrader from "./golden/block_grader.json" with { type: "json" };
 import blockRegistry from "./golden/block_registry.json" with { type: "json" };
 import lessonParser from "./golden/lesson_parser.json" with { type: "json" };

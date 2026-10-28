@@ -170,6 +170,27 @@ interface MeasuredCell {
 
 const isReinforcement = (topic: Topic): boolean => topic.reinforcement === true;
 
+// A module's cells: its primary steps in order, each with its reinforcement.
+function moduleCells(topics: Topic[]): Cell[] {
+  const cells: Cell[] = [];
+  const byId = new Map<Topic["id"], StepCell>();
+  for (const topic of topics) {
+    if (isReinforcement(topic)) continue;
+    // The direction cue: its 1-based place among the module's primary steps.
+    const cell: StepCell = { kind: "step", topic, ordinal: cells.length + 1, children: [] };
+    cells.push(cell);
+    byId.set(topic.id, cell);
+  }
+  const orphans: Topic[] = [];
+  for (const topic of topics) {
+    if (!isReinforcement(topic)) continue;
+    const parent = topic.parent_id == null ? null : byId.get(topic.parent_id);
+    (parent ? parent.children : orphans).push(topic);
+  }
+  if (orphans.length) cells.unshift({ kind: "anchor", topic: null, children: orphans });
+  return cells;
+}
+
 // The controller's JSON → the tree. Reinforcement goes under its parent_id when
 // that parent is a primary step of the same module; otherwise it is an ORPHAN,
 // and the orphans of a module share one anchor cell placed first.
@@ -179,33 +200,14 @@ export function buildTree(
 ): Tree {
   return {
     root: { title: root?.title || "" },
-    modules: (stages || []).map((stage, index) => {
-      const topics = stage.topics || [];
-      const cells: Cell[] = [];
-      const byId = new Map<Topic["id"], StepCell>();
-      for (const topic of topics) {
-        if (isReinforcement(topic)) continue;
-        // The direction cue: its 1-based place among the module's primary steps.
-        const cell: StepCell = { kind: "step", topic, ordinal: cells.length + 1, children: [] };
-        cells.push(cell);
-        byId.set(topic.id, cell);
-      }
-      const orphans: Topic[] = [];
-      for (const topic of topics) {
-        if (!isReinforcement(topic)) continue;
-        const parent = topic.parent_id == null ? null : byId.get(topic.parent_id);
-        (parent ? parent.children : orphans).push(topic);
-      }
-      if (orphans.length) cells.unshift({ kind: "anchor", topic: null, children: orphans });
-      return {
-        id: `m:${stage.module_id}`,
-        moduleId: stage.module_id,
-        index,
-        stage,
-        readable: stage.readable === true,
-        cells,
-      };
-    }),
+    modules: (stages || []).map((stage, index) => ({
+      id: `m:${stage.module_id}`,
+      moduleId: stage.module_id,
+      index,
+      stage,
+      readable: stage.readable === true,
+      cells: moduleCells(stage.topics || []),
+    })),
   };
 }
 
@@ -352,6 +354,55 @@ function validated(overrides: Partial<LayoutOptions>): LayoutOptions {
   return o;
 }
 
+type PlacedRow = { top: number; bottom: number; direction: "ltr" | "rtl"; heads: LayoutNode[] };
+
+// The module's route: from the module node to its first step, then step to step,
+// turning in the gutter on the side the row ends at.
+function connectRoute(
+  out: LayoutParts,
+  moduleNode: LayoutNode,
+  placedRows: PlacedRow[],
+  single: boolean,
+  locked: boolean,
+  [leftGutterX, rightGutterX]: [number, number],
+): void {
+  const sequence = placedRows.flatMap((row) => row.heads.map((head) => ({ head, row })));
+  if (sequence.length) {
+    const first = sequence[0].head;
+    const points: XY[] = single
+      ? [
+          [0, moduleNode.cy],
+          [first.cx, first.cy],
+        ]
+      : [
+          [0, moduleNode.cy],
+          [0, first.cy],
+          [first.cx, first.cy],
+        ];
+    out.edges.push(edge(moduleNode, first, "module", points, locked));
+  }
+  for (let i = 0; i + 1 < sequence.length; i++) {
+    const a = sequence[i];
+    const b = sequence[i + 1];
+    let points: XY[];
+    if (a.row === b.row) {
+      points = [
+        [a.head.cx, a.head.cy],
+        [b.head.cx, b.head.cy],
+      ];
+    } else {
+      const gx = a.row.direction === "ltr" ? rightGutterX : leftGutterX;
+      points = [
+        [a.head.cx, a.head.cy],
+        [gx, a.head.cy],
+        [gx, b.head.cy],
+        [b.head.cx, b.head.cy],
+      ];
+    }
+    out.edges.push(edge(a.head, b.head, "route", points, locked));
+  }
+}
+
 export function layoutJourney(tree: Tree, overrides: Partial<LayoutOptions> = {}): Layout {
   const o = validated(overrides);
   const out: LayoutParts = { nodes: [], edges: [], cells: [], modules: [] };
@@ -413,12 +464,7 @@ export function layoutJourney(tree: Tree, overrides: Partial<LayoutOptions> = {}
     const blockRight = rowLeft + Math.max(0, ...widths);
     let rowTop = single ? moduleNode.cy - step.d / 2 : moduleNode.y + moduleNode.h + o.rowGap;
     let blockBottom = moduleNode.y + moduleNode.h;
-    const placedRows: {
-      top: number;
-      bottom: number;
-      direction: "ltr" | "rtl";
-      heads: LayoutNode[];
-    }[] = [];
+    const placedRows: PlacedRow[] = [];
 
     rows.forEach((row, r) => {
       const ltr = r % 2 === 0;
@@ -441,44 +487,10 @@ export function layoutJourney(tree: Tree, overrides: Partial<LayoutOptions> = {}
       rowTop += height + o.rowGap;
     });
 
-    const locked = !mod.readable;
-    const sequence = placedRows.flatMap((row) => row.heads.map((head) => ({ head, row })));
-    if (sequence.length) {
-      const first = sequence[0].head;
-      const points: XY[] = single
-        ? [
-            [0, moduleNode.cy],
-            [first.cx, first.cy],
-          ]
-        : [
-            [0, moduleNode.cy],
-            [0, first.cy],
-            [first.cx, first.cy],
-          ];
-      out.edges.push(edge(moduleNode, first, "module", points, locked));
-    }
-    const leftGutterX = spineHalf + o.gutter / 2;
-    const rightGutterX = blockRight + o.gutter / 2;
-    for (let i = 0; i + 1 < sequence.length; i++) {
-      const a = sequence[i];
-      const b = sequence[i + 1];
-      let points: XY[];
-      if (a.row === b.row) {
-        points = [
-          [a.head.cx, a.head.cy],
-          [b.head.cx, b.head.cy],
-        ];
-      } else {
-        const gx = a.row.direction === "ltr" ? rightGutterX : leftGutterX;
-        points = [
-          [a.head.cx, a.head.cy],
-          [gx, a.head.cy],
-          [gx, b.head.cy],
-          [b.head.cx, b.head.cy],
-        ];
-      }
-      out.edges.push(edge(a.head, b.head, "route", points, locked));
-    }
+    connectRoute(out, moduleNode, placedRows, single, !mod.readable, [
+      spineHalf + o.gutter / 2,
+      blockRight + o.gutter / 2,
+    ]);
 
     out.modules.push({
       id: mod.id,

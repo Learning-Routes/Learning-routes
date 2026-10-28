@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { answerable, grade } from "../../src/index";
+import { answerable, grade } from "../../src/learning/grader";
 import fixture from "../golden/block_grader.json" with { type: "json" };
 
 describe("grader (block_grader.json)", () => {

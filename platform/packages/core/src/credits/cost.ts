@@ -1,6 +1,8 @@
 // What a model call costs, in integer microcents (lesson 10). The arithmetic is
 // exact (BigInt fractions) and rounds half away from zero, as v1's Rational did.
 
+const DECIMAL = /^([+-]?)(\d+)(?:\.(\d+))?(?:[eE]([+-]?\d+))?$/;
+
 export const MICROCENTS_PER_CENT = 10_000;
 
 type Rate = readonly [numerator: number, denominator: number];
@@ -110,7 +112,7 @@ function toSafeNumber(value: bigint): number {
 // Reported audio seconds as an exact fraction, or null when they are not a number.
 function decimal(value: string | number | undefined): Fraction | null {
   const text = value === undefined ? "" : String(value);
-  const match = /^([+-]?)(\d+)(?:\.(\d+))?(?:[eE]([+-]?\d+))?$/.exec(text);
+  const match = DECIMAL.exec(text);
   if (!match) return null;
   const [, sign, whole, fraction = "", exponent = "0"] = match;
   let n = BigInt(`${sign}${whole}${fraction}`);

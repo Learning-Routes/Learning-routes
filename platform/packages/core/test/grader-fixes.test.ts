@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { answerable, Block, grade, importV1Block, normalize } from "../src/index";
+import { Block } from "../src/blocks";
+import { answerable, grade, normalize } from "../src/learning/grader";
+import { importV1Block } from "../src/v1";
 
 const fillBlank = (blanks: string[]) => ({ type: "fill_blank", blanks });
 

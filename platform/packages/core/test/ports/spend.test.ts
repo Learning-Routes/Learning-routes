@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { rateLimitPerMinute } from "../../src/index";
+import { rateLimitPerMinute } from "../../src/credits/spend";
 import fixture from "../golden/spend_limits.json" with { type: "json" };
 import { runSpend } from "../runners";
 

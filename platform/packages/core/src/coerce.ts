@@ -1,6 +1,9 @@
 // How v1 read loose JSON (model output, client payloads), so the ports read it the
 // same way. Untrusted input never throws here (lesson 18).
 
+const FLOAT_MARK = /[.e]/;
+const BLANK = /^\p{White_Space}*$/u;
+
 export type Loose = Record<string, unknown>;
 
 /** A JSON object, or {} for anything else (v1: `(x || {}).with_indifferent_access`). */
@@ -36,7 +39,7 @@ export function asText(value: unknown): string {
 
 function rubyFloatText(value: number): string {
   const text = String(value);
-  return /[.e]/.test(text) ? text : `${text}.0`;
+  return FLOAT_MARK.test(text) ? text : `${text}.0`;
 }
 
 /** v1 `String#strip` whitespace. */
@@ -49,7 +52,7 @@ export function strip(text: string): string {
 
 /** v1 `blank?` on a string: empty or Unicode whitespace only. */
 export function isBlank(text: string | null | undefined): boolean {
-  return text === null || text === undefined || /^\p{White_Space}*$/u.test(text);
+  return text === null || text === undefined || BLANK.test(text);
 }
 
 /** v1 `presence`: the text, or null when it is blank. */

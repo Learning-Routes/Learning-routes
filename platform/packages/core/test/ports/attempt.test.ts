@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { type Attempt, fsrsRating, grade, newAttempt, recordSubmission } from "../../src/index";
+import { type Attempt, fsrsRating, newAttempt, recordSubmission } from "../../src/learning/attempt";
+import { grade } from "../../src/learning/grader";
 import fixture from "../golden/attempt_rating.json" with { type: "json" };
 
 const NOW = Date.parse("2026-10-26T12:00:00Z");
