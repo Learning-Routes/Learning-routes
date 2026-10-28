@@ -5,31 +5,32 @@ import {
   Outlet,
   Scripts,
   ScrollRestoration,
+  useRouteLoaderData,
 } from "react-router";
 
 import type { Route } from "./+types/root";
 import "./app.css";
+import { pageContext } from "./context";
 
-// The tokens' dark block keys on html[data-theme="dark"]; set it from the system
-// preference before the first paint.
-const themeScript =
-  'document.documentElement.dataset.theme = matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";';
+export function loader({ context }: Route.LoaderArgs) {
+  return { nonce: context.get(pageContext).nonce };
+}
 
 export function Layout({ children }: { children: React.ReactNode }) {
+  const nonce = useRouteLoaderData<typeof loader>("root")?.nonce;
   return (
     <html lang="es">
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        {/* biome-ignore lint/security/noDangerouslySetInnerHtml: a constant, no user input */}
-        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+        <script src="/theme.js" />
         <Meta />
         <Links />
       </head>
       <body>
         {children}
-        <ScrollRestoration />
-        <Scripts />
+        <ScrollRestoration nonce={nonce} />
+        <Scripts nonce={nonce} />
       </body>
     </html>
   );
