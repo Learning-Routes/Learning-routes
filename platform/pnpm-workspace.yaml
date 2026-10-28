@@ -4,10 +4,12 @@ packages:
 
 # Install only versions published at least 14 days ago. The unit is minutes
 # (20160 = 14 × 24 × 60); the setting exists since pnpm 10.16.0 (we pin 10.33.0).
-minimumReleaseAge: 20160
 
 # shortcut: pnpm 10.33 resolves vitest's vite peer from the "latest" tag and then
 # refuses it under minimumReleaseAge instead of taking an older release. Keep this
 # equal to apps/web's vite; drop it once pnpm picks a mature version for peers.
 overrides:
   vite: 8.3.4
+
+# Proof only: no release is this old.
+minimumReleaseAge: 99999999

@@ -18,7 +18,7 @@ export const TEMPLATES: readonly PromptTemplate[] = [
   {
     // Student-facing, so the cheapest model in the table (WORKING_AGREEMENT.md).
     name: "explain-answer",
-    model: "openai/gpt-5-nano",
+    model: "openai/gpt-4o",
     maxTokens: 300,
     promptCache: false,
     inputTokenBudget: 120,
