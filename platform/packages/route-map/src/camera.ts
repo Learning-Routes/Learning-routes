@@ -47,11 +47,19 @@ export function safeRect(viewport: Rect, overlays: (Rect | null | undefined)[] =
   const vRight = viewport.left + viewport.width;
   const vBottom = viewport.top + viewport.height;
   for (const o of overlays) {
-    if (!o || o.width <= 0 || o.height <= 0) continue;
+    if (!o || o.width <= 0 || o.height <= 0) {
+      continue;
+    }
     const oRight = o.left + o.width;
     const oBottom = o.top + o.height;
-    if (oRight <= viewport.left || o.left >= vRight || oBottom <= viewport.top || o.top >= vBottom)
+    if (
+      oRight <= viewport.left ||
+      o.left >= vRight ||
+      oBottom <= viewport.top ||
+      o.top >= vBottom
+    ) {
       continue;
+    }
     const options: [Side, number, number][] = [
       ["top", oBottom - viewport.top, viewport.height],
       ["bottom", vBottom - o.top, viewport.height],
@@ -128,10 +136,16 @@ export function ensureVisible(camera: Camera, box: Box, safe: Rect, margin = 24)
   const B = safe.top + safe.height - margin;
   let dx = 0;
   let dy = 0;
-  if (s.width > R - L || s.left < L) dx = L - s.left;
-  else if (s.left + s.width > R) dx = R - (s.left + s.width);
-  if (s.height > B - T || s.top < T) dy = T - s.top;
-  else if (s.top + s.height > B) dy = B - (s.top + s.height);
+  if (s.width > R - L || s.left < L) {
+    dx = L - s.left;
+  } else if (s.left + s.width > R) {
+    dx = R - (s.left + s.width);
+  }
+  if (s.height > B - T || s.top < T) {
+    dy = T - s.top;
+  } else if (s.top + s.height > B) {
+    dy = B - (s.top + s.height);
+  }
   return { ...camera, x: camera.x + dx, y: camera.y + dy };
 }
 
@@ -147,9 +161,13 @@ export function revealTitle(
 ): Camera {
   const k = camera.k;
   const want = safe.top + margin - (title.y * k + camera.y);
-  if (want <= 0) return camera;
+  if (want <= 0) {
+    return camera;
+  }
   const room = safe.top + safe.height - margin - ((step.y + step.h) * k + camera.y);
-  if (want <= room) return { ...camera, y: camera.y + want };
+  if (want <= room) {
+    return { ...camera, y: camera.y + want };
+  }
   const under = (title.y + title.h) * k + camera.y;
   const headroom = step.y * k + camera.y - (safe.top + margin);
   return { ...camera, y: camera.y - Math.max(0, Math.min(under, headroom)) };
@@ -179,7 +197,9 @@ export function clampCamera(camera: Camera, world: Box, safe: Rect): Camera {
     safeSize: number,
   ): number => {
     const span = size * camera.k;
-    if (span <= safeSize) return safeStart + (safeSize - span) / 2 - start * camera.k;
+    if (span <= safeSize) {
+      return safeStart + (safeSize - span) / 2 - start * camera.k;
+    }
     const max = safeStart - start * camera.k;
     const min = safeStart + safeSize - (start + size) * camera.k;
     return Math.min(max, Math.max(min, pos));

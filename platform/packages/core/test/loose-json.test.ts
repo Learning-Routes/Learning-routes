@@ -23,3 +23,15 @@ describe("v1 coercions", () => {
     expect(asText(1.5)).toBe("1.5");
   });
 });
+
+describe("asText on numbers, as Ruby's to_s", () => {
+  it.each([
+    [1.5, "1.5"],
+    [-0, "-0.0"],
+    [Number.NaN, "NaN"],
+    [Number.POSITIVE_INFINITY, "Infinity"],
+    [Number.NEGATIVE_INFINITY, "-Infinity"],
+  ])("%s reads as %s", (value, text) => {
+    expect(asText(value)).toBe(text);
+  });
+});

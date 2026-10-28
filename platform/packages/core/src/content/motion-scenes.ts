@@ -72,8 +72,12 @@ export function isKnownScene(name: string): boolean {
 /** Problems with a scene's data; [] when it is valid. Never throws on model output. Replaces v1 `MotionScenes.validate`. */
 export function validateScene(name: string, data: unknown): string[] {
   const schema = SCENES[name];
-  if (!schema || !Object.hasOwn(SCENES, name)) return [`unknown scene: ${name}`];
-  if (!isObject(data)) return ["data is not an object"];
+  if (!schema || !Object.hasOwn(SCENES, name)) {
+    return [`unknown scene: ${name}`];
+  }
+  if (!isObject(data)) {
+    return ["data is not an object"];
+  }
   return check(schema, data, "", null);
 }
 
@@ -96,14 +100,22 @@ function check(schema: Schema, value: unknown, path: string, container: Containe
 }
 
 function checkObject(schema: Schema, value: unknown, path: string, at: string): string[] {
-  if (!isObject(value)) return [`${at}: not an object`];
+  if (!isObject(value)) {
+    return [`${at}: not an object`];
+  }
   const errors: string[] = [];
-  for (const key of schema.required ?? [])
-    if (!(key in value)) errors.push(`${at}: missing ${key}`);
+  for (const key of schema.required ?? []) {
+    if (!(key in value)) {
+      errors.push(`${at}: missing ${key}`);
+    }
+  }
   for (const [key, child] of Object.entries(value)) {
     const childSchema = schema.properties?.[key];
-    if (childSchema) errors.push(...check(childSchema, child, `${path}/${key}`, value));
-    else if (schema.additionalProperties === false) errors.push(`${at}: unexpected ${key}`);
+    if (childSchema) {
+      errors.push(...check(childSchema, child, `${path}/${key}`, value));
+    } else if (schema.additionalProperties === false) {
+      errors.push(`${at}: unexpected ${key}`);
+    }
   }
   return errors;
 }
@@ -115,33 +127,45 @@ function checkArray(
   at: string,
   container: Container,
 ): string[] {
-  if (!Array.isArray(value)) return [`${at}: not an array`];
+  if (!Array.isArray(value)) {
+    return [`${at}: not an array`];
+  }
   const errors: string[] = [];
-  if (schema.minItems !== undefined && value.length < schema.minItems)
+  if (schema.minItems !== undefined && value.length < schema.minItems) {
     errors.push(`${at}: too few items`);
+  }
   if (schema.items) {
-    for (const [i, item] of value.entries())
+    for (const [i, item] of value.entries()) {
       errors.push(...check(schema.items, item, `${path}/${i}`, container));
+    }
   }
   return errors;
 }
 
 function checkString(schema: Schema, value: unknown, at: string): string[] {
-  if (typeof value !== "string") return [`${at}: not a string`];
-  if (schema.minLength !== undefined && [...value].length < schema.minLength)
+  if (typeof value !== "string") {
+    return [`${at}: not a string`];
+  }
+  if (schema.minLength !== undefined && [...value].length < schema.minLength) {
     return [`${at}: too short`];
+  }
   return [];
 }
 
 function checkInteger(schema: Schema, value: unknown, at: string, container: Container): string[] {
-  if (typeof value !== "number" || !Number.isInteger(value)) return [`${at}: not an integer`];
+  if (typeof value !== "number" || !Number.isInteger(value)) {
+    return [`${at}: not an integer`];
+  }
   const errors: string[] = [];
-  if (schema.minimum !== undefined && value < schema.minimum) errors.push(`${at}: below minimum`);
+  if (schema.minimum !== undefined && value < schema.minimum) {
+    errors.push(`${at}: below minimum`);
+  }
   const target = schema["x-index-into"];
   if (target !== undefined) {
     const array = container?.[target];
-    if (!Array.isArray(array) || value >= array.length)
+    if (!Array.isArray(array) || value >= array.length) {
       errors.push(`${at}: out of range for ${target}`);
+    }
   }
   return errors;
 }

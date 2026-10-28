@@ -32,10 +32,16 @@ for (const file of files) {
       ...[...line.matchAll(PHONE)].map(([m]) => m),
       ...[...line.matchAll(LONG_ID)].map(([m]) => m),
     ].filter((m) => !ALLOWLIST.some((allowed) => allowed.file === file && allowed.match === m));
-    for (const match of found) problems.push(`${file}:${index + 1}: ${match}`);
+    for (const match of found) {
+      problems.push(`${file}:${index + 1}: ${match}`);
+    }
   });
 }
 
-for (const problem of problems) console.error(problem);
-if (problems.length > 0) process.exit(1);
+for (const problem of problems) {
+  console.error(problem);
+}
+if (problems.length > 0) {
+  process.exit(1);
+}
 console.log(`${files.length} test, fixture and seed files: no personal data found`);

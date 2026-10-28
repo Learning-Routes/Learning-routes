@@ -78,13 +78,18 @@ export function decideSpend(request: SpendRequest): SpendDecision {
     consumesRateSlot: false,
   });
 
-  if (estimate.kind === "unknown") return refuse("unknown_cost");
+  if (estimate.kind === "unknown") {
+    return refuse("unknown_cost");
+  }
   if (limited && callsInWindow(consumedAt, now) + 1 > (limits.ratePerMinute as number)) {
     return refuse("rate_limit");
   }
 
-  if (spend.globalToday >= limits.dailyMicrocents) return refuse("daily_budget");
-  if (spend.userToday !== null && spend.userToday >= limits.userDailyMicrocents)
+  if (spend.globalToday >= limits.dailyMicrocents) {
+    return refuse("daily_budget");
+  }
+  if (spend.userToday !== null && spend.userToday >= limits.userDailyMicrocents) {
     return refuse("user_budget");
+  }
   return { verdict: "allowed", reason: null, consumesRateSlot: limited };
 }

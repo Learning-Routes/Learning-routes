@@ -16,10 +16,18 @@ const CHECKBOX_PREFIX = new RegExp(`^-${WS}*\\[[ x]\\]${WS}*`);
 type Marker = "option" | "correct" | "explanation" | "numbered";
 
 function markerOf(stripped: string): Marker | null {
-  if (OPTION.test(stripped)) return "option";
-  if (CORRECT.test(stripped)) return "correct";
-  if (EXPLANATION.test(stripped)) return "explanation";
-  if (NUMBERED.test(stripped)) return "numbered";
+  if (OPTION.test(stripped)) {
+    return "option";
+  }
+  if (CORRECT.test(stripped)) {
+    return "correct";
+  }
+  if (EXPLANATION.test(stripped)) {
+    return "explanation";
+  }
+  if (NUMBERED.test(stripped)) {
+    return "numbered";
+  }
   return null;
 }
 
@@ -39,7 +47,9 @@ interface Run {
 function step(run: Run, index: number, stripped: string): boolean {
   if (FENCE.test(stripped)) {
     // Before the first marker a fence belongs to the question; after it, it opens the aftermath.
-    if (run.first !== null) return false;
+    if (run.first !== null) {
+      return false;
+    }
     run.inFence = !run.inFence;
     run.prevStructural = false;
     return true;
@@ -53,31 +63,50 @@ function step(run: Run, index: number, stripped: string): boolean {
 }
 
 function continuation(run: Run, index: number, stripped: string): boolean {
-  if (run.first === null) return true;
+  if (run.first === null) {
+    return true;
+  }
   // Only the wrapped rest of an option or an explanation continues the run.
   if (!(run.prevStructural && (run.lastKind === "option" || run.lastKind === "explanation"))) {
     return false;
   }
-  if (isBoundary(stripped, ["heading", "rule"])) return false;
+  if (isBoundary(stripped, ["heading", "rule"])) {
+    return false;
+  }
   const option = run.options.at(-1);
-  if (run.lastKind === "option" && option) option.label = strip(`${option.label} ${stripped}`);
-  if (run.lastKind === "explanation") run.explanation = strip(`${run.explanation} ${stripped}`);
+  if (run.lastKind === "option" && option) {
+    option.label = strip(`${option.label} ${stripped}`);
+  }
+  if (run.lastKind === "explanation") {
+    run.explanation = strip(`${run.explanation} ${stripped}`);
+  }
   run.last = index;
   return true;
 }
 
 function expected(run: Run, kind: Marker): boolean {
-  if (kind === "correct") return run.correctLetter === null;
-  if (kind === "explanation") return run.explanation === null;
+  if (kind === "correct") {
+    return run.correctLetter === null;
+  }
+  if (kind === "explanation") {
+    return run.explanation === null;
+  }
   return run.correctLetter === null && run.explanation === null;
 }
 
 function marker(run: Run, index: number, kind: Marker, stripped: string): boolean {
-  if (!expected(run, kind)) return false;
-  if (kind === "option")
+  if (!expected(run, kind)) {
+    return false;
+  }
+  if (kind === "option") {
     run.options.push({ label: stripped.replace(OPTION_PREFIX, ""), correct: false });
-  if (kind === "correct") run.correctLetter = strip(stripped.replace(CORRECT, "")).toUpperCase();
-  if (kind === "explanation") run.explanation = strip(stripped.replace(EXPLANATION, ""));
+  }
+  if (kind === "correct") {
+    run.correctLetter = strip(stripped.replace(CORRECT, "")).toUpperCase();
+  }
+  if (kind === "explanation") {
+    run.explanation = strip(stripped.replace(EXPLANATION, ""));
+  }
   run.lastKind = kind;
   run.first ??= index;
   run.last = index;
@@ -104,7 +133,9 @@ export function headingCheck(questionFromHeading: string, body: string): Section
     lastKind: null,
   };
   for (const [index, line] of all.entries()) {
-    if (!step(run, index, strip(line))) break;
+    if (!step(run, index, strip(line))) {
+      break;
+    }
   }
   const { options, correctLetter, explanation, first, last } = run;
 
@@ -123,7 +154,9 @@ export function headingCheck(questionFromHeading: string, body: string): Section
 
   if (correctLetter !== null && OPTION_LETTER.test(correctLetter)) {
     const option = options[correctLetter.charCodeAt(0) - 65];
-    if (option) option.correct = true;
+    if (option) {
+      option.correct = true;
+    }
   }
 
   return { type: "check", title: null, question, options, explanation, aftermath, xp: 15 };

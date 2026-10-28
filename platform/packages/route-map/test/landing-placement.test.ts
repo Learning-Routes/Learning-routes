@@ -1,5 +1,8 @@
 import { expect, test } from "vitest";
-import { buildModel, camera, camFor, layoutChapter, restFor } from "../src/landing-placement";
+import { at } from "../src/at-index";
+import { camera, camFor, restFor } from "../src/landing-camera";
+import { buildModel } from "../src/landing-model";
+import { layoutChapter } from "../src/landing-placement";
 import SHAPES from "./fixtures/landing-text-shapes.json" with { type: "json" };
 
 // STEP 41 §2.2, the owner's main point: each chapter's text sits on a free spot of
@@ -25,12 +28,14 @@ const SHAPE_SETS: Record<string, Record<string, Viewport>> = SHAPES;
 
 function viewportOf(locale: string, viewport: string): Viewport {
   const found = SHAPE_SETS[locale]?.[viewport];
-  if (!found) throw new Error(`no text shapes for ${locale} at ${viewport}`);
+  if (!found) {
+    throw new Error(`no text shapes for ${locale} at ${viewport}`);
+  }
   return found;
 }
 
 function layout(viewport: Viewport): { hits: number; d: number }[] {
-  const [w, h] = viewport.stage;
+  const [w, h] = [at(viewport.stage, 0), at(viewport.stage, 1)];
   const model = buildModel();
   return viewport.texts.map((t, i) => {
     const l = layoutChapter(model, i, w, h, t.w, t.h, t.shape);
@@ -55,8 +60,8 @@ for (const locale of ["es", "en"]) {
   test(`${locale} at 360x740: the hero clears the map; the camera gives way to do it`, () => {
     const laid = layout(viewportOf(locale, "360x740"));
     expect(laid.map((l) => l.hits)).toEqual([0, 0, 0, 0, 0, 0]);
-    expect(laid[0].d, "the hero only clears by pulling the camera back").toBeGreaterThan(1);
-    expect(laid[0].d, "the camera pulls back no further than ×1.55").toBeLessThanOrEqual(1.55);
+    expect(at(laid, 0).d, "the hero only clears by pulling the camera back").toBeGreaterThan(1);
+    expect(at(laid, 0).d, "the camera pulls back no further than ×1.55").toBeLessThanOrEqual(1.55);
   });
 }
 
@@ -66,7 +71,7 @@ test("a point on the sheets' plane projects to the screen and back", () => {
   const H = 836;
   const r = restFor(camFor(2, false), Wd / H);
   const cam = camera(r.pos, r.tgt, Wd, H);
-  const p = model.mods[0].heads[2];
+  const p = at(at(model.mods, 0).heads, 2);
   const s = cam.project(p);
   const back = cam.hitPlane(s.x, s.y, p.y);
   expect(
@@ -81,7 +86,7 @@ test("a point on the sheets' plane projects to the screen and back", () => {
 test("the map is WP-37b's: six and five stops, three modules, the fan of three under step 3", () => {
   const model = buildModel();
   expect(model.mods.map((md) => md.heads.length)).toEqual([6, 5, 4]);
-  expect(model.mods[0].fan?.kids.length).toBe(3);
+  expect(at(model.mods, 0).fan?.kids.length).toBe(3);
   expect(model.mods.map((md) => !!md.locked)).toEqual([false, false, true]);
   expect(model.route.length, "a spine leg per module, then that module's legs").toBe(3 + 6 + 5 + 4);
   expect(model.itinerary.length).toBe(9);

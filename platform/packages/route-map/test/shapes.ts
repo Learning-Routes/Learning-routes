@@ -1,7 +1,7 @@
 // The named route shapes the route map's pure modules are tested over: the layout
 // (layout.test.ts) and the drawn paths (paths.test.ts).
 // One list, so a shape added for one is checked by both.
-import type { Stage, Topic } from "../src/layout";
+import type { Stage, Topic } from "../src/route-tree";
 
 interface ShapeTopic extends Topic {
   id: string;
@@ -53,7 +53,9 @@ export function stage(
   }: { primaries: number; fans?: Record<number, number>; orphans?: number; readable?: boolean },
 ): ShapeStage {
   const topics: ShapeTopic[] = [];
-  for (let i = 0; i < orphans; i++) topics.push(topic(`${id}-o${i}`, { reinforcement: true }));
+  for (let i = 0; i < orphans; i++) {
+    topics.push(topic(`${id}-o${i}`, { reinforcement: true }));
+  }
   for (let i = 0; i < primaries; i++) {
     const pid = `${id}-p${i}`;
     topics.push(topic(pid));

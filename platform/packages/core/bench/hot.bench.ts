@@ -36,7 +36,9 @@ const _decideSpend = decideSpend;
 
 const HOT: Record<string, () => void> = {
   grade: () => {
-    for (const { input } of grader.cases) _grade(input.section, input.payload);
+    for (const { input } of grader.cases) {
+      _grade(input.section, input.payload);
+    }
   },
   review: () => {
     let card = NEW_CARD;
@@ -47,7 +49,9 @@ const HOT: Record<string, () => void> = {
     }
   },
   parseLesson: () => {
-    for (const { input } of parser.cases) _runParser(input);
+    for (const { input } of parser.cases) {
+      _runParser(input);
+    }
   },
   decideSpend: () => {
     const consumedAt: number[] = [];
@@ -59,7 +63,9 @@ const HOT: Record<string, () => void> = {
         estimate: { kind: "known", microcents: 1_000 },
         now: NOW + i * 100,
       });
-      if (decision.consumesRateSlot) consumedAt.push(NOW + i * 100);
+      if (decision.consumesRateSlot) {
+        consumedAt.push(NOW + i * 100);
+      }
     }
   },
 };

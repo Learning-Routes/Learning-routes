@@ -60,7 +60,7 @@ test("on a phone the same overlays leave a usable rect", () => {
 
 test("zooming about a point keeps that point fixed", () => {
   const cam = zoomAbout({ x: 100, y: 50, k: 1 }, { x: 400, y: 300 }, 1.5, { min: 0.1, max: 2 });
-  const worldBefore = [(400 - 100) / 1.0, (300 - 50) / 1.0];
+  const worldBefore: [number, number] = [(400 - 100) / 1.0, (300 - 50) / 1.0];
   expectNear(400, worldBefore[0] * cam.k + cam.x, 1e-6);
   expectNear(300, worldBefore[1] * cam.k + cam.y, 1e-6);
 });
@@ -123,7 +123,7 @@ test("a drag of 10,000 px in any direction leaves the world covering the screen"
     [0, 10_000],
     [0, -10_000],
     [10_000, 10_000],
-  ]) {
+  ] as const) {
     const cam = clampCamera({ x: dx, y: dy, k }, WORLD, safe);
     const s = screenBox(cam, WORLD);
     expect(s.top, `dragged ${dx},${dy}: a gap above the world`).toBeLessThanOrEqual(

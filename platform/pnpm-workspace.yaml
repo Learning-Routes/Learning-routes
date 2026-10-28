@@ -6,8 +6,14 @@ packages:
 # (20160 = 14 × 24 × 60); the setting exists since pnpm 10.16.0 (we pin 10.33.0).
 minimumReleaseAge: 20160
 
-# shortcut: pnpm 10.33 resolves vitest's vite peer from the "latest" tag and then
+# pnpm 10.33 resolves vitest's vite peer from the "latest" tag and then
 # refuses it under minimumReleaseAge instead of taking an older release. Keep this
 # equal to apps/web's vite; drop it once pnpm picks a mature version for peers.
 overrides:
   vite: 8.3.4
+  # magicast (under @vitest/coverage-v8) asks for ^7 Babel, and pnpm 10.33 takes
+  # the newest release and then refuses it under minimumReleaseAge. Held at the
+  # newest 7.x at least 14 days old; drop these when pnpm picks a mature release.
+  "@babel/parser": 7.29.9
+  "@babel/types": 7.29.8
+  "@babel/helper-string-parser": 7.29.7

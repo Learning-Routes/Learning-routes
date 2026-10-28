@@ -30,6 +30,8 @@ describe("tokens", () => {
   });
 
   it("only overrides in dark what light declares", () => {
-    for (const name of Object.keys(dark)) expect(light).toHaveProperty([name]);
+    for (const name of Object.keys(dark)) {
+      expect(light).toHaveProperty([name]);
+    }
   });
 });

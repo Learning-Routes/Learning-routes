@@ -19,12 +19,16 @@ const WITH_TEXT = Object.keys(COPY) as WithText[];
 
 export function loader({ params, request }: Route.LoaderArgs) {
   const lang = params.lang;
-  if (!(isLocale(lang) && Object.hasOwn(COPY, lang))) throw data(null, { status: 404 });
+  if (!(isLocale(lang) && Object.hasOwn(COPY, lang))) {
+    throw data(null, { status: 404 });
+  }
   return { lang: lang as WithText, origin: new URL(request.url).origin };
 }
 
 export function meta({ loaderData }: Route.MetaArgs) {
-  if (!loaderData) return [];
+  if (!loaderData) {
+    return [];
+  }
   return [
     { title: BRAND },
     { name: "description", content: COPY[loaderData.lang].line },

@@ -13,7 +13,9 @@ describe("v1 → stored blocks", () => {
     for (const { lessonId, sections } of lessons) {
       const blocks = await importV1Lesson(sections, { routeId: "route-1", lessonId, locale: "es" });
       expect(blocks).toHaveLength(sections.length);
-      for (const block of blocks) expect(Block.safeParse(block).success).toBe(true);
+      for (const block of blocks) {
+        expect(Block.safeParse(block).success).toBe(true);
+      }
     }
   });
 
@@ -24,7 +26,9 @@ describe("v1 → stored blocks", () => {
       const first = await importV1Lesson(sections, { routeId: "route-1", lessonId, locale: "es" });
       const second = await importV1Lesson(sections, { routeId: "route-1", lessonId, locale: "es" });
       expect(second.map((b) => b.id)).toEqual(first.map((b) => b.id));
-      for (const block of first) ids.add(block.id);
+      for (const block of first) {
+        ids.add(block.id);
+      }
       count += first.length;
     }
     expect(ids.size).toBe(count);

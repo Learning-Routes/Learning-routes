@@ -19,7 +19,9 @@ const ALL: Boundary[] = ["heading", "fence", "rule"];
 
 /** Whether a stripped line ends a block. Replaces v1 `LessonSectionParser#aftermath_boundary?`. */
 export function isBoundary(stripped: string, rules: Boundary[]): boolean {
-  if (stripped === "") return false;
+  if (stripped === "") {
+    return false;
+  }
   return (
     (rules.includes("heading") && SUB_HEADING.test(stripped)) ||
     (rules.includes("fence") && FENCE.test(stripped)) ||
@@ -31,7 +33,9 @@ export function isBoundary(stripped: string, rules: Boundary[]): boolean {
 export function splitAftermath(body: string, rules: Boundary[] = ALL): [string, string | null] {
   const all = lines(body);
   const boundary = all.findIndex((line) => isBoundary(strip(line), rules));
-  if (boundary === -1) return [body, null];
+  if (boundary === -1) {
+    return [body, null];
+  }
   return [all.slice(0, boundary).join(""), presence(strip(all.slice(boundary).join("")))];
 }
 
@@ -44,7 +48,9 @@ export function* linesOutsideFences(all: string[]): Generator<[string, number]> 
       inFence = !inFence;
       continue;
     }
-    if (!inFence) yield [stripped, index];
+    if (!inFence) {
+      yield [stripped, index];
+    }
   }
 }
 
@@ -57,7 +63,9 @@ export function* linesOutsideFences(all: string[]): Generator<[string, number]> 
 export function splitJsonObject(body: string): [string | null, string] {
   const start = body.indexOf("{");
   const end = start === -1 ? -1 : closingBrace(body, start);
-  if (end === -1) return [null, body];
+  if (end === -1) {
+    return [null, body];
+  }
   return [body.slice(start, end + 1), body.slice(end + 1)];
 }
 
@@ -72,11 +80,15 @@ function closingBrace(body: string, start: number): number {
       [inString, escaped] = stringStep(char, escaped);
       continue;
     }
-    if (char === '"') inString = true;
-    else if (char === "{") depth += 1;
-    else if (char === "}") {
+    if (char === '"') {
+      inString = true;
+    } else if (char === "{") {
+      depth += 1;
+    } else if (char === "}") {
       depth -= 1;
-      if (depth === 0) return i;
+      if (depth === 0) {
+        return i;
+      }
     }
   }
   return -1;
@@ -84,8 +96,12 @@ function closingBrace(body: string, start: number): number {
 
 // One character inside a JSON string: [still in the string, the next one is escaped].
 function stringStep(char: string | undefined, escaped: boolean): [boolean, boolean] {
-  if (escaped) return [true, false];
-  if (char === "\\") return [true, true];
+  if (escaped) {
+    return [true, false];
+  }
+  if (char === "\\") {
+    return [true, true];
+  }
   return [char !== '"', false];
 }
 
@@ -96,7 +112,9 @@ export function stripClosingFence(remainder: string): string {
 
 /** JSON.parse that answers null instead of throwing: model output is untrusted. Replaces v1 `LessonSectionParser#safe_parse_json`. */
 export function parseJson(text: string | null): unknown {
-  if (text === null) return null;
+  if (text === null) {
+    return null;
+  }
   try {
     return JSON.parse(text);
   } catch {

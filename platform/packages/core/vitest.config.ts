@@ -2,11 +2,13 @@ import { defineConfig } from "vitest/config";
 
 export default defineConfig({
   test: {
-    benchmark: {
-      // Calls inside core still go through the module runner's export getters.
-      // The baseline is measured the same way, so the comparison holds; the
-      // absolute numbers are higher than in a bundled build.
-      suppressExportGetterWarnings: true,
+    coverage: {
+      provider: "v8",
+      include: ["src/**/*.ts"],
+      exclude: ["src/**/*.d.ts"],
+      // Floors that only rise (Platform STEP 1 §4.4): the measured value rounded
+      // down, never below 90. Measured 28 October 2026: lines 96.48%, branches 91.06%.
+      thresholds: { lines: 96, branches: 91 },
     },
   },
 });

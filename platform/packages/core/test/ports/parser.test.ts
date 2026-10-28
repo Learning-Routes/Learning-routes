@@ -25,6 +25,8 @@ describe("parser (lesson_parser.json)", () => {
       "## Pregunta:\nA) \n```",
       "\u0000",
     ];
-    for (const body of inputs) expect(() => parseLesson(body, { locale: "es" })).not.toThrow();
+    for (const body of inputs) {
+      expect(() => parseLesson(body, { locale: "es" })).not.toThrow();
+    }
   });
 });

@@ -15,8 +15,9 @@ export function conceptOrVisual(title: string | null, rawBody: string): Section 
   const body = strip(rawBody);
   const image = IMAGE.exec(body);
   const hasDiagram = body.includes("```mermaid");
-  if (image)
+  if (image) {
     return { type: "visual", title, body, image_url: image[2], contains_diagram: hasDiagram };
+  }
   return hasDiagram
     ? { type: "concept", title, body, contains_diagram: true }
     : { type: "concept", title, body };
@@ -55,7 +56,9 @@ export function motion(sceneFromHeading: string, body: string): Section {
     isKnownScene(scene) &&
     validateScene(scene, payload.data).length === 0;
 
-  if (!valid) return { type: "concept", title: null, body: presence(narration) ?? strip(body) };
+  if (!valid) {
+    return { type: "concept", title: null, body: presence(narration) ?? strip(body) };
+  }
   return {
     type: "motion",
     scene,
@@ -93,10 +96,18 @@ export function video(titleFromHeading: string, body: string): Section {
 
 // v1 `present?` on a JSON value: nil, false, blank strings and empty collections are absent.
 function isPresentValue(value: unknown): boolean {
-  if (value === null || value === undefined || value === false) return false;
-  if (typeof value === "string") return !isBlank(value);
-  if (Array.isArray(value)) return value.length > 0;
-  if (isObject(value)) return Object.keys(value).length > 0;
+  if (value === null || value === undefined || value === false) {
+    return false;
+  }
+  if (typeof value === "string") {
+    return !isBlank(value);
+  }
+  if (Array.isArray(value)) {
+    return value.length > 0;
+  }
+  if (isObject(value)) {
+    return Object.keys(value).length > 0;
+  }
   return true;
 }
 

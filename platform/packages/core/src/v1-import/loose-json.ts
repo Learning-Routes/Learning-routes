@@ -15,9 +15,15 @@ export function asObject(value: unknown): Loose {
 
 /** v1 `Array(x)`: nil is [], an array is itself, an object is its entries, anything else is [x]. */
 export function asArray(value: unknown): unknown[] {
-  if (value === null || value === undefined) return [];
-  if (Array.isArray(value)) return value;
-  if (typeof value === "object") return Object.entries(value);
+  if (value === null || value === undefined) {
+    return [];
+  }
+  if (Array.isArray(value)) {
+    return value;
+  }
+  if (typeof value === "object") {
+    return Object.entries(value);
+  }
   return [value];
 }
 
@@ -28,17 +34,24 @@ export function truthy(value: unknown): boolean {
 
 /** v1 `to_s` for JSON values. */
 export function asText(value: unknown): string {
-  if (value === null || value === undefined) return "";
-  if (typeof value === "string") return value;
-  if (typeof value === "number" && Number.isInteger(value) && !Object.is(value, -0))
+  if (value === null || value === undefined) {
+    return "";
+  }
+  if (typeof value === "string") {
+    return value;
+  }
+  if (typeof value === "number" && Number.isInteger(value) && !Object.is(value, -0)) {
     return String(value);
-  if (typeof value === "number")
+  }
+  if (typeof value === "number") {
     return Number.isFinite(value) ? rubyFloatText(value) : String(value);
+  }
   return JSON.stringify(value);
 }
 
 function rubyFloatText(value: number): string {
-  const text = String(value);
+  // JavaScript prints -0 as "0"; Ruby prints -0.0.
+  const text = Object.is(value, -0) ? "-0" : String(value);
   return FLOAT_MARK.test(text) ? text : `${text}.0`;
 }
 

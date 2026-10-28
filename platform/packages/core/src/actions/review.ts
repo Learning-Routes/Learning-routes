@@ -38,9 +38,11 @@ export const reviewSubmit = defineAction({
   async run(ctx, input): Promise<ReviewOutput> {
     const owner = ctx.actor.userId;
     const reviewKey = `review:${owner}:${input.reviewId}`;
-    // shortcut: read-then-write is not atomic; the Postgres store makes reviewId unique (STEP 47).
+    // shortcut(Platform STEP 2): read-then-write is not atomic; the Postgres store makes reviewId unique.
     const done = await ctx.store.get<ReviewOutput>(reviewKey);
-    if (done) return { ...done, duplicate: true };
+    if (done) {
+      return { ...done, duplicate: true };
+    }
 
     const cardKey = `card:${owner}:${input.cardId}`;
     const card = (await ctx.store.get<Card>(cardKey)) ?? NEW_CARD;

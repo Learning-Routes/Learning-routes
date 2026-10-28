@@ -61,15 +61,17 @@ type Price =
   | { kind: "audio"; centsPerHour: number }
   | { kind: "provider_reported" };
 
+// What a provider reported. A field may be absent or undefined (parsed provider
+// data), and either means "not reported".
 export interface Usage {
-  inputTokens?: number;
-  cachedTokens?: number;
-  cacheWriteTokens?: number;
-  outputTokens?: number;
-  imageInputTokens?: number;
-  characters?: number;
+  inputTokens?: number | undefined;
+  cachedTokens?: number | undefined;
+  cacheWriteTokens?: number | undefined;
+  outputTokens?: number | undefined;
+  imageInputTokens?: number | undefined;
+  characters?: number | undefined;
   /** A decimal string or a number, as the provider reports it. */
-  audioSeconds?: string | number;
+  audioSeconds?: string | number | undefined;
 }
 
 export type UnknownCostReason =
@@ -115,13 +117,18 @@ function toSafeNumber(value: bigint): number {
 function decimal(value: string | number | undefined): Fraction | null {
   const text = value === undefined ? "" : String(value);
   const match = DECIMAL.exec(text);
-  if (!match) return null;
+  if (!match) {
+    return null;
+  }
   const [, sign, whole, fraction = "", exponent = "0"] = match;
   let n = BigInt(`${sign}${whole}${fraction}`);
   let d = 10n ** BigInt(fraction.length);
   const e = Number(exponent);
-  if (e >= 0) n *= 10n ** BigInt(e);
-  else d *= 10n ** BigInt(-e);
+  if (e >= 0) {
+    n *= 10n ** BigInt(e);
+  } else {
+    d *= 10n ** BigInt(-e);
+  }
   return { n, d };
 }
 
@@ -131,7 +138,9 @@ function decimal(value: string | number | undefined): Fraction | null {
  * never 0 and never a raise. Replaces v1 `AiOrchestrator::CostTracker.estimate_microcents`.
  */
 export function estimateCost(model: string, usage: Usage): CostEstimate {
-  if (!Object.hasOwn(PRICING, model)) return unknown("unknown_model");
+  if (!Object.hasOwn(PRICING, model)) {
+    return unknown("unknown_model");
+  }
   const price: Price = PRICING[model as keyof typeof PRICING];
   const perCent = BigInt(MICROCENTS_PER_CENT);
 
@@ -141,7 +150,9 @@ export function estimateCost(model: string, usage: Usage): CostEstimate {
     case "flat":
       return known(BigInt(price.cents) * perCent);
     case "characters":
-      if (usage.characters === undefined) return unknown("missing_characters");
+      if (usage.characters === undefined) {
+        return unknown("missing_characters");
+      }
       return known(
         roundHalfAwayFromZero({
           n: big(usage.characters) * BigInt(price.centsPerThousand) * perCent,
@@ -150,7 +161,9 @@ export function estimateCost(model: string, usage: Usage): CostEstimate {
       );
     case "audio": {
       const seconds = decimal(usage.audioSeconds);
-      if (seconds === null) return unknown("missing_audio_seconds");
+      if (seconds === null) {
+        return unknown("missing_audio_seconds");
+      }
       return known(
         roundHalfAwayFromZero({
           n: seconds.n * BigInt(price.centsPerHour) * perCent,

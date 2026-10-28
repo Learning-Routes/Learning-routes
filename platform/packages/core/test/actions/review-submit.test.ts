@@ -48,7 +48,9 @@ describe("review.submit", () => {
     const store = memoryStore();
     const first = await submit(input(R1), testCtx("ui", store));
     const retry = await submit(input(R1, NOW, 1), testCtx("ui", store));
-    if (!(first.ok && retry.ok)) throw new Error("both calls should succeed");
+    if (!(first.ok && retry.ok)) {
+      throw new Error("both calls should succeed");
+    }
     expect(retry.output).toEqual({ ...(first.output as object), duplicate: true });
     expect(retry.output).toMatchObject({ card: { reps: 1 } });
   });

@@ -32,7 +32,9 @@ test("the same seed draws the same terrain; another seed draws another", () => {
 test("one path string per level, each with segments", () => {
   const paths = contours({ x: 0, y: 0, w: 1200, h: 900 }, { levels: LEVELS });
   expect(paths.length).toBe(LEVELS.length);
-  for (const d of paths) expect(segments(d).length).toBeGreaterThan(0);
+  for (const d of paths) {
+    expect(segments(d).length).toBeGreaterThan(0);
+  }
 });
 
 // The bounds of a layout are not whole numbers. A grid that overshoots the
