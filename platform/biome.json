@@ -70,6 +70,7 @@
                       "pg/*",
                       "postgres",
                       "@neondatabase/*",
+                      "@planetscale/*",
                       "mysql2",
                       "mysql2/*",
                       "better-sqlite3",

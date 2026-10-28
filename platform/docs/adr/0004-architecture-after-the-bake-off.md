@@ -25,7 +25,7 @@ MCP follows the **2026-07-28** specification: stateless, with no `initialize` ha
 
 ## Where data lives
 
-- **Shared data** (spaces, routes, enrollments, the credit ledger) is in Postgres on Neon.
+- **Shared data** (spaces, routes, enrollments, the credit ledger) is in Postgres on PlanetScale (ADR 0005).
 - **A live agent session** keeps its state in a Durable Object's SQLite, next to the code that runs it.
 - **Analytics** go to a store outside the database, so reporting never slows the product.
 

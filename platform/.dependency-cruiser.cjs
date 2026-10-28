@@ -72,6 +72,19 @@ module.exports = {
       },
     },
     {
+      name: "only-the-db-module-reaches-the-database",
+      comment:
+        "Drizzle and the Postgres drivers belong to apps/api/src/db/ alone (FOUNDATIONS.md §4); everything else goes through it.",
+      severity: "error",
+      from: { pathNot: "^apps/api/src/db/" },
+      to: {
+        path: [
+          "^(drizzle-orm|pg|postgres|@planetscale/|@neondatabase/)($|/)",
+          "node_modules/(drizzle-orm|pg|postgres|@planetscale|@neondatabase)/",
+        ],
+      },
+    },
+    {
       name: "web-and-api-stay-apart",
       severity: "error",
       from: { path: "^apps/(web|api)/" },
