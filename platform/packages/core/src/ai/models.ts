@@ -15,6 +15,9 @@ export interface ModelPrices {
   maxPromptTokens: number;
 }
 
+// Candidate for the cheapest tier: openai/gpt-oss-20b ($0.018 in, $0.09 out per
+// million tokens). It stays out of the table until it passes a zero-data-retention
+// check and an eval.
 export const MODELS = {
   // The cheapest: the default for student-facing features (WORKING_AGREEMENT.md).
   "openai/gpt-5-nano": {
