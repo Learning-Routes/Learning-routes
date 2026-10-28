@@ -30,3 +30,16 @@ The deploy secrets are still repository secrets, which any workflow in the repos
 3. In the Actions tab, run **Deploy to Production** on `main`, approve it when GitHub asks, and check that it succeeds.
 4. Only then delete each repository-level copy: `gh secret delete KAMAL_REGISTRY_USERNAME --repo Learning-Routes/Learning-routes`, and the same for the other four.
 5. Check that the repository list no longer has them: `gh secret list --repo Learning-Routes/Learning-routes`.
+
+## Security settings
+
+Set on 28 October 2026 (Platform STEP 1 §2.8). Each command is safe to run again.
+
+| Setting | State | Command |
+|---|---|---|
+| Secret scanning and push protection | on | `gh api -X PATCH repos/Learning-Routes/Learning-routes --input -` with `{"security_and_analysis":{"secret_scanning":{"status":"enabled"},"secret_scanning_push_protection":{"status":"enabled"}}}` |
+| Private vulnerability reporting | on | `gh api -X PUT repos/Learning-Routes/Learning-routes/private-vulnerability-reporting` |
+| Dependabot security updates | on (with vulnerability alerts) | `gh api -X PUT repos/Learning-Routes/Learning-routes/vulnerability-alerts`, then `gh api -X PUT repos/Learning-Routes/Learning-routes/automated-security-fixes` |
+| Workflows on pull requests from forks wait for approval | all outside contributors | `gh api -X PUT repos/Learning-Routes/Learning-routes/actions/permissions/fork-pr-contributor-approval -f approval_policy=all_external_contributors` |
+
+To check them: `gh api repos/Learning-Routes/Learning-routes --jq .security_and_analysis`, `gh api repos/Learning-Routes/Learning-routes/private-vulnerability-reporting` and `gh api repos/Learning-Routes/Learning-routes/actions/permissions/fork-pr-contributor-approval`.
