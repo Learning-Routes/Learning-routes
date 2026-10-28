@@ -43,3 +43,29 @@ Set on 28 October 2026 (Platform STEP 1 §2.8). Each command is safe to run agai
 | Workflows on pull requests from forks wait for approval | all outside contributors | `gh api -X PUT repos/Learning-Routes/Learning-routes/actions/permissions/fork-pr-contributor-approval -f approval_policy=all_external_contributors` |
 
 To check them: `gh api repos/Learning-Routes/Learning-routes --jq .security_and_analysis`, `gh api repos/Learning-Routes/Learning-routes/private-vulnerability-reporting` and `gh api repos/Learning-Routes/Learning-routes/actions/permissions/fork-pr-contributor-approval`.
+
+## Branch protection on main
+
+Set on 28 October 2026 (Platform STEP 1 §2.9):
+
+- a pull request is required, with **one approving review** and **review from the code owners** for the paths in `.github/CODEOWNERS`;
+- an approval is **dismissed when new commits are pushed**;
+- **linear history**, no force pushes, no deletion;
+- the required checks: `lint`, `scan_ruby`, `scan_js`, `test`, `system-test`, `no-tool-attribution`, `platform`, `workflow-rules` and `secret-scan`;
+- **`enforce_admins` is off.**
+
+### The trade-off
+
+The owner's account opens most pull requests, and GitHub never lets an author approve their own pull request. With `enforce_admins` on, the owner could not merge his own work without a second reviewer. With it off, the owner can merge his own green pull requests as an admin (`gh pr merge --admin`); everyone else needs his approval. The cost is that an admin merge skips the review requirement, so the owner merges only green pull requests, and turns `enforce_admins` on once a second maintainer can review.
+
+### The command
+
+```sh
+gh api -X PUT repos/Learning-Routes/Learning-routes/branches/main/protection --input - <<'EOF2'
+{"required_status_checks":{"strict":false,"contexts":["lint","scan_ruby","scan_js","test","system-test","no-tool-attribution","platform","workflow-rules","secret-scan"]},
+ "enforce_admins":false,
+ "required_pull_request_reviews":{"required_approving_review_count":1,"require_code_owner_reviews":true,"dismiss_stale_reviews":true,"require_last_push_approval":false},
+ "restrictions":null,"required_linear_history":true,"allow_force_pushes":false,"allow_deletions":false,
+ "block_creations":false,"required_conversation_resolution":false,"lock_branch":false,"allow_fork_syncing":false}
+EOF2
+```
