@@ -16,7 +16,8 @@
     "golden:check": "scripts/check-golden.sh",
     "knip": "knip",
     "deps": "depcruise apps packages --config .dependency-cruiser.cjs",
-    "worker-size": "scripts/check-worker-size.mjs"
+    "worker-size": "scripts/check-worker-size.mjs",
+    "bench": "pnpm --filter @learning-routes/core bench"
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.15",

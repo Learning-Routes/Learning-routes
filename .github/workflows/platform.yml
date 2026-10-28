@@ -85,6 +85,12 @@ jobs:
       - name: No unused files, exports or dependencies (knip)
         run: pnpm knip
         if: ${{ !cancelled() }}
+      # Not gating yet (STEP 46 §2.8): prints each hot function against its
+      # baseline; a regression over 30% goes in the pull request description.
+      - name: Benchmarks against the baseline
+        run: pnpm bench
+        continue-on-error: true
+        if: ${{ !cancelled() }}
       - name: Versions are exact and at least 14 days old
         run: node scripts/check-versions.mjs
         if: ${{ !cancelled() }}
