@@ -71,6 +71,10 @@ Confirmed, and intended. `decideSpend` refuses an unknown cost first, so a `tavi
 
 Confirmed. v1's guard never read a call's cost, so the test harness passes a known cost of 0 for every situation the fixture recorded (`V1_ESTIMATE` in `packages/core/test/runners.ts`).
 
+### A quantity that cannot be a quantity is refused
+
+A reported quantity that is negative, NaN or infinite makes the cost estimate `unknown` (`invalid_quantity`), so the gate refuses the call. v1 priced a negative quantity, such as `audioSeconds: "-1.5"` on `scribe_v2`, as a negative cost (-92 microcents) that lowered the day's spend. The case is in `test/golden/DIVERGENCES.md`.
+
 ## Branch protection
 
 `main` requires a pull request and the CI `check` job, refuses force pushes and deletion, and keeps a linear history. Administrators are held to the same rules. Learning-routes `main` has the same rules, with its own CI jobs required (`lint`, `scan_ruby`, `scan_js`, `test`, `system-test`, `no-tool-attribution`). Its deploy is a manual workflow run that pushes nothing to `main`, so the rules do not block it. Linear history means its pull requests now merge by squash or rebase, not with a merge commit.
