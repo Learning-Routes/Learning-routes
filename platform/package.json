@@ -15,7 +15,8 @@
     "format": "biome format --write .",
     "golden:check": "scripts/check-golden.sh",
     "knip": "knip",
-    "deps": "depcruise apps packages --config .dependency-cruiser.cjs"
+    "deps": "depcruise apps packages --config .dependency-cruiser.cjs",
+    "worker-size": "scripts/check-worker-size.mjs"
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.15",
