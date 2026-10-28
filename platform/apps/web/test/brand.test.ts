@@ -1,7 +1,7 @@
 import { BRAND, PLANNED_HOST } from "@learning-routes/core/locales";
 import { describe, expect, it } from "vitest";
-import type { Route } from "../app/routes/storefront/+types/landing";
-import { meta as landingMeta } from "../app/routes/storefront/landing";
+import type { Route } from "../app/routes/storefront/+types/home";
+import { meta as storefrontMeta } from "../app/routes/storefront/home";
 import { meta as studioMeta } from "../app/routes/studio";
 
 // Every platform source file, as text. The test's own file is outside these globs.
@@ -31,7 +31,7 @@ describe("the visible name while the platform is built", () => {
 
   it("titles the pages", () => {
     const loaderData = { lang: "es", origin: "https://new.learningroutes.com" } as const;
-    expect(landingMeta({ loaderData } as Route.MetaArgs)).toContainEqual({ title: BRAND });
+    expect(storefrontMeta({ loaderData } as Route.MetaArgs)).toContainEqual({ title: BRAND });
     expect(studioMeta()).toContainEqual({ title: `Estudio · ${BRAND}` });
   });
 
