@@ -1,3 +1,4 @@
+import { BRAND } from "@learning-routes/core/locales";
 import { renderToString } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import type { Route } from "../app/routes/storefront/+types/landing";
@@ -9,11 +10,11 @@ describe("landing", () => {
   it("shows the name and the line", () => {
     const html = renderToString(<Landing {...({ loaderData } as Route.ComponentProps)} />);
 
-    expect(html).toContain("Learning Routes");
+    expect(html).toContain(BRAND);
     expect(html).toContain("Lo que sabes, convertido en una ruta.");
   });
 
   it("titles the page", () => {
-    expect(meta({ loaderData } as Route.MetaArgs)).toContainEqual({ title: "Learning Routes" });
+    expect(meta({ loaderData } as Route.MetaArgs)).toContainEqual({ title: BRAND });
   });
 });

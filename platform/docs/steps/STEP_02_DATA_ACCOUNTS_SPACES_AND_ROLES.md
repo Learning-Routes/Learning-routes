@@ -143,7 +143,8 @@ Everything runs against a local Postgres 18. Do **not** create PlanetScale, Hype
 
     `runAction` writes it in the same transaction. Index `(space_id, at)`. `lr_app` gets `SELECT` and `INSERT` only. It is a log: never derive state from it.
 16. **Deletion.** Spaces, routes and their content are archived, never deleted. Per-user rows (profiles, memberships, enrollments, progress, cards, reviews) are erased only by `user.erase`, one migrator-run path with a test. Foreign keys from those rows to `user` are `ON DELETE CASCADE`, because only that path deletes a user.
-17. **Check against `core/domain.ts`.** A test builds one row of each table from the zod schema and inserts it.
+17. **Database names follow `FOUNDATIONS.md` §4b.** A test reads the Drizzle schema and fails on a table that is not a snake_case plural noun, a foreign key not named `<entity>_id`, a time not named `<event>_at`, or a boolean not named `is_<state>`. Better Auth's own tables are exempt.
+18. **Check against `core/domain.ts`.** A test builds one row of each table from the zod schema and inserts it.
 
 ## §3. Tenancy: two fences
 
