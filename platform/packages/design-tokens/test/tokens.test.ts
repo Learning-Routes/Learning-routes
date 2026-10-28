@@ -29,6 +29,13 @@ describe("tokens", () => {
     expect(light["--font-sans"]).toContain('"Archivo"');
   });
 
+  it("names the route map in the glossary's words; v1's stylesheet keeps --journey-*", () => {
+    for (const tokens of [light, dark]) {
+      expect(Object.keys(tokens).filter((name) => name.startsWith("--journey-"))).toEqual([]);
+      expect(tokens).toHaveProperty(["--route-map-contrast-rgb"]);
+    }
+  });
+
   it("only overrides in dark what light declares", () => {
     for (const name of Object.keys(dark)) {
       expect(light).toHaveProperty([name]);

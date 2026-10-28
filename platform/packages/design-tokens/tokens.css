@@ -1,5 +1,6 @@
 /* Ciruela tokens (STEP 41 §1.1), copied from the v1 app's
-   app/assets/tailwind/application.css with their names kept. Light values live
+   app/assets/tailwind/application.css with their names kept, except v1's
+   --journey-* properties, which are --route-map-* here. Light values live
    on :root, dark overrides on html[data-theme="dark"]. tokens.ts carries the same
    values, and test/tokens.test.ts keeps the two equal. */
 
@@ -63,11 +64,11 @@
   --radius-section: 20px;
 }
 
-/* Journey level colours (WP-37 §3.6). In a PLAIN :root block, not @theme:
+/* Route map level colours (WP-37 §3.6). In a PLAIN :root block, not @theme:
    Tailwind 4 drops @theme variables whose names it never sees written, and the
-   journey builds these at runtime (var(--color-node-${level})). Text-safe on
-   --color-bg (>= 4.5:1), measured by test/system/journey_map_test.rb; the dark
-   values are in the dark-theme variable block below. */
+   route map builds these at runtime (var(--color-node-${level})). Text-safe on
+   --color-bg (>= 4.5:1), as v1 measured in test/system/journey_map_test.rb; the
+   dark values are in the dark-theme variable block below. */
 :root {
   --color-node-nv1: #2E6B4B;
   --color-node-nv2: #2C5F8E;
@@ -123,9 +124,9 @@
   /* Progress bar track */
   --color-progress-track: #ECE6EF;
   /* Journey page contrast (for SVG overlays) */
-  --journey-contrast-rgb: 28, 24, 18;
-  --journey-alpha-mult: 5;
-  --journey-opacity-mult: 2.5;
+  --route-map-contrast-rgb: 28, 24, 18;
+  --route-map-alpha-mult: 5;
+  --route-map-opacity-mult: 2.5;
   /* Tint hover (for interactive controls like buttons) */
   --color-tint-hover: color-mix(in srgb, var(--color-txt) 14%, transparent);
   /* Step status icon colors */
@@ -242,9 +243,9 @@ html[data-theme="dark"] {
   --color-badge-review-bg: rgba(139, 92, 246, 0.15);
   --color-badge-review-text: #c4b5fd;
   --color-progress-track: #1C1325;
-  --journey-contrast-rgb: 255, 255, 255;
-  --journey-alpha-mult: 1;
-  --journey-opacity-mult: 1;
+  --route-map-contrast-rgb: 255, 255, 255;
+  --route-map-alpha-mult: 1;
+  --route-map-opacity-mult: 1;
   --color-tint-hover: rgba(255, 255, 255, 0.16);
   --color-step-completed-bg: rgba(34, 197, 94, 0.15);
   --color-step-completed-icon: #4ade80;
