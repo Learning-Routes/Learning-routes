@@ -14,7 +14,7 @@ CREATE TABLE "cards" (
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
 	CONSTRAINT "cards_user_id_item_id_key" UNIQUE("user_id","item_id"),
-	CONSTRAINT "cards_id_user_id_key" UNIQUE("id","user_id"),
+	CONSTRAINT "cards_id_user_id_space_id_key" UNIQUE("id","user_id","space_id"),
 	CONSTRAINT "cards_state" CHECK ("cards"."state" in ('new', 'learning', 'review', 'relearning'))
 );
 --> statement-breakpoint
@@ -79,11 +79,11 @@ ALTER TABLE "cards" ADD CONSTRAINT "cards_user_id_user_id_fk" FOREIGN KEY ("user
 ALTER TABLE "cards" ADD CONSTRAINT "cards_space_id_spaces_id_fk" FOREIGN KEY ("space_id") REFERENCES "public"."spaces"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "enrollments" ADD CONSTRAINT "enrollments_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "enrollments" ADD CONSTRAINT "enrollments_route_id_fkey" FOREIGN KEY ("route_id","space_id") REFERENCES "public"."routes"("id","space_id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "enrollments" ADD CONSTRAINT "enrollments_pinned_version_fkey" FOREIGN KEY ("route_id","pinned_version") REFERENCES "public"."route_versions"("route_id","version") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "enrollments" ADD CONSTRAINT "enrollments_pinned_version_fkey" FOREIGN KEY ("route_id","space_id","pinned_version") REFERENCES "public"."route_versions"("route_id","space_id","version") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "progress" ADD CONSTRAINT "progress_enrollment_id_fkey" FOREIGN KEY ("enrollment_id","space_id","user_id") REFERENCES "public"."enrollments"("id","space_id","user_id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "reviews" ADD CONSTRAINT "reviews_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "reviews" ADD CONSTRAINT "reviews_space_id_spaces_id_fk" FOREIGN KEY ("space_id") REFERENCES "public"."spaces"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "reviews" ADD CONSTRAINT "reviews_card_id_fkey" FOREIGN KEY ("card_id","user_id") REFERENCES "public"."cards"("id","user_id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "reviews" ADD CONSTRAINT "reviews_card_id_fkey" FOREIGN KEY ("card_id","user_id","space_id") REFERENCES "public"."cards"("id","user_id","space_id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "action_log" ADD CONSTRAINT "action_log_space_id_spaces_id_fk" FOREIGN KEY ("space_id") REFERENCES "public"."spaces"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 CREATE INDEX "reviews_user_id_card_id_reviewed_at_idx" ON "reviews" USING btree ("user_id","card_id","reviewed_at");--> statement-breakpoint
 CREATE INDEX "action_log_space_id_at_idx" ON "action_log" USING btree ("space_id","at");

@@ -101,20 +101,20 @@
             }
           ],
           "isUnique": false,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         }
       },
       "foreignKeys": {
         "account_user_id_user_id_fk": {
           "name": "account_user_id_user_id_fk",
           "tableFrom": "account",
-          "columnsFrom": ["user_id"],
           "tableTo": "user",
+          "columnsFrom": ["user_id"],
           "columnsTo": ["id"],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -159,8 +159,8 @@
       "uniqueConstraints": {
         "rate_limit_key_unique": {
           "name": "rate_limit_key_unique",
-          "columns": ["key"],
-          "nullsNotDistinct": false
+          "nullsNotDistinct": false,
+          "columns": ["key"]
         }
       },
       "policies": {},
@@ -234,28 +234,28 @@
             }
           ],
           "isUnique": false,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         }
       },
       "foreignKeys": {
         "session_user_id_user_id_fk": {
           "name": "session_user_id_user_id_fk",
           "tableFrom": "session",
-          "columnsFrom": ["user_id"],
           "tableTo": "user",
+          "columnsFrom": ["user_id"],
           "columnsTo": ["id"],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
         "session_token_unique": {
           "name": "session_token_unique",
-          "columns": ["token"],
-          "nullsNotDistinct": false
+          "nullsNotDistinct": false,
+          "columns": ["token"]
         }
       },
       "policies": {},
@@ -319,8 +319,8 @@
       "uniqueConstraints": {
         "user_email_unique": {
           "name": "user_email_unique",
-          "columns": ["email"],
-          "nullsNotDistinct": false
+          "nullsNotDistinct": false,
+          "columns": ["email"]
         }
       },
       "policies": {},
@@ -383,9 +383,9 @@
             }
           ],
           "isUnique": false,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         }
       },
       "foreignKeys": {},
@@ -462,19 +462,19 @@
         "blocks_lesson_id_fkey": {
           "name": "blocks_lesson_id_fkey",
           "tableFrom": "blocks",
-          "columnsFrom": ["lesson_id", "space_id"],
           "tableTo": "lessons",
+          "columnsFrom": ["lesson_id", "space_id"],
           "columnsTo": ["id", "space_id"],
-          "onUpdate": "no action",
-          "onDelete": "restrict"
+          "onDelete": "restrict",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
         "blocks_lesson_id_position_key": {
           "name": "blocks_lesson_id_position_key",
-          "columns": ["lesson_id", "position"],
-          "nullsNotDistinct": false
+          "nullsNotDistinct": false,
+          "columns": ["lesson_id", "position"]
         }
       },
       "policies": {},
@@ -524,29 +524,29 @@
         "lesson_prerequisites_route_id_fkey": {
           "name": "lesson_prerequisites_route_id_fkey",
           "tableFrom": "lesson_prerequisites",
-          "columnsFrom": ["route_id", "space_id"],
           "tableTo": "routes",
+          "columnsFrom": ["route_id", "space_id"],
           "columnsTo": ["id", "space_id"],
-          "onUpdate": "no action",
-          "onDelete": "restrict"
+          "onDelete": "restrict",
+          "onUpdate": "no action"
         },
         "lesson_prerequisites_lesson_id_fkey": {
           "name": "lesson_prerequisites_lesson_id_fkey",
           "tableFrom": "lesson_prerequisites",
-          "columnsFrom": ["lesson_id", "space_id"],
           "tableTo": "lessons",
+          "columnsFrom": ["lesson_id", "space_id"],
           "columnsTo": ["id", "space_id"],
-          "onUpdate": "no action",
-          "onDelete": "restrict"
+          "onDelete": "restrict",
+          "onUpdate": "no action"
         },
         "lesson_prerequisites_requires_lesson_id_fkey": {
           "name": "lesson_prerequisites_requires_lesson_id_fkey",
           "tableFrom": "lesson_prerequisites",
-          "columnsFrom": ["requires_lesson_id", "space_id"],
           "tableTo": "lessons",
+          "columnsFrom": ["requires_lesson_id", "space_id"],
           "columnsTo": ["id", "space_id"],
-          "onUpdate": "no action",
-          "onDelete": "restrict"
+          "onDelete": "restrict",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {
@@ -626,24 +626,24 @@
         "lessons_module_id_fkey": {
           "name": "lessons_module_id_fkey",
           "tableFrom": "lessons",
-          "columnsFrom": ["module_id", "space_id"],
           "tableTo": "modules",
+          "columnsFrom": ["module_id", "space_id"],
           "columnsTo": ["id", "space_id"],
-          "onUpdate": "no action",
-          "onDelete": "restrict"
+          "onDelete": "restrict",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
         "lessons_module_id_position_key": {
           "name": "lessons_module_id_position_key",
-          "columns": ["module_id", "position"],
-          "nullsNotDistinct": false
+          "nullsNotDistinct": false,
+          "columns": ["module_id", "position"]
         },
         "lessons_id_space_id_key": {
           "name": "lessons_id_space_id_key",
-          "columns": ["id", "space_id"],
-          "nullsNotDistinct": false
+          "nullsNotDistinct": false,
+          "columns": ["id", "space_id"]
         }
       },
       "policies": {},
@@ -716,24 +716,24 @@
         "modules_route_id_fkey": {
           "name": "modules_route_id_fkey",
           "tableFrom": "modules",
-          "columnsFrom": ["route_id", "space_id"],
           "tableTo": "routes",
+          "columnsFrom": ["route_id", "space_id"],
           "columnsTo": ["id", "space_id"],
-          "onUpdate": "no action",
-          "onDelete": "restrict"
+          "onDelete": "restrict",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
         "modules_route_id_position_key": {
           "name": "modules_route_id_position_key",
-          "columns": ["route_id", "position"],
-          "nullsNotDistinct": false
+          "nullsNotDistinct": false,
+          "columns": ["route_id", "position"]
         },
         "modules_id_space_id_key": {
           "name": "modules_id_space_id_key",
-          "columns": ["id", "space_id"],
-          "nullsNotDistinct": false
+          "nullsNotDistinct": false,
+          "columns": ["id", "space_id"]
         }
       },
       "policies": {},
@@ -855,24 +855,24 @@
         "routes_space_id_spaces_id_fk": {
           "name": "routes_space_id_spaces_id_fk",
           "tableFrom": "routes",
-          "columnsFrom": ["space_id"],
           "tableTo": "spaces",
+          "columnsFrom": ["space_id"],
           "columnsTo": ["id"],
-          "onUpdate": "no action",
-          "onDelete": "no action"
+          "onDelete": "no action",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
         "routes_space_id_slug_key": {
           "name": "routes_space_id_slug_key",
-          "columns": ["space_id", "slug"],
-          "nullsNotDistinct": false
+          "nullsNotDistinct": false,
+          "columns": ["space_id", "slug"]
         },
         "routes_id_space_id_key": {
           "name": "routes_id_space_id_key",
-          "columns": ["id", "space_id"],
-          "nullsNotDistinct": false
+          "nullsNotDistinct": false,
+          "columns": ["id", "space_id"]
         }
       },
       "policies": {},
@@ -1002,33 +1002,33 @@
         "cards_user_id_user_id_fk": {
           "name": "cards_user_id_user_id_fk",
           "tableFrom": "cards",
-          "columnsFrom": ["user_id"],
           "tableTo": "user",
+          "columnsFrom": ["user_id"],
           "columnsTo": ["id"],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         },
         "cards_space_id_spaces_id_fk": {
           "name": "cards_space_id_spaces_id_fk",
           "tableFrom": "cards",
-          "columnsFrom": ["space_id"],
           "tableTo": "spaces",
+          "columnsFrom": ["space_id"],
           "columnsTo": ["id"],
-          "onUpdate": "no action",
-          "onDelete": "no action"
+          "onDelete": "no action",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
         "cards_user_id_item_id_key": {
           "name": "cards_user_id_item_id_key",
-          "columns": ["user_id", "item_id"],
-          "nullsNotDistinct": false
+          "nullsNotDistinct": false,
+          "columns": ["user_id", "item_id"]
         },
-        "cards_id_user_id_key": {
-          "name": "cards_id_user_id_key",
-          "columns": ["id", "user_id"],
-          "nullsNotDistinct": false
+        "cards_id_user_id_space_id_key": {
+          "name": "cards_id_user_id_space_id_key",
+          "nullsNotDistinct": false,
+          "columns": ["id", "user_id", "space_id"]
         }
       },
       "policies": {},
@@ -1101,42 +1101,42 @@
         "enrollments_user_id_user_id_fk": {
           "name": "enrollments_user_id_user_id_fk",
           "tableFrom": "enrollments",
-          "columnsFrom": ["user_id"],
           "tableTo": "user",
+          "columnsFrom": ["user_id"],
           "columnsTo": ["id"],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         },
         "enrollments_route_id_fkey": {
           "name": "enrollments_route_id_fkey",
           "tableFrom": "enrollments",
-          "columnsFrom": ["route_id", "space_id"],
           "tableTo": "routes",
+          "columnsFrom": ["route_id", "space_id"],
           "columnsTo": ["id", "space_id"],
-          "onUpdate": "no action",
-          "onDelete": "restrict"
+          "onDelete": "restrict",
+          "onUpdate": "no action"
         },
         "enrollments_pinned_version_fkey": {
           "name": "enrollments_pinned_version_fkey",
           "tableFrom": "enrollments",
-          "columnsFrom": ["route_id", "pinned_version"],
           "tableTo": "route_versions",
-          "columnsTo": ["route_id", "version"],
-          "onUpdate": "no action",
-          "onDelete": "restrict"
+          "columnsFrom": ["route_id", "space_id", "pinned_version"],
+          "columnsTo": ["route_id", "space_id", "version"],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
         "enrollments_user_id_route_id_key": {
           "name": "enrollments_user_id_route_id_key",
-          "columns": ["user_id", "route_id"],
-          "nullsNotDistinct": false
+          "nullsNotDistinct": false,
+          "columns": ["user_id", "route_id"]
         },
         "enrollments_id_space_id_user_id_key": {
           "name": "enrollments_id_space_id_user_id_key",
-          "columns": ["id", "space_id", "user_id"],
-          "nullsNotDistinct": false
+          "nullsNotDistinct": false,
+          "columns": ["id", "space_id", "user_id"]
         }
       },
       "policies": {},
@@ -1208,11 +1208,11 @@
         "progress_enrollment_id_fkey": {
           "name": "progress_enrollment_id_fkey",
           "tableFrom": "progress",
-          "columnsFrom": ["enrollment_id", "space_id", "user_id"],
           "tableTo": "enrollments",
+          "columnsFrom": ["enrollment_id", "space_id", "user_id"],
           "columnsTo": ["id", "space_id", "user_id"],
-          "onUpdate": "no action",
-          "onDelete": "restrict"
+          "onDelete": "restrict",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {
@@ -1319,46 +1319,46 @@
             }
           ],
           "isUnique": false,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         }
       },
       "foreignKeys": {
         "reviews_user_id_user_id_fk": {
           "name": "reviews_user_id_user_id_fk",
           "tableFrom": "reviews",
-          "columnsFrom": ["user_id"],
           "tableTo": "user",
+          "columnsFrom": ["user_id"],
           "columnsTo": ["id"],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         },
         "reviews_space_id_spaces_id_fk": {
           "name": "reviews_space_id_spaces_id_fk",
           "tableFrom": "reviews",
-          "columnsFrom": ["space_id"],
           "tableTo": "spaces",
+          "columnsFrom": ["space_id"],
           "columnsTo": ["id"],
-          "onUpdate": "no action",
-          "onDelete": "no action"
+          "onDelete": "no action",
+          "onUpdate": "no action"
         },
         "reviews_card_id_fkey": {
           "name": "reviews_card_id_fkey",
           "tableFrom": "reviews",
-          "columnsFrom": ["card_id", "user_id"],
           "tableTo": "cards",
-          "columnsTo": ["id", "user_id"],
-          "onUpdate": "no action",
-          "onDelete": "no action"
+          "columnsFrom": ["card_id", "user_id", "space_id"],
+          "columnsTo": ["id", "user_id", "space_id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
         "reviews_user_id_review_id_key": {
           "name": "reviews_user_id_review_id_key",
-          "columns": ["user_id", "review_id"],
-          "nullsNotDistinct": false
+          "nullsNotDistinct": false,
+          "columns": ["user_id", "review_id"]
         }
       },
       "policies": {},
@@ -1459,20 +1459,20 @@
             }
           ],
           "isUnique": false,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         }
       },
       "foreignKeys": {
         "action_log_space_id_spaces_id_fk": {
           "name": "action_log_space_id_spaces_id_fk",
           "tableFrom": "action_log",
-          "columnsFrom": ["space_id"],
           "tableTo": "spaces",
+          "columnsFrom": ["space_id"],
           "columnsTo": ["id"],
-          "onUpdate": "no action",
-          "onDelete": "no action"
+          "onDelete": "no action",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -1534,29 +1534,29 @@
             }
           ],
           "isUnique": false,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         }
       },
       "foreignKeys": {
         "memberships_space_id_spaces_id_fk": {
           "name": "memberships_space_id_spaces_id_fk",
           "tableFrom": "memberships",
-          "columnsFrom": ["space_id"],
           "tableTo": "spaces",
+          "columnsFrom": ["space_id"],
           "columnsTo": ["id"],
-          "onUpdate": "no action",
-          "onDelete": "no action"
+          "onDelete": "no action",
+          "onUpdate": "no action"
         },
         "memberships_user_id_user_id_fk": {
           "name": "memberships_user_id_user_id_fk",
           "tableFrom": "memberships",
-          "columnsFrom": ["user_id"],
           "tableTo": "user",
+          "columnsFrom": ["user_id"],
           "columnsTo": ["id"],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {
@@ -1598,11 +1598,11 @@
         "platform_roles_user_id_user_id_fk": {
           "name": "platform_roles_user_id_user_id_fk",
           "tableFrom": "platform_roles",
-          "columnsFrom": ["user_id"],
           "tableTo": "user",
+          "columnsFrom": ["user_id"],
           "columnsTo": ["id"],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -1673,8 +1673,8 @@
       "uniqueConstraints": {
         "spaces_slug_unique": {
           "name": "spaces_slug_unique",
-          "columns": ["slug"],
-          "nullsNotDistinct": false
+          "nullsNotDistinct": false,
+          "columns": ["slug"]
         }
       },
       "policies": {},
@@ -1743,11 +1743,11 @@
         "user_profiles_user_id_user_id_fk": {
           "name": "user_profiles_user_id_user_id_fk",
           "tableFrom": "user_profiles",
-          "columnsFrom": ["user_id"],
           "tableTo": "user",
+          "columnsFrom": ["user_id"],
           "columnsTo": ["id"],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -1827,19 +1827,24 @@
         "route_versions_route_id_fkey": {
           "name": "route_versions_route_id_fkey",
           "tableFrom": "route_versions",
-          "columnsFrom": ["route_id", "space_id"],
           "tableTo": "routes",
+          "columnsFrom": ["route_id", "space_id"],
           "columnsTo": ["id", "space_id"],
-          "onUpdate": "no action",
-          "onDelete": "restrict"
+          "onDelete": "restrict",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
         "route_versions_route_id_version_key": {
           "name": "route_versions_route_id_version_key",
-          "columns": ["route_id", "version"],
-          "nullsNotDistinct": false
+          "nullsNotDistinct": false,
+          "columns": ["route_id", "version"]
+        },
+        "route_versions_route_id_space_id_version_key": {
+          "name": "route_versions_route_id_space_id_version_key",
+          "nullsNotDistinct": false,
+          "columns": ["route_id", "space_id", "version"]
         }
       },
       "policies": {},
@@ -1862,10 +1867,10 @@
   },
   "enums": {},
   "schemas": {},
-  "views": {},
   "sequences": {},
   "roles": {},
   "policies": {},
+  "views": {},
   "_meta": {
     "columns": {},
     "schemas": {},

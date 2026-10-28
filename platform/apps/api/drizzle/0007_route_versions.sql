@@ -9,6 +9,7 @@ CREATE TABLE "route_versions" (
 	"published_by_user_id" uuid NOT NULL,
 	"published_at" timestamp with time zone DEFAULT now() NOT NULL,
 	CONSTRAINT "route_versions_route_id_version_key" UNIQUE("route_id","version"),
+	CONSTRAINT "route_versions_route_id_space_id_version_key" UNIQUE("route_id","space_id","version"),
 	CONSTRAINT "route_versions_version" CHECK ("route_versions"."version" > 0),
 	CONSTRAINT "route_versions_snapshot_format" CHECK ("route_versions"."snapshot_format" > 0),
 	CONSTRAINT "route_versions_content_hash" CHECK ("route_versions"."content_hash" ~ '^[0-9a-f]{64}$')
