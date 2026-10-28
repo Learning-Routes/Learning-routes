@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { LocalizedText } from "./text";
+import { LocalizedText } from "../localized-text";
 
 // Field names are the ones v1 content carries (test/golden/lesson_parser.json).
 // Every schema is strict: a field nobody declared fails. The same builder makes

@@ -1,5 +1,5 @@
 import { redirect } from "react-router";
-import { COPY } from "./storefront/landing";
+import { COPY } from "./storefront/home";
 
 // x-default: the source locale's page.
 export function loader() {

@@ -1,6 +1,6 @@
-import { asText, isBlank, presence, strip } from "../../coerce";
-import { parseJson, splitJsonObject, stripClosingFence } from "../aftermath";
+import { asText, isBlank, presence, strip } from "../../v1-import/loose-json";
 import { isKnownScene, validateScene } from "../motion-scenes";
+import { parseJson, splitJsonObject, stripClosingFence } from "../trailing-content";
 import type { Section } from "./types";
 
 const IMAGE = /!\[([^\]]*)\]\(([^)]+)\)/;

@@ -2,7 +2,7 @@ import { BRAND, isLocale } from "@learning-routes/core/locales";
 import { data } from "react-router";
 import { alternates } from "../../alternates";
 import { storefront } from "../../surface";
-import type { Route } from "./+types/landing";
+import type { Route } from "./+types/home";
 
 export const handle = storefront;
 
@@ -32,7 +32,7 @@ export function meta({ loaderData }: Route.MetaArgs) {
   ];
 }
 
-export default function Landing({ loaderData }: Route.ComponentProps) {
+export default function StorefrontHome({ loaderData }: Route.ComponentProps) {
   return (
     <main className="home">
       <h1>{BRAND}</h1>

@@ -1,12 +1,10 @@
 {
-  "name": "@learning-routes/ui-tokens",
+  "name": "@learning-routes/route-map",
   "version": "0.0.0",
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./tokens.ts",
-    "./tokens.css": "./tokens.css",
-    "./fonts/*": "./fonts/*"
+    "./*": "./src/*.ts"
   },
   "scripts": {
     "test": "vitest run",

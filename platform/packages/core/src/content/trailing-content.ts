@@ -1,13 +1,14 @@
-import { presence, strip } from "../coerce";
-import { lines, WS } from "./text";
+import { presence, strip } from "../v1-import/loose-json";
+import { lines, WS } from "./ruby-text";
 
 const CLOSING_FENCE = /^[ \t]*\n?```[ \t]*\n?/;
 
 // Where a block ends. A body handed to a section parser never holds a `##` line,
 // but it often holds sub-headings, fenced code, rules and trailing prose. From
-// the first of those to the end is the AFTERMATH: content the author put after
-// the block, kept on the section so nothing is swallowed and the section count
-// never changes.
+// the first of those to the end is the block's TRAILING CONTENT: what the author
+// put after the block, kept on the section so nothing is swallowed and the section
+// count never changes. v1, its golden fixtures and the stored field call it
+// `aftermath`; the field keeps that name.
 
 export const SUB_HEADING = new RegExp(`^#{3,6}${WS}`);
 export const FENCE = /^(?:```|~~~)/;

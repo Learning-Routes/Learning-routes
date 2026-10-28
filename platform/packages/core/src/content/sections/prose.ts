@@ -1,5 +1,5 @@
-import { presence, strip } from "../../coerce";
-import { lines, WS } from "../text";
+import { presence, strip } from "../../v1-import/loose-json";
+import { lines, WS } from "../ruby-text";
 import { conceptOrVisual } from "./media";
 import type { Section } from "./types";
 

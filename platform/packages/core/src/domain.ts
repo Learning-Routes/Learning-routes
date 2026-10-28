@@ -1,6 +1,6 @@
 import { z } from "zod";
-import { Block, BlockId } from "./blocks";
-import { Id, Locale, LocalizedText, Timestamp } from "./text";
+import { Block, BlockId } from "./blocks/schema";
+import { Id, Locale, LocalizedText, Timestamp } from "./localized-text";
 
 // Money is always integer minor units with its currency (cents for EUR).
 export const Money = z.strictObject({

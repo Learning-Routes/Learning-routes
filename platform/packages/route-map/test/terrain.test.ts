@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { contours as drawContours } from "../src/journey_terrain";
+import { contours as drawContours } from "../src/terrain";
 
 // WP-37b §4.3. The faint contour lines behind the map are a pure module: seeded
 // noise → marching squares → one path string per level. The test parses the strings.

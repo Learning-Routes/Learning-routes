@@ -51,9 +51,9 @@ importers:
       '@learning-routes/core':
         specifier: workspace:*
         version: link:../../packages/core
-      '@learning-routes/ui-tokens':
+      '@learning-routes/design-tokens':
         specifier: workspace:*
-        version: link:../../packages/ui-tokens
+        version: link:../../packages/design-tokens
       isbot:
         specifier: 5.2.2
         version: 5.2.2
@@ -120,7 +120,7 @@ importers:
         specifier: 5.0.4
         version: 5.0.4(@types/node@22.20.5)(vite@8.3.4(@types/node@22.20.5)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.1))
 
-  packages/journey:
+  packages/design-tokens:
     devDependencies:
       '@types/node':
         specifier: 22.20.5
@@ -132,7 +132,7 @@ importers:
         specifier: 5.0.4
         version: 5.0.4(@types/node@22.20.5)(vite@8.3.4(@types/node@22.20.5)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.1))
 
-  packages/ui-tokens:
+  packages/route-map:
     devDependencies:
       '@types/node':
         specifier: 22.20.5

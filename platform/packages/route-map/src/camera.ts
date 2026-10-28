@@ -1,8 +1,8 @@
-// WP-37 §3.2-3.4 — camera math for the journey map. Pure: no DOM.
+// WP-37 §3.2-3.4 — camera math for the route map. Pure: no DOM.
 //
 // A camera is { x, y, k }: a world point p appears at p * k + (x, y) in
 // viewport-local pixels. World boxes are { x, y, w, h } (from
-// journey_map_layout.js); screen rects are { left, top, width, height }.
+// layout.ts); screen rects are { left, top, width, height }.
 
 export interface Rect {
   left: number;
