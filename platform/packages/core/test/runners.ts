@@ -14,7 +14,7 @@ import type { Locale } from "../src/text";
 // an answer on purpose, the same runner produces the new output that is recorded.
 
 const DAY = 86_400_000;
-export const FROZEN = Date.parse("2026-10-26T12:00:00Z");
+const FROZEN = Date.parse("2026-10-26T12:00:00Z");
 
 // ── fsrs.json ──────────────────────────────────────────────────────
 
