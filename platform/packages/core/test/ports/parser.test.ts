@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { parseLesson } from "../../src/index";
+import { parseLesson } from "../../src/content/parser";
 import fixture from "../golden/lesson_parser.json" with { type: "json" };
 import { runParser } from "../runners";
 

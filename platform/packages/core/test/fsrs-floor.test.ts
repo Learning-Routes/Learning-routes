@@ -1,6 +1,6 @@
 import fc from "fast-check";
 import { describe, expect, it } from "vitest";
-import { type Card, FSRS_STABILITY_FLOOR, review } from "../src/index";
+import { type Card, FSRS_STABILITY_FLOOR, review } from "../src/learning/fsrs";
 
 const DAY = 86_400_000;
 const NOW = Date.parse("2026-10-26T12:00:00Z");

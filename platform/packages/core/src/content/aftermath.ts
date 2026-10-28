@@ -1,6 +1,8 @@
 import { presence, strip } from "../coerce";
 import { lines, WS } from "./text";
 
+const CLOSING_FENCE = /^[ \t]*\n?```[ \t]*\n?/;
+
 // Where a block ends. A body handed to a section parser never holds a `##` line,
 // but it often holds sub-headings, fenced code, rules and trailing prose. From
 // the first of those to the end is the AFTERMATH: content the author put after
@@ -53,32 +55,42 @@ export function* linesOutsideFences(all: string[]): Generator<[string, number]> 
  */
 export function splitJsonObject(body: string): [string | null, string] {
   const start = body.indexOf("{");
-  if (start === -1) return [null, body];
+  const end = start === -1 ? -1 : closingBrace(body, start);
+  if (end === -1) return [null, body];
+  return [body.slice(start, end + 1), body.slice(end + 1)];
+}
 
+// Where the object opened at `start` closes, skipping braces inside strings; -1 if never.
+function closingBrace(body: string, start: number): number {
   let depth = 0;
   let inString = false;
   let escaped = false;
   for (let i = start; i < body.length; i++) {
     const char = body[i];
     if (inString) {
-      if (escaped) escaped = false;
-      else if (char === "\\") escaped = true;
-      else if (char === '"') inString = false;
+      [inString, escaped] = stringStep(char, escaped);
       continue;
     }
     if (char === '"') inString = true;
     else if (char === "{") depth += 1;
     else if (char === "}") {
       depth -= 1;
-      if (depth === 0) return [body.slice(start, i + 1), body.slice(i + 1)];
+      if (depth === 0) return i;
     }
   }
-  return [null, body];
+  return -1;
+}
+
+// One character inside a JSON string: [still in the string, the next one is escaped].
+function stringStep(char: string | undefined, escaped: boolean): [boolean, boolean] {
+  if (escaped) return [true, false];
+  if (char === "\\") return [true, true];
+  return [char !== '"', false];
 }
 
 /** The fenced form's closing ``` follows the JSON and is not content. Replaces v1 `LessonSectionParser#strip_closing_fence`. */
 export function stripClosingFence(remainder: string): string {
-  return remainder.replace(/^[ \t]*\n?```[ \t]*\n?/, "");
+  return remainder.replace(CLOSING_FENCE, "");
 }
 
 /** JSON.parse that answers null instead of throwing: model output is untrusted. Replaces v1 `LessonSectionParser#safe_parse_json`. */

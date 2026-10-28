@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { Block, importV1Block, v1BlockId } from "../src/index";
+import { Block } from "../src/blocks";
+import { importV1Block, v1BlockId } from "../src/v1";
+
+const UUID_V7 = /^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
 
 const source = { routeId: "route-1", lessonId: "lesson-1", position: 0, locale: "es" } as const;
 
@@ -42,7 +45,7 @@ describe("v1 import", () => {
     expect(await v1BlockId({ ...source, position: 1 })).not.toBe(id);
     expect(await v1BlockId({ ...source, lessonId: "lesson-2" })).not.toBe(id);
     expect((await importV1Block({ type: "tip", title: null, body: "x" }, source)).id).toBe(id);
-    expect(id).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/);
+    expect(id).toMatch(UUID_V7);
   });
 
   it("refuses a section v1 could not have produced", async () => {

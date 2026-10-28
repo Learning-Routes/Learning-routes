@@ -1,19 +1,17 @@
 import { describe, expect, it } from "vitest";
+import { Block } from "../src/blocks";
 import {
-  AUTHORED_BLOCK_TYPES,
-  BLOCK_TYPES,
-  Block,
   Change,
   CreditLedgerEntry,
   Lesson,
-  LocalizedText,
   Membership,
-  newBlockId,
   Offer,
   Progress,
   Route,
-  SYSTEM_BLOCK_TYPES,
-} from "../src/index";
+} from "../src/domain";
+import { newBlockId } from "../src/ids";
+import { AUTHORED_BLOCK_TYPES, BLOCK_TYPES, SYSTEM_BLOCK_TYPES } from "../src/learning/registry";
+import { LocalizedText } from "../src/text";
 
 const now = "2026-10-26T12:00:00.000Z";
 const blockId = "0192f6d0-7c3e-7cc0-8a1b-2b3c4d5e6f70";

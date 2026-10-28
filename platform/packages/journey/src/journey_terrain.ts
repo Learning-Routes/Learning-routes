@@ -116,8 +116,8 @@ export function contours(
   };
   const fx = within(x0, x0 + rect.w);
   const fy = within(y0, y0 + rect.h);
-  return levels.map((level) => {
-    const parts: string[] = [];
+  // The contour segments of one grid cell (i, j) at one level (marching squares).
+  const cellSegments = (level: number, i: number, j: number, parts: string[]): void => {
     const cross = (
       xa: number,
       ya: number,
@@ -129,32 +129,34 @@ export function contours(
       const t = (level - va) / (vb - va);
       return [xa + (xb - xa) * t, ya + (yb - ya) * t];
     };
+    const a = grid[j * cols + i];
+    const b = grid[j * cols + i + 1];
+    const c = grid[(j + 1) * cols + i + 1];
+    const d = grid[(j + 1) * cols + i];
+    const code =
+      (a > level ? 8 : 0) | (b > level ? 4 : 0) | (c > level ? 2 : 0) | (d > level ? 1 : 0);
+    const edges = EDGES[code];
+    if (!edges) return;
+    const xl = gx(i);
+    const xr = gx(i + 1);
+    const yt = gy(j);
+    const yb = gy(j + 1);
+    const at: Record<Edge, () => [number, number]> = {
+      T: () => cross(xl, yt, a, xr, yt, b),
+      R: () => cross(xr, yt, b, xr, yb, c),
+      B: () => cross(xl, yb, d, xr, yb, c),
+      L: () => cross(xl, yt, a, xl, yb, d),
+    };
+    for (let k = 0; k < edges.length; k += 2) {
+      const [px, py] = at[edges[k]]();
+      const [qx, qy] = at[edges[k + 1]]();
+      parts.push(`M${fx(px)} ${fy(py)}L${fx(qx)} ${fy(qy)}`);
+    }
+  };
+  return levels.map((level) => {
+    const parts: string[] = [];
     for (let j = 0; j + 1 < rows; j++) {
-      for (let i = 0; i + 1 < cols; i++) {
-        const a = grid[j * cols + i];
-        const b = grid[j * cols + i + 1];
-        const c = grid[(j + 1) * cols + i + 1];
-        const d = grid[(j + 1) * cols + i];
-        const code =
-          (a > level ? 8 : 0) | (b > level ? 4 : 0) | (c > level ? 2 : 0) | (d > level ? 1 : 0);
-        const edges = EDGES[code];
-        if (!edges) continue;
-        const xl = gx(i);
-        const xr = gx(i + 1);
-        const yt = gy(j);
-        const yb = gy(j + 1);
-        const at: Record<Edge, () => [number, number]> = {
-          T: () => cross(xl, yt, a, xr, yt, b),
-          R: () => cross(xr, yt, b, xr, yb, c),
-          B: () => cross(xl, yb, d, xr, yb, c),
-          L: () => cross(xl, yt, a, xl, yb, d),
-        };
-        for (let k = 0; k < edges.length; k += 2) {
-          const [px, py] = at[edges[k]]();
-          const [qx, qy] = at[edges[k + 1]]();
-          parts.push(`M${fx(px)} ${fy(py)}L${fx(qx)} ${fy(qy)}`);
-        }
-      }
+      for (let i = 0; i + 1 < cols; i++) cellSegments(level, i, j, parts);
     }
     return parts.join("");
   });

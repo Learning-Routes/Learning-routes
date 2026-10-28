@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { estimateCost, PRICING } from "../../src/index";
+import { estimateCost, PRICING } from "../../src/credits/cost";
 import fixture from "../golden/cost_estimate.json" with { type: "json" };
 import { runCost } from "../runners";
 

@@ -9,6 +9,8 @@ import {
 import { buildPaths, type Paths, samplePath } from "../src/journey_map_paths";
 import { SHAPES, type ShapeStage, stage, VIEW } from "./journey_shapes";
 
+const WHITESPACE = /\s+/;
+
 // WP-37b §3. What the map DRAWS is a pure module too: layout → SVG path strings,
 // chevrons, panels.
 //
@@ -200,11 +202,34 @@ function unit(a: number[], b: number[]): number[] {
   return len === 0 ? [0, 0] : [(b[0] - a[0]) / len, (b[1] - a[1]) / len];
 }
 
+function cubicCommand(point: number[], [c1x, c1y, c2x, c2y, x, y]: number[]): Command {
+  const to = [x, y];
+  return {
+    op: "C",
+    from: point,
+    to,
+    in: unit(point, sameXY([c1x, c1y], point) ? [c2x, c2y] : [c1x, c1y]),
+    out: unit(sameXY([c2x, c2y], to) ? [c1x, c1y] : [c2x, c2y], to),
+  };
+}
+
+function arcCommand(point: number[], [r, _ry, _rot, _large, sweep, x, y]: number[]): Command {
+  const to = [x, y];
+  const dx = x - point[0];
+  const dy = y - point[1];
+  // Quarter circle: S − C = v, E − C = v rotated ±90° by the sweep.
+  const v = sweep === 1 ? [(dy - dx) / 2.0, -(dx + dy) / 2.0] : [-(dx + dy) / 2.0, (dx - dy) / 2.0];
+  const w = [v[0] + dx, v[1] + dy];
+  const tangent = (u: number[]): number[] =>
+    sweep === 1 ? [-u[1] / r, u[0] / r] : [u[1] / r, -u[0] / r];
+  return { op: "A", from: point, to, r, in: tangent(v), out: tangent(w) };
+}
+
 // The grammar the module promises (addendum §C): absolute M L C Q A, numbers
 // separated by spaces. Each command gets its start, end and the unit tangents
 // entering and leaving it.
 function parse(d: string): Command[] {
-  const tokens = d.split(/\s+/).filter((t) => t !== "");
+  const tokens = d.split(WHITESPACE).filter((t) => t !== "");
   const cmds: Command[] = [];
   let point: number[] = [];
   const take = (n: number): number[] =>
@@ -226,31 +251,13 @@ function parse(d: string): Command[] {
       const dir = unit(point, to);
       cmds.push({ op, from: point, to, in: dir, out: dir });
     } else if (op === "C") {
-      const [c1x, c1y, c2x, c2y, x, y] = take(6);
-      const to = [x, y];
-      cmds.push({
-        op,
-        from: point,
-        to,
-        in: unit(point, sameXY([c1x, c1y], point) ? [c2x, c2y] : [c1x, c1y]),
-        out: unit(sameXY([c2x, c2y], to) ? [c1x, c1y] : [c2x, c2y], to),
-      });
+      cmds.push(cubicCommand(point, take(6)));
     } else if (op === "Q") {
       const [cx, cy, x, y] = take(4);
       const to = [x, y];
       cmds.push({ op, from: point, to, in: unit(point, [cx, cy]), out: unit([cx, cy], to) });
     } else if (op === "A") {
-      const [r, _ry, _rot, _large, sweep, x, y] = take(7);
-      const to = [x, y];
-      const dx = x - point[0];
-      const dy = y - point[1];
-      // Quarter circle: S − C = v, E − C = v rotated ±90° by the sweep.
-      const v =
-        sweep === 1 ? [(dy - dx) / 2.0, -(dx + dy) / 2.0] : [-(dx + dy) / 2.0, (dx - dy) / 2.0];
-      const w = [v[0] + dx, v[1] + dy];
-      const tangent = (u: number[]): number[] =>
-        sweep === 1 ? [-u[1] / r, u[0] / r] : [u[1] / r, -u[0] / r];
-      cmds.push({ op, from: point, to, r, in: tangent(v), out: tangent(w) });
+      cmds.push(arcCommand(point, take(7)));
     } else {
       expect.fail(`unexpected path command ${JSON.stringify(op)} in ${d}`);
     }

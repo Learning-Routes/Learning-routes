@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { type Locale, parseLesson } from "../src/index";
+import { parseLesson } from "../src/content/parser";
+import type { Locale } from "../src/text";
 
 // ADR 0003, fix 6: the titles v1 gave untitled freeform sections, per locale.
 // Answer 3 to platform#2 adds the default title of an untitled :::concept fence.

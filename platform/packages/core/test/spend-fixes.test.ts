@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { decideSpend, V1_LIMITS } from "../src/index";
+import { decideSpend, V1_LIMITS } from "../src/credits/spend";
 
 const NOW = Date.parse("2026-10-26T12:00:00Z");
 const limits = { ...V1_LIMITS, ratePerMinute: 20 };
