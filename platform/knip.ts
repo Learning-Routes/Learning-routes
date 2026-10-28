@@ -12,6 +12,10 @@ export default {
       // check-worker-size.mjs runs each app's own wrangler, from that app's folder.
       ignoreBinaries: ["wrangler"],
     },
+    "apps/api": {
+      // Read by Better Auth's CLI through pnpm db:auth-schema.
+      entry: ["src/auth/schema.config.ts"],
+    },
     "apps/web": {
       // Loaded by the HTML, not imported.
       entry: ["public/*.js"],
