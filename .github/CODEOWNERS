@@ -1,0 +1,21 @@
+# Paths that need the owner's review (CONTRIBUTING.md, "Reviews").
+
+# The platform's rules.
+/platform/packages/core/ @Garcia-G-G
+
+# The database schema and migrations, and authentication (Platform STEP 2 creates them).
+/platform/apps/api/src/db/ @Garcia-G-G
+/platform/apps/api/drizzle/ @Garcia-G-G
+/platform/apps/api/src/auth/ @Garcia-G-G
+
+# CI, workflows and repository settings files.
+/.github/ @Garcia-G-G
+
+# The Rails app's credentials and deploy configuration.
+/config/credentials/ @Garcia-G-G
+/config/deploy*.yml @Garcia-G-G
+
+# The documents that hold the rules.
+/platform/docs/FOUNDATIONS.md @Garcia-G-G
+/platform/docs/adr/ @Garcia-G-G
+/platform/docs/WORKING_AGREEMENT.md @Garcia-G-G
