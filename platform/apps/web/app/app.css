@@ -1,0 +1,48 @@
+@import "@learning-routes/ui-tokens/tokens.css";
+
+:root {
+  color-scheme: light;
+}
+
+html[data-theme="dark"] {
+  color-scheme: dark;
+}
+
+body {
+  margin: 0;
+  background: var(--color-bg);
+  color: var(--color-txt);
+  font-family: var(--font-sans);
+}
+
+.home {
+  min-height: 100vh;
+  display: grid;
+  place-content: center;
+  gap: 0.75rem;
+  padding: 1rem;
+  text-align: center;
+}
+
+.home h1 {
+  margin: 0;
+  font-size: clamp(2.5rem, 8vw, 4.5rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.home p {
+  margin: 0;
+  color: var(--color-sub);
+  font-size: 1.25rem;
+}
+
+.home p::before {
+  content: "";
+  display: block;
+  width: 3rem;
+  height: 3px;
+  margin: 0 auto 1rem;
+  border-radius: var(--radius-btn);
+  background: var(--color-accent);
+}

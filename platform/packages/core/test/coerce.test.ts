@@ -1,0 +1,25 @@
+import { describe, expect, it } from "vitest";
+import { asArray, asText, round2 } from "../src/coerce";
+
+describe("v1 coercions", () => {
+  it("rounds like Ruby's Float#round(2)", () => {
+    expect(round2(33.333333)).toBe(33.33);
+    expect(round2(66.666666)).toBe(66.67);
+    expect(round2(3.125)).toBe(3.13);
+    expect(round2(-3.125)).toBe(-3.13);
+    // 1.005 is 1.00499999... in binary; Ruby gives 1.0.
+    expect(round2(1.005)).toBe(1);
+  });
+
+  it("reads arrays like Array()", () => {
+    expect(asArray(null)).toEqual([]);
+    expect(asArray("a")).toEqual(["a"]);
+    expect(asArray({ a: 1 })).toEqual([["a", 1]]);
+  });
+
+  it("writes text like to_s", () => {
+    expect(asText(null)).toBe("");
+    expect(asText(3)).toBe("3");
+    expect(asText(1.5)).toBe("1.5");
+  });
+});

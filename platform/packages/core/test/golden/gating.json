@@ -1,0 +1,151 @@
+{
+  "unit": "gating",
+  "source": "engines/learning_routes_engine/app/services/learning_routes_engine/block_grader.rb:30",
+  "captured_at": "2026-10-26T12:00:00Z",
+  "cases": [
+    {
+      "input": "",
+      "output": {
+        "engagement_only": true,
+        "gating": false,
+        "gradable": false
+      }
+    },
+    {
+      "input": "audio",
+      "output": {
+        "engagement_only": true,
+        "gating": false,
+        "gradable": false
+      }
+    },
+    {
+      "input": "audio_explainer",
+      "output": {
+        "engagement_only": true,
+        "gating": false,
+        "gradable": false
+      }
+    },
+    {
+      "input": "check",
+      "output": {
+        "engagement_only": false,
+        "gating": true,
+        "gradable": true
+      }
+    },
+    {
+      "input": "code_playground",
+      "output": {
+        "engagement_only": true,
+        "gating": false,
+        "gradable": false
+      }
+    },
+    {
+      "input": "concept",
+      "output": {
+        "engagement_only": true,
+        "gating": false,
+        "gradable": false
+      }
+    },
+    {
+      "input": "drag_drop",
+      "output": {
+        "engagement_only": false,
+        "gating": true,
+        "gradable": true
+      }
+    },
+    {
+      "input": "example",
+      "output": {
+        "engagement_only": true,
+        "gating": false,
+        "gradable": false
+      }
+    },
+    {
+      "input": "fill_blank",
+      "output": {
+        "engagement_only": false,
+        "gating": true,
+        "gradable": true
+      }
+    },
+    {
+      "input": "flashcards",
+      "output": {
+        "engagement_only": true,
+        "gating": true,
+        "gradable": false
+      }
+    },
+    {
+      "input": "motion",
+      "output": {
+        "engagement_only": true,
+        "gating": false,
+        "gradable": false
+      }
+    },
+    {
+      "input": "scenario",
+      "output": {
+        "engagement_only": true,
+        "gating": true,
+        "gradable": false
+      }
+    },
+    {
+      "input": "simulation",
+      "output": {
+        "engagement_only": true,
+        "gating": false,
+        "gradable": false
+      }
+    },
+    {
+      "input": "summary",
+      "output": {
+        "engagement_only": true,
+        "gating": false,
+        "gradable": false
+      }
+    },
+    {
+      "input": "tap_pairs",
+      "output": {
+        "engagement_only": true,
+        "gating": false,
+        "gradable": false
+      }
+    },
+    {
+      "input": "tip",
+      "output": {
+        "engagement_only": true,
+        "gating": false,
+        "gradable": false
+      }
+    },
+    {
+      "input": "video",
+      "output": {
+        "engagement_only": true,
+        "gating": false,
+        "gradable": false
+      }
+    },
+    {
+      "input": "visual",
+      "output": {
+        "engagement_only": true,
+        "gating": false,
+        "gradable": false
+      }
+    }
+  ]
+}
