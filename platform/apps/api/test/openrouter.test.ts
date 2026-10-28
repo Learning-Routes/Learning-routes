@@ -1,7 +1,8 @@
 import { type GateContext, gate } from "@learning-routes/core/ai/gate";
 import { V1_LIMITS } from "@learning-routes/core/credits/spend";
 import { describe, expect, it } from "vitest";
-import { sendToOpenRouter } from "../src/ai/openrouter";
+import { sendToOpenRouter, settle } from "../src/ai/openrouter";
+import response from "./fixtures/openrouter-chat-completion.json" with { type: "json" };
 
 const ENDPOINT = "openrouter.ai/api/v1/chat";
 const context: GateContext = {
@@ -51,6 +52,25 @@ describe("the OpenRouter adapter", () => {
     expect(sent[0]?.url).toBe(`https://${ENDPOINT}/completions`);
     expect(new Headers(sent[0]?.init.headers).get("authorization")).toBe("Bearer test-key");
     expect(JSON.parse(String(sent[0]?.init.body))).toEqual(decision.request);
+  });
+
+  it("settles a call from the cost OpenRouter reports, in microcents", () => {
+    // usage.cost is in credits, one US dollar each: $0.0000145 is 14.5 microcents.
+    expect(settle(response)).toEqual({
+      cost: { kind: "known", microcents: 15 },
+      promptTokens: 194,
+      cachedTokens: 64,
+      completionTokens: 12,
+    });
+  });
+
+  it("never guesses a cost the response does not report", () => {
+    const noCost = { ...response, usage: { ...response.usage, cost: null } };
+    expect(settle(noCost).cost).toEqual({
+      kind: "unknown",
+      reason: "provider_reported_usage_required",
+    });
+    expect(settle({}).cost.kind).toBe("unknown");
   });
 
   it("is the only code that names the OpenRouter endpoint", () => {
