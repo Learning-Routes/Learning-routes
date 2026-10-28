@@ -30,6 +30,17 @@ Every dependency is pinned to an exact version (`.npmrc` has `save-exact=true`).
 
 AI tokens are most of what the platform spends, at every size. Every model call goes through `packages/core/src/ai/gate.ts`, with a model from `ai/models.ts`, a `max_tokens` and a prompt-cache setting, and through the spend gate in `credits/`. Only the one adapter in `apps/api` sends it. A student-facing feature uses the cheapest model in the table that passes the feature's own test cases; a more expensive model needs a failing case that shows why.
 
+## Migrations
+
+The database changes only through migrations in `apps/api/drizzle/`, applied with `pnpm db:migrate` as the migrator, over a direct connection, never through Hyperdrive.
+
+- **Forward-only.** An applied migration is never edited, rerun or undone. A mistake is fixed by the next migration.
+- **Expand, then contract.** A change that would break the running Worker is split: first add (a column, a table, a function), deploy the Worker that uses it, then remove the old shape in a later migration.
+- **Migrations run before the Worker deploys,** and each one works with the previous Worker.
+- **drizzle-kit generates** tables, columns and indexes. Grants, revokes, triggers and functions go in `drizzle-kit generate --custom` files, so the next generate never loses or duplicates them.
+- **Each file runs in one transaction,** with lock and statement timeouts, unless its first line is `-- no-transaction` (for `CREATE INDEX CONCURRENTLY`).
+- **squawk lints every migration** (`pnpm --filter @learning-routes/api db:lint`, part of `pnpm check`).
+
 ## Clean code
 
 Each rule has a tool that fails the build when it breaks. `pnpm check` runs them all, and CI runs the same command.
