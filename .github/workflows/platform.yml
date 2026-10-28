@@ -91,6 +91,9 @@ jobs:
         run: pnpm bench
         continue-on-error: true
         if: ${{ !cancelled() }}
+      - name: No personal data in test fixtures
+        run: pnpm fixtures
+        if: ${{ !cancelled() }}
       - name: Versions are exact and at least 14 days old
         run: node scripts/check-versions.mjs
         if: ${{ !cancelled() }}
