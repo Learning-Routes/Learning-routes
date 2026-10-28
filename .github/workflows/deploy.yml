@@ -17,6 +17,10 @@ concurrency:
 jobs:
   deploy:
     name: Deploy with Kamal
+    # Only from main, and only through the production environment: its secrets
+    # are released after the owner approves (platform/docs/runbooks/github.md).
+    if: github.ref == 'refs/heads/main'
+    environment: production
     # Pinned: setup-ruby has no Ruby 3.3.8 build for a newer ubuntu-latest.
     runs-on: ubuntu-24.04
 
