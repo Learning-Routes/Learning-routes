@@ -10,7 +10,7 @@
       "**",
       "!**/worker-configuration.d.ts",
       "!**/test/golden/*.json",
-      "!packages/ui-tokens/tokens.css",
+      "!packages/design-tokens/tokens.css",
       "!pnpm-lock.yaml"
     ]
   },
