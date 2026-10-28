@@ -86,4 +86,13 @@ describe("mcpTools", () => {
       required: ["text"],
     });
   });
+
+  it("names each tool by the key runAction answers to", async () => {
+    const aliased = { "test.alias": echo };
+    const [tool] = mcpTools(aliased);
+    expect(tool?.name).toBe("test.alias");
+    expect(await runAction(aliased, tool?.name ?? "", { text: "hola" }, ctx("mcp"))).toMatchObject({
+      ok: true,
+    });
+  });
 });
