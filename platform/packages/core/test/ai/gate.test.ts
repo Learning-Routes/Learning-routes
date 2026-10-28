@@ -54,7 +54,9 @@ describe("the AI gate", () => {
   it("describes the request: the model, max_tokens and the prompt cache", () => {
     const decision = gate({ ...spec, model: "anthropic/claude-haiku-5.5", promptCache: true }, ctx);
     expect(decision.verdict).toBe("allowed");
-    if (decision.verdict !== "allowed") return;
+    if (decision.verdict !== "allowed") {
+      return;
+    }
     expect(decision.request).toEqual({
       model: "anthropic/claude-haiku-5.5",
       max_tokens: 300,
@@ -73,7 +75,9 @@ describe("the AI gate", () => {
   it("never sends a call to a provider that keeps or trains on the data, whatever the model", () => {
     for (const model of Object.keys(MODELS) as ModelId[]) {
       const decision = gate({ ...spec, model }, ctx);
-      if (decision.verdict !== "allowed") throw new Error(`${model}: ${decision.reason}`);
+      if (decision.verdict !== "allowed") {
+        throw new Error(`${model}: ${decision.reason}`);
+      }
       expect(decision.request.provider).toEqual({ zdr: true, data_collection: "deny" });
     }
   });
@@ -108,6 +112,21 @@ describe("the AI gate", () => {
     // Refused first: no spend is reserved for a call that cannot happen.
     const spent = { ...ctx, spend: { globalToday: V1_LIMITS.dailyMicrocents, userToday: 0 } };
     expect(gate(over, spent)).toEqual({ verdict: "refused", reason: "prompt_too_long" });
+  });
+
+  it("prices a cached system prompt at the input price when the model has no cache-write price", () => {
+    const cached = gate({ ...spec, promptCache: true }, ctx);
+    const plain = gate(spec, ctx);
+    expect(MODELS["openai/gpt-5-nano"].cacheWrite).toBeNull();
+    expect(cached).toMatchObject({ verdict: "allowed" });
+    expect(cached.verdict === "allowed" && cached.estimateMicrocents).toBe(
+      plain.verdict === "allowed" && plain.estimateMicrocents,
+    );
+  });
+
+  it("throws on a call too large to price safely, rather than guess", () => {
+    const huge = { ...spec, model: "anthropic/claude-sonnet-5.5", maxTokens: 2 ** 40 };
+    expect(() => gate(huge, ctx)).toThrow(RangeError);
   });
 
   it("counts tokens at 4 characters each, rounded up", () => {

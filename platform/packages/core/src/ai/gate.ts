@@ -80,8 +80,9 @@ function worstCase(spec: CallSpec, model: ModelId): CostEstimate {
   const systemPrice = spec.promptCache ? (prices.cacheWrite ?? prices.input) : prices.input;
   const perMillion =
     tokens.system * systemPrice + tokens.messages * prices.input + spec.maxTokens * prices.output;
-  if (!Number.isSafeInteger(perMillion))
+  if (!Number.isSafeInteger(perMillion)) {
     throw new RangeError("a model call this large has no safe price");
+  }
   return { kind: "known", microcents: Math.ceil(perMillion / PER_MILLION) };
 }
 
@@ -108,21 +109,27 @@ export function gate(spec: CallSpec, context: GateContext): GateDecision {
   if (sessionId.length === 0 || sessionId.length > MAX_SESSION_ID) {
     return { verdict: "refused", reason: "invalid_session_id" };
   }
-  if (!isAllowedModel(model)) return { verdict: "refused", reason: "unknown_model" };
+  if (!isAllowedModel(model)) {
+    return { verdict: "refused", reason: "unknown_model" };
+  }
   // Before the spend gate: no spend is reserved for a call that cannot happen.
   const tokens = promptTokens(spec);
   if (tokens.system + tokens.messages > MODELS[model].maxPromptTokens) {
     return { verdict: "refused", reason: "prompt_too_long" };
   }
   const estimate = worstCase(spec, model);
+  if (estimate.kind === "unknown") {
+    return { verdict: "refused", reason: "unknown_cost" };
+  }
   const decision = decideSpend({ ...context, estimate });
   if (decision.verdict === "refused") {
+    // Safe: decideSpend gives a reason with every refusal, and every SpendReason is a GateRefusal.
     return { verdict: "refused", reason: decision.reason as GateRefusal };
   }
   return {
     verdict: "allowed",
     request: requestOf(spec, model),
-    estimateMicrocents: estimate.kind === "known" ? estimate.microcents : 0,
+    estimateMicrocents: estimate.microcents,
     consumesRateSlot: decision.consumesRateSlot,
   };
 }

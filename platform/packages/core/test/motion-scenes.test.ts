@@ -19,6 +19,29 @@ const transform = {
 };
 
 describe("motion scenes (v1 app/motion/src/scenes/*.schema.json)", () => {
+  it("names the path and the reason for each kind of problem", () => {
+    expect(validateScene("agreement", { ...agreement, labels: "SUJETO" })).toEqual([
+      "/labels: not an object",
+    ]);
+    expect(validateScene("agreement", { ...agreement, tokens: "Ele tenho" })).toEqual([
+      "/tokens: not an array",
+      "/subject: out of range for tokens",
+      "/verb: out of range for tokens",
+    ]);
+    expect(validateScene("agreement", { ...agreement, tokens: ["Ele", 2] })).toEqual([
+      "/tokens/1: not a string",
+    ]);
+    expect(validateScene("agreement", { ...agreement, wrong: "" })).toEqual(["/wrong: too short"]);
+    expect(validateScene("agreement", { ...agreement, subject: -1 })).toEqual([
+      "/subject: below minimum",
+    ]);
+    const labels = { ...agreement.labels, extra: "E" };
+    expect(validateScene("agreement", { ...agreement, labels })).toEqual([
+      "/labels: unexpected extra",
+    ]);
+    expect(validateScene("transform", { steps: {} })).toEqual(["/steps: not an array"]);
+  });
+
   it("accepts v1's examples", () => {
     expect(validateScene("agreement", agreement)).toEqual([]);
     expect(validateScene("transform", transform)).toEqual([]);

@@ -62,3 +62,12 @@ describe("unknown cost (ADR 0003, fix 4)", () => {
     });
   });
 });
+
+describe("reported audio seconds", () => {
+  it("reads a decimal with an exponent as the same exact number: 15e-1 is 1.5", () => {
+    const plain = estimateCost("scribe_v2", { audioSeconds: "1.5" });
+    expect(estimateCost("scribe_v2", { audioSeconds: "15e-1" })).toEqual(plain);
+    // 1.5 seconds at 22 cents an hour, in microcents, rounded half away from zero.
+    expect(plain).toEqual({ kind: "known", microcents: 92 });
+  });
+});

@@ -5,4 +5,5 @@ interface ImportMeta {
     pattern: string,
     options: { query: "?raw"; import: "default"; eager: true },
   ): Record<string, string>;
+  glob(pattern: string | string[], options: { eager: true }): Record<string, unknown>;
 }
