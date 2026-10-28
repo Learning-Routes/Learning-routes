@@ -64,6 +64,20 @@
       "when": 1793231216107,
       "tag": "0008_route_versions_append_only",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1793231361027,
+      "tag": "0009_learning_and_log",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1793231362128,
+      "tag": "0010_learning_and_log_rules",
+      "breakpoints": true
     }
   ]
 }

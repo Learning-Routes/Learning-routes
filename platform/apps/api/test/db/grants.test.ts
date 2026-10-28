@@ -24,6 +24,13 @@ const EXPECTED: Record<string, string[]> = {
   routes: ["INSERT", "SELECT", "UPDATE"],
   // Append-only, enforced by triggers too.
   route_versions: ["INSERT", "SELECT"],
+  // Learning: a student's own rows.
+  cards: ["INSERT", "SELECT", "UPDATE"],
+  enrollments: ["INSERT", "SELECT", "UPDATE"],
+  progress: ["INSERT", "SELECT", "UPDATE"],
+  reviews: ["INSERT", "SELECT"],
+  // The record of who did what: append-only.
+  action_log: ["INSERT", "SELECT"],
 };
 
 describe("lr_app's table privileges", () => {
