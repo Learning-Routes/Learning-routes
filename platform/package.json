@@ -19,7 +19,10 @@
     "worker-size": "scripts/check-worker-size.mjs",
     "bench": "pnpm --filter @learning-routes/core bench",
     "fixtures": "node scripts/check-fixtures.mjs",
-    "names": "node scripts/check-names.mjs"
+    "names": "node scripts/check-names.mjs",
+    "shortcuts": "node scripts/check-shortcuts.mjs",
+    "sizes": "node scripts/check-sizes.mjs",
+    "check": "node scripts/check.mjs"
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.15",
