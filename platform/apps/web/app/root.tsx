@@ -5,37 +5,54 @@ import {
   Outlet,
   Scripts,
   ScrollRestoration,
+  useMatches,
+  useParams,
+  useRouteLoaderData,
 } from "react-router";
 
 import type { Route } from "./+types/root";
 import "./app.css";
+import { isLocale } from "@learning-routes/core/locales";
+import { useEffect } from "react";
+import { pageContext } from "./context";
+import { isStorefront } from "./surface";
 
-// The tokens' dark block keys on html[data-theme="dark"]; set it from the system
-// preference before the first paint.
-const themeScript =
-  'document.documentElement.dataset.theme = matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";';
+export function loader({ context }: Route.LoaderArgs) {
+  return { nonce: context.get(pageContext).nonce };
+}
 
 export function Layout({ children }: { children: React.ReactNode }) {
+  const nonce = useRouteLoaderData<typeof loader>("root")?.nonce;
+  const storefront = isStorefront(useMatches());
+  const { lang } = useParams();
   return (
-    <html lang="es">
+    <html lang={lang && isLocale(lang) ? lang : "es"}>
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        {/* biome-ignore lint/security/noDangerouslySetInnerHtml: a constant, no user input */}
-        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+        <script src="/theme.js" />
         <Meta />
         <Links />
       </head>
       <body>
         {children}
-        <ScrollRestoration />
-        <Scripts />
+        {/* The storefront is server HTML: no React runtime, no hydration. */}
+        {storefront ? null : (
+          <>
+            <ScrollRestoration nonce={nonce} />
+            <Scripts nonce={nonce} />
+          </>
+        )}
       </body>
     </html>
   );
 }
 
 export default function App() {
+  // Runs only in a hydrated page; the browser tests read it.
+  useEffect(() => {
+    document.documentElement.dataset.hydrated = "true";
+  }, []);
   return <Outlet />;
 }
 

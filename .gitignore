@@ -90,3 +90,6 @@ db/*.sqlite3
 # Ignore key files for decrypting credentials and more.
 /config/credentials/*.key
 
+
+# Turborepo writes its cache next to the git root when platform/ is run from here.
+/.turbo

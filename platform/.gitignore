@@ -13,3 +13,7 @@ coverage/
 worker-configuration.d.ts
 *.tsbuildinfo
 .vitest/
+
+# Playwright
+test-results/
+playwright-report/
