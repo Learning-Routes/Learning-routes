@@ -33,7 +33,8 @@ jobs:
   scan_ruby:
     needs: changes
     if: ${{ !cancelled() && needs.changes.outputs.rails != 'false' }}
-    runs-on: ubuntu-latest
+    # Pinned: setup-ruby has no Ruby 3.3.8 build for a newer ubuntu-latest.
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout code
         uses: actions/checkout@v7
@@ -73,7 +74,8 @@ jobs:
   lint:
     needs: changes
     if: ${{ !cancelled() && needs.changes.outputs.rails != 'false' }}
-    runs-on: ubuntu-latest
+    # Pinned: setup-ruby has no Ruby 3.3.8 build for a newer ubuntu-latest.
+    runs-on: ubuntu-24.04
     env:
       RUBOCOP_CACHE_ROOT: tmp/rubocop
     steps:
