@@ -2,7 +2,7 @@
 
 **Status:** accepted, 28 October 2026.
 
-The reviewer built twelve frontends against one contract, ran the same browser suite on each, and reopened every layer with current sources. The full study is the reviewer's architecture document (link pending, see the STEP 46 pull request). This records what the platform takes from it.
+The reviewer built twelve frontends against one contract, ran the same browser suite on each, and reopened every layer with current sources. The full study is the reviewer's [architecture study](../architecture/2026-10-architecture-study.md). This records what the platform takes from it.
 
 ## Each part has one job
 
