@@ -39,6 +39,15 @@
         "noReExportAll": "error",
         "noDelete": "error",
         "useTopLevelRegex": "error"
+      },
+      "style": {
+        "useFilenamingConvention": {
+          "level": "error",
+          "options": {
+            "filenameCases": ["kebab-case"],
+            "requireAscii": true
+          }
+        }
       }
     }
   },
