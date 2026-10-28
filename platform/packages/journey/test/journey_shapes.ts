@@ -3,7 +3,7 @@
 // One list, so a shape added for one is checked by both.
 import type { Stage, Topic } from "../src/journey_map_layout";
 
-export interface ShapeTopic extends Topic {
+interface ShapeTopic extends Topic {
   id: string;
   name: string;
   status: string;
@@ -24,7 +24,7 @@ export interface ShapeStage extends Stage {
   topics: ShapeTopic[];
 }
 
-export function topic(
+function topic(
   id: string,
   {
     reinforcement = false,

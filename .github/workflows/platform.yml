@@ -73,6 +73,9 @@ jobs:
       # Browser tests against the built Worker, in the runner's installed Chrome.
       - run: pnpm --filter @learning-routes/web e2e
         if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+      - name: No unused files, exports or dependencies (knip)
+        run: pnpm knip
+        if: ${{ !cancelled() }}
       - name: Versions are exact and at least 14 days old
         run: node scripts/check-versions.mjs
         if: ${{ !cancelled() }}
