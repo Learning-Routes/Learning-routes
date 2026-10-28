@@ -2,7 +2,8 @@
 # The public-repository rules for workflows (platform/docs/WORKING_AGREEMENT.md):
 # every action is pinned by full commit SHA with its version in a comment, and
 # every workflow declares permissions at the top, contents: read at most, with a
-# comment above any job that widens them.
+# comment above any job that widens them. No workflow uses pull_request_target,
+# which runs a fork's pull request with this repository's token and secrets.
 # Prints each breach and exits 1 if there is any.
 
 require "yaml"
@@ -24,6 +25,10 @@ Dir[File.join(__dir__, "..", "workflows", "*.{yml,yaml}")].sort.each do |path|
 
   lines = File.readlines(path, chomp: true)
   workflow = YAML.safe_load_file(path, aliases: true)
+  # YAML reads the key `on` as true.
+  triggers = workflow[true] || workflow["on"]
+  uses_target = Array(triggers.is_a?(Hash) ? triggers.keys : triggers).map(&:to_s).include?("pull_request_target")
+  problems << "#{name}: uses pull_request_target" if uses_target
   if !workflow.key?("permissions")
     problems << "#{name}: declares no permissions at the top"
   elsif !READ_ONLY.include?(workflow["permissions"])
