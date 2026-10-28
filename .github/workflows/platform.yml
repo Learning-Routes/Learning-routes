@@ -87,10 +87,12 @@ jobs:
         if: ${{ !cancelled() }}
       # Not gating yet (STEP 46 §2.8): prints each hot function against its
       # baseline; a regression over 30% goes in the pull request description.
-      - name: Benchmarks against the baseline
-        run: pnpm bench
-        continue-on-error: true
-        if: ${{ !cancelled() }}
+      - name: Record the benchmark baseline on the runner
+        run: VITE_WRITE_BENCH=1 pnpm bench
+      - uses: actions/upload-artifact@v4
+        with:
+          name: bench-baseline
+          path: platform/packages/core/bench/baseline/
       - name: Versions are exact and at least 14 days old
         run: node scripts/check-versions.mjs
         if: ${{ !cancelled() }}
