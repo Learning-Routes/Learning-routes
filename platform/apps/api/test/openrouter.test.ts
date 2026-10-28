@@ -32,6 +32,7 @@ describe("the OpenRouter adapter", () => {
         model: "openai/gpt-5-nano",
         maxTokens: 100,
         promptCache: false,
+        sessionId: "review-session-0193",
         system: "Be brief.",
         messages: [{ role: "user", content: "Hola" }],
       },

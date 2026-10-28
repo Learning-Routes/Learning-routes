@@ -14,6 +14,7 @@ const spec: CallSpec = {
   model: "openai/gpt-5-nano",
   maxTokens: 300,
   promptCache: false,
+  sessionId: "review-session-0193",
   system: "x".repeat(400),
   messages: [{ role: "user", content: "y".repeat(400) }],
 };
@@ -58,6 +59,7 @@ describe("the AI gate", () => {
       model: "anthropic/claude-haiku-5.5",
       max_tokens: 300,
       provider: { zdr: true, data_collection: "deny" },
+      session_id: "review-session-0193",
       messages: [
         {
           role: "system",
@@ -73,6 +75,19 @@ describe("the AI gate", () => {
       const decision = gate({ ...spec, model }, ctx);
       if (decision.verdict !== "allowed") throw new Error(`${model}: ${decision.reason}`);
       expect(decision.request.provider).toEqual({ zdr: true, data_collection: "deny" });
+    }
+  });
+
+  it("keeps a session on one provider: session_id, at most 256 characters", () => {
+    expect(gate({ ...spec, sessionId: "s".repeat(256) }, ctx)).toMatchObject({
+      verdict: "allowed",
+      request: { session_id: "s".repeat(256) },
+    });
+    for (const sessionId of ["s".repeat(257), ""]) {
+      expect(gate({ ...spec, sessionId }, ctx)).toEqual({
+        verdict: "refused",
+        reason: "invalid_session_id",
+      });
     }
   });
 

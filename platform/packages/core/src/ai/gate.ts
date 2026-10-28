@@ -8,12 +8,20 @@ import { isAllowedModel, MODELS, type ModelId } from "./models";
 // sends the request it returns, through the one platform adapter.
 
 const CHARS_PER_TOKEN = 4;
+// OpenRouter's limit for session_id.
+const MAX_SESSION_ID = 256;
 const PER_MILLION = 1_000_000;
 
 export interface CallSpec {
   model: string;
   maxTokens: number;
   promptCache: boolean;
+  /**
+   * The agent session or the review session this call belongs to: OpenRouter keeps
+   * the session's calls on the provider that holds its prompt cache. At most 256
+   * characters. Never a user id, an email or other personal data.
+   */
+  sessionId: string;
   system: string;
   messages: { role: "user" | "assistant"; content: string }[];
 }
@@ -33,6 +41,7 @@ export interface ModelRequest {
   model: ModelId;
   max_tokens: number;
   provider: typeof NO_RETENTION;
+  session_id: string;
   messages: ({ role: "system"; content: SystemContent } | CallSpec["messages"][number])[];
 }
 
@@ -43,7 +52,7 @@ export type GateDecision =
       estimateMicrocents: number;
       consumesRateSlot: boolean;
     }
-  | { verdict: "refused"; reason: "unknown_model" | SpendReason };
+  | { verdict: "refused"; reason: "unknown_model" | "invalid_session_id" | SpendReason };
 
 /** New: a token count from text, at 4 characters a token, rounded up. */
 export function estimateInputTokens(text: string): number {
@@ -75,6 +84,7 @@ function requestOf(spec: CallSpec, model: ModelId): ModelRequest {
     model,
     max_tokens: spec.maxTokens,
     provider: NO_RETENTION,
+    session_id: spec.sessionId,
     messages: [{ role: "system", content: system }, ...spec.messages],
   };
 }
@@ -85,7 +95,10 @@ function requestOf(spec: CallSpec, model: ModelId): ModelRequest {
  * gate refuses.
  */
 export function gate(spec: CallSpec, context: GateContext): GateDecision {
-  const { model } = spec;
+  const { model, sessionId } = spec;
+  if (sessionId.length === 0 || sessionId.length > MAX_SESSION_ID) {
+    return { verdict: "refused", reason: "invalid_session_id" };
+  }
   if (!isAllowedModel(model)) return { verdict: "refused", reason: "unknown_model" };
   const estimate = worstCase(spec, model);
   const decision = decideSpend({ ...context, estimate });
