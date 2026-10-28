@@ -9,7 +9,7 @@ Learning Routes is a platform where creators build learning routes by talking to
 | `apps/web`           | Every page, on React Router 8 running on Cloudflare Workers      |
 | `apps/api`           | The API on Hono and Workers (`GET /health` today)                |
 | `packages/core`      | The domain: schemas and business rules, with no platform imports |
-| `packages/ui-tokens` | The Ciruela design tokens and the Archivo and DM Mono fonts      |
+| `packages/design-tokens` | The Ciruela design tokens and the Archivo and DM Mono fonts |
 | `packages/route-map` | The route map's geometry                                     |
 | `docs/`              | Decisions, lessons from v1 and how we work                       |
 
