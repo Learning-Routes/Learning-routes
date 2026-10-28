@@ -45,5 +45,7 @@ Nothing is deployed yet. Local secrets, once there are any, go in `apps/*/.dev.v
 
 - [ADR 0001: the stack](docs/adr/0001-stack.md)
 - [ADR 0002: what goes in core](docs/adr/0002-core-boundary.md)
+- [ADR 0003: decisions from the v1 port](docs/adr/0003-v1-port-decisions.md)
+- [ADR 0004: the architecture after the bake-off](docs/adr/0004-architecture-after-the-bake-off.md)
 - [Lessons from v1](docs/LESSONS_FROM_V1.md)
 - [Working agreement](docs/WORKING_AGREEMENT.md)
