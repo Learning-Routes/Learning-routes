@@ -9,6 +9,8 @@ export default {
     ".": {
       // Run by CI and package scripts.
       entry: ["scripts/*.mjs"],
+      // check-worker-size.mjs runs each app's own wrangler, from that app's folder.
+      ignoreBinaries: ["wrangler"],
     },
     "apps/web": {
       // Loaded by the HTML, not imported.
