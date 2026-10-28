@@ -1,4 +1,4 @@
-# Learning Routes platform
+# New Learning Routes
 
 Learning Routes is a platform where creators build learning routes by talking to agents, then publish them on their own page and sell them to their own students. This folder is the new platform. The v1 Rails app around it, at the root of the Learning-routes repository, keeps serving learningroutes.com while the platform is built.
 
