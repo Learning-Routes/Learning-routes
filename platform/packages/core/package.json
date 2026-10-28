@@ -4,20 +4,19 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./src/index.ts",
+    "./browser": "./src/actions/names.ts",
     "./locales": "./src/locales.ts",
-    "./actions/define": "./src/actions/define.ts",
-    "./actions/names": "./src/actions/names.ts",
-    "./actions/registry": "./src/actions/registry.ts"
+    "./*": "./src/*.ts"
   },
   "scripts": {
     "test": "vitest run",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "bench": "vitest bench --run --reporter=verbose"
   },
   "devDependencies": {
     "fast-check": "4.10.2",
     "typescript": "5.9.3",
-    "vitest": "5.0.5"
+    "vitest": "5.0.4"
   },
   "dependencies": {
     "zod": "4.6.7"

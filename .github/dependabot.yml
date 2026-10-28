@@ -1,12 +1,33 @@
+# STEP 46 §2.6: an update (npm, gems, actions) is proposed only once its release is 14 days old.
+# cooldown applies to version updates only; security updates are never delayed.
 version: 2
 updates:
-- package-ecosystem: bundler
-  directory: "/"
-  schedule:
-    interval: weekly
-  open-pull-requests-limit: 10
-- package-ecosystem: github-actions
-  directory: "/"
-  schedule:
-    interval: weekly
-  open-pull-requests-limit: 10
+  - package-ecosystem: npm
+    directory: /platform
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 14
+    groups:
+      minor-and-patch:
+        update-types: [minor, patch]
+
+  - package-ecosystem: bundler
+    directory: /
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 14
+    groups:
+      minor-and-patch:
+        update-types: [minor, patch]
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 14
+    groups:
+      minor-and-patch:
+        update-types: [minor, patch]

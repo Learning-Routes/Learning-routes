@@ -1,6 +1,8 @@
 import { asArray, asObject, asText, isBlank, round2, strip, truthy } from "../coerce";
 import { blockRole, isKnownBlockType } from "./registry";
 
+const INDEX_TEXT = /^(0|[1-9][0-9]*)$/;
+
 // Grades a submission against the block the server holds, never against what the
 // client claims (lesson 12).
 
@@ -56,7 +58,7 @@ function gradeCheck(section: Record<string, unknown>, payload: Record<string, un
 // option at all, never option 0 (ADR 0003).
 function optionIndex(value: unknown): number | null {
   if (typeof value === "number") return Number.isInteger(value) ? value : null;
-  if (typeof value === "string" && /^(0|[1-9][0-9]*)$/.test(value)) return Number(value);
+  if (typeof value === "string" && INDEX_TEXT.test(value)) return Number(value);
   return null;
 }
 

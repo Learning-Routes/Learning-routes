@@ -1,25 +1,20 @@
+import { parseLesson } from "../src/content/parser";
+import { type CostEstimate, estimateCost } from "../src/credits/cost";
 import {
-  type Card,
-  type CostEstimate,
   decideSpend,
-  estimateCost,
-  FsrsDomainError,
-  interval,
-  type Locale,
-  parseLesson,
   rateLimitPerMinute,
-  retrievability,
-  review,
   type SpendDecision,
   V1_LIMITS,
-} from "../src/index";
+} from "../src/credits/spend";
+import { type Card, FsrsDomainError, interval, retrievability, review } from "../src/learning/fsrs";
+import type { Locale } from "../src/text";
 
 // Each golden case, run through the port and answered in v1's output shape. The
 // port tests compare these answers with the fixtures; when an ADR 0003 fix changes
 // an answer on purpose, the same runner produces the new output that is recorded.
 
 const DAY = 86_400_000;
-export const FROZEN = Date.parse("2026-10-26T12:00:00Z");
+const FROZEN = Date.parse("2026-10-26T12:00:00Z");
 
 // ── fsrs.json ──────────────────────────────────────────────────────
 

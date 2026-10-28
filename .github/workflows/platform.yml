@@ -59,9 +59,38 @@ jobs:
           cache: pnpm
           cache-dependency-path: platform/pnpm-lock.yaml
       - run: pnpm install --frozen-lockfile
+      # Every check below runs even when one before it failed, so one run shows
+      # every guardrail that broke.
       - run: pnpm typecheck
+        if: ${{ !cancelled() }}
       - run: pnpm lint
+        if: ${{ !cancelled() }}
       - run: pnpm test
+        if: ${{ !cancelled() }}
       - run: pnpm build
+        id: build
+        if: ${{ !cancelled() }}
+      - name: JavaScript budgets (size-limit)
+        run: pnpm --filter @learning-routes/web size
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+      - name: Worker size budgets
+        run: pnpm worker-size
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
       # Browser tests against the built Worker, in the runner's installed Chrome.
       - run: pnpm --filter @learning-routes/web e2e
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+      - name: The architecture holds (dependency-cruiser)
+        run: pnpm deps
+        if: ${{ !cancelled() }}
+      - name: No unused files, exports or dependencies (knip)
+        run: pnpm knip
+        if: ${{ !cancelled() }}
+      # Not gating yet (STEP 46 §2.8): prints each hot function against its
+      # baseline; a regression over 30% goes in the pull request description.
+      - name: Benchmarks against the baseline
+        run: pnpm bench
+        continue-on-error: true
+        if: ${{ !cancelled() }}
+      - name: Versions are exact and at least 14 days old
+        run: node scripts/check-versions.mjs
+        if: ${{ !cancelled() }}

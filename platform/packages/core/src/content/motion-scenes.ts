@@ -77,53 +77,71 @@ export function validateScene(name: string, data: unknown): string[] {
   return check(schema, data, "", null);
 }
 
-function check(
+type Container = Record<string, unknown> | null;
+
+function check(schema: Schema, value: unknown, path: string, container: Container): string[] {
+  const at = path || "/";
+  switch (schema.type) {
+    case "object":
+      return checkObject(schema, value, path, at);
+    case "array":
+      return checkArray(schema, value, path, at, container);
+    case "string":
+      return checkString(schema, value, at);
+    case "integer":
+      return checkInteger(schema, value, at, container);
+    default:
+      return [];
+  }
+}
+
+function checkObject(schema: Schema, value: unknown, path: string, at: string): string[] {
+  if (!isObject(value)) return [`${at}: not an object`];
+  const errors: string[] = [];
+  for (const key of schema.required ?? [])
+    if (!(key in value)) errors.push(`${at}: missing ${key}`);
+  for (const [key, child] of Object.entries(value)) {
+    const childSchema = schema.properties?.[key];
+    if (childSchema) errors.push(...check(childSchema, child, `${path}/${key}`, value));
+    else if (schema.additionalProperties === false) errors.push(`${at}: unexpected ${key}`);
+  }
+  return errors;
+}
+
+function checkArray(
   schema: Schema,
   value: unknown,
   path: string,
-  container: Record<string, unknown> | null,
+  at: string,
+  container: Container,
 ): string[] {
+  if (!Array.isArray(value)) return [`${at}: not an array`];
   const errors: string[] = [];
-  const at = path || "/";
-
-  switch (schema.type) {
-    case "object":
-      if (!isObject(value)) return [`${at}: not an object`];
-      for (const key of schema.required ?? [])
-        if (!(key in value)) errors.push(`${at}: missing ${key}`);
-      for (const [key, child] of Object.entries(value)) {
-        const childSchema = schema.properties?.[key];
-        if (childSchema) errors.push(...check(childSchema, child, `${path}/${key}`, value));
-        else if (schema.additionalProperties === false) errors.push(`${at}: unexpected ${key}`);
-      }
-      return errors;
-    case "array":
-      if (!Array.isArray(value)) return [`${at}: not an array`];
-      if (schema.minItems !== undefined && value.length < schema.minItems)
-        errors.push(`${at}: too few items`);
-      if (schema.items) {
-        for (const [i, item] of value.entries())
-          errors.push(...check(schema.items, item, `${path}/${i}`, container));
-      }
-      return errors;
-    case "string":
-      if (typeof value !== "string") return [`${at}: not a string`];
-      if (schema.minLength !== undefined && [...value].length < schema.minLength)
-        errors.push(`${at}: too short`);
-      return errors;
-    case "integer": {
-      if (typeof value !== "number" || !Number.isInteger(value)) return [`${at}: not an integer`];
-      if (schema.minimum !== undefined && value < schema.minimum)
-        errors.push(`${at}: below minimum`);
-      const target = schema["x-index-into"];
-      if (target !== undefined) {
-        const array = container?.[target];
-        if (!Array.isArray(array) || value >= array.length)
-          errors.push(`${at}: out of range for ${target}`);
-      }
-      return errors;
-    }
-    default:
-      return errors;
+  if (schema.minItems !== undefined && value.length < schema.minItems)
+    errors.push(`${at}: too few items`);
+  if (schema.items) {
+    for (const [i, item] of value.entries())
+      errors.push(...check(schema.items, item, `${path}/${i}`, container));
   }
+  return errors;
+}
+
+function checkString(schema: Schema, value: unknown, at: string): string[] {
+  if (typeof value !== "string") return [`${at}: not a string`];
+  if (schema.minLength !== undefined && [...value].length < schema.minLength)
+    return [`${at}: too short`];
+  return [];
+}
+
+function checkInteger(schema: Schema, value: unknown, at: string, container: Container): string[] {
+  if (typeof value !== "number" || !Number.isInteger(value)) return [`${at}: not an integer`];
+  const errors: string[] = [];
+  if (schema.minimum !== undefined && value < schema.minimum) errors.push(`${at}: below minimum`);
+  const target = schema["x-index-into"];
+  if (target !== undefined) {
+    const array = container?.[target];
+    if (!Array.isArray(array) || value >= array.length)
+      errors.push(`${at}: out of range for ${target}`);
+  }
+  return errors;
 }

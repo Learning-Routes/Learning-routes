@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { newBlockId } from "../src/index";
+import { newBlockId } from "../src/ids";
+
+const FROZEN_ID = /^01a17814-ee00-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
 
 const sources = import.meta.glob("../src/**/*.ts", {
   query: "?raw",
@@ -31,7 +33,7 @@ describe("core purity", () => {
     const random = new Uint8Array(10).fill(0xab);
     const id = newBlockId(Date.parse("2026-10-26T12:00:00Z"), random);
     expect(id).toBe(newBlockId(Date.parse("2026-10-26T12:00:00Z"), random));
-    expect(id).toMatch(/^01a17814-ee00-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/);
+    expect(id).toMatch(FROZEN_ID);
     expect(() => newBlockId(0, new Uint8Array(4))).toThrow(RangeError);
   });
 });

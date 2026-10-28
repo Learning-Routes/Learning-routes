@@ -20,7 +20,27 @@
     "lineWidth": 100
   },
   "linter": {
-    "enabled": true
+    "enabled": true,
+    "rules": {
+      "complexity": {
+        "noExcessiveCognitiveComplexity": {
+          "level": "error",
+          "options": {
+            "maxAllowedComplexity": 15
+          }
+        }
+      },
+      "correctness": {
+        "noUnusedImports": "error"
+      },
+      "performance": {
+        "noAccumulatingSpread": "error",
+        "noBarrelFile": "error",
+        "noReExportAll": "error",
+        "noDelete": "error",
+        "useTopLevelRegex": "error"
+      }
+    }
   },
   "overrides": [
     {
@@ -60,6 +80,9 @@
                 ]
               }
             }
+          },
+          "suspicious": {
+            "noConsole": "error"
           }
         }
       }

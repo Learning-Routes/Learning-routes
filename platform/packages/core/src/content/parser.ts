@@ -15,6 +15,8 @@ import { fencedConcept, fencedProse, fencedSummary, headingSummary } from "./sec
 import type { Section } from "./sections/types";
 import { LINE_START, lines, WS } from "./text";
 
+const PARAGRAPH_BREAK = /\n{2,}/;
+
 export type { Section } from "./sections/types";
 
 export interface ParseOptions {
@@ -196,7 +198,7 @@ function headingSection(rawTitle: string, body: string): Section {
 
 function splitByParagraphs(text: string, titles: Titles): Section[] {
   const paragraphs = text
-    .split(/\n{2,}/)
+    .split(PARAGRAPH_BREAK)
     .map(strip)
     .filter((paragraph) => paragraph !== "");
   if (paragraphs.length <= PARAGRAPHS_PER_SECTION)

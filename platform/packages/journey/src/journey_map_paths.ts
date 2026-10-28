@@ -19,6 +19,8 @@
 
 import type { Layout, LayoutNode, Tree, XY } from "./journey_map_layout";
 
+const WHITESPACE = /\s+/;
+
 export const PATH_DEFAULTS = Object.freeze({
   panelPad: 18, // a module's panel = its layout box inflated by this
   traceRadius: 9, // fan trace corners; keep ≤ fanRowGap / 2 − 1
@@ -137,7 +139,7 @@ export function buildPaths(
   let previous = root;
   layout.modules.forEach((m, mi) => {
     const mod = byId.get(m.id) as LayoutNode;
-    const readable = tree.modules[mi] ? tree.modules[mi].readable === true : mod.readable === true;
+    const readable = (tree.modules[mi] ?? mod).readable === true;
     const { level } = mod;
 
     // The spine: from the origin's centre, then from just below each module's label.
@@ -153,35 +155,7 @@ export function buildPaths(
     );
     if (!heads.length) return;
 
-    // Segments in route order; `curve` marks a cubic between two heads (a chevron's place).
-    const first = heads[0].node;
-    const segs = [
-      {
-        d:
-          Math.abs(first.cy - mod.cy) < 0.5
-            ? `L ${first.cx} ${first.cy}`
-            : cubic(mod, first, o.tension),
-        a: mod,
-        b: first,
-        curve: false,
-      },
-    ];
-    for (let i = 0; i + 1 < heads.length; i++) {
-      const a = heads[i];
-      const b = heads[i + 1];
-      if (a.row === b.row) {
-        segs.push({ d: cubic(a.node, b.node, o.tension), a: a.node, b: b.node, curve: true });
-      } else {
-        const [g0, g1] = a.row.direction === "ltr" ? m.gutters.right : m.gutters.left;
-        const r = Math.min(o.bendRadius, (b.node.cy - a.node.cy) / 2);
-        segs.push({
-          d: uTurn(a.node, b.node, (g0 + g1) / 2, r),
-          a: a.node,
-          b: b.node,
-          curve: false,
-        });
-      }
-    }
+    const segs = segments(m, mod, heads, o);
     const start = `M ${mod.cx} ${mod.cy}`;
     const d = [start, ...segs.map((s) => s.d)].join(" ");
 
@@ -191,60 +165,126 @@ export function buildPaths(
     }
     out.route.push({ moduleId: m.id, d, level });
 
-    if (mi < curModIndex) out.travelled.push({ moduleId: m.id, d, level });
-    if (mi === curModIndex) {
-      const upTo = segs.findIndex((s) => s.b.id === headId);
-      out.travelled.push({
-        moduleId: m.id,
-        d: [start, ...segs.slice(0, upTo + 1).map((s) => s.d)].join(" "),
-        level,
-      });
-    }
+    const travelled = travelledPath(start, segs, d, mi - curModIndex, headId);
+    if (travelled) out.travelled.push({ moduleId: m.id, d: travelled, level });
 
-    // Chevrons on the curves still ahead. On a cubic with arms k·dx at both ends,
-    // t = 0.5 is the chord's midpoint and the tangent there is (1 − k)·dx : dy.
-    let ahead = mi > curModIndex;
-    for (const s of segs) {
-      if (ahead && s.curve) {
-        const dx = s.b.cx - s.a.cx;
-        const dy = s.b.cy - s.a.cy;
-        out.chevrons.push({
-          moduleId: m.id,
-          x: (s.a.cx + s.b.cx) / 2,
-          y: (s.a.cy + s.b.cy) / 2,
-          angle: (Math.atan2(dy, (1 - o.tension) * dx) * 180) / Math.PI,
-        });
-      }
-      if (mi === curModIndex && s.b.id === headId) ahead = true;
-    }
-
-    // Fans: a solid stub from under the head's label to the first street, then one
-    // trace per child along the layout's own fan edge, ending on the child's disc.
-    for (const { node: head } of heads) {
-      const edges = fans.filter((e) => e.from === head.id);
-      if (!edges.length) continue;
-      const labelBottom = head.y + head.h;
-      const street0 = edges[0].points[1][1];
-      out.trunk.push({
-        from: head.id,
-        d: `M ${head.cx} ${labelBottom} L ${head.cx} ${street0 - o.traceRadius}`,
-      });
-      for (const e of edges) {
-        const kid = byId.get(e.to) as LayoutNode;
-        const points = e.points.slice();
-        points[0] = [head.cx, labelBottom];
-        points[points.length - 1] = [kid.cx, kid.cy - o.reinforcementDiameter / 2];
-        const lit =
-          (kid.topic && kid.topic.status === "completed") || (curNode && kid.id === curNode.id);
-        (lit ? out.branchOn : out.branch).push({
-          from: head.id,
-          to: kid.id,
-          d: rounded(points, o.traceRadius),
-        });
-      }
-    }
+    const startsAhead = mi > curModIndex;
+    pushChevrons(out, m.id, segs, startsAhead, mi === curModIndex ? headId : null, o);
+    for (const { node: head } of heads) pushFan(out, head, fans, byId, curNode, o);
   });
   return out;
+}
+
+type LayoutModule = Layout["modules"][number];
+type Head = { node: LayoutNode; row: LayoutModule["rows"][number] };
+type Segment = { d: string; a: LayoutNode; b: LayoutNode; curve: boolean };
+
+// Segments in route order; `curve` marks a cubic between two heads (a chevron's place).
+function segments(m: LayoutModule, mod: LayoutNode, heads: Head[], o: PathOptions): Segment[] {
+  const first = heads[0].node;
+  const segs: Segment[] = [
+    {
+      d:
+        Math.abs(first.cy - mod.cy) < 0.5
+          ? `L ${first.cx} ${first.cy}`
+          : cubic(mod, first, o.tension),
+      a: mod,
+      b: first,
+      curve: false,
+    },
+  ];
+  for (let i = 0; i + 1 < heads.length; i++) {
+    const a = heads[i];
+    const b = heads[i + 1];
+    if (a.row === b.row) {
+      segs.push({ d: cubic(a.node, b.node, o.tension), a: a.node, b: b.node, curve: true });
+    } else {
+      const [g0, g1] = a.row.direction === "ltr" ? m.gutters.right : m.gutters.left;
+      const r = Math.min(o.bendRadius, (b.node.cy - a.node.cy) / 2);
+      segs.push({
+        d: uTurn(a.node, b.node, (g0 + g1) / 2, r),
+        a: a.node,
+        b: b.node,
+        curve: false,
+      });
+    }
+  }
+  return segs;
+}
+
+// How much of a module's route is travelled: all of it before the current module,
+// up to the current head in it, none after (`offset` is module index − current).
+function travelledPath(
+  start: string,
+  segs: Segment[],
+  d: string,
+  offset: number,
+  headId: string | null,
+): string | null {
+  if (offset < 0) return d;
+  if (offset > 0) return null;
+  const upTo = segs.findIndex((s) => s.b.id === headId);
+  return [start, ...segs.slice(0, upTo + 1).map((s) => s.d)].join(" ");
+}
+
+// Chevrons on the curves still ahead. On a cubic with arms k·dx at both ends,
+// t = 0.5 is the chord's midpoint and the tangent there is (1 − k)·dx : dy.
+// `aheadAfter` is the current head in the current module: curves after it are ahead.
+function pushChevrons(
+  out: Paths,
+  moduleId: string,
+  segs: Segment[],
+  startsAhead: boolean,
+  aheadAfter: string | null,
+  o: PathOptions,
+): void {
+  let ahead = startsAhead;
+  for (const s of segs) {
+    if (ahead && s.curve) {
+      const dx = s.b.cx - s.a.cx;
+      const dy = s.b.cy - s.a.cy;
+      out.chevrons.push({
+        moduleId,
+        x: (s.a.cx + s.b.cx) / 2,
+        y: (s.a.cy + s.b.cy) / 2,
+        angle: (Math.atan2(dy, (1 - o.tension) * dx) * 180) / Math.PI,
+      });
+    }
+    if (aheadAfter !== null && s.b.id === aheadAfter) ahead = true;
+  }
+}
+
+// Fans: a solid stub from under the head's label to the first street, then one
+// trace per child along the layout's own fan edge, ending on the child's disc.
+function pushFan(
+  out: Paths,
+  head: LayoutNode,
+  fans: Layout["edges"],
+  byId: Map<string, LayoutNode>,
+  curNode: LayoutNode | null,
+  o: PathOptions,
+): void {
+  const edges = fans.filter((e) => e.from === head.id);
+  if (!edges.length) return;
+  const labelBottom = head.y + head.h;
+  const street0 = edges[0].points[1][1];
+  out.trunk.push({
+    from: head.id,
+    d: `M ${head.cx} ${labelBottom} L ${head.cx} ${street0 - o.traceRadius}`,
+  });
+  for (const e of edges) {
+    const kid = byId.get(e.to) as LayoutNode;
+    const points = e.points.slice();
+    points[0] = [head.cx, labelBottom];
+    points[points.length - 1] = [kid.cx, kid.cy - o.reinforcementDiameter / 2];
+    const lit =
+      (kid.topic && kid.topic.status === "completed") || (curNode && kid.id === curNode.id);
+    (lit ? out.branchOn : out.branch).push({
+      from: head.id,
+      to: kid.id,
+      d: rounded(points, o.traceRadius),
+    });
+  }
 }
 
 // ── Sampling: points along a path of this module's grammar, ≤ `step` px apart ──
@@ -272,8 +312,33 @@ function polylineLength(at: (t: number) => XY): number {
   return len;
 }
 
+function pushLine(points: XY[], from: XY, to: XY, step: number): void {
+  const length = Math.hypot(to[0] - from[0], to[1] - from[1]);
+  const n = Math.max(1, Math.ceil(length / step - 1e-9));
+  for (let i = 1; i < n; i++)
+    points.push([from[0] + ((to[0] - from[0]) * i) / n, from[1] + ((to[1] - from[1]) * i) / n]);
+  points.push(to);
+}
+
+// A quarter circle of radius r from `from` to `to`, as a function of t in [0, 1].
+function quarterArc(from: XY, to: XY, r: number, sweep: number, d: string): (t: number) => XY {
+  const dx = to[0] - from[0];
+  const dy = to[1] - from[1];
+  if (Math.abs(Math.hypot(dx, dy) - r * Math.SQRT2) > 1e-6)
+    throw new Error(`samplePath: only quarter-circle arcs, in ${d}`);
+  // S − C = v; E − C is v turned 90° in the sweep's direction.
+  const v = sweep === 1 ? [(dy - dx) / 2, -(dx + dy) / 2] : [-(dx + dy) / 2, (dx - dy) / 2];
+  const centre = [from[0] - v[0], from[1] - v[1]];
+  const a0 = Math.atan2(v[1], v[0]);
+  const turn = sweep === 1 ? Math.PI / 2 : -Math.PI / 2;
+  return (t: number): XY => [
+    centre[0] + r * Math.cos(a0 + turn * t),
+    centre[1] + r * Math.sin(a0 + turn * t),
+  ];
+}
+
 export function samplePath(d: string, step = 3): XY[] {
-  const tokens = String(d).trim().split(/\s+/);
+  const tokens = String(d).trim().split(WHITESPACE);
   const points: XY[] = [];
   let point: XY | null = null;
   const num = (): number => {
@@ -293,13 +358,8 @@ export function samplePath(d: string, step = 3): XY[] {
       point = [num(), num()];
       points.push(point);
     } else if (op === "L") {
-      const from = point as XY;
       const to: XY = [num(), num()];
-      const length = Math.hypot(to[0] - from[0], to[1] - from[1]);
-      const n = Math.max(1, Math.ceil(length / step - 1e-9));
-      for (let i = 1; i < n; i++)
-        points.push([from[0] + ((to[0] - from[0]) * i) / n, from[1] + ((to[1] - from[1]) * i) / n]);
-      points.push(to);
+      pushLine(points, point as XY, to, step);
       point = to;
     } else if (op === "C") {
       const from = point as XY;
@@ -320,25 +380,8 @@ export function samplePath(d: string, step = 3): XY[] {
       num();
       num(); // ry, rotation, large-arc: this grammar's arcs are quarter circles
       const sweep = num();
-      const from = point as XY;
       const to: XY = [num(), num()];
-      const dx = to[0] - from[0];
-      const dy = to[1] - from[1];
-      if (Math.abs(Math.hypot(dx, dy) - r * Math.SQRT2) > 1e-6)
-        throw new Error(`samplePath: only quarter-circle arcs, in ${d}`);
-      // S − C = v; E − C is v turned 90° in the sweep's direction.
-      const v = sweep === 1 ? [(dy - dx) / 2, -(dx + dy) / 2] : [-(dx + dy) / 2, (dx - dy) / 2];
-      const centre = [from[0] - v[0], from[1] - v[1]];
-      const a0 = Math.atan2(v[1], v[0]);
-      const turn = sweep === 1 ? Math.PI / 2 : -Math.PI / 2;
-      walk(
-        (t: number): XY => [
-          centre[0] + r * Math.cos(a0 + turn * t),
-          centre[1] + r * Math.sin(a0 + turn * t),
-        ],
-        (r * Math.PI) / 2,
-        to,
-      );
+      walk(quarterArc(point as XY, to, r, sweep, d), (r * Math.PI) / 2, to);
     } else {
       throw new Error(`samplePath: unsupported command ${op} in ${d}`);
     }

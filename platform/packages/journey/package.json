@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./src/index.ts"
+    "./*": "./src/*.ts"
   },
   "scripts": {
     "test": "vitest run",
@@ -13,6 +13,6 @@
   "devDependencies": {
     "@types/node": "22.20.5",
     "typescript": "5.9.3",
-    "vitest": "5.0.5"
+    "vitest": "5.0.4"
   }
 }

@@ -3,6 +3,8 @@ import { FENCE, isBoundary, splitAftermath } from "../aftermath";
 import { lines, WS } from "../text";
 import type { Section } from "./types";
 
+const OPTION_LETTER = /^[A-D]$/;
+
 const OPTION = new RegExp(`^[A-Da-d]\\)${WS}`);
 const OPTION_PREFIX = new RegExp(`^[A-Da-d]\\)${WS}*`);
 const CORRECT = new RegExp(`^(?:CORRECTA|CORRECT|ANSWER):${WS}*`, "iu");
@@ -21,6 +23,68 @@ function markerOf(stripped: string): Marker | null {
   return null;
 }
 
+// The scan of a heading check's body: the run of options, CORRECTA and EXPLICACIÓN.
+interface Run {
+  options: { label: string; correct: boolean }[];
+  correctLetter: string | null;
+  explanation: string | null;
+  first: number | null;
+  last: number | null;
+  inFence: boolean;
+  prevStructural: boolean;
+  lastKind: Marker | null;
+}
+
+// Each step returns whether the run goes on after its line.
+function step(run: Run, index: number, stripped: string): boolean {
+  if (FENCE.test(stripped)) {
+    // Before the first marker a fence belongs to the question; after it, it opens the aftermath.
+    if (run.first !== null) return false;
+    run.inFence = !run.inFence;
+    run.prevStructural = false;
+    return true;
+  }
+  if (run.inFence || stripped === "") {
+    run.prevStructural = false;
+    return true;
+  }
+  const kind = markerOf(stripped);
+  return kind === null ? continuation(run, index, stripped) : marker(run, index, kind, stripped);
+}
+
+function continuation(run: Run, index: number, stripped: string): boolean {
+  if (run.first === null) return true;
+  // Only the wrapped rest of an option or an explanation continues the run.
+  if (!(run.prevStructural && (run.lastKind === "option" || run.lastKind === "explanation"))) {
+    return false;
+  }
+  if (isBoundary(stripped, ["heading", "rule"])) return false;
+  const option = run.options.at(-1);
+  if (run.lastKind === "option" && option) option.label = strip(`${option.label} ${stripped}`);
+  if (run.lastKind === "explanation") run.explanation = strip(`${run.explanation} ${stripped}`);
+  run.last = index;
+  return true;
+}
+
+function expected(run: Run, kind: Marker): boolean {
+  if (kind === "correct") return run.correctLetter === null;
+  if (kind === "explanation") return run.explanation === null;
+  return run.correctLetter === null && run.explanation === null;
+}
+
+function marker(run: Run, index: number, kind: Marker, stripped: string): boolean {
+  if (!expected(run, kind)) return false;
+  if (kind === "option")
+    run.options.push({ label: stripped.replace(OPTION_PREFIX, ""), correct: false });
+  if (kind === "correct") run.correctLetter = strip(stripped.replace(CORRECT, "")).toUpperCase();
+  if (kind === "explanation") run.explanation = strip(stripped.replace(EXPLANATION, ""));
+  run.lastKind = kind;
+  run.first ??= index;
+  run.last = index;
+  run.prevStructural = true;
+  return true;
+}
+
 /**
  * `## Pregunta:` / `## Question:`: the question, then a contiguous run of options,
  * one CORRECTA and one EXPLICACIÓN, then the aftermath. Markers count only outside
@@ -29,61 +93,20 @@ function markerOf(stripped: string): Marker | null {
  */
 export function headingCheck(questionFromHeading: string, body: string): Section {
   const all = lines(body);
-  const options: { label: string; correct: boolean }[] = [];
-  let correctLetter: string | null = null;
-  let explanation: string | null = null;
-  let first: number | null = null;
-  let last: number | null = null;
-  let inFence = false;
-  let prevStructural = false;
-  let lastKind: Marker | null = null;
-
+  const run: Run = {
+    options: [],
+    correctLetter: null,
+    explanation: null,
+    first: null,
+    last: null,
+    inFence: false,
+    prevStructural: false,
+    lastKind: null,
+  };
   for (const [index, line] of all.entries()) {
-    const stripped = strip(line);
-
-    if (FENCE.test(stripped)) {
-      // Before the first marker a fence belongs to the question; after it, it opens the aftermath.
-      if (first !== null) break;
-      inFence = !inFence;
-      prevStructural = false;
-      continue;
-    }
-    if (inFence || stripped === "") {
-      prevStructural = false;
-      continue;
-    }
-
-    const kind = markerOf(stripped);
-    if (kind === null) {
-      if (first === null) continue;
-      // Only the wrapped rest of an option or an explanation continues the run.
-      if (!(prevStructural && (lastKind === "option" || lastKind === "explanation"))) break;
-      if (isBoundary(stripped, ["heading", "rule"])) break;
-      const option = options.at(-1);
-      if (lastKind === "option" && option) option.label = strip(`${option.label} ${stripped}`);
-      if (lastKind === "explanation") explanation = strip(`${explanation} ${stripped}`);
-      last = index;
-      continue;
-    }
-
-    const expected =
-      kind === "correct"
-        ? correctLetter === null
-        : kind === "explanation"
-          ? explanation === null
-          : correctLetter === null && explanation === null;
-    if (!expected) break;
-
-    if (kind === "option")
-      options.push({ label: stripped.replace(OPTION_PREFIX, ""), correct: false });
-    if (kind === "correct") correctLetter = strip(stripped.replace(CORRECT, "")).toUpperCase();
-    if (kind === "explanation") explanation = strip(stripped.replace(EXPLANATION, ""));
-
-    lastKind = kind;
-    first ??= index;
-    last = index;
-    prevStructural = true;
+    if (!step(run, index, strip(line))) break;
   }
+  const { options, correctLetter, explanation, first, last } = run;
 
   let bodyQuestion: string;
   let aftermath: string | null;
@@ -98,7 +121,7 @@ export function headingCheck(questionFromHeading: string, body: string): Section
     .filter((part) => part !== null)
     .join("\n\n");
 
-  if (correctLetter !== null && /^[A-D]$/.test(correctLetter)) {
+  if (correctLetter !== null && OPTION_LETTER.test(correctLetter)) {
     const option = options[correctLetter.charCodeAt(0) - 65];
     if (option) option.correct = true;
   }

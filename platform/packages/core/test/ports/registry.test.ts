@@ -1,15 +1,15 @@
 import { describe, expect, it } from "vitest";
+import { Block } from "../../src/blocks";
 import {
   AUTHORED_BLOCK_TYPES,
   BLOCK_TYPES,
-  Block,
   blockRole,
   defaultTitle,
   fenceTypes,
   headingMap,
   isKnownBlockType,
   SYSTEM_BLOCK_TYPES,
-} from "../../src/index";
+} from "../../src/learning/registry";
 import registry from "../golden/block_registry.json" with { type: "json" };
 import gating from "../golden/gating.json" with { type: "json" };
 

@@ -1,8 +1,9 @@
 // The one file in browser code that calls fetch. Every browser write goes through
 // here, to an action in core's registry. Only types come from the registry, so zod
 // and server code stay out of the browser bundle.
-import { ACTION_NAMES, type ActionName } from "@learning-routes/core/actions/names";
+
 import type { ActionInput, ActionResponse } from "@learning-routes/core/actions/registry";
+import { ACTION_NAMES, type ActionName } from "@learning-routes/core/browser";
 
 /** Runs an action through the API. A network error rejects; a refusal is a result. */
 export async function callAction<N extends ActionName>(

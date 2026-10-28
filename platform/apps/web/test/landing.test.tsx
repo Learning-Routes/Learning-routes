@@ -1,7 +1,7 @@
 import { renderToString } from "react-dom/server";
 import { describe, expect, it } from "vitest";
-import type { Route } from "../app/routes/+types/landing";
-import Landing, { meta } from "../app/routes/landing";
+import type { Route } from "../app/routes/storefront/+types/landing";
+import Landing, { meta } from "../app/routes/storefront/landing";
 
 const loaderData = { lang: "es", origin: "https://learningroutes.com" } as const;
 

@@ -1,8 +1,5 @@
 import { createHash } from "node:crypto";
 import { expect, test } from "vitest";
-import * as cardTilt from "../src/card_tilt";
-import * as camera from "../src/journey_camera";
-import * as mapLayout from "../src/journey_map_layout";
 import {
   buildTree,
   type Layout,
@@ -12,9 +9,6 @@ import {
   layoutJourney,
   type XY,
 } from "../src/journey_map_layout";
-import * as mapPaths from "../src/journey_map_paths";
-import * as terrain from "../src/journey_terrain";
-import * as landing from "../src/landing_placement";
 import { SHAPES, type ShapeStage, stage, VIEW } from "./journey_shapes";
 
 // WP-37 §2. The map's geometry is a pure module, asserted without a browser.
@@ -413,7 +407,7 @@ test("rootX places the root's left edge; the spine still starts at x = 0", () =>
 });
 
 // One layout module, not two: the old satellite layout was not carried over, and
-// the package entry wires in nothing beyond the six modules.
+// the package is these six modules and nothing else.
 const OLD_LAYOUT = "../src/journey_layout";
 
 test("the old satellite layout is gone", async () => {
@@ -421,7 +415,15 @@ test("the old satellite layout is gone", async () => {
     import(/* @vite-ignore */ OLD_LAYOUT),
     "journey_layout still exists beside journey_map_layout",
   ).rejects.toThrow();
-  const wired = Object.keys(await import("../src/index")).sort();
-  const modules = [cardTilt, camera, mapLayout, mapPaths, terrain, landing];
-  expect(wired).toEqual([...new Set(modules.flatMap((m) => Object.keys(m)))].sort());
+  const files = Object.keys(
+    import.meta.glob("../src/*.ts", { query: "?raw", import: "default", eager: true }),
+  ).sort();
+  expect(files).toEqual([
+    "../src/card_tilt.ts",
+    "../src/journey_camera.ts",
+    "../src/journey_map_layout.ts",
+    "../src/journey_map_paths.ts",
+    "../src/journey_terrain.ts",
+    "../src/landing_placement.ts",
+  ]);
 });
