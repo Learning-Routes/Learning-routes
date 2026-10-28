@@ -6,15 +6,15 @@
 # fixtures are those v1 files plus the listed changes. Needs that checkout's Ruby,
 # its gems and its development database: see packages/core/test/golden/README.md.
 #
-#   pnpm golden:check                      (Learning-routes cloned next to this repository)
+#   pnpm golden:check                      (the Rails app around platform/)
 #   scripts/check-golden.sh <path to Learning-routes>
 set -euo pipefail
 
 root="$(cd "$(dirname "$0")/.." && pwd)"
-v1="${1:-$root/../Learning-routes}"
+v1="${1:-$root/..}"
 if [ ! -x "$v1/bin/rails" ]; then
   echo "golden:check needs a Learning-routes checkout with its database, and found none at $v1." >&2
-  echo "Clone Learning-Routes/Learning-routes next to this repository, or run scripts/check-golden.sh <its path>." >&2
+  echo "Run it from platform/ inside Learning-routes, or run scripts/check-golden.sh <a Learning-routes path>." >&2
   exit 2
 fi
 

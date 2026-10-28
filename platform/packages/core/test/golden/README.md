@@ -72,7 +72,7 @@ Nothing needed replacing.
 2. Copy `tmp/characterization/*.json` here.
 3. Update the commit and the counts above.
 
-To check that v1 still produces what these fixtures were recorded from, with Learning-routes cloned next to this repository and its development database migrated:
+To check that v1 still produces what these fixtures were recorded from, with the Rails app's development database migrated (the app is the repository root, around `platform/`):
 
 ```sh
 pnpm golden:check
