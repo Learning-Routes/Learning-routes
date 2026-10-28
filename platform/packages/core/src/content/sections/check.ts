@@ -1,6 +1,6 @@
-import { presence, strip } from "../../coerce";
-import { FENCE, isBoundary, splitAftermath } from "../aftermath";
-import { lines, WS } from "../text";
+import { presence, strip } from "../../v1-import/loose-json";
+import { lines, WS } from "../ruby-text";
+import { FENCE, isBoundary, splitAftermath } from "../trailing-content";
 import type { Section } from "./types";
 
 const OPTION_LETTER = /^[A-D]$/;

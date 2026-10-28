@@ -4,7 +4,7 @@
 
 ## Localized text
 
-Stored text is always a locale map, `{ es?, en?, pt?, fr?, it? }`, with at least one locale. Every Route has a required `sourceLocale`, and the route's title (and description, when it has one) must have text under that key. A plain string is accepted only at the v1 import boundary (`importV1Block` in `packages/core/src/v1.ts`), which turns it into `{ [sourceLocale]: text }`. The stored schemas refuse plain strings.
+Stored text is always a locale map, `{ es?, en?, pt?, fr?, it? }`, with at least one locale. Every Route has a required `sourceLocale`, and the route's title (and description, when it has one) must have text under that key. A plain string is accepted only at the v1 import boundary (`importV1Block` in `packages/core/src/v1-import/import.ts`), which turns it into `{ [sourceLocale]: text }`. The stored schemas refuse plain strings.
 
 ## React Router 8
 

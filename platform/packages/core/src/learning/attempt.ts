@@ -1,4 +1,4 @@
-import { asArray, asText } from "../coerce";
+import { asArray, asText } from "../v1-import/loose-json";
 import { AGAIN, EASY, GOOD, HARD } from "./fsrs";
 import type { GradeResult } from "./grader";
 

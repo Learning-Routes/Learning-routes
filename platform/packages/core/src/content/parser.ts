@@ -1,6 +1,7 @@
-import { asObject, isBlank, presence, strip } from "../coerce";
-import { fenceTypes, headingMap } from "../learning/registry";
-import type { Locale } from "../text";
+import { fenceTypes, headingMap } from "../blocks/types";
+import type { Locale } from "../localized-text";
+import { asObject, isBlank, presence, strip } from "../v1-import/loose-json";
+import { LINE_START, lines, WS } from "./ruby-text";
 import { fencedCheck, headingCheck } from "./sections/check";
 import {
   codePlayground,
@@ -13,7 +14,6 @@ import {
 import { conceptOrVisual, motion, video, visual } from "./sections/media";
 import { fencedConcept, fencedProse, fencedSummary, headingSummary } from "./sections/prose";
 import type { Section } from "./sections/types";
-import { LINE_START, lines, WS } from "./text";
 
 const PARAGRAPH_BREAK = /\n{2,}/;
 
