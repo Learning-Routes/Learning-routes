@@ -91,6 +91,25 @@ describe("the AI gate", () => {
     }
   });
 
+  it("refuses a prompt over the model's limit before the spend gate sees it", () => {
+    const limit = MODELS["anthropic/claude-haiku-5.5"].maxPromptTokens;
+    const fits = { ...spec, model: "anthropic/claude-haiku-5.5", system: "", messages: [] };
+    const atLimit = {
+      ...fits,
+      messages: [{ role: "user" as const, content: "x".repeat(limit * 4) }],
+    };
+    const over = {
+      ...fits,
+      messages: [{ role: "user" as const, content: "x".repeat(limit * 4 + 1) }],
+    };
+    expect(gate(atLimit, ctx).verdict).toBe("allowed");
+    expect(gate(over, ctx)).toEqual({ verdict: "refused", reason: "prompt_too_long" });
+
+    // Refused first: no spend is reserved for a call that cannot happen.
+    const spent = { ...ctx, spend: { globalToday: V1_LIMITS.dailyMicrocents, userToday: 0 } };
+    expect(gate(over, spent)).toEqual({ verdict: "refused", reason: "prompt_too_long" });
+  });
+
   it("counts tokens at 4 characters each, rounded up", () => {
     expect(estimateInputTokens("")).toBe(0);
     expect(estimateInputTokens("abcde")).toBe(2);

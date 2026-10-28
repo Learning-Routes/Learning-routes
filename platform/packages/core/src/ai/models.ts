@@ -11,16 +11,28 @@ export interface ModelPrices {
   cacheRead: number;
   /** null when the provider charges nothing extra to write the cache (billed as input). */
   cacheWrite: number | null;
+  /** The longest prompt the gate sends, in estimated tokens; a longer one is refused. */
+  maxPromptTokens: number;
 }
 
 export const MODELS = {
   // The cheapest: the default for student-facing features (WORKING_AGREEMENT.md).
-  "openai/gpt-5-nano": { input: 50_000, output: 400_000, cacheRead: 5_000, cacheWrite: null },
+  "openai/gpt-5-nano": {
+    input: 50_000,
+    output: 400_000,
+    cacheRead: 5_000,
+    cacheWrite: null,
+    // context_length in the models API.
+    maxPromptTokens: 400_000,
+  },
   "anthropic/claude-haiku-5.5": {
     input: 100_000,
     output: 500_000,
     cacheRead: 10_000,
     cacheWrite: 125_000,
+    // Its context is 1,000,000, but pricing.overrides charges 5 times as much from
+    // min_prompt_tokens 100,000 (models API); the table has the base price only.
+    maxPromptTokens: 99_999,
   },
   // For authoring work a cheaper model fails.
   "anthropic/claude-sonnet-5.5": {
@@ -28,6 +40,8 @@ export const MODELS = {
     output: 10_000_000,
     cacheRead: 100_000,
     cacheWrite: 2_500_000,
+    // context_length in the models API; no price override.
+    maxPromptTokens: 1_000_000,
   },
 } as const satisfies Record<string, ModelPrices>;
 

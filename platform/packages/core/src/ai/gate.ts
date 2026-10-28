@@ -52,11 +52,21 @@ export type GateDecision =
       estimateMicrocents: number;
       consumesRateSlot: boolean;
     }
-  | { verdict: "refused"; reason: "unknown_model" | "invalid_session_id" | SpendReason };
+  | { verdict: "refused"; reason: GateRefusal };
+
+export type GateRefusal = "unknown_model" | "invalid_session_id" | "prompt_too_long" | SpendReason;
 
 /** New: a token count from text, at 4 characters a token, rounded up. */
 export function estimateInputTokens(text: string): number {
   return Math.ceil(text.length / CHARS_PER_TOKEN);
+}
+
+// The prompt, in estimated tokens: the system prompt and the messages.
+function promptTokens(spec: CallSpec): { system: number; messages: number } {
+  return {
+    system: estimateInputTokens(spec.system),
+    messages: estimateInputTokens(spec.messages.map((m) => m.content).join("")),
+  };
 }
 
 // The most this call can cost: every prompt token at its price (the system prompt
@@ -66,11 +76,10 @@ function worstCase(spec: CallSpec, model: ModelId): CostEstimate {
     return { kind: "unknown", reason: "missing_max_tokens" };
   }
   const prices = MODELS[model];
-  const systemTokens = estimateInputTokens(spec.system);
-  const messageTokens = estimateInputTokens(spec.messages.map((m) => m.content).join(""));
+  const tokens = promptTokens(spec);
   const systemPrice = spec.promptCache ? (prices.cacheWrite ?? prices.input) : prices.input;
   const perMillion =
-    systemTokens * systemPrice + messageTokens * prices.input + spec.maxTokens * prices.output;
+    tokens.system * systemPrice + tokens.messages * prices.input + spec.maxTokens * prices.output;
   if (!Number.isSafeInteger(perMillion))
     throw new RangeError("a model call this large has no safe price");
   return { kind: "known", microcents: Math.ceil(perMillion / PER_MILLION) };
@@ -100,10 +109,15 @@ export function gate(spec: CallSpec, context: GateContext): GateDecision {
     return { verdict: "refused", reason: "invalid_session_id" };
   }
   if (!isAllowedModel(model)) return { verdict: "refused", reason: "unknown_model" };
+  // Before the spend gate: no spend is reserved for a call that cannot happen.
+  const tokens = promptTokens(spec);
+  if (tokens.system + tokens.messages > MODELS[model].maxPromptTokens) {
+    return { verdict: "refused", reason: "prompt_too_long" };
+  }
   const estimate = worstCase(spec, model);
   const decision = decideSpend({ ...context, estimate });
   if (decision.verdict === "refused") {
-    return { verdict: "refused", reason: decision.reason as SpendReason };
+    return { verdict: "refused", reason: decision.reason as GateRefusal };
   }
   return {
     verdict: "allowed",
