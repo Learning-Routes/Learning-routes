@@ -11,6 +11,11 @@ const EXPECTED: Record<string, string[]> = {
   session: READ_WRITE,
   user: READ_WRITE,
   verification: READ_WRITE,
+  // Tenancy. RLS (§3) narrows each to the rows a user may see.
+  memberships: READ_WRITE,
+  platform_roles: ["SELECT"],
+  spaces: ["INSERT", "SELECT", "UPDATE"],
+  user_profiles: ["INSERT", "SELECT", "UPDATE"],
 };
 
 describe("lr_app's table privileges", () => {
