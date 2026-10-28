@@ -1,11 +1,11 @@
-// The landing story's cameras: each chapter's framing, its resting camera on a
+// The landing story's cameras: each panel's framing, its resting camera on a
 // stage of a given aspect, and a perspective projection as three.js does it.
 import { at } from "./at-index";
 import { add, cross, dot, norm, scale, sub, type Vec3, v } from "./landing-curves";
 import type { AnchorKey } from "./landing-model";
 
 export const WEIGHTS = [1.1, 1.5, 1.6, 1.5, 1.8, 1.4];
-export const CHAPTERS = 6;
+export const PANELS = 6;
 export const FOV = 22;
 export const PHONE = 860;
 const CENTER = [10, 0.9, 12.7];
@@ -19,7 +19,7 @@ interface CamParams {
   sy: number;
 }
 
-// A chapter's camera, resolved: the subject as a point, the distance in world units.
+// A panel's camera, resolved: the subject as a point, the distance in world units.
 export interface CamPose {
   sub: Vec3;
   d: number;
@@ -98,7 +98,7 @@ export const CAMS: (CamParams & { m: Partial<CamParams> })[] = [
     m: { d: 132, az: 8, el: 60, sx: 0, sy: -0.28 },
   },
 ];
-// Where each chapter's text would like to sit: r = [left, top, right] as
+// Where each panel's text would like to sit: r = [left, top, right] as
 // fractions of the stage; a = what its line points at.
 export const LAY: { d: Lay[]; m: Lay[] } = {
   d: [

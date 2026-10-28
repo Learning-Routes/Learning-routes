@@ -1,4 +1,4 @@
-// What a chapter's text must not cover, seen from its resting camera: weighted
+// What a panel's text must not cover, seen from its resting camera: weighted
 // boxes in stage pixels. This answers the owner's main point (STEP 41 §2.2): the
 // text sits on a free spot of the map, never over the map, its names or the controls.
 import { at } from "./at-index";

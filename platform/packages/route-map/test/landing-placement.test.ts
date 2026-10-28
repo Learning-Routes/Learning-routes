@@ -2,10 +2,10 @@ import { expect, test } from "vitest";
 import { at } from "../src/at-index";
 import { camera, camFor, restFor } from "../src/landing-camera";
 import { buildModel } from "../src/landing-model";
-import { layoutChapter } from "../src/landing-placement";
+import { layoutPanel } from "../src/landing-placement";
 import SHAPES from "./fixtures/landing-text-shapes.json" with { type: "json" };
 
-// STEP 41 §2.2, the owner's main point: each chapter's text sits on a free spot of
+// STEP 41 §2.2, the owner's main point: each panel's text sits on a free spot of
 // the map — never over a stop or its name, a leg, the fan, a sheet's edge, a
 // module chip, the root title or the stage's controls. Run against the real
 // geometry, with the text shapes the landing measures (headline over body), in
@@ -38,19 +38,19 @@ function layout(viewport: Viewport): { hits: number; d: number }[] {
   const [w, h] = [at(viewport.stage, 0), at(viewport.stage, 1)];
   const model = buildModel();
   return viewport.texts.map((t, i) => {
-    const l = layoutChapter(model, i, w, h, t.w, t.h, t.shape);
+    const l = layoutPanel(model, i, w, h, t.w, t.h, t.shape);
     return { hits: l.slot.hits, d: l.d };
   });
 }
 
 for (const locale of ["es", "en"]) {
   for (const viewport of VIEWPORTS) {
-    test(`${locale} at ${viewport}: every chapter's text overlaps nothing`, () => {
+    test(`${locale} at ${viewport}: every panel's text overlaps nothing`, () => {
       const laid = layout(viewportOf(locale, viewport));
       laid.forEach((l, i) => {
         expect(
           l.hits,
-          `chapter ${i} covers ${l.hits} points of the map at ${viewport} (${locale})`,
+          `panel ${i} covers ${l.hits} points of the map at ${viewport} (${locale})`,
         ).toBe(0);
       });
     });
@@ -74,10 +74,9 @@ test("a point on the sheets' plane projects to the screen and back", () => {
   const p = at(at(model.mods, 0).heads, 2);
   const s = cam.project(p);
   const back = cam.hitPlane(s.x, s.y, p.y);
-  expect(
-    s.x >= 0 && s.x <= 1440 && s.y >= 0 && s.y <= 836,
-    "step 3 is on screen at chapter 2",
-  ).toBe(true);
+  expect(s.x >= 0 && s.x <= 1440 && s.y >= 0 && s.y <= 836, "step 3 is on screen at panel 2").toBe(
+    true,
+  );
   for (const k of ["x", "y", "z"] as const) {
     expect(Math.abs(p[k] - back[k])).toBeLessThanOrEqual(1e-6);
   }
