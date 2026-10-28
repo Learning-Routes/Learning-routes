@@ -47,9 +47,15 @@ This STEP writes the bases and makes the tooling hold them. It builds no feature
    - **The database is regional:** use a placement hint.
    - **No scale to zero, no free branches:** CI uses a local Postgres.
 3. In ADR 0001 and ADR 0004, change "Postgres on Neon" to "Postgres on PlanetScale (ADR 0005)". Leave `docs/architecture/2026-10-architecture-study.md` unchanged, because it is a dated record. ADR 0005 names the lines it supersedes. Add `@planetscale/*` to the drivers `core` may not import, in both Biome and ADR 0002.
-4. `docs/WORKING_AGREEMENT.md`:
+4. **The name while it is built: "New Learning Routes".** This is an owner decision. The platform replaces v1 gradually; `FOUNDATIONS.md` §2 has the four stages. Until the switch, the visible name is **New Learning Routes**:
+   - the `platform/README.md` title;
+   - the `<title>` and the app's brand text, from one constant in `core/locales` (browser-safe), so the switch is a one-line change;
+   - the planned host `new.learningroutes.com`, recorded as a constant and in the runbook, but not deployed in this STEP.
+
+   Technical names keep their final form: `@learning-routes/*` packages and `learning-routes-*` Workers. Add a test that the brand constant is the only place the visible name is written.
+5. `docs/WORKING_AGREEMENT.md`:
    - under "STEP files", the numbering above replaces the line pointing at the v1 repository;
-   - a new "Clean code" section lists each rule from §3 with the tool that enforces it;
+   - a new "Clean code" section lists each rule from §3 and §4 with the tool that enforces it;
    - a new "Public repository" section holds the rules from §2.
 
 ## §2. A public repository with contributors
@@ -114,7 +120,34 @@ This STEP writes the bases and makes the tooling hold them. It builds no feature
     - `example.com` and `example.org` addresses are allowed;
     - keep a small, commented allowlist for false positives.
 
-## §3. Clean code, enforced
+## §3. Names that make sense
+
+Owner, 28 October: good names from the start. `FOUNDATIONS.md` §4b holds the words and the conventions. This section makes the code match them before Platform STEP 2 adds to it. Every rename uses `git mv`, so history follows, and changes no behaviour. Build, tests and budgets stay green at every commit.
+
+1. **`packages/journey` becomes `packages/route-map`** (`@learning-routes/route-map`). The product word is "route map", not "journey". The files drop the repeated prefix and move to kebab-case:
+   - `journey_camera.ts` becomes `camera.ts`;
+   - `journey_map_layout.ts` becomes `layout.ts`;
+   - `journey_map_paths.ts` becomes `paths.ts`;
+   - `journey_terrain.ts` becomes `terrain.ts`.
+
+   `card_tilt.ts` and `landing_placement.ts` become `card-tilt.ts` and `landing-placement.ts`. If they are not route-map geometry, move them where they are used and say so in the PR. Update the comments that mention old paths, such as `journey_map_layout.js` and the Rails test names.
+2. **`packages/ui-tokens` becomes `packages/design-tokens`** (`@learning-routes/design-tokens`).
+3. **`packages/core/src`, one name per concept:**
+   - `blocks.ts` and `learning/registry.ts` (the block vocabulary) become `blocks/schema.ts` and `blocks/types.ts`. Two files called "registry" for different things confuse. `registry` now means only the action registry.
+   - `text.ts` becomes `localized-text.ts`.
+   - `content/text.ts` becomes `content/ruby-text.ts`, since it holds Ruby's text semantics.
+   - `v1.ts` and `coerce.ts` become `v1-import/import.ts` and `v1-import/loose-json.ts`.
+   - `content/aftermath.ts` becomes `content/trailing-content.ts`. Keep the comment that defines the term, reworded to match the new name.
+4. **The root package** `learning-routes-platform` becomes `@learning-routes/platform`.
+5. **Enforce it:**
+   - Biome's `useFilenamingConvention` set to kebab-case;
+   - a test that every action name matches `^[a-z]+(\.[a-z]+)+$`;
+   - a check that fails on a file named `utils`, `helpers`, `misc` or `common`.
+
+   Platform STEP 2 adds the database naming test.
+6. **The glossary is the source of truth.** If you find a word in code or copy that the glossary calls "Not", rename it in this section. If a case is unclear, ask in the PR.
+
+## §4. Clean code, enforced
 
 Platform STEP 2 is born under these rules.
 
