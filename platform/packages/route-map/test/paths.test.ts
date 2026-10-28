@@ -1,13 +1,7 @@
 import { expect, test } from "vitest";
-import {
-  buildTree,
-  type Layout,
-  type LayoutNode,
-  layoutJourney,
-  type XY,
-} from "../src/journey_map_layout";
-import { buildPaths, type Paths, samplePath } from "../src/journey_map_paths";
-import { SHAPES, type ShapeStage, stage, VIEW } from "./journey_shapes";
+import { buildTree, type Layout, type LayoutNode, layoutRouteMap, type XY } from "../src/layout";
+import { buildPaths, type Paths, samplePath } from "../src/paths";
+import { SHAPES, type ShapeStage, stage, VIEW } from "./shapes";
 
 const WHITESPACE = /\s+/;
 
@@ -108,7 +102,7 @@ function runs(stages: ShapeStage[], wave: number, current = currents(stages)): R
 function computeRun(stages: ShapeStage[], wave: number, current: (string | null)[]): Run {
   const opts = { ...VIEW, wave };
   const tree = buildTree({ title: "Ruta" }, stages);
-  const layout = layoutJourney(tree, opts);
+  const layout = layoutRouteMap(tree, opts);
   const variants = current.map((currentId) => {
     const paths = buildPaths(layout, tree, currentId, opts);
     const samples = Object.fromEntries(

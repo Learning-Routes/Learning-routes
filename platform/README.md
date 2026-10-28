@@ -10,7 +10,7 @@ Learning Routes is a platform where creators build learning routes by talking to
 | `apps/api`           | The API on Hono and Workers (`GET /health` today)                |
 | `packages/core`      | The domain: schemas and business rules, with no platform imports |
 | `packages/ui-tokens` | The Ciruela design tokens and the Archivo and DM Mono fonts      |
-| `packages/journey`   | The route map modules                                            |
+| `packages/route-map` | The route map's geometry                                     |
 | `docs/`              | Decisions, lessons from v1 and how we work                       |
 
 ## Install and run

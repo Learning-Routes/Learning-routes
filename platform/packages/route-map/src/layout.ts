@@ -1,5 +1,6 @@
-// WP-37 — the journey as a map. Pure geometry: NO DOM, no Stimulus, no CSS, so
-// every rule below is asserted under node by test/javascript/journey_map_layout_test.rb.
+// WP-37 — a route as a map. Pure geometry: NO DOM, no Stimulus, no CSS, ported
+// from v1's app/javascript/lib/journey_map_layout.js; every rule below is asserted in
+// test/layout.test.ts.
 //
 // THE TREE. Route → modules (along a spine) → primary steps → reinforcement.
 // It is never deeper than that, and every node of a kind has the same size.
@@ -345,11 +346,11 @@ function validated(overrides: Partial<LayoutOptions>): LayoutOptions {
   const o = { ...DEFAULTS, ...overrides };
   for (const [key, value] of Object.entries(o)) {
     if (!Number.isFinite(value))
-      throw new Error(`journey layout option ${key} must be a finite number, got ${value}`);
+      throw new Error(`route map layout option ${key} must be a finite number, got ${value}`);
   }
   for (const key of ["rowSize", "fanRowSize"] as const) {
     if (!Number.isInteger(o[key]) || o[key] < 1)
-      throw new Error(`journey layout option ${key} must be an integer >= 1, got ${o[key]}`);
+      throw new Error(`route map layout option ${key} must be an integer >= 1, got ${o[key]}`);
   }
   return o;
 }
@@ -403,7 +404,7 @@ function connectRoute(
   }
 }
 
-export function layoutJourney(tree: Tree, overrides: Partial<LayoutOptions> = {}): Layout {
+export function layoutRouteMap(tree: Tree, overrides: Partial<LayoutOptions> = {}): Layout {
   const o = validated(overrides);
   const out: LayoutParts = { nodes: [], edges: [], cells: [], modules: [] };
   const moduleSize = nodeSize("module", o);

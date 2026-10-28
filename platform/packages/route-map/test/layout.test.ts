@@ -6,10 +6,10 @@ import {
   type LayoutCell,
   type LayoutNode,
   type LayoutOptions,
-  layoutJourney,
+  layoutRouteMap,
   type XY,
-} from "../src/journey_map_layout";
-import { SHAPES, type ShapeStage, stage, VIEW } from "./journey_shapes";
+} from "../src/layout";
+import { SHAPES, type ShapeStage, stage, VIEW } from "./shapes";
 
 // WP-37 §2. The map's geometry is a pure module, asserted without a browser.
 //
@@ -24,7 +24,7 @@ const OPTION_SETS: Record<string, Partial<LayoutOptions>> = {
 };
 
 // WP-37b §2: with every default the output is WP-37's, BYTE FOR BYTE. SHA-256 of
-// JSON.stringify(layoutJourney(buildTree({ title: "Ruta" }, stages), {})) as produced
+// JSON.stringify(layoutRouteMap(buildTree({ title: "Ruta" }, stages), {})) as produced
 // by b907fea9's module (in the Rails repository). To regenerate (only if WP-37's
 // picture itself is meant to change): `git show b907fea9:app/javascript/lib/journey_map_layout.js
 // > /tmp/old.mjs` and hash its output over SHAPES the same way `digest` below does.
@@ -62,7 +62,7 @@ function layout(stages: ShapeStage[], overrides: Partial<LayoutOptions> = {}): L
   const key = JSON.stringify([stages, overrides]);
   let result = LAYOUTS.get(key);
   if (!result) {
-    result = layoutJourney(buildTree({ title: "Ruta" }, stages), overrides);
+    result = layoutRouteMap(buildTree({ title: "Ruta" }, stages), overrides);
     LAYOUTS.set(key, result);
   }
   return result;
@@ -71,7 +71,7 @@ function layout(stages: ShapeStage[], overrides: Partial<LayoutOptions> = {}): L
 function digest(stages: ShapeStage[]): string {
   const tree = buildTree({ title: "Ruta" }, stages);
   return createHash("sha256")
-    .update(JSON.stringify(layoutJourney(tree, {})))
+    .update(JSON.stringify(layoutRouteMap(tree, {})))
     .digest("hex");
 }
 
@@ -340,7 +340,7 @@ for (const bad of [
   test(`a bad option is refused: ${JSON.stringify(bad)}`, () => {
     const tree = buildTree({ title: "R" }, [stage("m0", { primaries: 2 })]);
     expect(
-      () => layoutJourney(tree, bad as unknown as Partial<LayoutOptions>),
+      () => layoutRouteMap(tree, bad as unknown as Partial<LayoutOptions>),
       `${JSON.stringify(bad)} was accepted`,
     ).toThrow();
   });
@@ -413,17 +413,17 @@ const OLD_LAYOUT = "../src/journey_layout";
 test("the old satellite layout is gone", async () => {
   await expect(
     import(/* @vite-ignore */ OLD_LAYOUT),
-    "journey_layout still exists beside journey_map_layout",
+    "v1's old satellite layout came back beside layout.ts",
   ).rejects.toThrow();
   const files = Object.keys(
     import.meta.glob("../src/*.ts", { query: "?raw", import: "default", eager: true }),
   ).sort();
   expect(files).toEqual([
-    "../src/card_tilt.ts",
-    "../src/journey_camera.ts",
-    "../src/journey_map_layout.ts",
-    "../src/journey_map_paths.ts",
-    "../src/journey_terrain.ts",
-    "../src/landing_placement.ts",
+    "../src/camera.ts",
+    "../src/card-tilt.ts",
+    "../src/landing-placement.ts",
+    "../src/layout.ts",
+    "../src/paths.ts",
+    "../src/terrain.ts",
   ]);
 });
