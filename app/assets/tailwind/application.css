@@ -732,6 +732,8 @@ html[data-theme="dark"] .border-lr-hover {
 @source "../../../engines/analytics/app/views";
 @source "../../../engines/ai_orchestrator/app/views";
 @source "../../../engines/community_engine/app/views";
+/* The new platform (STEP 46) has its own styles; its class names are not Rails's. */
+@source not "../../../platform";
 
 /* ==========================================================================
    CSP-SAFE HOVER/FOCUS UTILITIES
