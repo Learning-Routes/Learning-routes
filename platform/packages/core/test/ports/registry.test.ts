@@ -10,33 +10,40 @@ import {
   isKnownBlockType,
   SYSTEM_BLOCK_TYPES,
 } from "../../src/blocks/types";
+import { fromV1Type } from "../../src/v1-import/vocabulary";
 import registry from "../golden/block_registry.json" with { type: "json" };
 import gating from "../golden/gating.json" with { type: "json" };
 
 const v1 = registry.cases[0]?.output;
+// v1's type names, in the glossary's words (the fixture keeps v1's).
+const inGlossary = (types: string[] = []) => types.map(fromV1Type).sort();
 
 describe("registry (block_registry.json)", () => {
   it("lists v1's types, authored and system", () => {
-    expect([...BLOCK_TYPES].sort()).toEqual(v1?.types);
-    expect([...AUTHORED_BLOCK_TYPES].sort()).toEqual(v1?.authored_types);
-    expect([...SYSTEM_BLOCK_TYPES].sort()).toEqual(v1?.system_types);
+    expect([...BLOCK_TYPES].sort()).toEqual(inGlossary(v1?.types));
+    expect([...AUTHORED_BLOCK_TYPES].sort()).toEqual(inGlossary(v1?.authored_types));
+    expect([...SYSTEM_BLOCK_TYPES].sort()).toEqual(inGlossary(v1?.system_types));
   });
 
   it("has v1's fences and headings", () => {
     expect([...fenceTypes()].sort()).toEqual(v1?.fence_types);
-    expect(headingMap()).toEqual(v1?.heading_map);
+    expect(headingMap()).toEqual(
+      Object.fromEntries(
+        Object.entries(v1?.heading_map ?? {}).map(([heading, type]) => [heading, fromV1Type(type)]),
+      ),
+    );
   });
 
   it("knows exactly v1's types, case-sensitively", () => {
     for (const [type, known] of Object.entries(v1?.known ?? {})) {
-      expect(isKnownBlockType(type), type).toBe(known);
+      expect(isKnownBlockType(fromV1Type(type)), type).toBe(known);
     }
   });
 
   it("has v1's default titles in en and es", () => {
     for (const [locale, titles] of Object.entries(v1?.default_titles ?? {})) {
       for (const [type, title] of Object.entries(titles)) {
-        expect(defaultTitle(type, locale as "en" | "es")).toBe(title);
+        expect(defaultTitle(fromV1Type(type), locale as "en" | "es")).toBe(title);
       }
     }
     expect(defaultTitle("tap_pairs", "en")).toBeNull();
@@ -50,7 +57,7 @@ describe("registry (block_registry.json)", () => {
 
 describe("gating (gating.json)", () => {
   it.each(gating.cases)("$input", ({ input, output }) => {
-    const role = blockRole(input);
+    const role = blockRole(fromV1Type(input));
     expect({
       gradable: role.gradable,
       gating: role.gating,

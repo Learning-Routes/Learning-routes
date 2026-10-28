@@ -193,7 +193,22 @@ Added to `spend_limits.json` (`limit: "unknown_cost"`, 9 cases, with no v1 outpu
 - **Added cases:** 5 in `lesson_parser.json`, one per locale, each with an empty `:::concept` fence before a titled section. The summary's key points are the real title alone; v1 also listed "Concepto" there.
 - **Reason:** the same defect as the freeform titles: a Spanish name in a lesson taught in another language.
 
+## A quantity that cannot be a quantity (Platform STEP 1 follow-up)
+
+`estimateCost` refuses a reported quantity that is negative, NaN or infinite (tokens of any kind, characters, audio seconds) as `unknown`, reason `invalid_quantity`, so the AI gate refuses the call.
+
+| Case | v1, and the port until now | Now |
+| ---- | -------------------------- | --- |
+| `scribe_v2`, `audioSeconds: "-1.5"` | -92 microcents: a negative cost that lowers the day's spend | unknown, `invalid_quantity` |
+| `gpt-4.1-mini`, `inputTokens: -1` | a cost lowered by one token's price | unknown, `invalid_quantity` |
+| any priced model, a quantity of NaN or ±Infinity | the port threw a `RangeError` (`BigInt` of a non-finite number) | unknown, `invalid_quantity` |
+
+- **Changed cases:** none. No recorded case reports such a quantity.
+- **Added cases:** none in the fixtures; `test/cost-fixes.test.ts` covers each kind.
+- **Reason:** a provider that reports a nonsense quantity must not move the spend, up or down.
+
 ## Kept as v1 (no fixture change)
 
 - The FSRS variant (fix 2): `fsrs.json` stays as recorded. It is a known departure from FSRS v4: see ADR 0003.
 - A wrong retry after a pass, and a right answer after a release (fix 5): `attempt_rating.json`, the "check: right, then wrong" and "check: released, then right" histories stay as recorded.
+- `asText` on a very large float (`loose-json.ts`): JavaScript prints `1e+21` where Ruby prints `1.0e+21`. No golden fixture holds such a value, so the port keeps JavaScript's form until one does; `test/loose-json.test.ts` documents it.

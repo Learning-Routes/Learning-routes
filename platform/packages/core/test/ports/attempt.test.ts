@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { type Attempt, fsrsRating, newAttempt, recordSubmission } from "../../src/learning/attempt";
 import { grade } from "../../src/learning/grader";
+import { fromV1Section, fromV1Type } from "../../src/v1-import/vocabulary";
 import fixture from "../golden/attempt_rating.json" with { type: "json" };
 
 const NOW = Date.parse("2026-10-26T12:00:00Z");
@@ -40,7 +41,7 @@ describe("attempt rating (attempt_rating.json)", () => {
   it.each(byKind("fsrs_rating"))("rating #%#", ({ input, output }) => {
     const { block_type, correct, attempts, released, payload } = input as RatingInput;
     const attempt: Attempt = {
-      ...newAttempt(block_type),
+      ...newAttempt(fromV1Type(block_type)),
       correct,
       attempts: attempts ?? 0,
       releasedAt: released ? NOW : null,
@@ -51,11 +52,11 @@ describe("attempt rating (attempt_rating.json)", () => {
 
   it.each(byKind("submissions"))("$input.name", ({ input, output }) => {
     const { section, submissions } = input as HistoryInput;
-    let attempt = newAttempt(section.type);
+    let attempt = newAttempt(fromV1Type(section.type));
     const states = submissions.map(({ payload, complete }) => {
       attempt = recordSubmission(attempt, {
         payload,
-        grading: grade(section, payload),
+        grading: grade(fromV1Section(section), payload),
         complete,
         now: NOW,
       });
@@ -66,7 +67,7 @@ describe("attempt rating (attempt_rating.json)", () => {
 
   it("ignores ratings that only exist on Object.prototype", () => {
     const attempt = {
-      ...newAttempt("flashcards"),
+      ...newAttempt("cards"),
       payload: { ratings: ["constructor", "toString"] },
     };
     expect(fsrsRating(attempt)).toBeNull();

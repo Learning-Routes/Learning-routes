@@ -200,7 +200,7 @@ function headingSection(rawTitle: string, body: string): Section {
       return simulation(title, body);
     case "scenario":
       return scenario(title, body);
-    case "flashcards":
+    case "cards":
       return flashcards(title, body);
     case "video":
       return video(title, body);

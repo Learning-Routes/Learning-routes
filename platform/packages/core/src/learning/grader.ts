@@ -165,7 +165,7 @@ export function answerable(block: unknown): boolean {
       return asArray(section.pairs).some(truthy);
     case "fill_blank":
       return asArray(section.blanks).some((blank) => !isBlank(asText(blank)));
-    case "flashcards":
+    case "cards":
       return asArray(section.cards).some(truthy);
     case "scenario":
       return asArray(section.options).some(truthy);

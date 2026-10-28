@@ -75,6 +75,14 @@ describe("the OpenRouter adapter", () => {
     expect(settle({}).cost.kind).toBe("unknown");
   });
 
+  it.each([-0.001, Number.NaN, Number.POSITIVE_INFINITY])(
+    "never records a reported cost of %s, which would move the day's spend",
+    (cost) => {
+      const bad = { ...response, usage: { ...response.usage, cost } };
+      expect(settle(bad).cost).toEqual({ kind: "unknown", reason: "invalid_quantity" });
+    },
+  );
+
   it("is the only code that names the OpenRouter endpoint", () => {
     const files = Object.entries(sources);
     expect(files.length).toBeGreaterThan(20);

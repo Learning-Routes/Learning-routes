@@ -1,4 +1,4 @@
-// STEP 41 §2 — where each chapter's text sits on the landing's map. Pure: no DOM,
+// STEP 41 §2 — where each panel's text sits on the landing's map. Pure: no DOM,
 // no three.js. The map is landing-model.ts, its cameras landing-camera.ts, what the
 // text must not cover landing-obstacles.ts; this module picks the camera and the
 // free slot for the text.
@@ -196,11 +196,11 @@ function clearestCamera(
   return chosen;
 }
 
-// Chapter i on a Wd × H stage with text w × h of this shape: if its designed spot
+// Panel i on a Wd × H stage with text w × h of this shape: if its designed spot
 // is not clear, the camera gives way (pulls back ×1.0 to ×1.55 and slides) until
 // it is; then the text takes the free slot nearest the designed one.
 // → { params, rest: { pos, tgt }, slot, anchor, d }
-export function layoutChapter(
+export function layoutPanel(
   model: Model,
   i: number,
   Wd: number,

@@ -35,3 +35,10 @@ describe("asText on numbers, as Ruby's to_s", () => {
     expect(asText(value)).toBe(text);
   });
 });
+
+describe("asText on a very large float", () => {
+  it("keeps JavaScript's form, 1e+21 where Ruby prints 1.0e+21, until a golden fixture holds one", () => {
+    // A known difference from v1, recorded in test/golden/DIVERGENCES.md.
+    expect(asText(1e21)).toBe("1e+21");
+  });
+});

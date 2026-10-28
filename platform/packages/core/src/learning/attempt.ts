@@ -60,7 +60,7 @@ export function recordSubmission(
   return next;
 }
 
-const FLASHCARD_RATINGS: Record<string, number> = {
+const CARD_RATINGS: Record<string, number> = {
   hard: HARD,
   normal: GOOD,
   good: GOOD,
@@ -76,8 +76,8 @@ export function fsrsRating(attempt: Attempt): number | null {
   if (attempt.releasedAt !== null) {
     return null;
   }
-  if (attempt.blockType === "flashcards") {
-    return flashcardRating(attempt.payload);
+  if (attempt.blockType === "cards") {
+    return cardsRating(attempt.payload);
   }
   if (attempt.correct === null) {
     return null;
@@ -89,14 +89,14 @@ export function fsrsRating(attempt: Attempt): number | null {
 }
 
 // The worst card, not the average: one card still hard brings the step back sooner.
-function flashcardRating(payload: unknown): number | null {
+function cardsRating(payload: unknown): number | null {
   const isObject = (value: unknown) =>
     value !== null && typeof value === "object" && !Array.isArray(value);
   const ratings = isObject(payload) ? (payload as Record<string, unknown>).ratings : null;
   const values = isObject(ratings) ? Object.values(ratings as object) : asArray(ratings);
   const mapped = values.flatMap((value) => {
     const key = asText(value).toLowerCase();
-    return Object.hasOwn(FLASHCARD_RATINGS, key) ? [FLASHCARD_RATINGS[key] as number] : [];
+    return Object.hasOwn(CARD_RATINGS, key) ? [CARD_RATINGS[key] as number] : [];
   });
   return mapped.length === 0 ? null : Math.min(...mapped);
 }

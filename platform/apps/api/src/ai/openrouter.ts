@@ -36,18 +36,26 @@ interface Usage {
  */
 export function settle(response: { usage?: Usage }) {
   const usage = response.usage ?? {};
-  const cost: CostEstimate =
-    typeof usage.cost === "number" && Number.isFinite(usage.cost)
-      ? {
-          kind: "known",
-          // toFixed first: 0.0000145 * 1e6 is 14.499999999999998 in floating point.
-          microcents: Math.round(Number((usage.cost * MICROCENTS_PER_CREDIT).toFixed(6))),
-        }
-      : { kind: "unknown", reason: "provider_reported_usage_required" };
   return {
-    cost,
+    cost: costOf(usage.cost),
     promptTokens: usage.prompt_tokens ?? 0,
     cachedTokens: usage.prompt_tokens_details?.cached_tokens ?? 0,
     completionTokens: usage.completion_tokens ?? 0,
+  };
+}
+
+// A cost that is not reported is unknown; one that is negative or not finite is
+// invalid and never recorded, since it would move the day's spend.
+function costOf(credits: number | null | undefined): CostEstimate {
+  if (typeof credits !== "number") {
+    return { kind: "unknown", reason: "provider_reported_usage_required" };
+  }
+  if (!Number.isFinite(credits) || credits < 0) {
+    return { kind: "unknown", reason: "invalid_quantity" };
+  }
+  // toFixed first: 0.0000145 * 1e6 is 14.499999999999998 in floating point.
+  return {
+    kind: "known",
+    microcents: Math.round(Number((credits * MICROCENTS_PER_CREDIT).toFixed(6))),
   };
 }

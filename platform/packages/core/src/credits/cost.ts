@@ -80,7 +80,10 @@ export type UnknownCostReason =
   | "missing_characters"
   | "provider_reported_usage_required"
   // A model call with no max_tokens has no ceiling on its output (ai/gate.ts).
-  | "missing_max_tokens";
+  | "missing_max_tokens"
+  // A reported quantity that is negative, NaN or infinite (ADR 0003): v1 priced a
+  // negative one as a negative cost, which lowered the day's spend.
+  | "invalid_quantity";
 
 /** A price, or an explicit unknown: never a guessed 0 (lesson 10, ADR 0003). */
 export type CostEstimate =
@@ -132,6 +135,29 @@ function decimal(value: string | number | undefined): Fraction | null {
   return { n, d };
 }
 
+const COUNTS = [
+  "inputTokens",
+  "cachedTokens",
+  "cacheWriteTokens",
+  "imageInputTokens",
+  "outputTokens",
+  "characters",
+] as const;
+
+const isQuantity = (value: number) => Number.isFinite(value) && value >= 0;
+
+// Every reported quantity is a finite number, zero or more. Absent ones are fine:
+// each price says what it needs.
+function hasValidQuantities(usage: Usage): boolean {
+  const counts = COUNTS.every((field) => usage[field] === undefined || isQuantity(usage[field]));
+  const seconds = usage.audioSeconds;
+  if (typeof seconds === "number") {
+    return counts && isQuantity(seconds);
+  }
+  const parsed = decimal(seconds);
+  return counts && (parsed === null || parsed.n >= 0n);
+}
+
 /**
  * The estimated cost of a call. A call the price table cannot price (an unknown
  * model, or a usage-priced call without its quantity) is an explicit unknown,
@@ -140,6 +166,9 @@ function decimal(value: string | number | undefined): Fraction | null {
 export function estimateCost(model: string, usage: Usage): CostEstimate {
   if (!Object.hasOwn(PRICING, model)) {
     return unknown("unknown_model");
+  }
+  if (!hasValidQuantities(usage)) {
+    return unknown("invalid_quantity");
   }
   const price: Price = PRICING[model as keyof typeof PRICING];
   const perCent = BigInt(MICROCENTS_PER_CENT);

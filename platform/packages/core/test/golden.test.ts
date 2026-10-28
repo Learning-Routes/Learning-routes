@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { AUTHORED_BLOCK_TYPES, BLOCK_TYPES, SYSTEM_BLOCK_TYPES } from "../src/blocks/types";
 import { importV1Block } from "../src/v1-import/import";
+import { fromV1Type } from "../src/v1-import/vocabulary";
 import blockGrader from "./golden/block_grader.json" with { type: "json" };
 import blockRegistry from "./golden/block_registry.json" with { type: "json" };
 import lessonParser from "./golden/lesson_parser.json" with { type: "json" };
@@ -48,8 +49,10 @@ describe("golden fixtures", () => {
   it("the v1 registry lists exactly the types the union defines", () => {
     const registry = blockRegistry.cases[0]?.output;
 
-    expect(registry?.types).toEqual([...BLOCK_TYPES].sort());
-    expect(registry?.authored_types).toEqual([...AUTHORED_BLOCK_TYPES].sort());
-    expect(registry?.system_types).toEqual([...SYSTEM_BLOCK_TYPES].sort());
+    // The fixture keeps v1's type names; the registry uses the glossary's.
+    const inGlossary = (types: string[] = []) => types.map(fromV1Type).sort();
+    expect(inGlossary(registry?.types)).toEqual([...BLOCK_TYPES].sort());
+    expect(inGlossary(registry?.authored_types)).toEqual([...AUTHORED_BLOCK_TYPES].sort());
+    expect(inGlossary(registry?.system_types)).toEqual([...SYSTEM_BLOCK_TYPES].sort());
   });
 });

@@ -71,3 +71,35 @@ describe("reported audio seconds", () => {
     expect(plain).toEqual({ kind: "known", microcents: 92 });
   });
 });
+
+describe("a quantity that cannot be a quantity", () => {
+  const BAD = [-1, Number.NaN, Number.POSITIVE_INFINITY, Number.NEGATIVE_INFINITY];
+  const invalid = { kind: "unknown", reason: "invalid_quantity" };
+
+  it.each(BAD)("tokens of %s make the estimate unknown, so the gate refuses the call", (bad) => {
+    for (const field of [
+      "inputTokens",
+      "cachedTokens",
+      "cacheWriteTokens",
+      "imageInputTokens",
+      "outputTokens",
+    ]) {
+      expect(estimateCost("gpt-4.1-mini", { outputTokens: 10, [field]: bad })).toEqual(invalid);
+    }
+  });
+
+  it.each(BAD)("characters of %s make the estimate unknown", (bad) => {
+    expect(estimateCost("eleven_multilingual_v2", { characters: bad })).toEqual(invalid);
+  });
+
+  it.each([...BAD, "-1.5", "-15e-1"])("audio seconds of %s make the estimate unknown", (bad) => {
+    expect(estimateCost("scribe_v2", { audioSeconds: bad })).toEqual(invalid);
+  });
+
+  it("still prices zero, which is a quantity", () => {
+    expect(estimateCost("scribe_v2", { audioSeconds: 0 })).toEqual({
+      kind: "known",
+      microcents: 0,
+    });
+  });
+});

@@ -2,6 +2,7 @@ import { z } from "zod";
 import { Block, blockSchemas } from "../blocks/schema";
 import { deterministicId } from "../ids";
 import type { Locale } from "../localized-text";
+import { fromV1Section } from "./vocabulary";
 
 // The v1 import boundary: the only place a plain string becomes localized text,
 // and a [term, definition] pair becomes an object (ADR 0003).
@@ -43,7 +44,7 @@ export async function importV1Block(section: unknown, source: V1Source): Promise
     schema = v1BlockSchema(source.locale);
     v1Schemas.set(source.locale, schema);
   }
-  const fields = schema.parse(section);
+  const fields = schema.parse(fromV1Section(section));
   // v1 graded every blank as text (ADR 0003).
   const match = fields.type === "fill_blank" ? { match: "text" } : {};
   return Block.parse({ ...fields, ...match, id: await v1BlockId(source) });
