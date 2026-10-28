@@ -5,6 +5,7 @@
   "type": "module",
   "exports": {
     "./browser": "./src/actions/names.ts",
+    "./locales": "./src/locales.ts",
     "./*": "./src/*.ts"
   },
   "scripts": {

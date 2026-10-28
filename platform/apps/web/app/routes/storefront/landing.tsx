@@ -1,7 +1,7 @@
 import { isLocale } from "@learning-routes/core/locales";
 import { data } from "react-router";
-import { alternates } from "../alternates";
-import { storefront } from "../surface";
+import { alternates } from "../../alternates";
+import { storefront } from "../../surface";
 import type { Route } from "./+types/landing";
 
 export const handle = storefront;
