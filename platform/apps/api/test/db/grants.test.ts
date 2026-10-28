@@ -16,6 +16,12 @@ const EXPECTED: Record<string, string[]> = {
   platform_roles: ["SELECT"],
   spaces: ["INSERT", "SELECT", "UPDATE"],
   user_profiles: ["INSERT", "SELECT", "UPDATE"],
+  // A route's draft: archived, never deleted.
+  blocks: ["INSERT", "SELECT", "UPDATE"],
+  lesson_prerequisites: ["DELETE", "INSERT", "SELECT"],
+  lessons: ["INSERT", "SELECT", "UPDATE"],
+  modules: ["INSERT", "SELECT", "UPDATE"],
+  routes: ["INSERT", "SELECT", "UPDATE"],
 };
 
 describe("lr_app's table privileges", () => {
