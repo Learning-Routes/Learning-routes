@@ -16,4 +16,4 @@ Never open a public issue, pull request or discussion about a vulnerability, and
 
 ## What to expect
 
-We acknowledge a report within **[TO BE SET BY THE OWNER]** and keep you informed until it is fixed. Please give us that time before saying anything in public.
+We acknowledge a report within **5 business days** and send a status update within **14 days**, then keep you informed until it is fixed. Please give us that time before saying anything in public.
