@@ -97,12 +97,20 @@ One word per concept, and the same word in the code, the database, the UI copy a
 | **version** | An immutable published snapshot of a route | release, revision (a revision is a draft counter) |
 | **enrollment** | A student in one version of a route | subscription, purchase |
 | **progress** | What a student has completed | |
-| **card** / **review** | A spaced-repetition item and one answer to it | flashcard, attempt |
+| **card** / **review** | A spaced-repetition item and one answer to it | flashcard |
+| **attempt** | One graded answer to a block (a review is one answer to a card) | |
+| **cards** | The block a student flips through, front and back | flashcards (v1's name) |
+| **trailing content** | What an author wrote after a block, kept with it | aftermath (v1's name) |
+| **panel** | One scroll section of the marketing landing | chapter, and not scene: a scene is a Motion scene |
 | **route map** | The visual map of a route a student travels | journey map |
 | **action** | One registered change or query, named `noun.verb` | endpoint, command |
 | **storefront** | A space's public pages | landing, shop |
 | **studio** | Where creators build | dashboard, admin |
 | **credits** / **spend** | What AI work costs, and the gate that limits it | tokens, when it means money |
+
+**v1's names stay in v1's data.** v1's stored rows, its lesson syntax (`:::flashcards`, `## Flashcards:`) and the golden fixtures keep v1's words. The v1 import boundary, `packages/core/src/v1-import/vocabulary.ts`, maps them to the glossary's (`flashcards` to `cards`, `aftermath` to `trailing_content`), and nothing past that boundary uses v1's names. v1's stylesheet keeps its `--journey-*` properties; the platform's design tokens call them `--route-map-*`.
+
+**Code finds its home through its first user.** `card-tilt` stays in `route-map` until something uses it; its first consumer moves it into `apps/web`.
 
 ### Conventions
 
