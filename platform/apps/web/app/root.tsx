@@ -6,11 +6,13 @@ import {
   Scripts,
   ScrollRestoration,
   useMatches,
+  useParams,
   useRouteLoaderData,
 } from "react-router";
 
 import type { Route } from "./+types/root";
 import "./app.css";
+import { isLocale } from "@learning-routes/core/locales";
 import { useEffect } from "react";
 import { pageContext } from "./context";
 import { isStorefront } from "./surface";
@@ -22,8 +24,9 @@ export function loader({ context }: Route.LoaderArgs) {
 export function Layout({ children }: { children: React.ReactNode }) {
   const nonce = useRouteLoaderData<typeof loader>("root")?.nonce;
   const storefront = isStorefront(useMatches());
+  const { lang } = useParams();
   return (
-    <html lang="es">
+    <html lang={lang && isLocale(lang) ? lang : "es"}>
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />

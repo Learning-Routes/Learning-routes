@@ -9,6 +9,10 @@ export const handle = storefront;
 // Per locale; a locale gets a page only once it has text.
 export const COPY = {
   es: { line: "Lo que sabes, convertido en una ruta." },
+  en: { line: "What you know, turned into a route." },
+  pt: { line: "O que você sabe, transformado em uma rota." },
+  fr: { line: "Ce que vous savez, transformé en parcours." },
+  it: { line: "Ciò che sai, trasformato in un percorso." },
 } as const;
 type WithText = keyof typeof COPY;
 const WITH_TEXT = Object.keys(COPY) as WithText[];
