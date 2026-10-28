@@ -1,0 +1,65 @@
+name: Platform
+
+# The new platform in platform/ (STEP 46 §1): install, typecheck, lint, test and
+# build. Skipped, not left out, when platform/ did not change, because branch
+# protection requires the platform job and a check that never reports blocks a PR.
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: platform-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # Which parts this change touches (.github/scripts/changed-parts.sh). The jobs
+  # below are skipped when platform/ did not change; Rails runs in ci.yml.
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      rails: ${{ steps.parts.outputs.rails }}
+      platform: ${{ steps.parts.outputs.platform }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          filter: blob:none
+
+      - name: List the parts that changed
+        id: parts
+        env:
+          BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
+          HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          if git cat-file -e "$BASE^{commit}" 2>/dev/null; then
+            git diff --name-only "$BASE...$HEAD"
+          fi | .github/scripts/changed-parts.sh | tee -a "$GITHUB_OUTPUT"
+
+  platform:
+    needs: changes
+    if: ${{ !cancelled() && needs.changes.outputs.platform != 'false' }}
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: platform
+    steps:
+      - uses: actions/checkout@v7.0.1
+      # The pnpm version comes from packageManager in platform/package.json.
+      - uses: pnpm/action-setup@v6.1.0
+        with:
+          package_json_file: platform/package.json
+      - uses: actions/setup-node@v7.1.0
+        with:
+          node-version-file: platform/.nvmrc
+          cache: pnpm
+          cache-dependency-path: platform/pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm typecheck
+      - run: pnpm lint
+      - run: pnpm test
+      - run: pnpm build

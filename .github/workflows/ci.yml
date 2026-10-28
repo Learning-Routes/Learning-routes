@@ -6,7 +6,33 @@ on:
     branches: [main]
 
 jobs:
+  # Which parts this change touches (.github/scripts/changed-parts.sh). The jobs
+  # below are skipped when Rails did not change; platform/ runs in platform.yml.
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      rails: ${{ steps.parts.outputs.rails }}
+      platform: ${{ steps.parts.outputs.platform }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          filter: blob:none
+
+      - name: List the parts that changed
+        id: parts
+        env:
+          BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
+          HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          if git cat-file -e "$BASE^{commit}" 2>/dev/null; then
+            git diff --name-only "$BASE...$HEAD"
+          fi | .github/scripts/changed-parts.sh | tee -a "$GITHUB_OUTPUT"
+
   scan_ruby:
+    needs: changes
+    if: ${{ !cancelled() && needs.changes.outputs.rails != 'false' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -24,6 +50,8 @@ jobs:
         run: bin/bundler-audit
 
   scan_js:
+    needs: changes
+    if: ${{ !cancelled() && needs.changes.outputs.rails != 'false' }}
     # Pinned: libvips42t64 below is the Ubuntu 24.04 package name.
     runs-on: ubuntu-24.04
     steps:
@@ -43,6 +71,8 @@ jobs:
         run: bin/importmap audit
 
   lint:
+    needs: changes
+    if: ${{ !cancelled() && needs.changes.outputs.rails != 'false' }}
     runs-on: ubuntu-latest
     env:
       RUBOCOP_CACHE_ROOT: tmp/rubocop
@@ -69,6 +99,8 @@ jobs:
         run: bin/rubocop -f github
 
   test:
+    needs: changes
+    if: ${{ !cancelled() && needs.changes.outputs.rails != 'false' }}
     # Pinned: libvips42t64 below is the Ubuntu 24.04 package name.
     runs-on: ubuntu-24.04
 
@@ -144,6 +176,8 @@ jobs:
         run: bin/rails test engines/*/test
 
   system-test:
+    needs: changes
+    if: ${{ !cancelled() && needs.changes.outputs.rails != 'false' }}
     # Pinned: libvips42t64 below is the Ubuntu 24.04 package name.
     runs-on: ubuntu-24.04
 
