@@ -112,4 +112,20 @@ describe("the actor", () => {
       404,
     );
   });
+
+  it("passes on the refreshed cookie when a session is renewed during an action", async () => {
+    const { cookie, userId } = await signIn();
+    // A session close to its end is renewed on use (Better Auth's updateAge).
+    await query(
+      URLS.migrator,
+      "update session set expires_at = now() + interval '1 day' where user_id = $1",
+      [userId],
+    );
+    const enrollmentId = await enrollment(userId);
+    const response = await api.call("/api/a/review.submit", json(review(enrollmentId), { cookie }));
+    expect(response.status).toBe(200);
+    expect(
+      response.headers.getSetCookie().some((entry) => entry.startsWith("__Host-lr_session=")),
+    ).toBe(true);
+  });
 });

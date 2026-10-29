@@ -37,7 +37,7 @@ export function harness() {
     if (origin) {
       headers.set("origin", origin);
     }
-    headers.set("cf-connecting-ip", init.ip ?? `192.0.2.${Math.floor(Math.random() * 250) + 1}`);
+    headers.set("cf-connecting-ip", init.ip ?? randomIp());
     const url = path.startsWith("http") ? path : `${APP}${path}`;
     return app.request(url, { ...init, headers }, env, ctx);
   };
@@ -52,3 +52,13 @@ export const json = (body: unknown, extra: Record<string, string> = {}) => ({
 });
 
 export const randomEmail = () => `learner-${crypto.randomUUID()}@example.com`;
+
+/**
+ * A documentation-range IPv6 address no earlier test run used: rate-limit rows
+ * outlive a run, and Better Auth counts an IPv6 client by its /64, so the random
+ * part goes in the prefix.
+ */
+export const randomIp = () => {
+  const [a, b] = crypto.randomUUID().split("-");
+  return `2001:db8:${a?.slice(0, 4)}:${b}::1`;
+};
