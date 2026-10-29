@@ -51,3 +51,9 @@ export function upcastSnapshot(format: number, json: unknown): Snapshot {
       throw new RangeError(`unknown snapshot format: ${format}`);
   }
 }
+
+/** A draft's content as a version stores it: the same ids, without the draft's own fields. */
+export function snapshotOf(draft: Snapshot): Snapshot {
+  const { route, modules, lessons, prerequisites, blocks } = draft;
+  return { route, modules, lessons, prerequisites, blocks };
+}
