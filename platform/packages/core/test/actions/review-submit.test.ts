@@ -92,6 +92,17 @@ describe("review.submit", () => {
     expect(world.reviews.size).toBe(0);
   });
 
+  it("answers invalid to a reviewId reused for another item, and leaves no card behind", async () => {
+    const world = testWorld();
+    await submit(input(R1), testCtx("ui", world));
+    const otherItem = { ...input(R1), itemId: "0192d3a0-0000-7000-8000-0000000000c2" };
+    expect(await submit(otherItem, testCtx("ui", world))).toMatchObject({
+      ok: false,
+      code: "invalid",
+    });
+    expect(world.cards.size).toBe(1);
+  });
+
   it("answers not_found on a revoked enrollment", async () => {
     const world = testWorld();
     const enrollment = world.enrollments.get(ENROLLMENTS["student-1"] as string);

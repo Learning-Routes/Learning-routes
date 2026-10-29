@@ -1,6 +1,5 @@
 import { z } from "zod";
 import { type Card, review } from "../learning/fsrs";
-import { NEW_CARD } from "../learning/replay";
 import type { Repos, ReviewRecord } from "../repos/ports";
 import { ActionError, defineAction, type Scope } from "./define";
 
@@ -36,15 +35,6 @@ async function ownEnrollment(repos: Repos, scope: Scope, enrollmentId: string, u
   }
 }
 
-/** A new card's row, made before its first review so the review can name it. */
-async function newCard(repos: Repos, spaceId: string, userId: string, itemId: string, at: number) {
-  const created = await repos.learning.saveCard(spaceId, userId, itemId, NEW_CARD, at);
-  if (!created.ok) {
-    throw new ActionError("not_found", "not found");
-  }
-  return created.value.cardId;
-}
-
 /**
  * New: records one spaced-repetition review and schedules the card with FSRS.
  * Safe to retry: the same reviewId is applied once, and a retry gets the first result.
@@ -71,12 +61,14 @@ export const reviewSubmit = defineAction({
     const userId = ctx.actor.userId;
     await ownEnrollment(ctx.repos, scope, input.enrollmentId, userId);
     return ctx.repos.transaction(async (repos) => {
-      const stored = await repos.learning.card(scope.spaceId, userId, input.itemId);
-      const before = stored?.card ?? NEW_CARD;
+      // Locked until the end: a second review of this card waits for this one.
+      const locked = await repos.learning.lockCard(scope.spaceId, userId, input.itemId);
+      if (!locked.ok) {
+        throw new ActionError("not_found", "not found");
+      }
+      const { id: cardId, card: before } = locked.value;
       // The server schedules; a clock ahead of the server's cannot push a review later.
       const reviewedAt = Math.min(input.at, ctx.clock.now());
-      const cardId =
-        stored?.id ?? (await newCard(repos, scope.spaceId, userId, input.itemId, reviewedAt));
       const appended = await repos.reviews.append(scope.spaceId, userId, {
         reviewId: input.reviewId,
         cardId,
@@ -85,19 +77,17 @@ export const reviewSubmit = defineAction({
         elapsedMs: input.elapsedMs,
         stateBefore: before,
       });
+      if (!appended.ok || appended.value.review.cardId !== cardId) {
+        // Throwing undoes this unit of work, a card it made included.
+        throw new ActionError("invalid", "this reviewId was already used for another card");
+      }
       // A retry: the stored review decides the answer, and the card is not touched.
-      if (appended.duplicate) {
-        return resultOf(appended.review, input.itemId, true);
+      if (appended.value.duplicate) {
+        return resultOf(appended.value.review, input.itemId, true);
       }
       const next = review(before, input.rating, reviewedAt);
-      await repos.learning.saveCard(
-        scope.spaceId,
-        userId,
-        input.itemId,
-        next.card,
-        next.nextReviewAt,
-      );
-      return resultOf(appended.review, input.itemId, false);
+      await repos.learning.saveCard(scope.spaceId, userId, cardId, next.card, next.nextReviewAt);
+      return resultOf(appended.value.review, input.itemId, false);
     });
   },
 });

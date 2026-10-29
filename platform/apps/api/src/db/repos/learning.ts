@@ -5,6 +5,7 @@ import type {
   RepoResult,
   ReviewRecord,
   Reviews,
+  StoredCard,
 } from "@learning-routes/core/repos/ports";
 import { and, asc, eq } from "drizzle-orm";
 import { cards, progress, reviews } from "../schema/learning";
@@ -45,24 +46,54 @@ const saveProgress = (db: Db, spaceId: string, userId: string, record: ProgressR
     return ok(undefined);
   });
 
+/** Made new if missing, never reset: a racing first review waits on the lock instead. */
+const lockCard = (db: Db, where: { spaceId: string; userId: string; itemId: string }) =>
+  attempt(db, async (): Promise<RepoResult<StoredCard>> => {
+    await db
+      .insert(cards)
+      .values(where)
+      .onConflictDoNothing({ target: [cards.userId, cards.itemId] });
+    const [row] = await db
+      .select()
+      .from(cards)
+      .where(
+        and(
+          eq(cards.userId, where.userId),
+          eq(cards.itemId, where.itemId),
+          eq(cards.spaceId, where.spaceId),
+        ),
+      )
+      .for("update");
+    return row === undefined
+      ? fail("not_found")
+      : ok({ id: row.id, card: cardOf(row), dueAt: ms(row.dueAt) });
+  });
+
 const saveCard = (
   db: Db,
-  where: { spaceId: string; userId: string; itemId: string },
+  where: { spaceId: string; userId: string; cardId: string },
   card: Card,
   dueAt: number,
 ) =>
-  attempt(db, async (): Promise<RepoResult<{ cardId: string }>> => {
+  attempt(db, async (): Promise<RepoResult<void>> => {
     const { lastReviewAt, ...counts } = card;
-    const values = { ...counts, lastReviewAt: date(lastReviewAt), dueAt: new Date(dueAt) };
-    const [saved] = await db
-      .insert(cards)
-      .values({ ...values, ...where })
-      .onConflictDoUpdate({
-        target: [cards.userId, cards.itemId],
-        set: { ...values, updatedAt: new Date() },
+    const saved = await db
+      .update(cards)
+      .set({
+        ...counts,
+        lastReviewAt: date(lastReviewAt),
+        dueAt: new Date(dueAt),
+        updatedAt: new Date(),
       })
-      .returning({ cardId: cards.id });
-    return saved === undefined ? fail("not_found") : ok(saved);
+      .where(
+        and(
+          eq(cards.id, where.cardId),
+          eq(cards.userId, where.userId),
+          eq(cards.spaceId, where.spaceId),
+        ),
+      )
+      .returning({ id: cards.id });
+    return saved.length === 1 ? ok(undefined) : fail("not_found");
   });
 
 export const learningRepo = (db: Db): Learning => ({
@@ -88,8 +119,9 @@ export const learningRepo = (db: Db): Learning => ({
       .where(and(eq(cards.userId, userId), eq(cards.itemId, itemId), eq(cards.spaceId, spaceId)));
     return row === undefined ? null : { id: row.id, card: cardOf(row), dueAt: ms(row.dueAt) };
   },
-  saveCard: (spaceId, userId, itemId, card, dueAt) =>
-    saveCard(db, { spaceId, userId, itemId }, card, dueAt),
+  lockCard: (spaceId, userId, itemId) => lockCard(db, { spaceId, userId, itemId }),
+  saveCard: (spaceId, userId, cardId, card, dueAt) =>
+    saveCard(db, { spaceId, userId, cardId }, card, dueAt),
 });
 
 export const reviewsRepo = (db: Db): Reviews => ({
@@ -101,15 +133,21 @@ export const reviewsRepo = (db: Db): Reviews => ({
       .onConflictDoNothing({ target: [reviews.userId, reviews.reviewId] })
       .returning();
     if (inserted !== undefined) {
-      return { review: reviewOf(inserted), duplicate: false };
+      return ok({ review: reviewOf(inserted), duplicate: false });
     }
+    // Read back in this space only: a reviewId used in another space is a conflict.
     const [stored] = await db
       .select()
       .from(reviews)
-      .where(and(eq(reviews.userId, userId), eq(reviews.reviewId, entry.reviewId)));
-    if (stored === undefined) {
-      throw new Error("a review conflicted but cannot be read back");
-    }
-    return { review: reviewOf(stored), duplicate: true };
+      .where(
+        and(
+          eq(reviews.userId, userId),
+          eq(reviews.reviewId, entry.reviewId),
+          eq(reviews.spaceId, spaceId),
+        ),
+      );
+    return stored === undefined
+      ? fail("conflict")
+      : ok({ review: reviewOf(stored), duplicate: true });
   },
 });

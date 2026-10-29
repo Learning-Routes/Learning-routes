@@ -4,7 +4,7 @@ import { enrollments } from "../schema/learning";
 import { attempt, type Db, fail, ok } from "./shared";
 
 // Enrollments on Postgres (Platform STEP 2 §4). Joining is app.enroll's: it acts
-// for the transaction's user, so the port's userId only names them.
+// for the transaction's user, and only for them.
 
 async function enroll(
   db: Db,
@@ -42,7 +42,7 @@ export const enrollmentsRepo = (db: Db): Enrollments => ({
       .where(and(eq(enrollments.id, enrollmentId), eq(enrollments.spaceId, spaceId)));
     return row === undefined ? fail("not_found") : ok(row);
   },
-  enroll: (_userId, routeId) => enroll(db, routeId),
+  enroll: (routeId) => enroll(db, routeId),
   setPinnedVersion: (spaceId, enrollmentId, version) =>
     attempt(db, async () => {
       const updated = await db

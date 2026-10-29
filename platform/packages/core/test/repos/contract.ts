@@ -230,42 +230,52 @@ export function repositoryContract(name: string, withFixture: WithFixture) {
       });
     });
 
-    it("gives a retried review its first result back", async () => {
+    it("locks a card without ever resetting it, and gives a retried review its first result back", async () => {
       await withFixture(async ({ spaceId, ownerId, learnerId, actAs }) => {
         const owner = await actAs(ownerId);
         value(await owner.memberships.add(spaceId, { userId: learnerId, role: "student" }));
         const learner = await actAs(learnerId);
         const itemId = newId();
         const at = Date.UTC(2026, 9, 28);
+        const fresh = value(await learner.learning.lockCard(spaceId, learnerId, itemId));
+        expect(fresh).toMatchObject({ card: NEW_CARD, dueAt: null });
         const first = review(NEW_CARD, 3, at);
-        const { cardId } = value(
+        value(
           await learner.learning.saveCard(
             spaceId,
             learnerId,
-            itemId,
+            fresh.id,
             first.card,
             first.nextReviewAt,
           ),
         );
+        // Locking it again finds the saved card, never a new one.
+        expect(value(await learner.learning.lockCard(spaceId, learnerId, itemId))).toEqual({
+          id: fresh.id,
+          card: first.card,
+          dueAt: first.nextReviewAt,
+        });
         const entry = {
           reviewId: newId(),
-          cardId,
+          cardId: fresh.id,
           rating: 3,
           reviewedAt: at,
           elapsedMs: 900,
           stateBefore: NEW_CARD,
         };
-        expect(await learner.reviews.append(spaceId, learnerId, entry)).toEqual({
+        expect(value(await learner.reviews.append(spaceId, learnerId, entry))).toEqual({
           review: entry,
           duplicate: false,
         });
         // The retry carries another rating; the stored review wins.
-        expect(await learner.reviews.append(spaceId, learnerId, { ...entry, rating: 1 })).toEqual({
+        expect(
+          value(await learner.reviews.append(spaceId, learnerId, { ...entry, rating: 1 })),
+        ).toEqual({
           review: entry,
           duplicate: true,
         });
         expect(await learner.learning.card(spaceId, learnerId, itemId)).toEqual({
-          id: cardId,
+          id: fresh.id,
           card: first.card,
           dueAt: first.nextReviewAt,
         });
@@ -292,7 +302,7 @@ export function repositoryContract(name: string, withFixture: WithFixture) {
         await publish(owner, spaceId, fields.id, 1, ownerId);
 
         const learner = await actAs(learnerId);
-        const { enrollmentId } = value(await learner.enrollments.enroll(learnerId, fields.id));
+        const { enrollmentId } = value(await learner.enrollments.enroll(fields.id));
         expect(value(await learner.enrollments.get(spaceId, enrollmentId))).toMatchObject({
           routeId: fields.id,
           userId: learnerId,

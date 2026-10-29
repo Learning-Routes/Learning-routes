@@ -13,7 +13,8 @@ import { routeVersions } from "../schema/versions";
 import { attempt, type Db, fail, ok } from "./shared";
 
 // A route's draft on Postgres (Platform STEP 2 §4): read in position order, and
-// changed only by edits that name the revision they read.
+// changed only by edits that name the revision they read. An archived route is
+// gone for all of it.
 
 type Where = { spaceId: string; routeId: string };
 
@@ -78,7 +79,13 @@ async function getDraft(db: Db, where: Where): Promise<RepoResult<RouteDraft>> {
   const [route] = await db
     .select()
     .from(routes)
-    .where(and(eq(routes.id, where.routeId), eq(routes.spaceId, where.spaceId)));
+    .where(
+      and(
+        eq(routes.id, where.routeId),
+        eq(routes.spaceId, where.spaceId),
+        isNull(routes.archivedAt),
+      ),
+    );
   if (route === undefined) {
     return fail("not_found");
   }
@@ -114,7 +121,7 @@ const listRoutes = (db: Db, spaceId: string): Promise<RouteSummary[]> =>
       latestPublishedVersion: routes.latestPublishedVersion,
     })
     .from(routes)
-    .where(eq(routes.spaceId, spaceId))
+    .where(and(eq(routes.spaceId, spaceId), isNull(routes.archivedAt)))
     .orderBy(asc(sql`${routes.slug} collate "C"`));
 
 /**
@@ -130,6 +137,7 @@ const edit = (db: Db, where: Where, expected: number, change: () => Promise<Repo
         and(
           eq(routes.id, where.routeId),
           eq(routes.spaceId, where.spaceId),
+          isNull(routes.archivedAt),
           eq(routes.draftRevision, expected),
         ),
       )
@@ -138,7 +146,13 @@ const edit = (db: Db, where: Where, expected: number, change: () => Promise<Repo
       const [exists] = await db
         .select({ id: routes.id })
         .from(routes)
-        .where(and(eq(routes.id, where.routeId), eq(routes.spaceId, where.spaceId)));
+        .where(
+          and(
+            eq(routes.id, where.routeId),
+            eq(routes.spaceId, where.spaceId),
+            isNull(routes.archivedAt),
+          ),
+        );
       return fail(exists === undefined ? "not_found" : "conflict");
     }
     const changed = await change();
@@ -186,7 +200,14 @@ const markPublished = (db: Db, where: Where, version: number) =>
     const updated = await db
       .update(routes)
       .set({ latestPublishedVersion: version, updatedAt: new Date() })
-      .where(and(eq(routes.id, where.routeId), eq(routes.spaceId, where.spaceId), published))
+      .where(
+        and(
+          eq(routes.id, where.routeId),
+          eq(routes.spaceId, where.spaceId),
+          isNull(routes.archivedAt),
+          published,
+        ),
+      )
       .returning({ id: routes.id });
     return updated.length === 1 ? ok(undefined) : fail("not_found");
   });
