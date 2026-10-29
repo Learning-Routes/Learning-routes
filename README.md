@@ -96,4 +96,6 @@ For a hotfix the owner has decided to ship from a branch, `KAMAL_ALLOW_BRANCH_DE
 
 ## License
 
-All rights reserved.
+The whole repository, the Rails app and `platform/` alike, is licensed under the Functional Source License, version 1.1, with Apache 2.0 as the future license (FSL-1.1-ALv2). See [`LICENSE.md`](LICENSE.md). Anyone may use the code for any purpose except a Competing Use, as the license defines it. Each version becomes available under Apache 2.0 two years after it is published.
+
+Contributions are made under the Contributor License Agreement in [`CLA.md`](CLA.md). See [`CONTRIBUTING.md`](CONTRIBUTING.md).

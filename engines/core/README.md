@@ -25,4 +25,4 @@ $ gem install core
 Contribution directions go here.
 
 ## License
-The gem is available as open source under the terms of the [MIT License](https://opensource.org/licenses/MIT).
+Part of the Learning Routes repository, under its license: [`LICENSE.md`](../../LICENSE.md) (FSL-1.1-ALv2).
