@@ -1,5 +1,6 @@
-import { BLOCK_TYPES } from "@learning-routes/core/blocks/types";
+import { BLOCK_TYPES, type BlockTypeName } from "@learning-routes/core/blocks/types";
 import { Route } from "@learning-routes/core/domain";
+import type { Locale, LocalizedText } from "@learning-routes/core/localized-text";
 import { sql } from "drizzle-orm";
 import {
   bigint,
@@ -34,11 +35,11 @@ export const routes = pgTable(
       .notNull()
       .references(() => spaces.id),
     slug: text().notNull(),
-    title: jsonb().notNull(),
-    description: jsonb(),
-    sourceLocale: text().notNull(),
-    access: text().notNull(),
-    pricing: text().notNull(),
+    title: jsonb().$type<LocalizedText>().notNull(),
+    description: jsonb().$type<LocalizedText>(),
+    sourceLocale: text().$type<Locale>().notNull(),
+    access: text().$type<Route["access"]>().notNull(),
+    pricing: text().$type<Route["pricing"]>().notNull(),
     // Bumped on every draft change; an edit names the revision it read (§4.3).
     draftRevision: bigint({ mode: "number" }).notNull().default(0),
     latestPublishedVersion: integer(),
@@ -71,7 +72,7 @@ export const modules = pgTable(
     spaceId: uuid().notNull(),
     routeId: uuid().notNull(),
     position: position().notNull(),
-    title: jsonb().notNull(),
+    title: jsonb().$type<LocalizedText>().notNull(),
     createdAt: createdAt(),
     updatedAt: updatedAt(),
     archivedAt: archivedAt(),
@@ -96,7 +97,7 @@ export const lessons = pgTable(
     routeId: uuid().notNull(),
     moduleId: uuid().notNull(),
     position: position().notNull(),
-    title: jsonb().notNull(),
+    title: jsonb().$type<LocalizedText>().notNull(),
     createdAt: createdAt(),
     updatedAt: updatedAt(),
     archivedAt: archivedAt(),
@@ -122,9 +123,9 @@ export const blocks = pgTable(
     spaceId: uuid().notNull(),
     lessonId: uuid().notNull(),
     position: position().notNull(),
-    kind: text().notNull(),
+    kind: text().$type<BlockTypeName>().notNull(),
     // Validated by core's Block schema before every write.
-    data: jsonb().notNull(),
+    data: jsonb().$type<Record<string, unknown>>().notNull(),
     createdAt: createdAt(),
     updatedAt: updatedAt(),
     archivedAt: archivedAt(),

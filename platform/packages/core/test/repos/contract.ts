@@ -16,7 +16,10 @@ export interface ContractFixture {
   ownerId: string;
   /** A user with no role in the space yet. */
   learnerId: string;
-  /** The repositories, acting as this user. */
+  /**
+   * The repositories, acting as this user. The last call wins: Postgres acts for
+   * one user per transaction, so a test calls actAs again whenever the actor changes.
+   */
   actAs(userId: string): Promise<Repos>;
 }
 
@@ -309,20 +312,22 @@ export function repositoryContract(name: string, withFixture: WithFixture) {
         }
 
         // Version 2 removes one lesson and adds another.
-        const draft = value(await owner.routeDrafts.get(spaceId, fields.id));
+        const author = await actAs(ownerId);
+        const draft = value(await author.routeDrafts.get(spaceId, fields.id));
         revision = value(
-          await owner.routeDrafts.archiveLesson(spaceId, fields.id, draft.revision, removed.id),
+          await author.routeDrafts.archiveLesson(spaceId, fields.id, draft.revision, removed.id),
         ).revision;
         const added = lesson(m.id, "k");
-        value(await owner.routeDrafts.addLesson(spaceId, fields.id, revision, added));
-        await publish(owner, spaceId, fields.id, 2, ownerId);
-        value(await learner.enrollments.setPinnedVersion(spaceId, enrollmentId, 2));
+        value(await author.routeDrafts.addLesson(spaceId, fields.id, revision, added));
+        await publish(author, spaceId, fields.id, 2, ownerId);
 
-        const pinned = value(await learner.enrollments.get(spaceId, enrollmentId));
+        const student = await actAs(learnerId);
+        value(await student.enrollments.setPinnedVersion(spaceId, enrollmentId, 2));
+        const pinned = value(await student.enrollments.get(spaceId, enrollmentId));
         const version = value(
-          await learner.routeVersions.get(spaceId, fields.id, pinned.pinnedVersion),
+          await student.routeVersions.get(spaceId, fields.id, pinned.pinnedVersion),
         );
-        const progress = await learner.learning.progress(spaceId, enrollmentId);
+        const progress = await student.learning.progress(spaceId, enrollmentId);
         expect(progress.map((record) => record.lessonId).sort()).toEqual(
           [kept.id, removed.id].sort(),
         );

@@ -1,4 +1,4 @@
-import { ACTOR_KINDS } from "@learning-routes/core/actions/actor";
+import { ACTOR_KINDS, type ActorKind } from "@learning-routes/core/actions/actor";
 import { sql } from "drizzle-orm";
 import { bigint, check, index, jsonb, pgTable, text, uuid } from "drizzle-orm/pg-core";
 import { createdAt, id, oneOf } from "./columns";
@@ -16,7 +16,7 @@ export const actionLog = pgTable(
       .references(() => spaces.id),
     // No foreign key, so erasing the user leaves the record whole.
     actorUserId: uuid().notNull(),
-    actorVia: text().notNull(),
+    actorVia: text().$type<ActorKind>().notNull(),
     agentRunId: uuid(),
     action: text().notNull(),
     // Secrets and free text are redacted by core before the insert.

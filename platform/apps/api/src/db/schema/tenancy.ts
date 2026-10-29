@@ -1,4 +1,5 @@
 import { SpaceRole } from "@learning-routes/core/domain";
+import type { Locale, LocalizedText } from "@learning-routes/core/localized-text";
 import { sql } from "drizzle-orm";
 import { boolean, check, index, jsonb, pgTable, primaryKey, text, uuid } from "drizzle-orm/pg-core";
 import { user } from "./auth";
@@ -34,9 +35,9 @@ export const spaces = pgTable(
   {
     id: id(),
     slug: text().notNull().unique(),
-    name: jsonb().notNull(),
-    defaultLocale: text().notNull(),
-    locales: text().array().notNull(),
+    name: jsonb().$type<LocalizedText>().notNull(),
+    defaultLocale: text().$type<Locale>().notNull(),
+    locales: text().array().$type<Locale[]>().notNull(),
     createdAt: createdAt(),
     updatedAt: updatedAt(),
     archivedAt: archivedAt(),
@@ -57,7 +58,7 @@ export const memberships = pgTable(
     userId: uuid()
       .notNull()
       .references(() => user.id, { onDelete: "cascade" }),
-    role: text().notNull(),
+    role: text().$type<SpaceRole>().notNull(),
     createdAt: createdAt(),
   },
   (t) => [
