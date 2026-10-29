@@ -15,7 +15,8 @@
     "db:lint": "squawk -c .squawk.toml drizzle/*.sql",
     "db:auth-schema": "auth generate --config src/auth/schema.config.ts --adapter drizzle --dialect postgresql --output auth-schema.generated.ts -y",
     "db:generate": "drizzle-kit generate",
-    "db:erase-user": "node scripts/erase-user.ts"
+    "db:erase-user": "node scripts/erase-user.ts",
+    "db:measure-rls": "node scripts/measure-rls.ts"
   },
   "dependencies": {
     "@learning-routes/core": "workspace:*",
