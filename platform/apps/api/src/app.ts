@@ -5,6 +5,7 @@ import { confirmRoutes } from "./auth/confirm";
 import type { EmailSender } from "./auth/email";
 import { withDb } from "./db/with-db";
 import { requestLog } from "./log";
+import { appOriginOnly } from "./security/app-origin";
 
 // The API Worker's routes. Built by a factory so the tests can give it their own
 // email sender; index.ts builds the one Workers run.
@@ -17,6 +18,9 @@ export function createApp(deps: AppDeps) {
   const app = new Hono<{ Bindings: Env }>();
   app.use(requestLog);
   app.get("/health", (c) => c.json({ ok: true, version: pkg.version }));
+  for (const path of ["/api/*", "/mcp", "/mcp/*"]) {
+    app.use(path, appOriginOnly);
+  }
   confirmRoutes(app, deps.emailSender);
   app.on(["GET", "POST"], `${AUTH_PATH}/*`, (c) =>
     withDb(c.env, c.executionCtx, null, (tx) =>
