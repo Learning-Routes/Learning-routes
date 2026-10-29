@@ -1,8 +1,8 @@
 import * as z from "zod";
 import { SpaceRole } from "../domain";
 import { checkMembershipChange } from "../memberships";
-import { ActionError, defineAction, inSpace } from "./define";
-import { unwrap } from "./results";
+import { defineAction, inSpace } from "./define";
+import { refused, unwrap } from "./results";
 
 // A space and who belongs to it (Platform STEP 2 §6).
 
@@ -32,7 +32,7 @@ export const membershipAdd = defineAction({
       role: input.role,
     });
     if (refusal !== null) {
-      throw new ActionError(refusal, refusal.replace("_", " "));
+      throw refused(refusal);
     }
     unwrap(
       await ctx.repos.memberships.add(scope.spaceId, { userId: input.userId, role: input.role }),

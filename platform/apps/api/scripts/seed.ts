@@ -10,18 +10,21 @@
 
 import { fileURLToPath } from "node:url";
 import { parseArgs } from "node:util";
-import { contentHash, snapshotOf } from "@learning-routes/core/content/snapshot";
-import { newBlockId } from "@learning-routes/core/ids";
+import {
+  contentHash,
+  SNAPSHOT_FORMAT,
+  snapshotOf,
+  upcastSnapshot,
+} from "@learning-routes/core/content/snapshot";
 import type { RepoResult } from "@learning-routes/core/repos/ports";
 import { drizzle } from "drizzle-orm/node-postgres";
 import pg from "pg";
 import { pgRepos } from "../src/db/repos/index";
+import { newId } from "../src/ids";
 
 const LOCAL = "postgres://lr_migrator:local-only-migrator@localhost:54318/learning_routes";
 const SLUG = "english-unlimited";
 const SAMPLE = "primeros-pasos";
-
-const newId = () => newBlockId(Date.now(), crypto.getRandomValues(new Uint8Array(10)));
 
 /** A repository's value; the seed stops at the first refusal. */
 function must<T>(result: RepoResult<T>, step: string): T {
@@ -42,15 +45,15 @@ async function verifiedUser(db: pg.Client, email: string): Promise<string> {
   return rows[0].id;
 }
 
-async function space(db: pg.Client): Promise<string> {
+async function space(db: pg.Client, slug: string): Promise<string> {
   const { rows } = await db.query(
     `insert into spaces (slug, name, default_locale, locales)
      values ($1, '{"es": "English Unlimited", "en": "English Unlimited"}', 'es', '{es,en}')
      on conflict (slug) do nothing returning id`,
-    [SLUG],
+    [slug],
   );
   return (
-    rows[0]?.id ?? (await db.query("select id from spaces where slug = $1", [SLUG])).rows[0].id
+    rows[0]?.id ?? (await db.query("select id from spaces where slug = $1", [slug])).rows[0].id
   );
 }
 
@@ -123,6 +126,8 @@ async function sampleRoute(db: pg.Client, spaceId: string, ownerId: string) {
   const snapshot = snapshotOf(
     must(await repos.routeDrafts.get(spaceId, routeId), "read the sample route back"),
   );
+  // As route.publish does: never store a version that reading it back would refuse.
+  upcastSnapshot(SNAPSHOT_FORMAT, snapshot);
   must(
     await repos.routeVersions.append(spaceId, {
       routeId,
@@ -137,9 +142,13 @@ async function sampleRoute(db: pg.Client, spaceId: string, ownerId: string) {
 }
 
 /** Seeds inside the caller's transaction. */
-export async function seed(db: pg.Client, options: { ownerEmail: string; addOwner?: boolean }) {
+export async function seed(
+  db: pg.Client,
+  options: { ownerEmail: string; addOwner?: boolean; spaceSlug?: string },
+) {
   const ownerId = await verifiedUser(db, options.ownerEmail);
-  const spaceId = await space(db);
+  // The slug is English Unlimited's; tests pass their own, so each starts empty.
+  const spaceId = await space(db, options.spaceSlug ?? SLUG);
   await owner(db, spaceId, ownerId, options.addOwner ?? false);
   await sampleRoute(db, spaceId, ownerId);
 }

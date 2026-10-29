@@ -98,7 +98,8 @@ export const routePublish = defineAction({
         }),
       );
       unwrap(await repos.routeDrafts.markPublished(spaceId, input.routeId, version));
-      return { version, contentHash: hash };
+      // The revision frozen, so the action log ties this version to the edits before it.
+      return { version, contentHash: hash, revision: draft.revision };
     });
   },
 });
