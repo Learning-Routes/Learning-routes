@@ -26,10 +26,16 @@ export function harness() {
     props: {},
   } as unknown as ExecutionContext;
   /** One request, from a browser on the app origin unless headers say otherwise. */
-  const call = async (path: string, init: RequestInit & { ip?: string } = {}) => {
+  /** origin: null sends none; by default a non-GET carries the app's. */
+  const call = async (
+    path: string,
+    init: RequestInit & { ip?: string; origin?: string | null } = {},
+  ) => {
     const headers = new Headers(init.headers);
-    if (!headers.has("origin") && init.method && init.method !== "GET") {
-      headers.set("origin", APP);
+    const origin =
+      init.origin === undefined && init.method && init.method !== "GET" ? APP : init.origin;
+    if (origin) {
+      headers.set("origin", origin);
     }
     headers.set("cf-connecting-ip", init.ip ?? `192.0.2.${Math.floor(Math.random() * 250) + 1}`);
     const url = path.startsWith("http") ? path : `${APP}${path}`;
