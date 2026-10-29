@@ -17,6 +17,6 @@ repositoryContract("in memory", async (test) => {
     spaceId,
     ownerId,
     learnerId: crypto.randomUUID(),
-    actAs: async () => memoryRepos(state),
+    actAs: async (userId) => memoryRepos(state, userId),
   });
 });

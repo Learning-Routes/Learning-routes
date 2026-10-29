@@ -81,7 +81,7 @@ export function testCtx(
   let n = 0;
   return {
     actor: { via, userId },
-    repos: memoryRepos(world),
+    repos: memoryRepos(world, userId),
     tenancy: options.tenancy ?? worldTenancy(world),
     clock: { now: () => options.now ?? NOW },
     ids: {

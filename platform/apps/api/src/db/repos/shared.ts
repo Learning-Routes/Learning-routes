@@ -20,13 +20,23 @@ export const date = (time: number | null) => (time === null ? null : new Date(ti
 const REFUSALS: Record<string, RepoError> = {
   "23505": "conflict", // unique_violation
   "23503": "not_found", // foreign_key_violation: the parent is not there
-  "42501": "not_found", // insufficient_privilege: row-level security refused the row
   "23514": "invalid", // check_violation
 };
+// insufficient_privilege is a refusal only when row-level security refused the
+// row; a missing grant is a fault, and must fail loudly.
+const RLS_REFUSAL = /row-level security/;
 
-function codeOf(error: unknown): string | undefined {
-  const { code, cause } = error as { code?: string; cause?: { code?: string } };
-  return cause?.code ?? code;
+function refusalOf(error: unknown): RepoError | undefined {
+  const { code, message, cause } = error as {
+    code?: string;
+    message?: string;
+    cause?: { code?: string; message?: string };
+  };
+  const sqlstate = cause?.code ?? code;
+  if (sqlstate === "42501") {
+    return RLS_REFUSAL.test(cause?.message ?? message ?? "") ? "not_found" : undefined;
+  }
+  return REFUSALS[sqlstate ?? ""];
 }
 
 /**
@@ -69,7 +79,7 @@ export async function attempt<T>(
     if (error instanceof Refused) {
       return fail(error.code);
     }
-    const refusal = REFUSALS[codeOf(error) ?? ""];
+    const refusal = refusalOf(error);
     if (refusal === undefined) {
       throw error;
     }

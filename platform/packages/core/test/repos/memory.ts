@@ -1,5 +1,6 @@
 import type { SpaceRole } from "../../src/domain";
 import { newBlockId } from "../../src/ids";
+import { NEW_CARD } from "../../src/learning/replay";
 import type { Member } from "../../src/memberships";
 import type {
   ActionLogEntry,
@@ -126,7 +127,8 @@ function enroll(
   return ok({ enrollmentId: id, spaceId: row.spaceId });
 }
 
-export function memoryRepos(state: State): Repos {
+/** The twin, acting as one user: enroll acts for them, as Postgres does for app.user_id. */
+export function memoryRepos(state: State, actorId = ""): Repos {
   const draftIn = (spaceId: string, routeId: string) => {
     const row = state.drafts.get(routeId);
     return row?.spaceId === spaceId ? row : undefined;
@@ -291,7 +293,7 @@ export function memoryRepos(state: State): Repos {
         const enrollment = state.enrollments.get(enrollmentId);
         return enrollment?.spaceId === spaceId ? ok(enrollment) : fail("not_found");
       },
-      enroll: async (userId, routeId) => enroll(state, userId, routeId),
+      enroll: async (routeId) => enroll(state, actorId, routeId),
       setPinnedVersion: async (spaceId, enrollmentId, version) => {
         const enrollment = state.enrollments.get(enrollmentId);
         if (
@@ -328,23 +330,43 @@ export function memoryRepos(state: State): Repos {
           ? { id: stored.id, card: stored.card, dueAt: stored.dueAt }
           : null;
       },
-      saveCard: async (spaceId, userId, itemId, card, dueAt) => {
+      lockCard: async (spaceId, userId, itemId) => {
         const key = `${userId}:${itemId}`;
-        const id = state.cards.get(key)?.id ?? newId();
-        state.cards.set(key, { spaceId, userId, itemId, id, card, dueAt });
-        return ok({ cardId: id });
+        if (!state.cards.has(key)) {
+          state.cards.set(key, {
+            spaceId,
+            userId,
+            itemId,
+            id: newId(),
+            card: NEW_CARD,
+            dueAt: null,
+          });
+        }
+        const stored = state.cards.get(key);
+        return stored?.spaceId === spaceId
+          ? ok({ id: stored.id, card: stored.card, dueAt: stored.dueAt })
+          : fail("not_found");
+      },
+      saveCard: async (spaceId, userId, cardId, card, dueAt) => {
+        const stored = [...state.cards.values()].find(
+          (entry) => entry.id === cardId && entry.userId === userId && entry.spaceId === spaceId,
+        );
+        if (stored === undefined) {
+          return fail("not_found");
+        }
+        Object.assign(stored, { card, dueAt });
+        return ok(undefined);
       },
     },
     reviews: {
       append: async (spaceId, userId, entry) => {
-        const key = `${userId}:${entry.reviewId}`;
-        const stored = state.reviews.get(key);
-        if (stored !== undefined) {
-          const { spaceId: _, userId: __, ...review } = stored;
-          return { review, duplicate: true };
+        const stored = state.reviews.get(`${userId}:${entry.reviewId}`);
+        if (stored === undefined) {
+          state.reviews.set(`${userId}:${entry.reviewId}`, { spaceId, userId, ...entry });
+          return ok({ review: entry, duplicate: false });
         }
-        state.reviews.set(key, { spaceId, userId, ...entry });
-        return { review: entry, duplicate: false };
+        const { spaceId: storedSpace, userId: _, ...review } = stored;
+        return storedSpace === spaceId ? ok({ review, duplicate: true }) : fail("conflict");
       },
     },
     actionLog: {
@@ -354,7 +376,7 @@ export function memoryRepos(state: State): Repos {
     },
     transaction: async (fn) => {
       const copy = structuredClone(state);
-      const result = await fn(memoryRepos(copy));
+      const result = await fn(memoryRepos(copy, actorId));
       Object.assign(state, copy);
       return result;
     },

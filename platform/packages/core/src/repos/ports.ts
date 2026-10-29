@@ -1,5 +1,6 @@
+import type { ActorKind } from "../actions/actor";
 import type { Snapshot } from "../content/snapshot";
-import type { Progress, SpaceRole } from "../domain";
+import type { Enrollment, Progress, SpaceRole } from "../domain";
 import type { Card } from "../learning/fsrs";
 import type { Locale, LocalizedText } from "../localized-text";
 import type { Member } from "../memberships";
@@ -113,20 +114,17 @@ export interface EnrollmentRecord {
   routeId: string;
   userId: string;
   pinnedVersion: number;
-  status: "active" | "revoked" | "expired";
+  status: Enrollment["status"];
 }
 
 export interface Enrollments {
   get(spaceId: string, enrollmentId: string): Promise<RepoResult<EnrollmentRecord>>;
   /**
-   * Enrolls the acting user in a published, open and free route, as a student
+   * Enrolls the acting user (never anyone else) in a published, open and free route, as a student
    * unless they hold a role in its space: not_found for a route they cannot see,
    * invalid for a paid or closed one they can.
    */
-  enroll(
-    userId: string,
-    routeId: string,
-  ): Promise<RepoResult<{ enrollmentId: string; spaceId: string }>>;
+  enroll(routeId: string): Promise<RepoResult<{ enrollmentId: string; spaceId: string }>>;
   setPinnedVersion(
     spaceId: string,
     enrollmentId: string,
@@ -153,13 +151,19 @@ export interface Learning {
   progress(spaceId: string, enrollmentId: string): Promise<ProgressRecord[]>;
   saveProgress(spaceId: string, userId: string, record: ProgressRecord): Promise<RepoResult<void>>;
   card(spaceId: string, userId: string, itemId: string): Promise<StoredCard | null>;
+  /**
+   * The user's card for an item, locked until the transaction ends, so two reviews
+   * of it take turns. A missing card is made new, never reset. not_found when the
+   * user keeps that item's card in another space.
+   */
+  lockCard(spaceId: string, userId: string, itemId: string): Promise<RepoResult<StoredCard>>;
   saveCard(
     spaceId: string,
     userId: string,
-    itemId: string,
+    cardId: string,
     card: Card,
     dueAt: number,
-  ): Promise<RepoResult<{ cardId: string }>>;
+  ): Promise<RepoResult<void>>;
 }
 
 export interface ReviewRecord {
@@ -172,18 +176,21 @@ export interface ReviewRecord {
   stateBefore: Card;
 }
 
-/** Append only. A retry with the same reviewId gets the stored review back. */
+/**
+ * Append only. A retry with the same reviewId gets the stored review back;
+ * conflict when the user used that reviewId in another space.
+ */
 export interface Reviews {
   append(
     spaceId: string,
     userId: string,
     review: ReviewRecord,
-  ): Promise<{ review: ReviewRecord; duplicate: boolean }>;
+  ): Promise<RepoResult<{ review: ReviewRecord; duplicate: boolean }>>;
 }
 
 export interface ActionLogEntry {
   actorUserId: string;
-  actorVia: "ui" | "mcp" | "agent";
+  actorVia: ActorKind;
   agentRunId: string | null;
   action: string;
   /** Already redacted: no secrets, no free text. */
