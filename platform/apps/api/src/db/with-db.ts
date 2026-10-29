@@ -11,6 +11,15 @@ import pg from "pg";
 
 export type Transaction = Parameters<Parameters<ReturnType<typeof drizzle>["transaction"]>[0]>[0];
 
+/**
+ * Sets the user row-level security acts for, until the transaction ends. withDb
+ * does it first; a request that learns its user inside the transaction (from the
+ * session) sets it again before any read that user's rights govern.
+ */
+export async function setActingUser(tx: Transaction, userId: string | null): Promise<void> {
+  await tx.execute(sql`select set_config('app.user_id', ${userId ?? ""}, true)`);
+}
+
 /** Runs fn in one transaction as userId (or nobody), and commits before resolving. */
 export async function withDb<T>(
   env: Pick<Env, "DB">,
@@ -24,7 +33,7 @@ export async function withDb<T>(
     return await drizzle(client, { casing: "snake_case" }).transaction(async (tx) => {
       // First statement, local to this transaction: RLS reads the acting user here,
       // and a pooled connection's next transaction starts with nobody.
-      await tx.execute(sql`select set_config('app.user_id', ${userId ?? ""}, true)`);
+      await setActingUser(tx, userId);
       return fn(tx);
     });
   } finally {
