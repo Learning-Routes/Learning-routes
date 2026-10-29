@@ -1,4 +1,4 @@
-import { z } from "zod";
+import * as z from "zod";
 import { LOCALES } from "./locales";
 
 export const Locale = z.enum(LOCALES);

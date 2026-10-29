@@ -3,7 +3,7 @@ import { SpaceRole } from "@learning-routes/core/domain";
 import { and, eq } from "drizzle-orm";
 import type { NodePgQueryResultHKT } from "drizzle-orm/node-postgres";
 import type { PgDatabase } from "drizzle-orm/pg-core";
-import { z } from "zod";
+import * as z from "zod";
 import { routes } from "./schema/content";
 import { enrollments } from "./schema/learning";
 import { memberships, spaces } from "./schema/tenancy";

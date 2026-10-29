@@ -1,0 +1,6 @@
+# Copy to .dev.vars (git-ignored) for wrangler dev. Never commit .dev.vars.
+APP_ORIGIN=http://localhost:8787
+# Development only: sign-in links are written to the Worker's log instead of mailed.
+EMAIL_DELIVERY=log
+# Make one with: openssl rand -base64 32
+BETTER_AUTH_SECRET=

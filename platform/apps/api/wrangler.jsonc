@@ -5,6 +5,8 @@
   "compatibility_date": "2026-10-12",
   // pg needs Node's net and tls; Hyperdrive gives it a pooled Postgres connection.
   "compatibility_flags": ["nodejs_compat"],
+  // Minified: an unminified Worker ships every name and comment in its dependencies.
+  "minify": true,
   // Workers Logs and Traces: every log line kept, one trace in ten sampled.
   "observability": {
     "enabled": true,
@@ -13,6 +15,13 @@
   },
   // The database is regional: run next to it (ADR 0005).
   "placement": { "mode": "targeted", "region": "aws:us-east-1" },
+  // The app's origin: auth's base URL, its only trusted origin, and the only
+  // Origin a non-GET request may carry. EMAIL_DELIVERY is "log" only in
+  // development (.dev.vars); anywhere else, sign-in links are not sent until
+  // email delivery is set up.
+  "vars": { "APP_ORIGIN": "https://new.learningroutes.com", "EMAIL_DELIVERY": "none" },
+  // Set with wrangler secret put; locally in .dev.vars (git-ignored).
+  "secrets": { "required": ["BETTER_AUTH_SECRET"] },
   "hyperdrive": [
     {
       "binding": "DB",
