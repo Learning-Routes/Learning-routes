@@ -53,13 +53,15 @@ export async function attempt(client: pg.Client, sql: string, values: unknown[] 
   }
 }
 
-let users = 0;
-/** A new user, with an example.com address, inside the caller's transaction. */
+/**
+ * A new user, with an example.com address, inside the caller's transaction. The
+ * address is random: test files run in parallel, and two open transactions
+ * inserting the same unique value wait on each other, or deadlock.
+ */
 export async function newUser(client: pg.Client): Promise<string> {
-  users += 1;
   const { rows } = await client.query<{ id: string }>(
     `insert into "user" (name, email) values ('Test user', $1) returning id`,
-    [`user-${Date.now()}-${users}@example.com`],
+    [`user-${crypto.randomUUID()}@example.com`],
   );
   return rows[0]?.id as string;
 }
