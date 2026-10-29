@@ -65,3 +65,12 @@ export async function newUser(client: pg.Client): Promise<string> {
   );
   return rows[0]?.id as string;
 }
+
+/**
+ * From here on, the transaction acts as the Worker: lr_app's privileges and
+ * row-level security, as userId (or nobody), until reset role.
+ */
+export async function actAs(db: pg.Client, userId: string | null): Promise<void> {
+  await db.query("set local role lr_app");
+  await db.query("select set_config('app.user_id', $1, true)", [userId ?? ""]);
+}

@@ -15,14 +15,16 @@
     "db:lint": "squawk -c .squawk.toml drizzle/*.sql",
     "db:auth-schema": "auth generate --config src/auth/schema.config.ts --adapter drizzle --dialect postgresql --output auth-schema.generated.ts -y",
     "db:generate": "drizzle-kit generate",
-    "db:erase-user": "node scripts/erase-user.ts"
+    "db:erase-user": "node scripts/erase-user.ts",
+    "db:measure-rls": "node scripts/measure-rls.ts"
   },
   "dependencies": {
     "@learning-routes/core": "workspace:*",
     "better-auth": "1.7.8",
     "drizzle-orm": "0.45.4",
     "hono": "4.13.13",
-    "pg": "8.23.1"
+    "pg": "8.23.1",
+    "zod": "4.6.7"
   },
   "devDependencies": {
     "@types/pg": "8.23.1",

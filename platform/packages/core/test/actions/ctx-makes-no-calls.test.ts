@@ -7,6 +7,7 @@ import type { Ctx } from "../../src/actions/define";
 const REVIEWED = {
   actor: "who acts: a plain object",
   store: "the store for this transaction; no outside calls",
+  tenancy: "where a row lives and the actor's role there; reads the database only",
   now: "the time, a number",
   newId: "an id maker, pure",
 } as const;
@@ -17,6 +18,6 @@ const everyFieldReviewed: [Unreviewed] extends [never] ? true : false = true;
 describe("an action's context", () => {
   it("carries only reviewed fields, none of which can call out", () => {
     expect(everyFieldReviewed).toBe(true);
-    expect(Object.keys(REVIEWED).sort()).toEqual(["actor", "newId", "now", "store"]);
+    expect(Object.keys(REVIEWED).sort()).toEqual(["actor", "newId", "now", "store", "tenancy"]);
   });
 });
