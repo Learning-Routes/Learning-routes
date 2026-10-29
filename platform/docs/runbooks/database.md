@@ -2,7 +2,7 @@
 
 The owner's steps to put the platform's database into service after Platform STEP 2 is merged. Each numbered step is one action, done once, in order.
 
-**Secrets never touch a command line or the shell history.** Each is kept in the macOS Keychain and read with `$(security find-generic-password -s <name> -w)`, so the history holds the command, never the value. To save one, put `-w` last with no value, so the Keychain prompts for it:
+**Secrets never reach the shell history or a file.** Each is kept in the macOS Keychain and read with `$(security find-generic-password -s <name> -w)`, so the history holds the command, never the value. While a command runs, the value is in that process's arguments, visible to `ps` on this Mac. Run these steps on your own machine, with no one else signed in to it. To save a secret, put `-w` last with no value, so the Keychain prompts for it:
 
 ```sh
 security add-generic-password -a "$USER" -s lr-migrator -w
@@ -37,7 +37,16 @@ The Keychain items this runbook uses:
    psql "$(security find-generic-password -s lr-migrator -w)"
    ```
 
-   In the last `psql` session, type `\password lr_app`. It prompts for the password twice and never echoes it. Then `\q`. Save `lr_app`'s URL in the Keychain. Its user name carries the branch id, as PlanetScale requires (`lr_app.<branch-id>`).
+   In the last `psql` session, type `\password lr_app`. It prompts for the password twice and never echoes it. Then close the gaps PUBLIC leaves open on a new database, which the local role script closes too, and `\q`:
+
+   ```sql
+   revoke create on schema public from public;
+   revoke temporary on database postgres from public;
+   ```
+
+   (`postgres` is the database name in PlanetScale's URL; use yours if it differs.)
+
+   Save `lr_app`'s URL in the Keychain. Like the migrator's, it uses port 5432, the direct connection: Hyperdrive pools connections itself, and pooling on top of PgBouncer is what Cloudflare advises against. Its user name carries the branch id, as PlanetScale requires (`lr_app.<branch-id>`).
 
    ```sh
    security add-generic-password -a "$USER" -s lr-app -w
@@ -53,7 +62,13 @@ The Keychain items this runbook uses:
 
    **Not done in production:** the local role script's `grant lr_app to lr_migrator`. It's there only so the tests can act as `lr_app`.
 
-3. **Run the migrations** as the default role, over the direct connection:
+3. **Run the migrations** as the default role, over the direct connection. First check that role bypasses row-level security, as PlanetScale's docs say it does. The migrations and the seed in step 9 rely on it, since the policies are written for `lr_app` alone:
+
+   ```sh
+   psql "$(security find-generic-password -s lr-migrator -w)" -c "select rolbypassrls from pg_roles where rolname = current_user"
+   ```
+
+   It must answer `t`. If it answers `f`, stop and send the output. Then:
 
    ```sh
    DATABASE_URL_MIGRATOR="$(security find-generic-password -s lr-migrator -w)" pnpm --filter @learning-routes/api db:migrate
@@ -77,26 +92,33 @@ The Keychain items this runbook uses:
 
 5. **Put the config's id in `apps/api/wrangler.jsonc`.** Replace the placeholder `id` under `hyperdrive` with the one step 4 printed, in a small pull request. The id isn't a secret.
 
-6. **Set the auth secret,** piped straight from `openssl` to Cloudflare, so it's never printed or saved:
+6. **Set the auth secret.** Make one and copy it, set it from the clipboard at wrangler's prompt (which also offers to create the Worker on a first setup), then clear the clipboard:
 
    ```sh
-   openssl rand -base64 32 | npx wrangler secret put BETTER_AUTH_SECRET --cwd apps/api
+   openssl rand -base64 32 | pbcopy
+   npx wrangler secret put BETTER_AUTH_SECRET --cwd apps/api
+   pbcopy < /dev/null
    ```
 
-   The app origin isn't a secret: it's `APP_ORIGIN` in `apps/api/wrangler.jsonc` (`https://new.learningroutes.com`). Change it there if the app moves.
+   Paste at the prompt. The value is never printed or saved. The app origin isn't a secret: it's `APP_ORIGIN` in `apps/api/wrangler.jsonc` (`https://new.learningroutes.com`). Change it there if the app moves.
 
-7. **Deploy, and check.** Merge the pull request from step 5 and let it deploy. Then:
+7. **Deploy the API Worker, route the app's `/api` to it, and check.** No workflow deploys the platform yet, so deploy by hand from `main`, after merging the pull request from step 5:
 
    ```sh
-   curl -s https://new.learningroutes.com/health
+   git switch main && git pull
+   npx wrangler deploy --cwd apps/api
+   ```
+
+   In Cloudflare, under Workers, open `learning-routes-api`, then Settings, then Domains & Routes. Add the route `new.learningroutes.com/api/*` in the `learningroutes.com` zone. The host needs a proxied DNS record in that zone; the web Worker will serve the rest of it when it's deployed. Then:
+
+   ```sh
    curl -s https://new.learningroutes.com/api/auth/ok
    ```
 
-   - **The first** answers `{"ok":true,...}`.
-   - **The second** answers `{"ok":true}` only if the Worker reached the database through Hyperdrive as `lr_app`. That proves the SQL-created role connects (step 4).
+   It answers `{"ok":true}` only if the Worker reached the database through Hyperdrive as `lr_app`. That proves the SQL-created role connects (step 4).
 
 8. **Sign in once with your own email.** Email delivery is a later STEP, so production sends no sign-in links (`EMAIL_DELIVERY` is `"none"`). For this one sign-in, switch on the development sender, which writes the link to the Worker's log, then switch it off again:
-   1. In `apps/api/wrangler.jsonc`, set `"EMAIL_DELIVERY": "log"` and deploy.
+   1. In `apps/api/wrangler.jsonc`, set `"EMAIL_DELIVERY": "log"` and deploy, as in step 7.
    2. In one terminal, run `npx wrangler tail learning-routes-api --format pretty`.
    3. Ask for a link at `https://new.learningroutes.com/api/auth/sign-in/magic-link`: a POST with your email, from the app's own page once it exists, or from the browser console on the app origin.
    4. Open the link the tail shows, within five minutes, and choose "Sign in".
@@ -112,10 +134,28 @@ The Keychain items this runbook uses:
 
    It creates English Unlimited, makes you its owner and publishes one sample route. It refuses an address that hasn't signed in (step 8). Running it again changes nothing. To add a second owner later, add `--add-owner`.
 
-10. **If a branch is ever restored from a backup:** PlanetScale's docs say passwords are reset, and the old credentials don't work on the restored branch. Roles made in PlanetScale come back with the branch. The docs don't say whether a role made with SQL does, so check that `lr_app` exists first.
-    1. Set new passwords. In `psql` on the default role's new URL, run `\password lr_app`.
-    2. Save both new URLs in the Keychain. Delete the old items first, with `security delete-generic-password -s lr-app` and the same for `lr-migrator`.
-    3. Point Hyperdrive at the new URL:
+10. **If a branch is ever restored from a backup:** PlanetScale's docs say passwords are reset, and the old credentials don't work on the restored branch. Roles made in PlanetScale come back with the branch; the docs don't say whether a role made with SQL does. In this order:
+    1. Copy the default role's new URL from PlanetScale, and replace the Keychain item. The old one no longer works.
+
+       ```sh
+       security delete-generic-password -s lr-migrator
+       security add-generic-password -a "$USER" -s lr-migrator -w
+       ```
+
+    2. Check whether `lr_app` came back:
+
+       ```sh
+       psql "$(security find-generic-password -s lr-migrator -w)" -c "select count(*) from pg_roles where rolname = 'lr_app'"
+       ```
+
+       If it answers `0`, do step 2 again. Then give the role its grants back, which the migrations made when they first ran:
+
+       ```sh
+       grep -h "^grant .* to lr_app" apps/api/drizzle/*.sql | psql "$(security find-generic-password -s lr-migrator -w)"
+       ```
+
+    3. Set `lr_app`'s new password with `\password lr_app` in `psql`, and replace its Keychain item the same way.
+    4. Point Hyperdrive at the new URL:
 
        ```sh
        npx wrangler hyperdrive update <id> --connection-string="$(security find-generic-password -s lr-app -w)"
