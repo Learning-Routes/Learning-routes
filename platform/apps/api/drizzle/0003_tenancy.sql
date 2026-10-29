@@ -34,7 +34,8 @@ CREATE TABLE "user_profiles" (
 	"ui_locale" text,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
-	CONSTRAINT "user_profiles_ui_locale" CHECK ("user_profiles"."ui_locale" is null or app.is_locale_list(array["user_profiles"."ui_locale"]))
+	CONSTRAINT "user_profiles_ui_locale" CHECK ("user_profiles"."ui_locale" is null or app.is_locale_list(array["user_profiles"."ui_locale"])),
+	CONSTRAINT "user_profiles_time_zone" CHECK (app.is_time_zone("user_profiles"."time_zone"))
 );
 --> statement-breakpoint
 ALTER TABLE "memberships" ADD CONSTRAINT "memberships_space_id_spaces_id_fk" FOREIGN KEY ("space_id") REFERENCES "public"."spaces"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint

@@ -37,6 +37,9 @@ describe("upcastSnapshot (Platform STEP 2 §2.10)", () => {
   it("format 1: refuses a snapshot that does not match it", () => {
     expect(() => upcastSnapshot(1, { ...FORMAT_1, modules: "none" })).toThrow();
     expect(() => upcastSnapshot(1, { ...FORMAT_1, extra: true })).toThrow();
+    // Positions are keys keyBetween can insert next to; "a0" ends in its zero digit.
+    const badPosition = { ...FORMAT_1.modules[0], position: "a0" };
+    expect(() => upcastSnapshot(1, { ...FORMAT_1, modules: [badPosition] })).toThrow();
   });
 
   it("refuses a format it does not know, rather than guessing", () => {

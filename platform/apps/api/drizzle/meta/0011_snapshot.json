@@ -534,8 +534,8 @@
           "name": "lesson_prerequisites_lesson_id_fkey",
           "tableFrom": "lesson_prerequisites",
           "tableTo": "lessons",
-          "columnsFrom": ["lesson_id", "space_id"],
-          "columnsTo": ["id", "space_id"],
+          "columnsFrom": ["lesson_id", "route_id", "space_id"],
+          "columnsTo": ["id", "route_id", "space_id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         },
@@ -543,8 +543,8 @@
           "name": "lesson_prerequisites_requires_lesson_id_fkey",
           "tableFrom": "lesson_prerequisites",
           "tableTo": "lessons",
-          "columnsFrom": ["requires_lesson_id", "space_id"],
-          "columnsTo": ["id", "space_id"],
+          "columnsFrom": ["requires_lesson_id", "route_id", "space_id"],
+          "columnsTo": ["id", "route_id", "space_id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         }
@@ -578,6 +578,12 @@
         },
         "space_id": {
           "name": "space_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "route_id": {
+          "name": "route_id",
           "type": "uuid",
           "primaryKey": false,
           "notNull": true
@@ -627,8 +633,8 @@
           "name": "lessons_module_id_fkey",
           "tableFrom": "lessons",
           "tableTo": "modules",
-          "columnsFrom": ["module_id", "space_id"],
-          "columnsTo": ["id", "space_id"],
+          "columnsFrom": ["module_id", "route_id", "space_id"],
+          "columnsTo": ["id", "route_id", "space_id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         }
@@ -644,6 +650,11 @@
           "name": "lessons_id_space_id_key",
           "nullsNotDistinct": false,
           "columns": ["id", "space_id"]
+        },
+        "lessons_id_route_id_space_id_key": {
+          "name": "lessons_id_route_id_space_id_key",
+          "nullsNotDistinct": false,
+          "columns": ["id", "route_id", "space_id"]
         }
       },
       "policies": {},
@@ -730,10 +741,10 @@
           "nullsNotDistinct": false,
           "columns": ["route_id", "position"]
         },
-        "modules_id_space_id_key": {
-          "name": "modules_id_space_id_key",
+        "modules_id_route_id_space_id_key": {
+          "name": "modules_id_route_id_space_id_key",
           "nullsNotDistinct": false,
-          "columns": ["id", "space_id"]
+          "columns": ["id", "route_id", "space_id"]
         }
       },
       "policies": {},
@@ -1757,6 +1768,10 @@
         "user_profiles_ui_locale": {
           "name": "user_profiles_ui_locale",
           "value": "\"user_profiles\".\"ui_locale\" is null or app.is_locale_list(array[\"user_profiles\".\"ui_locale\"])"
+        },
+        "user_profiles_time_zone": {
+          "name": "user_profiles_time_zone",
+          "value": "app.is_time_zone(\"user_profiles\".\"time_zone\")"
         }
       },
       "isRLSEnabled": false

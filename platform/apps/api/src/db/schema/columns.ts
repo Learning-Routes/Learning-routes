@@ -4,7 +4,9 @@ import { timestamp, uuid } from "drizzle-orm/pg-core";
 // Columns every table shares (Platform STEP 2 §2): uuidv7 ids made by Postgres,
 // and times as timestamptz. Column names come from the keys, in snake_case.
 export const id = () => uuid().primaryKey().default(sql`uuidv7()`);
-const time = () => timestamp({ withTimezone: true });
+/** A time, always with its zone; named explicitly only for Better Auth's tables. */
+export const time = (name?: string) =>
+  name === undefined ? timestamp({ withTimezone: true }) : timestamp(name, { withTimezone: true });
 export const createdAt = () => time().notNull().defaultNow();
 /** Set by the repository on every change; the default covers the insert. */
 export const updatedAt = () => time().notNull().defaultNow();

@@ -1,5 +1,6 @@
 // user.erase (Platform STEP 2 §2.16): the one path that deletes a user, run as the
-// migrator. Spaces and content are archived, never deleted; a user's own rows
+// migrator. Spaces and content are never deleted, and a space's last owner is
+// never erased; a user's own rows
 // (profile, memberships, roles, enrollments, progress, cards, reviews, sessions
 // and accounts) go, in one transaction. The action log and published versions
 // keep the bare id, which then points at no one.
@@ -12,6 +13,24 @@ const LOCAL = "postgres://lr_migrator:local-only-migrator@localhost:54318/learni
 
 /** Erases one user inside the caller's transaction. */
 export async function eraseUser(db: pg.Client, userId: string): Promise<void> {
+  // A space always keeps an owner: the last one hands it over before going.
+  const { rows: alone } = await db.query(
+    `select space_id from memberships as mine
+      where mine.user_id = $1 and mine.role = 'owner'
+        and not exists (
+          select 1 from memberships as other
+           where other.space_id = mine.space_id and other.role = 'owner' and other.user_id <> mine.user_id
+        )`,
+    [userId],
+  );
+  if (alone.length > 0) {
+    throw new Error(
+      `the last owner of ${alone.length} space(s) cannot be erased; hand them over first`,
+    );
+  }
+  // Lock the enrollments first, so a progress write in flight finishes before the
+  // deletes, and its row goes with the rest.
+  await db.query("select 1 from enrollments where user_id = $1 for update", [userId]);
   // reviews are append-only; their rule lets this transaction remove this user's.
   await db.query("select set_config('app.erasing_user_id', $1, true)", [userId]);
   // progress restricts its enrollment's delete, so it goes first.

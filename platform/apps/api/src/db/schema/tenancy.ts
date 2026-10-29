@@ -25,6 +25,7 @@ export const userProfiles = pgTable(
       "user_profiles_ui_locale",
       sql`${t.uiLocale} is null or app.is_locale_list(array[${t.uiLocale}])`,
     ),
+    check("user_profiles_time_zone", sql`app.is_time_zone(${t.timeZone})`),
   ],
 );
 
