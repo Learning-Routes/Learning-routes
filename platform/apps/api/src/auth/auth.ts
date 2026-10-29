@@ -5,7 +5,7 @@ import { APIError } from "better-auth/api";
 import { betterAuth } from "better-auth/minimal";
 import { magicLink } from "better-auth/plugins/magic-link";
 import * as tables from "../db/schema/auth";
-import type { Database } from "../db/with-db";
+import type { Database, Transaction } from "../db/with-db";
 import type { EmailSender } from "./email";
 import { authOptions } from "./options";
 
@@ -47,7 +47,7 @@ async function refuseFloodedInbox(ctx: EndpointContext, address: string) {
   }
 }
 
-export function createAuth(env: Env, db: Database, email: EmailSender) {
+export function createAuth(env: Env, db: Database | Transaction, email: EmailSender) {
   return betterAuth({
     ...authOptions,
     baseURL: env.APP_ORIGIN,
