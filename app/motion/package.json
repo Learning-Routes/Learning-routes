@@ -1,5 +1,7 @@
 {
   "name": "mc",
+  "private": true,
+  "license": "SEE LICENSE IN LICENSE.md",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -8,7 +10,6 @@
   },
   "keywords": [],
   "author": "",
-  "license": "ISC",
   "dependencies": {
     "@motion-canvas/2d": "^3.17.2",
     "@motion-canvas/core": "^3.17.2",

@@ -1,7 +1,8 @@
 {
   "name": "@learning-routes/api",
-  "version": "0.0.0",
   "private": true,
+  "license": "SEE LICENSE IN LICENSE.md",
+  "version": "0.0.0",
   "type": "module",
   "scripts": {
     "dev": "wrangler dev",
