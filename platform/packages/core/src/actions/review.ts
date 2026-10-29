@@ -1,7 +1,8 @@
 import * as z from "zod";
 import { type Card, review } from "../learning/fsrs";
-import type { Repos, ReviewRecord } from "../repos/ports";
-import { ActionError, defineAction, inSpace, type Scope } from "./define";
+import type { ReviewRecord } from "../repos/ports";
+import { ActionError, defineAction, inSpace } from "./define";
+import { ownEnrollment } from "./enrollments";
 
 interface ReviewOutput {
   reviewId: string;
@@ -21,18 +22,6 @@ function resultOf(stored: ReviewRecord, itemId: string, duplicate: boolean): Rev
     nextReviewAt: next.nextReviewAt,
     duplicate,
   };
-}
-
-/** The actor's own active enrollment, or not_found: another's, or a revoked one, does not exist for them. */
-async function ownEnrollment(repos: Repos, scope: Scope, enrollmentId: string, userId: string) {
-  const enrollment = await repos.enrollments.get(scope.spaceId, enrollmentId);
-  if (
-    !enrollment.ok ||
-    enrollment.value.userId !== userId ||
-    enrollment.value.status !== "active"
-  ) {
-    throw new ActionError("not_found", "not found");
-  }
 }
 
 /**
@@ -60,7 +49,7 @@ export const reviewSubmit = defineAction({
   async run(ctx, input, given): Promise<ReviewOutput> {
     const scope = inSpace(given);
     const userId = ctx.actor.userId;
-    await ownEnrollment(ctx.repos, scope, input.enrollmentId, userId);
+    await ownEnrollment(ctx.repos, scope.spaceId, input.enrollmentId, userId);
     return ctx.repos.transaction(async (repos) => {
       // Locked until the end: a second review of this card waits for this one.
       const locked = await repos.learning.lockCard(scope.spaceId, userId, input.itemId);

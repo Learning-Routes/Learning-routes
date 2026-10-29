@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { runAction } from "../../src/actions/define";
 import { redact } from "../../src/actions/redact";
 import { ACTIONS } from "../../src/actions/registry";
-import { ENROLLMENT, NOW, SPACE, testCtx, testWorld } from "./test-ctx";
+import { ENROLLMENT, NOW, ROUTE, SPACE, testCtx, testWorld } from "./test-ctx";
 
 // Every action writes the action log in its own transaction (Platform STEP 2
 // §2.15, §6): who, how, what, with the input redacted by core, and the outcome.
@@ -16,7 +16,8 @@ describe("redact", () => {
         isFree: true,
         locale: "en",
         slug: "first-route",
-        title: { en: "My private notes about this student" },
+        title: { en: "Hola" },
+        body: "Saludar",
         token: "s3cret-value-that-must-not-be-logged",
         list: ["0192d3a0-0000-7000-8000-000000000002", "a long sentence with spaces"],
         nothing: null,
@@ -28,6 +29,7 @@ describe("redact", () => {
       locale: "en",
       slug: "first-route",
       title: { en: "[redacted]" },
+      body: "[redacted]",
       token: "[redacted]",
       list: ["0192d3a0-0000-7000-8000-000000000002", "[redacted]"],
       nothing: null,
@@ -76,5 +78,38 @@ describe("runAction and the action log", () => {
     expect(world.log.map((entry) => [entry.actorUserId, entry.outcome])).toEqual([
       ["student-1", "forbidden"],
     ]);
+  });
+
+  it("logs a member's refused enrollment in the route's space", async () => {
+    const world = testWorld();
+    const draft = world.drafts.get(ROUTE);
+    if (draft) {
+      draft.route = { ...draft.route, pricing: "paid" };
+    }
+    const result = await runAction(
+      ACTIONS,
+      "enrollment.create",
+      { routeId: ROUTE },
+      testCtx("ui", world, "student-1"),
+    );
+    expect(result).toMatchObject({ ok: false, code: "invalid" });
+    expect(world.log.map((entry) => [entry.spaceId, entry.action, entry.outcome])).toEqual([
+      [SPACE, "enrollment.create", "invalid"],
+    ]);
+  });
+
+  it("logs the draft revision a publish froze", async () => {
+    const world = testWorld();
+    await runAction(
+      ACTIONS,
+      "route.publish",
+      { routeId: ROUTE, expectedRevision: 0 },
+      testCtx("ui", world, "owner-1"),
+    );
+    expect(world.log.at(-1)).toMatchObject({
+      action: "route.publish",
+      outcome: "ok",
+      routeRevision: 0,
+    });
   });
 });

@@ -16,6 +16,12 @@ import { redact } from "./redact";
 export interface Target {
   kind: "space" | "route" | "enrollment";
   id: string;
+  /**
+   * An action the actor takes before they belong to the row's space:
+   * enrollment.create. It runs without a scope, logs in the space its output
+   * names, and logs a refusal in the row's space if the actor can see it.
+   */
+  self?: true;
 }
 
 /**
@@ -60,12 +66,8 @@ export interface ActionDef<I extends z.ZodType = z.ZodType, O = unknown> {
   kind: "query" | "mutation";
   description: string;
   input: I;
-  /**
-   * The row the action acts on; a spaceId in the input is checked against its
-   * space. "self" is for the one action a user takes before they belong to the
-   * space, enrollment.create: it gets no scope, and logs in the space its output names.
-   */
-  target: (input: z.infer<I>) => Target | "self";
+  /** The row the action acts on; a spaceId in the input is checked against its space. */
+  target: (input: z.infer<I>) => Target;
   run: (ctx: Ctx, input: z.infer<I>, scope: Scope | null) => Promise<O>;
 }
 
@@ -122,8 +124,8 @@ export async function runAction(
     return { ok: false, code: "invalid_input", issues };
   }
   const target = action.target(parsed.data);
-  if (target === "self") {
-    return runForSelf(action, name, parsed.data, ctx, isAllowed);
+  if (target.self) {
+    return runForSelf(action, name, parsed.data, ctx, target, isAllowed);
   }
   // The space comes from the row, never from the input.
   const found = await ctx.tenancy.scopeOf(target, ctx.actor.userId);
@@ -148,6 +150,7 @@ async function runForSelf(
   name: string,
   input: unknown,
   ctx: Ctx,
+  target: Target,
   isAllowed: (role: SpaceRole, action: string, via: ActorKind) => boolean,
 ): Promise<ActionResult> {
   if (!isAllowed("student", name, ctx.actor.via)) {
@@ -165,7 +168,13 @@ async function runForSelf(
     if (!(error instanceof ActionError)) {
       throw error;
     }
-    return { ok: false, code: error.code, message: error.message };
+    const result: ActionResult = { ok: false, code: error.code, message: error.message };
+    // A member's refusal is logged in the row's space; to anyone else it does not exist.
+    const scope = await ctx.tenancy.scopeOf(target, ctx.actor.userId);
+    if (scope?.role) {
+      await log(ctx, scope.spaceId, name, input, result);
+    }
+    return result;
   }
 }
 
