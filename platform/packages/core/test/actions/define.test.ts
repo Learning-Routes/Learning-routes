@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { z } from "zod";
 import type { ActorKind } from "../../src/actions/actor";
 import { ActionError, type Ctx, defineAction, mcpTools, runAction } from "../../src/actions/define";
+import { testCtx, testWorld } from "./test-ctx";
 
 const echo = defineAction({
   name: "test.echo",
@@ -9,7 +10,7 @@ const echo = defineAction({
   description: "Returns its input and who asked.",
   input: z.object({ text: z.string().min(1) }),
   target: () => ({ kind: "space", id: "space-1" }),
-  run: async (ctx, input) => ({ text: input.text, at: ctx.now }),
+  run: async (ctx, input) => ({ text: input.text, at: ctx.clock.now() }),
 });
 const fail = defineAction({
   name: "test.fail",
@@ -24,13 +25,11 @@ const fail = defineAction({
 const registry = { "test.echo": echo, "test.fail": fail };
 const allowAll = () => true;
 
+// Every target is in space-1, where user-1 owns it; access is tested in tenancy.test.ts.
 const ctx = (via: ActorKind): Ctx => ({
-  actor: { via, userId: "user-1" },
-  store: { get: async () => undefined, put: async () => undefined },
-  // Every target is in space-1, where user-1 owns it; access is tested in tenancy.test.ts.
+  ...testCtx(via, testWorld(), "user-1"),
   tenancy: { scopeOf: async () => ({ spaceId: "space-1", role: "owner" }) },
-  now: 1_000,
-  newId: () => "id-1",
+  clock: { now: () => 1_000 },
 });
 
 describe("runAction", () => {

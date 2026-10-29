@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { can } from "../access";
 import type { SpaceRole } from "../domain";
+import type { Repos } from "../repos/ports";
 import type { Actor, ActorKind } from "./actor";
 
 // The action registry: every change to the platform is one action. The internal
@@ -8,13 +9,7 @@ import type { Actor, ActorKind } from "./actor";
 // caller goes through the same gate, so a button and an agent reach the same
 // actions the same way. Only the permission table sets a way in apart: changes to
 // memberships and pricing are made in the app, never by an agent. Pure: the caller
-// supplies the store, the tenancy, the time and the id maker.
-
-/** What an action may read and write. The API implements it on real storage. */
-export interface Store {
-  get<T>(key: string): Promise<T | undefined>;
-  put<T>(key: string, value: T): Promise<void>;
-}
+// supplies the repositories, the tenancy, the clock and the id maker.
 
 /** The row an action acts on; its space is the space the action runs in. */
 export interface Target {
@@ -40,13 +35,23 @@ export interface Scope {
   role: SpaceRole;
 }
 
+/** The time, in epoch milliseconds. A port, so core never reads a clock. */
+export interface Clock {
+  now(): number;
+}
+
+/** New ids. A port, so core never draws random bytes. */
+export interface Ids {
+  newId(): string;
+}
+
 export interface Ctx {
   actor: Actor;
-  store: Store;
+  /** The repositories, inside the request's transaction (Platform STEP 2 §4). */
+  repos: Repos;
   tenancy: Tenancy;
-  /** Epoch milliseconds. */
-  now: number;
-  newId: () => string;
+  clock: Clock;
+  ids: Ids;
 }
 
 export interface ActionDef<I extends z.ZodType = z.ZodType, O = unknown> {
