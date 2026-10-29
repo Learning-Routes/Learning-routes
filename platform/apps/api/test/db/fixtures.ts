@@ -2,11 +2,12 @@ import type pg from "pg";
 
 // Rows the database tests build on, inside the caller's transaction.
 
+/** A space whose slug starts with the given one; a random suffix keeps parallel tests apart. */
 export async function newSpace(db: pg.Client, slug: string): Promise<string> {
   const { rows } = await db.query(
     `insert into spaces (slug, name, default_locale, locales)
      values ($1, '{"en": "A space"}', 'en', '{en}') returning id`,
-    [slug],
+    [`${slug}-${crypto.randomUUID()}`],
   );
   return rows[0]?.id;
 }

@@ -144,7 +144,7 @@ describe("user.erase (Platform STEP 2 §2.16)", () => {
     await Promise.all([setup.connect(), writer.connect()]);
     let userId = "";
     try {
-      const space = await newSpace(setup, `erase-race-${Date.now()}`);
+      const space = await newSpace(setup, "erase-race");
       const route = await newRoute(setup, space);
       await newVersion(setup, space, route, 1);
       userId = await newUser(setup);
