@@ -11,12 +11,8 @@ import pg from "pg";
 
 export type Transaction = Parameters<Parameters<ReturnType<typeof drizzle>["transaction"]>[0]>[0];
 
-/**
- * Sets the user row-level security acts for, until the transaction ends. withDb
- * does it first; a request that learns its user inside the transaction (from the
- * session) sets it again before any read that user's rights govern.
- */
-export async function setActingUser(tx: Transaction, userId: string | null): Promise<void> {
+/** Sets the user row-level security acts for, until the transaction ends. */
+async function setActingUser(tx: Transaction, userId: string | null): Promise<void> {
   await tx.execute(sql`select set_config('app.user_id', ${userId ?? ""}, true)`);
 }
 

@@ -19,7 +19,7 @@ export function createApp(deps: AppDeps) {
   const app = new Hono<{ Bindings: Env }>();
   app.use(requestLog);
   app.get("/health", (c) => c.json({ ok: true, version: pkg.version }));
-  for (const path of ["/api/*", "/mcp", "/mcp/*"]) {
+  for (const path of ["/api/*", "/mcp/*"]) {
     app.use(path, appOriginOnly);
   }
   confirmRoutes(app, deps.emailSender);

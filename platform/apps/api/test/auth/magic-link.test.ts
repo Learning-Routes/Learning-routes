@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it } from "vitest";
+import { identifierOf } from "../../src/auth/confirm";
 import { query, URLS } from "../db/connect";
 import { APP, harness, json, randomEmail } from "./harness";
 
@@ -22,11 +23,12 @@ async function requestLink(email = randomEmail()) {
   return { email, url, token: url.searchParams.get("token") ?? "" };
 }
 
-const confirm = (token: string, headers: Record<string, string> = {}) =>
+const confirm = (token: string, headers: Record<string, string> = {}, origin?: string) =>
   api.call("/api/auth/magic-link/confirm", {
     method: "POST",
     headers: { "content-type": "application/x-www-form-urlencoded", ...headers },
     body: new URLSearchParams({ token }).toString(),
+    origin,
   });
 
 const sessionCookie = (response: Response) =>
@@ -83,6 +85,37 @@ describe("signing in with a link", () => {
 
     const again = await confirm(token);
     expect(sessionCookie(again)).toBeUndefined();
+  });
+
+  it("posts from a page whose referrer policy keeps the Origin a browser sends", async () => {
+    const { url, token } = await requestLink();
+    const page = await api.call(`${url.pathname}${url.search}`);
+    // Fetch: a form POST from a no-referrer page carries Origin: null.
+    const policy = page.headers.get("referrer-policy") ?? "";
+    const browserOrigin = policy === "no-referrer" ? "null" : APP;
+    const signedIn = await confirm(token, {}, browserOrigin);
+    expect(signedIn.status).toBe(302);
+    expect(sessionCookie(signedIn)).toBeDefined();
+  });
+
+  it("answers 400 to a POST that is not a form, and 404 to a stored value that is not a link's", async () => {
+    const notAForm = await api.call("/api/auth/magic-link/confirm", json({ token: "x" }));
+    expect(notAForm.status).toBe(400);
+    const token = crypto.randomUUID();
+    await query(
+      URLS.migrator,
+      "insert into verification (identifier, value, expires_at) values ($1, 'not json', now() + interval '5 minutes')",
+      [await identifierOf(token)],
+    );
+    expect((await api.call(`/api/auth/magic-link/confirm?token=${token}`)).status).toBe(404);
+  });
+
+  it("finds a link's stored row by the same identifier Better Auth 1.7.8 writes", async () => {
+    const { token } = await requestLink();
+    const rows = await query(URLS.migrator, "select 1 from verification where identifier = $1", [
+      await identifierOf(token),
+    ]);
+    expect(rows).toHaveLength(1);
   });
 
   it("shows no email for a token that does not exist", async () => {

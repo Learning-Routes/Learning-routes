@@ -23,13 +23,15 @@ const BASE64_PADDING = /=+$/;
 const PAGE_HEADERS = {
   "content-type": "text/html; charset=utf-8",
   "cache-control": "no-store",
-  // The token is in this page's URL: send it nowhere else.
-  "referrer-policy": "no-referrer",
+  // The token is in this page's URL: no other site gets it as a referrer. Not
+  // no-referrer: a browser then sends the form's POST with Origin: null, which the
+  // app-origin check refuses.
+  "referrer-policy": "same-origin",
   "content-security-policy": "default-src 'none'; form-action 'self'; frame-ancestors 'none'",
 };
 
 /** The stored identifier of a magic link's token, as Better Auth 1.7.8 writes it (storeToken: "hashed"). */
-async function identifierOf(token: string): Promise<string> {
+export async function identifierOf(token: string): Promise<string> {
   const digest = new Uint8Array(
     await crypto.subtle.digest("SHA-256", new TextEncoder().encode(token)),
   );
@@ -47,8 +49,17 @@ async function pendingEmail(
   if (row === null || row.expiresAt.getTime() <= Date.now()) {
     return null;
   }
-  const { email } = JSON.parse(row.value) as { email?: unknown };
-  return typeof email === "string" ? email : null;
+  return emailIn(row.value);
+}
+
+/** The address in a magic link's stored value, or null for any other value. */
+function emailIn(value: string): string | null {
+  try {
+    const { email } = JSON.parse(value) as { email?: unknown };
+    return typeof email === "string" ? email : null;
+  } catch {
+    return null;
+  }
 }
 
 function page(email: string, token: string): string {
@@ -86,8 +97,12 @@ export function confirmRoutes(
   });
 
   app.post(CONFIRM_PATH, async (c) => {
-    const form = await c.req.formData();
-    const token = String(form.get("token") ?? "");
+    const form = await c.req.formData().catch(() => null);
+    const field = form?.get("token");
+    if (typeof field !== "string" || field.length === 0) {
+      return c.text("Bad request", 400);
+    }
+    const token = field;
     // Through Better Auth's handler, so its rate limits and checks apply.
     const verify = new URL(`${c.env.APP_ORIGIN}${AUTH_PATH}/magic-link/verify`);
     verify.searchParams.set("token", token);
