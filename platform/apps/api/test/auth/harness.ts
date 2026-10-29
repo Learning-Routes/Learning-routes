@@ -6,7 +6,7 @@ import { URLS } from "../db/connect";
 // requests go through the Worker's Hono app, with env and ctx as Workers give them.
 // Sent sign-in links are kept instead of mailed.
 
-const APP = "https://app.example.test";
+export const APP = "https://app.example.test";
 
 export function harness() {
   const sent: MagicLinkMessage[] = [];
