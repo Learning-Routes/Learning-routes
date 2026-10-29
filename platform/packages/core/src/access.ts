@@ -1,4 +1,4 @@
-import type { ActorKind } from "./actions/define";
+import type { ActorKind } from "./actions/actor";
 import type { ActionName } from "./actions/names";
 import type { SpaceRole } from "./domain";
 
@@ -25,10 +25,10 @@ export const PERMISSIONS = {
 } as const satisfies Record<ActionName, Row>;
 
 /** Whether a role in a space may call an action this way. */
-export function can(role: SpaceRole | "operator", action: ActionName, via: ActorKind): boolean {
+export function can(role: SpaceRole | "operator", action: string, via: ActorKind): boolean {
   if (role === "operator" || !Object.hasOwn(PERMISSIONS, action)) {
     return false;
   }
-  const row: Row = PERMISSIONS[action];
+  const row: Row = PERMISSIONS[action as ActionName];
   return row[role]?.includes(via) ?? false;
 }

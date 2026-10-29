@@ -1,19 +1,14 @@
 import { describe, expect, it } from "vitest";
 import { z } from "zod";
-import {
-  ActionError,
-  type ActorKind,
-  type Ctx,
-  defineAction,
-  mcpTools,
-  runAction,
-} from "../../src/actions/define";
+import type { ActorKind } from "../../src/actions/actor";
+import { ActionError, type Ctx, defineAction, mcpTools, runAction } from "../../src/actions/define";
 
 const echo = defineAction({
   name: "test.echo",
   kind: "query",
   description: "Returns its input and who asked.",
   input: z.object({ text: z.string().min(1) }),
+  target: () => ({ kind: "space", id: "space-1" }),
   run: async (ctx, input) => ({ text: input.text, at: ctx.now }),
 });
 const fail = defineAction({
@@ -21,36 +16,40 @@ const fail = defineAction({
   kind: "mutation",
   description: "Always refuses.",
   input: z.object({}),
+  target: () => ({ kind: "space", id: "space-1" }),
   run: async () => {
     throw new ActionError("not_found", "nothing here");
   },
 });
 const registry = { "test.echo": echo, "test.fail": fail };
+const allowAll = () => true;
 
 const ctx = (via: ActorKind): Ctx => ({
   actor: { via, userId: "user-1" },
   store: { get: async () => undefined, put: async () => undefined },
+  // Every target is in space-1, where user-1 owns it; access is tested in tenancy.test.ts.
+  tenancy: { spaceOf: async () => "space-1", roleOf: async () => "owner" },
   now: 1_000,
   newId: () => "id-1",
 });
 
 describe("runAction", () => {
   it("validates, runs and reports the output", async () => {
-    expect(await runAction(registry, "test.echo", { text: "hola" }, ctx("ui"))).toEqual({
+    expect(await runAction(registry, "test.echo", { text: "hola" }, ctx("ui"), allowAll)).toEqual({
       ok: true,
       output: { text: "hola", at: 1_000 },
     });
   });
 
   it("refuses an unknown action", async () => {
-    expect(await runAction(registry, "test.nope", {}, ctx("ui"))).toEqual({
+    expect(await runAction(registry, "test.nope", {}, ctx("ui"), allowAll)).toEqual({
       ok: false,
       code: "unknown_action",
     });
   });
 
   it("refuses invalid input with the failing paths", async () => {
-    expect(await runAction(registry, "test.echo", { text: "" }, ctx("mcp"))).toEqual({
+    expect(await runAction(registry, "test.echo", { text: "" }, ctx("mcp"), allowAll)).toEqual({
       ok: false,
       code: "invalid_input",
       issues: [{ path: "text", message: expect.any(String) }],
@@ -58,7 +57,7 @@ describe("runAction", () => {
   });
 
   it("reports an action's own refusal", async () => {
-    expect(await runAction(registry, "test.fail", {}, ctx("agent"))).toEqual({
+    expect(await runAction(registry, "test.fail", {}, ctx("agent"), allowAll)).toEqual({
       ok: false,
       code: "not_found",
       message: "nothing here",
@@ -66,7 +65,7 @@ describe("runAction", () => {
   });
 
   it("does not resolve a name through the prototype chain", async () => {
-    expect(await runAction(registry, "toString", {}, ctx("ui"))).toEqual({
+    expect(await runAction(registry, "toString", {}, ctx("ui"), allowAll)).toEqual({
       ok: false,
       code: "unknown_action",
     });
@@ -91,7 +90,9 @@ describe("mcpTools", () => {
     const aliased = { "test.alias": echo };
     const [tool] = mcpTools(aliased);
     expect(tool?.name).toBe("test.alias");
-    expect(await runAction(aliased, tool?.name ?? "", { text: "hola" }, ctx("mcp"))).toMatchObject({
+    expect(
+      await runAction(aliased, tool?.name ?? "", { text: "hola" }, ctx("mcp"), allowAll),
+    ).toMatchObject({
       ok: true,
     });
   });
