@@ -3,6 +3,7 @@ import { can } from "../access";
 import type { SpaceRole } from "../domain";
 import type { Repos } from "../repos/ports";
 import type { Actor, ActorKind } from "./actor";
+import { redact } from "./redact";
 
 // The action registry: every change to the platform is one action. The internal
 // endpoint, public REST, MCP and the typed client all come from it, and every
@@ -127,17 +128,45 @@ export async function runAction(
     return NOT_FOUND;
   }
   const { spaceId, role } = found;
-  if (!isAllowed(role, name, ctx.actor.via)) {
+  const result = await runInScope(action, name, parsed.data, ctx, { spaceId, role }, isAllowed);
+  // Every action a member calls is logged, refusals included, in its own transaction.
+  await ctx.repos.actionLog.append(spaceId, {
+    actorUserId: ctx.actor.userId,
+    actorVia: ctx.actor.via,
+    agentRunId: null,
+    action: name,
+    input: redact(parsed.data),
+    outcome: result.ok ? "ok" : result.code,
+    routeRevision: revisionOf(result),
+  });
+  return result;
+}
+
+async function runInScope(
+  action: ActionDef,
+  name: string,
+  input: unknown,
+  ctx: Ctx,
+  scope: Scope,
+  isAllowed: (role: SpaceRole, action: string, via: ActorKind) => boolean,
+): Promise<ActionResult> {
+  if (!isAllowed(scope.role, name, ctx.actor.via)) {
     return { ok: false, code: "forbidden", message: "not allowed" };
   }
   try {
-    return { ok: true, output: await action.run(ctx, parsed.data, { spaceId, role }) };
+    return { ok: true, output: await action.run(ctx, input, scope) };
   } catch (error) {
     if (!(error instanceof ActionError)) {
       throw error;
     }
     return { ok: false, code: error.code, message: error.message };
   }
+}
+
+/** The draft revision an edit produced, for the log. */
+function revisionOf(result: ActionResult): number | null {
+  const output = result.ok ? (result.output as { revision?: unknown } | null) : null;
+  return typeof output?.revision === "number" ? output.revision : null;
 }
 
 /**
