@@ -1,5 +1,7 @@
-import { betterAuth } from "better-auth";
+// The minimal build leaves out Kysely, which the Drizzle adapter does not need.
+
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
+import { betterAuth } from "better-auth/minimal";
 import * as tables from "../db/schema/auth";
 import type { Transaction } from "../db/with-db";
 import type { EmailSender } from "./email";
