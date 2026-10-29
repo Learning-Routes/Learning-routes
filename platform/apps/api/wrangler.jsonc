@@ -5,6 +5,8 @@
   "compatibility_date": "2026-10-12",
   // pg needs Node's net and tls; Hyperdrive gives it a pooled Postgres connection.
   "compatibility_flags": ["nodejs_compat"],
+  // Minified: an unminified Worker ships every name and comment in its dependencies.
+  "minify": true,
   // Workers Logs and Traces: every log line kept, one trace in ten sampled.
   "observability": {
     "enabled": true,

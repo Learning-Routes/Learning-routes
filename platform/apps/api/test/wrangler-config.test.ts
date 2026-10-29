@@ -21,6 +21,10 @@ describe("the API Worker's configuration (Platform STEP 2 §1.3)", () => {
     expect(config.compatibility_flags).toContain("nodejs_compat");
   });
 
+  it("is minified: the bundle counts against a 150 KiB budget", () => {
+    expect(config.minify).toBe(true);
+  });
+
   it("is placed in the database's region", () => {
     expect(config.placement).toEqual({ mode: "targeted", region: "aws:us-east-1" });
   });
