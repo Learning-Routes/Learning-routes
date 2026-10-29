@@ -1,7 +1,8 @@
 {
   "name": "@learning-routes/web",
-  "version": "0.0.0",
   "private": true,
+  "license": "SEE LICENSE IN LICENSE.md",
+  "version": "0.0.0",
   "type": "module",
   "scripts": {
     "dev": "react-router dev",

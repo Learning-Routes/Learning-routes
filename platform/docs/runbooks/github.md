@@ -69,3 +69,16 @@ gh api -X PUT repos/Learning-Routes/Learning-routes/branches/main/protection --i
  "block_creations":false,"required_conversation_resolution":false,"lock_branch":false,"allow_fork_syncing":false}
 EOF2
 ```
+
+## The Contributor License Agreement
+
+Contributors sign [`CLA.md`](../../../CLA.md) through the **CLA assistant GitHub App** ([cla-assistant.io](https://cla-assistant.io)). It isn't the GitHub Actions version ("CLA assistant lite"), which needs `pull_request_target`, and the workflow rules forbid that.
+
+1. **Create a gist with the agreement.** At [gist.github.com](https://gist.github.com), signed in as the owner, create a gist named `CLA.md` and paste the text of `CLA.md` from the repository's `main`. Save it.
+2. **Sign in to cla-assistant.io** with the owner's GitHub account, and authorize the app for the `Learning-Routes` organization.
+3. **Link the gist to the repository.** In cla-assistant.io, choose "Configure CLA", select `Learning-Routes/Learning-routes`, select the gist from step 1, and choose "Link".
+4. **Wait for the app to report on a pull request.** Open any pull request, or push to an open one: a check named `license/cla` appears, and the bot comments asking any author who hasn't signed to do so.
+5. **Require the check.** In the repository's Settings, open Branches, then the rule for `main`. Add `license/cla` to the required status checks and save.
+6. **Ask the earlier contributors to sign.** The agreement also covers contributions made before it existed. Ask everyone who has contributed so far to sign it once, at the link the bot gives, or at cla-assistant.io for this repository.
+
+When `CLA.md` changes, update the gist to the same text. cla-assistant.io then asks contributors to sign the new version.

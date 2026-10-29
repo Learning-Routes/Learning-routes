@@ -7,9 +7,13 @@ This repository holds two applications:
 
 Read [`platform/docs/FOUNDATIONS.md`](platform/docs/FOUNDATIONS.md) first. It says what the platform is, what it is built on and the rules it is built by.
 
-## License and outside contributions
+## License and contributions
 
-The license is being decided. Until it is published, the repository has no license, and contributions from outside the team are accepted only once the contribution terms are published here.
+The repository, the Rails app and `platform/` alike, is licensed under FSL-1.1-ALv2: see [`LICENSE.md`](LICENSE.md).
+
+**Every contributor signs the Contributor License Agreement in [`CLA.md`](CLA.md) once.** On your first pull request, the CLA assistant bot comments with a link: sign there with your GitHub account, and the check passes for that pull request and every later one. A pull request can't be merged until its author has signed.
+
+The agreement also covers contributions made before signing, so people who contributed before it existed are asked to sign it too.
 
 ## Set up
 

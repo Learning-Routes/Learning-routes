@@ -201,7 +201,7 @@ The two-tenant test proves both fences, together and each on its own.
 
 ### Data we hold
 
-- **We collect only what a feature needs.** Accounts are an email and a display name, and no age field until the owner decides.
+- **We collect only what a feature needs.** Accounts are an email and a display name. No age is asked: there is no age field and no age gate ([ADR 0007](adr/0007-no-age-is-asked.md)).
 - **Student content and AI prompts go only to zero-data-retention providers.**
 - **Logs never contain emails, tokens or lesson answers.** They carry ids.
 - **Tokens are stored hashed.** Session cookies are host-only, `Secure` and `HttpOnly`.
@@ -242,6 +242,10 @@ Every one of these fails the build:
 
 ## 11. Open decisions (the owner's)
 
-- **The license, and the terms for outside contributions.** Until it is decided, the repository has no license. Nobody outside may reuse the code, and contributions are accepted only under the terms the owner sets.
-- **Age.** Brazil's ECA Digital forbids relying on a self-declared age, and Portuguese is a launch language.
 - **The database region** (expected `aws:us-east-1`), and whether PlanetScale is billed through Cloudflare.
+
+Decided on 28 October 2026:
+
+- **The license:** FSL-1.1-ALv2 for the whole repository (`LICENSE.md`).
+- **Contributions:** every contributor signs the CLA (`CLA.md`) once, through the CLA assistant bot.
+- **Age:** no age is asked ([ADR 0007](adr/0007-no-age-is-asked.md)).
