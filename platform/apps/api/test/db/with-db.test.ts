@@ -1,6 +1,6 @@
 import { sql } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
-import { withDb } from "../../src/db/with-db";
+import { withClient, withDb } from "../../src/db/with-db";
 import { query, URLS } from "./connect";
 
 // A stand-in for the Worker's env and ctx: Hyperdrive's connection string is the
@@ -70,5 +70,19 @@ describe("withDb (Platform STEP 2 §1.6)", () => {
 
     expect(background).toHaveLength(1);
     await Promise.allSettled(background);
+  });
+});
+
+describe("withClient, for Better Auth (Platform STEP 2 §5.6)", () => {
+  it("runs each statement on its own, so a failed one does not abort the next, and closes the client", async () => {
+    const { env, ctx, background } = worker();
+    const after = await withClient(env, ctx, async (db) => {
+      await expect(db.execute(sql`select 1 / 0`)).rejects.toThrow();
+      const rows = await db.execute<{ value: number }>(sql`select 2 as value`);
+      return rows.rows[0]?.value;
+    });
+    expect(after).toBe(2);
+    expect(background).toHaveLength(1);
+    await Promise.all(background);
   });
 });
