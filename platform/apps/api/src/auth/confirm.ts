@@ -1,5 +1,5 @@
 import type { Hono } from "hono";
-import { withDb } from "../db/with-db";
+import { withClient } from "../db/with-db";
 import { AUTH_PATH, CONFIRM_PATH, createAuth } from "./auth";
 import type { EmailSender } from "./email";
 
@@ -76,8 +76,8 @@ export function confirmRoutes(
 
   app.get(CONFIRM_PATH, (c) => {
     const token = c.req.query("token") ?? "";
-    return withDb(c.env, c.executionCtx, null, async (tx) => {
-      const auth = createAuth(c.env, tx, emailSender(c.env));
+    return withClient(c.env, c.executionCtx, async (db) => {
+      const auth = createAuth(c.env, db, emailSender(c.env));
       const email = token.length === 0 ? null : await pendingEmail(auth, token);
       return email === null
         ? c.text("This sign-in link has expired or was already used.", 404)
@@ -93,8 +93,8 @@ export function confirmRoutes(
     verify.searchParams.set("token", token);
     verify.searchParams.set("callbackURL", "/");
     const request = new Request(verify, { headers: c.req.raw.headers });
-    return withDb(c.env, c.executionCtx, null, (tx) =>
-      createAuth(c.env, tx, emailSender(c.env)).handler(request),
+    return withClient(c.env, c.executionCtx, (db) =>
+      createAuth(c.env, db, emailSender(c.env)).handler(request),
     );
   });
 }
