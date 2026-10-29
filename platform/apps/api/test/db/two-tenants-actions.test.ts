@@ -4,6 +4,7 @@ import { ACTIONS } from "@learning-routes/core/actions/registry";
 import { drizzle } from "drizzle-orm/node-postgres";
 import { describe, expect, it } from "vitest";
 import { z } from "zod";
+import { pgRepos } from "../../src/db/repos/index";
 import { pgTenancy } from "../../src/db/tenancy";
 import { actAs, newUser, rolledBack, URLS } from "./connect";
 import { newEnrollment, newRoute, newSpace, newVersion } from "./fixtures";
@@ -35,26 +36,34 @@ describe("two tenants, through every action", () => {
 
       await actAs(db, a);
       const writes: string[] = [];
+      const repos = pgRepos(drizzle(db, { casing: "snake_case" }));
       const ctx = {
         actor: { via: "ui" as const, userId: a },
-        store: { get: async () => undefined, put: async (key: string) => void writes.push(key) },
+        repos,
         tenancy: pgTenancy(drizzle(db, { casing: "snake_case" })),
-        now: Date.now(),
-        newId: () => crypto.randomUUID(),
+        clock: { now: () => Date.now() },
+        ids: { newId: () => crypto.randomUUID() },
       };
       const input = {
         enrollmentId: enrollmentB,
         reviewId: REVIEW_ID,
-        cardId: "card-1",
+        itemId: crypto.randomUUID(),
         rating: 3,
         at: 0,
+        elapsedMs: 900,
       };
       expect(await runAction(ACTIONS, "review.submit", input, ctx)).toEqual({
         ok: false,
         code: "not_found",
         message: "not found",
       });
-      expect(writes).toEqual([]);
+      await db.query("reset role");
+      const written = await db.query(
+        "select count(*)::int as n from reviews where review_id = $1",
+        [REVIEW_ID],
+      );
+      expect(written.rows[0]?.n).toBe(0);
+      await actAs(db, a);
 
       // Naming their own space with B's row: an action that takes a spaceId, so the
       // input passes and runAction's space check is what refuses it.
