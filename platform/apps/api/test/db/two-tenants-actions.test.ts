@@ -1,8 +1,9 @@
-import { runAction } from "@learning-routes/core/actions/define";
+import { defineAction, runAction } from "@learning-routes/core/actions/define";
 import { ACTION_NAMES } from "@learning-routes/core/actions/names";
 import { ACTIONS } from "@learning-routes/core/actions/registry";
 import { drizzle } from "drizzle-orm/node-postgres";
 import { describe, expect, it } from "vitest";
+import { z } from "zod";
 import { pgTenancy } from "../../src/db/tenancy";
 import { actAs, newUser, rolledBack, URLS } from "./connect";
 import { newEnrollment, newRoute, newSpace, newVersion } from "./fixtures";
@@ -53,12 +54,40 @@ describe("two tenants, through every action", () => {
         code: "not_found",
         message: "not found",
       });
-      // Even naming their own space with B's row.
-      expect(
-        await runAction(ACTIONS, "review.submit", { ...input, spaceId: spaceA }, ctx),
-      ).toMatchObject({
-        ok: false,
+      expect(writes).toEqual([]);
+
+      // Naming their own space with B's row: an action that takes a spaceId, so the
+      // input passes and runAction's space check is what refuses it.
+      const touch = defineAction({
+        name: "test.touch",
+        kind: "mutation",
+        description: "Names a space and an enrollment.",
+        input: z.object({ spaceId: z.uuid(), enrollmentId: z.uuid() }),
+        target: (given) => ({ kind: "enrollment", id: given.enrollmentId }),
+        run: async () => {
+          writes.push("touched");
+        },
       });
+      const allowAll = () => true;
+      const registry = { "test.touch": touch };
+      expect(
+        await runAction(
+          registry,
+          "test.touch",
+          { spaceId: spaceA, enrollmentId: enrollmentB },
+          ctx,
+          allowAll,
+        ),
+      ).toEqual({ ok: false, code: "not_found", message: "not found" });
+      expect(
+        await runAction(
+          registry,
+          "test.touch",
+          { spaceId: spaceB, enrollmentId: enrollmentB },
+          ctx,
+          allowAll,
+        ),
+      ).toEqual({ ok: false, code: "not_found", message: "not found" });
       expect(writes).toEqual([]);
     });
   });
@@ -74,10 +103,16 @@ describe("two tenants, through every action", () => {
       const route = await newRoute(db, space);
       await actAs(db, owner);
       const tenancy = pgTenancy(drizzle(db, { casing: "snake_case" }));
-      expect(await tenancy.spaceOf({ kind: "route", id: route })).toBe(space);
-      expect(await tenancy.spaceOf({ kind: "space", id: space })).toBe(space);
-      expect(await tenancy.roleOf(space, owner)).toBe("owner");
-      expect(await tenancy.spaceOf({ kind: "route", id: crypto.randomUUID() })).toBeNull();
+      expect(await tenancy.scopeOf({ kind: "route", id: route }, owner)).toEqual({
+        spaceId: space,
+        role: "owner",
+      });
+      expect(await tenancy.scopeOf({ kind: "space", id: space }, owner)).toEqual({
+        spaceId: space,
+        role: "owner",
+      });
+      expect(await tenancy.scopeOf({ kind: "route", id: crypto.randomUUID() }, owner)).toBeNull();
+      expect(await tenancy.scopeOf({ kind: "route", id: "not-a-uuid" }, owner)).toBeNull();
     });
   });
 
@@ -93,8 +128,10 @@ describe("two tenants, through every action", () => {
       await newVersion(db, space, route, 1);
       await actAs(db, student);
       const tenancy = pgTenancy(drizzle(db, { casing: "snake_case" }));
-      expect(await tenancy.spaceOf({ kind: "route", id: route })).toBe(space);
-      expect(await tenancy.roleOf(space, student)).toBe("student");
+      expect(await tenancy.scopeOf({ kind: "route", id: route }, student)).toEqual({
+        spaceId: space,
+        role: "student",
+      });
     });
   });
 });

@@ -46,6 +46,20 @@ describe("app.enroll", () => {
     });
   });
 
+  it("answers invalid for a revoked enrollment, rather than handing it back as ok", async () => {
+    await rolledBack(URLS.migrator, async (db) => {
+      const space = await newSpace(db, "enroll");
+      const route = await published(db, space, "free");
+      const learner = await newUser(db);
+      await actAs(db, learner);
+      const { enrollment_id } = await enroll(db, route);
+      await db.query("reset role");
+      await db.query("update enrollments set status = 'revoked' where id = $1", [enrollment_id]);
+      await actAs(db, learner);
+      expect(await enroll(db, route)).toEqual({ outcome: "invalid", enrollment_id: null });
+    });
+  });
+
   it("keeps a member's role: an owner who enrolls stays owner", async () => {
     await rolledBack(URLS.migrator, async (db) => {
       const space = await newSpace(db, "enroll");

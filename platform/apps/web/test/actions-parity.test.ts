@@ -1,16 +1,12 @@
-import {
-  type ActorKind,
-  type Ctx,
-  mcpTools,
-  runAction,
-} from "@learning-routes/core/actions/define";
+import type { ActorKind } from "@learning-routes/core/actions/actor";
+import { type Ctx, mcpTools, runAction } from "@learning-routes/core/actions/define";
 import { ACTIONS } from "@learning-routes/core/actions/registry";
 import { describe, expect, it } from "vitest";
 import { api } from "../app/api";
 
-// STEP 46 §4: a button and an agent can only ever do the same things. The
+// STEP 46 §4: a button and an agent reach the same actions the same way. The
 // registry, the MCP tools and the browser client are one list, and the gate treats
-// every actor alike.
+// every way in alike, except where the permission table sets one apart.
 
 const ACTORS: ActorKind[] = ["ui", "mcp", "agent"];
 const NOW = 1_800_000_000_000;
@@ -25,12 +21,17 @@ function ctx(via: ActorKind): Ctx {
         rows.set(key, value);
       },
     },
+    // One space, where the caller is a student enrolled through ENROLLMENT.
+    tenancy: { scopeOf: async () => ({ spaceId: "space-1", role: "student" }) },
     now: NOW,
     newId: () => "id-1",
   };
 }
 
+const ENROLLMENT = "0192d3a0-0000-7000-8000-0000000000e1";
+
 const REVIEW = {
+  enrollmentId: ENROLLMENT,
   reviewId: "0192d3a0-0000-7000-8000-000000000001",
   cardId: "card-hello",
   rating: 3,

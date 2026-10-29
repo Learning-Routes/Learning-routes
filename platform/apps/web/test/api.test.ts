@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { api, callAction } from "../app/api";
 
 const INPUT = {
+  enrollmentId: "0192d3a0-0000-7000-8000-0000000000e1",
   reviewId: "0192d3a0-0000-7000-8000-000000000001",
   cardId: "card-hello",
   rating: 3,
