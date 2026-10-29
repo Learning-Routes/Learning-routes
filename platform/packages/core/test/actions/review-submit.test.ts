@@ -26,9 +26,9 @@ const input = (
 const submit = (raw: unknown, ctx = testCtx("ui")) => runAction(ACTIONS, "review.submit", raw, ctx);
 
 describe("review.submit", () => {
-  it("is the registry's only action so far, under the names browser code reads", () => {
+  it("is registered under the name browser code reads", () => {
     expect(Object.keys(ACTIONS)).toEqual([...ACTION_NAMES]);
-    expect(ACTION_NAMES).toEqual(["review.submit"]);
+    expect(ACTION_NAMES).toContain("review.submit");
   });
 
   it("schedules the card with core's FSRS", async () => {

@@ -1,4 +1,17 @@
 // The registry's action names, with no zod and no server code, so browser code can
 // import them at runtime. registry.ts checks that it registers exactly these.
-export const ACTION_NAMES = ["review.submit"] as const;
+export const ACTION_NAMES = [
+  "space.get",
+  "membership.add",
+  "route.create",
+  "route.get",
+  "route.list",
+  "module.add",
+  "lesson.add",
+  "block.add",
+  "route.publish",
+  "enrollment.create",
+  "enrollment.upgrade",
+  "review.submit",
+] as const;
 export type ActionName = (typeof ACTION_NAMES)[number];

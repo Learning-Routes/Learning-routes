@@ -1,6 +1,7 @@
 import type { ActorKind } from "../../src/actions/actor";
 import type { Ctx, Tenancy } from "../../src/actions/define";
 import type { SpaceRole } from "../../src/domain";
+import { newBlockId } from "../../src/ids";
 import { memoryRepos, memoryState } from "../repos/memory";
 
 // The actions' tests run on the repositories' in-memory twin: one space with a
@@ -17,6 +18,22 @@ export const ENROLLMENT = ENROLLMENTS["student-1"] as string;
 
 export type World = ReturnType<typeof memoryState>;
 
+export const STAFF = {
+  owner: "owner-1",
+  coeditor: "coeditor-1",
+  assistant: "assistant-1",
+} as const;
+
+const ROUTE_FIELDS = {
+  id: ROUTE,
+  slug: "first-route",
+  title: { en: "First route" },
+  description: null,
+  sourceLocale: "en" as const,
+  access: "open" as const,
+  pricing: "free" as const,
+};
+
 export function testWorld(): World {
   const state = memoryState();
   state.spaces.set(SPACE, {
@@ -25,6 +42,27 @@ export function testWorld(): World {
     name: { en: "Space" },
     defaultLocale: "en",
     locales: ["en"],
+  });
+  for (const [role, userId] of Object.entries(STAFF)) {
+    state.members.set(`${SPACE}:${userId}`, { spaceId: SPACE, userId, role: role as SpaceRole });
+  }
+  state.drafts.set(ROUTE, {
+    spaceId: SPACE,
+    route: ROUTE_FIELDS,
+    revision: 0,
+    latestPublishedVersion: 1,
+    modules: [],
+    lessons: [],
+    prerequisites: [],
+    blocks: [],
+  });
+  state.versions.set(`${ROUTE}:1`, {
+    spaceId: SPACE,
+    routeId: ROUTE,
+    version: 1,
+    snapshot: { route: ROUTE_FIELDS, modules: [], lessons: [], prerequisites: [], blocks: [] },
+    contentHash: "0".repeat(64),
+    publishedByUserId: STAFF.owner,
   });
   for (const [userId, enrollmentId] of Object.entries(ENROLLMENTS)) {
     state.members.set(`${SPACE}:${userId}`, { spaceId: SPACE, userId, role: "student" });
@@ -85,9 +123,10 @@ export function testCtx(
     tenancy: options.tenancy ?? worldTenancy(world),
     clock: { now: () => options.now ?? NOW },
     ids: {
+      // Real uuidv7s, the same in every run: the counter is the random part.
       newId: () => {
         n += 1;
-        return `id-${n}`;
+        return newBlockId(options.now ?? NOW, new Uint8Array(10).fill(n % 256));
       },
     },
   };
