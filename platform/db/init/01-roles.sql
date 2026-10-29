@@ -3,7 +3,7 @@
 -- service container. LOCAL ONLY: the passwords are fixed development values.
 
 -- PlanetScale's default role: bypasses RLS, owns the schema, runs the migrations.
--- Tests never connect as it, except to migrate and to prove what it cannot do.
+-- Tests use it to set up rows, inside transactions they roll back.
 create role lr_migrator login bypassrls password 'local-only-migrator';
 
 -- The Worker's role. It bypasses nothing, owns nothing and inherits no role: in
@@ -19,3 +19,9 @@ grant connect on database learning_routes to lr_app;
 alter schema public owner to lr_migrator;
 revoke create on schema public from public;
 grant usage on schema public to lr_app;
+
+-- TESTS ONLY: lets the migrator act as lr_app (SET ROLE, never inherited), so a
+-- test sets up rows and then reads them under lr_app's row-level security in one
+-- transaction it rolls back. It gives the migrator nothing it lacks; production
+-- needs no such grant.
+grant lr_app to lr_migrator with inherit false, set true;
