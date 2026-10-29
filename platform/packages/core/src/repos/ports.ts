@@ -104,6 +104,8 @@ export interface RouteVersion {
 /** Read and append only: a version never changes. */
 export interface RouteVersions {
   get(spaceId: string, routeId: string, version: number): Promise<RepoResult<RouteVersion>>;
+  /** The highest published version of a route, or null when it has none. */
+  latest(spaceId: string, routeId: string): Promise<number | null>;
   /** conflict when the version exists. */
   append(spaceId: string, version: RouteVersion): Promise<RepoResult<void>>;
 }

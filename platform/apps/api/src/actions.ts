@@ -1,12 +1,12 @@
 import { runAction } from "@learning-routes/core/actions/define";
 import { ACTIONS } from "@learning-routes/core/actions/registry";
-import { newBlockId } from "@learning-routes/core/ids";
 import type { Hono } from "hono";
 import { createAuth } from "./auth/auth";
 import type { EmailSender } from "./auth/email";
 import { pgRepos } from "./db/repos/index";
 import { pgTenancy } from "./db/tenancy";
 import { type Transaction, withClient, withDb } from "./db/with-db";
+import { newId } from "./ids";
 
 // The app's way into the action registry (Platform STEP 2 §5.7): POST
 // /api/a/:name. The actor is the session's user, read by Better Auth from the
@@ -18,6 +18,7 @@ const STATUS = {
   invalid_input: 400,
   not_found: 404,
   forbidden: 403,
+  conflict: 409,
   invalid: 422,
 } as const;
 
@@ -27,7 +28,7 @@ function ctxFor(tx: Transaction, userId: string) {
     repos: pgRepos(tx),
     tenancy: pgTenancy(tx),
     clock: { now: () => Date.now() },
-    ids: { newId: () => newBlockId(Date.now(), crypto.getRandomValues(new Uint8Array(10))) },
+    ids: { newId },
   };
 }
 

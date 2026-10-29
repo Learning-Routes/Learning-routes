@@ -268,6 +268,12 @@ export function memoryRepos(state: State, actorId = ""): Repos {
       },
     },
     routeVersions: {
+      latest: async (spaceId, routeId) => {
+        const versions = [...state.versions.values()]
+          .filter((entry) => entry.spaceId === spaceId && entry.routeId === routeId)
+          .map((entry) => entry.version);
+        return versions.length === 0 ? null : Math.max(...versions);
+      },
       get: async (spaceId, routeId, version) => {
         const stored = state.versions.get(`${routeId}:${version}`);
         if (stored?.spaceId !== spaceId) {

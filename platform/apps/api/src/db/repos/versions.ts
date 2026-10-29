@@ -1,6 +1,6 @@
 import { SNAPSHOT_FORMAT, upcastSnapshot } from "@learning-routes/core/content/snapshot";
 import type { RouteVersions } from "@learning-routes/core/repos/ports";
-import { and, eq } from "drizzle-orm";
+import { and, eq, max } from "drizzle-orm";
 import { routeVersions } from "../schema/versions";
 import { attempt, type Db, fail, ok } from "./shared";
 
@@ -8,6 +8,13 @@ import { attempt, type Db, fail, ok } from "./shared";
 // stored snapshot is read through core's upcastSnapshot, whatever its format.
 
 export const routeVersionsRepo = (db: Db): RouteVersions => ({
+  async latest(spaceId, routeId) {
+    const [row] = await db
+      .select({ version: max(routeVersions.version) })
+      .from(routeVersions)
+      .where(and(eq(routeVersions.routeId, routeId), eq(routeVersions.spaceId, spaceId)));
+    return row?.version ?? null;
+  },
   async get(spaceId, routeId, version) {
     const [row] = await db
       .select()
