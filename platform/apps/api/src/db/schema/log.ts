@@ -1,4 +1,4 @@
-import { ACTOR_KINDS } from "@learning-routes/core/actions/define";
+import { ACTOR_KINDS } from "@learning-routes/core/actions/actor";
 import { sql } from "drizzle-orm";
 import { bigint, check, index, jsonb, pgTable, text, uuid } from "drizzle-orm/pg-core";
 import { createdAt, id, oneOf } from "./columns";

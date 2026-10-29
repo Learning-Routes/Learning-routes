@@ -1,4 +1,6 @@
-import type { ActorKind, Ctx, Store } from "../../src/actions/define";
+import type { ActorKind } from "../../src/actions/actor";
+import type { Ctx, Store, Tenancy } from "../../src/actions/define";
+import type { SpaceRole } from "../../src/domain";
 
 /** The tests' store: a Map. The API brings real storage in STEP 47. */
 export function memoryStore(): Store {
@@ -14,11 +16,36 @@ export function memoryStore(): Store {
 
 export const NOW = Date.parse("2026-10-28T12:00:00Z");
 
-export function testCtx(via: ActorKind, store: Store = memoryStore(), userId = "student-1"): Ctx {
+/** The tests' tenancy: which space each row is in ("kind:id"), and roles ("space:user"). */
+export function memoryTenancy(map: {
+  rows: Record<string, string>;
+  roles: Record<string, SpaceRole>;
+}): Tenancy {
+  return {
+    spaceOf: async ({ kind, id }) => map.rows[`${kind}:${id}`] ?? null,
+    roleOf: async (spaceId, userId) => map.roles[`${spaceId}:${userId}`] ?? null,
+  };
+}
+
+export const ENROLLMENT = "0192d3a0-0000-7000-8000-0000000000e1";
+
+/** Every test student is a student of space-1, enrolled through ENROLLMENT. */
+const everyoneIsAStudent: Tenancy = {
+  spaceOf: async ({ kind, id }) => (kind === "enrollment" && id === ENROLLMENT ? "space-1" : null),
+  roleOf: async (spaceId) => (spaceId === "space-1" ? "student" : null),
+};
+
+export function testCtx(
+  via: ActorKind,
+  store: Store = memoryStore(),
+  userId = "student-1",
+  tenancy: Tenancy = everyoneIsAStudent,
+): Ctx {
   let n = 0;
   return {
     actor: { via, userId },
     store,
+    tenancy,
     now: NOW,
     newId: () => {
       n += 1;

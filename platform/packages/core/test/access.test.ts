@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { can, PERMISSIONS } from "../src/access";
-import { ACTOR_KINDS } from "../src/actions/define";
+import { ACTOR_KINDS } from "../src/actions/actor";
 import { ACTION_NAMES } from "../src/actions/names";
 import { SpaceRole } from "../src/domain";
 
@@ -46,6 +46,6 @@ describe("can(role, action, via)", () => {
   });
 
   it("refuses an action it does not know", () => {
-    expect(can("owner", "space.delete" as never, "ui")).toBe(false);
+    expect(can("owner", "space.delete", "ui")).toBe(false);
   });
 });
