@@ -22,8 +22,12 @@ export function memoryTenancy(map: {
   roles: Record<string, SpaceRole>;
 }): Tenancy {
   return {
-    spaceOf: async ({ kind, id }) => map.rows[`${kind}:${id}`] ?? null,
-    roleOf: async (spaceId, userId) => map.roles[`${spaceId}:${userId}`] ?? null,
+    scopeOf: async ({ kind, id }, userId) => {
+      const spaceId = map.rows[`${kind}:${id}`];
+      return spaceId === undefined
+        ? null
+        : { spaceId, role: map.roles[`${spaceId}:${userId}`] ?? null };
+    },
   };
 }
 
@@ -31,8 +35,8 @@ export const ENROLLMENT = "0192d3a0-0000-7000-8000-0000000000e1";
 
 /** Every test student is a student of space-1, enrolled through ENROLLMENT. */
 const everyoneIsAStudent: Tenancy = {
-  spaceOf: async ({ kind, id }) => (kind === "enrollment" && id === ENROLLMENT ? "space-1" : null),
-  roleOf: async (spaceId) => (spaceId === "space-1" ? "student" : null),
+  scopeOf: async ({ kind, id }) =>
+    kind === "enrollment" && id === ENROLLMENT ? { spaceId: "space-1", role: "student" } : null,
 };
 
 export function testCtx(

@@ -53,7 +53,9 @@ alter table reviews enable row level security;
 --> statement-breakpoint
 alter table action_log enable row level security;
 --> statement-breakpoint
--- memberships is enabled, not forced: its owner, the migrator, runs app.member_space_ids.
+-- memberships is enabled, not forced, as the STEP asks. The migrator, which owns it
+-- and app.member_space_ids, bypasses RLS today; if an owner ever does not,
+-- forcing would make the helper read memberships through the policies that call it.
 alter table memberships enable row level security;
 --> statement-breakpoint
 alter table user_profiles force row level security;
@@ -243,15 +245,22 @@ begin
     return;
   end if;
   if not is_member then
-    insert into public.memberships (space_id, user_id, role) values (target.space_id, me, 'student');
+    -- Two enrolls at once in one space would both find no membership.
+    insert into public.memberships (space_id, user_id, role) values (target.space_id, me, 'student')
+    on conflict do nothing;
   end if;
   insert into public.enrollments (space_id, route_id, user_id, pinned_version, status)
   values (target.space_id, target.id, me, target.latest_published_version, 'active')
   on conflict on constraint enrollments_user_id_route_id_key do nothing
   returning id into enrolled;
   if enrolled is null then
+    -- Already enrolled: the same enrollment back, unless it was revoked or expired.
     select enrollment.id into enrolled from public.enrollments as enrollment
-     where enrollment.user_id = me and enrollment.route_id = target.id;
+     where enrollment.user_id = me and enrollment.route_id = target.id and enrollment.status = 'active';
+    if enrolled is null then
+      return query select 'invalid', null::uuid;
+      return;
+    end if;
   end if;
   return query select 'ok', enrolled;
 end;

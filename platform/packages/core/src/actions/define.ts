@@ -4,9 +4,11 @@ import type { SpaceRole } from "../domain";
 import type { Actor, ActorKind } from "./actor";
 
 // The action registry: every change to the platform is one action. The internal
-// endpoint, public REST, MCP and the typed client all come from it, so a button and
-// an agent can only ever do the same things. Pure: the caller supplies the store,
-// the time and the id maker.
+// endpoint, public REST, MCP and the typed client all come from it, and every
+// caller goes through the same gate, so a button and an agent reach the same
+// actions the same way. Only the permission table sets a way in apart: changes to
+// memberships and pricing are made in the app, never by an agent. Pure: the caller
+// supplies the store, the tenancy, the time and the id maker.
 
 /** What an action may read and write. The API implements it on real storage. */
 export interface Store {
@@ -22,13 +24,14 @@ export interface Target {
 
 /**
  * Where a row lives and who may act there (Platform STEP 2 §3.2). The API reads
- * both from Postgres, under the acting user's row-level security.
+ * both from Postgres, in one query, under the acting user's row-level security.
  */
 export interface Tenancy {
-  /** The row's space, or null when the actor cannot see the row. */
-  spaceOf(target: Target): Promise<string | null>;
-  /** The user's role in the space, or null when they are not a member. */
-  roleOf(spaceId: string, userId: string): Promise<SpaceRole | null>;
+  /** The row's space and the user's role there; null when they cannot see the row. */
+  scopeOf(
+    target: Target,
+    userId: string,
+  ): Promise<{ spaceId: string; role: SpaceRole | null } | null>;
 }
 
 /** The space an action runs in, and the actor's role there, found by runAction. */
@@ -109,12 +112,16 @@ export async function runAction(
     return { ok: false, code: "invalid_input", issues };
   }
   // The space comes from the row, never from the input.
-  const spaceId = await ctx.tenancy.spaceOf(action.target(parsed.data));
+  const found = await ctx.tenancy.scopeOf(action.target(parsed.data), ctx.actor.userId);
   const claimed = (parsed.data as { spaceId?: unknown }).spaceId;
-  const role = spaceId === null ? null : await ctx.tenancy.roleOf(spaceId, ctx.actor.userId);
-  if (spaceId === null || role === null || (claimed !== undefined && claimed !== spaceId)) {
+  if (
+    found === null ||
+    found.role === null ||
+    (claimed !== undefined && String(claimed).toLowerCase() !== found.spaceId.toLowerCase())
+  ) {
     return NOT_FOUND;
   }
+  const { spaceId, role } = found;
   if (!isAllowed(role, name, ctx.actor.via)) {
     return { ok: false, code: "forbidden", message: "not allowed" };
   }

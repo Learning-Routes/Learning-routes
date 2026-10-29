@@ -9,10 +9,10 @@ import { SpaceRole } from "../src/domain";
 // row is written, and PERMISSIONS does not compile without one.
 const EXPECTED: Record<string, Record<string, string[]>> = {
   "review.submit": {
-    owner: ["ui", "mcp"],
-    coeditor: ["ui", "mcp"],
-    assistant: ["ui", "mcp"],
-    student: ["ui", "mcp"],
+    owner: ["ui", "mcp", "agent"],
+    coeditor: ["ui", "mcp", "agent"],
+    assistant: ["ui", "mcp", "agent"],
+    student: ["ui", "mcp", "agent"],
   },
 };
 

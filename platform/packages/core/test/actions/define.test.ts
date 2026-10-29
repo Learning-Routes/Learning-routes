@@ -28,7 +28,7 @@ const ctx = (via: ActorKind): Ctx => ({
   actor: { via, userId: "user-1" },
   store: { get: async () => undefined, put: async () => undefined },
   // Every target is in space-1, where user-1 owns it; access is tested in tenancy.test.ts.
-  tenancy: { spaceOf: async () => "space-1", roleOf: async () => "owner" },
+  tenancy: { scopeOf: async () => ({ spaceId: "space-1", role: "owner" }) },
   now: 1_000,
   newId: () => "id-1",
 });

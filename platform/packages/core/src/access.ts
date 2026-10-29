@@ -17,11 +17,11 @@ import type { SpaceRole } from "./domain";
 
 type Row = Partial<Record<SpaceRole, readonly ActorKind[]>>;
 
-const PEOPLE = ["ui", "mcp"] as const;
+const ANY_WAY = ["ui", "mcp", "agent"] as const;
 
 export const PERMISSIONS = {
-  // A review is the student's own recall, so no agent submits one.
-  "review.submit": { owner: PEOPLE, coeditor: PEOPLE, assistant: PEOPLE, student: PEOPLE },
+  // Any member may study. The action records a review only on the actor's own enrollment.
+  "review.submit": { owner: ANY_WAY, coeditor: ANY_WAY, assistant: ANY_WAY, student: ANY_WAY },
 } as const satisfies Record<ActionName, Row>;
 
 /** Whether a role in a space may call an action this way. */

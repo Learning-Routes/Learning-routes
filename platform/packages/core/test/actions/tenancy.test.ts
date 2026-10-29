@@ -60,12 +60,13 @@ describe("runAction finds the space from the target row", () => {
     expect(result).toEqual({ ok: false, code: "not_found", message: "not found" });
   });
 
-  it("answers forbidden to a member whose way in is not allowed", async () => {
+  it("answers forbidden to a member the permission table refuses", async () => {
     const result = await runAction(
       ACTIONS,
       "review.submit",
       review(E_A),
-      testCtx("agent", memoryStore(), "student-1", tenancy),
+      testCtx("ui", memoryStore(), "student-1", tenancy),
+      () => false,
     );
     expect(result).toEqual({ ok: false, code: "forbidden", message: "not allowed" });
   });
@@ -100,5 +101,31 @@ describe("runAction finds the space from the target row", () => {
         allowAll,
       ),
     ).toEqual({ ok: true, output: { spaceId: "space-b", role: "assistant" } });
+  });
+
+  it("compares a uuid spaceId whatever its letter case", async () => {
+    const SPACE = "0192d3a0-0000-7000-8000-0000000000aa";
+    const upper = memoryTenancy({
+      rows: { [`enrollment:${E_A}`]: SPACE },
+      roles: { [`${SPACE}:student-1`]: "student" },
+    });
+    const touch = defineAction({
+      name: "test.touch",
+      kind: "query",
+      description: "Names a space and an enrollment.",
+      input: z.object({ spaceId: z.string(), enrollmentId: z.string() }),
+      target: (input) => ({ kind: "enrollment", id: input.enrollmentId }),
+      run: async (_ctx, _input, scope) => scope.spaceId,
+    });
+    const ctx = testCtx("ui", memoryStore(), "student-1", upper);
+    expect(
+      await runAction(
+        { "test.touch": touch },
+        "test.touch",
+        { spaceId: SPACE.toUpperCase(), enrollmentId: E_A },
+        ctx,
+        () => true,
+      ),
+    ).toEqual({ ok: true, output: SPACE });
   });
 });
