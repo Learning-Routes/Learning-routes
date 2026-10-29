@@ -18,6 +18,7 @@ const STATUS = {
   invalid_input: 400,
   not_found: 404,
   forbidden: 403,
+  conflict: 409,
   invalid: 422,
 } as const;
 

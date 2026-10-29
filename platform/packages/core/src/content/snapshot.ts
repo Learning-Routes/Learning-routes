@@ -57,3 +57,25 @@ export function snapshotOf(draft: Snapshot): Snapshot {
   const { route, modules, lessons, prerequisites, blocks } = draft;
   return { route, modules, lessons, prerequisites, blocks };
 }
+
+/** JSON with every object's keys in order, so equal content always reads the same. */
+function canonical(value: unknown): string {
+  if (Array.isArray(value)) {
+    return `[${value.map(canonical).join(",")}]`;
+  }
+  if (value !== null && typeof value === "object") {
+    const entries = Object.entries(value).filter(([, item]) => item !== undefined);
+    entries.sort(([a], [b]) => (a < b ? -1 : 1));
+    return `{${entries.map(([key, item]) => `${JSON.stringify(key)}:${canonical(item)}`).join(",")}}`;
+  }
+  return JSON.stringify(value);
+}
+
+/** A version's content hash: SHA-256, hex, of its snapshot in canonical JSON. */
+export async function contentHash(snapshot: Snapshot): Promise<string> {
+  const digest = await crypto.subtle.digest(
+    "SHA-256",
+    new TextEncoder().encode(canonical(snapshot)),
+  );
+  return Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, "0")).join("");
+}

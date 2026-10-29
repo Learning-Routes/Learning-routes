@@ -1,7 +1,7 @@
 import * as z from "zod";
 import { type Card, review } from "../learning/fsrs";
 import type { Repos, ReviewRecord } from "../repos/ports";
-import { ActionError, defineAction, type Scope } from "./define";
+import { ActionError, defineAction, inSpace, type Scope } from "./define";
 
 interface ReviewOutput {
   reviewId: string;
@@ -57,7 +57,8 @@ export const reviewSubmit = defineAction({
     elapsedMs: z.int().nonnegative(),
   }),
   target: (input) => ({ kind: "enrollment", id: input.enrollmentId }),
-  async run(ctx, input, scope): Promise<ReviewOutput> {
+  async run(ctx, input, given): Promise<ReviewOutput> {
+    const scope = inSpace(given);
     const userId = ctx.actor.userId;
     await ownEnrollment(ctx.repos, scope, input.enrollmentId, userId);
     return ctx.repos.transaction(async (repos) => {

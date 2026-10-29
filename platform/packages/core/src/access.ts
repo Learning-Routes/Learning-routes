@@ -19,9 +19,32 @@ type Row = Partial<Record<SpaceRole, readonly ActorKind[]>>;
 
 const ANY_WAY = ["ui", "mcp", "agent"] as const;
 
+const EVERYONE = {
+  owner: ANY_WAY,
+  coeditor: ANY_WAY,
+  assistant: ANY_WAY,
+  student: ANY_WAY,
+} as const;
+const STAFF = { owner: ANY_WAY, coeditor: ANY_WAY, assistant: ANY_WAY } as const;
+const EDITORS = { owner: ANY_WAY, coeditor: ANY_WAY } as const;
+
 export const PERMISSIONS = {
-  // Any member may study. The action records a review only on the actor's own enrollment.
-  "review.submit": { owner: ANY_WAY, coeditor: ANY_WAY, assistant: ANY_WAY, student: ANY_WAY },
+  "space.get": EVERYONE,
+  // Memberships change only in the app, and only by an owner.
+  "membership.add": { owner: ["ui"] },
+  // route.create itself refuses a paid route from anywhere but the app.
+  "route.create": EDITORS,
+  "route.get": STAFF,
+  "route.list": STAFF,
+  "module.add": EDITORS,
+  "lesson.add": EDITORS,
+  "block.add": EDITORS,
+  "route.publish": EDITORS,
+  // On the actor's own behalf, allowed as the student role it gives a newcomer.
+  "enrollment.create": EVERYONE,
+  // Each acts only on the actor's own enrollment.
+  "enrollment.upgrade": EVERYONE,
+  "review.submit": EVERYONE,
 } as const satisfies Record<ActionName, Row>;
 
 /** Whether a role in a space may call an action this way. */

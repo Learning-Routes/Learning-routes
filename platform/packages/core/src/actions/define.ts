@@ -60,9 +60,13 @@ export interface ActionDef<I extends z.ZodType = z.ZodType, O = unknown> {
   kind: "query" | "mutation";
   description: string;
   input: I;
-  /** The row the action acts on. A spaceId in the input is checked against its space. */
-  target: (input: z.infer<I>) => Target;
-  run: (ctx: Ctx, input: z.infer<I>, scope: Scope) => Promise<O>;
+  /**
+   * The row the action acts on; a spaceId in the input is checked against its
+   * space. "self" is for the one action a user takes before they belong to the
+   * space, enrollment.create: it gets no scope, and logs in the space its output names.
+   */
+  target: (input: z.infer<I>) => Target | "self";
+  run: (ctx: Ctx, input: z.infer<I>, scope: Scope | null) => Promise<O>;
 }
 
 export type Registry = Record<string, ActionDef>;
@@ -71,7 +75,7 @@ export type Registry = Record<string, ActionDef>;
 export class ActionError extends Error {
   override name = "ActionError";
   constructor(
-    readonly code: "not_found" | "forbidden" | "invalid",
+    readonly code: "not_found" | "forbidden" | "invalid" | "conflict",
     message: string,
   ) {
     super(message);
@@ -117,8 +121,12 @@ export async function runAction(
     }));
     return { ok: false, code: "invalid_input", issues };
   }
+  const target = action.target(parsed.data);
+  if (target === "self") {
+    return runForSelf(action, name, parsed.data, ctx, isAllowed);
+  }
   // The space comes from the row, never from the input.
-  const found = await ctx.tenancy.scopeOf(action.target(parsed.data), ctx.actor.userId);
+  const found = await ctx.tenancy.scopeOf(target, ctx.actor.userId);
   const claimed = (parsed.data as { spaceId?: unknown }).spaceId;
   if (
     found === null ||
@@ -130,16 +138,55 @@ export async function runAction(
   const { spaceId, role } = found;
   const result = await runInScope(action, name, parsed.data, ctx, { spaceId, role }, isAllowed);
   // Every action a member calls is logged, refusals included, in its own transaction.
-  await ctx.repos.actionLog.append(spaceId, {
+  await log(ctx, spaceId, name, parsed.data, result);
+  return result;
+}
+
+/** An action on the actor's own behalf: allowed as the student role it may give them. */
+async function runForSelf(
+  action: ActionDef,
+  name: string,
+  input: unknown,
+  ctx: Ctx,
+  isAllowed: (role: SpaceRole, action: string, via: ActorKind) => boolean,
+): Promise<ActionResult> {
+  if (!isAllowed("student", name, ctx.actor.via)) {
+    return { ok: false, code: "forbidden", message: "not allowed" };
+  }
+  try {
+    const output = await action.run(ctx, input, null);
+    const { spaceId } = output as { spaceId?: unknown };
+    const result: ActionResult = { ok: true, output };
+    if (typeof spaceId === "string") {
+      await log(ctx, spaceId, name, input, result);
+    }
+    return result;
+  } catch (error) {
+    if (!(error instanceof ActionError)) {
+      throw error;
+    }
+    return { ok: false, code: error.code, message: error.message };
+  }
+}
+
+function log(ctx: Ctx, spaceId: string, name: string, input: unknown, result: ActionResult) {
+  return ctx.repos.actionLog.append(spaceId, {
     actorUserId: ctx.actor.userId,
     actorVia: ctx.actor.via,
     agentRunId: null,
     action: name,
-    input: redact(parsed.data),
+    input: redact(input),
     outcome: result.ok ? "ok" : result.code,
     routeRevision: revisionOf(result),
   });
-  return result;
+}
+
+/** The scope a member action runs in; runAction always gives one. */
+export function inSpace(scope: Scope | null): Scope {
+  if (scope === null) {
+    throw new ActionError("not_found", "not found");
+  }
+  return scope;
 }
 
 async function runInScope(
