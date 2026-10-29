@@ -1,4 +1,5 @@
 import { Enrollment, Progress, ReviewCard } from "@learning-routes/core/domain";
+import type { Card, CardState } from "@learning-routes/core/learning/fsrs";
 import { sql } from "drizzle-orm";
 import {
   check,
@@ -34,7 +35,7 @@ export const enrollments = pgTable(
       .references(() => user.id, { onDelete: "cascade" }),
     // Changes only through enrollment.upgrade.
     pinnedVersion: integer().notNull(),
-    status: text().notNull(),
+    status: text().$type<Enrollment["status"]>().notNull(),
     createdAt: createdAt(),
     updatedAt: updatedAt(),
   },
@@ -64,9 +65,9 @@ export const progress = pgTable(
     lessonId: uuid().notNull(),
     spaceId: uuid().notNull(),
     userId: uuid().notNull(),
-    status: text().notNull(),
+    status: text().$type<Progress["status"]>().notNull(),
     completedAt: time(),
-    blocks: jsonb().notNull().default([]),
+    blocks: jsonb().$type<Progress["blocks"]>().notNull().default([]),
     updatedAt: updatedAt(),
   },
   (t) => [
@@ -94,7 +95,7 @@ export const cards = pgTable(
       .notNull()
       .references(() => spaces.id),
     itemId: uuid().notNull(),
-    state: text(),
+    state: text().$type<CardState>(),
     reps: integer().notNull().default(0),
     lapses: integer().notNull().default(0),
     stability: doublePrecision().notNull().default(0),
@@ -128,7 +129,7 @@ export const reviews = pgTable(
     rating: smallint().notNull(),
     reviewedAt: time().notNull(),
     elapsedMs: integer().notNull(),
-    stateBefore: jsonb().notNull(),
+    stateBefore: jsonb().$type<Card>().notNull(),
   },
   (t) => [
     // No action, not restrict: erasing a user removes the card and its reviews together.

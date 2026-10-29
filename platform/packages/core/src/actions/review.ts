@@ -1,14 +1,38 @@
 import { z } from "zod";
 import { type Card, review } from "../learning/fsrs";
-import { NEW_CARD } from "../learning/replay";
-import { defineAction } from "./define";
+import type { Repos, ReviewRecord } from "../repos/ports";
+import { ActionError, defineAction, type Scope } from "./define";
 
 interface ReviewOutput {
   reviewId: string;
-  cardId: string;
+  itemId: string;
   card: Card;
   nextReviewAt: number;
   duplicate: boolean;
+}
+
+/** The result a stored review gave: replaying it from its state before is exact. */
+function resultOf(stored: ReviewRecord, itemId: string, duplicate: boolean): ReviewOutput {
+  const next = review(stored.stateBefore, stored.rating, stored.reviewedAt);
+  return {
+    reviewId: stored.reviewId,
+    itemId,
+    card: next.card,
+    nextReviewAt: next.nextReviewAt,
+    duplicate,
+  };
+}
+
+/** The actor's own active enrollment, or not_found: another's, or a revoked one, does not exist for them. */
+async function ownEnrollment(repos: Repos, scope: Scope, enrollmentId: string, userId: string) {
+  const enrollment = await repos.enrollments.get(scope.spaceId, enrollmentId);
+  if (
+    !enrollment.ok ||
+    enrollment.value.userId !== userId ||
+    enrollment.value.status !== "active"
+  ) {
+    throw new ActionError("not_found", "not found");
+  }
 }
 
 /**
@@ -24,34 +48,46 @@ export const reviewSubmit = defineAction({
     /** The student's enrollment the card belongs to; its row gives the space. */
     enrollmentId: z.uuid(),
     reviewId: z.uuid(),
-    cardId: z.string().min(1),
+    /** The content item the card is for, the same in every version and enrollment. */
+    itemId: z.uuid(),
     rating: z.int().min(1).max(4),
     /** When the student answered (epoch ms); a queued review arrives later. */
     at: z.int().nonnegative(),
+    /** How long the student took to answer. */
+    elapsedMs: z.int().nonnegative(),
   }),
   target: (input) => ({ kind: "enrollment", id: input.enrollmentId }),
-  async run(ctx, input): Promise<ReviewOutput> {
-    const owner = ctx.actor.userId;
-    const reviewKey = `review:${owner}:${input.reviewId}`;
-    // shortcut(Platform STEP 2): read-then-write is not atomic; the Postgres store makes reviewId unique.
-    const done = await ctx.store.get<ReviewOutput>(reviewKey);
-    if (done) {
-      return { ...done, duplicate: true };
-    }
-
-    const cardKey = `card:${owner}:${input.cardId}`;
-    const card = (await ctx.store.get<Card>(cardKey)) ?? NEW_CARD;
-    // The server schedules; a clock ahead of the server's cannot push a review later.
-    const next = review(card, input.rating, Math.min(input.at, ctx.now));
-    const output: ReviewOutput = {
-      reviewId: input.reviewId,
-      cardId: input.cardId,
-      card: next.card,
-      nextReviewAt: next.nextReviewAt,
-      duplicate: false,
-    };
-    await ctx.store.put(cardKey, next.card);
-    await ctx.store.put(reviewKey, output);
-    return output;
+  async run(ctx, input, scope): Promise<ReviewOutput> {
+    const userId = ctx.actor.userId;
+    await ownEnrollment(ctx.repos, scope, input.enrollmentId, userId);
+    return ctx.repos.transaction(async (repos) => {
+      // Locked until the end: a second review of this card waits for this one.
+      const locked = await repos.learning.lockCard(scope.spaceId, userId, input.itemId);
+      if (!locked.ok) {
+        throw new ActionError("not_found", "not found");
+      }
+      const { id: cardId, card: before } = locked.value;
+      // The server schedules; a clock ahead of the server's cannot push a review later.
+      const reviewedAt = Math.min(input.at, ctx.clock.now());
+      const appended = await repos.reviews.append(scope.spaceId, userId, {
+        reviewId: input.reviewId,
+        cardId,
+        rating: input.rating,
+        reviewedAt,
+        elapsedMs: input.elapsedMs,
+        stateBefore: before,
+      });
+      if (!appended.ok || appended.value.review.cardId !== cardId) {
+        // Throwing undoes this unit of work, a card it made included.
+        throw new ActionError("invalid", "this reviewId was already used for another card");
+      }
+      // A retry: the stored review decides the answer, and the card is not touched.
+      if (appended.value.duplicate) {
+        return resultOf(appended.value.review, input.itemId, true);
+      }
+      const next = review(before, input.rating, reviewedAt);
+      await repos.learning.saveCard(scope.spaceId, userId, cardId, next.card, next.nextReviewAt);
+      return resultOf(appended.value.review, input.itemId, false);
+    });
   },
 });
