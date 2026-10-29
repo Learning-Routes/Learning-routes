@@ -1,4 +1,4 @@
-import { z } from "zod";
+import * as z from "zod";
 import { Block, BlockId } from "./blocks/schema";
 import { POSITION_KEY } from "./content/position";
 import { Id, Locale, LocalizedText, Timestamp } from "./localized-text";
