@@ -7,7 +7,7 @@ create function app.refuse_change_unless_erasing() returns trigger
   set search_path = pg_catalog
 as $$
 begin
-  if tg_op = 'DELETE' and old.user_id::text = current_setting('app.erasing_user_id', true) then
+  if tg_op = 'DELETE' and old.user_id = nullif(current_setting('app.erasing_user_id', true), '')::uuid then
     return old;
   end if;
   raise exception '% is append-only', tg_table_name using errcode = 'restrict_violation';

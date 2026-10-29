@@ -2,6 +2,7 @@ import { z } from "zod";
 import { BLOCK_TYPES } from "../blocks/types";
 import { Route } from "../domain";
 import { Locale, LocalizedText } from "../localized-text";
+import { POSITION_KEY } from "./position";
 
 // A published version's content (Platform STEP 2 §2.10): the route, its modules,
 // lessons, prerequisites and blocks, frozen. Ids are the draft's, copied verbatim,
@@ -11,7 +12,7 @@ import { Locale, LocalizedText } from "../localized-text";
 
 export const SNAPSHOT_FORMAT = 1;
 
-const Position = z.string().min(1);
+const Position = z.string().regex(POSITION_KEY);
 
 const SnapshotV1 = z.strictObject({
   route: z.strictObject({

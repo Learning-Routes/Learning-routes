@@ -113,6 +113,7 @@ describe("every table holds what core's domain schemas allow", () => {
       await db.insert(lessons).values({
         id: lesson.id,
         spaceId: ids.space,
+        routeId: lesson.routeId,
         moduleId: lesson.moduleId,
         position: "V",
         title: lesson.title,

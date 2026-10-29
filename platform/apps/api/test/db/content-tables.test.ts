@@ -53,9 +53,12 @@ describe("the content tables (Platform STEP 2 §2.6–§2.8)", () => {
       expect(await attempt(db, addModule, [a, route, "V"])).toMatch(UNIQUE);
 
       const addLesson =
-        'insert into lessons (space_id, module_id, position, title) values ($1, $2, $3, \'{"en": "L"}\') returning id';
-      expect(await attempt(db, addLesson, [b, moduleId, "V"])).toMatch(FOREIGN_KEY);
-      const { rows: lessons } = await db.query(addLesson, [a, moduleId, "V"]);
+        'insert into lessons (space_id, route_id, module_id, position, title) values ($1, $2, $3, $4, \'{"en": "L"}\') returning id';
+      expect(await attempt(db, addLesson, [b, route, moduleId, "V"])).toMatch(FOREIGN_KEY);
+      // A lesson's route is its module's route.
+      const otherRoute = await newRoute(db, a, "other-route");
+      expect(await attempt(db, addLesson, [a, otherRoute, moduleId, "V"])).toMatch(FOREIGN_KEY);
+      const { rows: lessons } = await db.query(addLesson, [a, route, moduleId, "V"]);
       const lessonId = lessons[0]?.id;
 
       const addBlock =
@@ -80,7 +83,7 @@ describe("the content tables (Platform STEP 2 §2.6–§2.8)", () => {
     });
   });
 
-  it("lesson_prerequisites: a pair is stored once, never a lesson on itself, never across spaces", async () => {
+  it("lesson_prerequisites: a pair is stored once, never a lesson on itself, never across routes or spaces", async () => {
     await rolledBack(URLS.migrator, async (db) => {
       const a = await newSpace(db, "space-a");
       const b = await newSpace(db, "space-b");
@@ -93,8 +96,8 @@ describe("the content tables (Platform STEP 2 §2.6–§2.8)", () => {
       const lesson = async (position: string) =>
         (
           await db.query(
-            'insert into lessons (space_id, module_id, position, title) values ($1, $2, $3, \'{"en": "L"}\') returning id',
-            [a, modules[0]?.id, position],
+            'insert into lessons (space_id, route_id, module_id, position, title) values ($1, $2, $3, $4, \'{"en": "L"}\') returning id',
+            [a, route, modules[0]?.id, position],
           )
         ).rows[0]?.id;
       const first = await lesson("G");
@@ -105,6 +108,9 @@ describe("the content tables (Platform STEP 2 §2.6–§2.8)", () => {
       expect(await attempt(db, add, [a, route, second, first])).toMatch(UNIQUE);
       expect(await attempt(db, add, [a, route, first, first])).toMatch(CHECK);
       expect(await attempt(db, add, [b, otherRoute, first, second])).toMatch(FOREIGN_KEY);
+      // A prerequisite names the route both lessons belong to, not another one.
+      const sameSpaceRoute = await newRoute(db, a, "same-space-route");
+      expect(await attempt(db, add, [a, sameSpaceRoute, first, second])).toMatch(FOREIGN_KEY);
     });
   });
 

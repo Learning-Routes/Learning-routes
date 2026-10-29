@@ -83,7 +83,7 @@ export const modules = pgTable(
       foreignColumns: [routes.id, routes.spaceId],
     }).onDelete("restrict"),
     unique("modules_route_id_position_key").on(t.routeId, t.position),
-    unique("modules_id_space_id_key").on(t.id, t.spaceId),
+    unique("modules_id_route_id_space_id_key").on(t.id, t.routeId, t.spaceId),
     check("modules_title_localized", sql`app.is_localized(${t.title})`),
   ],
 );
@@ -93,6 +93,7 @@ export const lessons = pgTable(
   {
     id: id(),
     spaceId: uuid().notNull(),
+    routeId: uuid().notNull(),
     moduleId: uuid().notNull(),
     position: position().notNull(),
     title: jsonb().notNull(),
@@ -101,13 +102,15 @@ export const lessons = pgTable(
     archivedAt: archivedAt(),
   },
   (t) => [
+    // A lesson's route and space are its module's.
     foreignKey({
       name: "lessons_module_id_fkey",
-      columns: [t.moduleId, t.spaceId],
-      foreignColumns: [modules.id, modules.spaceId],
+      columns: [t.moduleId, t.routeId, t.spaceId],
+      foreignColumns: [modules.id, modules.routeId, modules.spaceId],
     }).onDelete("restrict"),
     unique("lessons_module_id_position_key").on(t.moduleId, t.position),
     unique("lessons_id_space_id_key").on(t.id, t.spaceId),
+    unique("lessons_id_route_id_space_id_key").on(t.id, t.routeId, t.spaceId),
     check("lessons_title_localized", sql`app.is_localized(${t.title})`),
   ],
 );
@@ -138,7 +141,8 @@ export const blocks = pgTable(
   ],
 );
 
-// core refuses a cycle (createsCycle) before the insert.
+// Both lessons belong to the named route. core refuses a cycle (createsCycle)
+// before the insert.
 export const lessonPrerequisites = pgTable(
   "lesson_prerequisites",
   {
@@ -156,13 +160,13 @@ export const lessonPrerequisites = pgTable(
     }).onDelete("restrict"),
     foreignKey({
       name: "lesson_prerequisites_lesson_id_fkey",
-      columns: [t.lessonId, t.spaceId],
-      foreignColumns: [lessons.id, lessons.spaceId],
+      columns: [t.lessonId, t.routeId, t.spaceId],
+      foreignColumns: [lessons.id, lessons.routeId, lessons.spaceId],
     }).onDelete("restrict"),
     foreignKey({
       name: "lesson_prerequisites_requires_lesson_id_fkey",
-      columns: [t.requiresLessonId, t.spaceId],
-      foreignColumns: [lessons.id, lessons.spaceId],
+      columns: [t.requiresLessonId, t.routeId, t.spaceId],
+      foreignColumns: [lessons.id, lessons.routeId, lessons.spaceId],
     }).onDelete("restrict"),
     check("lesson_prerequisites_not_itself", sql`${t.lessonId} <> ${t.requiresLessonId}`),
   ],

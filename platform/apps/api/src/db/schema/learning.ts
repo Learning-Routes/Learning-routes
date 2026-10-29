@@ -11,20 +11,17 @@ import {
   primaryKey,
   smallint,
   text,
-  timestamp,
   unique,
   uuid,
 } from "drizzle-orm/pg-core";
 import { user } from "./auth";
-import { createdAt, id, oneOf, updatedAt } from "./columns";
+import { createdAt, id, oneOf, time, updatedAt } from "./columns";
 import { routes } from "./content";
 import { spaces } from "./tenancy";
 import { routeVersions } from "./versions";
 
 // Learning (Platform STEP 2 §2.11–§2.14): a student's enrollments, progress, cards
 // and review log. Every row belongs to one user and goes with them (user.erase).
-
-const at = () => timestamp({ withTimezone: true });
 
 export const enrollments = pgTable(
   "enrollments",
@@ -68,7 +65,7 @@ export const progress = pgTable(
     spaceId: uuid().notNull(),
     userId: uuid().notNull(),
     status: text().notNull(),
-    completedAt: at(),
+    completedAt: time(),
     blocks: jsonb().notNull().default([]),
     updatedAt: updatedAt(),
   },
@@ -102,8 +99,8 @@ export const cards = pgTable(
     lapses: integer().notNull().default(0),
     stability: doublePrecision().notNull().default(0),
     difficulty: doublePrecision().notNull().default(0),
-    lastReviewAt: at(),
-    dueAt: at(),
+    lastReviewAt: time(),
+    dueAt: time(),
     fsrsParamsVersion: smallint().notNull().default(1),
     createdAt: createdAt(),
     updatedAt: updatedAt(),
@@ -129,7 +126,7 @@ export const reviews = pgTable(
     cardId: uuid().notNull(),
     reviewId: uuid().notNull(),
     rating: smallint().notNull(),
-    reviewedAt: at().notNull(),
+    reviewedAt: time().notNull(),
     elapsedMs: integer().notNull(),
     stateBefore: jsonb().notNull(),
   },

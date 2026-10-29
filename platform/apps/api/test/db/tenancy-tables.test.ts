@@ -28,6 +28,14 @@ describe("the tenancy tables (Platform STEP 2 §2.2–§2.5)", () => {
     });
   });
 
+  it("user_profiles: a time zone Postgres knows, or the insert is refused", async () => {
+    await rolledBack(URLS.migrator, async (db) => {
+      const add = "insert into user_profiles (user_id, time_zone) values ($1, $2)";
+      expect(await attempt(db, add, [await newUser(db), "America/Mexico_City"])).toBeNull();
+      expect(await attempt(db, add, [await newUser(db), "Mars/Olympus"])).toMatch(CHECK);
+    });
+  });
+
   it("spaces: a uuidv7 id, a unique slug, a localized name, and a default among its locales", async () => {
     await rolledBack(URLS.migrator, async (db) => {
       const { rows } = await db.query(SPACE, space("english-unlimited"));

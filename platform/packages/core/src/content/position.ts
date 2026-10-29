@@ -5,7 +5,8 @@
 // always room before it.
 const DIGITS = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 const ZERO = "0";
-const KEY = /^[0-9A-Za-z]*[1-9A-Za-z]$/;
+/** A key keyBetween makes and accepts: base-62 digits, never ending in zero. */
+export const POSITION_KEY = /^[0-9A-Za-z]*[1-9A-Za-z]$/;
 
 function digit(char: string | undefined): number {
   return DIGITS.indexOf(char as string);
@@ -36,7 +37,7 @@ function midpoint(a: string, b: string | null): string {
 /** The position key between two neighbours; null means the start or the end. */
 export function keyBetween(before: string | null, after: string | null): string {
   for (const key of [before, after]) {
-    if (key !== null && !KEY.test(key)) {
+    if (key !== null && !POSITION_KEY.test(key)) {
       throw new RangeError(`not a position key: ${JSON.stringify(key)}`);
     }
   }
