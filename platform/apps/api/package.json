@@ -16,7 +16,8 @@
     "db:auth-schema": "auth generate --config src/auth/schema.config.ts --adapter drizzle --dialect postgresql --output auth-schema.generated.ts -y",
     "db:generate": "drizzle-kit generate",
     "db:erase-user": "node scripts/erase-user.ts",
-    "db:measure-rls": "node scripts/measure-rls.ts"
+    "db:measure-rls": "node scripts/measure-rls.ts",
+    "db:seed": "node scripts/seed.ts"
   },
   "dependencies": {
     "@learning-routes/core": "workspace:*",
