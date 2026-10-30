@@ -67,7 +67,6 @@ would fail; connections already open keep working. Do it when nobody is using th
 
 ## Notes
 
-- `.github/workflows/deploy.yml` reads a repository secret `LEARNING_ROUTES_DATABASE_PASSWORD`.
-  The workflow is manual-only and must not be used; if that secret exists, it now holds the
-  old value — delete it in GitHub → Settings → Secrets and variables → Actions.
+- No GitHub workflow deploys the Rails app and GitHub holds no deploy secret; the deploy runs
+  from the owner's machine (`platform/docs/runbooks/github.md`, "Deploying the Rails app").
 - `.env.deploy*` is ignored by git (`/.env*`). Never commit it.

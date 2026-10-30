@@ -4,7 +4,7 @@ How the repository is set up on GitHub, the commands that set it, and what is le
 
 ## The production environment
 
-The Rails deploy (`.github/workflows/deploy.yml`) runs only from `main`, in the `production` environment. That environment releases its secrets only after its required reviewer, the owner, approves the run, and only for the `main` branch. It was created with:
+No workflow uses the `production` environment today. It is kept for the platform's deploys from CI. It releases its secrets only after its required reviewer, the owner, approves the run, and only for the `main` branch. It was created with:
 
 ```sh
 uid=$(gh api users/Garcia-G-G --jq .id)
@@ -15,21 +15,24 @@ EOF2
 gh api -X POST repos/Learning-Routes/Learning-routes/environments/production/deployment-branch-policies -f name=main -f type=branch
 ```
 
-### For the owner: move the deploy secrets into the environment
+## Deploying the Rails app
 
-The deploy secrets are still repository secrets, which any workflow in the repository could read. Only the owner holds their values. While both exist, the environment's copy wins, so the deploy keeps working during the move.
+The Rails app is deployed from the owner's Mac with `kamal deploy`. Nothing is stored in GitHub: there is no deploy workflow, and no repository or environment holds a deploy secret.
 
-1. For each of `KAMAL_REGISTRY_USERNAME`, `KAMAL_REGISTRY_PASSWORD`, `RAILS_MASTER_KEY`, `LEARNING_ROUTES_DATABASE_PASSWORD` and `SSH_PRIVATE_KEY`, set it on the environment. `gh` asks for the value and does not echo it:
+`.kamal/secrets` reads each value from an environment variable and holds no value itself. Git ignores it; `.kamal/secrets.example` shows its shape.
+
+1. **Once per checkout,** create the file from the example: `cp .kamal/secrets.example .kamal/secrets`.
+2. **Before each deploy,** in the terminal you deploy from, export each variable from the macOS Keychain. The service names below are placeholders; use the ones the values are stored under:
 
    ```sh
-   gh secret set KAMAL_REGISTRY_USERNAME --env production --repo Learning-Routes/Learning-routes
+   export KAMAL_REGISTRY_USERNAME="$(security find-generic-password -s <registry-username-service> -w)"
+   export KAMAL_REGISTRY_PASSWORD="$(security find-generic-password -s <registry-password-service> -w)"
+   export RAILS_MASTER_KEY="$(security find-generic-password -s <rails-master-key-service> -w)"
+   export POSTGRES_PASSWORD="$(security find-generic-password -s <postgres-password-service> -w)"
    ```
 
-   For `SSH_PRIVATE_KEY`, read the value from the key file instead: `gh secret set SSH_PRIVATE_KEY --env production --repo Learning-Routes/Learning-routes < path/to/key`.
-2. Check that all five are there: `gh secret list --env production --repo Learning-Routes/Learning-routes`.
-3. In the Actions tab, run **Deploy to Production** on `main`, approve it when GitHub asks, and check that it succeeds.
-4. Only then delete each repository-level copy: `gh secret delete KAMAL_REGISTRY_USERNAME --repo Learning-Routes/Learning-routes`, and the same for the other four.
-5. Check that the repository list no longer has them: `gh secret list --repo Learning-Routes/Learning-routes`.
+3. **Deploy from an up-to-date `main`:** `bin/kamal deploy`. The `pre-build` hook refuses any other checkout.
+4. **Close the terminal** when the deploy is done, so the values don't stay in its environment.
 
 ## Security settings
 
