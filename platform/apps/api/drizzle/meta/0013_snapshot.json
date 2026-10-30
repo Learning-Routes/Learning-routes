@@ -475,10 +475,31 @@
             }
           ],
           "isUnique": true,
-          "with": {},
-          "method": "btree",
           "where": "\"blocks\".\"archived_at\" is null",
-          "concurrently": false
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "blocks_lesson_id_position_idx": {
+          "name": "blocks_lesson_id_position_idx",
+          "columns": [
+            {
+              "expression": "lesson_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "position",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
         }
       },
       "foreignKeys": {
