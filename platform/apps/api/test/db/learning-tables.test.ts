@@ -9,6 +9,7 @@ const UNIQUE = /duplicate key value violates unique constraint/;
 const FOREIGN_KEY = /violates foreign key constraint/;
 const APPEND_ONLY = /is append-only/;
 const PERMISSION_DENIED = /permission denied/;
+const PINNED_FORWARD = /pinned version only moves forward/;
 
 describe("the learning tables (Platform STEP 2 §2.11–§2.14)", () => {
   it("enrollments: one per student and route, pinned to a published version", async () => {
@@ -22,6 +23,24 @@ describe("the learning tables (Platform STEP 2 §2.11–§2.14)", () => {
       expect(await attempt(db, add, [space, route, student, 1, "active"])).toBeNull();
       expect(await attempt(db, add, [space, route, student, 1, "active"])).toMatch(UNIQUE);
       expect(await attempt(db, add, [space, route, await newUser(db), 1, "paused"])).toMatch(CHECK);
+    });
+  });
+
+  it("enrollments: the pinned version only moves forward", async () => {
+    await rolledBack(URLS.migrator, async (db) => {
+      const space = await newSpace(db, "learning");
+      const route = await newRoute(db, space);
+      await newVersion(db, space, route, 1);
+      await newVersion(db, space, route, 2);
+      const enrollment = await newEnrollment(db, space, route, await newUser(db));
+      const pin = "update enrollments set pinned_version = $2 where id = $1";
+      expect(await attempt(db, pin, [enrollment, 1])).toMatch(PINNED_FORWARD);
+      expect(await attempt(db, pin, [enrollment, 2])).toBeNull();
+      expect(await attempt(db, pin, [enrollment, 1])).toMatch(PINNED_FORWARD);
+      // A status change leaves the pinned version alone.
+      expect(
+        await attempt(db, "update enrollments set status = 'revoked' where id = $1", [enrollment]),
+      ).toBeNull();
     });
   });
 
