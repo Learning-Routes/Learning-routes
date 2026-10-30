@@ -1,8 +1,8 @@
 // user.erase (Platform STEP 2 §2.16): the one path that deletes a user, run as the
 // migrator. Spaces and content are never deleted, and a space's last owner is
 // never erased; a user's own rows
-// (profile, memberships, roles, enrollments, progress, cards, reviews, sessions
-// and accounts) go, in one transaction. The action log and published versions
+// (profile, memberships, roles, enrollments, progress, cards, reviews, sessions,
+// accounts and pending sign-in links) go, in one transaction. The action log and published versions
 // keep the bare id, which then points at no one.
 //
 //   node scripts/erase-user.ts <user id>
@@ -45,6 +45,14 @@ export async function eraseUser(db: pg.Client, userId: string): Promise<void> {
   await db.query("select set_config('app.erasing_user_id', $1, true)", [userId]);
   // progress restricts its enrollment's delete, so it goes first.
   await db.query("delete from progress where user_id = $1", [userId]);
+  // Pending magic links name the address, not the user: Better Auth stores
+  // {"email": ...} as the value. Rows of other kinds, or not JSON, are left alone.
+  await db.query(
+    `delete from verification
+      where case when pg_input_is_valid(value, 'jsonb') then lower(value::jsonb ->> 'email') end
+          = (select lower(email) from "user" where id = $1)`,
+    [userId],
+  );
   // Every other per-user row cascades from the user.
   const { rowCount } = await db.query(`delete from "user" where id = $1`, [userId]);
   if (rowCount !== 1) {

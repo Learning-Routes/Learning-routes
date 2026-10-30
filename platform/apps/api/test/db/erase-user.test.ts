@@ -72,6 +72,29 @@ async function rowsOf(db: pg.Client, userId: string) {
   return counts;
 }
 
+/** A pending magic link for the user's address, stored as Better Auth stores it. */
+async function pendingLink(db: pg.Client, userId: string, shout = false) {
+  const { rows } = await db.query(`select email from "user" where id = $1`, [userId]);
+  const email: string = rows[0]?.email;
+  const identifier = crypto.randomUUID();
+  await db.query(
+    "insert into verification (identifier, value, expires_at) values ($1, $2, now() + interval '5 minutes')",
+    [
+      identifier,
+      JSON.stringify({ email: shout ? email.toUpperCase() : email, name: "", attempt: 0 }),
+    ],
+  );
+  return identifier;
+}
+
+async function linksLeft(db: pg.Client, identifiers: string[]) {
+  const { rows } = await db.query(
+    "select count(*)::int as n from verification where identifier = any ($1)",
+    [identifiers],
+  );
+  return rows[0]?.n;
+}
+
 describe("user.erase (Platform STEP 2 §2.16)", () => {
   it("removes every per-user row of one user, and nothing of anyone else's", async () => {
     await rolledBack(URLS.migrator, async (db) => {
@@ -81,8 +104,18 @@ describe("user.erase (Platform STEP 2 §2.16)", () => {
       const erased = await learner(db, space, route);
       const kept = await learner(db, space, route);
 
+      const erasedLinks = [await pendingLink(db, erased), await pendingLink(db, erased, true)];
+      const keptLinks = [await pendingLink(db, kept)];
+      // A row of another kind whose value is not JSON stays, and breaks nothing.
+      await db.query(
+        "insert into verification (identifier, value, expires_at) values ($1, 'not json', now())",
+        [crypto.randomUUID()],
+      );
+
       await eraseUser(db, erased);
 
+      expect(await linksLeft(db, erasedLinks)).toBe(0);
+      expect(await linksLeft(db, keptLinks)).toBe(1);
       expect(Object.values(await rowsOf(db, erased)).every((n) => n === 0)).toBe(true);
       expect(Object.values(await rowsOf(db, kept)).every((n) => n === 1)).toBe(true);
       // The record of what they did stays, with no way back to who they were.
