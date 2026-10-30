@@ -22,6 +22,19 @@ export function createApp(deps: AppDeps) {
   for (const path of ["/api/*", "/mcp/*"]) {
     app.use(path, appOriginOnly);
   }
+  // A sign-in request names an address and nothing else. Better Auth would give a
+  // new account the request's name, which is not the requester's to set: a link
+  // asked for by someone else would name the account for them.
+  app.post(`${AUTH_PATH}/sign-in/magic-link`, async (c, next) => {
+    const body: unknown = await c.req.raw
+      .clone()
+      .json()
+      .catch(() => null);
+    if (body !== null && typeof body === "object" && Object.hasOwn(body, "name")) {
+      return c.json({ code: "invalid_input", message: "a sign-in request takes no name" }, 400);
+    }
+    return next();
+  });
   confirmRoutes(app, deps.emailSender);
   actionRoutes(app, deps.emailSender);
   app.on(["GET", "POST"], `${AUTH_PATH}/*`, (c) =>

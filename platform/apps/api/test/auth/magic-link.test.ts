@@ -51,6 +51,16 @@ describe("signing in with a link", () => {
     expect(stored).toEqual([]);
   });
 
+  it("refuses a sign-in request that names the account: the name is not the requester's to set", async () => {
+    const email = randomEmail();
+    const response = await api.call(
+      "/api/auth/sign-in/magic-link",
+      json({ email, name: "Someone else" }),
+    );
+    expect(response.status).toBe(400);
+    expect(api.sent.some((entry) => entry.email === email)).toBe(false);
+  });
+
   it("writes the email in the language the browser asked in", async () => {
     const email = randomEmail();
     const response = await api.call(
