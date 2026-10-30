@@ -12,7 +12,7 @@ import {
   Space,
   UserProfile,
 } from "@learning-routes/core/domain";
-import type { LoggedReview } from "@learning-routes/core/learning/replay";
+import { type LoggedReview, NEW_CARD } from "@learning-routes/core/learning/replay";
 import type { InferInsertModel, Table } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/node-postgres";
 import type pg from "pg";
@@ -203,7 +203,7 @@ const toRow = {
     rating: r.rating,
     reviewedAt: new Date(r.reviewedAt),
     elapsedMs: 800,
-    stateBefore: {},
+    stateBefore: NEW_CARD,
   }),
   actionLog: (a: Actor, spaceId: string): Row<typeof actionLog> => ({
     id: crypto.randomUUID(),

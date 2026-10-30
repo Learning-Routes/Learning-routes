@@ -8,28 +8,30 @@ import { attempt, type Db, fail, ok } from "./shared";
 // stored snapshot is read through core's upcastSnapshot, whatever its format.
 
 export const routeVersionsRepo = (db: Db): RouteVersions => ({
-  async get(spaceId, routeId, version) {
-    const [row] = await db
-      .select()
-      .from(routeVersions)
-      .where(
-        and(
-          eq(routeVersions.routeId, routeId),
-          eq(routeVersions.version, version),
-          eq(routeVersions.spaceId, spaceId),
-        ),
-      );
-    if (row === undefined) {
-      return fail("not_found");
-    }
-    return ok({
-      routeId: row.routeId,
-      version: row.version,
-      snapshot: upcastSnapshot(row.snapshotFormat, row.snapshot),
-      contentHash: row.contentHash,
-      publishedByUserId: row.publishedByUserId,
-    });
-  },
+  // In attempt: a snapshot no upcast reads answers invalid instead of throwing.
+  get: (spaceId, routeId, version) =>
+    attempt(db, async () => {
+      const [row] = await db
+        .select()
+        .from(routeVersions)
+        .where(
+          and(
+            eq(routeVersions.routeId, routeId),
+            eq(routeVersions.version, version),
+            eq(routeVersions.spaceId, spaceId),
+          ),
+        );
+      if (row === undefined) {
+        return fail("not_found");
+      }
+      return ok({
+        routeId: row.routeId,
+        version: row.version,
+        snapshot: upcastSnapshot(row.snapshotFormat, row.snapshot),
+        contentHash: row.contentHash,
+        publishedByUserId: row.publishedByUserId,
+      });
+    }),
   append: (spaceId, version) =>
     attempt(db, async () => {
       await db

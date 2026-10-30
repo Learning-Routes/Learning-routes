@@ -125,29 +125,31 @@ export const learningRepo = (db: Db): Learning => ({
 });
 
 export const reviewsRepo = (db: Db): Reviews => ({
-  // insert ... on conflict do nothing returning: a retry gets the stored review.
-  async append(spaceId, userId, entry) {
-    const [inserted] = await db
-      .insert(reviews)
-      .values({ ...entry, userId, spaceId, reviewedAt: new Date(entry.reviewedAt) })
-      .onConflictDoNothing({ target: [reviews.userId, reviews.reviewId] })
-      .returning();
-    if (inserted !== undefined) {
-      return ok({ review: reviewOf(inserted), duplicate: false });
-    }
-    // Read back in this space only: a reviewId used in another space is a conflict.
-    const [stored] = await db
-      .select()
-      .from(reviews)
-      .where(
-        and(
-          eq(reviews.userId, userId),
-          eq(reviews.reviewId, entry.reviewId),
-          eq(reviews.spaceId, spaceId),
-        ),
-      );
-    return stored === undefined
-      ? fail("conflict")
-      : ok({ review: reviewOf(stored), duplicate: true });
-  },
+  // insert ... on conflict do nothing returning: a retry gets the stored review. A
+  // card that is not the user's in this space fails the card's foreign key: not_found.
+  append: (spaceId, userId, entry) =>
+    attempt(db, async (): Promise<RepoResult<{ review: ReviewRecord; duplicate: boolean }>> => {
+      const [inserted] = await db
+        .insert(reviews)
+        .values({ ...entry, userId, spaceId, reviewedAt: new Date(entry.reviewedAt) })
+        .onConflictDoNothing({ target: [reviews.userId, reviews.reviewId] })
+        .returning();
+      if (inserted !== undefined) {
+        return ok({ review: reviewOf(inserted), duplicate: false });
+      }
+      // Read back in this space only: a reviewId used in another space is a conflict.
+      const [stored] = await db
+        .select()
+        .from(reviews)
+        .where(
+          and(
+            eq(reviews.userId, userId),
+            eq(reviews.reviewId, entry.reviewId),
+            eq(reviews.spaceId, spaceId),
+          ),
+        );
+      return stored === undefined
+        ? fail("conflict")
+        : ok({ review: reviewOf(stored), duplicate: true });
+    }),
 });

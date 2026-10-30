@@ -4,7 +4,7 @@ import { routeDrafts } from "./drafts";
 import { enrollmentsRepo } from "./enrollments";
 import { learningRepo, reviewsRepo } from "./learning";
 import { membershipsRepo, spacesRepo } from "./members";
-import { type Db, underSavepoint } from "./shared";
+import { attempt, type Db, ok, underSavepoint } from "./shared";
 import { routeVersionsRepo } from "./versions";
 
 // The repositories on Postgres (Platform STEP 2 §4), as lr_app under the acting
@@ -21,9 +21,12 @@ export function pgRepos(db: Db): Repos {
     learning: learningRepo(db),
     reviews: reviewsRepo(db),
     actionLog: {
-      async append(spaceId, entry) {
-        await db.insert(actionLog).values({ ...entry, spaceId });
-      },
+      // Row-level security refuses an actor from outside the space: not_found.
+      append: (spaceId, entry) =>
+        attempt(db, async () => {
+          await db.insert(actionLog).values({ ...entry, spaceId });
+          return ok(undefined);
+        }),
     },
     transaction: (fn) => underSavepoint(db, () => fn(pgRepos(db))),
   };

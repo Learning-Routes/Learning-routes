@@ -9,6 +9,7 @@ import type {
   DraftModule,
   EnrollmentRecord,
   ProgressRecord,
+  RepoError,
   RepoResult,
   Repos,
   ReviewRecord,
@@ -20,7 +21,8 @@ import type {
 
 // The repositories' in-memory twin (Platform STEP 2 §4): plain maps, with the same
 // answers as Postgres for the contract suite. A transaction works on a copy and
-// keeps it only if the work finishes; a throw discards it.
+// keeps it only if the work finishes; a throw discards it, and so does a commit
+// over another transaction's that landed after this one began.
 
 interface DraftRow {
   spaceId: string;
@@ -44,18 +46,24 @@ export function memoryState() {
     cards: new Map<string, { spaceId: string; userId: string; itemId: string } & StoredCard>(),
     reviews: new Map<string, { spaceId: string; userId: string } & ReviewRecord>(),
     log: [] as ({ spaceId: string } & ActionLogEntry)[],
+    /** Bumped by every commit, so an overlapping one is caught instead of losing writes. */
+    commits: 0,
   };
 }
 type State = ReturnType<typeof memoryState>;
 
 const ok = <T>(value: T): RepoResult<T> => ({ ok: true, value });
-const fail = (error: "not_found" | "conflict" | "invalid") => ({ ok: false, error }) as const;
+const fail = (error: RepoError) => ({ ok: false, error }) as const;
 const newId = () => newBlockId(Date.now(), crypto.getRandomValues(new Uint8Array(10)));
 const byPosition = (a: { position: string }, b: { position: string }) =>
   a.position < b.position ? -1 : a.position > b.position ? 1 : 0;
 
-/** A draft as the port returns it: live content only, each list in position order. */
+/** A draft as the port returns it: a copy of the live content, each list in position order. */
 function readDraft(row: DraftRow): RouteDraft {
+  return structuredClone(liveDraft(row));
+}
+
+function liveDraft(row: DraftRow): RouteDraft {
   const modules = [...row.modules].sort(byPosition);
   const moduleOrder = new Map(modules.map((entry, i) => [entry.id, i]));
   const lessons = row.lessons
@@ -96,6 +104,15 @@ function enroll(
   if (row === undefined || row.latestPublishedVersion === null) {
     return fail("not_found");
   }
+  // An existing enrollment answers first, and makes no membership.
+  const existing = [...state.enrollments.values()].find(
+    (entry) => entry.userId === userId && entry.routeId === routeId,
+  );
+  if (existing !== undefined) {
+    return existing.status === "active"
+      ? ok({ enrollmentId: existing.id, spaceId: row.spaceId })
+      : fail("invalid");
+  }
   const member = state.members.has(`${row.spaceId}:${userId}`);
   if (row.route.access !== "open" || row.route.pricing !== "free") {
     return fail(member ? "invalid" : "not_found");
@@ -106,14 +123,6 @@ function enroll(
       userId,
       role: "student",
     });
-  }
-  const existing = [...state.enrollments.values()].find(
-    (entry) => entry.userId === userId && entry.routeId === routeId,
-  );
-  if (existing !== undefined) {
-    return existing.status === "active"
-      ? ok({ enrollmentId: existing.id, spaceId: row.spaceId })
-      : fail("invalid");
   }
   const id = newId();
   state.enrollments.set(id, {
@@ -139,7 +148,7 @@ export function memoryRepos(state: State, actorId = ""): Repos {
     spaceId: string,
     routeId: string,
     expected: number,
-    change: (row: DraftRow) => "not_found" | "conflict" | null,
+    change: (row: DraftRow) => RepoError | null,
   ) => {
     const row = draftIn(spaceId, routeId);
     if (row === undefined) {
@@ -192,7 +201,7 @@ export function memoryRepos(state: State, actorId = ""): Repos {
         }
         state.drafts.set(route.id, {
           spaceId,
-          route,
+          route: structuredClone(route),
           revision: 0,
           latestPublishedVersion: null,
           modules: [],
@@ -220,7 +229,7 @@ export function memoryRepos(state: State, actorId = ""): Repos {
       addModule: (spaceId, routeId, expected, module) =>
         edit(spaceId, routeId, expected, (row) => {
           if (row.modules.some((entry) => entry.position === module.position)) {
-            return "conflict";
+            return "position_taken";
           }
           row.modules.push(module);
           return null;
@@ -230,9 +239,11 @@ export function memoryRepos(state: State, actorId = ""): Repos {
           if (!row.modules.some((entry) => entry.id === lesson.moduleId)) {
             return "not_found";
           }
-          const siblings = row.lessons.filter((entry) => entry.moduleId === lesson.moduleId);
+          const siblings = row.lessons.filter(
+            (entry) => entry.moduleId === lesson.moduleId && !entry.archived,
+          );
           if (siblings.some((entry) => entry.position === lesson.position)) {
-            return "conflict";
+            return "position_taken";
           }
           row.lessons.push({ ...lesson, archived: false });
           return null;
@@ -244,7 +255,7 @@ export function memoryRepos(state: State, actorId = ""): Repos {
           }
           const siblings = row.blocks.filter((entry) => entry.lessonId === block.lessonId);
           if (siblings.some((entry) => entry.position === block.position)) {
-            return "conflict";
+            return "position_taken";
           }
           row.blocks.push(block);
           return null;
@@ -258,9 +269,20 @@ export function memoryRepos(state: State, actorId = ""): Repos {
           target.archived = true;
           return null;
         }),
+      lockDraft: async (spaceId, routeId, expected) => {
+        const row = draftIn(spaceId, routeId);
+        if (row === undefined) {
+          return fail("not_found");
+        }
+        return row.revision === expected ? ok(undefined) : fail("conflict");
+      },
       markPublished: async (spaceId, routeId, version) => {
         const row = draftIn(spaceId, routeId);
-        if (row === undefined || !state.versions.has(`${routeId}:${version}`)) {
+        if (
+          row === undefined ||
+          !state.versions.has(`${routeId}:${version}`) ||
+          version <= (row.latestPublishedVersion ?? 0)
+        ) {
           return fail("not_found");
         }
         row.latestPublishedVersion = version;
@@ -294,16 +316,20 @@ export function memoryRepos(state: State, actorId = ""): Repos {
         return enrollment?.spaceId === spaceId ? ok(enrollment) : fail("not_found");
       },
       enroll: async (routeId) => enroll(state, actorId, routeId),
-      setPinnedVersion: async (spaceId, enrollmentId, version) => {
+      upgrade: async (spaceId, enrollmentId) => {
         const enrollment = state.enrollments.get(enrollmentId);
         if (
           enrollment?.spaceId !== spaceId ||
-          !state.versions.has(`${enrollment.routeId}:${version}`)
+          enrollment.userId !== actorId ||
+          enrollment.status !== "active"
         ) {
           return fail("not_found");
         }
-        enrollment.pinnedVersion = version;
-        return ok(undefined);
+        const latest = state.drafts.get(enrollment.routeId)?.latestPublishedVersion ?? null;
+        if (latest !== null && latest > enrollment.pinnedVersion) {
+          enrollment.pinnedVersion = latest;
+        }
+        return ok({ pinnedVersion: enrollment.pinnedVersion });
       },
     },
     learning: {
@@ -361,6 +387,12 @@ export function memoryRepos(state: State, actorId = ""): Repos {
     reviews: {
       append: async (spaceId, userId, entry) => {
         const stored = state.reviews.get(`${userId}:${entry.reviewId}`);
+        const ownCard = [...state.cards.values()].some(
+          (card) => card.id === entry.cardId && card.userId === userId && card.spaceId === spaceId,
+        );
+        if (stored === undefined && !ownCard) {
+          return fail("not_found");
+        }
         if (stored === undefined) {
           state.reviews.set(`${userId}:${entry.reviewId}`, { spaceId, userId, ...entry });
           return ok({ review: entry, duplicate: false });
@@ -371,13 +403,21 @@ export function memoryRepos(state: State, actorId = ""): Repos {
     },
     actionLog: {
       append: async (spaceId, entry) => {
+        if (entry.actorUserId !== actorId || roleOf(spaceId, actorId) === null) {
+          return fail("not_found");
+        }
         state.log.push({ spaceId, ...entry });
+        return ok(undefined);
       },
     },
     transaction: async (fn) => {
+      const began = state.commits;
       const copy = structuredClone(state);
       const result = await fn(memoryRepos(copy, actorId));
-      Object.assign(state, copy);
+      if (state.commits !== began) {
+        throw new Error("overlapping transactions: another one committed after this began");
+      }
+      Object.assign(state, copy, { commits: began + 1 });
       return result;
     },
   };

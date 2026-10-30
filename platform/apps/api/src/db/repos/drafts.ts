@@ -9,7 +9,6 @@ import type {
 } from "@learning-routes/core/repos/ports";
 import { and, asc, eq, isNull, sql } from "drizzle-orm";
 import { blocks, lessonPrerequisites, lessons, modules, routes } from "../schema/content";
-import { routeVersions } from "../schema/versions";
 import { attempt, type Db, fail, ok } from "./shared";
 
 // A route's draft on Postgres (Platform STEP 2 §4): read in position order, and
@@ -125,38 +124,47 @@ const listRoutes = (db: Db, spaceId: string): Promise<RouteSummary[]> =>
     .orderBy(asc(sql`${routes.slug} collate "C"`));
 
 /**
- * One draft edit: bumps the revision only if it is still the one the editor read,
- * then makes the change, all under one savepoint.
+ * Locks the live route's row at the revision the caller read: a concurrent edit or
+ * publish waits here, then sees the new revision and answers conflict.
+ */
+async function lockDraft(db: Db, where: Where, expected: number): Promise<RepoResult<void>> {
+  const [route] = await db
+    .select({ revision: routes.draftRevision })
+    .from(routes)
+    .where(
+      and(
+        eq(routes.id, where.routeId),
+        eq(routes.spaceId, where.spaceId),
+        isNull(routes.archivedAt),
+      ),
+    )
+    .for("update");
+  if (route === undefined) {
+    return fail("not_found");
+  }
+  return route.revision === expected ? ok(undefined) : fail("conflict");
+}
+
+/**
+ * One draft edit, under one savepoint: lock the draft at the revision the editor
+ * read, make the change, then move the revision forward through app.bump_draft,
+ * the only path that may.
  */
 const edit = (db: Db, where: Where, expected: number, change: () => Promise<RepoResult<void>>) =>
   attempt(db, async () => {
-    const [bumped] = await db
-      .update(routes)
-      .set({ draftRevision: sql`${routes.draftRevision} + 1`, updatedAt: new Date() })
-      .where(
-        and(
-          eq(routes.id, where.routeId),
-          eq(routes.spaceId, where.spaceId),
-          isNull(routes.archivedAt),
-          eq(routes.draftRevision, expected),
-        ),
-      )
-      .returning({ revision: routes.draftRevision });
-    if (bumped === undefined) {
-      const [exists] = await db
-        .select({ id: routes.id })
-        .from(routes)
-        .where(
-          and(
-            eq(routes.id, where.routeId),
-            eq(routes.spaceId, where.spaceId),
-            isNull(routes.archivedAt),
-          ),
-        );
-      return fail(exists === undefined ? "not_found" : "conflict");
+    const locked = await lockDraft(db, where, expected);
+    if (!locked.ok) {
+      return locked;
     }
     const changed = await change();
-    return changed.ok ? ok({ revision: bumped.revision }) : changed;
+    if (!changed.ok) {
+      return changed;
+    }
+    const result = await db.execute<{ revision: string | null }>(
+      sql`select app.bump_draft(${where.routeId}, ${where.spaceId}, ${expected}) as revision`,
+    );
+    const revision = result.rows[0]?.revision ?? null;
+    return revision === null ? fail("conflict") : ok({ revision: Number(revision) });
   });
 
 const isLiveLesson = async (db: Db, where: Where, lessonId: string) =>
@@ -193,23 +201,13 @@ async function archiveLesson(db: Db, where: Where, lessonId: string): Promise<Re
   return ok(undefined);
 }
 
+/** Through app.mark_published: an existing, newer version, on a live route. */
 const markPublished = (db: Db, where: Where, version: number) =>
   attempt(db, async () => {
-    const published = sql`exists (select 1 from ${routeVersions}
-      where ${routeVersions.routeId} = ${where.routeId} and ${routeVersions.version} = ${version})`;
-    const updated = await db
-      .update(routes)
-      .set({ latestPublishedVersion: version, updatedAt: new Date() })
-      .where(
-        and(
-          eq(routes.id, where.routeId),
-          eq(routes.spaceId, where.spaceId),
-          isNull(routes.archivedAt),
-          published,
-        ),
-      )
-      .returning({ id: routes.id });
-    return updated.length === 1 ? ok(undefined) : fail("not_found");
+    const result = await db.execute<{ done: boolean }>(
+      sql`select app.mark_published(${where.routeId}, ${where.spaceId}, ${version}) as done`,
+    );
+    return result.rows[0]?.done === true ? ok(undefined) : fail("not_found");
   });
 
 const insertModule = async (db: Db, where: Where, module: DraftModule) => {
@@ -230,6 +228,8 @@ export const routeDrafts = (db: Db): RouteDrafts => ({
     }),
   get: (spaceId, routeId) => getDraft(db, { spaceId, routeId }),
   list: (spaceId) => listRoutes(db, spaceId),
+  lockDraft: (spaceId, routeId, expected) =>
+    attempt(db, () => lockDraft(db, { spaceId, routeId }, expected)),
   addModule: (spaceId, routeId, expected, module) =>
     edit(db, { spaceId, routeId }, expected, () => insertModule(db, { spaceId, routeId }, module)),
   addLesson: (spaceId, routeId, expected, lesson) =>

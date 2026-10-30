@@ -26,15 +26,26 @@ const REFUSALS: Record<string, RepoError> = {
 // row; a missing grant is a fault, and must fail loudly.
 const RLS_REFUSAL = /row-level security/;
 
+// A unique key on a parent and a position: the sibling's place is taken.
+const POSITION_KEY = /_position_key$/;
+
 function refusalOf(error: unknown): RepoError | undefined {
-  const { code, message, cause } = error as {
+  const { name, code, message, cause } = error as {
+    name?: string;
     code?: string;
     message?: string;
-    cause?: { code?: string; message?: string };
+    cause?: { code?: string; message?: string; constraint?: string };
   };
+  // A stored value core's schemas refuse, such as a snapshot no upcast reads.
+  if (name === "ZodError") {
+    return "invalid";
+  }
   const sqlstate = cause?.code ?? code;
   if (sqlstate === "42501") {
     return RLS_REFUSAL.test(cause?.message ?? message ?? "") ? "not_found" : undefined;
+  }
+  if (sqlstate === "23505" && POSITION_KEY.test(cause?.constraint ?? "")) {
+    return "position_taken";
   }
   return REFUSALS[sqlstate ?? ""];
 }

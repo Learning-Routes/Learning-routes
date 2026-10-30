@@ -29,6 +29,8 @@ export type WithFixture = (test: (fixture: ContractFixture) => Promise<void>) =>
 const random = () => crypto.getRandomValues(new Uint8Array(10));
 export const newId = () => newBlockId(Date.now(), random());
 
+const ok = () => ({ ok: true, value: undefined });
+
 function value<T>(result: RepoResult<T>): T {
   if (!result.ok) {
     throw new Error(`expected ok, got ${result.error}`);
@@ -138,11 +140,12 @@ export function repositoryContract(name: string, withFixture: WithFixture) {
         const revision = value(
           await repos.routeDrafts.addModule(spaceId, fields.id, 0, first),
         ).revision;
+        // A taken position is its own refusal, apart from a stale revision.
         expect(
           await repos.routeDrafts.addModule(spaceId, fields.id, revision, module("V")),
         ).toEqual({
           ok: false,
-          error: "conflict",
+          error: "position_taken",
         });
         expect(
           await repos.routeDrafts.addLesson(spaceId, fields.id, revision, lesson(newId(), "V")),
@@ -282,6 +285,110 @@ export function repositoryContract(name: string, withFixture: WithFixture) {
       });
     });
 
+    it("frees an archived lesson's position for a new lesson", async () => {
+      await withFixture(async ({ spaceId, ownerId, actAs }) => {
+        const repos = await actAs(ownerId);
+        const fields = routeFields("reused");
+        let revision = value(await repos.routeDrafts.create(spaceId, fields)).revision;
+        const m = module("V");
+        revision = value(
+          await repos.routeDrafts.addModule(spaceId, fields.id, revision, m),
+        ).revision;
+        const first = lesson(m.id, "V");
+        revision = value(
+          await repos.routeDrafts.addLesson(spaceId, fields.id, revision, first),
+        ).revision;
+        revision = value(
+          await repos.routeDrafts.archiveLesson(spaceId, fields.id, revision, first.id),
+        ).revision;
+        const again = lesson(m.id, "V");
+        value(await repos.routeDrafts.addLesson(spaceId, fields.id, revision, again));
+        const draft = value(await repos.routeDrafts.get(spaceId, fields.id));
+        expect(draft.lessons.map((entry) => entry.id)).toEqual([again.id]);
+      });
+    });
+
+    it("locks a draft at the revision its caller read, and refuses a stale one", async () => {
+      await withFixture(async ({ spaceId, ownerId, actAs }) => {
+        const repos = await actAs(ownerId);
+        const fields = routeFields("locked");
+        value(await repos.routeDrafts.create(spaceId, fields));
+        expect(await repos.routeDrafts.lockDraft(spaceId, fields.id, 0)).toEqual(ok());
+        value(await repos.routeDrafts.addModule(spaceId, fields.id, 0, module("V")));
+        expect(await repos.routeDrafts.lockDraft(spaceId, fields.id, 0)).toEqual({
+          ok: false,
+          error: "conflict",
+        });
+        expect(await repos.routeDrafts.lockDraft(spaceId, newId(), 1)).toEqual({
+          ok: false,
+          error: "not_found",
+        });
+      });
+    });
+
+    it("hands out drafts that a caller may change without changing the store", async () => {
+      await withFixture(async ({ spaceId, ownerId, actAs }) => {
+        const repos = await actAs(ownerId);
+        const fields = routeFields("copied");
+        value(await repos.routeDrafts.create(spaceId, fields));
+        value(await repos.routeDrafts.addModule(spaceId, fields.id, 0, module("V")));
+        const read = value(await repos.routeDrafts.get(spaceId, fields.id));
+        read.modules.push(module("W"));
+        read.route.title.en = "Changed";
+        const again = value(await repos.routeDrafts.get(spaceId, fields.id));
+        expect(again.modules).toHaveLength(1);
+        expect(again.route.title).toEqual({ en: "Route copied" });
+      });
+    });
+
+    it("marks a version published only once, and only forward", async () => {
+      await withFixture(async ({ spaceId, ownerId, actAs }) => {
+        const repos = await actAs(ownerId);
+        const fields = routeFields("forward");
+        value(await repos.routeDrafts.create(spaceId, fields));
+        await publish(repos, spaceId, fields.id, 1, ownerId);
+        expect(await repos.routeDrafts.markPublished(spaceId, fields.id, 1)).toEqual({
+          ok: false,
+          error: "not_found",
+        });
+      });
+    });
+
+    it("refuses a review of a card that is not the user's, and a log entry from outside the space", async () => {
+      await withFixture(async ({ spaceId, ownerId, learnerId, actAs }) => {
+        const owner = await actAs(ownerId);
+        const card = value(await owner.learning.lockCard(spaceId, ownerId, newId()));
+        value(await owner.memberships.add(spaceId, { userId: learnerId, role: "student" }));
+        const learner = await actAs(learnerId);
+        const entry = {
+          reviewId: newId(),
+          cardId: card.id,
+          rating: 3,
+          reviewedAt: Date.UTC(2026, 9, 28),
+          elapsedMs: 900,
+          stateBefore: NEW_CARD,
+        };
+        expect(await learner.reviews.append(spaceId, learnerId, entry)).toEqual({
+          ok: false,
+          error: "not_found",
+        });
+        const logEntry = {
+          actorUserId: learnerId,
+          actorVia: "ui" as const,
+          agentRunId: null,
+          action: "review.submit",
+          input: {},
+          outcome: "ok",
+          routeRevision: null,
+        };
+        expect(await learner.actionLog.append(spaceId, logEntry)).toEqual(ok());
+        expect(await learner.actionLog.append(newId(), logEntry)).toEqual({
+          ok: false,
+          error: "not_found",
+        });
+      });
+    });
+
     it("upgrades an enrollment: progress on a removed lesson is kept but not counted", async () => {
       await withFixture(async ({ spaceId, ownerId, learnerId, actAs }) => {
         const owner = await actAs(ownerId);
@@ -331,8 +438,15 @@ export function repositoryContract(name: string, withFixture: WithFixture) {
         value(await author.routeDrafts.addLesson(spaceId, fields.id, revision, added));
         await publish(author, spaceId, fields.id, 2, ownerId);
 
+        // Only the student moves their own enrollment, and only forward.
+        expect(await author.enrollments.upgrade(spaceId, enrollmentId)).toEqual({
+          ok: false,
+          error: "not_found",
+        });
         const student = await actAs(learnerId);
-        value(await student.enrollments.setPinnedVersion(spaceId, enrollmentId, 2));
+        expect(value(await student.enrollments.upgrade(spaceId, enrollmentId))).toEqual({
+          pinnedVersion: 2,
+        });
         const pinned = value(await student.enrollments.get(spaceId, enrollmentId));
         const version = value(
           await student.routeVersions.get(spaceId, fields.id, pinned.pinnedVersion),

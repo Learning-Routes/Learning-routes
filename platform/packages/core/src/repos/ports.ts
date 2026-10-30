@@ -11,7 +11,13 @@ import type { Member } from "../memberships";
 // contract suite. Every method takes the space and filters on it together with
 // the id; none accepts a raw filter. Times are epoch milliseconds.
 
-export type RepoError = "not_found" | "conflict" | "invalid";
+/**
+ * not_found: no such row for this caller. conflict: a stale revision or a taken
+ * unique value. position_taken: a live sibling already holds that position key,
+ * so the caller needs a new key, not a fresh read. invalid: the database refused
+ * the value.
+ */
+export type RepoError = "not_found" | "conflict" | "position_taken" | "invalid";
 export type RepoResult<T> = { ok: true; value: T } | { ok: false; error: RepoError };
 
 export interface SpaceRecord {
@@ -64,7 +70,13 @@ export interface RouteDrafts {
   get(spaceId: string, routeId: string): Promise<RepoResult<RouteDraft>>;
   /** The space's routes, ordered by slug. */
   list(spaceId: string): Promise<RouteSummary[]>;
-  /** Each add: not_found without its parent, conflict on a stale revision or a taken position. */
+  /**
+   * Locks the draft until the transaction ends, at the revision the caller read:
+   * not_found without the route, conflict on a stale revision. An edit or a publish
+   * that reads the draft afterwards reads what it locked.
+   */
+  lockDraft(spaceId: string, routeId: string, expectedRevision: number): Promise<RepoResult<void>>;
+  /** Each add: not_found without its parent, conflict on a stale revision, position_taken on a live sibling's key. */
   addModule(
     spaceId: string,
     routeId: string,
@@ -90,6 +102,7 @@ export interface RouteDrafts {
     expectedRevision: number,
     lessonId: string,
   ): Promise<Revised>;
+  /** not_found unless the version exists and is newer than the last, on a live route. */
   markPublished(spaceId: string, routeId: string, version: number): Promise<RepoResult<void>>;
 }
 
@@ -125,11 +138,11 @@ export interface Enrollments {
    * invalid for a paid or closed one they can.
    */
   enroll(routeId: string): Promise<RepoResult<{ enrollmentId: string; spaceId: string }>>;
-  setPinnedVersion(
-    spaceId: string,
-    enrollmentId: string,
-    version: number,
-  ): Promise<RepoResult<void>>;
+  /**
+   * Moves the acting user's own active enrollment to its route's latest published
+   * version, never back: not_found for anyone else's, or a revoked one.
+   */
+  upgrade(spaceId: string, enrollmentId: string): Promise<RepoResult<{ pinnedVersion: number }>>;
 }
 
 export interface ProgressRecord {
@@ -178,7 +191,8 @@ export interface ReviewRecord {
 
 /**
  * Append only. A retry with the same reviewId gets the stored review back;
- * conflict when the user used that reviewId in another space.
+ * conflict when the user used that reviewId in another space; not_found when the
+ * card is not the user's in this space.
  */
 export interface Reviews {
   append(
@@ -200,7 +214,8 @@ export interface ActionLogEntry {
 }
 
 export interface ActionLog {
-  append(spaceId: string, entry: ActionLogEntry): Promise<void>;
+  /** not_found when the actor may not write in the space. */
+  append(spaceId: string, entry: ActionLogEntry): Promise<RepoResult<void>>;
 }
 
 export interface Repos {
