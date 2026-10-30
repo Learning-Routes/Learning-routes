@@ -116,22 +116,29 @@ describe("two tenants, through every action", () => {
     });
   });
 
-  it("finds a published route's space for its students, who cannot see the draft", async () => {
+  it("finds a published route's space for the students enrolled in it, who cannot see the draft", async () => {
     await rolledBack(URLS.migrator, async (db) => {
-      const student = await newUser(db);
+      const [student, notEnrolled] = [await newUser(db), await newUser(db)];
       const space = await newSpace(db, "space-a");
-      await db.query(
-        "insert into memberships (space_id, user_id, role) values ($1, $2, 'student')",
-        [space, student],
-      );
+      for (const userId of [student, notEnrolled]) {
+        await db.query(
+          "insert into memberships (space_id, user_id, role) values ($1, $2, 'student')",
+          [space, userId],
+        );
+      }
       const route = await newRoute(db, space);
       await newVersion(db, space, route, 1);
+      await newEnrollment(db, space, route, student);
       await actAs(db, student);
       const tenancy = pgTenancy(drizzle(db, { casing: "snake_case" }));
       expect(await tenancy.scopeOf({ kind: "route", id: route }, student)).toEqual({
         spaceId: space,
         role: "student",
       });
+      // A student of the space reads only the versions of routes they study.
+      await db.query("reset role");
+      await actAs(db, notEnrolled);
+      expect(await tenancy.scopeOf({ kind: "route", id: route }, notEnrolled)).toBeNull();
     });
   });
 });

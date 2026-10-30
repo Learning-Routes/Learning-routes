@@ -92,6 +92,13 @@
       "when": 1793233061421,
       "tag": "0012_row_level_security",
       "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1793395897949,
+      "tag": "0013_app_grants",
+      "breakpoints": true
     }
   ]
 }

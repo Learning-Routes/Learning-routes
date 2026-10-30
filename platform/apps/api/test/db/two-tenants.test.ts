@@ -8,6 +8,7 @@ import { newEnrollment, newRoute, newSpace, newVersion } from "./fixtures";
 // A's space has two students and a coeditor. Every table holds rows of both.
 
 const RLS = /row-level security/;
+const PERMISSION_DENIED = /permission denied/;
 
 async function world(db: pg.Client) {
   const a = await newUser(db);
@@ -35,8 +36,13 @@ async function world(db: pg.Client) {
       [space, route],
     );
     const { rows: lessons } = await db.query(
-      `insert into lessons (space_id, route_id, module_id, position, title) values ($1, $2, $3, 'V', '{"en": "L"}') returning id`,
+      `insert into lessons (space_id, route_id, module_id, position, title)
+       values ($1, $2, $3, 'V', '{"en": "L"}'), ($1, $2, $3, 'k', '{"en": "L2"}') returning id`,
       [space, route, modules[0]?.id],
+    );
+    await db.query(
+      "insert into lesson_prerequisites (space_id, route_id, lesson_id, requires_lesson_id) values ($1, $2, $3, $4)",
+      [space, route, lessons[1]?.id, lessons[0]?.id],
     );
     await db.query(
       `insert into blocks (space_id, lesson_id, position, kind, data) values ($1, $2, 'V', 'concept', '{}')`,
@@ -81,6 +87,7 @@ const SPACE_TABLES = [
   "modules",
   "lessons",
   "blocks",
+  "lesson_prerequisites",
   "route_versions",
   "enrollments",
   "progress",
@@ -170,12 +177,11 @@ describe("two tenants, raw SQL under row-level security", () => {
       for (const who of [w.coeditor, w.student]) {
         await db.query("reset role");
         await actAs(db, who);
-        const promoted = await db.query(
-          "update memberships set role = 'owner' where user_id = $1",
-          [who],
-        );
-        expect(promoted.rowCount).toBe(0);
         await db.query("savepoint s");
+        await expect(
+          db.query("update memberships set role = 'owner' where user_id = $1", [who]),
+        ).rejects.toThrow(PERMISSION_DENIED);
+        await db.query("rollback to savepoint s");
         await expect(
           db.query("insert into memberships (space_id, user_id, role) values ($1, $2, 'owner')", [
             w.spaceA,
@@ -194,7 +200,8 @@ describe("two tenants, raw SQL under row-level security", () => {
       }
       await db.query("reset role");
       const owners = await db.query(
-        "select user_id from memberships where role = 'owner' order by user_id",
+        "select user_id from memberships where role = 'owner' and space_id = any ($1) order by user_id",
+        [[w.spaceA, w.spaceB]],
       );
       expect(owners.rows.map((row) => row.user_id).sort()).toEqual([w.a, w.b].sort());
     });
@@ -222,9 +229,12 @@ describe("a pooled connection", () => {
       await pooled.query("commit");
       expect([first.rowCount, second.rowCount]).toEqual([1, 0]);
     } finally {
+      // One transaction: the space must not be seen without its owner at commit.
+      await setup.query("begin");
       await setup.query("delete from memberships where space_id = $1", [spaceId]);
       await setup.query("delete from spaces where id = $1", [spaceId]);
       await setup.query(`delete from "user" where id = $1`, [userId]);
+      await setup.query("commit");
       await Promise.all([setup.end(), pooled.end()]);
     }
   });
