@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { Block, BlockId } from "./blocks/schema";
+import { POSITION_KEY } from "./content/position";
 import { Id, Locale, LocalizedText, Timestamp } from "./localized-text";
 import { isTimeZone } from "./time-zone";
 
@@ -48,7 +49,10 @@ export const Route = z
     access: z.enum(["open", "closed"]),
     pricing: z.enum(["free", "paid"]),
     version: z.int().positive(),
-    forkedFrom: z.strictObject({ routeId: Id, version: z.int().positive() }).nullable(),
+    // Provenance only: the fork has its own content ids (ADR 0006).
+    forkedFrom: z
+      .strictObject({ spaceId: Id, routeId: Id, version: z.int().positive() })
+      .nullable(),
     createdAt: Timestamp,
     updatedAt: Timestamp,
   })
@@ -65,10 +69,13 @@ export const Route = z
     }
   });
 
+/** A fractional position key from keyBetween: siblings sort by it, byte by byte. */
+export const PositionKey = z.string().regex(POSITION_KEY, "a position key from keyBetween");
+
 export const Module = z.strictObject({
   id: Id,
   routeId: Id,
-  position: z.int().nonnegative(),
+  position: PositionKey,
   title: LocalizedText,
 });
 
@@ -77,7 +84,7 @@ export const Lesson = z.strictObject({
   id: Id,
   routeId: Id,
   moduleId: Id,
-  position: z.int().nonnegative(),
+  position: PositionKey,
   title: LocalizedText,
   prerequisites: z.array(Id),
   blocks: z.array(Block),
@@ -131,11 +138,9 @@ export const Enrollment = z.strictObject({
   routeId: Id,
   routeVersion: z.int().positive(),
   studentId: Id,
-  offerId: Id.nullable(),
-  source: z.enum(["free", "purchase", "grant"]),
+  // How it was paid for (an offer, a purchase) arrives with Stripe.
   status: z.enum(["active", "revoked", "expired"]),
   createdAt: Timestamp,
-  revokedAt: Timestamp.nullish(),
 });
 
 export const ReviewCard = z.strictObject({
@@ -148,10 +153,11 @@ export const ReviewCard = z.strictObject({
   nextReviewAt: Timestamp.nullable(),
 });
 
-// One student's progress through one lesson. It never lives on the content.
+// One student's progress through one lesson of one enrollment. It never lives on
+// the content; the lesson's review card is a separate row (ReviewCard).
 export const Progress = z.strictObject({
+  enrollmentId: Id,
   studentId: Id,
-  routeId: Id,
   lessonId: Id,
   status: z.enum(["not_started", "in_progress", "completed"]),
   completedAt: Timestamp.nullable(),
@@ -167,7 +173,6 @@ export const Progress = z.strictObject({
       completedAt: Timestamp.nullable(),
     }),
   ),
-  review: ReviewCard.nullable(),
 });
 
 // Every agent or creator action, so it can be shown, approved and undone.
