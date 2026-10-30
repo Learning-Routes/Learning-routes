@@ -86,4 +86,5 @@ CREATE UNIQUE INDEX "blocks_lesson_id_position_key" ON "blocks" USING btree ("le
 CREATE INDEX "lesson_prerequisites_route_id_idx" ON "lesson_prerequisites" USING btree ("route_id");--> statement-breakpoint
 CREATE UNIQUE INDEX "lessons_module_id_position_key" ON "lessons" USING btree ("module_id","position") WHERE "lessons"."archived_at" is null;--> statement-breakpoint
 CREATE INDEX "lessons_route_id_module_id_position_idx" ON "lessons" USING btree ("route_id","module_id","position");--> statement-breakpoint
-CREATE UNIQUE INDEX "modules_route_id_position_key" ON "modules" USING btree ("route_id","position") WHERE "modules"."archived_at" is null;
+CREATE UNIQUE INDEX "modules_route_id_position_key" ON "modules" USING btree ("route_id","position") WHERE "modules"."archived_at" is null;--> statement-breakpoint
+CREATE INDEX "blocks_lesson_id_position_idx" ON "blocks" USING btree ("lesson_id","position");

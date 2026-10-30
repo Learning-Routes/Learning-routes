@@ -149,6 +149,8 @@ export const blocks = pgTable(
     uniqueIndex("blocks_lesson_id_position_key")
       .on(t.lessonId, t.position)
       .where(sql`${t.archivedAt} is null`),
+    // Every read of a lesson's blocks, archived ones included.
+    index("blocks_lesson_id_position_idx").on(t.lessonId, t.position),
     check("blocks_kind", sql`${t.kind} in (${oneOf(BLOCK_TYPES)})`),
     check("blocks_data_object", sql`jsonb_typeof(${t.data}) = 'object'`),
   ],

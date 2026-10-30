@@ -55,6 +55,8 @@ describe("the hot paths' indexes", () => {
       '(module_id, "position") WHERE (archived_at IS NULL)',
       '(lesson_id, "position") WHERE (archived_at IS NULL)',
       '(route_id, module_id, "position")',
+      // A read that does not filter archived blocks cannot use the partial index.
+      '(lesson_id, "position")',
       "(route_id)",
     ]) {
       expect(defs).toContain(expected);
