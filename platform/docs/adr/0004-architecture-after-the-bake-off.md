@@ -41,7 +41,7 @@ STEP 46 §2 made these CI steps, each proven once by breaking it:
 - knip, for unused code and packages;
 - dependency-cruiser, for the boundaries above;
 - size-limit, for JavaScript budgets;
-- a Worker size budget;
+- a Worker size budget: 250 KiB gzip for the web Worker and 300 KiB for the API Worker. The API's was 150 KiB until Platform STEP 2, when the owner raised it. It measured 14.8 KiB before STEP 2, 438 KiB once Better Auth, Drizzle and `pg` arrived, 249 KiB after minifying, Better Auth's build without Kysely and zod imported as a namespace, and 253 KiB with the first actions. Cloudflare has no compressed limit: its limits are 64 MiB uncompressed and 1 s of startup. A separate auth Worker would add a hop to every action. Heavy work stays out of global scope, and the size check prints the API Worker's startup time as wrangler profiles it;
 - the 14-day version rule, with Dependabot and osv-scanner;
 - the AI cost guard: every model call goes through `core/ai/gate.ts`, with a model from the price table, a `max_tokens`, a prompt within the model's limit and the spend gate, only to zero-data-retention providers, with a `session_id` so a session keeps its prompt cache.
 
