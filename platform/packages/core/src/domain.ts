@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { Block, BlockId } from "./blocks/schema";
 import { Id, Locale, LocalizedText, Timestamp } from "./localized-text";
+import { isTimeZone } from "./time-zone";
 
 // Money is always integer minor units with its currency (cents for EUR).
 export const Money = z.strictObject({
@@ -15,6 +16,16 @@ export const Space = z.strictObject({
   defaultLocale: Locale,
   locales: z.array(Locale).min(1),
   createdAt: Timestamp,
+});
+
+export const TimeZone = z.string().refine(isTimeZone, "a time zone the runtime knows");
+
+// A user's own settings, apart from Better Auth's user row.
+export const UserProfile = z.strictObject({
+  userId: Id,
+  displayName: z.string().min(1).nullable(),
+  timeZone: TimeZone,
+  uiLocale: Locale.nullable(),
 });
 
 export const SpaceRole = z.enum(["owner", "coeditor", "assistant", "student"]);
@@ -189,6 +200,7 @@ export const CreditLedgerEntry = z.strictObject({
 
 export type Money = z.infer<typeof Money>;
 export type Space = z.infer<typeof Space>;
+export type UserProfile = z.infer<typeof UserProfile>;
 export type Membership = z.infer<typeof Membership>;
 export type Route = z.infer<typeof Route>;
 export type Module = z.infer<typeof Module>;

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { attempt, newUser, rolledBack, URLS } from "./connect";
+import { attempt, newUser, query, rolledBack, URLS } from "./connect";
 
 const UUID_V7 = /^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
 const CHECK = /violates check constraint/;
@@ -28,12 +28,15 @@ describe("the tenancy tables (Platform STEP 2 §2.2–§2.5)", () => {
     });
   });
 
-  it("user_profiles: a time zone Postgres knows, or the insert is refused", async () => {
-    await rolledBack(URLS.migrator, async (db) => {
-      const add = "insert into user_profiles (user_id, time_zone) values ($1, $2)";
-      expect(await attempt(db, add, [await newUser(db), "America/Mexico_City"])).toBeNull();
-      expect(await attempt(db, add, [await newUser(db), "Mars/Olympus"])).toMatch(CHECK);
-    });
+  it("user_profiles: the time zone is checked by core's UserProfile, not by a CHECK", async () => {
+    // A CHECK scanning pg_timezone_names ran on every write (review item 17).
+    const rows = await query(
+      URLS.migrator,
+      `select conname from pg_constraint where conrelid = 'user_profiles'::regclass and contype = 'c'`,
+    );
+    expect(rows.map((row: { conname: string }) => row.conname)).toEqual([
+      "user_profiles_ui_locale",
+    ]);
   });
 
   it("spaces: a uuidv7 id, a unique slug, a localized name, and a default among its locales", async () => {

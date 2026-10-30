@@ -1880,10 +1880,6 @@
         "user_profiles_ui_locale": {
           "name": "user_profiles_ui_locale",
           "value": "\"user_profiles\".\"ui_locale\" is null or app.is_locale_list(array[\"user_profiles\".\"ui_locale\"])"
-        },
-        "user_profiles_time_zone": {
-          "name": "user_profiles_time_zone",
-          "value": "app.is_time_zone(\"user_profiles\".\"time_zone\")"
         }
       },
       "isRLSEnabled": false
