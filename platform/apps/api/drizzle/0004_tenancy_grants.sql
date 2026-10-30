@@ -19,7 +19,10 @@ create function app.keep_an_owner() returns trigger
   set search_path = pg_catalog, public
 as $$
 begin
-  if old.role = 'owner' and not exists (
+  -- A space deleted along with its memberships (only the migrator can) needs none.
+  if old.role = 'owner'
+    and exists (select 1 from public.spaces as space where space.id = old.space_id)
+    and not exists (
     select 1 from public.memberships as membership
      where membership.space_id = old.space_id and membership.role = 'owner'
   ) then

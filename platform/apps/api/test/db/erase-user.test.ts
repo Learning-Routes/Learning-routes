@@ -269,6 +269,10 @@ describe("user.erase (Platform STEP 2 §2.16)", () => {
       ]);
       await db.query("update memberships set role = 'coeditor' where user_id = $1", [owner]);
       expect(await attempt(db, "set constraints all immediate")).toMatch(NO_OWNER_LEFT);
+      // A space deleted with its memberships (only the migrator can) needs no owner.
+      await db.query("delete from memberships where space_id = $1", [space]);
+      await db.query("delete from spaces where id = $1", [space]);
+      expect(await attempt(db, "set constraints all immediate")).toBeNull();
     });
   });
 
