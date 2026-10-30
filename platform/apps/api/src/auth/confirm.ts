@@ -1,69 +1,59 @@
+import { negotiateLocale } from "@learning-routes/core/locales";
+import { SIGN_IN_TEXT } from "@learning-routes/core/sign-in-text";
 import type { Hono } from "hono";
 import { withClient } from "../db/with-db";
 import { AUTH_PATH, CONFIRM_PATH, createAuth } from "./auth";
 import { type EmailSender, escapeHtml } from "./email";
 
-// The sign-in link's page (Platform STEP 2 §5.3). A GET only asks "Sign in as …?";
-// the page's form POSTs the token back, and only that signs in. A link scanner, or
-// another site that opens the link, gets the question and nothing more. Better
-// Auth's own verify, which signs in on a GET, answers 404 from outside.
-
-const BASE64_PADDING = /=+$/;
+// The sign-in link's page (Platform STEP 2 §5.3, and review item 11). The link
+// carries the token in its fragment, which no browser sends: this page's request
+// has no token, so no server, proxy or log sees it. The page asks "Sign in?" in the
+// browser's language; its script, an external file that script-src 'self' allows,
+// moves the token into the form, and the form's POST is the only thing that signs
+// in. A link scanner, or another site that opens the link, gets the question and
+// nothing more. Better Auth's own verify, which signs in on a GET, answers 404.
 
 const PAGE_HEADERS = {
   "content-type": "text/html; charset=utf-8",
   "cache-control": "no-store",
-  // The token is in this page's URL: no other site gets it as a referrer. Not
-  // no-referrer: a browser then sends the form's POST with Origin: null, which the
-  // app-origin check refuses.
+  // Not no-referrer: a browser then sends the form's POST with Origin: null, which
+  // the app-origin check refuses.
   "referrer-policy": "same-origin",
-  "content-security-policy": "default-src 'none'; form-action 'self'; frame-ancestors 'none'",
+  "content-security-policy":
+    "default-src 'none'; script-src 'self'; form-action 'self'; base-uri 'none'; frame-ancestors 'none'",
 };
 
-/** The stored identifier of a magic link's token, as Better Auth 1.7.8 writes it (storeToken: "hashed"). */
-export async function identifierOf(token: string): Promise<string> {
-  const digest = new Uint8Array(
-    await crypto.subtle.digest("SHA-256", new TextEncoder().encode(token)),
-  );
-  const base64 = btoa(String.fromCharCode(...digest));
-  return `magic-link:${base64.replaceAll("+", "-").replaceAll("/", "_").replace(BASE64_PADDING, "")}`;
-}
+const SCRIPT_PATH = `${CONFIRM_PATH}.js`;
 
-/** The email an unexpired link was sent to, or null, read through Better Auth's own adapter. */
-async function pendingEmail(
-  auth: ReturnType<typeof createAuth>,
-  token: string,
-): Promise<string | null> {
-  const { internalAdapter } = await auth.$context;
-  const row = await internalAdapter.findVerificationValue(await identifierOf(token));
-  if (row === null || row.expiresAt.getTime() <= Date.now()) {
-    return null;
-  }
-  return emailIn(row.value);
+/** Moves the token from the fragment into the form, and out of the address bar. */
+const SCRIPT = `// The sign-in token is in the link's fragment, which no request carries.
+const token = new URLSearchParams(location.hash.slice(1)).get("token");
+history.replaceState(null, "", location.pathname);
+const form = document.querySelector("form");
+if (token && form) {
+  form.elements.token.value = token;
+} else {
+  form?.setAttribute("hidden", "");
+  document.getElementById("no-link")?.removeAttribute("hidden");
 }
+`;
 
-/** The address in a magic link's stored value, or null for any other value. */
-function emailIn(value: string): string | null {
-  try {
-    const { email } = JSON.parse(value) as { email?: unknown };
-    return typeof email === "string" ? email : null;
-  } catch {
-    return null;
-  }
-}
-
-function page(email: string, token: string): string {
+function page(acceptLanguage: string | undefined): string {
+  const locale = negotiateLocale(acceptLanguage);
+  const words = SIGN_IN_TEXT[locale];
   return `<!doctype html>
-<html lang="en">
+<html lang="${locale}">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Sign in</title>
+<title>${escapeHtml(words.pageTitle)}</title>
+<script src="${SCRIPT_PATH}" defer></script>
 <main>
-<h1>Sign in as ${escapeHtml(email)}?</h1>
+<h1>${escapeHtml(words.pageQuestion)}</h1>
 <form method="post" action="${CONFIRM_PATH}">
-<input type="hidden" name="token" value="${escapeHtml(token)}">
-<button type="submit">Sign in</button>
+<input type="hidden" name="token" value="">
+<button type="submit">${escapeHtml(words.pageAction)}</button>
 </form>
+<p id="no-link" hidden>${escapeHtml(words.pageNoLink)}</p>
 </main>
 </html>
 `;
@@ -75,16 +65,14 @@ export function confirmRoutes(
 ) {
   app.get(`${AUTH_PATH}/magic-link/verify`, (c) => c.notFound());
 
-  app.get(CONFIRM_PATH, (c) => {
-    const token = c.req.query("token") ?? "";
-    return withClient(c.env, c.executionCtx, async (db) => {
-      const auth = createAuth(c.env, db, emailSender(c.env));
-      const email = token.length === 0 ? null : await pendingEmail(auth, token);
-      return email === null
-        ? c.text("This sign-in link has expired or was already used.", 404)
-        : c.body(page(email, token), 200, PAGE_HEADERS);
-    });
-  });
+  app.get(CONFIRM_PATH, (c) => c.body(page(c.req.header("accept-language")), 200, PAGE_HEADERS));
+
+  app.get(SCRIPT_PATH, (c) =>
+    c.body(SCRIPT, 200, {
+      "content-type": "text/javascript; charset=utf-8",
+      "cache-control": "public, max-age=300",
+    }),
+  );
 
   app.post(CONFIRM_PATH, async (c) => {
     const form = await c.req.formData().catch(() => null);

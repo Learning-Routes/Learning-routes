@@ -114,12 +114,13 @@ export function createAuth(env: Env, db: Database | Transaction, email: EmailSen
         // The email says five minutes.
         expiresIn: 300,
         // The link opens the app's page, which asks first; Better Auth's own link
-        // would sign in on a GET.
+        // would sign in on a GET, with the token in its query.
         sendMagicLink: async ({ email: address, token }, ctx) => {
           await refuseFloodedInbox(ctx, address);
           await email.sendMagicLink({
             email: address,
-            url: `${env.APP_ORIGIN}${CONFIRM_PATH}?token=${encodeURIComponent(token)}`,
+            // In the fragment: no request, and so no log, ever carries it.
+            url: `${env.APP_ORIGIN}${CONFIRM_PATH}#token=${encodeURIComponent(token)}`,
             locale: negotiateLocale(ctx?.request?.headers.get("accept-language")),
           });
         },

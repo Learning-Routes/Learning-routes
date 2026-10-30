@@ -1,11 +1,12 @@
 import { afterEach, describe, expect, it } from "vitest";
-import { identifierOf } from "../../src/auth/confirm";
 import { query, URLS } from "../db/connect";
 import { APP, harness, json, randomEmail } from "./harness";
 
-// Signing in with a link (Platform STEP 2 §5.3, §5.4). The link opens a page that
-// asks "Sign in as …?" and posts the token back; nothing signs in on a GET, so a
-// link scanner, or a page on another site that opens the link, signs in nobody.
+// Signing in with a link (Platform STEP 2 §5.3, §5.4, and review item 11). The link
+// carries the token in its fragment, which no request sends: the page it opens asks
+// "Sign in?", and its script moves the token into the form that posts it back.
+// Nothing signs in on a GET, so a link scanner, or a page on another site that
+// opens the link, signs in nobody, and no server or log ever sees the token in a URL.
 
 const SESSION_COOKIE_FIRST = /^__Host-lr_session=[^;]+; /;
 const UUID_V7 = /^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
@@ -20,7 +21,7 @@ async function requestLink(email = randomEmail()) {
     throw new Error("no link was sent");
   }
   const url = new URL(message.url);
-  return { email, url, token: url.searchParams.get("token") ?? "" };
+  return { email, url, token: new URLSearchParams(url.hash.slice(1)).get("token") ?? "" };
 }
 
 const confirm = (token: string, headers: Record<string, string> = {}, origin?: string) =>
@@ -38,6 +39,9 @@ describe("signing in with a link", () => {
   it("sends a link to the app's confirmation page, and stores only the token's hash", async () => {
     const { url, token } = await requestLink();
     expect(`${url.origin}${url.pathname}`).toBe(`${APP}/api/auth/magic-link/confirm`);
+    // The request the link makes carries no token: it is only in the fragment.
+    expect(url.search).toBe("");
+    expect(url.href.split("#")[0]).not.toContain(token);
     expect(token.length).toBeGreaterThan(20);
     const stored = await query(
       URLS.migrator,
@@ -57,22 +61,38 @@ describe("signing in with a link", () => {
     expect(api.sent.find((entry) => entry.email === email)?.locale).toBe("fr");
   });
 
-  it("asks on a GET, and signs in nobody: the page posts the token back", async () => {
-    const { email, url, token } = await requestLink();
+  it("asks on a GET, in the browser's language, and signs in nobody", async () => {
+    const { url, token } = await requestLink();
     for (const _ of [1, 2]) {
-      const page = await api.call(`${url.pathname}${url.search}`);
+      const page = await api.call(url.pathname, { headers: { "accept-language": "en" } });
       expect(page.status).toBe(200);
       expect(page.headers.getSetCookie()).toEqual([]);
       const html = await page.text();
-      expect(html).toContain(`Sign in as ${email}?`);
+      expect(html).toContain("Sign in to New Learning Routes?");
       expect(html).toContain('<form method="post" action="/api/auth/magic-link/confirm">');
+      expect(html).toContain('<script src="/api/auth/magic-link/confirm.js" defer></script>');
+      expect(html).not.toContain(token);
+      expect(page.headers.get("content-security-policy")).toContain("script-src 'self'");
     }
+    const spanish = await api.call(url.pathname, { headers: { "accept-language": "es-MX,es" } });
+    const html = await spanish.text();
+    expect(html).toContain('<html lang="es">');
+    expect(html).toContain("¿Entrar en New Learning Routes?");
     // Better Auth's own GET verify, which would sign in, does not exist here.
     const scanner = await api.call(
       `/api/auth/magic-link/verify?token=${encodeURIComponent(token)}`,
     );
     expect(scanner.status).toBe(404);
     expect(scanner.headers.getSetCookie()).toEqual([]);
+  });
+
+  it("serves the page's script from the app, which moves the fragment's token into the form", async () => {
+    const script = await api.call("/api/auth/magic-link/confirm.js");
+    expect(script.status).toBe(200);
+    expect(script.headers.get("content-type")).toBe("text/javascript; charset=utf-8");
+    const source = await script.text();
+    expect(source).toContain("location.hash");
+    expect(source).toContain("history.replaceState");
   });
 
   it("signs in on the POST, once, with an exact __Host- session cookie and a uuidv7 user", async () => {
@@ -108,28 +128,10 @@ describe("signing in with a link", () => {
     expect(sessionCookie(signedIn)).toBeDefined();
   });
 
-  it("answers 400 to a POST that is not a form, and 404 to a stored value that is not a link's", async () => {
+  it("answers 400 to a POST that is not a form, and signs in nobody with a token that does not exist", async () => {
     const notAForm = await api.call("/api/auth/magic-link/confirm", json({ token: "x" }));
     expect(notAForm.status).toBe(400);
-    const token = crypto.randomUUID();
-    await query(
-      URLS.migrator,
-      "insert into verification (identifier, value, expires_at) values ($1, 'not json', now() + interval '5 minutes')",
-      [await identifierOf(token)],
-    );
-    expect((await api.call(`/api/auth/magic-link/confirm?token=${token}`)).status).toBe(404);
-  });
-
-  it("finds a link's stored row by the same identifier Better Auth 1.7.8 writes", async () => {
-    const { token } = await requestLink();
-    const rows = await query(URLS.migrator, "select 1 from verification where identifier = $1", [
-      await identifierOf(token),
-    ]);
-    expect(rows).toHaveLength(1);
-  });
-
-  it("shows no email for a token that does not exist", async () => {
-    const page = await api.call("/api/auth/magic-link/confirm?token=not-a-real-token");
-    expect(page.status).toBe(404);
+    const unknown = await confirm(crypto.randomUUID());
+    expect(sessionCookie(unknown)).toBeUndefined();
   });
 });

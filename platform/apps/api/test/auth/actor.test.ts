@@ -13,7 +13,7 @@ async function signIn() {
   const email = randomEmail();
   await api.call("/api/auth/sign-in/magic-link", json({ email }));
   const link = api.sent.find((message) => message.email === email);
-  const token = new URL(link?.url ?? "").searchParams.get("token") ?? "";
+  const token = new URLSearchParams(new URL(link?.url ?? "").hash.slice(1)).get("token") ?? "";
   const confirmed = await api.call("/api/auth/magic-link/confirm", {
     method: "POST",
     headers: { "content-type": "application/x-www-form-urlencoded" },
