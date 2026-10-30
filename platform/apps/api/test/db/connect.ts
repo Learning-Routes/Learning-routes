@@ -65,3 +65,40 @@ export async function newUser(client: pg.Client): Promise<string> {
   );
   return rows[0]?.id as string;
 }
+
+/** The backend pid of a connected client, to watch its locks. */
+export async function backendPid(client: pg.Client): Promise<number> {
+  const { rows } = await client.query<{ pid: number }>("select pg_backend_pid() as pid");
+  return rows[0]?.pid as number;
+}
+
+/**
+ * Resolves once the backend `pid` waits on a lock, or `work` settles first: a
+ * test that must interleave two transactions waits on pg_locks, never on a timer.
+ */
+export async function blockedOrDone(pid: number, work: Promise<unknown>): Promise<void> {
+  let settled = false;
+  work.then(
+    () => {
+      settled = true;
+    },
+    () => {
+      settled = true;
+    },
+  );
+  const deadline = Date.now() + 10_000;
+  while (!settled) {
+    const rows = await query(
+      URLS.migrator,
+      "select 1 from pg_locks where pid = $1 and not granted",
+      [pid],
+    );
+    if (rows.length > 0) {
+      return;
+    }
+    if (Date.now() > deadline) {
+      throw new Error(`backend ${pid} neither waited on a lock nor finished`);
+    }
+    await new Promise((resolve) => setTimeout(resolve, 10));
+  }
+}

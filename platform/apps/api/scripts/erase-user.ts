@@ -13,7 +13,17 @@ const LOCAL = "postgres://lr_migrator:local-only-migrator@localhost:54318/learni
 
 /** Erases one user inside the caller's transaction. */
 export async function eraseUser(db: pg.Client, userId: string): Promise<void> {
-  // A space always keeps an owner: the last one hands it over before going.
+  // A space always keeps an owner: the last one hands it over before going. The
+  // owner rows of the user's spaces are locked first, so a concurrent erase of a
+  // co-owner waits here and then sees this one gone.
+  await db.query(
+    `select 1 from memberships
+      where role = 'owner'
+        and space_id in (select space_id from memberships where user_id = $1 and role = 'owner')
+      order by space_id, user_id
+        for update`,
+    [userId],
+  );
   const { rows: alone } = await db.query(
     `select space_id from memberships as mine
       where mine.user_id = $1 and mine.role = 'owner'

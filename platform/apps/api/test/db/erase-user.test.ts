@@ -1,13 +1,14 @@
 import pg from "pg";
 import { describe, expect, it } from "vitest";
 import { eraseUser } from "../../scripts/erase-user";
-import { attempt, newUser, query, rolledBack, URLS } from "./connect";
+import { attempt, backendPid, blockedOrDone, newUser, query, rolledBack, URLS } from "./connect";
 import { newEnrollment, newRoute, newSpace, newVersion } from "./fixtures";
 
 // user.erase (Platform STEP 2 §2.16), run inside a transaction each test rolls back.
 
 const APPEND_ONLY = /append-only/;
 const PERMISSION_DENIED = /permission denied/;
+const NO_OWNER_LEFT = /last owner|no owner left/;
 
 const PER_USER_TABLES = [
   ["user_profiles", "user_id"],
@@ -155,13 +156,19 @@ describe("user.erase (Platform STEP 2 §2.16)", () => {
         "insert into progress (enrollment_id, lesson_id, space_id, user_id, status) values ($1, uuidv7(), $2, $3, 'in_progress')",
         [enrollment, space, userId],
       );
-      const erasing = rolledBack(URLS.migrator, async (db) => {
-        await eraseUser(db, userId);
-        return rowsOf(db, userId);
-      });
-      await new Promise((resolve) => setTimeout(resolve, 200));
-      await writer.query("commit");
-      expect(Object.values(await erasing).every((n) => n === 0)).toBe(true);
+      const eraser = new pg.Client({ connectionString: URLS.migrator });
+      await eraser.connect();
+      try {
+        const eraserPid = await backendPid(eraser);
+        await eraser.query("begin");
+        const erasing = eraseUser(eraser, userId).then(() => rowsOf(eraser, userId));
+        await blockedOrDone(eraserPid, erasing);
+        await writer.query("commit");
+        expect(Object.values(await erasing).every((n) => n === 0)).toBe(true);
+      } finally {
+        await eraser.query("rollback");
+        await eraser.end();
+      }
     } finally {
       if (userId) {
         await setup.query("begin");
@@ -170,6 +177,66 @@ describe("user.erase (Platform STEP 2 §2.16)", () => {
       }
       await Promise.all([setup.end(), writer.end()]);
     }
+  });
+
+  it("erases one of two co-owners erased at once, and the space keeps the other", async () => {
+    // Committed rows on three connections: the space and the surviving owner stay.
+    const setup = new pg.Client({ connectionString: URLS.migrator });
+    const first = new pg.Client({ connectionString: URLS.migrator });
+    const second = new pg.Client({ connectionString: URLS.migrator });
+    await Promise.all([setup.connect(), first.connect(), second.connect()]);
+    try {
+      const space = await newSpace(setup, "co-owners");
+      const owners = [await newUser(setup), await newUser(setup)];
+      for (const owner of owners) {
+        await setup.query(
+          "insert into memberships (space_id, user_id, role) values ($1, $2, 'owner')",
+          [space, owner],
+        );
+      }
+      const commitOrRollback = async (db: pg.Client, work: Promise<unknown>) => {
+        try {
+          await work;
+          await db.query("commit");
+          return "erased";
+        } catch (error) {
+          await db.query("rollback");
+          return (error as Error).message;
+        }
+      };
+      // The first erase runs and holds its transaction open while the second starts.
+      const secondPid = await backendPid(second);
+      await first.query("begin");
+      await eraseUser(first, owners[0] as string);
+      await second.query("begin");
+      const secondDone = commitOrRollback(second, eraseUser(second, owners[1] as string));
+      await blockedOrDone(secondPid, secondDone);
+      const firstDone = commitOrRollback(first, Promise.resolve());
+      const outcomes = await Promise.all([firstDone, secondDone]);
+
+      expect(outcomes.filter((outcome) => outcome === "erased")).toHaveLength(1);
+      expect(outcomes.find((outcome) => outcome !== "erased")).toMatch(NO_OWNER_LEFT);
+      const { rows } = await setup.query(
+        "select count(*)::int as n from memberships where space_id = $1 and role = 'owner'",
+        [space],
+      );
+      expect(rows[0]?.n).toBe(1);
+    } finally {
+      await Promise.all([setup.end(), first.end(), second.end()]);
+    }
+  });
+
+  it("is refused by the database when a space would be left without an owner", async () => {
+    await rolledBack(URLS.migrator, async (db) => {
+      const space = await newSpace(db, "erase");
+      const owner = await newUser(db);
+      await db.query("insert into memberships (space_id, user_id, role) values ($1, $2, 'owner')", [
+        space,
+        owner,
+      ]);
+      await db.query("update memberships set role = 'coeditor' where user_id = $1", [owner]);
+      expect(await attempt(db, "set constraints all immediate")).toMatch(NO_OWNER_LEFT);
+    });
   });
 
   it("answers not found for a user that does not exist", async () => {

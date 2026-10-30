@@ -10,3 +10,28 @@ grant select, update on spaces to lr_app;
 grant select, insert on memberships to lr_app;
 --> statement-breakpoint
 grant select on platform_roles to lr_app;
+--> statement-breakpoint
+-- Every space keeps an owner. Checked at commit, so a hand-over inside one
+-- transaction works; user.erase also locks the owner rows first, so two erases
+-- of co-owners at once cannot both pass.
+create function app.keep_an_owner() returns trigger
+  language plpgsql security definer
+  set search_path = pg_catalog, public
+as $$
+begin
+  if old.role = 'owner' and not exists (
+    select 1 from public.memberships as membership
+     where membership.space_id = old.space_id and membership.role = 'owner'
+  ) then
+    raise exception 'space % would have no owner left', old.space_id using errcode = 'check_violation';
+  end if;
+  return null;
+end;
+$$;
+--> statement-breakpoint
+revoke execute on function app.keep_an_owner() from public;
+--> statement-breakpoint
+create constraint trigger memberships_keep_an_owner
+  after update or delete on memberships
+  deferrable initially deferred
+  for each row execute function app.keep_an_owner();
