@@ -8,7 +8,8 @@ import { APP, harness, json, randomEmail } from "./harness";
 // Nothing signs in on a GET, so a link scanner, or a page on another site that
 // opens the link, signs in nobody, and no server or log ever sees the token in a URL.
 
-const SESSION_COOKIE_FIRST = /^__Host-lr_session=[^;]+; /;
+const EXACT_SESSION_COOKIE =
+  /^__Host-lr_session=[^;\s]+; Max-Age=604800; Path=\/; HttpOnly; Secure; SameSite=Lax$/;
 const UUID_V7 = /^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
 const api = harness();
 afterEach(() => api.settle());
@@ -109,16 +110,11 @@ describe("signing in with a link", () => {
     const { email, token } = await requestLink();
     const signedIn = await confirm(token);
     expect(signedIn.status).toBe(302);
-    const cookie = sessionCookie(signedIn) ?? "";
-    expect(cookie).toMatch(SESSION_COOKIE_FIRST);
-    const attributes = cookie
-      .split("; ")
-      .slice(1)
-      .map((part) => part.split("=")[0]?.toLowerCase());
-    expect(attributes).toEqual(expect.arrayContaining(["path", "httponly", "secure", "samesite"]));
-    expect(cookie).toContain("Path=/");
-    expect(cookie).toContain("SameSite=Lax");
-    expect(attributes).not.toContain("domain");
+    // The whole Set-Cookie, exactly, and no other cookie: __Host- with Secure,
+    // Path=/ and no Domain, HttpOnly, SameSite=Lax, for Better Auth's seven days.
+    const cookies = signedIn.headers.getSetCookie();
+    expect(cookies).toHaveLength(1);
+    expect(cookies[0]).toMatch(EXACT_SESSION_COOKIE);
 
     const [user] = await query(URLS.migrator, `select id from "user" where email = $1`, [email]);
     expect(user?.id).toMatch(UUID_V7);
