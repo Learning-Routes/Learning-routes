@@ -8,7 +8,6 @@ CREATE TABLE "blocks" (
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"archived_at" timestamp with time zone,
-	CONSTRAINT "blocks_lesson_id_position_key" UNIQUE("lesson_id","position"),
 	CONSTRAINT "blocks_kind" CHECK ("blocks"."kind" in ('concept', 'check', 'tip', 'example', 'summary', 'drag_drop', 'fill_blank', 'code_playground', 'simulation', 'scenario', 'cards', 'visual', 'motion', 'audio', 'audio_explainer', 'video')),
 	CONSTRAINT "blocks_data_object" CHECK (jsonb_typeof("blocks"."data") = 'object')
 );
@@ -32,7 +31,6 @@ CREATE TABLE "lessons" (
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"archived_at" timestamp with time zone,
-	CONSTRAINT "lessons_module_id_position_key" UNIQUE("module_id","position"),
 	CONSTRAINT "lessons_id_space_id_key" UNIQUE("id","space_id"),
 	CONSTRAINT "lessons_id_route_id_space_id_key" UNIQUE("id","route_id","space_id"),
 	CONSTRAINT "lessons_title_localized" CHECK (app.is_localized("lessons"."title"))
@@ -47,7 +45,6 @@ CREATE TABLE "modules" (
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"archived_at" timestamp with time zone,
-	CONSTRAINT "modules_route_id_position_key" UNIQUE("route_id","position"),
 	CONSTRAINT "modules_id_route_id_space_id_key" UNIQUE("id","route_id","space_id"),
 	CONSTRAINT "modules_title_localized" CHECK (app.is_localized("modules"."title"))
 );
@@ -84,4 +81,9 @@ ALTER TABLE "lesson_prerequisites" ADD CONSTRAINT "lesson_prerequisites_lesson_i
 ALTER TABLE "lesson_prerequisites" ADD CONSTRAINT "lesson_prerequisites_requires_lesson_id_fkey" FOREIGN KEY ("requires_lesson_id","route_id","space_id") REFERENCES "public"."lessons"("id","route_id","space_id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "lessons" ADD CONSTRAINT "lessons_module_id_fkey" FOREIGN KEY ("module_id","route_id","space_id") REFERENCES "public"."modules"("id","route_id","space_id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "modules" ADD CONSTRAINT "modules_route_id_fkey" FOREIGN KEY ("route_id","space_id") REFERENCES "public"."routes"("id","space_id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "routes" ADD CONSTRAINT "routes_space_id_spaces_id_fk" FOREIGN KEY ("space_id") REFERENCES "public"."spaces"("id") ON DELETE no action ON UPDATE no action;
+ALTER TABLE "routes" ADD CONSTRAINT "routes_space_id_spaces_id_fk" FOREIGN KEY ("space_id") REFERENCES "public"."spaces"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+CREATE UNIQUE INDEX "blocks_lesson_id_position_key" ON "blocks" USING btree ("lesson_id","position") WHERE "blocks"."archived_at" is null;--> statement-breakpoint
+CREATE INDEX "lesson_prerequisites_route_id_idx" ON "lesson_prerequisites" USING btree ("route_id");--> statement-breakpoint
+CREATE UNIQUE INDEX "lessons_module_id_position_key" ON "lessons" USING btree ("module_id","position") WHERE "lessons"."archived_at" is null;--> statement-breakpoint
+CREATE INDEX "lessons_route_id_module_id_position_idx" ON "lessons" USING btree ("route_id","module_id","position");--> statement-breakpoint
+CREATE UNIQUE INDEX "modules_route_id_position_key" ON "modules" USING btree ("route_id","position") WHERE "modules"."archived_at" is null;

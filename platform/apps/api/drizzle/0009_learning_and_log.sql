@@ -85,5 +85,6 @@ ALTER TABLE "reviews" ADD CONSTRAINT "reviews_user_id_user_id_fk" FOREIGN KEY ("
 ALTER TABLE "reviews" ADD CONSTRAINT "reviews_space_id_spaces_id_fk" FOREIGN KEY ("space_id") REFERENCES "public"."spaces"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "reviews" ADD CONSTRAINT "reviews_card_id_fkey" FOREIGN KEY ("card_id","user_id","space_id") REFERENCES "public"."cards"("id","user_id","space_id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "action_log" ADD CONSTRAINT "action_log_space_id_spaces_id_fk" FOREIGN KEY ("space_id") REFERENCES "public"."spaces"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+CREATE INDEX "enrollments_route_id_idx" ON "enrollments" USING btree ("route_id");--> statement-breakpoint
 CREATE INDEX "reviews_user_id_card_id_reviewed_at_idx" ON "reviews" USING btree ("user_id","card_id","reviewed_at");--> statement-breakpoint
 CREATE INDEX "action_log_space_id_at_idx" ON "action_log" USING btree ("space_id","at");

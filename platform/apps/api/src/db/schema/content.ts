@@ -6,12 +6,14 @@ import {
   check,
   customType,
   foreignKey,
+  index,
   integer,
   jsonb,
   pgTable,
   primaryKey,
   text,
   unique,
+  uniqueIndex,
   uuid,
 } from "drizzle-orm/pg-core";
 import { archivedAt, createdAt, id, oneOf, updatedAt } from "./columns";
@@ -82,7 +84,10 @@ export const modules = pgTable(
       columns: [t.routeId, t.spaceId],
       foreignColumns: [routes.id, routes.spaceId],
     }).onDelete("restrict"),
-    unique("modules_route_id_position_key").on(t.routeId, t.position),
+    // Unique among live siblings only: archiving a child frees its key.
+    uniqueIndex("modules_route_id_position_key")
+      .on(t.routeId, t.position)
+      .where(sql`${t.archivedAt} is null`),
     unique("modules_id_route_id_space_id_key").on(t.id, t.routeId, t.spaceId),
     check("modules_title_localized", sql`app.is_localized(${t.title})`),
   ],
@@ -108,7 +113,12 @@ export const lessons = pgTable(
       columns: [t.moduleId, t.routeId, t.spaceId],
       foreignColumns: [modules.id, modules.routeId, modules.spaceId],
     }).onDelete("restrict"),
-    unique("lessons_module_id_position_key").on(t.moduleId, t.position),
+    // Unique among live siblings only: archiving a child frees its key.
+    uniqueIndex("lessons_module_id_position_key")
+      .on(t.moduleId, t.position)
+      .where(sql`${t.archivedAt} is null`),
+    // A route's lessons in order, for snapshots and progress.
+    index("lessons_route_id_module_id_position_idx").on(t.routeId, t.moduleId, t.position),
     unique("lessons_id_space_id_key").on(t.id, t.spaceId),
     unique("lessons_id_route_id_space_id_key").on(t.id, t.routeId, t.spaceId),
     check("lessons_title_localized", sql`app.is_localized(${t.title})`),
@@ -135,7 +145,10 @@ export const blocks = pgTable(
       columns: [t.lessonId, t.spaceId],
       foreignColumns: [lessons.id, lessons.spaceId],
     }).onDelete("restrict"),
-    unique("blocks_lesson_id_position_key").on(t.lessonId, t.position),
+    // Unique among live siblings only: archiving a child frees its key.
+    uniqueIndex("blocks_lesson_id_position_key")
+      .on(t.lessonId, t.position)
+      .where(sql`${t.archivedAt} is null`),
     check("blocks_kind", sql`${t.kind} in (${oneOf(BLOCK_TYPES)})`),
     check("blocks_data_object", sql`jsonb_typeof(${t.data}) = 'object'`),
   ],
@@ -153,6 +166,7 @@ export const lessonPrerequisites = pgTable(
   },
   (t) => [
     primaryKey({ columns: [t.lessonId, t.requiresLessonId] }),
+    index("lesson_prerequisites_route_id_idx").on(t.routeId),
     foreignKey({
       name: "lesson_prerequisites_route_id_fkey",
       columns: [t.routeId, t.spaceId],

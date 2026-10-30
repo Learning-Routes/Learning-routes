@@ -50,6 +50,7 @@ export const enrollments = pgTable(
       foreignColumns: [routeVersions.routeId, routeVersions.spaceId, routeVersions.version],
     }).onDelete("restrict"),
     unique("enrollments_user_id_route_id_key").on(t.userId, t.routeId),
+    index("enrollments_route_id_idx").on(t.routeId),
     unique("enrollments_id_space_id_user_id_key").on(t.id, t.spaceId, t.userId),
     check("enrollments_status", sql`${t.status} in (${oneOf(Enrollment.shape.status.options)})`),
   ],

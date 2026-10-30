@@ -457,7 +457,30 @@
           "notNull": false
         }
       },
-      "indexes": {},
+      "indexes": {
+        "blocks_lesson_id_position_key": {
+          "name": "blocks_lesson_id_position_key",
+          "columns": [
+            {
+              "expression": "lesson_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "position",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "where": "\"blocks\".\"archived_at\" is null",
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
       "foreignKeys": {
         "blocks_lesson_id_fkey": {
           "name": "blocks_lesson_id_fkey",
@@ -470,13 +493,7 @@
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "blocks_lesson_id_position_key": {
-          "name": "blocks_lesson_id_position_key",
-          "columns": ["lesson_id", "position"],
-          "nullsNotDistinct": false
-        }
-      },
+      "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {
         "blocks_kind": {
@@ -519,7 +536,23 @@
           "notNull": true
         }
       },
-      "indexes": {},
+      "indexes": {
+        "lesson_prerequisites_route_id_idx": {
+          "name": "lesson_prerequisites_route_id_idx",
+          "columns": [
+            {
+              "expression": "route_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
       "foreignKeys": {
         "lesson_prerequisites_route_id_fkey": {
           "name": "lesson_prerequisites_route_id_fkey",
@@ -621,7 +654,57 @@
           "notNull": false
         }
       },
-      "indexes": {},
+      "indexes": {
+        "lessons_module_id_position_key": {
+          "name": "lessons_module_id_position_key",
+          "columns": [
+            {
+              "expression": "module_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "position",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "where": "\"lessons\".\"archived_at\" is null",
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "lessons_route_id_module_id_position_idx": {
+          "name": "lessons_route_id_module_id_position_idx",
+          "columns": [
+            {
+              "expression": "route_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "module_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "position",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
       "foreignKeys": {
         "lessons_module_id_fkey": {
           "name": "lessons_module_id_fkey",
@@ -635,15 +718,15 @@
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
-        "lessons_module_id_position_key": {
-          "name": "lessons_module_id_position_key",
-          "columns": ["module_id", "position"],
-          "nullsNotDistinct": false
-        },
         "lessons_id_space_id_key": {
           "name": "lessons_id_space_id_key",
-          "columns": ["id", "space_id"],
-          "nullsNotDistinct": false
+          "nullsNotDistinct": false,
+          "columns": ["id", "space_id"]
+        },
+        "lessons_id_route_id_space_id_key": {
+          "name": "lessons_id_route_id_space_id_key",
+          "nullsNotDistinct": false,
+          "columns": ["id", "route_id", "space_id"]
         }
       },
       "policies": {},
@@ -711,7 +794,30 @@
           "notNull": false
         }
       },
-      "indexes": {},
+      "indexes": {
+        "modules_route_id_position_key": {
+          "name": "modules_route_id_position_key",
+          "columns": [
+            {
+              "expression": "route_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "position",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "where": "\"modules\".\"archived_at\" is null",
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
       "foreignKeys": {
         "modules_route_id_fkey": {
           "name": "modules_route_id_fkey",
@@ -725,15 +831,10 @@
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
-        "modules_route_id_position_key": {
-          "name": "modules_route_id_position_key",
-          "columns": ["route_id", "position"],
-          "nullsNotDistinct": false
-        },
-        "modules_id_space_id_key": {
-          "name": "modules_id_space_id_key",
-          "columns": ["id", "space_id"],
-          "nullsNotDistinct": false
+        "modules_id_route_id_space_id_key": {
+          "name": "modules_id_route_id_space_id_key",
+          "nullsNotDistinct": false,
+          "columns": ["id", "route_id", "space_id"]
         }
       },
       "policies": {},
