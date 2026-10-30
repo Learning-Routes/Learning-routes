@@ -20,3 +20,9 @@ Many creators share one database, so a row in the wrong space is a data leak. Wi
 
 - Composite keys are wider, and each parent carries one more unique index.
 - Moving content between spaces is not an update. It is a fork: a copy into the other space, with provenance kept in plain columns.
+
+## Forks mint new content ids
+
+A fork copies one published version's snapshot into the new route, with **new ids** for every module, lesson and block. The source is recorded only in `forked_from_space_id`, `forked_from_route_id` and `forked_from_version`.
+
+Content ids are stable across versions of one route, not across routes. A learner's progress and review cards are keyed by those ids, so a fork with the same ids would let a student's history in the source answer for the fork. With new ids, `cards (user_id, item_id)` stays unique per item a learner actually studied, and a fork starts with no history.
