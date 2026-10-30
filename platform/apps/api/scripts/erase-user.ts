@@ -2,17 +2,21 @@
 // migrator. Spaces and content are never deleted, and a space's last owner is
 // never erased; a user's own rows
 // (profile, memberships, roles, enrollments, progress, cards, reviews, sessions,
-// accounts and pending sign-in links) go, in one transaction. The action log and published versions
+// accounts, pending sign-in links and the address's sign-in limit) go, in one transaction. The action log and published versions
 // keep the bare id, which then points at no one.
 //
-//   node scripts/erase-user.ts <user id>
+//   BETTER_AUTH_SECRET=... node scripts/erase-user.ts <user id>
 import { fileURLToPath } from "node:url";
 import pg from "pg";
+import { emailRateKey } from "../src/auth/rate-key";
 
 const LOCAL = "postgres://lr_migrator:local-only-migrator@localhost:54318/learning_routes";
 
-/** Erases one user inside the caller's transaction. */
-export async function eraseUser(db: pg.Client, userId: string): Promise<void> {
+/**
+ * Erases one user inside the caller's transaction. authSecret is the API Worker's
+ * BETTER_AUTH_SECRET: the per-address sign-in limit is keyed by an HMAC with it.
+ */
+export async function eraseUser(db: pg.Client, userId: string, authSecret: string): Promise<void> {
   // A space always keeps an owner: the last one hands it over before going. The
   // owner rows of the user's spaces are locked first, so a concurrent erase of a
   // co-owner waits here and then sees this one gone.
@@ -56,6 +60,15 @@ export async function eraseUser(db: pg.Client, userId: string): Promise<void> {
           = (select lower(email) from "user" where id = $1)`,
     [userId],
   );
+  const { rows: found } = await db.query<{ email: string }>(
+    `select email from "user" where id = $1`,
+    [userId],
+  );
+  if (found[0] !== undefined) {
+    await db.query("delete from rate_limit where key = $1", [
+      await emailRateKey(authSecret, found[0].email),
+    ]);
+  }
   // Every other per-user row cascades from the user.
   const { rowCount } = await db.query(`delete from "user" where id = $1`, [userId]);
   if (rowCount !== 1) {
@@ -65,11 +78,16 @@ export async function eraseUser(db: pg.Client, userId: string): Promise<void> {
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const userId = process.argv[2] ?? "";
+  // Read from the environment, never an argument, so it stays out of shell history.
+  const authSecret = process.env.BETTER_AUTH_SECRET ?? "";
+  if (authSecret === "") {
+    throw new Error("set BETTER_AUTH_SECRET: the sign-in limit's row is keyed with it");
+  }
   const client = new pg.Client({ connectionString: process.env.DATABASE_URL_MIGRATOR ?? LOCAL });
   await client.connect();
   try {
     await client.query("begin");
-    await eraseUser(client, userId);
+    await eraseUser(client, userId, authSecret);
     await client.query("commit");
     console.log(JSON.stringify({ message: "user erased", user_id: userId }));
   } catch (error) {

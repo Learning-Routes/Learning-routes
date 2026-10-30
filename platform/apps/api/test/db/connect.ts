@@ -11,6 +11,9 @@ export const URLS = {
     "postgres://lr_migrator:local-only-migrator@localhost:54318/learning_routes",
 };
 
+/** The auth secret every test uses: the API harness signs with it, user.erase keys with it. */
+export const TEST_SECRET = "test-only-secret-0123456789abcdef0123456789abcdef";
+
 /** Runs SQL on a fresh connection and returns the rows of its last statement. */
 export async function query(url: string, sql: string, values: unknown[] = []) {
   const client = new pg.Client({ connectionString: url });

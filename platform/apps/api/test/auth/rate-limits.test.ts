@@ -1,5 +1,7 @@
 import { afterEach, describe, expect, it } from "vitest";
-import { harness, json, randomEmail, randomIp } from "./harness";
+import { emailRateKey } from "../../src/auth/rate-key";
+import { query, URLS } from "../db/connect";
+import { harness, json, randomEmail, randomIp, TEST_SECRET } from "./harness";
 
 // Rate limits (Platform STEP 2 §5.6), counted in the database, per client IP as
 // Cloudflare reports it, so every Worker instance shares one count.
@@ -41,6 +43,7 @@ describe("rate limits", () => {
     );
     const limited = statuses(responses).filter((status) => status === 429).length;
     expect(20 - limited).toBeLessThanOrEqual(CONFIRM_MAX);
+    expect(limited).toBeLessThan(20);
   });
 
   it(`send at most ${PER_EMAIL_MAX} links in ten minutes to one address, from any number of IPs`, async () => {
@@ -68,5 +71,37 @@ describe("rate limits", () => {
     const neighbour = `${local.replace("_", "x")}@example.com`;
     await api.call("/api/auth/sign-in/magic-link", json({ email: neighbour }));
     expect(api.sent.some((message) => message.email === neighbour)).toBe(true);
+  });
+
+  it("store no address: an address's count is keyed by an HMAC of it with the auth secret", async () => {
+    const email = randomEmail();
+    await api.call("/api/auth/sign-in/magic-link", json({ email: email.toUpperCase() }));
+    const plain = await query(
+      URLS.migrator,
+      "select 1 from rate_limit where key like '%' || $1 || '%'",
+      [email.split("@")[0]],
+    );
+    expect(plain).toEqual([]);
+    const keyed = await query(URLS.migrator, "select count from rate_limit where key = $1", [
+      await emailRateKey(TEST_SECRET, email),
+    ]);
+    expect(keyed).toEqual([{ count: 1 }]);
+  });
+
+  it(`start a new window once the old one is over, and still send at most ${PER_EMAIL_MAX} of 20 parallel links`, async () => {
+    const email = randomEmail();
+    // A full window that ended an hour ago.
+    await query(
+      URLS.migrator,
+      "insert into rate_limit (key, count, last_request) values ($1, $2, $3)",
+      [await emailRateKey(TEST_SECRET, email), PER_EMAIL_MAX, Date.now() - 3_600_000],
+    );
+    const responses = await Promise.all(
+      Array.from({ length: 20 }, () => api.call("/api/auth/sign-in/magic-link", json({ email }))),
+    );
+    const sent = api.sent.filter((message) => message.email === email).length;
+    expect(sent).toBeLessThanOrEqual(PER_EMAIL_MAX);
+    expect(sent).toBeGreaterThan(0);
+    expect(statuses(responses).filter((status) => status !== 200 && status !== 429)).toEqual([]);
   });
 });

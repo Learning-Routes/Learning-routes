@@ -9,6 +9,7 @@ import * as tables from "../db/schema/auth";
 import type { Database, Transaction } from "../db/with-db";
 import type { EmailSender } from "./email";
 import { authOptions } from "./options";
+import { emailRateKey } from "./rate-key";
 
 // Better Auth for one request (Platform STEP 2 §5), on withClient's client: a
 // Worker has no long-lived state, so it is built per request from env. The app
@@ -27,50 +28,75 @@ const ADDRESS_WINDOW_MS = 600_000;
 
 type EndpointContext = Parameters<Parameters<typeof magicLink>[0]["sendMagicLink"]>[1];
 
-/**
- * At most five sign-in links per address in ten minutes, whatever its letter case
- * and whatever the IPs asking. Counted in Better Auth's own rate-limit table, keyed
- * by the address, with the same atomic conditional increment its IP limits use.
- */
-async function refuseFloodedInbox(endpoint: EndpointContext, address: string): Promise<void> {
-  if (endpoint === undefined) {
-    throw new APIError("INTERNAL_SERVER_ERROR");
-  }
-  const { adapter } = endpoint.context;
-  const key = `magic-link-email:${address.toLowerCase()}`;
-  const now = Date.now();
-  const byKey = { field: "key", value: key };
-  const counted = await adapter.incrementOne({
+/** How often one request races others for the count before it gives up. */
+const ATTEMPTS = 3;
+
+type Adapter = NonNullable<EndpointContext>["context"]["adapter"];
+
+/** One more link in the address's current window, if it has room: atomic. */
+const countInWindow = (adapter: Adapter, key: string, now: number) =>
+  adapter.incrementOne({
     model: "rateLimit",
     where: [
-      byKey,
+      { field: "key", value: key },
       { field: "lastRequest", operator: "gt", value: now - ADDRESS_WINDOW_MS },
       { field: "count", operator: "lt", value: LINKS_PER_ADDRESS },
     ],
     increment: { count: 1 },
     set: { lastRequest: now },
   });
-  if (counted) {
-    return;
+
+/**
+ * At most five sign-in links per address in ten minutes, whatever its letter case
+ * and whatever the IPs asking. Counted in Better Auth's own rate-limit table, keyed
+ * by an HMAC of the address, with atomic conditional writes only: the count goes up
+ * only inside a window with room; the first link creates the row once; a window
+ * that is over is restarted only by the one request that still sees its old start.
+ * A request that loses every race gives up after a few tries.
+ */
+async function refuseFloodedInbox(
+  endpoint: EndpointContext,
+  address: string,
+  secret: string,
+): Promise<void> {
+  if (endpoint === undefined) {
+    throw new APIError("INTERNAL_SERVER_ERROR");
   }
-  const row = await adapter.findOne<{ lastRequest: number | bigint }>({
-    model: "rateLimit",
-    where: [byKey],
-  });
-  if (row === null) {
-    // The first link: a concurrent first link may create the row first, so try again.
-    const created = await adapter
-      .create({ model: "rateLimit", data: { key, count: 1, lastRequest: now } })
-      .catch(() => null);
-    return created === null ? refuseFloodedInbox(endpoint, address) : undefined;
-  }
-  if (Number(row.lastRequest) <= now - ADDRESS_WINDOW_MS) {
-    await adapter.update({
+  const { adapter } = endpoint.context;
+  const key = await emailRateKey(secret, address);
+  const byKey = { field: "key", value: key };
+  for (let attempt = 0; attempt < ATTEMPTS; attempt++) {
+    const now = Date.now();
+    if (await countInWindow(adapter, key, now)) {
+      return;
+    }
+    const row = await adapter.findOne<{ lastRequest: number | bigint }>({
       model: "rateLimit",
       where: [byKey],
+    });
+    if (row === null) {
+      // The first link. A concurrent first link may create the row first: try again.
+      const created = await adapter
+        .create({ model: "rateLimit", data: { key, count: 1, lastRequest: now } })
+        .catch(() => null);
+      if (created !== null) {
+        return;
+      }
+      continue;
+    }
+    if (Number(row.lastRequest) > now - ADDRESS_WINDOW_MS) {
+      break;
+    }
+    // The window is over. Restart it only if no one else has: the update matches
+    // the old start, which a restart changes.
+    const restarted = await adapter.updateMany({
+      model: "rateLimit",
+      where: [byKey, { field: "lastRequest", value: Number(row.lastRequest) }],
       update: { count: 1, lastRequest: now },
     });
-    return;
+    if (restarted === 1) {
+      return;
+    }
   }
   throw new APIError("TOO_MANY_REQUESTS", {
     message: "Too many sign-in links for this address. Try again later.",
@@ -116,7 +142,7 @@ export function createAuth(env: Env, db: Database | Transaction, email: EmailSen
         // The link opens the app's page, which asks first; Better Auth's own link
         // would sign in on a GET, with the token in its query.
         sendMagicLink: async ({ email: address, token }, ctx) => {
-          await refuseFloodedInbox(ctx, address);
+          await refuseFloodedInbox(ctx, address, env.BETTER_AUTH_SECRET);
           await email.sendMagicLink({
             email: address,
             // In the fragment: no request, and so no log, ever carries it.

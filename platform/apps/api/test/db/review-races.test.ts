@@ -7,7 +7,7 @@ import { describe, expect, it } from "vitest";
 import { eraseUser } from "../../scripts/erase-user";
 import { pgRepos } from "../../src/db/repos/index";
 import { pgTenancy } from "../../src/db/tenancy";
-import { actAs, newUser, rolledBack, URLS } from "./connect";
+import { actAs, newUser, rolledBack, TEST_SECRET, URLS } from "./connect";
 import { newEnrollment, newRoute, newSpace, newVersion } from "./fixtures";
 
 // review.submit under concurrency, on Postgres (Platform STEP 2 §4.5): the card is
@@ -95,7 +95,7 @@ describe("review.submit, two at once on one card", () => {
       expect(rebuilt.card.reps).toBe(2);
     } finally {
       await setup.query("begin");
-      await eraseUser(setup, student);
+      await eraseUser(setup, student, TEST_SECRET);
       await setup.query("commit");
       await Promise.all([setup.end(), one.end(), two.end()]);
     }

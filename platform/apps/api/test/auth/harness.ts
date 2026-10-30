@@ -1,6 +1,8 @@
 import { createApp } from "../../src/app";
 import type { MagicLinkMessage } from "../../src/auth/email";
-import { URLS } from "../db/connect";
+import { TEST_SECRET, URLS } from "../db/connect";
+
+export { TEST_SECRET };
 
 // The API as a browser on the app origin reaches it, against the local database:
 // requests go through the Worker's Hono app, with env and ctx as Workers give them.
@@ -18,7 +20,7 @@ export function harness() {
     DB: { connectionString: URLS.app } as Hyperdrive,
     APP_ORIGIN: APP,
     ENVIRONMENT: "test",
-    BETTER_AUTH_SECRET: "test-only-secret-0123456789abcdef0123456789abcdef",
+    BETTER_AUTH_SECRET: TEST_SECRET,
   } as Env;
   const ctx = {
     waitUntil: (promise: Promise<unknown>) => void pending.push(promise),
