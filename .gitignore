@@ -93,3 +93,6 @@ db/*.sqlite3
 
 # Turborepo writes its cache next to the git root when platform/ is run from here.
 /.turbo
+
+# Kamal reads deploy secrets from this file; the committed example shows its shape.
+/.kamal/secrets
