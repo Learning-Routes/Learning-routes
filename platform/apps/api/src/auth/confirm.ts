@@ -1,23 +1,13 @@
 import type { Hono } from "hono";
 import { withClient } from "../db/with-db";
 import { AUTH_PATH, CONFIRM_PATH, createAuth } from "./auth";
-import type { EmailSender } from "./email";
+import { type EmailSender, escapeHtml } from "./email";
 
 // The sign-in link's page (Platform STEP 2 §5.3). A GET only asks "Sign in as …?";
 // the page's form POSTs the token back, and only that signs in. A link scanner, or
 // another site that opens the link, gets the question and nothing more. Better
 // Auth's own verify, which signs in on a GET, answers 404 from outside.
 
-const HTML_ESCAPES: Record<string, string> = {
-  "&": "&amp;",
-  "<": "&lt;",
-  ">": "&gt;",
-  '"': "&quot;",
-  "'": "&#39;",
-};
-const HTML_SPECIAL = /[&<>"']/g;
-const escapeHtml = (text: string) =>
-  text.replace(HTML_SPECIAL, (char) => HTML_ESCAPES[char] ?? char);
 const BASE64_PADDING = /=+$/;
 
 const PAGE_HEADERS = {

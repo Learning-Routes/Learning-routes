@@ -47,6 +47,16 @@ describe("signing in with a link", () => {
     expect(stored).toEqual([]);
   });
 
+  it("writes the email in the language the browser asked in", async () => {
+    const email = randomEmail();
+    const response = await api.call(
+      "/api/auth/sign-in/magic-link",
+      json({ email }, { "accept-language": "fr-CA,fr;q=0.9,en;q=0.5" }),
+    );
+    expect(response.status).toBe(200);
+    expect(api.sent.find((entry) => entry.email === email)?.locale).toBe("fr");
+  });
+
   it("asks on a GET, and signs in nobody: the page posts the token back", async () => {
     const { email, url, token } = await requestLink();
     for (const _ of [1, 2]) {

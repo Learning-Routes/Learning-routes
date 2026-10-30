@@ -1,5 +1,6 @@
 // The minimal build leaves out Kysely, which the Drizzle adapter does not need.
 
+import { negotiateLocale } from "@learning-routes/core/locales";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { APIError } from "better-auth/api";
 import { betterAuth } from "better-auth/minimal";
@@ -110,6 +111,8 @@ export function createAuth(env: Env, db: Database | Transaction, email: EmailSen
     plugins: [
       magicLink({
         storeToken: "hashed",
+        // The email says five minutes.
+        expiresIn: 300,
         // The link opens the app's page, which asks first; Better Auth's own link
         // would sign in on a GET.
         sendMagicLink: async ({ email: address, token }, ctx) => {
@@ -117,6 +120,7 @@ export function createAuth(env: Env, db: Database | Transaction, email: EmailSen
           await email.sendMagicLink({
             email: address,
             url: `${env.APP_ORIGIN}${CONFIRM_PATH}?token=${encodeURIComponent(token)}`,
+            locale: negotiateLocale(ctx?.request?.headers.get("accept-language")),
           });
         },
       }),

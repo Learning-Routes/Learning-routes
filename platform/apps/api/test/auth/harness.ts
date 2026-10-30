@@ -17,7 +17,7 @@ export function harness() {
   const env = {
     DB: { connectionString: URLS.app } as Hyperdrive,
     APP_ORIGIN: APP,
-    EMAIL_DELIVERY: "none",
+    ENVIRONMENT: "test",
     BETTER_AUTH_SECRET: "test-only-secret-0123456789abcdef0123456789abcdef",
   } as Env;
   const ctx = {
