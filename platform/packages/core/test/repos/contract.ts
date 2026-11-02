@@ -209,6 +209,8 @@ export function repositoryContract(name: string, withFixture: WithFixture) {
           ok: false,
           error: "not_found",
         });
+        expect(await repos.routeVersions.latest(spaceId, fields.id)).toBe(1);
+        expect(await repos.routeVersions.latest(spaceId, newId())).toBeNull();
       });
     });
 

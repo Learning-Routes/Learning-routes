@@ -7,13 +7,23 @@ import { SpaceRole } from "../src/domain";
 // The permission table (Platform STEP 2 §3.1), listed in full: every registered
 // action against every role and every way in. A new action fails here until its
 // row is written, and PERMISSIONS does not compile without one.
+const ANY = ["ui", "mcp", "agent"];
+const EVERYONE = { owner: ANY, coeditor: ANY, assistant: ANY, student: ANY };
+const STAFF = { owner: ANY, coeditor: ANY, assistant: ANY };
+const EDITORS = { owner: ANY, coeditor: ANY };
 const EXPECTED: Record<string, Record<string, string[]>> = {
-  "review.submit": {
-    owner: ["ui", "mcp", "agent"],
-    coeditor: ["ui", "mcp", "agent"],
-    assistant: ["ui", "mcp", "agent"],
-    student: ["ui", "mcp", "agent"],
-  },
+  "space.get": EVERYONE,
+  "membership.add": { owner: ["ui"] },
+  "route.create": EDITORS,
+  "route.get": STAFF,
+  "route.list": STAFF,
+  "module.add": EDITORS,
+  "lesson.add": EDITORS,
+  "block.add": EDITORS,
+  "route.publish": EDITORS,
+  "enrollment.create": EVERYONE,
+  "enrollment.upgrade": EVERYONE,
+  "review.submit": EVERYONE,
 };
 
 describe("can(role, action, via)", () => {

@@ -124,8 +124,8 @@ const listRoutes = (db: Db, spaceId: string): Promise<RouteSummary[]> =>
     .orderBy(asc(sql`${routes.slug} collate "C"`));
 
 /**
- * Locks the live route's row at the revision the caller read: a concurrent edit or
- * publish waits here, then sees the new revision and answers conflict.
+ * Locks the live route's row at the revision the caller read: a concurrent edit
+ * waits here, then sees the new revision and answers conflict.
  */
 async function lockDraft(db: Db, where: Where, expected: number): Promise<RepoResult<void>> {
   const [route] = await db

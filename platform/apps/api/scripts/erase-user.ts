@@ -5,7 +5,7 @@
 // accounts, pending sign-in links and the address's sign-in limit) go, in one transaction. The action log and published versions
 // keep the bare id, which then points at no one.
 //
-//   BETTER_AUTH_SECRET=... node scripts/erase-user.ts <user id>
+//   BETTER_AUTH_SECRET=... pnpm db:erase-user <user id>
 import { fileURLToPath } from "node:url";
 import pg from "pg";
 import { emailRateKey } from "../src/auth/rate-key";

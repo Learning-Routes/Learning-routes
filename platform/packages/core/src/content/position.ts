@@ -46,3 +46,24 @@ export function keyBetween(before: string | null, after: string | null): string 
   }
   return midpoint(before ?? "", after);
 }
+
+/**
+ * The key for a new item placed among siblings: after the sibling with id after,
+ * first when after is null, last when it is undefined; null when after names no sibling.
+ */
+export function positionAfter(
+  siblings: readonly { id: string; position: string }[],
+  after: string | null | undefined,
+): string | null {
+  const ordered = [...siblings].sort((a, b) => (a.position < b.position ? -1 : 1));
+  const index =
+    after === undefined
+      ? ordered.length - 1
+      : after === null
+        ? -1
+        : ordered.findIndex((item) => item.id === after);
+  if (after != null && index === -1) {
+    return null;
+  }
+  return keyBetween(ordered[index]?.position ?? null, ordered[index + 1]?.position ?? null);
+}
