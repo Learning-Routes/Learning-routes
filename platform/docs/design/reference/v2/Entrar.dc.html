@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Entrar</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&amp;family=DM+Mono:wght@400;500&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;font-family:"Archivo",system-ui,sans-serif;color:#1D1226}
+a{color:#57248A}a:hover{color:#3E1866}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #F5F2F6; padding: 20px 24px 32px; display: flex; flex-direction: column; font-family: Archivo, system-ui, sans-serif">
+<a href="Main.dc.html" style="display: flex; align-items: center; gap: 10px; text-decoration: none; color: #1D1226; min-height: 44px">
+<svg width="26" height="26" viewBox="0 0 28 28" aria-hidden="true"><rect width="28" height="28" rx="7" fill="#6A2EA0"></rect><path d="M7 20 C 12 20, 12 9, 21 8" stroke="#FFFFFF" stroke-width="2.4" fill="none" stroke-linecap="round"></path><circle cx="21" cy="8" r="2.6" fill="#E79A0F"></circle></svg>
+<span style="font-weight: 700; font-size: 16px">Learning Routes</span>
+</a>
+
+<div style="flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 28px">
+<div style="display: flex; flex-direction: column; gap: 12px">
+<h1 style="margin: 0; font-size: 44px; line-height: 0.98; font-weight: 800; font-stretch: 106%; letter-spacing: -0.035em">Entra a tu ruta.</h1>
+<p style="margin: 0; font-size: 17px; line-height: 1.5; color: #4A3D54">Te enviamos un enlace a tu correo. Sin contraseñas.</p>
+</div>
+
+<form style="display: flex; flex-direction: column; gap: 16px">
+<div style="display: flex; flex-direction: column; gap: 8px">
+<label for="email" style="font-size: 15px; font-weight: 600">Tu correo</label>
+<input id="email" type="email" autocomplete="email" placeholder="nombre@correo.com" style="height: 52px; box-sizing: border-box; border: 1.5px solid #857A8D; border-radius: 12px; background: #FFFFFF; padding: 0 16px; font-size: 17px; font-family: Archivo, sans-serif; color: #1D1226; outline-offset: 3px">
+</div>
+<a href="Revisa.dc.html" style="height: 52px; display: flex; align-items: center; justify-content: center; background: #6A2EA0; color: #FFFFFF; text-decoration: none; font-weight: 700; font-size: 17px; border-radius: 10px; box-shadow: inset 0 1px 0 rgba(255,255,255,0.22), 0 3px 0 0 #42185F, 0 8px 16px -8px rgba(106,46,160,0.7)">Enviar enlace</a>
+</form>
+
+<p style="margin: 0; font-size: 14px; color: #4A3D54; line-height: 1.5">¿Primera vez? Es lo mismo: el enlace crea tu cuenta. El primer módulo es gratis.</p>
+</div>
+
+<p style="margin: 0; font-size: 13px; color: #73667C; line-height: 1.5">Al entrar aceptas los <a href="#">Términos</a> y la <a href="#">Privacidad</a>.</p>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Panel de operador</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&amp;family=DM+Mono:wght@400;500&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#F5F2F6;font-family:"Archivo",system-ui,sans-serif;color:#1D1226}
+a{color:#57248A}a:hover{color:#3E1866}
+</style>
+</helmet>
+<div style="min-height: 100vh; background: #F5F2F6; font-family: Archivo, system-ui, sans-serif; color: #1D1226; display: flex; flex-wrap: wrap">
+<nav aria-label="Operador" style="flex: 1 1 220px; max-width: 260px; min-width: 0; background: #1D1226; color: #F5F2F6; padding: 24px 16px; display: flex; flex-direction: column; gap: 6px">
+<div style="display: flex; align-items: center; gap: 10px; padding: 0 8px 18px">
+<svg width="26" height="26" viewBox="0 0 28 28" aria-hidden="true"><rect width="28" height="28" rx="7" fill="#6A2EA0"></rect><path d="M7 20 C 12 20, 12 9, 21 8" stroke="#FFFFFF" stroke-width="2.4" fill="none" stroke-linecap="round"></path><circle cx="21" cy="8" r="2.6" fill="#E79A0F"></circle></svg>
+<span style="font-weight: 700">Operador</span>
+</div>
+<a href="#" aria-current="page" style="min-height: 44px; display: flex; align-items: center; justify-content: space-between; padding: 0 12px; border-radius: 10px; background: #2A1E36; color: #FFFFFF; text-decoration: none; font-weight: 600">Solicitudes <span style="font-family: 'DM Mono', monospace; font-size: 12px; background: #E79A0F; color: #1D1226; border-radius: 6px; padding: 1px 7px">3</span></a>
+<a href="#" style="min-height: 44px; display: flex; align-items: center; justify-content: space-between; padding: 0 12px; border-radius: 10px; color: #E6DDEC; text-decoration: none">Catálogo <span style="font-family: 'DM Mono', monospace; font-size: 12px; color: #CFC4D8">2 por revisar</span></a>
+<a href="#" style="min-height: 44px; display: flex; align-items: center; padding: 0 12px; border-radius: 10px; color: #E6DDEC; text-decoration: none">Creadores</a>
+<a href="#" style="min-height: 44px; display: flex; align-items: center; padding: 0 12px; border-radius: 10px; color: #E6DDEC; text-decoration: none">Pagos</a>
+</nav>
+
+<main style="flex: 999 1 600px; min-width: 0; padding: 32px; display: flex; flex-direction: column; gap: 20px">
+<div style="display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap; gap: 8px">
+<h1 style="margin: 0; font-size: 40px; font-weight: 800; font-stretch: 106%; letter-spacing: -0.03em; line-height: 1">Quieren enseñar</h1>
+<span style="font-size: 15px; color: #4A3D54">3 nuevas. Las más antiguas, primero.</span>
+</div>
+
+<div style="display: flex; flex-direction: column; gap: 12px">
+<sc-for list="{{requests}}" as="q" hint-placeholder-count="3">
+<article style="background: #FFFFFF; border-radius: 18px; padding: 20px 22px; box-shadow: inset 0 0 0 1px #E4DCE8, 0 8px 0 -1px #DED3E3, 0 8px 0 0 #D1C5D7; display: flex; flex-wrap: wrap; gap: 16px; align-items: center">
+<span style="width: 48px; height: 48px; border-radius: 50%; background: #F0E5F8; color: #57248A; font-weight: 800; font-size: 18px; display: flex; align-items: center; justify-content: center">{{q.initial}}</span>
+<div style="flex: 1 1 320px; min-width: 0; display: flex; flex-direction: column; gap: 4px">
+<span style="font-size: 18px; font-weight: 700">{{q.name}}</span>
+<span style="font-size: 15px; color: #4A3D54">{{q.topic}}</span>
+<span style="font-size: 14px; color: #4A3D54">Le siguen en {{q.where}}. Escribió hace {{q.age}}.</span>
+</div>
+<div style="display: flex; gap: 10px">
+<button style="height: 44px; padding: 0 16px; border-radius: 10px; border: 1.5px solid #D1C5D7; background: #FFFFFF; font-family: Archivo, sans-serif; font-size: 15px; font-weight: 600; color: #1D1226">Responder</button>
+<button style="height: 44px; padding: 0 18px; border-radius: 10px; border: none; background: #6A2EA0; color: #FFFFFF; font-family: Archivo, sans-serif; font-size: 15px; font-weight: 700">Invitar</button>
+</div>
+</article>
+</sc-for>
+</div>
+
+<section style="display: flex; flex-direction: column; gap: 12px; margin-top: 12px">
+<h2 style="margin: 0; font-size: 24px; font-weight: 800; letter-spacing: -0.02em">Pidieron entrar al catálogo</h2>
+<div style="background: #FFFFFF; border-radius: 18px; box-shadow: inset 0 0 0 1px #E4DCE8; overflow-x: auto">
+<table style="width: 100%; border-collapse: collapse; font-size: 15px; min-width: 640px">
+<thead><tr style="text-align: left; color: #4A3D54; font-size: 13px; font-family: 'DM Mono', monospace"><th style="padding: 14px 20px; font-weight: 500">Ruta</th><th style="padding: 14px 20px; font-weight: 500">Creador</th><th style="padding: 14px 20px; font-weight: 500">Idioma</th><th style="padding: 14px 20px; font-weight: 500"></th></tr></thead>
+<tbody>
+<tr style="border-top: 1px solid #E4DCE8"><td style="padding: 14px 20px; font-weight: 600">Portugués para el trabajo</td><td style="padding: 14px 20px">Mariana Ortega</td><td style="padding: 14px 20px">Español</td><td style="padding: 14px 20px; text-align: right"><a href="Ruta.dc.html">Revisar</a></td></tr>
+<tr style="border-top: 1px solid #E4DCE8"><td style="padding: 14px 20px; font-weight: 600">Guitarra desde cero</td><td style="padding: 14px 20px">Andrés Mora</td><td style="padding: 14px 20px">Español</td><td style="padding: 14px 20px; text-align: right"><a href="Ruta.dc.html">Revisar</a></td></tr>
+</tbody>
+</table>
+</div>
+</section>
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+renderVals() {
+return {
+requests: [
+{ name: 'Profe Tomás', initial: 'T', topic: 'Cálculo y álgebra para colegio y universidad', where: 'YouTube', age: '3 días' },
+{ name: 'Lucía Vega', initial: 'L', topic: 'Inglés para el trabajo', where: 'Instagram', age: '1 día' },
+{ name: 'Diego Ramos', initial: 'D', topic: 'Programación web para principiantes', where: 'Su web', age: '5 horas' }
+]
+};
+}
+}
+</script>
+</body>
+</html>

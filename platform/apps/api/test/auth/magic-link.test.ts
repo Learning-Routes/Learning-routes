@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from "vitest";
-import { screenAfterConfirm } from "../../src/auth/confirm";
+import { maskAddress, screenAfterConfirm } from "../../src/auth/confirm";
 import { query, URLS } from "../db/connect";
 import { APP, harness, json, randomEmail, randomIp } from "./harness";
 
@@ -14,6 +14,7 @@ const EXACT_SESSION_COOKIE =
 const UUID_V7 = /^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
 const PADDING = /=+$/;
 const PEEK_MAX = 30;
+const PEEK_TOKEN_MAX = 10;
 const api = harness();
 afterEach(() => api.settle());
 
@@ -98,30 +99,59 @@ describe("signing in with a link", () => {
     expect(scanner.headers.getSetCookie()).toEqual([]);
   });
 
-  it("says which address a link signs in, without using it up", async () => {
+  it("says which address a link signs in, masked, without using it up", async () => {
     const { email, token } = await requestLink();
     for (const _ of [1, 2]) {
       const peeked = await peek(token);
       expect(peeked.status).toBe(200);
-      expect(await peeked.json()).toEqual({ email });
+      const body = await peeked.json();
+      expect(body).toEqual({ email: `${email.slice(0, 2)}•••@example.com` });
+      expect(JSON.stringify(body)).not.toContain(email);
       expect(peeked.headers.getSetCookie()).toEqual([]);
+      expect(peeked.headers.get("cache-control")).toBe("no-store");
     }
     expect(sessionCookie(await confirm(token))).toBeDefined();
     expect((await peek(token)).status).toBe(404);
   });
 
-  it("names no address for an unknown or expired token, or a request that is not one", async () => {
-    expect((await peek(crypto.randomUUID())).status).toBe(404);
-    const { token } = await requestLink();
-    const expired = await query(
+  it("masks an address to its first two characters and its whole domain", () => {
+    expect(maskAddress("lector@example.com")).toBe("le•••@example.com");
+    expect(maskAddress("ab@example.com")).toBe("ab•••@example.com");
+    expect(maskAddress("a@example.com")).toBe("a•••@example.com");
+    expect(maskAddress("a@b@example.com")).toBe("a@•••@example.com");
+  });
+
+  it("answers the same for an unknown, an expired and a used token", async () => {
+    const expired = await requestLink();
+    const rows = await query(
       URLS.migrator,
       "update verification set expires_at = now() - interval '1 minute' where identifier = $1 returning 1",
-      [`magic-link:${await identifierOf(token)}`],
+      [`magic-link:${await identifierOf(expired.token)}`],
     );
-    expect(expired).toHaveLength(1);
-    expect((await peek(token)).status).toBe(404);
+    expect(rows).toHaveLength(1);
+    const used = await requestLink();
+    expect(sessionCookie(await confirm(used.token))).toBeDefined();
+
+    const answers = await Promise.all(
+      [crypto.randomUUID(), expired.token, used.token].map(async (token) => {
+        const response = await peek(token);
+        return {
+          status: response.status,
+          body: await response.text(),
+          headers: [...response.headers.entries()],
+        };
+      }),
+    );
+    expect(answers[0]?.status).toBe(404);
+    expect(answers[0]?.headers).toContainEqual(["cache-control", "no-store"]);
+    expect(answers[1]).toEqual(answers[0]);
+    expect(answers[2]).toEqual(answers[0]);
+  });
+
+  it("does not cache a request that is not a lookup", async () => {
     const notJson = await api.call("/api/auth/magic-link/peek", json({ nothing: true }));
     expect(notJson.status).toBe(400);
+    expect(notJson.headers.get("cache-control")).toBe("no-store");
   });
 
   it("limits how often one client can look a link up, and counts each client apart", async () => {
@@ -129,14 +159,29 @@ describe("signing in with a link", () => {
     const lookups = Array.from({ length: PEEK_MAX + 5 }, () =>
       api.call("/api/auth/magic-link/peek", { ...json({ token: crypto.randomUUID() }), ip }),
     );
-    const statuses = (await Promise.all(lookups)).map((response) => response.status);
+    const responses = await Promise.all(lookups);
+    const statuses = responses.map((response) => response.status);
     expect(statuses.filter((status) => status === 404).length).toBeLessThanOrEqual(PEEK_MAX);
     expect(statuses.filter((status) => status === 429).length).toBeGreaterThan(0);
+    const limited = responses.find((response) => response.status === 429);
+    expect(limited?.headers.get("cache-control")).toBe("no-store");
     const another = await api.call("/api/auth/magic-link/peek", {
       ...json({ token: crypto.randomUUID() }),
       ip: randomIp(),
     });
     expect(another.status).toBe(404);
+  });
+
+  it("limits how often one token can be looked up, from any client, known or not", async () => {
+    for (const token of [(await requestLink()).token, crypto.randomUUID()]) {
+      const responses = [];
+      // One at a time, each from a new client, so only the token's own limit can answer.
+      for (let lookup = 0; lookup < PEEK_TOKEN_MAX; lookup++) {
+        responses.push((await peek(token)).status);
+      }
+      expect(responses).not.toContain(429);
+      expect((await peek(token)).status).toBe(429);
+    }
   });
 
   it("signs in on the POST, once, with an exact __Host- session cookie and a uuidv7 user", async () => {

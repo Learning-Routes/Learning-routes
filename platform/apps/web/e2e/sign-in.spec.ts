@@ -4,6 +4,7 @@ import { expect, test } from "@playwright/test";
 // The app's origin in these runs is port 4174, which keeps the theme cookie.
 const DEV = "http://localhost:4174";
 const EMAIL = "lector@example.com";
+const MASKED = "le•••@example.com";
 const LINK = `${DEV}/sign-in/confirm#token=a-token`;
 const NO_TOKEN_IN_URL = /a-token/;
 
@@ -93,7 +94,7 @@ for (const [notice, text] of [
   });
 }
 
-test("the link shows the address the API names, keeps the token out of the URL, and has one POST button", async ({
+test("the link shows the masked address the API names, keeps the token out of the URL, and has one POST button", async ({
   page,
 }) => {
   const seen: string[] = [];
@@ -101,11 +102,11 @@ test("the link shows the address the API names, keeps the token out of the URL, 
   let peeked = "";
   await page.route("**/api/auth/magic-link/peek", (route) => {
     peeked = route.request().postData() ?? "";
-    return route.fulfill({ json: { email: EMAIL } });
+    return route.fulfill({ json: { email: MASKED } });
   });
   const response = await page.goto(LINK);
   expect(response?.headers()["referrer-policy"]).toBe("same-origin");
-  await expect(page.getByRole("heading", { name: `Entrar como ${EMAIL}` })).toBeFocused();
+  await expect(page.getByRole("heading", { name: `Entrar como ${MASKED}` })).toBeFocused();
   expect(peeked).toContain("a-token");
   expect(page.url()).not.toMatch(NO_TOKEN_IN_URL);
   for (const url of seen) {
