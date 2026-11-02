@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Landing de New Learning Routes</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#F5F2F6;font-family:"Archivo",system-ui,sans-serif;color:#1D1226}
+a{color:#57248A}a:hover{color:#3E1866}
+</style>
+</helmet>
+<div style="min-height: 100vh; background: #F5F2F6; font-family: Archivo, system-ui, sans-serif; color: #1D1226; font-variant-numeric: tabular-nums">
+
+<header style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; padding: 20px 40px">
+<a href="Main.dc.html" style="display: flex; align-items: center; gap: 12px; text-decoration: none; color: #1D1226">
+<svg width="30" height="30" viewBox="0 0 28 28" aria-hidden="true"><rect width="28" height="28" rx="8" fill="#1D1226"></rect><path d="M7 20 C 12 20, 12 9, 21 8" stroke="#FFFFFF" stroke-width="2.4" fill="none" stroke-linecap="round"></path><circle cx="21" cy="8" r="2.8" fill="#E79A0F"></circle></svg>
+<span style="font-weight: 800; font-size: 18px; font-stretch: 110%; letter-spacing: -0.01em">Learning Routes</span>
+</a>
+<nav style="display: flex; align-items: center; gap: 28px; flex-wrap: wrap; font-size: 16px">
+<a href="Catalogo.dc.html" style="color: #1D1226; text-decoration: none">Explorar rutas</a>
+<a href="Ensenar.dc.html" style="color: #1D1226; text-decoration: none">Enseñar</a>
+<a href="Entrar.dc.html" style="color: #1D1226; text-decoration: none; font-weight: 700">Entrar</a>
+</nav>
+</header>
+
+<section style="max-width: 1360px; margin: 0 auto; padding: 40px 40px 24px; display: flex; flex-wrap: wrap; gap: 24px; align-items: center">
+<div style="flex: 1 1 520px; min-width: 0; display: flex; flex-direction: column; gap: 28px">
+<h1 style="margin: 0; font-size: clamp(54px, 8vw, 118px); line-height: 0.9; font-weight: 800; font-stretch: 118%; letter-spacing: -0.045em">Aprende con quien mejor lo enseña.</h1>
+<p style="margin: 0; font-size: 21px; line-height: 1.5; color: #4A3D54; max-width: 34ch">Cada ruta es un camino claro, armado por alguien que enseña ese tema. Avanzas un tema a la vez, y el primer módulo es gratis.</p>
+<div style="display: flex; align-items: center; gap: 24px; flex-wrap: wrap">
+<a href="Catalogo.dc.html" style="background: #6A2EA0; color: #FFFFFF; text-decoration: none; font-weight: 700; font-size: 19px; padding: 18px 28px; border-radius: 12px; box-shadow: 0 4px 0 0 #42185F">Explorar rutas</a>
+<a href="Ensenar.dc.html" style="font-size: 17px; font-weight: 600">¿Enseñas algo? Crea tu ruta</a>
+</div>
+</div>
+
+<figure style="flex: 1 1 520px; min-width: 0; margin: 0">
+<svg viewBox="0 0 600 600" style="width: 100%; height: auto; display: block" role="img" aria-label="Una ruta: tres temas hechos, el tema actual en dorado y los siguientes por recorrer, con una parada de práctica extra">
+<path d="M70 560 C 70 470, 210 470, 230 400 S 120 290, 210 230 S 430 230, 450 150 S 380 60, 520 40" stroke="#E4DCE8" stroke-width="26" fill="none" stroke-linecap="round"></path>
+<path d="M70 560 C 70 470, 210 470, 230 400 S 120 290, 210 230" stroke="#6A2EA0" stroke-width="10" fill="none" stroke-linecap="round"></path>
+<path d="M210 230 S 430 230, 450 150 S 380 60, 520 40" stroke="#C9BBD3" stroke-width="5" fill="none" stroke-linecap="round" stroke-dasharray="2 14"></path>
+<path d="M230 400 C 300 410, 330 380, 360 352" stroke="#117F3A" stroke-width="4" fill="none" stroke-linecap="round" stroke-dasharray="2 9"></path>
+<circle cx="70" cy="560" r="16" fill="#117F3A"></circle>
+<path d="M62 560 l6 6 l11 -12" stroke="#FFFFFF" stroke-width="3.5" fill="none" stroke-linecap="round" stroke-linejoin="round"></path>
+<circle cx="230" cy="400" r="16" fill="#117F3A"></circle>
+<path d="M222 400 l6 6 l11 -12" stroke="#FFFFFF" stroke-width="3.5" fill="none" stroke-linecap="round" stroke-linejoin="round"></path>
+<circle cx="360" cy="352" r="11" fill="#FFFFFF" stroke="#117F3A" stroke-width="3"></circle>
+<circle cx="210" cy="230" r="34" fill="#E79A0F" fill-opacity="0.16"></circle>
+<circle cx="210" cy="230" r="20" fill="#FFFFFF" stroke="#E79A0F" stroke-width="6"></circle>
+<circle cx="450" cy="150" r="14" fill="#FFFFFF" stroke="#C9BBD3" stroke-width="4"></circle>
+<rect x="502" y="22" width="36" height="36" rx="6" transform="rotate(45 520 40)" fill="#1D1226"></rect>
+<text x="252" y="222" font-family="Archivo, sans-serif" font-size="22" font-weight="800" fill="#1D1226">Estás aquí</text>
+<text x="252" y="248" font-family="Archivo, sans-serif" font-size="17" fill="#4A3D54">Tema 3: Ser y estar</text>
+<text x="378" y="358" font-family="Archivo, sans-serif" font-size="15" fill="#117F3A">Práctica extra</text>
+<text x="418" y="92" font-family="Archivo, sans-serif" font-size="15" fill="#4A3D54" text-anchor="end">Examen</text>
+<text x="100" y="566" font-family="Archivo, sans-serif" font-size="15" fill="#4A3D54">Saludos</text>
+</svg>
+</figure>
+</section>
+
+<section style="max-width: 1360px; margin: 0 auto; padding: 56px 40px 24px">
+<h2 style="margin: 0 0 32px; font-size: clamp(34px, 4vw, 56px); font-weight: 800; font-stretch: 112%; letter-spacing: -0.035em; line-height: 1">Así se recorre una ruta</h2>
+<ol style="margin: 0; padding: 0; list-style: none; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 32px; border-top: 3px solid #1D1226">
+<li style="padding-top: 24px; display: flex; flex-direction: column; gap: 10px">
+<span style="font-size: 40px; font-weight: 800; font-stretch: 118%; color: #6A2EA0">1</span>
+<h3 style="margin: 0; font-size: 24px; font-weight: 800; letter-spacing: -0.015em">Elige con quién aprender</h3>
+<p style="margin: 0; font-size: 17px; line-height: 1.55; color: #4A3D54; max-width: 36ch">Cada ruta la arma alguien que enseña ese tema. Ves sus módulos antes de empezar.</p>
+</li>
+<li style="padding-top: 24px; display: flex; flex-direction: column; gap: 10px">
+<span style="font-size: 40px; font-weight: 800; font-stretch: 118%; color: #6A2EA0">2</span>
+<h3 style="margin: 0; font-size: 24px; font-weight: 800; letter-spacing: -0.015em">Avanza un tema a la vez</h3>
+<p style="margin: 0; font-size: 17px; line-height: 1.55; color: #4A3D54; max-width: 36ch">Lees, practicas y respondes una pregunta. Si algo cuesta, aparece práctica extra justo ahí.</p>
+</li>
+<li style="padding-top: 24px; display: flex; flex-direction: column; gap: 10px">
+<span style="font-size: 40px; font-weight: 800; font-stretch: 118%; color: #6A2EA0">3</span>
+<h3 style="margin: 0; font-size: 24px; font-weight: 800; letter-spacing: -0.015em">Cierra cada módulo con un examen</h3>
+<p style="margin: 0; font-size: 17px; line-height: 1.55; color: #4A3D54; max-width: 36ch">Confirmas lo que sabes y sigues. El primer módulo es gratis; pagas solo si quieres seguir.</p>
+</li>
+</ol>
+</section>
+
+<section style="max-width: 1360px; margin: 0 auto; padding: 64px 40px 24px; display: flex; flex-direction: column; gap: 24px">
+<div style="display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap; gap: 12px">
+<h2 style="margin: 0; font-size: clamp(34px, 4vw, 56px); font-weight: 800; font-stretch: 112%; letter-spacing: -0.035em; line-height: 1">Rutas para empezar</h2>
+<a href="Catalogo.dc.html" style="font-size: 17px; font-weight: 600">Ver todas las rutas</a>
+</div>
+<div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px">
+<a href="Ruta.dc.html" style="text-decoration: none; color: #1D1226; background: #FFFFFF; border-radius: 20px; padding: 24px; display: flex; flex-direction: column; gap: 14px; box-shadow: inset 0 0 0 1px #E4DCE8">
+<svg viewBox="0 0 300 90" style="width: 100%; height: auto" aria-hidden="true"><path d="M10 70 C 60 70, 70 30, 120 34 S 190 70, 230 40 S 270 14, 290 18" stroke="#6A2EA0" stroke-width="6" fill="none" stroke-linecap="round"></path><circle cx="10" cy="70" r="7" fill="#6A2EA0"></circle><circle cx="120" cy="34" r="7" fill="#FFFFFF" stroke="#6A2EA0" stroke-width="3"></circle><circle cx="230" cy="40" r="7" fill="#FFFFFF" stroke="#6A2EA0" stroke-width="3"></circle><rect x="282" y="10" width="16" height="16" rx="3" transform="rotate(45 290 18)" fill="#1D1226"></rect></svg>
+<h3 style="margin: 0; font-size: 24px; font-weight: 800; letter-spacing: -0.015em">Portugués para viajar</h3>
+<p style="margin: 0; font-size: 16px; color: #4A3D54">Con Mariana Ortega. 3 módulos, 14 temas.</p>
+</a>
+<a href="Ruta.dc.html" style="text-decoration: none; color: #1D1226; background: #FFFFFF; border-radius: 20px; padding: 24px; display: flex; flex-direction: column; gap: 14px; box-shadow: inset 0 0 0 1px #E4DCE8">
+<svg viewBox="0 0 300 90" style="width: 100%; height: auto" aria-hidden="true"><path d="M10 20 C 50 20, 40 70, 90 70 S 130 20, 170 22 S 220 72, 250 66 S 280 40, 290 40" stroke="#2C5F8E" stroke-width="6" fill="none" stroke-linecap="round"></path><circle cx="10" cy="20" r="7" fill="#2C5F8E"></circle><circle cx="90" cy="70" r="7" fill="#FFFFFF" stroke="#2C5F8E" stroke-width="3"></circle><circle cx="170" cy="22" r="7" fill="#FFFFFF" stroke="#2C5F8E" stroke-width="3"></circle><circle cx="250" cy="66" r="7" fill="#FFFFFF" stroke="#2C5F8E" stroke-width="3"></circle><rect x="282" y="32" width="16" height="16" rx="3" transform="rotate(45 290 40)" fill="#1D1226"></rect></svg>
+<h3 style="margin: 0; font-size: 24px; font-weight: 800; letter-spacing: -0.015em">Cálculo sin miedo</h3>
+<p style="margin: 0; font-size: 16px; color: #4A3D54">Con Profe Tomás. 6 módulos, 41 temas.</p>
+</a>
+<a href="Ruta.dc.html" style="text-decoration: none; color: #1D1226; background: #FFFFFF; border-radius: 20px; padding: 24px; display: flex; flex-direction: column; gap: 14px; box-shadow: inset 0 0 0 1px #E4DCE8">
+<svg viewBox="0 0 300 90" style="width: 100%; height: auto" aria-hidden="true"><path d="M10 50 C 40 10, 80 10, 110 50 S 180 88, 210 50 S 270 12, 290 30" stroke="#127C76" stroke-width="6" fill="none" stroke-linecap="round"></path><circle cx="10" cy="50" r="7" fill="#127C76"></circle><circle cx="110" cy="50" r="7" fill="#FFFFFF" stroke="#127C76" stroke-width="3"></circle><circle cx="210" cy="50" r="7" fill="#FFFFFF" stroke="#127C76" stroke-width="3"></circle><rect x="282" y="22" width="16" height="16" rx="3" transform="rotate(45 290 30)" fill="#1D1226"></rect></svg>
+<h3 style="margin: 0; font-size: 24px; font-weight: 800; letter-spacing: -0.015em">Guitarra desde cero</h3>
+<p style="margin: 0; font-size: 16px; color: #4A3D54">Con Andrés Mora. 4 módulos, 18 temas.</p>
+</a>
+</div>
+</section>
+
+<section style="max-width: 1360px; margin: 0 auto; padding: 72px 40px 96px">
+<div style="background: #1D1226; color: #F5F2F6; border-radius: 28px; padding: 64px; display: flex; flex-wrap: wrap; gap: 40px; align-items: flex-end; justify-content: space-between; overflow: hidden; position: relative">
+<svg viewBox="0 0 600 200" style="position: absolute; right: -40px; top: -20px; width: 640px; height: auto; opacity: 0.5" aria-hidden="true"><path d="M0 180 C 120 180, 160 60, 300 70 S 480 160, 600 20" stroke="#6A2EA0" stroke-width="14" fill="none" stroke-linecap="round"></path></svg>
+<div style="flex: 1 1 460px; min-width: 0; display: flex; flex-direction: column; gap: 16px; position: relative">
+<h2 style="margin: 0; font-size: clamp(36px, 4.4vw, 64px); font-weight: 800; font-stretch: 114%; letter-spacing: -0.04em; line-height: 0.95">¿Enseñas algo que sabes bien?</h2>
+<p style="margin: 0; color: #CFC4D8; font-size: 19px; line-height: 1.55; max-width: 44ch">Conviértelo en una ruta con tu propia página, y véndela a tus alumnos. Un asistente te ayuda a armarla y tú decides cada paso.</p>
+</div>
+<div style="display: flex; flex-direction: column; gap: 10px; align-items: flex-start; position: relative">
+<a href="Ensenar.dc.html" style="background: #F5F2F6; color: #1D1226; text-decoration: none; font-weight: 700; font-size: 19px; padding: 18px 28px; border-radius: 12px">Quiero enseñar</a>
+<span style="font-size: 15px; color: #CFC4D8">Por ahora entramos por invitación.</span>
+</div>
+</div>
+</section>
+
+<footer style="max-width: 1360px; margin: 0 auto; padding: 28px 40px 48px; border-top: 1px solid #DED3E3; display: flex; flex-wrap: wrap; gap: 24px; justify-content: space-between; color: #4A3D54; font-size: 15px">
+<span>Learning Routes</span>
+<nav style="display: flex; gap: 24px; flex-wrap: wrap">
+<a href="#" style="color: #4A3D54">Privacidad</a>
+<a href="#" style="color: #4A3D54">Términos</a>
+<a href="#" style="color: #4A3D54">Español</a>
+</nav>
+</footer>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":2280}}'>
+class Component extends DCLogic {
+renderVals() { return {}; }
+}
+</script>
+</body>
+</html>
