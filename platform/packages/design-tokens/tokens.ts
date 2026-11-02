@@ -2,7 +2,7 @@
 // CSS (canvas, SVG built in script). test/tokens.test.ts keeps the two equal.
 
 export const light = {
-  "--font-sans": '"Archivo", system-ui, -apple-system, "Segoe UI", sans-serif',
+  "--font-sans": '"Archivo", "Archivo Fallback", system-ui, -apple-system, "Segoe UI", sans-serif',
   "--font-mono": '"DM Mono", monospace',
   "--color-bg": "#F5F2F6",
   "--color-card": "#FFFFFF",
@@ -152,6 +152,9 @@ export const light = {
   "--z-raised": "10",
   "--z-header": "50",
   "--z-overlay": "100",
+  "--gradient-stage":
+    "radial-gradient(120% 90% at 50% 30%, var(--color-stage-hi) 0%, var(--color-bg) 58%, var(--color-bg-2) 100%)",
+  "--color-stage-hi": "#FFFFFF",
   "--size-touch": "44px",
   "--size-control": "48px",
   "--size-header": "64px",
@@ -242,5 +245,6 @@ export const dark: Partial<Record<TokenName, string>> = {
   "--color-motion-hi": "#6B5418",
   "--color-motion-hi2": "#2A5F7D",
   "--color-accent-strong": "#D9C0F7",
+  "--color-stage-hi": "#2A1D38",
   "--color-field-border": "#8A7799",
 };

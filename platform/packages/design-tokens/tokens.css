@@ -7,16 +7,27 @@
 
 @font-face {
   font-family: "Archivo";
-  src: url("./fonts/Archivo[wdth,wght].ttf") format("truetype");
-  font-weight: 100 900;
-  font-stretch: 62% 125%;
+  src: url("./fonts/Archivo-latin.woff2") format("woff2");
+  font-weight: 400 800;
+  font-stretch: 100% 125%;
   font-style: normal;
   font-display: swap;
 }
 
+/* Arial, sized to Archivo's metrics: the hero text never waits for the font, and the
+   swap barely moves it. */
+@font-face {
+  font-family: "Archivo Fallback";
+  src: local("Arial"), local("Helvetica");
+  size-adjust: 104%;
+  ascent-override: 84.4%;
+  descent-override: 20.2%;
+  line-gap-override: 0%;
+}
+
 @font-face {
   font-family: "DM Mono";
-  src: url("./fonts/DMMono-Regular.ttf") format("truetype");
+  src: url("./fonts/DMMono-Regular-latin.woff2") format("woff2");
   font-weight: 400;
   font-style: normal;
   font-display: swap;
@@ -24,7 +35,7 @@
 
 @font-face {
   font-family: "DM Mono";
-  src: url("./fonts/DMMono-Medium.ttf") format("truetype");
+  src: url("./fonts/DMMono-Medium-latin.woff2") format("woff2");
   font-weight: 500;
   font-style: normal;
   font-display: swap;
@@ -32,7 +43,7 @@
 
 :root {
   /* --- Typography --- */
-  --font-sans: "Archivo", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-sans: "Archivo", "Archivo Fallback", system-ui, -apple-system, "Segoe UI", sans-serif;
   --font-mono: "DM Mono", monospace;
 
   /* --- Colors: Light theme (Ciruela, STEP 41 §1.1) --- */
@@ -243,6 +254,8 @@
   --z-raised: 10;
   --z-header: 50;
   --z-overlay: 100;
+  --gradient-stage: radial-gradient(120% 90% at 50% 30%, var(--color-stage-hi) 0%, var(--color-bg) 58%, var(--color-bg-2) 100%);
+  --color-stage-hi: #FFFFFF;
   --size-touch: 44px;
   --size-control: 48px;
   --size-header: 64px;
@@ -251,6 +264,7 @@
 
 html[data-theme="dark"] {
   --color-accent-strong: #D9C0F7;
+  --color-stage-hi: #2A1D38;
   --color-field-border: #8A7799;
   /* Journey level colours, dark theme (WP-37 §3.6). */
   --color-node-nv1: #7CC4A0;
@@ -352,6 +366,8 @@ html[data-theme="dark"] {
 @media (prefers-color-scheme: dark) {
   html:not([data-theme]) {
     --color-accent-strong: #D9C0F7;
+    --color-stage-hi: #2A1D38;
+  --color-stage-hi: #2A1D38;
     --color-field-border: #8A7799;
       --color-node-nv1: #7CC4A0;
     --color-node-nv2: #8DB6E0;

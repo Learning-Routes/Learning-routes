@@ -1,0 +1,11 @@
+{
+  "extends": "./tsconfig.cloudflare.json",
+  "include": ["scripts/**/*", "app/landing/route-map-figure.tsx"],
+  "compilerOptions": {
+    "composite": false,
+    "incremental": false,
+    "noEmit": true,
+    "types": ["node"],
+    "lib": ["ES2022", "DOM"]
+  }
+}

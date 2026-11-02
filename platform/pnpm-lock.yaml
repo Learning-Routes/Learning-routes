@@ -86,6 +86,9 @@ importers:
       '@learning-routes/design-tokens':
         specifier: workspace:*
         version: link:../../packages/design-tokens
+      '@learning-routes/route-map':
+        specifier: workspace:*
+        version: link:../../packages/route-map
       isbot:
         specifier: 5.2.2
         version: 5.2.2
@@ -123,6 +126,9 @@ importers:
       size-limit:
         specifier: 14.2.0
         version: 14.2.0
+      tsx:
+        specifier: 4.23.15
+        version: 4.23.15
       typescript:
         specifier: 5.9.3
         version: 5.9.3
