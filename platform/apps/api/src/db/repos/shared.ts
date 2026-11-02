@@ -62,7 +62,9 @@ export async function underSavepoint<T>(db: Db, work: () => Promise<T>): Promise
     await db.execute(sql`release savepoint unit`);
     return result;
   } catch (error) {
+    // A savepoint survives its rollback; left alive, an outer rollback by this name stops here.
     await db.execute(sql`rollback to savepoint unit`);
+    await db.execute(sql`release savepoint unit`);
     throw error;
   }
 }
