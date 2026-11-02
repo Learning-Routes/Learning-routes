@@ -42,11 +42,11 @@ export const LANDING_TEXT: Record<LocaleCode, LandingText> = {
       },
       {
         title: "Un tema a la vez",
-        body: "Lees, practicas y respondes una comprobación. Al acertar, el tema queda hecho y la línea avanza contigo.",
+        body: "Lees, practicas y respondes una pregunta. Al acertar, el tema queda hecho y la línea avanza contigo.",
       },
       {
-        title: "Si algo cuesta, aparece un refuerzo",
-        body: "Fallar una comprobación abre temas cortos de refuerzo debajo de ese tema. Al terminarlos, sigues por la ruta.",
+        title: "Si algo cuesta, aparece práctica extra",
+        body: "Fallar una pregunta abre temas cortos de práctica extra debajo de ese tema. Al terminarlos, sigues por la ruta.",
       },
       {
         title: "Cada módulo cierra con un examen",
@@ -74,11 +74,11 @@ export const LANDING_TEXT: Record<LocaleCode, LandingText> = {
       },
       {
         title: "One topic at a time",
-        body: "Read, practice and answer a check. Get it right and the topic is done, and the line moves forward with you.",
+        body: "Read, practice and answer a question. Get it right and the topic is done, and the line moves forward with you.",
       },
       {
-        title: "If something is hard, a refresher appears",
-        body: "Missing a check opens short refresher topics under that topic. Finish them and you carry on along the route.",
+        title: "If something is hard, extra practice appears",
+        body: "Missing a question opens short extra practice topics under that topic. Finish them and you carry on along the route.",
       },
       {
         title: "Every module ends with an exam",
@@ -106,11 +106,11 @@ export const LANDING_TEXT: Record<LocaleCode, LandingText> = {
       },
       {
         title: "Um tema de cada vez",
-        body: "Você lê, pratica e responde a uma verificação. Ao acertar, o tema fica concluído e a linha avança com você.",
+        body: "Você lê, pratica e responde a uma pergunta. Ao acertar, o tema fica concluído e a linha avança com você.",
       },
       {
-        title: "Se algo pesar, aparece um reforço",
-        body: "Errar uma verificação abre temas curtos de reforço abaixo desse tema. Ao terminá-los, você segue pela rota.",
+        title: "Se algo pesar, aparece prática extra",
+        body: "Errar uma pergunta abre temas curtos de prática extra abaixo desse tema. Ao terminá-los, você segue pela rota.",
       },
       {
         title: "Cada módulo fecha com uma prova",
@@ -138,11 +138,11 @@ export const LANDING_TEXT: Record<LocaleCode, LandingText> = {
       },
       {
         title: "Un sujet à la fois",
-        body: "Vous lisez, vous pratiquez et vous répondez à une vérification. Une bonne réponse termine le sujet, et la ligne avance avec vous.",
+        body: "Vous lisez, vous pratiquez et vous répondez à une question. Une bonne réponse termine le sujet, et la ligne avance avec vous.",
       },
       {
-        title: "Si c'est difficile, un renfort apparaît",
-        body: "Rater une vérification ouvre de courts sujets de renfort sous ce sujet. Une fois terminés, vous reprenez le parcours.",
+        title: "Si c'est difficile, une pratique supplémentaire apparaît",
+        body: "Rater une question ouvre de courts sujets de pratique supplémentaire sous ce sujet. Une fois terminés, vous reprenez le parcours.",
       },
       {
         title: "Chaque module se termine par un examen",
@@ -170,11 +170,11 @@ export const LANDING_TEXT: Record<LocaleCode, LandingText> = {
       },
       {
         title: "Un argomento alla volta",
-        body: "Leggi, ti eserciti e rispondi a una verifica. Se è giusta, l'argomento è fatto e la linea avanza con te.",
+        body: "Leggi, ti eserciti e rispondi a una domanda. Se rispondi bene, l'argomento è fatto e la linea avanza con te.",
       },
       {
-        title: "Se qualcosa è difficile, arriva un rinforzo",
-        body: "Sbagliare una verifica apre brevi argomenti di rinforzo sotto quell'argomento. Finiti quelli, prosegui lungo il percorso.",
+        title: "Se qualcosa è difficile, arriva la pratica extra",
+        body: "Sbagliare una domanda apre brevi argomenti di pratica extra sotto quell'argomento. Finiti quelli, prosegui lungo il percorso.",
       },
       {
         title: "Ogni modulo si chiude con un esame",

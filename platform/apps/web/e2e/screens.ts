@@ -6,6 +6,7 @@ import type { Page } from "@playwright/test";
 
 export const DEV = "http://localhost:4174";
 const EMAIL = "lector@example.com";
+const MASKED = "le•••@example.com";
 
 export const SCREENS: Record<string, (page: Page) => Promise<unknown>> = {
   landing: (page) => page.goto(`${DEV}/es`),
@@ -25,10 +26,10 @@ export const SCREENS: Record<string, (page: Page) => Promise<unknown>> = {
   },
   "sign-in-confirm": async (page) => {
     await page.route("**/api/auth/magic-link/peek", (route) =>
-      route.fulfill({ json: { email: EMAIL } }),
+      route.fulfill({ json: { email: MASKED } }),
     );
     await page.goto(`${DEV}/sign-in/confirm#token=fixture`);
-    await page.getByRole("heading", { name: `Entrar como ${EMAIL}` }).waitFor();
+    await page.getByRole("heading", { name: `Entrar como ${MASKED}` }).waitFor();
   },
   "sign-in-expired": (page) => page.goto(`${DEV}/sign-in?notice=expired`),
   "sign-in-limited": (page) => page.goto(`${DEV}/sign-in?notice=limited`),

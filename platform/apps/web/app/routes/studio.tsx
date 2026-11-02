@@ -2,13 +2,13 @@
 import { BRAND } from "@learning-routes/core/locales";
 
 export function meta() {
-  return [{ title: `Estudio · ${BRAND}` }];
+  return [{ title: `Enseñar · ${BRAND}` }];
 }
 
 export default function Studio() {
   return (
     <main>
-      <h1>Estudio</h1>
+      <h1>Enseñar</h1>
     </main>
   );
 }

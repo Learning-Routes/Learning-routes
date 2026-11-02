@@ -32,7 +32,7 @@ describe("the visible name while the platform is built", () => {
   it("titles the pages", () => {
     const loaderData = { lang: "es", origin: "https://new.learningroutes.com" } as const;
     expect(storefrontMeta({ loaderData } as Route.MetaArgs)).toContainEqual({ title: BRAND });
-    expect(studioMeta()).toContainEqual({ title: `Estudio · ${BRAND}` });
+    expect(studioMeta()).toContainEqual({ title: `Enseñar · ${BRAND}` });
   });
 
   it("is written in one place only, so the switch is a one-line change", () => {

@@ -172,7 +172,7 @@ export const SIGN_IN_TEXT: Record<LocaleCode, SignInText> = {
     confirmTitle: "Se connecter en tant que",
     confirmAction: "Se connecter",
     confirmOnce: "Ce lien fonctionne une seule fois.",
-    checking: "Vérification du lien",
+    checking: "Ouverture du lien",
     expiredTitle: "Ce lien ne fonctionne plus",
     expiredBody:
       "Il a expiré ou a déjà été utilisé. Demandez-en un autre ci-dessous, il arrivera vite.",
@@ -180,7 +180,7 @@ export const SIGN_IN_TEXT: Record<LocaleCode, SignInText> = {
     limitedBody: "Attendez quelques minutes et demandez-en un autre.",
     failedTitle: "Le lien n'a pas pu être envoyé",
     failedBody: "Vérifiez votre connexion et réessayez dans une minute.",
-    signedOutTitle: "Vous êtes déconnecté",
+    signedOutTitle: "Votre session est fermée.",
     signedOutBody: "Pour revenir, demandez un lien ci-dessous.",
     needsScript: "Pour vous connecter, activez JavaScript dans votre navigateur.",
     reopenLink:
@@ -216,7 +216,7 @@ export const SIGN_IN_TEXT: Record<LocaleCode, SignInText> = {
     limitedBody: "Aspetta qualche minuto e chiedine un altro.",
     failedTitle: "Non è stato possibile inviare il link",
     failedBody: "Controlla la connessione e riprova tra un minuto.",
-    signedOutTitle: "Sei uscito dal tuo account",
+    signedOutTitle: "La sessione è chiusa.",
     signedOutBody: "Per tornare, chiedi un link qui sotto.",
     needsScript: "Per accedere, attiva JavaScript nel browser.",
     reopenLink:
