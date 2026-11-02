@@ -112,6 +112,10 @@ describe("route.create, route.get and route.list", () => {
       await call(world, STAFF.coeditor, "route.create", route("paid", "paid"), "agent"),
     ).toMatchObject({ ok: false, code: "forbidden" });
     expect(await call(world, STAFF.coeditor, "route.create", route("paid", "paid"))).toMatchObject({
+      ok: false,
+      code: "forbidden",
+    });
+    expect(await call(world, STAFF.owner, "route.create", route("paid", "paid"))).toMatchObject({
       ok: true,
     });
     expect(await call(world, STAFF.owner, "route.create", route("paid"))).toMatchObject({

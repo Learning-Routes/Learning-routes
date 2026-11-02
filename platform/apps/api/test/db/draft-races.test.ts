@@ -1,7 +1,10 @@
+import { runAction } from "@learning-routes/core/actions/define";
+import { ACTIONS } from "@learning-routes/core/actions/registry";
 import { drizzle } from "drizzle-orm/node-postgres";
 import pg from "pg";
 import { describe, expect, it } from "vitest";
 import { pgRepos } from "../../src/db/repos/index";
+import { pgTenancy } from "../../src/db/tenancy";
 import { actAs, backendPid, blockedOrDone, newUser, rolledBack, URLS } from "./connect";
 import { newRoute, newSpace, newVersion } from "./fixtures";
 
@@ -51,6 +54,60 @@ describe("two draft edits at once", () => {
         [routeId],
       );
       expect(rows).toEqual([{ position: "G" }]);
+    } finally {
+      await Promise.all([setup.end(), one.end(), two.end()]);
+    }
+  });
+});
+
+describe("a publish against a draft edit", () => {
+  it("waits for the edit, then answers conflict instead of freezing the stale draft", async () => {
+    const setup = new pg.Client({ connectionString: URLS.migrator });
+    const one = new pg.Client({ connectionString: URLS.migrator });
+    const two = new pg.Client({ connectionString: URLS.migrator });
+    await Promise.all([setup.connect(), one.connect(), two.connect()]);
+    try {
+      const ownerId = await newUser(setup);
+      const spaceId = await newSpace(setup, "publish-race");
+      await setup.query(
+        "insert into memberships (space_id, user_id, role) values ($1, $2, 'owner')",
+        [spaceId, ownerId],
+      );
+      const routeId = await newRoute(setup, spaceId);
+      const twoPid = await backendPid(two);
+      for (const db of [one, two]) {
+        await db.query("begin");
+        await actAs(db, ownerId);
+      }
+      const orm = drizzle(two, { casing: "snake_case" });
+      const edit = await pgRepos(drizzle(one, { casing: "snake_case" })).routeDrafts.addModule(
+        spaceId,
+        routeId,
+        0,
+        module("G"),
+      );
+      expect(edit).toEqual({ ok: true, value: { revision: 1 } });
+      const publishing = runAction(
+        ACTIONS,
+        "route.publish",
+        { routeId, expectedRevision: 0 },
+        {
+          actor: { via: "ui" as const, userId: ownerId },
+          repos: pgRepos(orm),
+          tenancy: pgTenancy(orm),
+          clock: { now: () => Date.now() },
+          ids: { newId: () => crypto.randomUUID() },
+        },
+      );
+      await blockedOrDone(twoPid, publishing);
+      await one.query("commit");
+      expect(await publishing).toMatchObject({ ok: false, code: "conflict" });
+      await two.query("commit");
+      const { rows } = await setup.query(
+        "select count(*)::int as n from route_versions where route_id = $1",
+        [routeId],
+      );
+      expect(rows[0]?.n).toBe(0);
     } finally {
       await Promise.all([setup.end(), one.end(), two.end()]);
     }

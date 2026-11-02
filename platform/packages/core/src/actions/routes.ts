@@ -30,9 +30,9 @@ export const routeCreate = defineAction({
   target: (input) => ({ kind: "space", id: input.spaceId }),
   async run(ctx, input, given) {
     const scope = inSpace(given);
-    // Pricing is set in the app, never by an agent or over MCP.
-    if (input.pricing !== "free" && ctx.actor.via !== "ui") {
-      throw new ActionError("forbidden", "a price is set in the app");
+    // Pricing is set in the app, by an owner, never by an agent or over MCP.
+    if (input.pricing !== "free" && (ctx.actor.via !== "ui" || scope.role !== "owner")) {
+      throw new ActionError("forbidden", "an owner sets a price, in the app");
     }
     const { spaceId: _, description, ...fields } = input;
     const routeId = ctx.ids.newId();
@@ -77,10 +77,9 @@ export const routePublish = defineAction({
   async run(ctx, input, given) {
     const { spaceId } = inSpace(given);
     return ctx.repos.transaction(async (repos) => {
+      // Locked first: an edit cannot land between this read and the version it freezes.
+      unwrap(await repos.routeDrafts.lockDraft(spaceId, input.routeId, input.expectedRevision));
       const draft = unwrap(await repos.routeDrafts.get(spaceId, input.routeId));
-      if (draft.revision !== input.expectedRevision) {
-        throw new ActionError("conflict", "the draft changed since it was read");
-      }
       const snapshot = snapshotOf(draft);
       // A version is read back through upcastSnapshot; never store one it would refuse.
       if (!upcastSnapshotAccepts(snapshot)) {
