@@ -1,5 +1,5 @@
+import { SIGN_IN_TEXT } from "@learning-routes/core/copy/sign-in";
 import { BRAND, type LocaleCode } from "@learning-routes/core/locales";
-import { SIGN_IN_TEXT } from "@learning-routes/core/sign-in-text";
 import { logEvent } from "../log";
 
 // Sending sign-in links (Platform STEP 2 §5.3, and the owner's answer in the review):
@@ -26,21 +26,62 @@ const HTML_ESCAPES: Record<string, string> = {
   "'": "&#39;",
 };
 const HTML_SPECIAL = /[&<>"']/g;
-export const escapeHtml = (text: string) =>
+const escapeHtml = (text: string) =>
   text.replace(HTML_SPECIAL, (char) => HTML_ESCAPES[char] ?? char);
 
-/** The sign-in email in one locale: the same words as text and as HTML. */
+/** Tokens' values, since an email can't read the stylesheet; test/auth/email.test.ts keeps them equal. */
+const INK = "#1D1226";
+const SOFT_INK = "#4A3D54";
+const PAPER = "#F5F2F6";
+const SHEET = "#FFFFFF";
+const ACCENT = "#6A2EA0";
+const HERE = "#E79A0F";
+
+/**
+ * The sign-in email in one locale: the same words as text and as HTML. Tables and
+ * bgcolor, since mail clients drop most CSS; the mark is a cell and a character, so it
+ * shows with images off, and there is no remote image and one link, on the app's origin.
+ */
 export function magicLinkEmail({ url, locale }: Pick<MagicLinkMessage, "url" | "locale">) {
   const words = SIGN_IN_TEXT[locale];
   const text = [words.emailIntro, "", url, "", words.emailExpiry, words.emailIgnore].join("\n");
+  const type = "font-family:Arial,Helvetica,sans-serif";
   const html = `<!doctype html>
 <html lang="${locale}">
+<head>
 <meta charset="utf-8">
+<meta name="color-scheme" content="light dark">
+<meta name="supported-color-schemes" content="light dark">
 <title>${escapeHtml(words.emailSubject)}</title>
-<p>${escapeHtml(words.emailIntro)}</p>
-<p><a href="${escapeHtml(url)}">${escapeHtml(words.emailAction)}</a></p>
-<p>${escapeHtml(words.emailExpiry)}</p>
-<p>${escapeHtml(words.emailIgnore)}</p>
+<style>
+@media (prefers-color-scheme: dark) {
+  .paper { background-color: #150E1C !important; }
+  .sheet { background-color: #241931 !important; }
+  .ink { color: #F2ECF6 !important; }
+  .soft { color: #CDBFD8 !important; }
+}
+</style>
+</head>
+<body class="paper" style="margin:0;padding:0;background-color:${PAPER}">
+<table role="presentation" class="paper" width="100%" cellpadding="0" cellspacing="0" bgcolor="${PAPER}">
+<tr><td align="center" style="padding:32px 16px">
+<table role="presentation" class="sheet" width="100%" cellpadding="0" cellspacing="0" bgcolor="${SHEET}" style="max-width:480px;border-radius:18px">
+<tr><td style="padding:32px">
+<table role="presentation" cellpadding="0" cellspacing="0"><tr>
+<td width="26" height="26" align="center" bgcolor="${ACCENT}" style="border-radius:7px;color:${HERE};${type};font-size:12px;line-height:26px">&#9679;</td>
+<td class="ink" style="padding-left:8px;color:${INK};${type};font-size:15px;font-weight:bold">${escapeHtml(BRAND)}</td>
+</tr></table>
+<p class="ink" style="margin:24px 0 24px;color:${INK};${type};font-size:18px;line-height:1.4">${escapeHtml(words.emailIntro)}</p>
+<table role="presentation" cellpadding="0" cellspacing="0"><tr>
+<td bgcolor="${ACCENT}" style="border-radius:10px"><a href="${escapeHtml(url)}" style="display:inline-block;padding:14px 24px;color:#FFFFFF;${type};font-size:16px;font-weight:bold;text-decoration:none">${escapeHtml(words.emailAction)}</a></td>
+</tr></table>
+<p class="soft" style="margin:24px 0 8px;color:${SOFT_INK};${type};font-size:14px;line-height:1.5">${escapeHtml(words.emailExpiry)}</p>
+<p class="soft" style="margin:0;color:${SOFT_INK};${type};font-size:14px;line-height:1.5">${escapeHtml(words.emailIgnore)}</p>
+</td></tr>
+</table>
+</td></tr>
+</table>
+</body>
 </html>
 `;
   return { subject: words.emailSubject, text, html };

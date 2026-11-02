@@ -28,12 +28,17 @@ export function loader({ context, request }: Route.LoaderArgs) {
 export function Layout({ children }: { children: React.ReactNode }) {
   const root = useRouteLoaderData<typeof loader>("root");
   const nonce = root?.nonce;
-  const storefront = isStorefront(useMatches());
+  const matches = useMatches();
+  const storefront = isStorefront(matches);
+  // A page says its language when it has been translated; the rest are in Spanish.
+  const pageLocale = matches
+    .map((match) => (match.loaderData as { locale?: string } | undefined)?.locale)
+    .find(Boolean);
   const { lang } = useParams();
   return (
     // A storefront's HTML never varies by cookie: the media query decides there.
     <html
-      lang={lang && isLocale(lang) ? lang : "es"}
+      lang={lang && isLocale(lang) ? lang : (pageLocale ?? "es")}
       data-theme={storefront ? undefined : root?.theme}
     >
       <head>

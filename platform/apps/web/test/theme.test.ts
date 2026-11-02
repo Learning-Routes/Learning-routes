@@ -23,10 +23,15 @@ describe("where the toggle goes back to", () => {
     expect(safeNext("/studio?a=1")).toBe("/studio?a=1");
   });
 
-  it.each(["https://elsewhere.example", "//elsewhere.example", "/\\elsewhere.example", null])(
-    "never %s",
-    (next) => {
-      expect(safeNext(next)).toBe("/studio");
-    },
-  );
+  it.each([
+    "https://elsewhere.example",
+    "//elsewhere.example",
+    "/\\elsewhere.example",
+    "/\t/elsewhere.example",
+    "/\n/elsewhere.example",
+    "\t//elsewhere.example",
+    null,
+  ])("never %s", (next) => {
+    expect(safeNext(next)).toBe("/studio");
+  });
 });

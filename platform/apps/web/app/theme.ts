@@ -3,7 +3,7 @@
 
 const COOKIE = "lr_theme";
 const ONE_YEAR = 31_536_000;
-const ANOTHER_HOST = /^\/[/\\]/;
+const THIS_SITE = "https://this-site.invalid";
 
 type Theme = "light" | "dark";
 
@@ -23,9 +23,15 @@ export function themeFromCookie(header: string | null): Theme | undefined {
 export const themeCookie = (theme: Theme) =>
   `${COOKIE}=${theme}; Path=/; Max-Age=${ONE_YEAR}; SameSite=Lax; Secure`;
 
-/** Where to go back to: a path on this site, or the studio. */
+/** Where to go back to: a path on this site, or the studio. Parsed as a browser will. */
 export function safeNext(next: unknown): string {
-  return typeof next === "string" && next.startsWith("/") && !ANOTHER_HOST.test(next)
-    ? next
-    : "/studio";
+  if (typeof next !== "string" || !next.startsWith("/")) {
+    return "/studio";
+  }
+  try {
+    const url = new URL(next, THIS_SITE);
+    return url.origin === THIS_SITE ? `${url.pathname}${url.search}` : "/studio";
+  } catch {
+    return "/studio";
+  }
 }

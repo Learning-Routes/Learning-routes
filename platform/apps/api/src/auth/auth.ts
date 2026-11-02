@@ -19,9 +19,11 @@ import { emailRateKey } from "./rate-key";
 
 export const AUTH_PATH = "/api/auth";
 export const CONFIRM_PATH = `${AUTH_PATH}/magic-link/confirm`;
+/** The app's page a link opens; the web Worker serves it. */
+const LINK_PATH = "/sign-in/confirm";
 
 /** The session cookie: __Host- pins it to the app's own origin (Secure, Path=/, no Domain). */
-const SESSION_COOKIE = "__Host-lr_session";
+export const SESSION_COOKIE = "__Host-lr_session";
 
 const LINKS_PER_ADDRESS = 5;
 const ADDRESS_WINDOW_MS = 600_000;
@@ -33,59 +35,51 @@ const ATTEMPTS = 3;
 
 type Adapter = NonNullable<EndpointContext>["context"]["adapter"];
 
-/** One more link in the address's current window, if it has room: atomic. */
-const countInWindow = (adapter: Adapter, key: string, now: number) =>
-  adapter.incrementOne({
-    model: "rateLimit",
-    where: [
-      { field: "key", value: key },
-      { field: "lastRequest", operator: "gt", value: now - ADDRESS_WINDOW_MS },
-      { field: "count", operator: "lt", value: LINKS_PER_ADDRESS },
-    ],
-    increment: { count: 1 },
-    set: { lastRequest: now },
-  });
-
 /**
- * At most five sign-in links per address in ten minutes, whatever its letter case
- * and whatever the IPs asking. Counted in Better Auth's own rate-limit table, keyed
- * by an HMAC of the address, with atomic conditional writes only: the count goes up
- * only inside a window with room; the first link creates the row once; a window
- * that is over is restarted only by the one request that still sees its old start.
- * A request that loses every race gives up after a few tries.
+ * One more in this key's current window, if it has room. Counted in Better Auth's own
+ * rate-limit table with atomic conditional writes only: the count goes up only inside
+ * a window with room; the first request creates the row once; a window that is over is
+ * restarted only by the one request that still sees its old start. A request that
+ * loses every race gets false, after a few tries.
  */
-async function refuseFloodedInbox(
-  endpoint: EndpointContext,
-  address: string,
-  secret: string,
-): Promise<void> {
-  if (endpoint === undefined) {
-    throw new APIError("INTERNAL_SERVER_ERROR");
-  }
-  const { adapter } = endpoint.context;
-  const key = await emailRateKey(secret, address);
+export async function takeFromWindow(
+  adapter: Pick<Adapter, "incrementOne" | "findOne" | "create" | "updateMany">,
+  key: string,
+  max: number,
+  windowMs: number,
+): Promise<boolean> {
   const byKey = { field: "key", value: key };
   for (let attempt = 0; attempt < ATTEMPTS; attempt++) {
     const now = Date.now();
-    if (await countInWindow(adapter, key, now)) {
-      return;
+    const counted = await adapter.incrementOne({
+      model: "rateLimit",
+      where: [
+        byKey,
+        { field: "lastRequest", operator: "gt", value: now - windowMs },
+        { field: "count", operator: "lt", value: max },
+      ],
+      increment: { count: 1 },
+      set: { lastRequest: now },
+    });
+    if (counted) {
+      return true;
     }
     const row = await adapter.findOne<{ lastRequest: number | bigint }>({
       model: "rateLimit",
       where: [byKey],
     });
     if (row === null) {
-      // The first link. A concurrent first link may create the row first: try again.
+      // The first one. A concurrent first one may create the row first: try again.
       const created = await adapter
         .create({ model: "rateLimit", data: { key, count: 1, lastRequest: now } })
         .catch(() => null);
       if (created !== null) {
-        return;
+        return true;
       }
       continue;
     }
-    if (Number(row.lastRequest) > now - ADDRESS_WINDOW_MS) {
-      break;
+    if (Number(row.lastRequest) > now - windowMs) {
+      return false;
     }
     // The window is over. Restart it only if no one else has: the update matches
     // the old start, which a restart changes.
@@ -95,12 +89,32 @@ async function refuseFloodedInbox(
       update: { count: 1, lastRequest: now },
     });
     if (restarted === 1) {
-      return;
+      return true;
     }
   }
-  throw new APIError("TOO_MANY_REQUESTS", {
-    message: "Too many sign-in links for this address. Try again later.",
-  });
+  return false;
+}
+
+/**
+ * At most five sign-in links per address in ten minutes, whatever its letter case and
+ * whatever the IPs asking, keyed by an HMAC of the address.
+ */
+async function refuseFloodedInbox(
+  endpoint: EndpointContext,
+  address: string,
+  secret: string,
+): Promise<void> {
+  if (endpoint === undefined) {
+    throw new APIError("INTERNAL_SERVER_ERROR");
+  }
+  const key = await emailRateKey(secret, address);
+  if (
+    !(await takeFromWindow(endpoint.context.adapter, key, LINKS_PER_ADDRESS, ADDRESS_WINDOW_MS))
+  ) {
+    throw new APIError("TOO_MANY_REQUESTS", {
+      message: "Too many sign-in links for this address. Try again later.",
+    });
+  }
 }
 
 export function createAuth(env: Env, db: Database | Transaction, email: EmailSender) {
@@ -146,7 +160,7 @@ export function createAuth(env: Env, db: Database | Transaction, email: EmailSen
           await email.sendMagicLink({
             email: address,
             // In the fragment: no request, and so no log, ever carries it.
-            url: `${env.APP_ORIGIN}${CONFIRM_PATH}#token=${encodeURIComponent(token)}`,
+            url: `${env.APP_ORIGIN}${LINK_PATH}#token=${encodeURIComponent(token)}`,
             locale: negotiateLocale(ctx?.request?.headers.get("accept-language")),
           });
         },

@@ -1,7 +1,7 @@
 import { runAction } from "@learning-routes/core/actions/define";
 import { ACTIONS } from "@learning-routes/core/actions/registry";
 import type { Hono } from "hono";
-import { createAuth } from "./auth/auth";
+import { createAuth, SESSION_COOKIE } from "./auth/auth";
 import type { EmailSender } from "./auth/email";
 import { pgRepos } from "./db/repos/index";
 import { pgTenancy } from "./db/tenancy";
@@ -12,6 +12,8 @@ import { newId } from "./ids";
 // /api/a/:name. The actor is the session's user, read by Better Auth from the
 // session cookie, never from the request body; with no session, nothing runs. The
 // action runs in one transaction, as lr_app, under that user's row-level security.
+
+const DEAD_SESSION = `${SESSION_COOKIE}=; Max-Age=0; Path=/; HttpOnly; Secure; SameSite=Lax`;
 
 const STATUS = {
   unknown_action: 404,
@@ -45,6 +47,10 @@ export function actionRoutes(app: Hono<{ Bindings: Env }>, emailSender: (env: En
         emailSender(c.env),
       ).api.getSession({ headers: c.req.raw.headers, returnHeaders: true });
       if (session === null) {
+        // A dead session's cookie goes with it, so the browser stops sending it.
+        if (c.req.header("cookie")?.includes(`${SESSION_COOKIE}=`)) {
+          c.header("set-cookie", DEAD_SESSION);
+        }
         return c.json({ ok: false, code: "unauthenticated" }, 401);
       }
       const userId = session.user.id;

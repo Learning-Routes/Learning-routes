@@ -41,7 +41,10 @@ describe("rate limits", () => {
         }),
       ),
     );
-    const limited = statuses(responses).filter((status) => status === 429).length;
+    // The form's POST lands on the screen that explains the wait, not on a raw 429.
+    const limited = responses.filter(
+      (response) => response.headers.get("location") === "/sign-in?notice=limited",
+    ).length;
     expect(20 - limited).toBeLessThanOrEqual(CONFIRM_MAX);
     expect(limited).toBeLessThan(20);
   });

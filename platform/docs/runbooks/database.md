@@ -167,7 +167,6 @@ The Keychain items this runbook uses:
 
 ## Also to set up
 
-- **A rate limit on the sign-in page.** `GET /api/auth/magic-link/confirm` reads the database once per request and has no limit of its own; Better Auth limits the rest. Add a Cloudflare rate-limiting rule on that path, for example 30 requests a minute per IP.
 
 ## Later
 

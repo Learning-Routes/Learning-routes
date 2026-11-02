@@ -39,7 +39,7 @@
 .button-primary:hover {
   background: var(--color-accent-hover);
 }
-.button-primary:active:not(:disabled) {
+.button-primary:active:not(:disabled, [aria-busy="true"]) {
   transform: translateY(2px);
   box-shadow: var(--shadow-btn-pressed);
 }
@@ -51,7 +51,7 @@
 .button-secondary:hover {
   background: var(--color-bg-2);
 }
-.button-secondary:active:not(:disabled) {
+.button-secondary:active:not(:disabled, [aria-busy="true"]) {
   transform: translateY(2px);
   box-shadow: var(--shadow-btn-secondary-pressed);
 }
@@ -62,7 +62,9 @@
 .button-quiet:hover {
   background: var(--color-bg-2);
 }
-.button:disabled {
+.button:disabled,
+.button[aria-busy="true"],
+.button[aria-busy="true"]:hover {
   cursor: default;
   background: var(--color-bg-2);
   color: var(--color-muted);
@@ -194,6 +196,9 @@
   border: 1px solid;
   font-size: var(--text-small);
   line-height: 1.45;
+}
+.notice:focus {
+  outline: none;
 }
 .notice-title {
   margin: 0;

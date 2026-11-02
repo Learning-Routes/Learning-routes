@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
+import { SIGN_IN_TEXT } from "../src/copy/sign-in";
 import { LOCALES, negotiateLocale } from "../src/locales";
-import { SIGN_IN_TEXT } from "../src/sign-in-text";
 
 // The sign-in email and confirmation page in every locale (Platform STEP 2 review,
 // owner's answers 2 and 5), in the language the browser asks for.
