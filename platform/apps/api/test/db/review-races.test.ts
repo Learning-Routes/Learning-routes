@@ -33,11 +33,12 @@ const submit = (
   reviewId: string,
   rating: number,
   at: number,
+  itemId = ITEM,
 ) =>
   runAction(
     ACTIONS,
     "review.submit",
-    { enrollmentId, reviewId, itemId: ITEM, rating, at, elapsedMs: 700 },
+    { enrollmentId, reviewId, itemId, rating, at, elapsedMs: 700 },
     ctxFor(db, userId),
   );
 
@@ -92,6 +93,57 @@ describe("review.submit, two at once on one card", () => {
       expect(log).toHaveLength(2);
       expect(stored).toEqual([{ reps: rebuilt.card.reps, state: rebuilt.card.state }]);
       expect(rebuilt.card.reps).toBe(2);
+    } finally {
+      await setup.query("begin");
+      await eraseUser(setup, student);
+      await setup.query("commit");
+      await Promise.all([setup.end(), one.end(), two.end()]);
+    }
+  });
+});
+
+describe("review.submit, the racing pair", () => {
+  it("runs 200 times on a new card each time with no deadlock", { timeout: 60_000 }, async () => {
+    const setup = new pg.Client({ connectionString: URLS.migrator });
+    const one = new pg.Client({ connectionString: URLS.migrator });
+    const two = new pg.Client({ connectionString: URLS.migrator });
+    await Promise.all([setup.connect(), one.connect(), two.connect()]);
+    const student = await newUser(setup);
+    try {
+      const space = await newSpace(setup, "race-200");
+      const route = await newRoute(setup, space);
+      await newVersion(setup, space, route, 1);
+      await setup.query(
+        "insert into memberships (space_id, user_id, role) values ($1, $2, 'student')",
+        [space, student],
+      );
+      const enrollment = await newEnrollment(setup, space, route, student);
+      const base = Date.UTC(2026, 9, 1);
+      for (let round = 0; round < 200; round++) {
+        const item = crypto.randomUUID();
+        const run = async (db: pg.Client, rating: number) => {
+          await db.query("begin");
+          await actAs(db, student);
+          const result = await submit(
+            db,
+            student,
+            enrollment,
+            crypto.randomUUID(),
+            rating,
+            base,
+            item,
+          );
+          await db.query("commit");
+          return result;
+        };
+        const results = await Promise.all([run(one, 3), run(two, 4)]);
+        expect(results.every((result) => result.ok)).toBe(true);
+      }
+      const { rows } = await setup.query(
+        "select count(*)::int as n from reviews where user_id = $1",
+        [student],
+      );
+      expect(rows[0]?.n).toBe(400);
     } finally {
       await setup.query("begin");
       await eraseUser(setup, student);
