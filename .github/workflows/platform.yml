@@ -77,11 +77,25 @@ jobs:
       - name: Create the database roles
         run: docker exec -i ${{ job.services.postgres.id }} psql -v ON_ERROR_STOP=1 -U postgres -d learning_routes < db/init/01-roles.sql
       - run: pnpm install --frozen-lockfile
+      # The visual tests' one fixed browser build, tied to the pinned @playwright/test.
+      - name: Install the visual tests' browser
+        run: pnpm --filter @learning-routes/web exec playwright install --with-deps chromium
       # Every check a contributor runs, in the same command (Platform STEP 1 §4.6):
       # types, lint, boundaries, knip, sizes, shortcuts, names, fixtures, versions,
       # tests with coverage, builds, budgets and the browser tests in the
       # runner's installed Chrome. Each runs even when one before it failed.
       - run: pnpm check
+      # Baselines are recorded here, not on a laptop: a run with a missing or changed
+      # screenshot writes it, and this keeps it to download and commit.
+      - name: Keep the visual results
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        if: ${{ !cancelled() }}
+        with:
+          name: visual-results
+          path: |
+            platform/apps/web/e2e/visual-baselines
+            platform/apps/web/test-results
+          if-no-files-found: ignore
       # Not gating yet (STEP 46 §2.8): prints each hot function against its
       # baseline; a regression over 30% goes in the pull request description.
       - name: Benchmarks against the baseline

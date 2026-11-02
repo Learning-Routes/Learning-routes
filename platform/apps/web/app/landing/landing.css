@@ -196,6 +196,7 @@
   margin-bottom: var(--space-3);
   font-family: var(--font-mono);
   font-size: var(--text-small);
+  font-weight: 400;
   color: var(--color-muted);
 }
 .landing-step-title {

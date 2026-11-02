@@ -156,16 +156,16 @@
   --color-due-text: #B45309;
   --color-due-link: #A75C05;
   /* Semantic feedback colors */
-  --color-positive: #117F3A;
+  --color-positive: #0E6E32;
   --color-positive-bg: rgba(22, 163, 74, 0.08);
   --color-positive-border: rgba(22, 163, 74, 0.18);
   --color-warning: #956603;
   --color-warning-bg: rgba(202, 138, 4, 0.08);
   --color-warning-border: rgba(202, 138, 4, 0.18);
-  --color-negative: #D52222;
+  --color-negative: #B91C1C;
   --color-negative-bg: rgba(220, 38, 38, 0.08);
   --color-negative-border: rgba(220, 38, 38, 0.18);
-  --color-info: #2563EB;
+  --color-info: #1D4ED8;
   --color-info-bg: rgba(37, 99, 235, 0.08);
   --color-info-border: rgba(37, 99, 235, 0.18);
 

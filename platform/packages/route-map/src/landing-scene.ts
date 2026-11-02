@@ -10,7 +10,9 @@ const STOP_RADIUS = 0.55;
 const DISC_RADIUS = 0.72;
 const EXAM_RADIUS = 0.72;
 const KAPPA = 0.5523;
-const SAMPLES_PER_UNIT = 2.5;
+const SAMPLES_PER_UNIT = 1.5;
+// Off the stage by more than this, a shape is not drawn: the HTML carries only what shows.
+const STAGE_MARGIN = 48;
 
 export interface SceneOptions {
   /** Which panel's camera. */
@@ -47,7 +49,7 @@ export interface Scene {
   origin: string;
 }
 
-const n = (value: number) => Math.round(value * 10) / 10;
+const n = (value: number) => Math.round(value);
 
 function pen(cam: StageCamera) {
   const at2 = (p: Vec3) => {
@@ -80,6 +82,30 @@ function samples(curve: Curve): Vec3[] {
   return Array.from({ length: count + 1 }, (_, i) => curve.getPointAt(i / count));
 }
 
+function stopsOf(
+  model: ReturnType<typeof buildModel>,
+  draw: ReturnType<typeof pen>,
+  onStage: (p: Vec3) => boolean,
+  here: number,
+): Stop[] {
+  return model.mods.flatMap((md) =>
+    md.heads.flatMap((head, index) => {
+      if (!onStage(head)) {
+        return [];
+      }
+      const exam = index === md.heads.length - 1;
+      const inFirst = md.m === 0;
+      return {
+        d: exam ? draw.diamond(head, EXAM_RADIUS) : draw.circle(head, STOP_RADIUS),
+        state: inFirst && index < here ? "done" : inFirst && index === here ? "here" : "ahead",
+        exam,
+        module: md.m,
+        locked: md.locked === true,
+      } satisfies Stop;
+    }),
+  );
+}
+
 /** The whole map from one panel's camera, with the student at stop `done` of module 1. */
 export function landingScene(options: SceneOptions): Scene {
   const { panel, mobile, width, height, done, fan = false, framing } = options;
@@ -107,37 +133,40 @@ export function landingScene(options: SceneOptions): Scene {
       locked: md.locked === true,
     }));
 
+  const onStage = (p: Vec3) => {
+    const { x, y } = cam.project(p);
+    return (
+      x > -STAGE_MARGIN &&
+      x < width + STAGE_MARGIN &&
+      y > -STAGE_MARGIN &&
+      y < height + STAGE_MARGIN
+    );
+  };
+
   const here = done;
   const firstLegs = first.legs.slice(0, here + 1);
   const routeCurves: Curve[] = [at(model.spine, 0), ...firstLegs];
-  const stops: Stop[] = model.mods.flatMap((md) =>
-    md.heads.map((head, index) => {
-      const exam = index === md.heads.length - 1;
-      const inFirst = md.m === 0;
-      return {
-        d: exam ? draw.diamond(head, EXAM_RADIUS) : draw.circle(head, STOP_RADIUS),
-        state: inFirst && index < here ? "done" : inFirst && index === here ? "here" : "ahead",
-        exam,
-        module: md.m,
-        locked: md.locked === true,
-      } satisfies Stop;
-    }),
-  );
+  const stops = stopsOf(model, draw, onStage, here);
 
   const opened = fan ? fanOf(first) : null;
   return {
     width,
     height,
     sheets,
-    track: model.route.map(({ curve }) => draw.polyline(samples(curve))),
+    track: model.route
+      .map(({ curve }) => samples(curve))
+      .filter((points) => points.some(onStage))
+      .map(draw.polyline),
     route: draw.polyline(routeCurves.flatMap(samples)),
     branch: opened ? opened.traces.map((trace) => draw.polyline(samples(trace))) : [],
     stops,
     branchStops: opened ? opened.kids.map((kid) => draw.circle(kid, STOP_RADIUS * 0.72)) : [],
-    discs: model.mods.map((md) => {
-      const { x, y } = cam.project(v(md.disc.x + DISC_RADIUS * 1.3, md.disc.y, md.disc.z));
-      return { d: draw.circle(md.disc, DISC_RADIUS), module: md.m, label: { x: n(x), y: n(y) } };
-    }),
+    discs: model.mods
+      .filter((md) => onStage(md.disc))
+      .map((md) => {
+        const { x, y } = cam.project(v(md.disc.x + DISC_RADIUS * 1.3, md.disc.y, md.disc.z));
+        return { d: draw.circle(md.disc, DISC_RADIUS), module: md.m, label: { x: n(x), y: n(y) } };
+      }),
     origin: draw.diamond(model.origin, 0.42),
   };
 }
