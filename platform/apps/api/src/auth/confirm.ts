@@ -17,6 +17,7 @@ const LIMITED = "/sign-in?notice=limited";
 const FAILED = "/sign-in?notice=failed";
 const LINK_IS_THE_PROBLEM = "INVALID_TOKEN";
 const PEEKS_PER_CLIENT = 30;
+const PEEKS_PER_TOKEN = 10;
 const PEEK_WINDOW_MS = 600_000;
 const ANY_ORIGIN = "https://origin.invalid";
 
@@ -36,6 +37,12 @@ function addressIn(value: string): string | null {
   } catch {
     return null;
   }
+}
+
+/** Enough to recognise your own account: a forwarded or leaked link shows no more. */
+export function maskAddress(email: string): string {
+  const at = email.lastIndexOf("@");
+  return `${email.slice(0, Math.min(2, at))}•••${email.slice(at)}`;
 }
 
 /** Where the confirm POST's answer sends a person instead, or null to let it through. */
@@ -61,20 +68,27 @@ export function confirmRoutes(
 ) {
   app.get(`${AUTH_PATH}/magic-link/verify`, (c) => c.notFound());
 
-  // Reads the pending link and leaves it: only the POST below uses it up. Whoever holds
-  // the token already has the email it was sent to.
+  // Reads the pending link and leaves it: only the POST below uses it up. It answers the
+  // same for an unknown, expired or used token, and counts a token whether or not it
+  // exists, so the answer tells nobody which tokens were real.
   app.post(`${AUTH_PATH}/magic-link/peek`, async (c) => {
+    c.header("Cache-Control", "no-store");
     const body = (await c.req.json().catch(() => null)) as { token?: unknown } | null;
     const sent = body?.token;
     if (typeof sent !== "string" || sent.length === 0) {
       return c.json({ code: "invalid_input" }, 400);
     }
-    const identifier = `magic-link:${await identifierOf(sent)}`;
+    const hash = await identifierOf(sent);
+    const identifier = `magic-link:${hash}`;
     const client = c.req.header("cf-connecting-ip") ?? "unknown";
     const email = await withClient(c.env, c.executionCtx, async (db) => {
       const { adapter, internalAdapter } = await createAuth(c.env, db, emailSender(c.env)).$context;
-      const key = `magic-link-peek:${client}`;
-      if (!(await takeFromWindow(adapter, key, PEEKS_PER_CLIENT, PEEK_WINDOW_MS))) {
+      const byClient = `magic-link-peek:${client}`;
+      const byToken = `magic-link-peek-token:${hash}`;
+      if (
+        !(await takeFromWindow(adapter, byClient, PEEKS_PER_CLIENT, PEEK_WINDOW_MS)) ||
+        !(await takeFromWindow(adapter, byToken, PEEKS_PER_TOKEN, PEEK_WINDOW_MS))
+      ) {
         return "limited" as const;
       }
       const pending = await internalAdapter.findVerificationValue(identifier);
@@ -83,7 +97,9 @@ export function confirmRoutes(
     if (email === "limited") {
       return c.json({ code: "too_many_requests" }, 429);
     }
-    return email === null ? c.json({ code: "not_found" }, 404) : c.json({ email });
+    return email === null
+      ? c.json({ code: "not_found" }, 404)
+      : c.json({ email: maskAddress(email) });
   });
 
   app.post(CONFIRM_PATH, async (c) => {
