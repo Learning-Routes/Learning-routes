@@ -88,7 +88,7 @@ describe("domain", () => {
       id: "l2",
       routeId: "r1",
       moduleId: "m1",
-      position: 1,
+      position: "V",
       prerequisites: ["l1"],
       title: { es: "Dos" },
       blocks: [{ id: blockId, type: "tip", title: null, body: { es: "Practica." } }],
@@ -106,11 +106,11 @@ describe("domain", () => {
       access: "open",
       pricing: "paid",
       version: 3,
-      forkedFrom: { routeId: "r1", version: 2 },
+      forkedFrom: { spaceId: "s0", routeId: "r1", version: 2 },
       createdAt: now,
       updatedAt: now,
     });
-    expect(route.forkedFrom).toEqual({ routeId: "r1", version: 2 });
+    expect(route.forkedFrom).toEqual({ spaceId: "s0", routeId: "r1", version: 2 });
     expect(Route.safeParse({ ...route, version: 0 }).success).toBe(false);
   });
 
@@ -173,15 +173,14 @@ describe("domain", () => {
 
   it("keeps progress per student, apart from the content", () => {
     const progress = Progress.parse({
+      enrollmentId: "e1",
       studentId: "u1",
-      routeId: "r1",
       lessonId: "l1",
       status: "in_progress",
       completedAt: null,
       blocks: [
         { blockId, attempts: 3, correct: false, score: 0, releasedAt: now, completedAt: now },
       ],
-      review: null,
     });
     expect(progress.blocks[0]?.releasedAt).toBe(now);
   });

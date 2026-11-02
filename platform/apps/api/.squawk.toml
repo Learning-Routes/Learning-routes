@@ -7,4 +7,11 @@ assume_in_transaction = true
 
 # pnpm db:migrate sets lock_timeout and statement_timeout before every file
 # (scripts/migrate.ts; a test checks it), so a file need not set them itself.
-excluded_rules = ["require-lock-timeout", "require-statement-timeout"]
+# Every id is a uuid, so int and smallint hold only bounded counts (a version
+# number, a rating, a rate-limit window's hits), never a growing key.
+excluded_rules = [
+  "require-lock-timeout",
+  "require-statement-timeout",
+  "prefer-bigint-over-int",
+  "prefer-bigint-over-smallint",
+]
