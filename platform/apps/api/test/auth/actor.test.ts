@@ -1,4 +1,5 @@
-import { afterEach, describe, expect, it } from "vitest";
+import pg from "pg";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { query, URLS } from "../db/connect";
 import { harness, json, randomEmail } from "./harness";
 
@@ -6,7 +7,10 @@ import { harness, json, randomEmail } from "./harness";
 // Actor.userId from Better Auth's session, never from a request body.
 
 const api = harness();
-afterEach(() => api.settle());
+afterEach(async () => {
+  vi.restoreAllMocks();
+  await api.settle();
+});
 
 /** Signs in through the real link flow and returns the session cookie and user id. */
 async function signIn() {
@@ -89,6 +93,15 @@ describe("the actor", () => {
       [body.reviewId],
     );
     expect(stored?.user_id).toBe(userId);
+  });
+
+  it("runs on one database connection per request: the session is read on it before the transaction", async () => {
+    const { cookie, userId } = await signIn();
+    const enrollmentId = await enrollment(userId);
+    const connect = vi.spyOn(pg.Client.prototype, "connect");
+    const response = await api.call("/api/a/review.submit", json(review(enrollmentId), { cookie }));
+    expect(response.status).toBe(200);
+    expect(connect).toHaveBeenCalledTimes(1);
   });
 
   it("can never be named in the body", async () => {

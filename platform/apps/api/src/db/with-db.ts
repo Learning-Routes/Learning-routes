@@ -23,21 +23,24 @@ export async function withDb<T>(
   userId: string | null,
   fn: (tx: Transaction) => Promise<T>,
 ): Promise<T> {
-  const client = new pg.Client({ connectionString: env.DB.connectionString });
-  try {
-    await client.connect();
-    return await drizzle(client, { casing: "snake_case" }).transaction(async (tx) => {
-      // First statement, local to this transaction: RLS reads the acting user here,
-      // and a pooled connection's next transaction starts with nobody.
-      await setActingUser(tx, userId);
-      return fn(tx);
-    });
-  } finally {
-    ctx.waitUntil(client.end());
-  }
+  return withClient(env, ctx, (db) => transactionAs(db, userId, fn));
 }
 
 export type Database = NodePgDatabase;
+
+/** One transaction as userId (or nobody) on a client withClient already holds. */
+export function transactionAs<T>(
+  db: Database,
+  userId: string | null,
+  fn: (tx: Transaction) => Promise<T>,
+): Promise<T> {
+  return db.transaction(async (tx) => {
+    // First statement, local to this transaction: RLS reads the acting user here,
+    // and a pooled connection's next transaction starts with nobody.
+    await setActingUser(tx, userId);
+    return fn(tx);
+  });
+}
 
 /**
  * A client whose statements each commit on their own, for Better Auth only: it

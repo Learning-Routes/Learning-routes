@@ -6,7 +6,7 @@ import { createAuth } from "./auth/auth";
 import type { EmailSender } from "./auth/email";
 import { pgRepos } from "./db/repos/index";
 import { pgTenancy } from "./db/tenancy";
-import { type Transaction, withClient, withDb } from "./db/with-db";
+import { type Transaction, transactionAs, withClient } from "./db/with-db";
 
 // The app's way into the action registry (Platform STEP 2 §5.7): POST
 // /api/a/:name. The actor is the session's user, read by Better Auth from the
@@ -34,24 +34,25 @@ function ctxFor(tx: Transaction, userId: string) {
 export function actionRoutes(app: Hono<{ Bindings: Env }>, emailSender: (env: Env) => EmailSender) {
   app.post("/api/a/:name", async (c) => {
     const input: unknown = await c.req.json().catch(() => null);
-    // The session first, on its own client: Better Auth may renew it, and expects
-    // its statements to commit on their own. The renewed cookie goes back below.
-    const { headers: renewed, response: session } = await withClient(c.env, c.executionCtx, (db) =>
-      createAuth(c.env, db, emailSender(c.env)).api.getSession({
-        headers: c.req.raw.headers,
-        returnHeaders: true,
-      }),
-    );
-    if (session === null) {
-      return c.json({ ok: false, code: "unauthenticated" }, 401);
-    }
-    const userId = session.user.id;
-    const result = await withDb(c.env, c.executionCtx, userId, (tx) =>
-      runAction(ACTIONS, c.req.param("name"), input, ctxFor(tx, userId)),
-    );
-    for (const cookie of renewed.getSetCookie()) {
-      c.header("set-cookie", cookie, { append: true });
-    }
-    return c.json(result, result.ok ? 200 : STATUS[result.code]);
+    return withClient(c.env, c.executionCtx, async (db) => {
+      // The session first, before BEGIN on this client: Better Auth may renew it, and
+      // expects its statements to commit on their own. The renewed cookie goes back below.
+      const { headers: renewed, response: session } = await createAuth(
+        c.env,
+        db,
+        emailSender(c.env),
+      ).api.getSession({ headers: c.req.raw.headers, returnHeaders: true });
+      if (session === null) {
+        return c.json({ ok: false, code: "unauthenticated" }, 401);
+      }
+      const userId = session.user.id;
+      const result = await transactionAs(db, userId, (tx) =>
+        runAction(ACTIONS, c.req.param("name"), input, ctxFor(tx, userId)),
+      );
+      for (const cookie of renewed.getSetCookie()) {
+        c.header("set-cookie", cookie, { append: true });
+      }
+      return c.json(result, result.ok ? 200 : STATUS[result.code]);
+    });
   });
 }
