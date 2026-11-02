@@ -18,7 +18,7 @@ The Keychain items this runbook uses:
 ## Before you start
 
 - Platform STEP 2 is merged, and `main` is green.
-- You can sign in to PlanetScale and to Cloudflare (`npx wrangler login`).
+- You can sign in to PlanetScale and to Cloudflare (`pnpm --filter @learning-routes/api exec wrangler login`).
 - In `platform/`, `pnpm install` has run.
 
 ## Steps
@@ -49,8 +49,10 @@ The Keychain items this runbook uses:
    Save `lr_app`'s URL in the Keychain. Like the migrator's, it uses port 5432, the direct connection: Hyperdrive pools connections itself, and pooling on top of PgBouncer is what Cloudflare advises against. Its user name carries the branch id, as PlanetScale requires (`lr_app.<branch-id>`).
 
    ```sh
-   security add-generic-password -a "$USER" -s lr-app -w
+   security add-generic-password -U -a "$USER" -s lr-app -w
    ```
+
+   `-U` replaces the item if it is already there, so this step can run again during a restore.
 
    Check that the role connects and can do nothing yet:
 
@@ -81,13 +83,13 @@ The Keychain items this runbook uses:
 4. **Create the Hyperdrive config,** with caching off, so a session or a permission is never served from a cache:
 
    ```sh
-   npx wrangler hyperdrive create lr-db \
+   pnpm --filter @learning-routes/api exec wrangler hyperdrive create lr-db \
      --connection-string="$(security find-generic-password -s lr-app -w)" \
      --caching-disabled --sslmode verify-full --origin-connection-limit 20
    ```
 
    - **The connection limit** is Hyperdrive's soft cap on connections to the database. Its minimum is 5, and its maximum is about 100 on a paid plan. Keep it below the share of PlanetScale's `max_connections` you want the Worker to use, which depends on the cluster's size.
-   - **If `verify-full` fails** with a certificate error: Cloudflare's docs pair it with a CA you upload (`npx wrangler cert upload certificate-authority`), passed with `--ca-certificate-id`. Neither side documents which CA PlanetScale's certificate chains to. If you have to upload one, record which in this runbook.
+   - **If `verify-full` fails** with a certificate error: Cloudflare's docs pair it with a CA you upload (`pnpm --filter @learning-routes/api exec wrangler cert upload certificate-authority`), passed with `--ca-certificate-id`. Neither side documents which CA PlanetScale's certificate chains to. If you have to upload one, record which in this runbook.
    - **Also unconfirmed:** neither side's docs say whether a role made with SQL can connect through Hyperdrive. Step 7 checks it.
 
 5. **Put the config's id in `apps/api/wrangler.jsonc`.** Replace the placeholder `id` under `hyperdrive` with the one step 4 printed, in a small pull request. The id isn't a secret.
@@ -96,7 +98,7 @@ The Keychain items this runbook uses:
 
    ```sh
    openssl rand -base64 32 | pbcopy
-   npx wrangler secret put BETTER_AUTH_SECRET --cwd apps/api
+   pnpm --filter @learning-routes/api exec wrangler secret put BETTER_AUTH_SECRET
    pbcopy < /dev/null
    ```
 
@@ -106,7 +108,7 @@ The Keychain items this runbook uses:
 
    ```sh
    git switch main && git pull
-   npx wrangler deploy --cwd apps/api
+   pnpm --filter @learning-routes/api exec wrangler deploy
    ```
 
    In Cloudflare, under Workers, open `learning-routes-api`, then Settings, then Domains & Routes. Add the route `new.learningroutes.com/api/*` in the `learningroutes.com` zone. The host needs a proxied DNS record in that zone; the web Worker will serve the rest of it when it's deployed. Then:
@@ -121,7 +123,7 @@ The Keychain items this runbook uses:
    1. Enable sending for the domain, and add the DNS records it asks for:
 
       ```sh
-      npx wrangler email sending enable new.learningroutes.com
+      pnpm --filter @learning-routes/api exec wrangler email sending enable new.learningroutes.com
       ```
 
    2. Ask for a link at `https://new.learningroutes.com/api/auth/sign-in/magic-link`: a POST with your email, from the app's own page once it exists, or from the browser console on the app origin.
@@ -160,7 +162,7 @@ The Keychain items this runbook uses:
     4. Point Hyperdrive at the new URL:
 
        ```sh
-       npx wrangler hyperdrive update <id> --connection-string="$(security find-generic-password -s lr-app -w)"
+       pnpm --filter @learning-routes/api exec wrangler hyperdrive update <id> --connection-string="$(security find-generic-password -s lr-app -w)"
        ```
 
 ## Also to set up
