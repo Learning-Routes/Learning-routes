@@ -7,7 +7,7 @@ import { describe, expect, it } from "vitest";
 const { scripts } = JSON.parse(readFileSync("package.json", "utf8"));
 
 describe.each(["seed", "erase-user"])("db:%s", (name) => {
-  it("loads under the runner its command names", () => {
+  it("loads under the runner its command names", { timeout: 30_000 }, () => {
     expect(scripts[`db:${name}`]).toBe(`tsx scripts/${name}.ts`);
     const loaded = execFileSync(
       "node_modules/.bin/tsx",

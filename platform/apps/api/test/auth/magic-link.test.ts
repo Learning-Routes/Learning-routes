@@ -3,14 +3,15 @@ import { query, URLS } from "../db/connect";
 import { APP, harness, json, randomEmail } from "./harness";
 
 // Signing in with a link (Platform STEP 2 §5.3, §5.4, and review item 11). The link
-// carries the token in its fragment, which no request sends: the page it opens asks
-// "Sign in?", and its script moves the token into the form that posts it back.
+// carries the token in its fragment, which no request sends: the app's page it opens
+// asks which address it signs in, shows it, and posts the token back from a form.
 // Nothing signs in on a GET, so a link scanner, or a page on another site that
 // opens the link, signs in nobody, and no server or log ever sees the token in a URL.
 
 const EXACT_SESSION_COOKIE =
   /^__Host-lr_session=[^;\s]+; Max-Age=604800; Path=\/; HttpOnly; Secure; SameSite=Lax$/;
 const UUID_V7 = /^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
+const PADDING = /=+$/;
 const api = harness();
 afterEach(() => api.settle());
 
@@ -33,13 +34,24 @@ const confirm = (token: string, headers: Record<string, string> = {}, origin?: s
     origin,
   });
 
+const peek = (token: string) => api.call("/api/auth/magic-link/peek", json({ token }));
+
+/** How Better Auth stores a token: the base64url of its SHA-256. */
+async function identifierOf(token: string) {
+  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(token));
+  return btoa(String.fromCharCode(...new Uint8Array(digest)))
+    .replaceAll("+", "-")
+    .replaceAll("/", "_")
+    .replace(PADDING, "");
+}
+
 const sessionCookie = (response: Response) =>
   response.headers.getSetCookie().find((cookie) => cookie.startsWith("__Host-"));
 
 describe("signing in with a link", () => {
   it("sends a link to the app's confirmation page, and stores only the token's hash", async () => {
     const { url, token } = await requestLink();
-    expect(`${url.origin}${url.pathname}`).toBe(`${APP}/api/auth/magic-link/confirm`);
+    expect(`${url.origin}${url.pathname}`).toBe(`${APP}/sign-in/confirm`);
     // The request the link makes carries no token: it is only in the fragment.
     expect(url.search).toBe("");
     expect(url.href.split("#")[0]).not.toContain(token);
@@ -72,24 +84,11 @@ describe("signing in with a link", () => {
     expect(api.sent.find((entry) => entry.email === email)?.locale).toBe("fr");
   });
 
-  it("asks on a GET, in the browser's language, and signs in nobody", async () => {
-    const { url, token } = await requestLink();
-    for (const _ of [1, 2]) {
-      const page = await api.call(url.pathname, { headers: { "accept-language": "en" } });
-      expect(page.status).toBe(200);
-      expect(page.headers.getSetCookie()).toEqual([]);
-      const html = await page.text();
-      expect(html).toContain("Sign in to New Learning Routes?");
-      expect(html).toContain('<form method="post" action="/api/auth/magic-link/confirm">');
-      expect(html).toContain('<script src="/api/auth/magic-link/confirm.js" defer></script>');
-      expect(html).not.toContain(token);
-      expect(page.headers.get("content-security-policy")).toContain("script-src 'self'");
-    }
-    const spanish = await api.call(url.pathname, { headers: { "accept-language": "es-MX,es" } });
-    const html = await spanish.text();
-    expect(html).toContain('<html lang="es">');
-    expect(html).toContain("¿Entrar en New Learning Routes?");
-    // Better Auth's own GET verify, which would sign in, does not exist here.
+  it("signs in nobody on a GET: the API has no page for the link, and Better Auth's verify is gone", async () => {
+    const { token } = await requestLink();
+    const page = await api.call("/api/auth/magic-link/confirm");
+    expect(page.status).toBe(404);
+    expect(page.headers.getSetCookie()).toEqual([]);
     const scanner = await api.call(
       `/api/auth/magic-link/verify?token=${encodeURIComponent(token)}`,
     );
@@ -97,19 +96,37 @@ describe("signing in with a link", () => {
     expect(scanner.headers.getSetCookie()).toEqual([]);
   });
 
-  it("serves the page's script from the app, which moves the fragment's token into the form", async () => {
-    const script = await api.call("/api/auth/magic-link/confirm.js");
-    expect(script.status).toBe(200);
-    expect(script.headers.get("content-type")).toBe("text/javascript; charset=utf-8");
-    const source = await script.text();
-    expect(source).toContain("location.hash");
-    expect(source).toContain("history.replaceState");
+  it("says which address a link signs in, without using it up", async () => {
+    const { email, token } = await requestLink();
+    for (const _ of [1, 2]) {
+      const peeked = await peek(token);
+      expect(peeked.status).toBe(200);
+      expect(await peeked.json()).toEqual({ email });
+      expect(peeked.headers.getSetCookie()).toEqual([]);
+    }
+    expect(sessionCookie(await confirm(token))).toBeDefined();
+    expect((await peek(token)).status).toBe(404);
+  });
+
+  it("names no address for an unknown or expired token, or a request that is not one", async () => {
+    expect((await peek(crypto.randomUUID())).status).toBe(404);
+    const { token } = await requestLink();
+    const expired = await query(
+      URLS.migrator,
+      "update verification set expires_at = now() - interval '1 minute' where identifier = $1 returning 1",
+      [`magic-link:${await identifierOf(token)}`],
+    );
+    expect(expired).toHaveLength(1);
+    expect((await peek(token)).status).toBe(404);
+    const notJson = await api.call("/api/auth/magic-link/peek", json({ nothing: true }));
+    expect(notJson.status).toBe(400);
   });
 
   it("signs in on the POST, once, with an exact __Host- session cookie and a uuidv7 user", async () => {
     const { email, token } = await requestLink();
     const signedIn = await confirm(token);
     expect(signedIn.status).toBe(302);
+    expect(signedIn.headers.get("location")).toBe(`${APP}/studio`);
     // The whole Set-Cookie, exactly, and no other cookie: __Host- with Secure,
     // Path=/ and no Domain, HttpOnly, SameSite=Lax, for Better Auth's seven days.
     const cookies = signedIn.headers.getSetCookie();
@@ -121,17 +138,7 @@ describe("signing in with a link", () => {
 
     const again = await confirm(token);
     expect(sessionCookie(again)).toBeUndefined();
-  });
-
-  it("posts from a page whose referrer policy keeps the Origin a browser sends", async () => {
-    const { url, token } = await requestLink();
-    const page = await api.call(`${url.pathname}${url.search}`);
-    // Fetch: a form POST from a no-referrer page carries Origin: null.
-    const policy = page.headers.get("referrer-policy") ?? "";
-    const browserOrigin = policy === "no-referrer" ? "null" : APP;
-    const signedIn = await confirm(token, {}, browserOrigin);
-    expect(signedIn.status).toBe(302);
-    expect(sessionCookie(signedIn)).toBeDefined();
+    expect(again.headers.get("location")).toContain("/sign-in?notice=expired");
   });
 
   it("answers 400 to a POST that is not a form, and signs in nobody with a token that does not exist", async () => {

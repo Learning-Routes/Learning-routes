@@ -1,62 +1,36 @@
-import { negotiateLocale } from "@learning-routes/core/locales";
-import { SIGN_IN_TEXT } from "@learning-routes/core/sign-in-text";
 import type { Hono } from "hono";
 import { withClient } from "../db/with-db";
 import { AUTH_PATH, CONFIRM_PATH, createAuth } from "./auth";
-import { type EmailSender, escapeHtml } from "./email";
+import type { EmailSender } from "./email";
 
-// The sign-in link's page (Platform STEP 2 §5.3, and review item 11). The link
-// carries the token in its fragment, which no browser sends: this page's request
-// has no token, so no server, proxy or log sees it. The page asks "Sign in?" in the
-// browser's language; its script, an external file that script-src 'self' allows,
-// moves the token into the form, and the form's POST is the only thing that signs
-// in. A link scanner, or another site that opens the link, gets the question and
-// nothing more. Better Auth's own verify, which signs in on a GET, answers 404.
+// What the sign-in link's page needs (Platform STEP 2 review item 11, and Platform
+// STEP 3 §3). The link carries the token in its fragment, which no browser sends, so
+// no server, proxy or log sees it. The app's page reads it, asks here which address it
+// signs in so it can say so, and only its form's POST signs in. A link scanner, or
+// another site that opens the link, signs in nobody. Better Auth's own verify, which
+// signs in on a GET, answers 404.
 
-const PAGE_HEADERS = {
-  "content-type": "text/html; charset=utf-8",
-  "cache-control": "no-store",
-  // Not no-referrer: a browser then sends the form's POST with Origin: null, which
-  // the app-origin check refuses.
-  "referrer-policy": "same-origin",
-  "content-security-policy":
-    "default-src 'none'; script-src 'self'; form-action 'self'; base-uri 'none'; frame-ancestors 'none'",
-};
+const PADDING = /=+$/;
+const SIGNED_IN = "/studio";
+const EXPIRED = "/sign-in?notice=expired";
+const LIMITED = "/sign-in?notice=limited";
 
-const SCRIPT_PATH = `${CONFIRM_PATH}.js`;
-
-/** Moves the token from the fragment into the form, and out of the address bar. */
-const SCRIPT = `// The sign-in token is in the link's fragment, which no request carries.
-const token = new URLSearchParams(location.hash.slice(1)).get("token");
-history.replaceState(null, "", location.pathname);
-const form = document.querySelector("form");
-if (token && form) {
-  form.elements.token.value = token;
-} else {
-  form?.setAttribute("hidden", "");
-  document.getElementById("no-link")?.removeAttribute("hidden");
+/** How Better Auth stores a token when storeToken is "hashed". */
+async function identifierOf(token: string): Promise<string> {
+  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(token));
+  return btoa(String.fromCharCode(...new Uint8Array(digest)))
+    .replaceAll("+", "-")
+    .replaceAll("/", "_")
+    .replace(PADDING, "");
 }
-`;
 
-function page(acceptLanguage: string | undefined): string {
-  const locale = negotiateLocale(acceptLanguage);
-  const words = SIGN_IN_TEXT[locale];
-  return `<!doctype html>
-<html lang="${locale}">
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>${escapeHtml(words.pageTitle)}</title>
-<script src="${SCRIPT_PATH}" defer></script>
-<main>
-<h1>${escapeHtml(words.pageQuestion)}</h1>
-<form method="post" action="${CONFIRM_PATH}">
-<input type="hidden" name="token" value="">
-<button type="submit">${escapeHtml(words.pageAction)}</button>
-</form>
-<p id="no-link" hidden>${escapeHtml(words.pageNoLink)}</p>
-</main>
-</html>
-`;
+function addressIn(value: string): string | null {
+  try {
+    const { email } = JSON.parse(value) as { email?: unknown };
+    return typeof email === "string" ? email : null;
+  } catch {
+    return null;
+  }
 }
 
 export function confirmRoutes(
@@ -65,14 +39,22 @@ export function confirmRoutes(
 ) {
   app.get(`${AUTH_PATH}/magic-link/verify`, (c) => c.notFound());
 
-  app.get(CONFIRM_PATH, (c) => c.body(page(c.req.header("accept-language")), 200, PAGE_HEADERS));
-
-  app.get(SCRIPT_PATH, (c) =>
-    c.body(SCRIPT, 200, {
-      "content-type": "text/javascript; charset=utf-8",
-      "cache-control": "public, max-age=300",
-    }),
-  );
+  // Reads the pending link and leaves it: only the POST below uses it up. Whoever holds
+  // the token already has the email it was sent to.
+  app.post(`${AUTH_PATH}/magic-link/peek`, async (c) => {
+    const body = (await c.req.json().catch(() => null)) as { token?: unknown } | null;
+    const sent = body?.token;
+    if (typeof sent !== "string" || sent.length === 0) {
+      return c.json({ code: "invalid_input" }, 400);
+    }
+    const identifier = `magic-link:${await identifierOf(sent)}`;
+    const email = await withClient(c.env, c.executionCtx, async (db) => {
+      const { internalAdapter } = await createAuth(c.env, db, emailSender(c.env)).$context;
+      const pending = await internalAdapter.findVerificationValue(identifier);
+      return pending && new Date(pending.expiresAt) > new Date() ? addressIn(pending.value) : null;
+    });
+    return email === null ? c.json({ code: "not_found" }, 404) : c.json({ email });
+  });
 
   app.post(CONFIRM_PATH, async (c) => {
     const form = await c.req.formData().catch(() => null);
@@ -84,10 +66,12 @@ export function confirmRoutes(
     // Through Better Auth's handler, so its rate limits and checks apply.
     const verify = new URL(`${c.env.APP_ORIGIN}${AUTH_PATH}/magic-link/verify`);
     verify.searchParams.set("token", token);
-    verify.searchParams.set("callbackURL", "/");
+    verify.searchParams.set("callbackURL", SIGNED_IN);
+    verify.searchParams.set("errorCallbackURL", EXPIRED);
     const request = new Request(verify, { headers: c.req.raw.headers });
-    return withClient(c.env, c.executionCtx, (db) =>
+    const response = await withClient(c.env, c.executionCtx, (db) =>
       createAuth(c.env, db, emailSender(c.env)).handler(request),
     );
+    return response.status === 429 ? c.redirect(LIMITED, 303) : response;
   });
 }

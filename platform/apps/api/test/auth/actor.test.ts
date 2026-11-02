@@ -104,6 +104,20 @@ describe("the actor", () => {
     expect(connect).toHaveBeenCalledTimes(1);
   });
 
+  it("clears a dead session's cookie on the 401, and sets no cookie for a browser with none", async () => {
+    const dead = await api.call(
+      "/api/a/space.get",
+      json({ spaceId: crypto.randomUUID() }, { cookie: "__Host-lr_session=gone.gone" }),
+    );
+    expect(dead.status).toBe(401);
+    expect(dead.headers.getSetCookie()).toEqual([
+      "__Host-lr_session=; Max-Age=0; Path=/; HttpOnly; Secure; SameSite=Lax",
+    ]);
+    const none = await api.call("/api/a/space.get", json({ spaceId: crypto.randomUUID() }));
+    expect(none.status).toBe(401);
+    expect(none.headers.getSetCookie()).toEqual([]);
+  });
+
   it("can never be named in the body", async () => {
     const { cookie, userId } = await signIn();
     const someoneElse = (await signIn()).userId;

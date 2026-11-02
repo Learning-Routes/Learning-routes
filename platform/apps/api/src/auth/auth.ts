@@ -19,9 +19,11 @@ import { emailRateKey } from "./rate-key";
 
 export const AUTH_PATH = "/api/auth";
 export const CONFIRM_PATH = `${AUTH_PATH}/magic-link/confirm`;
+/** The app's page a link opens; the web Worker serves it. */
+const LINK_PATH = "/sign-in/confirm";
 
 /** The session cookie: __Host- pins it to the app's own origin (Secure, Path=/, no Domain). */
-const SESSION_COOKIE = "__Host-lr_session";
+export const SESSION_COOKIE = "__Host-lr_session";
 
 const LINKS_PER_ADDRESS = 5;
 const ADDRESS_WINDOW_MS = 600_000;
@@ -146,7 +148,7 @@ export function createAuth(env: Env, db: Database | Transaction, email: EmailSen
           await email.sendMagicLink({
             email: address,
             // In the fragment: no request, and so no log, ever carries it.
-            url: `${env.APP_ORIGIN}${CONFIRM_PATH}#token=${encodeURIComponent(token)}`,
+            url: `${env.APP_ORIGIN}${LINK_PATH}#token=${encodeURIComponent(token)}`,
             locale: negotiateLocale(ctx?.request?.headers.get("accept-language")),
           });
         },

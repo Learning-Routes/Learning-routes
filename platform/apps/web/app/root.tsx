@@ -12,7 +12,7 @@ import {
 
 import type { Route } from "./+types/root";
 import "./app.css";
-import { isLocale } from "@learning-routes/core/locales";
+import { isLocale, negotiateLocale } from "@learning-routes/core/locales";
 import { useEffect } from "react";
 import { pageContext } from "./context";
 import { isStorefront } from "./surface";
@@ -22,6 +22,7 @@ export function loader({ context, request }: Route.LoaderArgs) {
   return {
     nonce: context.get(pageContext).nonce,
     theme: themeFromCookie(request.headers.get("cookie")),
+    locale: negotiateLocale(request.headers.get("accept-language"), "es"),
   };
 }
 
@@ -33,7 +34,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
   return (
     // A storefront's HTML never varies by cookie: the media query decides there.
     <html
-      lang={lang && isLocale(lang) ? lang : "es"}
+      lang={lang && isLocale(lang) ? lang : (root?.locale ?? "es")}
       data-theme={storefront ? undefined : root?.theme}
     >
       <head>
