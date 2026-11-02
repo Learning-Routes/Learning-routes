@@ -5,14 +5,33 @@
   "compatibility_date": "2026-10-12",
   // pg needs Node's net and tls; Hyperdrive gives it a pooled Postgres connection.
   "compatibility_flags": ["nodejs_compat"],
+  // Minified: an unminified Worker ships every name and comment in its dependencies.
+  "minify": true,
   // Workers Logs and Traces: every log line kept, one trace in ten sampled.
   "observability": {
     "enabled": true,
-    "logs": { "enabled": true, "head_sampling_rate": 1 },
+    // No invocation logs: they carry each request's full URL. requestLog writes
+    // the matched route's pattern instead.
+    "logs": { "enabled": true, "head_sampling_rate": 1, "invocation_logs": false },
     "traces": { "enabled": true, "head_sampling_rate": 0.1 }
   },
   // The database is regional: run next to it (ADR 0005).
   "placement": { "mode": "targeted", "region": "aws:us-east-1" },
+  // APP_ORIGIN: auth's base URL, its only trusted origin, and the only Origin a
+  // non-GET request may carry. ENVIRONMENT is "development" only in .dev.vars,
+  // where sign-in links go to the log; anywhere else they are mailed.
+  "vars": {
+    "APP_ORIGIN": "https://new.learningroutes.com",
+    "ENVIRONMENT": "production",
+    "EMAIL_FROM": "sign-in@new.learningroutes.com"
+  },
+  // Cloudflare Email Sending: sign-in links, from this one address only. The
+  // domain is enabled with wrangler email sending enable (docs/runbooks/database.md).
+  "send_email": [
+    { "name": "EMAIL", "allowed_sender_addresses": ["sign-in@new.learningroutes.com"] }
+  ],
+  // Set with wrangler secret put; locally in .dev.vars (git-ignored).
+  "secrets": { "required": ["BETTER_AUTH_SECRET"] },
   "hyperdrive": [
     {
       "binding": "DB",

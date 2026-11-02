@@ -1,40 +1,26 @@
-import {
-  type ActorKind,
-  type Ctx,
-  mcpTools,
-  runAction,
-} from "@learning-routes/core/actions/define";
+import type { ActorKind } from "@learning-routes/core/actions/actor";
+import { mcpTools, runAction } from "@learning-routes/core/actions/define";
 import { ACTIONS } from "@learning-routes/core/actions/registry";
+import { ENROLLMENT, NOW, testCtx } from "@learning-routes/core/testing/actions/test-ctx";
 import { describe, expect, it } from "vitest";
 import { api } from "../app/api";
 
-// STEP 46 §4: a button and an agent can only ever do the same things. The
+// STEP 46 §4: a button and an agent reach the same actions the same way. The
 // registry, the MCP tools and the browser client are one list, and the gate treats
-// every actor alike.
+// every way in alike, except where the permission table sets one apart.
 
 const ACTORS: ActorKind[] = ["ui", "mcp", "agent"];
-const NOW = 1_800_000_000_000;
 
-function ctx(via: ActorKind): Ctx {
-  const rows = new Map<string, unknown>();
-  return {
-    actor: { via, userId: "student-1" },
-    store: {
-      get: async <T>(key: string) => rows.get(key) as T | undefined,
-      put: async <T>(key: string, value: T) => {
-        rows.set(key, value);
-      },
-    },
-    now: NOW,
-    newId: () => "id-1",
-  };
-}
+// Each actor gets its own world: one space, where the caller is an enrolled student.
+const ctx = (via: ActorKind) => testCtx(via);
 
 const REVIEW = {
+  enrollmentId: ENROLLMENT,
   reviewId: "0192d3a0-0000-7000-8000-000000000001",
-  cardId: "card-hello",
+  itemId: "0192d3a0-0000-7000-8000-0000000000c1",
   rating: 3,
   at: NOW,
+  elapsedMs: 900,
 };
 
 describe("action parity", () => {
