@@ -1,6 +1,6 @@
-import pg from "pg";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { query, URLS } from "../db/connect";
+import { spyOnConnections } from "../db/spy-connections";
 import { harness, json, randomEmail } from "./harness";
 
 // The actor comes only from the session (Platform STEP 2 §5.7): the API reads
@@ -98,7 +98,7 @@ describe("the actor", () => {
   it("runs on one database connection per request: the session is read on it before the transaction", async () => {
     const { cookie, userId } = await signIn();
     const enrollmentId = await enrollment(userId);
-    const connect = vi.spyOn(pg.Client.prototype, "connect");
+    const connect = spyOnConnections();
     const response = await api.call("/api/a/review.submit", json(review(enrollmentId), { cookie }));
     expect(response.status).toBe(200);
     expect(connect).toHaveBeenCalledTimes(1);

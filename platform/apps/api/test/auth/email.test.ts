@@ -44,7 +44,7 @@ describe("the sender", () => {
     const env = {
       ENVIRONMENT: "production",
       EMAIL: binding,
-      EMAIL_FROM: "sign-in@example.test",
+      EMAIL_FROM: "sign-in@example.com",
     } as unknown as Env;
     await emailSenderFor(env).sendMagicLink({
       email: "learner@example.com",
@@ -54,7 +54,7 @@ describe("the sender", () => {
     const { subject, text, html } = magicLinkEmail({ url: URL_WITH_FRAGMENT, locale: "es" });
     expect(sent).toEqual([
       {
-        from: { email: "sign-in@example.test", name: expect.any(String) },
+        from: { email: "sign-in@example.com", name: expect.any(String) },
         to: "learner@example.com",
         subject,
         text,
