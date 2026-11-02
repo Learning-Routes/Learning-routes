@@ -19,3 +19,7 @@
 /platform/docs/FOUNDATIONS.md @Garcia-G-G
 /platform/docs/adr/ @Garcia-G-G
 /platform/docs/WORKING_AGREEMENT.md @Garcia-G-G
+
+# The design: the reference and the tokens that hold it.
+/platform/docs/design/ @Garcia-G-G
+/platform/packages/design-tokens/ @Garcia-G-G
