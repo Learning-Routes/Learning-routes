@@ -29,17 +29,32 @@ export async function withDb<T>(
 export type Database = NodePgDatabase;
 
 /** One transaction as userId (or nobody) on a client withClient already holds. */
-export function transactionAs<T>(
+export async function transactionAs<T>(
   db: Database,
   userId: string | null,
   fn: (tx: Transaction) => Promise<T>,
 ): Promise<T> {
-  return db.transaction(async (tx) => {
-    // First statement, local to this transaction: RLS reads the acting user here,
-    // and a pooled connection's next transaction starts with nobody.
-    await setActingUser(tx, userId);
-    return fn(tx);
-  });
+  const once = () =>
+    db.transaction(async (tx) => {
+      // First statement, local to this transaction: RLS reads the acting user here,
+      // and a pooled connection's next transaction starts with nobody.
+      await setActingUser(tx, userId);
+      return fn(tx);
+    });
+  try {
+    return await once();
+  } catch (error) {
+    if (!isDeadlockVictim(error)) {
+      throw error;
+    }
+    // Rolled back, and nothing outside the database ran inside it: safe to run once more.
+    return once();
+  }
+}
+
+function isDeadlockVictim(error: unknown): boolean {
+  const { code, cause } = error as { code?: string; cause?: { code?: string } };
+  return (cause?.code ?? code) === "40P01";
 }
 
 /**

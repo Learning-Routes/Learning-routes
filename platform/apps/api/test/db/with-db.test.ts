@@ -73,6 +73,45 @@ describe("withDb (Platform STEP 2 §1.6)", () => {
   });
 });
 
+describe("withDb, when Postgres picks it as a deadlock's victim", () => {
+  const victim = sql`do $$ begin raise exception 'chosen' using errcode = '40P01'; end $$`;
+
+  it("retries the whole transaction once", async () => {
+    const { env, ctx, background } = worker();
+    let attempts = 0;
+    const answer = await withDb(env, ctx, null, async (tx) => {
+      attempts += 1;
+      if (attempts === 1) {
+        await tx.execute(victim);
+      }
+      return "kept";
+    });
+    expect([answer, attempts]).toEqual(["kept", 2]);
+    await Promise.all(background);
+  });
+
+  it("gives up after the retry, and never retries any other error", async () => {
+    const { env, ctx, background } = worker();
+    let attempts = 0;
+    await expect(
+      withDb(env, ctx, null, async (tx) => {
+        attempts += 1;
+        await tx.execute(victim);
+      }),
+    ).rejects.toThrow();
+    expect(attempts).toBe(2);
+    attempts = 0;
+    await expect(
+      withDb(env, ctx, null, async (tx) => {
+        attempts += 1;
+        await tx.execute(sql`select 1 / 0`);
+      }),
+    ).rejects.toThrow();
+    expect(attempts).toBe(1);
+    await Promise.all(background);
+  });
+});
+
 describe("withClient, for Better Auth (Platform STEP 2 §5.6)", () => {
   it("runs each statement on its own, so a failed one does not abort the next, and closes the client", async () => {
     const { env, ctx, background } = worker();

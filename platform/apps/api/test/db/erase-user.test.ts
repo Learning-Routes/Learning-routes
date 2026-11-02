@@ -257,7 +257,7 @@ describe("user.erase (Platform STEP 2 §2.16)", () => {
       await reviewing.query("begin");
       await reviewing.query("select 1 from cards where id = $1 for update", [rows[0]?.id]);
       await erasing.query("begin");
-      const erased = eraseUser(erasing, userId);
+      const erased = eraseUser(erasing, userId, TEST_SECRET);
       await blockedOrDone(await backendPid(erasing), erased);
       await reviewing.query(
         `insert into reviews (user_id, space_id, card_id, review_id, rating, reviewed_at, elapsed_ms, state_before)

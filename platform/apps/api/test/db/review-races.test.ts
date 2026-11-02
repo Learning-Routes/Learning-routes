@@ -146,7 +146,7 @@ describe("review.submit, the racing pair", () => {
       expect(rows[0]?.n).toBe(400);
     } finally {
       await setup.query("begin");
-      await eraseUser(setup, student);
+      await eraseUser(setup, student, TEST_SECRET);
       await setup.query("commit");
       await Promise.all([setup.end(), one.end(), two.end()]);
     }
