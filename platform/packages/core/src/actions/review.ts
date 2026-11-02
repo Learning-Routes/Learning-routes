@@ -1,4 +1,4 @@
-import { z } from "zod";
+import * as z from "zod";
 import { type Card, review } from "../learning/fsrs";
 import type { Repos, ReviewRecord } from "../repos/ports";
 import { ActionError, defineAction, type Scope } from "./define";

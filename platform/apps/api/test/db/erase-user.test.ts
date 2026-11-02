@@ -1,7 +1,17 @@
 import pg from "pg";
 import { describe, expect, it } from "vitest";
 import { eraseUser } from "../../scripts/erase-user";
-import { attempt, backendPid, blockedOrDone, newUser, query, rolledBack, URLS } from "./connect";
+import { emailRateKey } from "../../src/auth/rate-key";
+import {
+  attempt,
+  backendPid,
+  blockedOrDone,
+  newUser,
+  query,
+  rolledBack,
+  TEST_SECRET,
+  URLS,
+} from "./connect";
 import { newEnrollment, newRoute, newSpace, newVersion } from "./fixtures";
 
 // user.erase (Platform STEP 2 §2.16), run inside a transaction each test rolls back.
@@ -112,8 +122,24 @@ describe("user.erase (Platform STEP 2 §2.16)", () => {
         [crypto.randomUUID()],
       );
 
-      await eraseUser(db, erased);
+      const limits = [];
+      for (const userId of [erased, kept]) {
+        const { rows } = await db.query(`select email from "user" where id = $1`, [userId]);
+        const key = await emailRateKey(TEST_SECRET, rows[0]?.email);
+        await db.query("insert into rate_limit (key, count, last_request) values ($1, 1, $2)", [
+          key,
+          Date.now(),
+        ]);
+        limits.push(key);
+      }
 
+      await eraseUser(db, erased, TEST_SECRET);
+
+      const { rows: limitsLeft } = await db.query(
+        "select key from rate_limit where key = any ($1)",
+        [limits],
+      );
+      expect(limitsLeft).toEqual([{ key: limits[1] }]);
       expect(await linksLeft(db, erasedLinks)).toBe(0);
       expect(await linksLeft(db, keptLinks)).toBe(1);
       expect(Object.values(await rowsOf(db, erased)).every((n) => n === 0)).toBe(true);
@@ -147,7 +173,7 @@ describe("user.erase (Platform STEP 2 §2.16)", () => {
       const route = await newRoute(db, space);
       await newVersion(db, space, route, 1);
       const userId = await learner(db, space, route);
-      await eraseUser(db, userId.toUpperCase());
+      await eraseUser(db, userId.toUpperCase(), TEST_SECRET);
       expect(Object.values(await rowsOf(db, userId)).every((n) => n === 0)).toBe(true);
     });
   });
@@ -160,13 +186,13 @@ describe("user.erase (Platform STEP 2 §2.16)", () => {
         space,
         owner,
       ]);
-      await expect(eraseUser(db, owner)).rejects.toThrow("last owner");
+      await expect(eraseUser(db, owner, TEST_SECRET)).rejects.toThrow("last owner");
       const coOwner = await newUser(db);
       await db.query("insert into memberships (space_id, user_id, role) values ($1, $2, 'owner')", [
         space,
         coOwner,
       ]);
-      await eraseUser(db, owner);
+      await eraseUser(db, owner, TEST_SECRET);
     });
   });
 
@@ -194,7 +220,7 @@ describe("user.erase (Platform STEP 2 §2.16)", () => {
       try {
         const eraserPid = await backendPid(eraser);
         await eraser.query("begin");
-        const erasing = eraseUser(eraser, userId).then(() => rowsOf(eraser, userId));
+        const erasing = eraseUser(eraser, userId, TEST_SECRET).then(() => rowsOf(eraser, userId));
         await blockedOrDone(eraserPid, erasing);
         await writer.query("commit");
         expect(Object.values(await erasing).every((n) => n === 0)).toBe(true);
@@ -205,7 +231,7 @@ describe("user.erase (Platform STEP 2 §2.16)", () => {
     } finally {
       if (userId) {
         await setup.query("begin");
-        await eraseUser(setup, userId);
+        await eraseUser(setup, userId, TEST_SECRET);
         await setup.query("commit");
       }
       await Promise.all([setup.end(), writer.end()]);
@@ -231,7 +257,7 @@ describe("user.erase (Platform STEP 2 §2.16)", () => {
       await reviewing.query("begin");
       await reviewing.query("select 1 from cards where id = $1 for update", [rows[0]?.id]);
       await erasing.query("begin");
-      const erased = eraseUser(erasing, userId);
+      const erased = eraseUser(erasing, userId, TEST_SECRET);
       await blockedOrDone(await backendPid(erasing), erased);
       await reviewing.query(
         `insert into reviews (user_id, space_id, card_id, review_id, rating, reviewed_at, elapsed_ms, state_before)
@@ -276,9 +302,12 @@ describe("user.erase (Platform STEP 2 §2.16)", () => {
       // The first erase runs and holds its transaction open while the second starts.
       const secondPid = await backendPid(second);
       await first.query("begin");
-      await eraseUser(first, owners[0] as string);
+      await eraseUser(first, owners[0] as string, TEST_SECRET);
       await second.query("begin");
-      const secondDone = commitOrRollback(second, eraseUser(second, owners[1] as string));
+      const secondDone = commitOrRollback(
+        second,
+        eraseUser(second, owners[1] as string, TEST_SECRET),
+      );
       await blockedOrDone(secondPid, secondDone);
       const firstDone = commitOrRollback(first, Promise.resolve());
       const outcomes = await Promise.all([firstDone, secondDone]);
@@ -314,9 +343,9 @@ describe("user.erase (Platform STEP 2 §2.16)", () => {
 
   it("answers not found for a user that does not exist", async () => {
     await rolledBack(URLS.migrator, async (db) => {
-      await expect(eraseUser(db, "0190f3a0-0000-7000-8000-0000000000ff")).rejects.toThrow(
-        "no such user",
-      );
+      await expect(
+        eraseUser(db, "0190f3a0-0000-7000-8000-0000000000ff", TEST_SECRET),
+      ).rejects.toThrow("no such user");
     });
   });
 });

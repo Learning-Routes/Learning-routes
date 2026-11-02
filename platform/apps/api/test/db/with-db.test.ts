@@ -1,6 +1,6 @@
 import { sql } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
-import { withDb } from "../../src/db/with-db";
+import { withClient, withDb } from "../../src/db/with-db";
 import { query, URLS } from "./connect";
 
 // A stand-in for the Worker's env and ctx: Hyperdrive's connection string is the
@@ -70,5 +70,58 @@ describe("withDb (Platform STEP 2 §1.6)", () => {
 
     expect(background).toHaveLength(1);
     await Promise.allSettled(background);
+  });
+});
+
+describe("withDb, when Postgres picks it as a deadlock's victim", () => {
+  const victim = sql`do $$ begin raise exception 'chosen' using errcode = '40P01'; end $$`;
+
+  it("retries the whole transaction once", async () => {
+    const { env, ctx, background } = worker();
+    let attempts = 0;
+    const answer = await withDb(env, ctx, null, async (tx) => {
+      attempts += 1;
+      if (attempts === 1) {
+        await tx.execute(victim);
+      }
+      return "kept";
+    });
+    expect([answer, attempts]).toEqual(["kept", 2]);
+    await Promise.all(background);
+  });
+
+  it("gives up after the retry, and never retries any other error", async () => {
+    const { env, ctx, background } = worker();
+    let attempts = 0;
+    await expect(
+      withDb(env, ctx, null, async (tx) => {
+        attempts += 1;
+        await tx.execute(victim);
+      }),
+    ).rejects.toThrow();
+    expect(attempts).toBe(2);
+    attempts = 0;
+    await expect(
+      withDb(env, ctx, null, async (tx) => {
+        attempts += 1;
+        await tx.execute(sql`select 1 / 0`);
+      }),
+    ).rejects.toThrow();
+    expect(attempts).toBe(1);
+    await Promise.all(background);
+  });
+});
+
+describe("withClient, for Better Auth (Platform STEP 2 §5.6)", () => {
+  it("runs each statement on its own, so a failed one does not abort the next, and closes the client", async () => {
+    const { env, ctx, background } = worker();
+    const after = await withClient(env, ctx, async (db) => {
+      await expect(db.execute(sql`select 1 / 0`)).rejects.toThrow();
+      const rows = await db.execute<{ value: number }>(sql`select 2 as value`);
+      return rows.rows[0]?.value;
+    });
+    expect(after).toBe(2);
+    expect(background).toHaveLength(1);
+    await Promise.all(background);
   });
 });

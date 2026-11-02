@@ -1,4 +1,4 @@
-import { z } from "zod";
+import * as z from "zod";
 import { BLOCK_TYPES } from "../blocks/types";
 import { Route } from "../domain";
 import { Locale, LocalizedText } from "../localized-text";

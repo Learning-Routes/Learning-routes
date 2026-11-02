@@ -1,4 +1,4 @@
-import { z } from "zod";
+import * as z from "zod";
 import { can } from "../access";
 import type { SpaceRole } from "../domain";
 import type { Repos } from "../repos/ports";
