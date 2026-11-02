@@ -25,10 +25,11 @@ function pageScripts(routeIds) {
 
 export default [
   {
-    // No hydration (§3.2): the storefront loads theme.js and nothing else (e2e/storefront.spec.ts).
-    name: "storefront route",
-    path: [`${CLIENT}/theme.js`],
-    limit: "1 KB",
+    // Static CSS, one file for every surface (Platform STEP 3 §2.2). The storefront
+    // ships no JavaScript at all: e2e/storefront.spec.ts checks it has no script.
+    name: "storefront CSS",
+    path: [`${CLIENT}/assets/*.css`],
+    limit: "20 KB",
     gzip: true,
   },
   {

@@ -18,7 +18,7 @@ export default {
     },
     "apps/web": {
       // Loaded by the HTML, not imported.
-      entry: ["public/*.js"],
+      entry: [],
     },
   },
   // CSS @import names packages too (app.css imports the design tokens).

@@ -9,5 +9,11 @@
     "logs": { "enabled": true, "head_sampling_rate": 1 },
     "traces": { "enabled": true, "head_sampling_rate": 0.1 }
   },
-  "upload_source_maps": true
+  "upload_source_maps": true,
+  // APP_ORIGIN: the only host that keeps a theme cookie. ENVIRONMENT is "development"
+  // only in a local run, where /studio/_design exists.
+  "vars": {
+    "APP_ORIGIN": "https://new.learningroutes.com",
+    "ENVIRONMENT": "production"
+  }
 }

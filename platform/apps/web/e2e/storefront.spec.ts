@@ -2,14 +2,14 @@ import { expect, test } from "@playwright/test";
 
 const SCRIPT = /<script\b[^>]*>/g;
 
-test("the storefront ships no React: no module script, no preload, only its own files", async ({
+test("the storefront ships no script at all: no React, no preload, no theme.js", async ({
   request,
 }) => {
   const html = await (await request.get("/es")).text();
 
   expect(html).not.toContain('type="module"');
   expect(html).not.toContain("modulepreload");
-  expect(html.match(SCRIPT)).toEqual(['<script src="/theme.js">']);
+  expect(html.match(SCRIPT)).toBeNull();
 });
 
 test("an app page is hydrated", async ({ page, request }) => {
