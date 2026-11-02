@@ -88,7 +88,8 @@ try {
   }
   for (const [id, { name, limit, unit }] of Object.entries(TARGETS)) {
     const value = median(runs.map((audits) => audits[id].numericValue));
-    const over = value >= limit;
+    // A run with no measurement must fail: NaN compares false against any limit.
+    const over = !Number.isFinite(value) || value >= limit;
     failed ||= over;
     const shown = unit ? Math.round(value) : value.toFixed(3);
     console.log(`${name}: ${shown}${unit} (target under ${limit}${unit})${over ? ", over" : ""}`);
