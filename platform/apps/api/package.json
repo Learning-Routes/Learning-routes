@@ -8,22 +8,32 @@
     "dev": "wrangler dev",
     "build": "wrangler deploy --dry-run --outdir dist",
     "test": "vitest run",
-    "typecheck": "wrangler types && tsc --noEmit",
-    "cf-typegen": "wrangler types",
-    "postinstall": "wrangler types",
+    "typecheck": "wrangler types --strict-vars=false && tsc --noEmit",
+    "cf-typegen": "wrangler types --strict-vars=false",
+    "postinstall": "wrangler types --strict-vars=false",
     "db:migrate": "node scripts/migrate.ts",
-    "db:lint": "squawk -c .squawk.toml drizzle/*.sql"
+    "db:lint": "squawk -c .squawk.toml drizzle/*.sql",
+    "db:auth-schema": "auth generate --config src/auth/schema.config.ts --adapter drizzle --dialect postgresql --output auth-schema.generated.ts -y",
+    "db:generate": "drizzle-kit generate",
+    "db:erase-user": "tsx scripts/erase-user.ts",
+    "db:check": "node scripts/check-drizzle-sync.mjs",
+    "db:measure-rls": "node scripts/measure-rls.ts",
+    "db:seed": "tsx scripts/seed.ts"
   },
   "dependencies": {
     "@learning-routes/core": "workspace:*",
+    "better-auth": "1.7.8",
     "drizzle-orm": "0.45.4",
     "hono": "4.13.13",
-    "pg": "8.23.1"
+    "pg": "8.23.1",
+    "zod": "4.6.7"
   },
   "devDependencies": {
     "@types/pg": "8.23.1",
+    "auth": "1.7.8",
     "drizzle-kit": "0.31.11",
     "squawk-cli": "2.69.0",
+    "tsx": "4.23.15",
     "typescript": "5.9.3",
     "vitest": "5.0.4",
     "wrangler": "4.151.0"

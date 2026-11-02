@@ -1,0 +1,273 @@
+/* The landing (Platform STEP 3 §4): the mockup's composition, with the map as SVG. */
+
+.landing-hero {
+  position: relative;
+  min-height: calc(100svh - var(--size-header));
+  overflow: hidden;
+  background: var(--gradient-stage);
+}
+.landing-hero-text {
+  position: relative;
+  z-index: var(--z-raised);
+  max-width: 44rem;
+  padding: clamp(var(--space-10), 9vh, var(--space-24)) var(--space-8) var(--space-8)
+    clamp(var(--space-8), 5.5vw, var(--space-20));
+}
+.landing-headline {
+  margin: 0;
+  font-size: var(--text-display);
+  font-weight: var(--weight-display);
+  font-stretch: var(--stretch-display);
+  letter-spacing: var(--tracking-display);
+  line-height: var(--leading-display);
+  text-wrap: balance;
+}
+.landing-lead {
+  margin: var(--space-5) 0 0;
+  max-width: 36ch;
+  font-size: var(--text-lead);
+  line-height: 1.42;
+  color: var(--color-sub);
+}
+.landing-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3) var(--space-5);
+  margin-top: var(--space-6);
+}
+.landing-fine {
+  margin: 0;
+  font-size: var(--text-small);
+  color: var(--color-muted);
+}
+
+/* The map */
+.route-map {
+  display: block;
+}
+.hero-map-wide {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.hero-map-phone {
+  display: none;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 390 / 460;
+}
+.map-sheet-shade {
+  fill: var(--color-shade);
+  opacity: 0.35;
+}
+.map-sheet-side {
+  fill: var(--color-edge);
+  stroke: var(--color-faint);
+  stroke-width: 1;
+}
+.map-sheet-top {
+  fill: var(--color-card);
+  stroke: var(--color-border-subtle);
+  stroke-width: 1;
+}
+.map-sheet-locked {
+  opacity: 0.68;
+}
+.map-track {
+  fill: none;
+  stroke: var(--color-faint);
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-dasharray: 1 5;
+}
+.map-branch {
+  fill: none;
+  stroke: var(--color-reinforce);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-dasharray: 1 5;
+}
+.map-branch-stop {
+  fill: var(--color-card);
+  stroke: var(--color-reinforce);
+  stroke-width: 2;
+  stroke-dasharray: 2 3;
+}
+.map-route {
+  fill: none;
+  stroke: var(--color-accent);
+  stroke-width: 3.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 1;
+  animation: map-route-draw calc(var(--motion-300) * 4) var(--ease-out) both;
+}
+@keyframes map-route-draw {
+  from {
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .map-route {
+    animation: none;
+  }
+}
+.map-origin {
+  fill: var(--color-accent);
+}
+.map-disc {
+  fill: var(--color-card);
+  stroke: var(--color-field-border);
+  stroke-width: 2;
+}
+.map-disc-0 {
+  stroke: var(--color-accent);
+}
+.map-stop {
+  fill: var(--color-card);
+  stroke: var(--color-field-border);
+  stroke-width: 1.75;
+}
+.map-stop-exam {
+  stroke: var(--color-accent);
+  fill: var(--color-accent-soft);
+}
+.map-stop-done {
+  fill: var(--color-accent);
+  stroke: var(--color-accent);
+}
+.map-stop-here {
+  stroke: var(--color-highlight);
+  stroke-width: 3.5;
+}
+.map-stop-locked {
+  stroke: var(--color-faint);
+  fill: var(--color-bg-2);
+}
+.map-chip-field {
+  fill: var(--color-card);
+  stroke: var(--color-border-subtle);
+}
+.map-chip-dot {
+  fill: var(--color-accent);
+}
+.map-chip-locked .map-chip-dot {
+  fill: var(--color-faint);
+}
+.map-chip-text {
+  fill: var(--color-sub);
+  font: var(--weight-label) 12.5px var(--font-sans);
+  white-space: pre;
+}
+.map-chip-badge {
+  fill: var(--color-accent-soft);
+}
+.map-chip-badge-text {
+  fill: var(--color-accent-strong);
+  font: var(--weight-label) 11.5px var(--font-sans);
+}
+
+/* How it works */
+.landing-steps {
+  scroll-margin-top: var(--size-header);
+  display: grid;
+  gap: var(--space-4);
+  max-width: 90rem;
+  margin-inline: auto;
+  padding: var(--space-16) clamp(var(--space-4), 5.5vw, var(--space-20));
+}
+.landing-step {
+  display: grid;
+  grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+  align-items: center;
+  gap: var(--space-12);
+  padding-block: var(--space-8);
+}
+.landing-step:nth-child(even) .landing-step-text {
+  order: 2;
+}
+.landing-step-number {
+  display: block;
+  margin-bottom: var(--space-3);
+  font-family: var(--font-mono);
+  font-size: var(--text-small);
+  font-weight: 400;
+  color: var(--color-muted);
+}
+.landing-step-title {
+  margin: 0;
+  max-width: 16ch;
+  font-size: var(--text-heading);
+  font-weight: var(--weight-display);
+  font-stretch: var(--stretch-display);
+  letter-spacing: var(--tracking-display);
+  line-height: var(--leading-display);
+  text-wrap: balance;
+}
+.landing-step-body {
+  margin: var(--space-4) 0 0;
+  max-width: 34ch;
+  font-size: var(--text-lead);
+  line-height: 1.42;
+  color: var(--color-sub);
+}
+.landing-step-map {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 720 / 500;
+  border-radius: var(--radius-section);
+  background: var(--gradient-stage);
+  box-shadow: inset 0 0 0 1px var(--color-border-subtle);
+}
+
+/* The close */
+.landing-close {
+  display: grid;
+  justify-items: start;
+  gap: var(--space-5);
+  max-width: 90rem;
+  margin-inline: auto;
+  padding: var(--space-12) clamp(var(--space-4), 5.5vw, var(--space-20)) var(--space-24);
+}
+.landing-close-title {
+  margin: 0;
+  max-width: 18ch;
+  font-size: var(--text-heading);
+  font-weight: var(--weight-display);
+  font-stretch: var(--stretch-display);
+  letter-spacing: var(--tracking-display);
+  line-height: var(--leading-display);
+}
+.landing-footer {
+  padding: var(--space-6) clamp(var(--space-4), 5.5vw, var(--space-20)) var(--space-8);
+  border-top: 1px solid var(--color-border-subtle);
+  font-size: var(--text-small);
+  color: var(--color-muted);
+}
+
+@media (max-width: 860px) {
+  .landing-hero {
+    min-height: 0;
+  }
+  .landing-hero-text {
+    padding: var(--space-8) var(--space-4) var(--space-2);
+  }
+  .hero-map-wide {
+    display: none;
+  }
+  .hero-map-phone {
+    display: block;
+  }
+  .landing-step {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-6);
+  }
+  .landing-step:nth-child(even) .landing-step-text {
+    order: 0;
+  }
+}

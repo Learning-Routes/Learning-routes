@@ -11,10 +11,12 @@ export default {
       entry: ["scripts/*.mjs"],
       // check-worker-size.mjs runs each app's own wrangler, from that app's folder.
       ignoreBinaries: ["wrangler"],
+      // Run by scripts/check-lighthouse.mjs through pnpm exec, not imported.
+      ignoreDependencies: ["lighthouse"],
     },
-    "apps/web": {
-      // Loaded by the HTML, not imported.
-      entry: ["public/*.js"],
+    "apps/api": {
+      // Read by Better Auth's CLI through pnpm db:auth-schema.
+      entry: ["src/auth/schema.config.ts"],
     },
   },
   // CSS @import names packages too (app.css imports the design tokens).

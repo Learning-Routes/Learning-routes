@@ -15,6 +15,11 @@ const CHECKS = [
   ["no personal data in fixtures", "pnpm", ["fixtures"]],
   ["versions: exact, at least 14 days old", "node", ["scripts/check-versions.mjs"]],
   ["migrations (squawk)", "pnpm", ["--filter", "@learning-routes/api", "db:lint"]],
+  [
+    "migrations match the schema (drizzle-kit)",
+    "pnpm",
+    ["--filter", "@learning-routes/api", "db:check"],
+  ],
   ["tests, with coverage floors", "pnpm", ["turbo", "run", "test", "--continue"]],
   ["builds", "pnpm", ["turbo", "run", "build"]],
   [
@@ -25,6 +30,7 @@ const CHECKS = [
   ],
   ["Worker size budgets", "pnpm", ["worker-size"], "builds"],
   ["browser tests", "pnpm", ["--filter", "@learning-routes/web", "e2e"], "builds"],
+  ["storefront performance (Lighthouse)", "node", ["scripts/check-lighthouse.mjs"], "builds"],
 ];
 
 const failed = [];

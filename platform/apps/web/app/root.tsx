@@ -13,24 +13,42 @@ import {
 import type { Route } from "./+types/root";
 import "./app.css";
 import { isLocale } from "@learning-routes/core/locales";
+import archivo from "@learning-routes/design-tokens/fonts/Archivo-latin.woff2?url";
 import { useEffect } from "react";
 import { pageContext } from "./context";
 import { isStorefront } from "./surface";
+import { themeFromCookie } from "./theme";
 
-export function loader({ context }: Route.LoaderArgs) {
-  return { nonce: context.get(pageContext).nonce };
+export const links: Route.LinksFunction = () => [
+  { rel: "preload", href: archivo, as: "font", type: "font/woff2", crossOrigin: "anonymous" },
+];
+
+export function loader({ context, request }: Route.LoaderArgs) {
+  return {
+    nonce: context.get(pageContext).nonce,
+    theme: themeFromCookie(request.headers.get("cookie")),
+  };
 }
 
 export function Layout({ children }: { children: React.ReactNode }) {
-  const nonce = useRouteLoaderData<typeof loader>("root")?.nonce;
-  const storefront = isStorefront(useMatches());
+  const root = useRouteLoaderData<typeof loader>("root");
+  const nonce = root?.nonce;
+  const matches = useMatches();
+  const storefront = isStorefront(matches);
+  // A page says its language when it has been translated; the rest are in Spanish.
+  const pageLocale = matches
+    .map((match) => (match.loaderData as { locale?: string } | undefined)?.locale)
+    .find(Boolean);
   const { lang } = useParams();
   return (
-    <html lang={lang && isLocale(lang) ? lang : "es"}>
+    // A storefront's HTML never varies by cookie: the media query decides there.
+    <html
+      lang={lang && isLocale(lang) ? lang : (pageLocale ?? "es")}
+      data-theme={storefront ? undefined : root?.theme}
+    >
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <script src="/theme.js" />
         <Meta />
         <Links />
       </head>

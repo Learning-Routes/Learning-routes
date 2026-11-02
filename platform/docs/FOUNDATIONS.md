@@ -82,7 +82,7 @@ A name says what a thing is, in the product's own words. A contributor should be
 
 ### The words we use
 
-One word per concept, and the same word in the code, the database, the UI copy and the docs.
+One word per concept, and the same word in the code, the database and the docs. What a person reads uses the same word, except for the plainer ones listed under "What a person reads".
 
 | Word | Means | Not |
 |---|---|---|
@@ -107,6 +107,18 @@ One word per concept, and the same word in the code, the database, the UI copy a
 | **storefront** | A space's public pages | landing, shop |
 | **studio** | Where creators build | dashboard, admin |
 | **credits** / **spend** | What AI work costs, and the gate that limits it | tokens, when it means money |
+
+### What a person reads
+
+Some names belong to the code and are not what a person should read. Code and URLs keep them (`storefront`, `studio`, `agent`); this table covers only UI copy, in all five locales. A copy check in `packages/core/test/copy.test.ts` fails on the old words in a locale file.
+
+| Concept | es | en | pt | fr | it | Not |
+|---|---|---|---|---|---|---|
+| Short topics after a missed question | práctica extra | extra practice | prática extra | pratique supplémentaire | pratica extra | refuerzo |
+| A check, in a lesson | pregunta | question | pergunta | question | domanda | comprobación, check |
+| **storefront** | tu página, la página de [creador] | your page | sua página | votre page | la tua pagina | vitrina, storefront |
+| **studio** | Enseñar | Teach | Ensinar | Enseigner | Insegnare | Estudio |
+| **agent** | tu asistente | your assistant | seu assistente | votre assistant | il tuo assistente | agente |
 
 **v1's names stay in v1's data.** v1's stored rows, its lesson syntax (`:::flashcards`, `## Flashcards:`) and the golden fixtures keep v1's words. The v1 import boundary, `packages/core/src/v1-import/vocabulary.ts`, maps them to the glossary's (`flashcards` to `cards`, `aftermath` to `trailing_content`), and nothing past that boundary uses v1's names. v1's stylesheet keeps its `--journey-*` properties; the platform's design tokens call them `--route-map-*`.
 

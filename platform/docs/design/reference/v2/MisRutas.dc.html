@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Mis rutas</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;font-family:"Archivo",system-ui,sans-serif;color:#1D1226}
+a{color:#57248A}a:hover{color:#3E1866}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #F5F2F6; display: flex; flex-direction: column; font-family: Archivo, system-ui, sans-serif; color: #1D1226; font-variant-numeric: tabular-nums">
+<header style="padding: 12px 20px; display: flex; align-items: center; justify-content: space-between">
+<div role="tablist" aria-label="Modo" style="display: flex; background: #ECE6EF; border-radius: 12px; padding: 4px">
+<button role="tab" aria-selected="true" style="min-height: 40px; padding: 0 16px; border-radius: 9px; border: none; background: #FFFFFF; font-family: Archivo, sans-serif; font-weight: 700; font-size: 15px; color: #1D1226">Aprender</button>
+<a href="Estudio.dc.html" role="tab" aria-selected="false" style="min-height: 40px; padding: 0 16px; border-radius: 9px; display: flex; align-items: center; text-decoration: none; font-size: 15px; color: #4A3D54">Enseñar</a>
+</div>
+<button aria-label="Tu cuenta" style="width: 44px; height: 44px; border-radius: 50%; border: none; background: #1D1226; font-family: Archivo, sans-serif; font-weight: 800; color: #FFFFFF">G</button>
+</header>
+
+<main style="flex: 1; padding: 8px 20px 20px; display: flex; flex-direction: column; gap: 16px; overflow: hidden">
+<h1 style="margin: 0; font-size: 40px; font-weight: 800; font-stretch: 116%; letter-spacing: -0.04em; line-height: 0.95">Mis rutas</h1>
+
+<a href="Mapa.dc.html" style="text-decoration: none; color: #FFFFFF; background: #1D1226; border-radius: 22px; padding: 20px; display: flex; flex-direction: column; gap: 14px; position: relative; overflow: hidden">
+<svg viewBox="0 0 350 70" style="width: 100%; height: auto; display: block" aria-hidden="true">
+<path d="M12 56 C 60 56, 70 20, 120 22 S 200 60, 250 36 S 320 14, 338 16" stroke="#3A2C48" stroke-width="14" fill="none" stroke-linecap="round"></path>
+<path d="M12 56 C 60 56, 70 20, 120 22" stroke="#B48BE0" stroke-width="6" fill="none" stroke-linecap="round"></path>
+<circle cx="12" cy="56" r="7" fill="#7CC4A0"></circle>
+<circle cx="120" cy="22" r="10" fill="#1D1226" stroke="#F5B23C" stroke-width="4"></circle>
+<rect x="330" y="8" width="16" height="16" rx="3" transform="rotate(45 338 16)" fill="#F5F2F6"></rect>
+</svg>
+<div style="display: flex; flex-direction: column; gap: 4px">
+<span style="font-size: 24px; font-weight: 800; letter-spacing: -0.02em">Portugués para viajar</span>
+<span style="font-size: 15px; color: #CFC4D8">Vas en el tema 3 de 14: Ser y estar</span>
+</div>
+<span style="height: 48px; display: flex; align-items: center; justify-content: center; background: #F5F2F6; color: #1D1226; font-weight: 700; font-size: 17px; border-radius: 12px">Seguir</span>
+</a>
+
+<a href="Leccion.dc.html" style="text-decoration: none; color: #1D1226; background: #FFFFFF; border-radius: 18px; padding: 16px 18px; box-shadow: inset 0 0 0 1.5px #E79A0F; display: flex; align-items: center; justify-content: space-between; gap: 12px">
+<span style="display: flex; flex-direction: column; gap: 2px"><b style="font-size: 17px">Repasa 12 preguntas</b><span style="font-size: 14px; color: #4A3D54">Unos 6 minutos, para no olvidar</span></span>
+<span style="font-weight: 700; color: #8A5800">Repasar</span>
+</a>
+
+<h2 style="margin: 8px 0 0; font-size: 17px; font-weight: 700; color: #4A3D54">También estudias</h2>
+<a href="Mapa.dc.html" style="text-decoration: none; color: #1D1226; background: #FFFFFF; border-radius: 18px; padding: 16px 18px; box-shadow: inset 0 0 0 1px #E4DCE8; display: flex; flex-direction: column; gap: 8px">
+<span style="font-size: 19px; font-weight: 800">Cálculo sin miedo</span>
+<span style="font-size: 14px; color: #4A3D54">Con Profe Tomás. Módulo 2 de 6.</span>
+<div style="height: 6px; border-radius: 3px; background: #ECE6EF; overflow: hidden"><div style="width: 31%; height: 6px; background: #2C5F8E"></div></div>
+</a>
+
+<a href="Catalogo.dc.html" style="min-height: 52px; display: flex; align-items: center; justify-content: center; text-decoration: none; color: #57248A; font-weight: 700">Explorar más rutas</a>
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

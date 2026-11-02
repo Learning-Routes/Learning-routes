@@ -6,8 +6,15 @@
   // Workers Logs and Traces: every log line kept, one trace in ten sampled.
   "observability": {
     "enabled": true,
-    "logs": { "enabled": true, "head_sampling_rate": 1 },
+    // Invocation logs off: each carries the request's whole URL.
+    "logs": { "enabled": true, "head_sampling_rate": 1, "invocation_logs": false },
     "traces": { "enabled": true, "head_sampling_rate": 0.1 }
   },
-  "upload_source_maps": true
+  "upload_source_maps": true,
+  // APP_ORIGIN: the only host that keeps a theme cookie. ENVIRONMENT is "development"
+  // only in a local run, where /studio/_design exists.
+  "vars": {
+    "APP_ORIGIN": "https://new.learningroutes.com",
+    "ENVIRONMENT": "production"
+  }
 }

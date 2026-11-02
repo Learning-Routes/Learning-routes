@@ -1,4 +1,4 @@
-import { z } from "zod";
+import * as z from "zod";
 import { LocalizedText } from "../localized-text";
 
 // Field names are the ones v1 content carries (test/golden/lesson_parser.json).

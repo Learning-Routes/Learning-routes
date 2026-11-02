@@ -1,28 +1,64 @@
-import { z } from "zod";
+import * as z from "zod";
+import { can } from "../access";
+import type { SpaceRole } from "../domain";
+import type { Repos } from "../repos/ports";
+import type { Actor, ActorKind } from "./actor";
+import { redact } from "./redact";
 
 // The action registry: every change to the platform is one action. The internal
-// endpoint, public REST, MCP and the typed client all come from it, so a button and
-// an agent can only ever do the same things. Pure: the caller supplies the store,
-// the time and the id maker.
+// endpoint, public REST, MCP and the typed client all come from it, and every
+// caller goes through the same gate, so a button and an agent reach the same
+// actions the same way. Only the permission table sets a way in apart: changes to
+// memberships and pricing are made in the app, never by an agent. Pure: the caller
+// supplies the repositories, the tenancy, the clock and the id maker.
 
-export type ActorKind = "ui" | "mcp" | "agent";
-export interface Actor {
-  via: ActorKind;
-  userId: string;
+/** The row an action acts on; its space is the space the action runs in. */
+export interface Target {
+  kind: "space" | "route" | "enrollment";
+  id: string;
+  /**
+   * An action the actor takes before they belong to the row's space:
+   * enrollment.create. It runs without a scope, logs in the space its output
+   * names, and logs a refusal in the row's space if the actor can see it.
+   */
+  self?: true;
 }
 
-/** What an action may read and write. The API implements it on real storage. */
-export interface Store {
-  get<T>(key: string): Promise<T | undefined>;
-  put<T>(key: string, value: T): Promise<void>;
+/**
+ * Where a row lives and who may act there (Platform STEP 2 §3.2). The API reads
+ * both from Postgres, in one query, under the acting user's row-level security.
+ */
+export interface Tenancy {
+  /** The row's space and the user's role there; null when they cannot see the row. */
+  scopeOf(
+    target: Target,
+    userId: string,
+  ): Promise<{ spaceId: string; role: SpaceRole | null } | null>;
+}
+
+/** The space an action runs in, and the actor's role there, found by runAction. */
+export interface Scope {
+  spaceId: string;
+  role: SpaceRole;
+}
+
+/** The time, in epoch milliseconds. A port, so core never reads a clock. */
+export interface Clock {
+  now(): number;
+}
+
+/** New ids. A port, so core never draws random bytes. */
+export interface Ids {
+  newId(): string;
 }
 
 export interface Ctx {
   actor: Actor;
-  store: Store;
-  /** Epoch milliseconds. */
-  now: number;
-  newId: () => string;
+  /** The repositories, inside the request's transaction (Platform STEP 2 §4). */
+  repos: Repos;
+  tenancy: Tenancy;
+  clock: Clock;
+  ids: Ids;
 }
 
 export interface ActionDef<I extends z.ZodType = z.ZodType, O = unknown> {
@@ -30,7 +66,9 @@ export interface ActionDef<I extends z.ZodType = z.ZodType, O = unknown> {
   kind: "query" | "mutation";
   description: string;
   input: I;
-  run: (ctx: Ctx, input: z.infer<I>) => Promise<O>;
+  /** The row the action acts on; a spaceId in the input is checked against its space. */
+  target: (input: z.infer<I>) => Target;
+  run: (ctx: Ctx, input: z.infer<I>, scope: Scope | null) => Promise<O>;
 }
 
 export type Registry = Record<string, ActionDef>;
@@ -39,7 +77,7 @@ export type Registry = Record<string, ActionDef>;
 export class ActionError extends Error {
   override name = "ActionError";
   constructor(
-    readonly code: "not_found" | "forbidden" | "invalid",
+    readonly code: "not_found" | "forbidden" | "invalid" | "conflict" | "position_taken",
     message: string,
   ) {
     super(message);
@@ -57,15 +95,21 @@ export function defineAction<I extends z.ZodType, O>(action: ActionDef<I, O>): A
   return action;
 }
 
+const NOT_FOUND = { ok: false, code: "not_found", message: "not found" } as const;
+
 /**
- * New: the one gate every caller goes through. It validates the input, runs the
- * action and reports the result; the refusals are the same for every actor.
+ * New: the one gate every caller goes through. It validates the input, finds the
+ * target row's space and the actor's role there, checks the permission table, runs
+ * the action and reports the result; the refusals are the same for every actor.
+ * Outside the space, or for a row the actor cannot see, the answer is not_found;
+ * forbidden is only for a member whose role or way in is not allowed.
  */
 export async function runAction(
   registry: Registry,
   name: string,
   rawInput: unknown,
   ctx: Ctx,
+  isAllowed: (role: SpaceRole, action: string, via: ActorKind) => boolean = can,
 ): Promise<ActionResult> {
   const action = Object.hasOwn(registry, name) ? registry[name] : undefined;
   if (!action) {
@@ -79,14 +123,112 @@ export async function runAction(
     }));
     return { ok: false, code: "invalid_input", issues };
   }
+  const target = action.target(parsed.data);
+  if (target.self) {
+    return runForSelf(action, name, parsed.data, ctx, target, isAllowed);
+  }
+  // The space comes from the row, never from the input.
+  const found = await ctx.tenancy.scopeOf(target, ctx.actor.userId);
+  const claimed = (parsed.data as { spaceId?: unknown }).spaceId;
+  if (
+    found === null ||
+    found.role === null ||
+    (claimed !== undefined && String(claimed).toLowerCase() !== found.spaceId.toLowerCase())
+  ) {
+    return NOT_FOUND;
+  }
+  const { spaceId, role } = found;
+  const result = await runInScope(action, name, parsed.data, ctx, { spaceId, role }, isAllowed);
+  // Mutations and every refusal are logged, in the action's transaction; a query that succeeds is not.
+  if (action.kind === "mutation" || !result.ok) {
+    await log(ctx, spaceId, name, parsed.data, result);
+  }
+  return result;
+}
+
+/** An action on the actor's own behalf: allowed as the student role it may give them. */
+async function runForSelf(
+  action: ActionDef,
+  name: string,
+  input: unknown,
+  ctx: Ctx,
+  target: Target,
+  isAllowed: (role: SpaceRole, action: string, via: ActorKind) => boolean,
+): Promise<ActionResult> {
+  if (!isAllowed("student", name, ctx.actor.via)) {
+    return { ok: false, code: "forbidden", message: "not allowed" };
+  }
   try {
-    return { ok: true, output: await action.run(ctx, parsed.data) };
+    const output = await action.run(ctx, input, null);
+    const { spaceId } = output as { spaceId?: unknown };
+    const result: ActionResult = { ok: true, output };
+    if (typeof spaceId === "string") {
+      await log(ctx, spaceId, name, input, result);
+    }
+    return result;
+  } catch (error) {
+    if (!(error instanceof ActionError)) {
+      throw error;
+    }
+    const result: ActionResult = { ok: false, code: error.code, message: error.message };
+    // A member's refusal is logged in the row's space; to anyone else it does not exist.
+    const scope = await ctx.tenancy.scopeOf(target, ctx.actor.userId);
+    if (scope?.role) {
+      await log(ctx, scope.spaceId, name, input, result);
+    }
+    return result;
+  }
+}
+
+async function log(ctx: Ctx, spaceId: string, name: string, input: unknown, result: ActionResult) {
+  const logged = await ctx.repos.actionLog.append(spaceId, {
+    actorUserId: ctx.actor.userId,
+    actorVia: ctx.actor.via,
+    agentRunId: null,
+    action: name,
+    input: redact(input),
+    outcome: result.ok ? "ok" : result.code,
+    routeRevision: revisionOf(result),
+  });
+  // Thrown past runAction, so the transaction rolls back: nothing commits unlogged.
+  if (!logged.ok) {
+    throw new Error(`the action log refused an entry: ${logged.error}`);
+  }
+}
+
+/** The scope a member action runs in; runAction always gives one. */
+export function inSpace(scope: Scope | null): Scope {
+  if (scope === null) {
+    throw new ActionError("not_found", "not found");
+  }
+  return scope;
+}
+
+async function runInScope(
+  action: ActionDef,
+  name: string,
+  input: unknown,
+  ctx: Ctx,
+  scope: Scope,
+  isAllowed: (role: SpaceRole, action: string, via: ActorKind) => boolean,
+): Promise<ActionResult> {
+  if (!isAllowed(scope.role, name, ctx.actor.via)) {
+    return { ok: false, code: "forbidden", message: "not allowed" };
+  }
+  try {
+    return { ok: true, output: await action.run(ctx, input, scope) };
   } catch (error) {
     if (!(error instanceof ActionError)) {
       throw error;
     }
     return { ok: false, code: error.code, message: error.message };
   }
+}
+
+/** The draft revision an edit produced, for the log. */
+function revisionOf(result: ActionResult): number | null {
+  const output = result.ok ? (result.output as { revision?: unknown } | null) : null;
+  return typeof output?.revision === "number" ? output.revision : null;
 }
 
 /**

@@ -7,10 +7,14 @@ const requestHandler = createRequestHandler(
 );
 
 export default {
-  async fetch(request) {
+  async fetch(request, env) {
     const nonce = btoa(String.fromCharCode(...crypto.getRandomValues(new Uint8Array(16))));
     const context = new RouterContextProvider();
-    context.set(pageContext, { nonce });
+    context.set(pageContext, {
+      nonce,
+      appOrigin: env.APP_ORIGIN,
+      isDevelopment: String(env.ENVIRONMENT) === "development",
+    });
     return requestHandler(request, context);
   },
 } satisfies ExportedHandler<Env>;

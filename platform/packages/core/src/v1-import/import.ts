@@ -1,4 +1,4 @@
-import { z } from "zod";
+import * as z from "zod";
 import { Block, blockSchemas } from "../blocks/schema";
 import { deterministicId } from "../ids";
 import type { Locale } from "../localized-text";
