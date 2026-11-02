@@ -11,7 +11,9 @@ describe("the landing's map as flat shapes", () => {
     const scene = landingScene(hero);
     expect(scene.sheets).toHaveLength(3);
     expect(scene.sheets.filter((sheet) => sheet.locked)).toHaveLength(1);
-    expect(scene.stops).toHaveLength(6 + 5 + 4);
+    expect(landingScene({ ...hero, panel: 1, width: 720, height: 500 }).stops).toHaveLength(
+      6 + 5 + 4,
+    );
     expect(scene.discs).toHaveLength(3);
     expect(scene.route.startsWith("M")).toBe(true);
   });
@@ -34,6 +36,12 @@ describe("the landing's map as flat shapes", () => {
     const opened = landingScene({ ...hero, done: 2, fan: true });
     expect(opened.branch).toHaveLength(3);
     expect(opened.branchStops).toHaveLength(3);
+  });
+
+  it("leaves out what the camera can't see", () => {
+    const close = { panel: 2, mobile: false, width: 720, height: 500, done: 2 };
+    expect(landingScene(close).stops.length).toBeLessThan(6 + 5 + 4);
+    expect(landingScene(close).track.length).toBeLessThan(landingScene(hero).track.length);
   });
 
   it("the route grows with the student", () => {

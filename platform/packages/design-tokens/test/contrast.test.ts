@@ -65,6 +65,9 @@ const PAIRS: Pair[] = [
   ["--color-positive", "--color-positive-bg", BODY, "--color-card"],
   ["--color-negative", "--color-negative-bg", BODY, "--color-card"],
   ["--color-info", "--color-info-bg", BODY, "--color-card"],
+  ["--color-positive", "--color-positive-bg", BODY, "--color-bg"],
+  ["--color-negative", "--color-negative-bg", BODY, "--color-bg"],
+  ["--color-info", "--color-info-bg", BODY, "--color-bg"],
   ["--color-negative", "--color-card", BODY],
   // Large display text.
   ["--color-txt", "--color-bg", LARGE],

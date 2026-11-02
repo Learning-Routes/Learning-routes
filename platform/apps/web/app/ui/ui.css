@@ -336,6 +336,9 @@
   .site-nav {
     gap: var(--space-1);
   }
+  .site-nav .button-small {
+    padding-inline: var(--space-3);
+  }
 }
 
 /* ThemeToggle: the stylesheet shows the button that fits the theme in use */
