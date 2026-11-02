@@ -7,7 +7,8 @@
   "exports": {
     "./browser": "./src/actions/names.ts",
     "./locales": "./src/locales.ts",
-    "./*": "./src/*.ts"
+    "./*": "./src/*.ts",
+    "./testing/*": "./test/*.ts"
   },
   "scripts": {
     "test": "vitest run --coverage",
