@@ -28,10 +28,13 @@ overrides:
   # pnpm resolves these ranges under @react-router/dev to the newest release and then refuses it
   # under minimumReleaseAge. Held at the newest at least 14 days old; drop this once
   # the newest has aged, after 9 November 2026.
+  # Security fix: 3.1.8, behind Lighthouse, has four advisories fixed in 3.1.9.
+  fast-uri: 3.1.9
   pkg-types: 2.3.3
   browserslist: 4.29.3
 
 # Security fixes are not delayed (STEP 46 §2.6): this one version was 13 days old
-# when taken. Remove the entry with the undici override above.
+# when taken, and fast-uri's by a few hours. Remove each entry with its override above.
 minimumReleaseAgeExclude:
   - undici@7.30.1
+  - fast-uri@3.1.9
