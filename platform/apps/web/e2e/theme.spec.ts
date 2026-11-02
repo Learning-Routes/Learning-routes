@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { expect, test } from "@playwright/test";
 
 const DEV = "http://localhost:4174";
@@ -39,6 +40,11 @@ test("with no choice the page follows the system, before first paint and with no
   const background = await page.evaluate(() => getComputedStyle(document.body).backgroundColor);
   expect(background).toBe("rgb(21, 14, 28)");
   await context.close();
+});
+
+test("the web Worker's logs carry no URLs: a query could hold anything", async () => {
+  const config = readFileSync("wrangler.jsonc", "utf8");
+  expect(config).toContain('"invocation_logs": false');
 });
 
 test("a storefront's HTML never varies by the cookie", async ({ request }) => {

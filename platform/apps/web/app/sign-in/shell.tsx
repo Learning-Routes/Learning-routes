@@ -23,9 +23,19 @@ function SignInRoute({ step }: { step: 1 | 2 | 3 }) {
 }
 
 /** A screen's heading takes focus when it arrives, so a screen reader hears the change. */
-export function ScreenTitle({ children }: { children: ReactNode }) {
+export function ScreenTitle({
+  children,
+  takeFocus = true,
+}: {
+  children: ReactNode;
+  takeFocus?: boolean;
+}) {
   const heading = useRef<HTMLHeadingElement>(null);
-  useEffect(() => heading.current?.focus(), []);
+  useEffect(() => {
+    if (takeFocus) {
+      heading.current?.focus();
+    }
+  }, [takeFocus]);
   return (
     <h1 ref={heading} className="sign-in-title" tabIndex={-1}>
       {children}

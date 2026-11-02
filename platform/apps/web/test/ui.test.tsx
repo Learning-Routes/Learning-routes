@@ -53,7 +53,9 @@ describe("Button", () => {
         Enviar enlace
       </Button>,
     );
-    expect(html).toContain("disabled");
+    // Not disabled: that would drop keyboard focus from the button on every send.
+    expect(html).not.toContain(" disabled");
+    expect(html).toContain('aria-disabled="true"');
     expect(html).toContain('aria-busy="true"');
     expect(html).toContain('aria-label="Cargando"');
     expect(html).toContain("Enviar enlace");
@@ -88,6 +90,7 @@ describe("TextField", () => {
     );
     expect(html).toContain('aria-invalid="true"');
     expect(html).toContain("Falta la arroba.");
+    expect(html).toContain('aria-live="polite"');
     expect(html).not.toContain("Una pista");
   });
 });

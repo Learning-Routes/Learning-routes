@@ -1,4 +1,4 @@
-import type { ComponentProps, ReactNode } from "react";
+import type { ComponentProps, ReactNode, Ref } from "react";
 
 // The small pieces of the design system (Platform STEP 3 §2.3).
 
@@ -25,13 +25,21 @@ export function Notice({
   tone,
   title,
   children,
+  ref,
 }: {
   tone: "success" | "info" | "error";
   title: string;
   children?: ReactNode;
+  /** To move focus here when it arrives with the page, which a live role doesn't announce. */
+  ref?: Ref<HTMLDivElement>;
 }) {
   return (
-    <div className={`notice notice-${tone}`} role={tone === "error" ? "alert" : "status"}>
+    <div
+      ref={ref}
+      className={`notice notice-${tone}`}
+      role={tone === "error" ? "alert" : "status"}
+      tabIndex={-1}
+    >
       <p className="notice-title">{title}</p>
       {children ? <div className="notice-body">{children}</div> : null}
     </div>

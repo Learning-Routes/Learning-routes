@@ -1,11 +1,12 @@
 import { SIGN_IN_TEXT } from "@learning-routes/core/copy/sign-in";
 import { BRAND, negotiateLocale } from "@learning-routes/core/locales";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router";
 import { peekSignInLink } from "../api";
 import { ScreenTitle, SignInShell } from "../sign-in/shell";
 import "../sign-in/sign-in.css";
 import { Button } from "../ui/button";
+import { Notice } from "../ui/parts";
 import type { Route } from "./+types/sign-in-confirm";
 
 // "Entrar como …" (Platform STEP 3 §3). The link's token is in the fragment, which no
@@ -43,19 +44,26 @@ export default function SignInConfirm({ loaderData }: Route.ComponentProps) {
   const [link, setLink] = useState<{ token: string; email: string } | null>(null);
   const [posting, setPosting] = useState(false);
 
+  // Once: React's strict mode runs an effect twice, and the first run clears the fragment.
+  const started = useRef(false);
+
   useEffect(() => {
+    if (started.current) {
+      return;
+    }
+    started.current = true;
     const token = tokenInFragment(window.location.hash);
     // Out of the address bar and the history at once.
     window.history.replaceState(null, "", window.location.pathname);
     async function check() {
-      const found = token ? await peekSignInLink(token) : "gone";
-      if (token && found !== "gone" && found !== "failed") {
+      // No token: a reload, since the fragment is gone. The link may well still work.
+      const found = token ? await peekSignInLink(token) : "reopen";
+      if (typeof found === "object" && token) {
         setLink({ token, email: found.email });
-      } else {
-        await navigate(`/sign-in?notice=${found === "failed" ? "failed" : "expired"}`, {
-          replace: true,
-        });
+        return;
       }
+      const notice = found === "gone" ? "expired" : found;
+      await navigate(`/sign-in?notice=${notice}`, { replace: true });
     }
     check().catch(() => undefined);
   }, [navigate]);
@@ -72,7 +80,12 @@ export default function SignInConfirm({ loaderData }: Route.ComponentProps) {
             className="sign-in-confirm"
             method="post"
             action={CONFIRM_ACTION}
-            onSubmit={() => setPosting(true)}
+            onSubmit={(event) => {
+              if (posting) {
+                event.preventDefault();
+              }
+              setPosting(true);
+            }}
           >
             <input type="hidden" name="token" value={link.token} />
             <Button type="submit" loading={posting} loadingLabel={words.checking}>
@@ -83,6 +96,9 @@ export default function SignInConfirm({ loaderData }: Route.ComponentProps) {
       ) : (
         <>
           <h1 className="sign-in-title">{words.confirmTitle}</h1>
+          <noscript>
+            <Notice tone="info" title={words.needsScript} />
+          </noscript>
           <p className="sign-in-checking" role="status">
             <span className="spinner" />
             {words.checking}

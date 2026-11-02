@@ -43,7 +43,7 @@ test("an address with no @ gets told how to fix it, on leaving the field and on 
   await expect(field).not.toHaveAttribute("aria-invalid", "true");
   await field.blur();
   await expect(page.getByText("Escribe un correo con @")).toBeVisible();
-  await field.focus();
+  await field.fill("sin arrobax");
   await expect(page.getByText("Escribe un correo con @")).toBeHidden();
   await page.getByRole("button", { name: "Enviar enlace" }).click();
   await expect(field).toHaveAttribute("aria-invalid", "true");
@@ -131,4 +131,63 @@ test("the screens follow the browser's language", async ({ browser }) => {
   await expect(page.getByRole("heading", { name: "Se connecter" })).toBeVisible();
   await expect(page.locator("html")).toHaveAttribute("lang", "fr");
   await context.close();
+});
+
+test("with no script the address never reaches a URL, and the page says what it needs", async ({
+  browser,
+}) => {
+  const context = await browser.newContext({ javaScriptEnabled: false, locale: "es-ES" });
+  const page = await context.newPage();
+  await page.goto(`${DEV}/sign-in`);
+  await page.getByLabel("Tu correo").fill(EMAIL);
+  await page.getByRole("button", { name: "Enviar enlace" }).click();
+  await expect(page.getByLabel("Tu correo")).toBeVisible();
+  expect(page.url()).toBe(`${DEV}/sign-in`);
+  // Chromium's emulation doesn't render <noscript>, so read it from the HTML.
+  for (const path of ["/sign-in", "/sign-in/confirm"]) {
+    const html = await (await context.request.get(`${DEV}${path}`)).text();
+    expect(html).toContain("Para entrar, activa JavaScript");
+    expect(html).toContain("<noscript>");
+  }
+  await context.close();
+});
+
+test("the theme toggle keeps the screen you are on", async ({ page }) => {
+  await page.route("**/api/auth/sign-in/magic-link", (route) => route.fulfill({ json: {} }));
+  await page.goto(`${DEV}/sign-in`);
+  await page.getByLabel("Tu correo").fill(EMAIL);
+  await page.getByRole("button", { name: "Enviar enlace" }).click();
+  await expect(page.getByText(EMAIL)).toBeVisible();
+  const toggle = page.getByRole("button", { name: "Cambiar a modo oscuro" });
+  await toggle.click();
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
+  await expect(page.getByText(EMAIL)).toBeVisible();
+});
+
+test("a confirm page reached with no token asks to open the link again, not 'expired'", async ({
+  page,
+}) => {
+  await page.goto(`${DEV}/sign-in/confirm`);
+  await expect(page.getByText("Abre otra vez el enlace de tu correo")).toBeVisible();
+  await expect(page.getByText("Este enlace ya no sirve")).toBeHidden();
+});
+
+test("an error stays while the field has focus, and goes on the first keystroke", async ({
+  page,
+}) => {
+  await page.goto(`${DEV}/sign-in`);
+  const field = page.getByLabel("Tu correo");
+  await field.fill("sin arroba");
+  await page.keyboard.press("Enter");
+  await expect(page.getByText("Escribe un correo con @")).toBeVisible();
+  await field.blur();
+  await field.focus();
+  await expect(page.getByText("Escribe un correo con @")).toBeVisible();
+  await page.keyboard.type("x");
+  await expect(page.getByText("Escribe un correo con @")).toBeHidden();
+});
+
+test("a notice from the server takes focus, so a screen reader hears it", async ({ page }) => {
+  await page.goto(`${DEV}/sign-in?notice=expired`);
+  await expect(page.locator(".notice")).toBeFocused();
 });

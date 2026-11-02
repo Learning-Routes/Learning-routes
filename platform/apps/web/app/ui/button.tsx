@@ -36,6 +36,7 @@ export function Button({
   type = "button",
   className,
   children,
+  onClick,
   ...button
 }: AsButton) {
   return (
@@ -43,8 +44,11 @@ export function Button({
       {...button}
       type={type}
       className={classes(emphasis, size, className)}
-      disabled={disabled || loading}
+      disabled={disabled}
+      // Not disabled while loading: that would drop keyboard focus on every send.
+      aria-disabled={loading || undefined}
       aria-busy={loading || undefined}
+      onClick={loading ? (event) => event.preventDefault() : onClick}
     >
       {/* The label keeps its place while loading, so the button never changes size. */}
       <span className="button-label">{children}</span>

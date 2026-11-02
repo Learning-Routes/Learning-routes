@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it } from "vitest";
+import { screenAfterConfirm } from "../../src/auth/confirm";
 import { query, URLS } from "../db/connect";
-import { APP, harness, json, randomEmail } from "./harness";
+import { APP, harness, json, randomEmail, randomIp } from "./harness";
 
 // Signing in with a link (Platform STEP 2 §5.3, §5.4, and review item 11). The link
 // carries the token in its fragment, which no request sends: the app's page it opens
@@ -12,6 +13,7 @@ const EXACT_SESSION_COOKIE =
   /^__Host-lr_session=[^;\s]+; Max-Age=604800; Path=\/; HttpOnly; Secure; SameSite=Lax$/;
 const UUID_V7 = /^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
 const PADDING = /=+$/;
+const PEEK_MAX = 30;
 const api = harness();
 afterEach(() => api.settle());
 
@@ -122,6 +124,21 @@ describe("signing in with a link", () => {
     expect(notJson.status).toBe(400);
   });
 
+  it("limits how often one client can look a link up, and counts each client apart", async () => {
+    const ip = randomIp();
+    const lookups = Array.from({ length: PEEK_MAX + 5 }, () =>
+      api.call("/api/auth/magic-link/peek", { ...json({ token: crypto.randomUUID() }), ip }),
+    );
+    const statuses = (await Promise.all(lookups)).map((response) => response.status);
+    expect(statuses.filter((status) => status === 404).length).toBeLessThanOrEqual(PEEK_MAX);
+    expect(statuses.filter((status) => status === 429).length).toBeGreaterThan(0);
+    const another = await api.call("/api/auth/magic-link/peek", {
+      ...json({ token: crypto.randomUUID() }),
+      ip: randomIp(),
+    });
+    expect(another.status).toBe(404);
+  });
+
   it("signs in on the POST, once, with an exact __Host- session cookie and a uuidv7 user", async () => {
     const { email, token } = await requestLink();
     const signedIn = await confirm(token);
@@ -146,5 +163,26 @@ describe("signing in with a link", () => {
     expect(notAForm.status).toBe(400);
     const unknown = await confirm(crypto.randomUUID());
     expect(sessionCookie(unknown)).toBeUndefined();
+  });
+});
+
+describe("the screen after the confirm POST", () => {
+  const redirect = (location: string) => new Response(null, { status: 302, headers: { location } });
+
+  it("lets a sign-in through, and says expired only when the link is the problem", () => {
+    expect(screenAfterConfirm(redirect(`${APP}/studio`))).toBeNull();
+    expect(screenAfterConfirm(redirect(`${APP}/sign-in?notice=expired&error=INVALID_TOKEN`))).toBe(
+      "/sign-in?notice=expired",
+    );
+  });
+
+  it("never blames the link for a fault on our side, or shows a raw error", () => {
+    for (const code of ["failed_to_create_session", "failed_to_create_user", "user_not_found"]) {
+      expect(screenAfterConfirm(redirect(`${APP}/sign-in?notice=expired&error=${code}`))).toBe(
+        "/sign-in?notice=failed",
+      );
+    }
+    expect(screenAfterConfirm(new Response(null, { status: 500 }))).toBe("/sign-in?notice=failed");
+    expect(screenAfterConfirm(new Response(null, { status: 429 }))).toBe("/sign-in?notice=limited");
   });
 });

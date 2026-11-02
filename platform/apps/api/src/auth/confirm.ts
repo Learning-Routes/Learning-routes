@@ -1,6 +1,6 @@
 import type { Hono } from "hono";
 import { withClient } from "../db/with-db";
-import { AUTH_PATH, CONFIRM_PATH, createAuth } from "./auth";
+import { AUTH_PATH, CONFIRM_PATH, createAuth, takeFromWindow } from "./auth";
 import type { EmailSender } from "./email";
 
 // What the sign-in link's page needs (Platform STEP 2 review item 11, and Platform
@@ -14,6 +14,11 @@ const PADDING = /=+$/;
 const SIGNED_IN = "/studio";
 const EXPIRED = "/sign-in?notice=expired";
 const LIMITED = "/sign-in?notice=limited";
+const FAILED = "/sign-in?notice=failed";
+const LINK_IS_THE_PROBLEM = "INVALID_TOKEN";
+const PEEKS_PER_CLIENT = 30;
+const PEEK_WINDOW_MS = 600_000;
+const ANY_ORIGIN = "https://origin.invalid";
 
 /** How Better Auth stores a token when storeToken is "hashed". */
 async function identifierOf(token: string): Promise<string> {
@@ -33,6 +38,23 @@ function addressIn(value: string): string | null {
   }
 }
 
+/** Where the confirm POST's answer sends a person instead, or null to let it through. */
+export function screenAfterConfirm(response: Response): string | null {
+  if (response.status === 429) {
+    return LIMITED;
+  }
+  if (response.status >= 400) {
+    return FAILED;
+  }
+  const location = response.headers.get("location");
+  if (!location?.includes("notice=expired")) {
+    return null;
+  }
+  // Better Auth sends every failure to the same place: only a bad link reads as expired.
+  const error = new URL(location, ANY_ORIGIN).searchParams.get("error");
+  return error === LINK_IS_THE_PROBLEM ? EXPIRED : FAILED;
+}
+
 export function confirmRoutes(
   app: Hono<{ Bindings: Env }>,
   emailSender: (env: Env) => EmailSender,
@@ -48,11 +70,19 @@ export function confirmRoutes(
       return c.json({ code: "invalid_input" }, 400);
     }
     const identifier = `magic-link:${await identifierOf(sent)}`;
+    const client = c.req.header("cf-connecting-ip") ?? "unknown";
     const email = await withClient(c.env, c.executionCtx, async (db) => {
-      const { internalAdapter } = await createAuth(c.env, db, emailSender(c.env)).$context;
+      const { adapter, internalAdapter } = await createAuth(c.env, db, emailSender(c.env)).$context;
+      const key = `magic-link-peek:${client}`;
+      if (!(await takeFromWindow(adapter, key, PEEKS_PER_CLIENT, PEEK_WINDOW_MS))) {
+        return "limited" as const;
+      }
       const pending = await internalAdapter.findVerificationValue(identifier);
       return pending && new Date(pending.expiresAt) > new Date() ? addressIn(pending.value) : null;
     });
+    if (email === "limited") {
+      return c.json({ code: "too_many_requests" }, 429);
+    }
     return email === null ? c.json({ code: "not_found" }, 404) : c.json({ email });
   });
 
@@ -69,9 +99,14 @@ export function confirmRoutes(
     verify.searchParams.set("callbackURL", SIGNED_IN);
     verify.searchParams.set("errorCallbackURL", EXPIRED);
     const request = new Request(verify, { headers: c.req.raw.headers });
-    const response = await withClient(c.env, c.executionCtx, (db) =>
-      createAuth(c.env, db, emailSender(c.env)).handler(request),
-    );
-    return response.status === 429 ? c.redirect(LIMITED, 303) : response;
+    try {
+      const response = await withClient(c.env, c.executionCtx, (db) =>
+        createAuth(c.env, db, emailSender(c.env)).handler(request),
+      );
+      const screen = screenAfterConfirm(response);
+      return screen ? c.redirect(screen, 303) : response;
+    } catch {
+      return c.redirect(FAILED, 303);
+    }
   });
 }

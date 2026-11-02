@@ -37,6 +37,8 @@ export interface SignInText {
   failedBody: string;
   signedOutTitle: string;
   signedOutBody: string;
+  needsScript: string;
+  reopenLink: string;
 }
 
 export const SIGN_IN_TEXT: Record<LocaleCode, SignInText> = {
@@ -72,6 +74,8 @@ export const SIGN_IN_TEXT: Record<LocaleCode, SignInText> = {
     failedBody: "Revisa tu conexión y vuelve a intentarlo en un minuto.",
     signedOutTitle: "Saliste de tu cuenta",
     signedOutBody: "Para volver, pide un enlace aquí abajo.",
+    needsScript: "Para entrar, activa JavaScript en tu navegador.",
+    reopenLink: "Abre otra vez el enlace de tu correo. Si no lo tienes, pide otro aquí abajo.",
   },
   en: {
     emailSubject: `Your sign-in link for ${BRAND}`,
@@ -106,6 +110,8 @@ export const SIGN_IN_TEXT: Record<LocaleCode, SignInText> = {
     failedBody: "Check your connection and try again in a minute.",
     signedOutTitle: "You signed out",
     signedOutBody: "To come back, ask for a link below.",
+    needsScript: "To sign in, turn on JavaScript in your browser.",
+    reopenLink: "Open the link from your email again. If you don't have it, ask for another below.",
   },
   pt: {
     emailSubject: `Seu link para entrar no ${BRAND}`,
@@ -139,6 +145,8 @@ export const SIGN_IN_TEXT: Record<LocaleCode, SignInText> = {
     failedBody: "Confira sua conexão e tente de novo em um minuto.",
     signedOutTitle: "Você saiu da sua conta",
     signedOutBody: "Para voltar, peça um link abaixo.",
+    needsScript: "Para entrar, ative o JavaScript no seu navegador.",
+    reopenLink: "Abra de novo o link do seu e-mail. Se não o tiver, peça outro abaixo.",
   },
   fr: {
     emailSubject: `Votre lien de connexion à ${BRAND}`,
@@ -174,6 +182,9 @@ export const SIGN_IN_TEXT: Record<LocaleCode, SignInText> = {
     failedBody: "Vérifiez votre connexion et réessayez dans une minute.",
     signedOutTitle: "Vous êtes déconnecté",
     signedOutBody: "Pour revenir, demandez un lien ci-dessous.",
+    needsScript: "Pour vous connecter, activez JavaScript dans votre navigateur.",
+    reopenLink:
+      "Rouvrez le lien de votre e-mail. Si vous ne l'avez plus, demandez-en un autre ci-dessous.",
   },
   it: {
     emailSubject: `Il tuo link per accedere a ${BRAND}`,
@@ -207,5 +218,8 @@ export const SIGN_IN_TEXT: Record<LocaleCode, SignInText> = {
     failedBody: "Controlla la connessione e riprova tra un minuto.",
     signedOutTitle: "Sei uscito dal tuo account",
     signedOutBody: "Per tornare, chiedi un link qui sotto.",
+    needsScript: "Per accedere, attiva JavaScript nel browser.",
+    reopenLink:
+      "Apri di nuovo il link nella tua email. Se non ce l'hai, chiedine un altro qui sotto.",
   },
 };

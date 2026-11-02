@@ -1,6 +1,7 @@
 import { SIGN_IN_TEXT, type SignInText } from "@learning-routes/core/copy/sign-in";
 import { BRAND, negotiateLocale } from "@learning-routes/core/locales";
-import { type FormEvent, useEffect, useState } from "react";
+import { type FormEvent, type Ref, useEffect, useRef, useState } from "react";
+import { redirect } from "react-router";
 import { requestSignInLink } from "../api";
 import { ScreenTitle, SignInShell } from "../sign-in/shell";
 import "../sign-in/sign-in.css";
@@ -14,7 +15,7 @@ import type { Route } from "./+types/sign-in";
 
 const AN_EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const RESEND_WAIT_SECONDS = 30;
-const NOTICES = ["expired", "limited", "failed", "signed-out"] as const;
+const NOTICES = ["expired", "reopen", "limited", "failed", "signed-out"] as const;
 type NoticeName = (typeof NOTICES)[number];
 
 const isNotice = (value: string | null): value is NoticeName =>
@@ -28,34 +29,50 @@ export function loader({ request }: Route.LoaderArgs) {
   };
 }
 
+// Reached only by a submit before the page has hydrated, or with no script. The field
+// has no name, so nothing of the address came with it.
+export function action() {
+  return redirect("/sign-in", 303);
+}
+
 export function meta({ loaderData }: Route.MetaArgs) {
   const title = loaderData ? SIGN_IN_TEXT[loaderData.locale].title : "";
   return [{ title: `${title} · ${BRAND}` }, { name: "robots", content: "noindex" }];
 }
 
-function NoticeFor({ name, words }: { name: NoticeName; words: SignInText }) {
+function NoticeFor({
+  name,
+  words,
+  ref,
+}: {
+  name: NoticeName;
+  words: SignInText;
+  ref?: Ref<HTMLDivElement>;
+}) {
   switch (name) {
     case "expired":
       return (
-        <Notice tone="info" title={words.expiredTitle}>
+        <Notice ref={ref} tone="info" title={words.expiredTitle}>
           {words.expiredBody}
         </Notice>
       );
+    case "reopen":
+      return <Notice ref={ref} tone="info" title={words.reopenLink} />;
     case "limited":
       return (
-        <Notice tone="error" title={words.limitedTitle}>
+        <Notice ref={ref} tone="error" title={words.limitedTitle}>
           {words.limitedBody}
         </Notice>
       );
     case "failed":
       return (
-        <Notice tone="error" title={words.failedTitle}>
+        <Notice ref={ref} tone="error" title={words.failedTitle}>
           {words.failedBody}
         </Notice>
       );
     default:
       return (
-        <Notice tone="success" title={words.signedOutTitle}>
+        <Notice ref={ref} tone="success" title={words.signedOutTitle}>
           {words.signedOutBody}
         </Notice>
       );
@@ -77,12 +94,24 @@ function Ask({
   const [invalid, setInvalid] = useState(false);
   const [sending, setSending] = useState(false);
   const [notice, setNotice] = useState(initialNotice);
+  const noticeRef = useRef<HTMLDivElement>(null);
+  const field = useRef<HTMLFormElement>(null);
   const isValid = () => AN_EMAIL.test(email.trim());
+  const focusField = () => field.current?.querySelector("input")?.focus();
+
+  useEffect(() => {
+    if (notice) {
+      noticeRef.current?.focus();
+    }
+  }, [notice]);
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (sending) {
+      return;
+    }
     if (!isValid()) {
-      event.currentTarget.querySelector("input")?.focus();
+      focusField();
       setInvalid(true);
       return;
     }
@@ -93,6 +122,7 @@ function Ask({
     if (outcome === "sent") {
       onSent(email.trim());
     } else if (outcome === "invalid") {
+      focusField();
       setInvalid(true);
     } else {
       setNotice(outcome);
@@ -101,13 +131,16 @@ function Ask({
 
   return (
     <>
-      <ScreenTitle>{words.title}</ScreenTitle>
+      <ScreenTitle takeFocus={!initialNotice}>{words.title}</ScreenTitle>
       <p className="sign-in-copy">{words.intro}</p>
-      {notice ? <NoticeFor name={notice} words={words} /> : null}
-      <form className="sign-in-form" noValidate onSubmit={submit}>
+      <noscript>
+        <Notice tone="info" title={words.needsScript} />
+      </noscript>
+      {notice ? <NoticeFor ref={noticeRef} name={notice} words={words} /> : null}
+      <form ref={field} className="sign-in-form" method="post" noValidate onSubmit={submit}>
+        {/* No name: a submit before the page hydrates must carry no address anywhere. */}
         <TextField
           label={words.emailLabel}
-          name="email"
           type="email"
           autoComplete="email"
           inputMode="email"
@@ -119,7 +152,6 @@ function Ask({
             setEmail(event.target.value);
             setInvalid(false);
           }}
-          onFocus={() => setInvalid(false)}
           onBlur={() => setInvalid(email.trim().length > 0 && !isValid())}
         />
         <Button type="submit" loading={sending} loadingLabel={words.sending}>
@@ -142,6 +174,13 @@ function Sent({
   const [wait, setWait] = useState(RESEND_WAIT_SECONDS);
   const [sending, setSending] = useState(false);
   const [outcome, setOutcome] = useState<"resent" | "limited" | "failed" | null>(null);
+  const noticeRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (outcome) {
+      noticeRef.current?.focus();
+    }
+  }, [outcome]);
 
   useEffect(() => {
     if (wait <= 0) {
@@ -170,9 +209,9 @@ function Sent({
         {words.sentTo} <span className="sign-in-address">{email}</span>
       </p>
       <p className="sign-in-copy">{words.sentNext}</p>
-      {outcome === "resent" ? <Notice tone="success" title={words.resent} /> : null}
+      {outcome === "resent" ? <Notice ref={noticeRef} tone="success" title={words.resent} /> : null}
       {outcome === "limited" || outcome === "failed" ? (
-        <NoticeFor name={outcome} words={words} />
+        <NoticeFor ref={noticeRef} name={outcome} words={words} />
       ) : null}
       <div className="sign-in-actions">
         {wait > 0 ? (

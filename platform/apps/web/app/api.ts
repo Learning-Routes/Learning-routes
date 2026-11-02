@@ -51,7 +51,7 @@ export async function requestSignInLink(
 /** The address a pending link signs in; "gone" when it expired or was used. */
 export async function peekSignInLink(
   token: string,
-): Promise<{ email: string } | "gone" | "failed"> {
+): Promise<{ email: string } | "gone" | "limited" | "failed"> {
   try {
     const response = await fetch("/api/auth/magic-link/peek", {
       ...JSON_POST,
@@ -60,8 +60,21 @@ export async function peekSignInLink(
     if (response.ok) {
       return (await response.json()) as { email: string };
     }
+    if (response.status === 429) {
+      return "limited";
+    }
     return response.status === 404 ? "gone" : "failed";
   } catch {
     return "failed";
   }
+}
+
+/** Saves the toggle's choice without leaving the page. The page has already changed. */
+export async function saveTheme(theme: string): Promise<void> {
+  await fetch("/theme", {
+    method: "POST",
+    headers: { "content-type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams({ theme, next: "/" }),
+    redirect: "manual",
+  }).catch(() => undefined);
 }
