@@ -1,4 +1,11 @@
 @import "@learning-routes/design-tokens/tokens.css";
+@import "./ui/ui.css";
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
 
 :root {
   color-scheme: light;
@@ -8,11 +15,21 @@ html[data-theme="dark"] {
   color-scheme: dark;
 }
 
+@media (prefers-color-scheme: dark) {
+  html:not([data-theme]) {
+    color-scheme: dark;
+  }
+}
+
 body {
   margin: 0;
   background: var(--color-bg);
   color: var(--color-txt);
   font-family: var(--font-sans);
+  font-size: var(--text-body);
+  font-weight: var(--weight-body);
+  line-height: var(--leading-body);
+  -webkit-font-smoothing: antialiased;
 }
 
 .home {

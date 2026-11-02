@@ -1,0 +1,377 @@
+/* The design system's components (Platform STEP 3 §2.3). Tokens only: a raw colour or
+   size here fails test/ui-css.test.ts. One static file, so the strict CSP allows it. */
+
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+  border-radius: var(--radius-chip);
+}
+
+/* Button: a little body, a lit top and a pressable edge */
+.button {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--size-control);
+  padding-inline: var(--space-6);
+  border: 0;
+  border-radius: var(--radius-btn);
+  font: var(--weight-label) var(--text-body) / 1 var(--font-sans);
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background-color var(--motion-150) var(--ease-out),
+    transform var(--motion-100) var(--ease-out),
+    box-shadow var(--motion-100) var(--ease-out);
+}
+.button-small {
+  min-height: var(--size-touch);
+  padding-inline: var(--space-4);
+  font-size: var(--text-small);
+}
+.button-primary {
+  background: var(--color-accent);
+  color: var(--color-accent-text);
+  box-shadow: var(--shadow-btn);
+}
+.button-primary:hover {
+  background: var(--color-accent-hover);
+}
+.button-primary:active:not(:disabled) {
+  transform: translateY(2px);
+  box-shadow: var(--shadow-btn-pressed);
+}
+.button-secondary {
+  background: var(--color-card);
+  color: var(--color-txt);
+  box-shadow: var(--shadow-btn-secondary);
+}
+.button-secondary:hover {
+  background: var(--color-bg-2);
+}
+.button-secondary:active:not(:disabled) {
+  transform: translateY(2px);
+  box-shadow: var(--shadow-btn-secondary-pressed);
+}
+.button-quiet {
+  background: transparent;
+  color: var(--color-link);
+}
+.button-quiet:hover {
+  background: var(--color-bg-2);
+}
+.button:disabled {
+  cursor: default;
+  background: var(--color-bg-2);
+  color: var(--color-muted);
+  box-shadow: inset 0 0 0 1px var(--color-border-subtle);
+}
+.button[aria-busy="true"] .button-label {
+  visibility: hidden;
+}
+.button-spinner {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+}
+.spinner {
+  width: var(--space-5);
+  height: var(--space-5);
+  border: 2px solid currentcolor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: spin calc(var(--motion-300) * 3) linear infinite;
+}
+@keyframes spin {
+  to {
+    transform: rotate(1turn);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .spinner {
+    animation: none;
+    border-right-color: currentcolor;
+    opacity: 0.6;
+  }
+}
+
+/* Link */
+.text-link {
+  color: var(--color-link);
+  font-weight: var(--weight-label);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+.text-link:hover {
+  color: var(--color-txt);
+}
+
+/* TextField */
+.field {
+  display: grid;
+  gap: var(--space-2);
+}
+.field-label {
+  font-size: var(--text-small);
+  font-weight: var(--weight-label);
+  color: var(--color-txt);
+}
+.field-input {
+  width: 100%;
+  min-height: var(--size-control);
+  padding-inline: var(--space-4);
+  border: 0;
+  border-radius: var(--radius-field);
+  background: var(--color-card);
+  box-shadow: inset 0 0 0 1.5px var(--color-field-border);
+  color: var(--color-txt);
+  font: var(--weight-body) var(--text-body) var(--font-sans);
+  transition: box-shadow var(--motion-150) var(--ease-out);
+}
+.field-input:disabled {
+  background: var(--color-bg-2);
+  box-shadow: inset 0 0 0 1px var(--color-border-subtle);
+  color: var(--color-muted);
+}
+.field-input::placeholder {
+  color: var(--color-muted);
+}
+.field-input:focus-visible {
+  outline: none;
+  box-shadow: inset 0 0 0 2px var(--color-accent);
+}
+.field[data-invalid] .field-input {
+  box-shadow: inset 0 0 0 2px var(--color-negative);
+}
+.field-hint,
+.field-error {
+  margin: 0;
+  min-height: 1.4em;
+  font-size: var(--text-small);
+  line-height: 1.4;
+}
+.field-hint {
+  color: var(--color-muted);
+}
+.field-error {
+  color: var(--color-negative);
+}
+
+/* Card */
+.card {
+  border-radius: var(--radius-card);
+  background: var(--color-card);
+  box-shadow: var(--shadow-card);
+  padding: var(--space-6);
+}
+
+/* Badge */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-chip);
+  font-size: var(--text-meta);
+  font-weight: var(--weight-label);
+  line-height: 1;
+}
+.badge-accent {
+  background: var(--color-accent-soft);
+  color: var(--color-accent-strong);
+}
+.badge-neutral {
+  background: var(--color-bg-2);
+  color: var(--color-sub);
+}
+
+/* Notice */
+.notice {
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-btn);
+  border: 1px solid;
+  font-size: var(--text-small);
+  line-height: 1.45;
+}
+.notice-title {
+  margin: 0;
+  font-weight: var(--weight-label);
+}
+.notice-body {
+  margin-top: var(--space-1);
+  color: var(--color-txt);
+}
+.notice-success {
+  background: var(--color-positive-bg);
+  border-color: var(--color-positive-border);
+  color: var(--color-positive);
+}
+.notice-info {
+  background: var(--color-info-bg);
+  border-color: var(--color-info-border);
+  color: var(--color-info);
+}
+.notice-error {
+  background: var(--color-negative-bg);
+  border-color: var(--color-negative-border);
+  color: var(--color-negative);
+}
+
+/* EmptyState */
+.empty-state {
+  display: grid;
+  justify-items: start;
+  gap: var(--space-2);
+  max-width: var(--measure);
+  padding-block: var(--space-10);
+}
+.empty-state-mark {
+  width: var(--space-16);
+  fill: var(--color-card);
+  stroke: var(--color-field-border);
+  stroke-width: 1.5;
+  stroke-dasharray: 2 4;
+  margin-block-end: var(--space-2);
+  overflow: visible;
+}
+.empty-state-mark circle {
+  stroke-dasharray: none;
+}
+.empty-state-title {
+  margin: 0;
+  font-size: var(--text-title);
+  font-weight: var(--weight-display);
+  font-stretch: var(--stretch-title);
+  letter-spacing: var(--tracking-title);
+  line-height: var(--leading-heading);
+}
+.empty-state-body {
+  margin: 0;
+  color: var(--color-sub);
+}
+.empty-state-action {
+  margin-block-start: var(--space-4);
+}
+
+/* SiteHeader */
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: var(--z-header);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  min-height: var(--size-header);
+  padding-inline: var(--space-8);
+  background: var(--color-bg);
+  border-block-end: 1px solid var(--color-border-subtle);
+}
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--size-touch);
+  font-size: var(--text-body);
+  font-weight: var(--weight-display);
+  font-stretch: var(--stretch-title);
+  color: var(--color-txt);
+  text-decoration: none;
+  white-space: nowrap;
+}
+.brand-mark-field {
+  fill: var(--color-accent);
+}
+.brand-mark-line {
+  fill: none;
+  stroke: var(--color-accent-text);
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+.brand-mark-start {
+  fill: var(--color-accent-text);
+}
+.brand-mark-here {
+  fill: var(--color-highlight);
+}
+.site-nav {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+.nav-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--size-touch);
+  padding-inline: var(--space-3);
+  border-radius: var(--radius-btn);
+  color: var(--color-sub);
+  font-size: var(--text-small);
+  font-weight: var(--weight-label);
+  text-decoration: none;
+}
+.nav-link:hover {
+  background: var(--color-bg-2);
+  color: var(--color-txt);
+}
+@media (max-width: 860px) {
+  .site-header {
+    padding-inline: var(--space-4);
+    gap: var(--space-2);
+  }
+  /* What only explains the page gives way to what acts: the action stays. */
+  .nav-link {
+    display: none;
+  }
+  .brand {
+    font-size: var(--text-small);
+  }
+  .site-nav {
+    gap: var(--space-1);
+  }
+}
+
+/* ThemeToggle: the stylesheet shows the button that fits the theme in use */
+.theme-toggle {
+  display: contents;
+}
+.theme-button {
+  display: grid;
+  place-items: center;
+  width: var(--size-touch);
+  height: var(--size-touch);
+  border: 0;
+  border-radius: var(--radius-btn);
+  background: transparent;
+  color: var(--color-sub);
+  box-shadow: inset 0 0 0 1px var(--color-faint);
+  cursor: pointer;
+}
+.theme-button:hover {
+  background: var(--color-bg-2);
+  color: var(--color-txt);
+}
+.theme-button svg {
+  fill: none;
+  stroke: currentcolor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.theme-to-light,
+html[data-theme="dark"] .theme-to-dark {
+  display: none;
+}
+html[data-theme="dark"] .theme-to-light {
+  display: grid;
+}
+@media (prefers-color-scheme: dark) {
+  html:not([data-theme]) .theme-to-dark {
+    display: none;
+  }
+  html:not([data-theme]) .theme-to-light {
+    display: grid;
+  }
+}
