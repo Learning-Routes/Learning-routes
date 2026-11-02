@@ -212,6 +212,42 @@ describe("user.erase (Platform STEP 2 §2.16)", () => {
     }
   });
 
+  it("takes the card before the user, as a review in flight does, so the two cannot deadlock", async () => {
+    const setup = new pg.Client({ connectionString: URLS.migrator });
+    const reviewing = new pg.Client({ connectionString: URLS.migrator });
+    const erasing = new pg.Client({ connectionString: URLS.migrator });
+    await Promise.all([setup.connect(), reviewing.connect(), erasing.connect()]);
+    try {
+      const spaceId = await newSpace(setup, "erase-review");
+      const userId = await newUser(setup);
+      await setup.query(
+        "insert into memberships (space_id, user_id, role) values ($1, $2, 'student')",
+        [spaceId, userId],
+      );
+      const { rows } = await setup.query(
+        "insert into cards (space_id, user_id, item_id) values ($1, $2, uuidv7()) returning id",
+        [spaceId, userId],
+      );
+      await reviewing.query("begin");
+      await reviewing.query("select 1 from cards where id = $1 for update", [rows[0]?.id]);
+      await erasing.query("begin");
+      const erased = eraseUser(erasing, userId);
+      await blockedOrDone(await backendPid(erasing), erased);
+      await reviewing.query(
+        `insert into reviews (user_id, space_id, card_id, review_id, rating, reviewed_at, elapsed_ms, state_before)
+         values ($1, $2, $3, uuidv7(), 3, now(), 700, '{}')`,
+        [userId, spaceId, rows[0]?.id],
+      );
+      await reviewing.query("commit");
+      await erased;
+      await erasing.query("commit");
+      const left = await setup.query("select 1 from reviews where user_id = $1", [userId]);
+      expect(left.rowCount).toBe(0);
+    } finally {
+      await Promise.all([setup.end(), reviewing.end(), erasing.end()]);
+    }
+  });
+
   it("erases one of two co-owners erased at once, and the space keeps the other", async () => {
     // Committed rows on three connections: the space and the surviving owner stay.
     const setup = new pg.Client({ connectionString: URLS.migrator });

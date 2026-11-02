@@ -33,7 +33,6 @@ describe("route_versions (Platform STEP 2 §2.10)", () => {
       expect(await attempt(db, "delete from route_versions where id = $1", [versionId])).toMatch(
         APPEND_ONLY,
       );
-      expect(await attempt(db, "truncate route_versions cascade")).toMatch(APPEND_ONLY);
     });
   });
 

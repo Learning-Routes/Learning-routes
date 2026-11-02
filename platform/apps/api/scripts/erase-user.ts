@@ -41,6 +41,9 @@ export async function eraseUser(db: pg.Client, userId: string): Promise<void> {
   // Lock the enrollments first, so a progress write in flight finishes before the
   // deletes, and its row goes with the rest.
   await db.query("select 1 from enrollments where user_id = $1 for update", [userId]);
+  // The cards before the user, the order review.submit takes them: it holds its card
+  // while its review's foreign key needs the user row, so the other order deadlocks.
+  await db.query("select 1 from cards where user_id = $1 for update", [userId]);
   // reviews are append-only; their rule lets this transaction remove this user's.
   await db.query("select set_config('app.erasing_user_id', $1, true)", [userId]);
   // progress restricts its enrollment's delete, so it goes first.

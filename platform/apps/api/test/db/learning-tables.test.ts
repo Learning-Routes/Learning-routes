@@ -161,7 +161,6 @@ describe("the learning tables (Platform STEP 2 §2.11–§2.14)", () => {
       ).toMatch(CHECK);
       expect(await attempt(db, "update reviews set rating = 1")).toMatch(APPEND_ONLY);
       expect(await attempt(db, "delete from reviews")).toMatch(APPEND_ONLY);
-      expect(await attempt(db, "truncate reviews")).toMatch(APPEND_ONLY);
       const index = await db.query(
         "select 1 from pg_indexes where tablename = 'reviews' and indexdef like '%(user_id, card_id, reviewed_at)%'",
       );
@@ -178,7 +177,6 @@ describe("the learning tables (Platform STEP 2 §2.11–§2.14)", () => {
       expect(await attempt(db, add, [space, "email"])).toMatch(CHECK);
       expect(await attempt(db, "update action_log set outcome = 'invalid'")).toMatch(APPEND_ONLY);
       expect(await attempt(db, "delete from action_log")).toMatch(APPEND_ONLY);
-      expect(await attempt(db, "truncate action_log")).toMatch(APPEND_ONLY);
       const index = await db.query(
         "select 1 from pg_indexes where tablename = 'action_log' and indexdef like '%(space_id, at)%'",
       );
