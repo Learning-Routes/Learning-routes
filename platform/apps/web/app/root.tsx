@@ -13,10 +13,15 @@ import {
 import type { Route } from "./+types/root";
 import "./app.css";
 import { isLocale } from "@learning-routes/core/locales";
+import archivo from "@learning-routes/design-tokens/fonts/Archivo-latin.woff2?url";
 import { useEffect } from "react";
 import { pageContext } from "./context";
 import { isStorefront } from "./surface";
 import { themeFromCookie } from "./theme";
+
+export const links: Route.LinksFunction = () => [
+  { rel: "preload", href: archivo, as: "font", type: "font/woff2", crossOrigin: "anonymous" },
+];
 
 export function loader({ context, request }: Route.LoaderArgs) {
   return {

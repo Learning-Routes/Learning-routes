@@ -6,9 +6,9 @@
   "type": "module",
   "scripts": {
     "dev": "react-router dev",
-    "build": "react-router build",
+    "build": "react-router build && tsx --tsconfig tsconfig.og.json scripts/render-og.tsx",
     "test": "vitest run",
-    "typecheck": "wrangler types && react-router typegen && tsc -b",
+    "typecheck": "wrangler types && react-router typegen && tsc -b && tsc -p tsconfig.og.json",
     "cf-typegen": "wrangler types",
     "postinstall": "wrangler types",
     "e2e": "playwright test",
@@ -17,6 +17,7 @@
   "dependencies": {
     "@learning-routes/core": "workspace:*",
     "@learning-routes/design-tokens": "workspace:*",
+    "@learning-routes/route-map": "workspace:*",
     "isbot": "5.2.2",
     "react": "19.3.0",
     "react-dom": "19.3.0",
@@ -31,6 +32,7 @@
     "@types/react": "19.3.0",
     "@types/react-dom": "19.3.0",
     "size-limit": "14.2.0",
+    "tsx": "4.23.15",
     "typescript": "5.9.3",
     "vite": "8.3.4",
     "vitest": "5.0.4",
