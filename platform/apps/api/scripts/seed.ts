@@ -77,6 +77,8 @@ async function owner(db: pg.Client, spaceId: string, userId: string, addOwner: b
 
 /** One sample route, built and published through the repositories, once. */
 async function sampleRoute(db: pg.Client, spaceId: string, ownerId: string) {
+  // The draft's functions act for the current user, and only for an editor of the space.
+  await db.query("select set_config('app.user_id', $1, true)", [ownerId]);
   const repos = pgRepos(drizzle(db, { casing: "snake_case" }));
   if ((await repos.routeDrafts.list(spaceId)).some((route) => route.slug === SAMPLE)) {
     return;

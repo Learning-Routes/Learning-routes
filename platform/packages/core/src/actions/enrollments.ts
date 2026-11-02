@@ -40,19 +40,6 @@ export const enrollmentUpgrade = defineAction({
     "Move your enrollment to the route's latest published version. Progress is kept by lesson.",
   input: z.strictObject({ enrollmentId: z.uuid() }),
   target: (input) => ({ kind: "enrollment", id: input.enrollmentId }),
-  async run(ctx, input, given) {
-    const { spaceId } = inSpace(given);
-    const enrollment = await ownEnrollment(
-      ctx.repos,
-      spaceId,
-      input.enrollmentId,
-      ctx.actor.userId,
-    );
-    const latest = await ctx.repos.routeVersions.latest(spaceId, enrollment.routeId);
-    if (latest !== null && latest > enrollment.pinnedVersion) {
-      unwrap(await ctx.repos.enrollments.setPinnedVersion(spaceId, input.enrollmentId, latest));
-      return { pinnedVersion: latest };
-    }
-    return { pinnedVersion: enrollment.pinnedVersion };
-  },
+  run: async (ctx, input, given) =>
+    unwrap(await ctx.repos.enrollments.upgrade(inSpace(given).spaceId, input.enrollmentId)),
 });

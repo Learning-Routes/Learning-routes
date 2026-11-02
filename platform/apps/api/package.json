@@ -18,7 +18,6 @@
     "db:erase-user": "node scripts/erase-user.ts",
     "db:check": "node scripts/check-drizzle-sync.mjs",
     "db:measure-rls": "node scripts/measure-rls.ts",
-    "db:measure-rls": "node scripts/measure-rls.ts",
     "db:seed": "node scripts/seed.ts"
   },
   "dependencies": {
