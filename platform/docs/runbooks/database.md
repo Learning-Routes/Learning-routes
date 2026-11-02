@@ -117,14 +117,15 @@ The Keychain items this runbook uses:
 
    It answers `{"ok":true}` only if the Worker reached the database through Hyperdrive as `lr_app`. That proves the SQL-created role connects (step 4).
 
-8. **Sign in once with your own email.** Email delivery is a later STEP, so production sends no sign-in links (`EMAIL_DELIVERY` is `"none"`). For this one sign-in, switch on the development sender, which writes the link to the Worker's log, then switch it off again:
-   1. In `apps/api/wrangler.jsonc`, set `"EMAIL_DELIVERY": "log"` and deploy, as in step 7.
-   2. In one terminal, run `npx wrangler tail learning-routes-api --format pretty`.
-   3. Ask for a link at `https://new.learningroutes.com/api/auth/sign-in/magic-link`: a POST with your email, from the app's own page once it exists, or from the browser console on the app origin.
-   4. Open the link the tail shows, within five minutes, and choose "Sign in".
-   5. Set `"EMAIL_DELIVERY"` back to `"none"` and deploy at once.
+8. **Sign in once with your own email.** Sign-in links go out through Cloudflare Email Sending, which needs Workers Paid and is in beta. No link ever goes to a log outside local development.
+   1. Enable sending for the domain, and add the DNS records it asks for:
 
-   The link signs in once and expires in five minutes, but it stays in Workers Logs until their retention ends. Do this only for your own address.
+      ```sh
+      npx wrangler email sending enable new.learningroutes.com
+      ```
+
+   2. Ask for a link at `https://new.learningroutes.com/api/auth/sign-in/magic-link`: a POST with your email, from the app's own page once it exists, or from the browser console on the app origin.
+   3. Open the link in the email, within five minutes, and choose "Sign in".
 
 9. **Run the seed** with that email, as the default role:
 
@@ -148,10 +149,11 @@ The Keychain items this runbook uses:
        psql "$(security find-generic-password -s lr-migrator -w)" -c "select count(*) from pg_roles where rolname = 'lr_app'"
        ```
 
-       If it answers `0`, do step 2 again. Then give the role its grants back, which the migrations made when they first ran:
+       If it answers `0`, do step 2 again. Then give the role its exact grants back, and check the one it must never have. The last command must print `f`:
 
        ```sh
-       grep -h "^grant .* to lr_app" apps/api/drizzle/*.sql | psql "$(security find-generic-password -s lr-migrator -w)"
+       psql "$(security find-generic-password -s lr-migrator -w)" -v ON_ERROR_STOP=1 -f apps/api/drizzle/0013_app_grants.sql
+       psql "$(security find-generic-password -s lr-migrator -w)" -tAc "select has_table_privilege('lr_app', '\"user\"', 'delete')"
        ```
 
     3. Set `lr_app`'s new password with `\password lr_app` in `psql`, and replace its Keychain item the same way.
