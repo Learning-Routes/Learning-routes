@@ -19,6 +19,7 @@ const STATUS = {
   not_found: 404,
   forbidden: 403,
   conflict: 409,
+  position_taken: 409,
   invalid: 422,
 } as const;
 

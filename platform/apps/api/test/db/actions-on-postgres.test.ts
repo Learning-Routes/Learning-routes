@@ -127,10 +127,8 @@ describe("the first actions, end to end on Postgres", () => {
           "module.add",
           "review.submit",
           "route.create",
-          "route.list",
           "route.publish",
           "route.publish",
-          "space.get",
         ].sort(),
       );
       expect(rows.every((row) => row.outcome === "ok")).toBe(true);

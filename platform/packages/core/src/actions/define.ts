@@ -77,7 +77,7 @@ export type Registry = Record<string, ActionDef>;
 export class ActionError extends Error {
   override name = "ActionError";
   constructor(
-    readonly code: "not_found" | "forbidden" | "invalid" | "conflict",
+    readonly code: "not_found" | "forbidden" | "invalid" | "conflict" | "position_taken",
     message: string,
   ) {
     super(message);
@@ -139,8 +139,10 @@ export async function runAction(
   }
   const { spaceId, role } = found;
   const result = await runInScope(action, name, parsed.data, ctx, { spaceId, role }, isAllowed);
-  // Every action a member calls is logged, refusals included, in its own transaction.
-  await log(ctx, spaceId, name, parsed.data, result);
+  // Mutations and every refusal are logged, in the action's transaction; a query that succeeds is not.
+  if (action.kind === "mutation" || !result.ok) {
+    await log(ctx, spaceId, name, parsed.data, result);
+  }
   return result;
 }
 

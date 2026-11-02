@@ -2,10 +2,11 @@ import { describe, expect, it } from "vitest";
 import { runAction } from "../../src/actions/define";
 import { redact } from "../../src/actions/redact";
 import { ACTIONS } from "../../src/actions/registry";
-import { ENROLLMENT, NOW, ROUTE, SPACE, testCtx, testWorld } from "./test-ctx";
+import { ENROLLMENT, NOW, ROUTE, SPACE, STAFF, testCtx, testWorld } from "./test-ctx";
 
-// Every action writes the action log in its own transaction (Platform STEP 2
-// §2.15, §6): who, how, what, with the input redacted by core, and the outcome.
+// Mutations and every refusal write the action log, in the action's transaction
+// (Platform STEP 2 §2.15, §6): who, how, what, with the input redacted by core,
+// and the outcome. A query that succeeds writes nothing.
 
 describe("redact", () => {
   it("keeps ids, numbers, flags and short codes, and drops free text and secrets", () => {
@@ -80,6 +81,26 @@ describe("runAction and the action log", () => {
     ]);
   });
 
+  it("writes nothing for a query that succeeds, and the refusal of one that does not", async () => {
+    const world = testWorld();
+    const owner = testCtx("ui", world, STAFF.owner);
+    expect(await runAction(ACTIONS, "space.get", { spaceId: SPACE }, owner)).toMatchObject({
+      ok: true,
+    });
+    expect(await runAction(ACTIONS, "route.get", { routeId: ROUTE }, owner)).toMatchObject({
+      ok: true,
+    });
+    expect(await runAction(ACTIONS, "route.list", { spaceId: SPACE }, owner)).toMatchObject({
+      ok: true,
+    });
+    expect(world.log).toEqual([]);
+    const student = testCtx("ui", world, "student-1");
+    await runAction(ACTIONS, "route.get", { routeId: ROUTE }, student);
+    expect(world.log.map((entry) => [entry.action, entry.outcome])).toEqual([
+      ["route.get", "forbidden"],
+    ]);
+  });
+
   it("logs a member's refused enrollment in the route's space", async () => {
     const world = testWorld();
     const draft = world.drafts.get(ROUTE);
@@ -90,7 +111,8 @@ describe("runAction and the action log", () => {
       ACTIONS,
       "enrollment.create",
       { routeId: ROUTE },
-      testCtx("ui", world, "student-1"),
+      // A member with no enrollment here: one who has one gets it back, paid or not.
+      testCtx("ui", world, STAFF.coeditor),
     );
     expect(result).toMatchObject({ ok: false, code: "invalid" });
     expect(world.log.map((entry) => [entry.spaceId, entry.action, entry.outcome])).toEqual([

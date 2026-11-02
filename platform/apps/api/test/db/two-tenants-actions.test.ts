@@ -67,6 +67,7 @@ describe("two tenants, through every action", () => {
         [spaceB, routeB, modules[0]?.id],
       );
       const enrollmentB = await newEnrollment(db, spaceB, routeB, b);
+      const routeA = await newRoute(db, spaceA, "a-route");
       const inputs: Record<string, unknown> = {
         "space.get": { spaceId: spaceB },
         "membership.add": { spaceId: spaceB, userId: a, role: "owner" },
@@ -125,6 +126,15 @@ describe("two tenants, through every action", () => {
           { ok: false, code: "not_found", message: expect.any(String) },
         ]);
       }
+      // With A's own space, A sees A's rows and none of B's.
+      expect(await runAction(ACTIONS, "space.get", { spaceId: spaceA }, ctx)).toMatchObject({
+        ok: true,
+        output: { id: spaceA },
+      });
+      expect(await runAction(ACTIONS, "route.list", { spaceId: spaceA }, ctx)).toMatchObject({
+        ok: true,
+        output: [{ id: routeA }],
+      });
       await db.query("reset role");
       expect(await everyTable(db, [spaceA, spaceB], [a, b])).toEqual(before);
     });
