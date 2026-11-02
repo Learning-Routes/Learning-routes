@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Enseñar: editar una ruta</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#F5F2F6;font-family:"Archivo",system-ui,sans-serif;color:#1D1226}
+a{color:#57248A}a:hover{color:#3E1866}
+</style>
+</helmet>
+<div style="min-height: 100vh; background: #F5F2F6; font-family: Archivo, system-ui, sans-serif; color: #1D1226; display: flex; flex-direction: column; font-variant-numeric: tabular-nums">
+
+<header style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; padding: 14px 28px">
+<div style="display: flex; align-items: center; gap: 16px; flex-wrap: wrap">
+<div role="tablist" aria-label="Modo" style="display: flex; background: #ECE6EF; border-radius: 12px; padding: 4px">
+<a href="MisRutas.dc.html" role="tab" aria-selected="false" style="min-height: 40px; padding: 0 16px; border-radius: 9px; display: flex; align-items: center; text-decoration: none; font-size: 15px; color: #4A3D54">Aprender</a>
+<button role="tab" aria-selected="true" style="min-height: 40px; padding: 0 16px; border-radius: 9px; border: none; background: #FFFFFF; font-family: Archivo, sans-serif; font-weight: 700; font-size: 15px; color: #1D1226">Enseñar</button>
+</div>
+<a href="#" style="color: #4A3D54; text-decoration: none; font-size: 15px">Mis rutas como creadora</a>
+</div>
+<div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap">
+<a href="Vitrina.dc.html" style="color: #1D1226; font-weight: 600">Ver mi página</a>
+<a href="Mapa.dc.html" style="color: #1D1226; font-weight: 600">Verla como alumno</a>
+</div>
+</header>
+
+<div style="flex: 1; display: flex; flex-wrap: wrap; gap: 28px; padding: 12px 28px 32px; align-items: flex-start">
+
+<section style="flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column; gap: 18px">
+<div style="display: flex; align-items: flex-end; justify-content: space-between; flex-wrap: wrap; gap: 16px">
+<div style="display: flex; flex-direction: column; gap: 8px">
+<h1 style="margin: 0; font-size: 46px; font-weight: 800; font-stretch: 116%; letter-spacing: -0.04em; line-height: 0.95">Portugués para viajar</h1>
+<p style="margin: 0; font-size: 16px; color: #4A3D54">212 alumnos. Tienes cambios sin publicar: tus alumnos todavía ven la versión anterior.</p>
+</div>
+<button style="height: 52px; padding: 0 24px; border-radius: 12px; border: none; background: #6A2EA0; color: #FFFFFF; font-family: Archivo, sans-serif; font-weight: 700; font-size: 17px; box-shadow: 0 4px 0 0 #42185F">Publicar cambios</button>
+</div>
+
+<article style="background: #FFFFFF; border-radius: 22px; box-shadow: inset 0 0 0 1px #E4DCE8; padding: 22px 24px; display: flex; flex-direction: column; gap: 10px">
+<div style="display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap">
+<h2 style="margin: 0; font-size: 22px; font-weight: 800; flex: 1">Módulo 1: En el aeropuerto</h2>
+<span style="font-size: 15px; color: #0E5F5A; font-weight: 700">Gratis para todos</span>
+</div>
+<ol style="margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column">
+<li style="display: flex; align-items: center; gap: 14px; padding: 12px 4px; border-bottom: 1px solid #F0EBF2"><span style="width: 12px; height: 12px; border-radius: 50%; background: #117F3A"></span><span style="flex: 1; font-size: 17px">Saludos y presentaciones</span><span style="font-size: 15px; color: #4A3D54">Listo</span></li>
+<li style="display: flex; align-items: center; gap: 14px; padding: 12px 4px; border-bottom: 1px solid #F0EBF2"><span style="width: 12px; height: 12px; border-radius: 50%; background: #117F3A"></span><span style="flex: 1; font-size: 17px">En migración</span><span style="font-size: 15px; color: #4A3D54">Listo</span></li>
+<li style="display: flex; align-items: center; gap: 14px; padding: 12px 12px; margin: 4px -8px; border-radius: 12px; background: #FBF0DA"><span style="width: 12px; height: 12px; border-radius: 50%; border: 3px solid #E79A0F; background: #FFFFFF"></span><span style="flex: 1; font-size: 17px; font-weight: 700">Recoger el equipaje</span><span style="font-size: 15px; color: #6E4B02">Tu asistente lo está escribiendo</span></li>
+<li style="display: flex; align-items: center; gap: 14px; padding: 12px 4px"><span style="width: 12px; height: 12px; border-radius: 2px; transform: rotate(45deg); background: #1D1226"></span><span style="flex: 1; font-size: 17px">Examen del módulo</span><span style="font-size: 15px; color: #4A3D54">Falta</span></li>
+</ol>
+<button style="align-self: flex-start; min-height: 44px; border: none; background: none; color: #57248A; font-family: Archivo, sans-serif; font-weight: 700; font-size: 16px; padding: 0">Agregar un tema</button>
+</article>
+
+<article style="background: #FFFFFF; border-radius: 22px; box-shadow: inset 0 0 0 1px #E4DCE8; padding: 20px 24px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap">
+<h2 style="margin: 0; font-size: 22px; font-weight: 800; flex: 1">Módulo 2: En el hotel</h2>
+<span style="font-size: 15px; color: #4A3D54">5 temas listos. Para quien compra la ruta.</span>
+</article>
+<article style="background: #FFFFFF; border-radius: 22px; box-shadow: inset 0 0 0 1px #E4DCE8; padding: 20px 24px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap">
+<h2 style="margin: 0; font-size: 22px; font-weight: 800; flex: 1">Módulo 3: Comer fuera</h2>
+<span style="font-size: 15px; color: #4A3D54">4 temas listos. Para quien compra la ruta.</span>
+</article>
+</section>
+
+<aside aria-labelledby="asis" style="flex: 1 1 380px; min-width: 0; max-width: 460px; background: #1D1226; color: #F5F2F6; border-radius: 26px; padding: 24px; display: flex; flex-direction: column; gap: 18px">
+<h2 id="asis" style="margin: 0; font-size: 22px; font-weight: 800; letter-spacing: -0.01em">Tu asistente</h2>
+
+<div style="background: #FFFFFF; color: #1D1226; border-radius: 18px; padding: 20px; display: flex; flex-direction: column; gap: 12px">
+<p style="margin: 0; font-size: 15px; font-weight: 700; color: #8A5800">Necesita tu visto bueno</p>
+<p style="margin: 0; font-size: 19px; font-weight: 800; line-height: 1.3">Escribir 3 temas y el examen del módulo 1</p>
+<ul style="margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 4px; color: #4A3D54; font-size: 16px; line-height: 1.45">
+<li>Recoger el equipaje</li>
+<li>Pedir ayuda en el aeropuerto</li>
+<li>Del aeropuerto al hotel</li>
+<li>El examen: 8 preguntas</li>
+</ul>
+<p style="margin: 0; font-size: 15px; color: #4A3D54">Costará como máximo [N] créditos. Nada se publica hasta que tú lo publiques.</p>
+<div style="display: flex; gap: 10px; flex-wrap: wrap">
+<button style="flex: 1; min-width: 140px; height: 48px; border-radius: 12px; border: none; background: #6A2EA0; color: #FFFFFF; font-family: Archivo, sans-serif; font-weight: 700; font-size: 16px; box-shadow: 0 3px 0 0 #42185F">Aprobar y empezar</button>
+<button style="flex: 1; min-width: 120px; height: 48px; border-radius: 12px; border: 1.5px solid #C9BBD3; background: #FFFFFF; color: #1D1226; font-family: Archivo, sans-serif; font-weight: 600; font-size: 16px">Cambiar algo</button>
+</div>
+</div>
+
+<div style="display: flex; flex-direction: column; gap: 8px">
+<p style="margin: 0; font-size: 15px; font-weight: 700; color: #CFC4D8">Lo que hizo hasta ahora</p>
+<p style="margin: 0; font-size: 15px; line-height: 1.5; color: #E6DDEC">Leyó tus dos primeros temas para escribir con tu mismo tono, y te propone el plan de arriba.</p>
+</div>
+
+<form style="display: flex; gap: 8px; margin-top: auto">
+<label for="msg" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">Escríbele a tu asistente</label>
+<input id="msg" placeholder="Escríbele a tu asistente" style="flex: 1; min-width: 0; height: 48px; border-radius: 12px; border: 1.5px solid #5A4A68; background: #2A1E36; color: #F5F2F6; padding: 0 14px; font-family: Archivo, sans-serif; font-size: 16px">
+<button style="height: 48px; padding: 0 16px; border-radius: 12px; border: none; background: #F5F2F6; color: #1D1226; font-family: Archivo, sans-serif; font-weight: 700; font-size: 15px">Enviar</button>
+</form>
+</aside>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+renderVals() { return {}; }
+}
+</script>
+</body>
+</html>
