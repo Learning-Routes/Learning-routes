@@ -244,6 +244,18 @@ describe("route.publish", () => {
   });
 });
 
+describe("route.publish, twice", () => {
+  it("answers conflict when the draft is already the latest version", async () => {
+    const world = testWorld();
+    const input = { routeId: ROUTE, expectedRevision: 0 };
+    output(await call(world, STAFF.owner, "route.publish", input));
+    expect(await call(world, STAFF.owner, "route.publish", input)).toMatchObject({
+      ok: false,
+      code: "conflict",
+    });
+  });
+});
+
 describe("enrollment.create and enrollment.upgrade", () => {
   it("makes a stranger a student of a free, open route, logged in its space", async () => {
     const world = testWorld();

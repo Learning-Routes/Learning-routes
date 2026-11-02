@@ -180,8 +180,8 @@ async function runForSelf(
   }
 }
 
-function log(ctx: Ctx, spaceId: string, name: string, input: unknown, result: ActionResult) {
-  return ctx.repos.actionLog.append(spaceId, {
+async function log(ctx: Ctx, spaceId: string, name: string, input: unknown, result: ActionResult) {
+  const logged = await ctx.repos.actionLog.append(spaceId, {
     actorUserId: ctx.actor.userId,
     actorVia: ctx.actor.via,
     agentRunId: null,
@@ -190,6 +190,10 @@ function log(ctx: Ctx, spaceId: string, name: string, input: unknown, result: Ac
     outcome: result.ok ? "ok" : result.code,
     routeRevision: revisionOf(result),
   });
+  // Thrown past runAction, so the transaction rolls back: nothing commits unlogged.
+  if (!logged.ok) {
+    throw new Error(`the action log refused an entry: ${logged.error}`);
+  }
 }
 
 /** The scope a member action runs in; runAction always gives one. */

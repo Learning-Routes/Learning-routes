@@ -114,6 +114,57 @@ describe("a publish against a draft edit", () => {
   });
 });
 
+describe("two publishes at once", () => {
+  it("makes one version, and answers conflict to the second", async () => {
+    const setup = new pg.Client({ connectionString: URLS.migrator });
+    const one = new pg.Client({ connectionString: URLS.migrator });
+    const two = new pg.Client({ connectionString: URLS.migrator });
+    await Promise.all([setup.connect(), one.connect(), two.connect()]);
+    try {
+      const ownerId = await newUser(setup);
+      const spaceId = await newSpace(setup, "publish-twice");
+      await setup.query(
+        "insert into memberships (space_id, user_id, role) values ($1, $2, 'owner')",
+        [spaceId, ownerId],
+      );
+      const routeId = await newRoute(setup, spaceId);
+      const twoPid = await backendPid(two);
+      const publish = (db: pg.Client) => {
+        const orm = drizzle(db, { casing: "snake_case" });
+        return runAction(
+          ACTIONS,
+          "route.publish",
+          { routeId, expectedRevision: 0 },
+          {
+            actor: { via: "ui" as const, userId: ownerId },
+            repos: pgRepos(orm),
+            tenancy: pgTenancy(orm),
+            clock: { now: () => Date.now() },
+            ids: { newId: () => crypto.randomUUID() },
+          },
+        );
+      };
+      for (const db of [one, two]) {
+        await db.query("begin");
+        await actAs(db, ownerId);
+      }
+      expect(await publish(one)).toMatchObject({ ok: true, output: { version: 1 } });
+      const second = publish(two);
+      await blockedOrDone(twoPid, second);
+      await one.query("commit");
+      expect(await second).toMatchObject({ ok: false, code: "conflict" });
+      await two.query("commit");
+      const { rows } = await setup.query(
+        "select count(*)::int as n from route_versions where route_id = $1",
+        [routeId],
+      );
+      expect(rows[0]?.n).toBe(1);
+    } finally {
+      await Promise.all([setup.end(), one.end(), two.end()]);
+    }
+  });
+});
+
 describe("a stored version core cannot read", () => {
   it("answers invalid instead of throwing", async () => {
     await rolledBack(URLS.migrator, async (db) => {

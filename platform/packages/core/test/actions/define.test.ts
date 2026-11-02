@@ -26,11 +26,18 @@ const registry = { "test.echo": echo, "test.fail": fail };
 const allowAll = () => true;
 
 // Every target is in space-1, where user-1 owns it; access is tested in tenancy.test.ts.
-const ctx = (via: ActorKind): Ctx => ({
-  ...testCtx(via, testWorld(), "user-1"),
-  tenancy: { scopeOf: async () => ({ spaceId: "space-1", role: "owner" }) },
-  clock: { now: () => 1_000 },
-});
+const ctx = (via: ActorKind): Ctx => {
+  const base = testCtx(via, testWorld(), "user-1");
+  return {
+    ...base,
+    repos: {
+      ...base.repos,
+      actionLog: { append: async () => ({ ok: true, value: undefined }) },
+    },
+    tenancy: { scopeOf: async () => ({ spaceId: "space-1", role: "owner" }) },
+    clock: { now: () => 1_000 },
+  };
+};
 
 describe("runAction", () => {
   it("validates, runs and reports the output", async () => {

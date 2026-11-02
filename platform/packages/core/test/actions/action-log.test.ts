@@ -101,6 +101,23 @@ describe("runAction and the action log", () => {
     ]);
   });
 
+  it("fails the action when the log refuses its entry, so the mutation does not commit", async () => {
+    const world = testWorld();
+    const ctx = testCtx("ui", world, STAFF.owner);
+    const repos = {
+      ...ctx.repos,
+      actionLog: { append: async () => ({ ok: false as const, error: "not_found" as const }) },
+    };
+    await expect(
+      runAction(
+        ACTIONS,
+        "route.publish",
+        { routeId: ROUTE, expectedRevision: 0 },
+        { ...ctx, repos },
+      ),
+    ).rejects.toThrow("the action log refused");
+  });
+
   it("logs a member's refused enrollment in the route's space", async () => {
     const world = testWorld();
     const draft = world.drafts.get(ROUTE);

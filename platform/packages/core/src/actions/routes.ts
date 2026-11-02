@@ -87,6 +87,17 @@ export const routePublish = defineAction({
       }
       const version = (draft.latestPublishedVersion ?? 0) + 1;
       const hash = await contentHash(snapshot);
+      // A double click: the revision did not move, but the second publish must not make a copy.
+      if (draft.latestPublishedVersion !== null) {
+        const last = await repos.routeVersions.get(
+          spaceId,
+          input.routeId,
+          draft.latestPublishedVersion,
+        );
+        if (last.ok && last.value.contentHash === hash) {
+          throw new ActionError("conflict", "the draft is already the latest version");
+        }
+      }
       unwrap(
         await repos.routeVersions.append(spaceId, {
           routeId: input.routeId,
