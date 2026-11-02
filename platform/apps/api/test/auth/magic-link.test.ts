@@ -115,7 +115,7 @@ describe("signing in with a link", () => {
   });
 
   it("masks an address to its first two characters and its whole domain", () => {
-    expect(maskAddress("garcia@gmail.com")).toBe("ga•••@gmail.com");
+    expect(maskAddress("lector@example.com")).toBe("le•••@example.com");
     expect(maskAddress("ab@example.com")).toBe("ab•••@example.com");
     expect(maskAddress("a@example.com")).toBe("a•••@example.com");
     expect(maskAddress("a@b@example.com")).toBe("a@•••@example.com");
