@@ -1,0 +1,822 @@
+<!doctype html>
+<html lang="es">
+<head><meta charset="utf-8">
+<title>Mapa anotado</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<script>(() => { let m = 'light'; try { m = localStorage.getItem('lr-modo') || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'); } catch (e) {} if (m !== 'dark') m = 'light'; const r = document.documentElement; r.dataset.v = '3'; r.dataset.mode = m; })();</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&display=swap">
+<style>
+/* Ciruela, the owner's palette (19 Oct), in light and dark */
+[data-mode="light"]{ --bg:#F5F2F6; --bg-2:#ECE6EF; --panel:#FFFFFF; --ink:#1D1226; --ink-2:#4A3D54; --muted:#73667C; --line:#E4DCE8; --line-2:#D1C5D7; --route:#6A2EA0; --route-hover:#57248A; --route-ink:#FFFFFF; --route-soft:#F0E5F8; --signal:#E79A0F; --signal-ink:#9A6200; --reinf:#13807A; --bad:#B53A2A; --halo:#FFFFFF; --m-track:#CFC3D6; --m-ring:#9D8FA6; --m-lock:#C2B6C9; --edge:#DED3E3; --shade:rgba(29,18,38,.18); --stage:radial-gradient(120% 90% at 50% 30%,#FFFFFF 0%,#F5F2F6 58%,#ECE6EF 100%); color-scheme:light; --shadow:0 1px 2px rgba(12,20,36,.05),0 12px 32px -14px rgba(12,20,36,.24); --hi:rgba(255,255,255,.9); --m-glow:.08; --m-sh:.14; --m-hemi:1; --m-key:.82; }
+[data-mode="dark"]{ --bg:#150E1C; --bg-2:#1C1325; --panel:#241931; --ink:#F2ECF6; --ink-2:#CDBFD8; --muted:#9C8BAA; --line:#33263F; --line-2:#44344F; --route:#B98AF0; --route-hover:#CAA4F5; --route-ink:#150E1C; --route-soft:#33224A; --signal:#F5B23C; --signal-ink:#F8C66B; --reinf:#46C2B6; --bad:#FF8F7D; --halo:#1C1325; --m-track:#4A3A58; --m-ring:#8A7799; --m-lock:#3C2E48; --edge:#1C1325; --shade:rgba(0,0,0,.55); --stage:radial-gradient(120% 90% at 50% 30%,#2A1D38 0%,#1A1223 58%,#150E1C 100%); color-scheme:dark; --shadow:0 1px 2px rgba(0,0,0,.35),0 14px 36px -16px rgba(0,0,0,.75); --hi:rgba(255,255,255,.07); --m-glow:.16; --m-sh:.5; --m-hemi:.85; --m-key:.75; }
+:root{ --sans:"Archivo",system-ui,-apple-system,"Segoe UI",sans-serif; --ease:cubic-bezier(.23,1,.32,1); --nav:64px;
+  --h1:clamp(52px,5.1vw,100px); --h2:clamp(32px,2.75vw,54px); --p:clamp(16px,1.22vw,21px); --note:clamp(28px,2.3vw,40px); }
+@media (max-width:860px){ :root{ --h1:42px; --h2:29px; --p:16px; --note:26px; } }
+*{box-sizing:border-box}
+[hidden]{display:none !important}
+html{background:var(--bg)}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:17px;font-weight:420;line-height:1.55;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--route);outline-offset:3px;border-radius:8px}
+.wrap{width:100%;max-width:1280px;margin:0 auto;padding:0 32px}
+@media (max-width:640px){.wrap{padding:0 18px}}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:48px;padding:0 22px;border-radius:10px;border:0;background:var(--route);color:var(--route-ink);font:650 16px var(--sans);text-decoration:none;white-space:nowrap;cursor:pointer;transition:background-color .15s ease,transform .12s var(--ease)}
+.btn:hover{background:var(--route-hover)}
+.btn:active{transform:scale(.98)}
+.btn.sm{height:38px;padding:0 14px;font-size:14.5px;border-radius:9px}
+.btn[disabled]{opacity:.45;cursor:default}
+.fine{font-size:14px;color:var(--muted)}
+
+.nav{position:fixed;inset:0 0 auto 0;z-index:50;height:var(--nav);background:color-mix(in srgb,var(--bg) 90%,transparent);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+.nav .wrap{display:flex;align-items:center;justify-content:space-between;height:100%;gap:16px;max-width:none}
+.brand{display:inline-flex;align-items:center;gap:10px;font:700 16.5px var(--sans);font-stretch:108%;text-decoration:none;white-space:nowrap}
+.nav-r{display:flex;align-items:center;gap:4px}
+.nav-r a.lk{font-weight:520;font-size:15px;color:var(--ink-2);text-decoration:none;padding:8px 12px;border-radius:8px}
+.nav-r a.lk:hover{color:var(--ink);background:var(--bg-2)}
+@media (max-width:860px){.nav-r a.lk{display:none}}
+
+/* ---------- the stage: the map is the page ---------- */
+main{padding-top:var(--nav)}
+.journey{position:relative}
+.stage{position:sticky;top:var(--nav);height:calc(100vh - var(--nav));height:calc(100svh - var(--nav));overflow:hidden;background:var(--stage)}
+#world{position:absolute;inset:0;width:100%;height:100%;display:block}
+.fade{position:absolute;inset:auto 0 0 0;height:120px;pointer-events:none;background:linear-gradient(180deg,transparent,color-mix(in srgb,var(--bg) 80%,transparent))}
+.labels{position:absolute;inset:0;pointer-events:none}
+.ml,.mn,.mc,.mr{position:absolute;left:0;top:0;opacity:0;transition:opacity .25s ease;will-change:transform}
+.ml{width:max-content;max-width:150px;text-align:center;font:620 13.5px/1.25 var(--sans);font-stretch:94%;color:var(--ink-2);text-shadow:0 0 2px var(--halo),0 0 5px var(--halo),0 0 9px var(--halo)}
+.ml b{font-weight:720;color:var(--ink)}
+.ml small{display:block;font:720 11.5px var(--sans);color:var(--signal-ink);margin-bottom:1px}
+.ml.r{max-width:124px;font-size:12.5px;font-weight:520;color:var(--muted)}
+.mn{font:680 11px var(--sans);color:var(--muted);font-variant-numeric:tabular-nums}
+.mc{display:flex;align-items:center;gap:7px;padding:4px 9px;border-radius:7px;background:var(--panel);box-shadow:inset 0 0 0 1px var(--line);font:620 12.5px var(--sans);color:var(--ink-2);white-space:nowrap}
+.mc i{width:7px;height:7px;border-radius:50%;background:var(--route)}
+.mc span{color:var(--muted);font-weight:500}
+.mc em{font-style:normal;font-weight:650;font-size:11.5px;padding:1px 7px;border-radius:5px;background:var(--route-soft);color:var(--route)}
+.mr{white-space:nowrap}
+.mr small{display:block;font:520 12.5px var(--sans);color:var(--muted)}
+.mr b{display:block;font:700 22px/1.1 var(--sans);font-stretch:108%;letter-spacing:-.015em;color:var(--ink)}
+
+/* chapter text: flat and legible, pinned to a free spot on the map so it travels with it */
+.css3d{position:absolute;inset:0;overflow:hidden;pointer-events:none}
+.cam3d{position:absolute;inset:0;pointer-events:none}
+.ann{position:absolute;left:0;top:0;opacity:0;transition:opacity .35s ease;color:var(--ink);will-change:transform}
+.ann.on{opacity:1}
+.ann .in{display:inline-block;max-width:100%;vertical-align:top}
+.ann h1,.ann h2{margin:0;font-family:var(--sans);font-weight:740;font-stretch:112%;letter-spacing:-.03em;line-height:.98;text-wrap:balance}
+.ann h1{font-size:var(--h1)}
+.ann h2{font-size:var(--h2)}
+.ann .wr{display:block;clip-path:inset(-12% 100% -24% 0);transition:clip-path 1s var(--ease)}
+.ann.on .wr{clip-path:inset(-12% -3% -24% -3%)}
+.ann p{margin:.7em 0 0;font-size:var(--p);line-height:1.42;color:var(--ink-2);max-width:31ch;opacity:0;transition:opacity .5s ease .35s}
+.ann h1 + p{max-width:36ch}
+.ann.on p{opacity:1}
+.ann .acts{display:flex;align-items:center;flex-wrap:wrap;gap:12px 18px;margin-top:26px;opacity:0;transition:opacity .5s ease .55s}
+.ann.on .acts{opacity:1}
+.ann.on .acts a{pointer-events:auto}
+.lead{position:absolute;left:0;top:0;width:1px;height:1px;overflow:visible;pointer-events:none}
+.lead path{fill:none;stroke:var(--ink-2);stroke-width:1.75;stroke-linecap:round;stroke-dasharray:1;stroke-dashoffset:1;transition:stroke-dashoffset .9s var(--ease) .3s}
+.ann.on .lead path{stroke-dashoffset:0}
+.lead circle{fill:var(--panel);stroke:var(--ink);stroke-width:2;opacity:0;transition:opacity .3s ease 1s}
+.lead circle.c2{fill:var(--ink);stroke:none}
+.ann.on .lead circle{opacity:1}
+
+.stage-top{position:absolute;left:32px;right:32px;top:20px;display:flex;justify-content:space-between;align-items:center;gap:16px;pointer-events:none;opacity:0;transition:opacity .3s ease}
+.stage-top.on{opacity:1}
+.stage-top.on > *{pointer-events:auto}
+.seg{display:flex;align-items:center;gap:10px}
+.seg > span{font-size:13.5px;color:var(--muted)}
+.seg .opts{display:flex;padding:3px;border-radius:10px;background:var(--panel);box-shadow:inset 0 0 0 1px var(--line)}
+.seg button{height:32px;padding:0 12px;border:0;border-radius:7px;background:transparent;color:var(--ink-2);font:620 13.5px var(--sans);cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--panel)}
+.legend{display:flex;gap:16px;font-size:13px;color:var(--muted);flex-wrap:wrap;justify-content:flex-end}
+.legend span{display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.vdots{position:absolute;right:22px;top:50%;transform:translateY(-50%);opacity:0;transition:opacity .3s ease}
+.vdots.on{opacity:1}
+.vdots ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:12px}
+.vdots button{display:block;width:10px;height:10px;padding:0;border:0;border-radius:50%;background:var(--line-2);cursor:pointer;transition:background-color .2s ease,height .3s var(--ease)}
+.vdots button[aria-current="step"]{background:var(--route);height:26px;border-radius:6px}
+@media (max-width:860px){
+  .stage-top{left:16px;right:16px;top:auto;bottom:16px}
+  .seg > span,.legend{display:none !important}
+  .seg .opts{overflow-x:auto;max-width:calc(100vw - 32px);scrollbar-width:none}
+  .vdots{right:8px}
+  .ml{max-width:120px;font-size:12.5px}
+}
+.fallback{display:none}
+.no-gl .stage{position:relative;height:auto;padding:40px 32px}
+.no-gl #world,.no-gl .labels,.no-gl .stage-top,.no-gl .fade,.no-gl .vdots,.no-gl .lead{display:none !important}
+.no-gl .css3d,.no-gl .cam3d{position:relative;transform:none !important}
+.no-gl .ann{position:relative;transform:none !important;opacity:1;width:auto !important;max-width:720px;margin:0 0 40px}
+.no-gl .ann .wr{clip-path:none}
+.no-gl .ann p,.no-gl .ann .acts{opacity:1}
+.no-gl .fallback{display:block;color:var(--muted);font-size:15px}
+
+/* ---------- the close: a fresh map sheet; the route starts at the field ---------- */
+.final{padding:112px 0;border-top:1px solid var(--line)}
+.sheet{position:relative;border-radius:22px;padding:84px 80px 76px}
+.tick{position:absolute;width:22px;height:22px;border-color:var(--route);border-style:solid;border-width:0}
+.tick.tl{left:22px;top:22px;border-left-width:2px;border-top-width:2px}
+.tick.tr{right:22px;top:22px;border-right-width:2px;border-top-width:2px}
+.tick.bl{left:22px;bottom:22px;border-left-width:2px;border-bottom-width:2px}
+.tick.br{right:22px;bottom:22px;border-right-width:2px;border-bottom-width:2px}
+.close{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);column-gap:clamp(48px,6vw,96px);align-items:center}
+.close h2{margin:0;font:760 clamp(42px,4vw,76px)/.98 var(--sans);font-stretch:112%;letter-spacing:-.032em;text-wrap:balance;max-width:13ch}
+.close .intro{margin:24px 0 0;font-size:clamp(17px,1.3vw,20px);line-height:1.5;color:var(--ink-2);max-width:36ch}
+.ask{margin-top:36px;display:flex;gap:10px}
+.ask input{flex:1 1 auto;min-width:0;height:58px;border:0;border-radius:12px;background:var(--bg);box-shadow:inset 0 0 0 1.5px var(--line-2);color:var(--ink);font:500 17px var(--sans);padding:0 18px;transition:box-shadow .15s ease}
+.ask input::placeholder{color:var(--muted)}
+.ask input:focus-visible{outline:none;box-shadow:inset 0 0 0 2px var(--route)}
+.ask .btn{height:58px;padding:0 26px;border-radius:12px;flex:none}
+.ideas{margin-top:18px;display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.ideas > span{font-size:14px;color:var(--muted);margin-right:2px}
+.ideas button{height:34px;padding:0 12px;border:0;border-radius:8px;background:transparent;box-shadow:inset 0 0 0 1px var(--line-2);font:560 14px var(--sans);color:var(--ink-2);cursor:pointer;transition:box-shadow .15s ease,color .15s ease}
+.ideas button:hover{box-shadow:inset 0 0 0 1px var(--ink-2);color:var(--ink)}
+.plan{position:relative;margin:0}
+.plan svg{display:block;width:100%;height:auto;overflow:visible}
+.bp-sheet{fill:none;stroke:var(--line-2);stroke-width:1.5;stroke-dasharray:6 6}
+.bp-sheet.one{stroke:var(--route);stroke-opacity:.5}
+.bp-sheet.three{stroke-opacity:.6}
+.bp-line{fill:none;stroke:var(--line-2);stroke-width:2.5;stroke-linecap:round;stroke-dasharray:.5 8}
+.bp-node{fill:var(--panel);stroke:var(--line-2);stroke-width:2;transition:fill .3s ease,stroke .3s ease}
+.bp-disc{fill:var(--panel);stroke:var(--line-2);stroke-width:2}
+.bp-disc.one{stroke:var(--route)}
+.bp-origin{fill:var(--route)}
+.bp-route{fill:none;stroke:var(--route);stroke-width:4;stroke-linecap:round;stroke-dasharray:1;stroke-dashoffset:1;transition:stroke-dashoffset 1.4s var(--ease)}
+.plan.drawn .bp-route{stroke-dashoffset:0}
+.plan.drawn .n1{fill:var(--route);stroke:var(--route)}
+.plan.drawn .n1:nth-of-type(2){transition-delay:.25s}.plan.drawn .n1:nth-of-type(3){transition-delay:.5s}.plan.drawn .n1:nth-of-type(4){transition-delay:.75s}.plan.drawn .n1:nth-of-type(5){transition-delay:1s}
+.plan.wait .bp-line{animation:flow 1.2s linear infinite}
+@keyframes flow{to{stroke-dashoffset:-8.5}}
+.plan .bp{position:relative}
+.plan .chip{position:absolute;transform:translateY(-50%)}
+.plan .chip.c1{left:13%;top:12.5%}.plan .chip.c2{left:13%;top:46.5%}.plan .chip.c3{left:13%;top:78.5%}
+.chip{display:inline-flex;align-items:center;gap:7px;max-width:72%;padding:5px 10px;border-radius:7px;background:var(--panel);box-shadow:inset 0 0 0 1px var(--line);font:620 13px var(--sans);color:var(--ink-2);white-space:nowrap}
+.chip i{flex:none;width:7px;height:7px;border-radius:50%;background:var(--route)}
+.chip b{font-weight:620;overflow:hidden;text-overflow:ellipsis}
+.chip em{font-style:normal;font-weight:650;font-size:12px;padding:1px 7px;border-radius:5px;background:var(--route-soft);color:var(--route)}
+.chip.mute{color:var(--muted)}.chip.mute i{background:var(--line-2)}
+.plan figcaption{margin-top:20px;padding-left:2%;font-size:16px;line-height:1.5;color:var(--ink-2);max-width:40ch}
+.plan figcaption b{display:block;font:740 22px/1.15 var(--sans);font-stretch:110%;letter-spacing:-.012em;color:var(--ink);margin-bottom:4px}
+@media (max-width:960px){
+  .final{padding:72px 0}
+  .sheet{padding:56px 22px 36px;border-radius:18px}
+  .tick{width:16px;height:16px}.tick.tl,.tick.tr{top:14px}.tick.bl,.tick.br{bottom:14px}.tick.tl,.tick.bl{left:14px}.tick.tr,.tick.br{right:14px}
+  .close{grid-template-columns:minmax(0,1fr)}
+  .close h2{font-size:clamp(40px,10vw,56px)}
+  .ask{flex-direction:column}
+  .ask .btn{width:100%}
+  .plan{margin-top:56px}
+  .plan .chip{font-size:12px}
+  .ideas > span{flex-basis:100%}
+  .ideas button{height:32px;padding:0 10px;font-size:13.5px}
+}
+@media (prefers-reduced-motion: reduce){.plan.wait .bp-line{animation:none}.bp-route,.bp-node{transition:none}}
+footer{border-top:1px solid var(--line)}
+footer .wrap{display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px;padding-top:24px;padding-bottom:32px;font-size:14px;color:var(--muted)}
+footer nav{display:flex;gap:18px}
+footer a{text-decoration:none}
+footer a:hover{color:var(--ink)}
+
+/* light / dark, like the app's own switch */
+.mode-b{display:grid;place-items:center;width:38px;height:38px;margin-right:6px;border:0;border-radius:10px;background:transparent;color:var(--ink-2);cursor:pointer;box-shadow:inset 0 0 0 1px var(--line-2)}
+.mode-b:hover{color:var(--ink);background:var(--bg-2)}
+.mode-b .i-sun{display:none}[data-mode="dark"] .mode-b .i-sun{display:block}[data-mode="dark"] .mode-b .i-moon{display:none}
+@media (max-width:860px){.brand{font-size:14.5px;gap:8px}.nav .wrap{gap:8px}.nav-r .btn.sm{padding:0 12px;font-size:13.5px}.mode-b{width:34px;height:34px;margin-right:2px}}
+
+/* cards with body: a sheet with thickness, lit from above, like the sheets of the map */
+@property --gl{syntax:'<percentage>';inherits:false;initial-value:0%}
+.card3{position:relative;border-radius:18px;--gl:0%;--th:8px;
+  background:radial-gradient(560px circle at var(--mx,30%) var(--my,0%),color-mix(in srgb,var(--hi) var(--gl),transparent),transparent 62%),linear-gradient(170deg,color-mix(in srgb,var(--panel) 100%,var(--hi)) 0%,var(--panel) 40%,color-mix(in srgb,var(--panel) 90%,var(--bg)) 100%);
+  box-shadow:inset 0 1px 0 var(--hi),inset 0 0 0 1px var(--line),
+    0 var(--th) 0 -1px var(--edge),0 var(--th) 0 0 color-mix(in srgb,var(--line-2) 80%,transparent),
+    0 calc(var(--th) + 14px) 26px -14px var(--shade),0 calc(var(--th) + 40px) 70px -36px var(--shade);
+  transform:perspective(1100px) rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg)) translateY(var(--ty,0px));transition:transform .5s var(--ease),box-shadow .5s var(--ease),--gl .5s ease}
+.card3.lift{--ty:-6px;--gl:65%;--th:12px}
+.card3.moving{transition:box-shadow .5s var(--ease),--gl .5s ease}
+[data-mode="dark"] .card3{box-shadow:inset 0 1px 0 var(--hi),inset 0 0 0 1px var(--line-2),0 var(--th) 0 -1px var(--edge),0 var(--th) 0 0 var(--line-2),0 calc(var(--th) + 14px) 26px -12px var(--shade),0 calc(var(--th) + 40px) 70px -30px var(--shade)}
+/* buttons have a little body too: a lit top and a pressable edge */
+.btn{box-shadow:inset 0 1px 0 rgba(255,255,255,.22),0 3px 0 0 color-mix(in srgb,var(--route) 62%,#000),0 8px 16px -8px color-mix(in srgb,var(--route) 70%,transparent);transition:background-color .15s ease,transform .12s var(--ease),box-shadow .12s ease}
+.btn:active{transform:translateY(2px);box-shadow:inset 0 1px 0 rgba(255,255,255,.18),0 1px 0 0 color-mix(in srgb,var(--route) 62%,#000)}
+.btn.ghost{background:var(--panel);color:var(--ink);box-shadow:inset 0 0 0 1px var(--line-2),0 3px 0 0 var(--line-2)}
+.btn.ghost:hover{background:var(--bg-2)}
+
+/* review only: how the app's cards look in this palette, light and dark side by side */
+.muestra{border-top:1px solid var(--line)}
+.mu-head{padding-top:72px;padding-bottom:28px}
+.mu-tag{margin:0 0 8px;font-size:13px;color:var(--muted)}
+.mu-head h2{margin:0;font:740 clamp(28px,2.4vw,40px)/1.05 var(--sans);font-stretch:110%;letter-spacing:-.02em;max-width:24ch}
+.mu-band{background:var(--bg);color:var(--ink);padding:44px 0 64px}
+.mu-band + .mu-band{border-top:1px solid var(--line)}
+.mu-l{margin:0 0 22px;font:650 13px var(--sans);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.mu-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:28px}
+.rcard{padding:22px 22px 20px;display:flex;flex-direction:column;gap:6px}
+.rc-top{display:flex;justify-content:space-between;align-items:center;font-size:13px;color:var(--muted)}
+.lvl{font:650 12px var(--sans);padding:3px 8px;border-radius:6px;background:var(--route-soft);color:var(--route)}
+.rcard h3,.cont h3,.ctrl h3{margin:6px 0 0;font:720 22px/1.15 var(--sans);font-stretch:108%;letter-spacing:-.012em;color:var(--ink)}
+.rc-sub{margin:0;font-size:14.5px;color:var(--ink-2)}
+.tray{margin:12px 0 8px;padding:10px 12px 8px;border-radius:12px;background:color-mix(in srgb,var(--bg) 75%,var(--panel));box-shadow:inset 0 2px 5px -1px var(--shade),inset 0 0 0 1px var(--line)}
+.rc-map{display:block;width:100%;height:auto;overflow:visible}
+.rc-foot{display:flex;align-items:center;gap:14px;margin-top:4px}
+.bar{flex:1;height:8px;border-radius:8px;background:color-mix(in srgb,var(--bg) 70%,var(--line));box-shadow:inset 0 1px 2px var(--shade);overflow:hidden}
+.bar b{display:block;height:100%;border-radius:6px;background:var(--route)}
+.cont{grid-column:span 2;display:flex;align-items:center;justify-content:space-between;gap:20px;padding:26px 28px}
+.cont .k{margin:0;font-size:13px;color:var(--muted)}
+.cont .btn{flex:none}
+.ctrl{padding:22px;display:flex;flex-direction:column;gap:14px}
+.ctrl .row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.ctrl input{height:46px;border:0;border-radius:10px;background:var(--bg);box-shadow:inset 0 0 0 1.5px var(--line-2);color:var(--ink);font:500 15px var(--sans);padding:0 14px;min-width:0}
+.ctrl input::placeholder{color:var(--muted)}
+.tag{font:620 12.5px var(--sans);padding:4px 9px;border-radius:7px}
+.tag.ok{background:var(--route);color:var(--route-ink)}
+.tag.now{box-shadow:inset 0 0 0 1.5px var(--signal);color:var(--signal-ink)}
+.tag.re{box-shadow:inset 0 0 0 1.5px var(--reinf);color:var(--reinf)}
+@media (max-width:960px){.mu-grid{grid-template-columns:minmax(0,1fr)}.cont{grid-column:auto;flex-direction:column;align-items:flex-start}}
+@media (prefers-reduced-motion: reduce){.plan.wait .bp-line{animation:none}.bp-route,.bp-node{transition:none}}
+footer{border-top:1px solid var(--line)}
+footer .wrap{display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px;padding-top:24px;padding-bottom:32px;font-size:14px;color:var(--muted)}
+footer nav{display:flex;gap:18px}
+footer a{text-decoration:none}
+footer a:hover{color:var(--ink)}
+
+/* review only: palette switch in the nav, so it never sits on the page */
+.pal{display:flex;align-items:center;gap:6px;margin-right:10px;padding-right:14px;border-right:1px solid var(--line)}
+.pal span{font-size:13px;color:var(--muted);margin-right:2px}
+.pal button{width:22px;height:22px;padding:0;border:0;border-radius:50%;background:var(--c);cursor:pointer;box-shadow:inset 0 0 0 2px var(--bg),0 0 0 1px var(--line-2)}
+.pal button[aria-pressed="true"]{box-shadow:inset 0 0 0 3px var(--bg),0 0 0 2px var(--ink)}
+@media (max-width:860px){.pal span{display:none}.pal{margin-right:2px;padding-right:8px;gap:4px}.pal button{width:18px;height:18px}.brand{font-size:14.5px;gap:8px}.nav .wrap{gap:8px}.nav-r .btn.sm{padding:0 12px;font-size:13.5px}}
+@media (prefers-reduced-motion: reduce){.card3,.ann,.ann .wr,.ann p,.ann .acts,.lead path,.lead circle,.stage-top,.vdots,.ml,.mn,.mc,.mr,.btn,.ls-bar b,.vdots button{transition:none}.op.no{animation:none}}
+</style>
+
+<header class="nav">
+  <div class="wrap">
+    <a class="brand" href="#inicio"><svg aria-hidden="true" width="26" height="26" viewBox="0 0 26 26" fill="none"><rect x=".5" y=".5" width="25" height="25" rx="7" fill="var(--route)"/><path d="M6.5 18.5c4.5 0 3.5-7 7.5-7s3-5 5.5-5" stroke="var(--route-ink)" stroke-width="2" stroke-linecap="round"/><circle cx="6.5" cy="18.5" r="2" fill="var(--route-ink)"/><circle cx="19.5" cy="6.5" r="2" fill="var(--signal)"/></svg>Learning Routes</a>
+    <nav class="nav-r" aria-label="Principal"><button type="button" class="mode-b" id="modeB" aria-label="Cambiar a modo oscuro"><svg class="i-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></svg><svg class="i-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg></button><a class="lk" href="#como" data-jump="1">Cómo funciona</a><a class="lk" href="#">Entrar</a><a class="btn sm" href="#empezar">Crear mi ruta</a></nav>
+  </div>
+</header>
+
+<main id="inicio">
+<section class="journey" id="como" aria-label="Learning Routes: cómo funciona una ruta">
+  <div class="stage" id="stage">
+    <canvas id="world" aria-hidden="true"></canvas>
+    <div class="fade" aria-hidden="true"></div>
+    <div class="labels" id="labels" aria-hidden="true"></div>
+    <div class="css3d" id="css3d"><div class="cam3d" id="cam3d">
+      <div class="ann" data-ch="0">
+        <div class="in"><h1><span class="wr">Aprende lo que quieras, bien.</span></h1></div>
+        <p>Learning Routes lo convierte en una ruta: módulos en orden, temas cortos con práctica y un examen al cerrar cada módulo.</p>
+        <div class="acts"><a class="btn" href="#empezar">Crear mi ruta</a><span class="fine">El primer módulo es gratis.</span></div>
+      </div>
+      <div class="ann" data-ch="1"><svg class="lead" aria-hidden="true"><path pathLength="1"/><circle r="7"/><circle class="c2" r="2.6"/></svg><div class="in"><h2><span class="wr">Tu ruta, armada para ti</span></h2></div><p>Nos dices qué quieres aprender y cuánto sabes. La ruta se arma en módulos, cada uno con sus temas en orden.</p></div>
+      <div class="ann" data-ch="2"><svg class="lead" aria-hidden="true"><path pathLength="1"/><circle r="7"/><circle class="c2" r="2.6"/></svg><div class="in"><h2><span class="wr">Un tema a la vez</span></h2></div><p>Lees, practicas y respondes una comprobación. Al acertar, el tema queda hecho y la línea avanza contigo.</p></div>
+      <div class="ann" data-ch="3"><svg class="lead" aria-hidden="true"><path pathLength="1"/><circle r="7"/><circle class="c2" r="2.6"/></svg><div class="in"><h2><span class="wr">Si algo cuesta, aparece un refuerzo</span></h2></div><p>Fallar una comprobación abre temas cortos de refuerzo debajo de ese tema. Al terminarlos, sigues por la ruta.</p></div>
+      <div class="ann" data-ch="4"><svg class="lead" aria-hidden="true"><path pathLength="1"/><circle r="7"/><circle class="c2" r="2.6"/></svg><div class="in"><h2><span class="wr">Cada módulo cierra con un examen</span></h2></div><p>Confirma lo que sabes y pasas al siguiente módulo de tu ruta.</p></div>
+      <div class="ann" data-ch="5"><div class="in"><h2><span class="wr">Tu ruta entera, de un vistazo</span></h2></div><p>Módulos en orden, cada uno con sus temas y sus refuerzos. El primer módulo es gratis.</p><div class="acts"><a class="btn" href="#empezar">Crear mi ruta</a></div></div>
+    </div></div>
+    <div class="stage-top" id="stageTop">
+      <div class="seg"><span id="segL">Ruta de ejemplo</span><div class="opts" role="group" aria-labelledby="segL"><button type="button" data-t="pt" aria-pressed="true">Portugués</button><button type="button" data-t="py" aria-pressed="false">Python</button><button type="button" data-t="gt" aria-pressed="false">Guitarra</button><button type="button" data-t="fn" aria-pressed="false">Finanzas</button></div></div>
+      <div class="legend" aria-label="Leyenda del mapa">
+        <span><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><circle cx="7" cy="7" r="6" fill="var(--route)"/><path d="M4.4 7.2l1.8 1.8 3.4-3.6" fill="none" stroke="var(--route-ink)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Hecho</span>
+        <span><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><circle cx="7" cy="7" r="5.2" fill="none" stroke="var(--signal)" stroke-width="2.2"/></svg>Estás aquí</span>
+        <span><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><circle cx="7" cy="7" r="5.4" fill="none" stroke="var(--muted)" stroke-width="1.4"/></svg>Por llegar</span>
+        <span><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><circle cx="7" cy="7" r="5.4" fill="none" stroke="var(--reinf)" stroke-width="1.5" stroke-dasharray="1.6 2"/><circle cx="7" cy="7" r="1.8" fill="var(--reinf)"/></svg>Refuerzo</span>
+        <span><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><circle cx="7" cy="7" r="5.4" fill="none" stroke="var(--muted)" stroke-width="1.4" stroke-dasharray="2.4 2.2"/></svg>Bloqueado</span>
+      </div>
+    </div>
+    <nav class="vdots" id="vdotsNav" aria-label="Capítulos"><ol id="vdots"></ol></nav>
+    <p class="fallback">Tu navegador no muestra el mapa en 3D. Este es el recorrido de una ruta, paso a paso.</p>
+  </div>
+</section>
+
+<section class="final" id="empezar" aria-labelledby="fH">
+  <div class="wrap">
+    <div class="sheet card3">
+      <i class="tick tl" aria-hidden="true"></i><i class="tick tr" aria-hidden="true"></i><i class="tick bl" aria-hidden="true"></i><i class="tick br" aria-hidden="true"></i>
+      <div class="close">
+        <div>
+          <h2 id="fH">¿Qué quieres aprender?</h2>
+          <p class="intro">Escríbelo con tus palabras, como se lo contarías a un amigo. Con eso armamos tu ruta, módulo a módulo.</p>
+          <form class="ask" id="ask"><label class="sr" for="want">Qué quieres aprender</label><input id="want" autocomplete="off" placeholder="Por ejemplo: inglés para el trabajo"><button class="btn" type="submit">Crear mi ruta</button></form>
+          <div class="ideas" role="group" aria-label="Ideas para empezar"><span>Ideas:</span><button type="button">Portugués para viajar</button><button type="button">Python desde cero</button><button type="button">Guitarra para empezar</button><button type="button">Finanzas personales</button></div>
+        </div>
+        <figure class="plan" id="plan">
+          <div class="bp"><svg viewBox="0 0 520 400" aria-hidden="true">
+            <rect class="bp-sheet one" x="8" y="50" width="504" height="104" rx="16"/>
+            <rect class="bp-sheet" x="8" y="186" width="504" height="96" rx="16"/>
+            <rect class="bp-sheet three" x="8" y="314" width="504" height="78" rx="16"/>
+            <path class="bp-line" d="M28 26 C 28 58, 52 66, 52 89"/>
+            <path class="bp-line" d="M52 102 C 90 102, 96 92, 128 92 C 170 92, 172 112, 212 112 C 254 112, 256 90, 296 90 C 338 90, 340 110, 380 110 C 422 110, 424 94, 462 94"/>
+            <path class="bp-line" d="M52 115 L 52 221"/>
+            <path class="bp-line" d="M52 234 C 96 234, 100 226, 140 226 C 188 226, 190 244, 236 244 C 284 244, 286 224, 332 224 C 380 224, 382 240, 428 240"/>
+            <path class="bp-line" d="M52 247 L 52 340"/>
+            <path class="bp-line" d="M52 353 C 100 353, 104 348, 150 348 C 206 348, 206 360, 260 360 C 316 360, 316 346, 370 346"/>
+            <path class="bp-route" pathLength="1" d="M28 26 C 28 58, 52 66, 52 89 L 52 102 C 90 102, 96 92, 128 92 C 170 92, 172 112, 212 112 C 254 112, 256 90, 296 90 C 338 90, 340 110, 380 110 C 422 110, 424 94, 462 94"/>
+            <polygon class="bp-origin" points="28,12 37,24 28,36 19,24"/>
+            <circle class="bp-disc one" cx="52" cy="102" r="13"/><circle class="bp-disc" cx="52" cy="234" r="13"/><circle class="bp-disc" cx="52" cy="353" r="12" stroke-opacity=".6"/>
+            <g><circle class="bp-node n1" cx="128" cy="92" r="11"/><circle class="bp-node n1" cx="212" cy="112" r="11"/><circle class="bp-node n1" cx="296" cy="90" r="11"/><circle class="bp-node n1" cx="380" cy="110" r="11"/><circle class="bp-node n1" cx="462" cy="94" r="11"/></g>
+            <g><circle class="bp-node" cx="140" cy="226" r="11"/><circle class="bp-node" cx="236" cy="244" r="11"/><circle class="bp-node" cx="332" cy="224" r="11"/><circle class="bp-node" cx="428" cy="240" r="11"/></g>
+            <g opacity=".6"><circle class="bp-node" cx="150" cy="348" r="10"/><circle class="bp-node" cx="260" cy="360" r="10"/><circle class="bp-node" cx="370" cy="346" r="10"/></g>
+          </svg>
+          <span class="chip c1"><i></i><b id="c1t">Módulo 1</b><em>Gratis</em></span>
+          <span class="chip c2 mute"><i></i><b>Módulo 2</b></span>
+          <span class="chip c3 mute"><i></i><b>Módulo 3</b></span></div>
+          <figcaption><b>Tu ruta aparecerá aquí.</b>Módulos en orden, cada uno con sus temas. El primer módulo es gratis.</figcaption>
+        </figure>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="muestra" aria-labelledby="muH">
+  <div class="wrap mu-head"><p class="mu-tag">Referencia para la app · no va en el landing</p><h2 id="muH">Las tarjetas de la app con Ciruela</h2></div>
+  <div class="mu-band" data-v="3" data-mode="light"><div class="wrap"><p class="mu-l">Claro</p><div class="mu-grid"></div></div></div>
+  <div class="mu-band" data-v="3" data-mode="dark"><div class="wrap"><p class="mu-l">Oscuro</p><div class="mu-grid"></div></div></div>
+</section>
+</main>
+<footer><div class="wrap"><span>© 2026 Learning Routes</span><nav aria-label="Legal"><a href="#">Términos</a><a href="#">Privacidad</a><a href="#">Contacto</a></nav></div></footer>
+
+<script src="three.min.js"></script>
+<script>
+(() => {
+  let VER = document.documentElement.dataset.v;
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
+  const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
+  const lerp = (a, b, t) => a + (b - a) * t;
+  const ss = (a, b, v) => { const t = clamp((v - a) / (b - a)); return t * t * (3 - 2 * t); };
+  const ease = t => t < .5 ? 4*t*t*t : 1 - Math.pow(-2*t + 2, 3)/2;
+  let onPalette = () => {};
+  const ROOT = document.documentElement;
+  function setLook(v, m){
+    ROOT.dataset.v = '3'; ROOT.dataset.mode = m; $$('.mu-band').forEach(b => b.dataset.v = '3');
+    try { localStorage.setItem('lr-modo', m); } catch (e) {}
+    $('#modeB').setAttribute('aria-label', m === 'dark' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro');
+    onPalette();
+  }
+  $('#modeB').addEventListener('click', () => setLook('3', ROOT.dataset.mode === 'dark' ? 'light' : 'dark'));
+  function themeFromCSS(){
+    const cs = getComputedStyle(ROOT), g = k => cs.getPropertyValue(k).trim(), dark = ROOT.dataset.mode === 'dark';
+    return { panel: g('--panel'), track: g('--m-track'), node: g('--panel'), ring: g('--m-ring'), route: g('--route'), glow: parseFloat(g('--m-glow')), signal: g('--signal'), reinf: g('--reinf'), check: g('--route-ink'), lock: g('--m-lock'), ink: g('--ink'),
+      hemiSky: dark ? g('--ink-2') : '#FFFFFF', hemiGround: dark ? g('--bg') : g('--line-2'), hemiI: parseFloat(g('--m-hemi')), keyI: parseFloat(g('--m-key')), shadow: parseFloat(g('--m-sh')), fog: g('--bg') };
+  }
+
+  /* ---------- the showcase: three routes, where to continue, and the controls ---------- */
+  const mini = (n, done) => { const xs = [...Array(n)].map((_, i) => 18 + i * (264 / (n - 1))), ys = xs.map((_, i) => i % 2 ? 40 : 22);
+    let d = `M${xs[0]} ${ys[0]}`; for (let i = 1; i < n; i++){ const mx = (xs[i - 1] + xs[i]) / 2; d += ` C ${mx} ${ys[i - 1]}, ${mx} ${ys[i]}, ${xs[i]} ${ys[i]}`; }
+    let dd = `M${xs[0]} ${ys[0]}`; for (let i = 1; i <= done; i++){ const mx = (xs[i - 1] + xs[i]) / 2; dd += ` C ${mx} ${ys[i - 1]}, ${mx} ${ys[i]}, ${xs[i]} ${ys[i]}`; }
+    const nodes = xs.map((x, i) => i < done ? `<circle cx="${x}" cy="${ys[i]}" r="8" fill="var(--route)"/><path d="M${x - 3.4} ${ys[i]}l2.3 2.3 4.4-4.6" fill="none" stroke="var(--route-ink)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>` : i === done ? `<circle cx="${x}" cy="${ys[i]}" r="8" fill="var(--panel)" stroke="var(--signal)" stroke-width="3"/>` : `<circle cx="${x}" cy="${ys[i]}" r="7" fill="var(--panel)" stroke="var(--line-2)" stroke-width="2"/>`).join('');
+    return `<div class="tray"><svg class="rc-map" viewBox="0 0 300 62" aria-hidden="true"><path d="${d}" fill="none" stroke="var(--line-2)" stroke-width="2.4" stroke-dasharray=".5 7" stroke-linecap="round"/><path d="${dd}" fill="none" stroke="var(--route)" stroke-width="4" stroke-linecap="round"/>${nodes}</svg></div>`; };
+  const ROUTES = [['Portugués para viajar', 'Nivel 1', 'Módulo 1 de 3', 'Fundamentos', 6, 4], ['Python desde cero', 'Nivel 2', 'Módulo 2 de 3', 'Trabajar con datos', 5, 2], ['Guitarra para empezar', 'Nivel 1', 'Módulo 1 de 3', 'Lo básico', 6, 1]];
+  const cards = ROUTES.map(([t, lv, m, mod, n, d]) => `<article class="rcard card3 tilt"><div class="rc-top"><span class="lvl">${lv}</span><span>${m}</span></div><h3>${t}</h3><p class="rc-sub">${mod} · ${d} de ${n} temas</p>${mini(n, d)}<div class="rc-foot"><span class="bar"><b style="width:${Math.round(d / n * 100)}%"></b></span><a class="btn sm" href="#empezar" tabindex="-1">Continuar</a></div></article>`).join('')
+    + `<article class="cont card3 tilt"><div><p class="k">Sigue donde lo dejaste</p><h3>Ser y estar</h3><p class="rc-sub">Portugués para viajar · Tema 3 de 6 · unos 8 minutos</p></div><a class="btn" href="#empezar" tabindex="-1">Continuar</a></article>`
+    + `<article class="ctrl card3 tilt"><h3>Botones y campos</h3><div class="row"><a class="btn sm" href="#empezar" tabindex="-1">Crear mi ruta</a><a class="btn sm ghost" href="#como" tabindex="-1">Ver cómo funciona</a></div><div class="row"><span class="tag ok">Hecho</span><span class="tag now">Estás aquí</span><span class="tag re">Refuerzo</span></div><input aria-label="Campo de ejemplo" tabindex="-1" placeholder="Por ejemplo: inglés para el trabajo"></article>`;
+  $$('.mu-grid').forEach(g => g.innerHTML = cards);
+
+  /* ---------- cards follow the pointer a little, and lift ---------- */
+  if (matchMedia('(hover: hover) and (pointer: fine)').matches && !reduce){
+    $$('.card3').forEach(c => {
+      const tilt = c.classList.contains('tilt');
+      c.addEventListener('pointerenter', () => c.classList.add('lift'));
+      c.addEventListener('pointermove', e => { const r = c.getBoundingClientRect(), px = (e.clientX - r.left) / r.width, py = (e.clientY - r.top) / r.height;
+        c.style.setProperty('--mx', (px * 100).toFixed(1) + '%'); c.style.setProperty('--my', (py * 100).toFixed(1) + '%');
+        if (tilt){ c.classList.add('moving'); c.style.setProperty('--ry', ((px - .5) * 6).toFixed(2) + 'deg'); c.style.setProperty('--rx', ((.5 - py) * 5).toFixed(2) + 'deg'); } });
+      c.addEventListener('pointerleave', () => { c.classList.remove('lift', 'moving'); c.style.setProperty('--rx', '0deg'); c.style.setProperty('--ry', '0deg'); });
+    });
+  }
+  setLook(ROOT.dataset.v, ROOT.dataset.mode);
+
+  /* ---------- the close: ideas fill the field; asking draws the start of a route ---------- */
+  const want = $('#want'), plan = $('#plan');
+  $$('.ideas button').forEach(b => b.addEventListener('click', () => { want.value = b.textContent; want.focus(); }));
+  want.addEventListener('focus', () => plan.classList.add('wait'));
+  want.addEventListener('blur', () => plan.classList.remove('wait'));
+  $('#ask').addEventListener('submit', e => { e.preventDefault(); const v = want.value.trim(); if (!v){ want.focus(); return; }
+    $('#c1t').textContent = v.charAt(0).toUpperCase() + v.slice(1); plan.classList.remove('drawn'); void plan.offsetWidth; plan.classList.add('drawn'); });
+
+  /* ---------- 3D available? ---------- */
+  const anns = $$('.ann');
+  const hasGL = !!window.THREE && (() => { try { const c = document.createElement('canvas'); return !!(c.getContext('webgl2') || c.getContext('webgl')); } catch (e) { return false; } })();
+  function noGL(){ document.documentElement.classList.add('no-gl'); anns.forEach(a => a.classList.add('on')); }
+  if (!hasGL){ noGL(); return; }
+
+  const THEMES = {
+    '1':{ panel:'#FFFFFF', track:'#C3CAD6', node:'#FFFFFF', ring:'#8F99AB', route:'#2346D8', glow:.08, signal:'#F2542D', reinf:'#0E8F8A', check:'#FFFFFF', lock:'#B4BCC9', ink:'#0C1424', hemiSky:'#FFFFFF', hemiGround:'#C4CBD7', hemiI:1.0, keyI:.82, shadow:.14, fog:'#F3F5F9' },
+    '2':{ panel:'#13342D', track:'#2F5A4F', node:'#13342D', ring:'#6C9187', route:'#E6BE62', glow:.16, signal:'#FF8A66', reinf:'#89C6F0', check:'#1B1606', lock:'#3F6359', ink:'#EEF3EF', hemiSky:'#CFE6DA', hemiGround:'#0A1C18', hemiI:.85, keyI:.75, shadow:.5, fog:'#0A1C18' },
+    '3':{ panel:'#FFFFFF', track:'#CFC3D6', node:'#FFFFFF', ring:'#9D8FA6', route:'#6A2EA0', glow:.08, signal:'#E79A0F', reinf:'#13807A', check:'#FFFFFF', lock:'#C2B6C9', ink:'#1D1226', hemiSky:'#FFFFFF', hemiGround:'#D1C5D7', hemiI:1.0, keyI:.82, shadow:.14, fog:'#F5F2F6' }
+  };
+
+  /* ---------- content ---------- */
+  const REINF = ['Repasa los conceptos clave', 'Práctica guiada', 'Nueva evaluación'];
+  const TOPICS = {
+    pt:{ title:'Portugués para viajar', mods:[['Fundamentos',['Saludos','Pronombres','Ser y estar','Números','Direcciones','Examen del módulo']],['En el camino',['Transporte','En el hotel','En el restaurante','De compras','Examen del módulo']],['Conversación real',4]] },
+    py:{ title:'Python desde cero', mods:[['Primeros pasos',['Variables','Tipos de datos','Condicionales','Bucles','Funciones','Examen del módulo']],['Trabajar con datos',['Listas','Diccionarios','Archivos','Errores','Examen del módulo']],['Proyectos',4]] },
+    gt:{ title:'Guitarra para empezar', mods:[['Lo básico',['Postura','Afinar','Primeros acordes','Ritmo','Cambios de acorde','Examen del módulo']],['Tus canciones',['Rasgueos','Arpegios','Tu primera canción','La cejilla','Examen del módulo']],['Tocar con otros',4]] },
+    fn:{ title:'Finanzas personales', mods:[['Tu dinero hoy',['Ingresos','Gastos','Presupuesto','Ahorro','Deudas','Examen del módulo']],['Hacerlo crecer',['Fondo de emergencia','Invertir','Impuestos','Metas','Examen del módulo']],['Largo plazo',4]] }
+  };
+  let topic = 'pt';
+
+  /* ---------- the approved map, as a scale model ---------- */
+  const V = (x, y, z) => new THREE.Vector3(x, y, z);
+  const SX = [4.2, 8.4, 12.6, 16.8], GUT = 19.4, RB = 1.1, WAVE = .8, KT = .55, T = .2;
+  const MODDEF = [
+    { y: 0,   top: -3.8, disc: -2.4, rows: [0, 7.0],    n: 6, fanAt: 2, bottom: 10.2 },
+    { y: .9,  top: 12.6, disc: 13.8, rows: [16.0, 20.6], n: 5, bottom: 23.0 },
+    { y: 1.8, top: 25.4, disc: 26.6, rows: [28.8],       n: 4, bottom: 31.8, locked: true }
+  ];
+  const MODS = MODDEF.map((d, m) => {
+    const top = d.y + T, heads = [];
+    for (let i = 0; i < d.n; i++){ const r = Math.floor(i / 4), j = i % 4; const x = r % 2 === 0 ? SX[j] : SX[3 - j]; heads.push(V(x, top, d.rows[r] + (j % 2 ? WAVE : 0))); }
+    const disc = V(0, top, d.disc), legs = [];
+    const cubic = (a, b) => { const dx = b.x - a.x; return new THREE.CubicBezierCurve3(a, V(a.x + KT*dx, a.y, a.z), V(b.x - KT*dx, b.y, b.z), b); };
+    const uturn = (a, b) => { const p = new THREE.CurvePath(), k = .5523*RB; const p1 = V(GUT - RB, a.y, a.z), p2 = V(GUT, a.y, a.z + RB), p3 = V(GUT, b.y, b.z - RB), p4 = V(GUT - RB, b.y, b.z);
+      p.add(new THREE.LineCurve3(a, p1)); p.add(new THREE.CubicBezierCurve3(p1, V(p1.x + k, a.y, a.z), V(GUT, a.y, p2.z - k), p2)); p.add(new THREE.LineCurve3(p2, p3)); p.add(new THREE.CubicBezierCurve3(p3, V(GUT, b.y, p3.z + k), V(p4.x + k, b.y, b.z), p4)); p.add(new THREE.LineCurve3(p4, b)); return p; };
+    legs.push(cubic(disc, heads[0]));
+    for (let i = 1; i < heads.length; i++){ const same = Math.floor(i / 4) === Math.floor((i - 1) / 4); legs.push(same ? cubic(heads[i - 1], heads[i]) : uturn(heads[i - 1], heads[i])); }
+    let fan = null;
+    if (d.fanAt != null){
+      const h = heads[d.fanAt], street = h.z + 2.1, r2 = .38, kids = [-2, 0, 2].map(dx => V(h.x + dx, top, h.z + 3.4));
+      const traces = kids.map(c => { const p = new THREE.CurvePath(), a = V(h.x, top, h.z + .7), end = V(c.x, top, c.z - .45);
+        if (Math.abs(c.x - h.x) < .01){ p.add(new THREE.LineCurve3(a, end)); return p; }
+        const s = Math.sign(c.x - h.x), b1 = V(h.x, top, street - r2), b2 = V(h.x + s*r2, top, street), b3 = V(c.x - s*r2, top, street), b4 = V(c.x, top, street + r2);
+        p.add(new THREE.LineCurve3(a, b1)); p.add(new THREE.QuadraticBezierCurve3(b1, V(h.x, top, street), b2)); p.add(new THREE.LineCurve3(b2, b3)); p.add(new THREE.QuadraticBezierCurve3(b3, V(c.x, top, street), b4)); p.add(new THREE.LineCurve3(b4, end)); return p; });
+      fan = { head: h, kids, traces };
+    }
+    return Object.assign({}, d, { m, topY: top, heads, disc, legs, fan });
+  });
+  const M1 = MODS[0], M2 = MODS[1], M3 = MODS[2];
+  const origin = V(0, M1.topY, -6.4);
+  const spineLegs = [
+    new THREE.LineCurve3(origin, M1.disc),
+    new THREE.CubicBezierCurve3(M1.disc, V(0, M1.topY, M1.disc.z + 9), V(0, M2.topY, M2.disc.z - 6), M2.disc),
+    new THREE.CubicBezierCurve3(M2.disc, V(0, M2.topY, M2.disc.z + 7), V(0, M3.topY, M3.disc.z - 5), M3.disc)
+  ];
+  const chain = (...cs) => { const p = new THREE.CurvePath(); cs.forEach(c => p.add(c)); return p; };
+  const fanGo = chain(new THREE.LineCurve3(M1.fan.head, M1.fan.traces[0].getPoint(0)), M1.fan.traces[0], new THREE.LineCurve3(M1.fan.traces[0].getPoint(1), M1.fan.kids[0]));
+  const reverse = c => ({ getPointAt: t => c.getPointAt(1 - t) });
+  const examPos = M1.heads[5];
+  const jump = new THREE.QuadraticBezierCurve3(examPos, V((examPos.x + M2.disc.x)/2, M2.topY + 5.5, (examPos.z + M2.disc.z)/2), M2.disc);
+  const ITIN = [ M1.legs[1], M1.legs[2], fanGo, reverse(fanGo), M1.legs[3], M1.legs[4], M1.legs[5], jump, M2.legs[0] ];
+
+  /* ---------- renderer ---------- */
+  const stage = $('#stage'), canvas = $('#world');
+  let renderer;
+  try { renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true }); } catch (e) { renderer = null; }
+  if (!renderer){ noGL(); return; }
+  renderer.outputEncoding = THREE.sRGBEncoding;
+  renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  renderer.setPixelRatio(Math.min(devicePixelRatio || 1, matchMedia('(pointer: coarse)').matches ? 1.5 : 2));
+  const scene = new THREE.Scene(), camera = new THREE.PerspectiveCamera(28, 1, .5, 600);
+  const C = hex => new THREE.Color(hex).convertSRGBToLinear();
+  const hemi = new THREE.HemisphereLight(0xffffff, 0x888888, 1); scene.add(hemi);
+  const key = new THREE.DirectionalLight(0xffffff, 1); key.position.set(-14, 30, 16); key.target.position.set(9.6, 0, 12);
+  key.castShadow = true; key.shadow.mapSize.set(2048, 2048); Object.assign(key.shadow.camera, { left: -27, right: 27, top: 27, bottom: -27, near: 1, far: 100 }); key.shadow.bias = -0.0005; key.shadow.normalBias = 0.03;
+  scene.add(key, key.target);
+  scene.fog = new THREE.Fog(0xffffff, 110, 230);
+  const lam = (o = {}) => new THREE.MeshLambertMaterial(Object.assign({ color: 0xffffff }, o));
+  const basic = (o = {}) => new THREE.MeshBasicMaterial(Object.assign({ color: 0xffffff }, o));
+  const M = { panel: lam(), panelLocked: lam({ transparent: true, opacity: .72 }), track: lam(), node: lam(), ring: lam(), lock: lam(), check: basic(), reinf: lam(), route: lam(), glow: basic({ transparent: true, opacity: .08, depthWrite: false }), signal: lam(), signalFlat: basic({ transparent: true, opacity: .5, depthWrite: false }), ink: lam(), shadow: new THREE.ShadowMaterial({ opacity: .15 }) };
+  const ground = new THREE.Mesh(new THREE.PlaneGeometry(500, 500), M.shadow); ground.rotation.x = -Math.PI/2; ground.position.set(9.6, -1.4, 12); ground.receiveShadow = true; scene.add(ground);
+  function rounded(w, h, r){ const s = new THREE.Shape(); s.moveTo(r, 0); s.lineTo(w - r, 0); s.quadraticCurveTo(w, 0, w, r); s.lineTo(w, h - r); s.quadraticCurveTo(w, h, w - r, h); s.lineTo(r, h); s.quadraticCurveTo(0, h, 0, h - r); s.lineTo(0, r); s.quadraticCurveTo(0, 0, r, 0); return s; }
+  MODS.forEach(md => {
+    const x0 = -1.8, x1 = 21.2, w = x1 - x0, h = md.bottom - md.top;
+    const g = new THREE.ExtrudeGeometry(rounded(w, h, .9), { depth: T, bevelEnabled: true, bevelThickness: .035, bevelSize: .035, bevelSegments: 2, curveSegments: 10 });
+    const mesh = new THREE.Mesh(g, md.locked ? M.panelLocked : M.panel); mesh.rotation.x = Math.PI/2; mesh.position.set(x0, md.y + T, md.top); mesh.castShadow = true; mesh.receiveShadow = true; scene.add(mesh);
+    if (!md.locked){ const a = new THREE.BoxGeometry(.8, .02, .05), b = new THREE.BoxGeometry(.05, .02, .8);
+      [[x0 + .45, md.top + .45, 1, 1], [x1 - .45, md.top + .45, -1, 1], [x0 + .45, md.bottom - .45, 1, -1], [x1 - .45, md.bottom - .45, -1, -1]].forEach(([x, z, sx, sz]) => { const p = new THREE.Mesh(a, M.route); p.position.set(x + sx*.375, md.topY + .015, z); const q = new THREE.Mesh(b, M.route); q.position.set(x, md.topY + .015, z + sz*.375); scene.add(p, q); }); }
+  });
+  function tube(curve, radius, mat, perUnit = 9){ const L = curve.getLength(), seg = Math.max(8, Math.ceil(L * perUnit)); const g = new THREE.TubeGeometry(curve, seg, radius, 8, false); const mesh = new THREE.Mesh(g, mat); mesh.userData = { seg, L }; scene.add(mesh); return mesh; }
+  function frac(mesh, a, b){ const seg = mesh.userData.seg, i0 = Math.floor(clamp(a)*seg), i1 = Math.ceil(clamp(b)*seg); mesh.visible = i1 > i0; mesh.geometry.setDrawRange(i0*48, Math.max(0, i1 - i0)*48); }
+  const ROUTE = [];
+  function addLeg(curve, m){ const tr = tube(curve, .035, M.track); const br = tube(curve, .075, M.route); br.castShadow = true; const gl = tube(curve, .24, M.glow, 4); frac(br, 0, 0); frac(gl, 0, 0); const r = { curve, m, track: tr, bright: br, glow: gl, L: br.userData.L }; ROUTE.push(r); return r; }
+  const R = { spine: [], m: [[], [], []] };
+  R.spine.push(addLeg(spineLegs[0], 0)); M1.legs.forEach(c => R.m[0].push(addLeg(c, 0)));
+  R.spine.push(addLeg(spineLegs[1], 1)); M2.legs.forEach(c => R.m[1].push(addLeg(c, 1)));
+  R.spine.push(addLeg(spineLegs[2], 2)); M3.legs.forEach(c => R.m[2].push(addLeg(c, 2)));
+  let acc = 0; ROUTE.forEach(r => { r.start = acc; acc += r.L; }); const ROUTE_LEN = acc;
+  const dotGeo = new THREE.SphereGeometry(.05, 8, 6);
+  function dotted(curve, gap, mat, lift){ const L = curve.getLength(), n = Math.max(2, Math.floor(L / gap)); const im = new THREE.InstancedMesh(dotGeo, mat, n + 1); const o = new THREE.Object3D(); for (let i = 0; i <= n; i++){ const p = curve.getPointAt(i / n); o.position.set(p.x, p.y + lift, p.z); o.updateMatrix(); im.setMatrixAt(i, o.matrix); } scene.add(im); return im; }
+  const dots3 = M1.fan.traces.map(t => dotted(t, .24, M.reinf, .04));
+  const fanOn = M1.fan.traces.map(t => { const m = tube(t, .055, M.reinf); m.visible = false; return m; });
+  R.m[2].forEach(r => { r.track.visible = false; dotted(r.curve, .4, M.lock, .04); });
+  const chevGeo = new THREE.ConeGeometry(.1, .28, 10); chevGeo.rotateZ(-Math.PI/2);
+  const chevrons = [];
+  [...R.m[0], ...R.m[1]].forEach(r => { if (r.curve === M1.legs[0] || r.curve === M2.legs[0]) return; const p = r.curve.getPointAt(.5), t = r.curve.getTangentAt(.5); const c = new THREE.Mesh(chevGeo, M.track); c.position.set(p.x, p.y + .05, p.z); c.rotation.y = Math.atan2(-t.z, t.x); scene.add(c); chevrons.push({ mesh: c, leg: r }); });
+  const cyl = (r, h, seg = 48) => new THREE.CylinderGeometry(r, r, h, seg);
+  const tor = (r, t, arc) => { const g = new THREE.TorusGeometry(r, t, 8, 64, arc); g.rotateX(Math.PI/2); return g; };
+  const checkGeo = (() => { const p = new THREE.CurvePath(); p.add(new THREE.LineCurve3(V(-.19, 0, .01), V(-.06, 0, .14))); p.add(new THREE.LineCurve3(V(-.06, 0, .14), V(.2, 0, -.13))); return new THREE.TubeGeometry(p, 8, .04, 6, false); })();
+  const NODES = [];
+  function mkStep(pos, m, kind){
+    const g = new THREE.Group(); g.position.copy(pos); const exam = kind === 'exam', H = .16;
+    const body = exam ? new THREE.Mesh(new THREE.BoxGeometry(.92, H, .92), M.node) : new THREE.Mesh(cyl(.55, H), M.node);
+    if (exam) body.rotation.y = Math.PI/4; body.position.y = H/2; body.castShadow = true; body.receiveShadow = true;
+    const ring = exam ? new THREE.Mesh(new THREE.BoxGeometry(1.0, .04, 1.0), M.ring) : new THREE.Mesh(tor(.55, .032), M.ring);
+    if (exam) ring.rotation.y = Math.PI/4; ring.position.y = exam ? H - .01 : H + .005;
+    const fill = exam ? new THREE.Mesh(new THREE.BoxGeometry(.96, H + .03, .96), M.route) : new THREE.Mesh(cyl(.57, H + .03), M.route);
+    if (exam) fill.rotation.y = Math.PI/4; fill.position.y = (H + .03)/2; fill.castShadow = true; fill.visible = false;
+    const chk = new THREE.Mesh(checkGeo, M.check); chk.position.y = H + .05; chk.visible = false;
+    const cur = exam ? new THREE.Mesh(new THREE.BoxGeometry(1.08, .06, 1.08), M.signal) : new THREE.Mesh(tor(.6, .055), M.signal);
+    if (exam) cur.rotation.y = Math.PI/4; cur.position.y = H + .01; cur.visible = false;
+    g.add(body, ring, fill, chk, cur); scene.add(g);
+    const n = { kind, m, pos, g, ring, fill, chk, cur, state: '' }; NODES.push(n); return n;
+  }
+  function mkReinf(pos){ const g = new THREE.Group(); g.position.copy(pos); const body = new THREE.Mesh(cyl(.32, .1), M.node); body.position.y = .05; body.castShadow = true; const rd = new THREE.Group(); for (let i = 0; i < 12; i++){ const a = i/12*Math.PI*2, d = new THREE.Mesh(dotGeo, M.reinf); d.position.set(Math.cos(a)*.33, .11, Math.sin(a)*.33); rd.add(d); } const dot = new THREE.Mesh(new THREE.SphereGeometry(.08, 12, 8), M.reinf); dot.position.y = .12; const fill = new THREE.Mesh(cyl(.34, .13), M.reinf); fill.position.y = .065; fill.visible = false; g.add(body, rd, dot, fill); scene.add(g); return { g, fill, pos }; }
+  function mkModule(md){ const g = new THREE.Group(); g.position.copy(md.disc); const body = new THREE.Mesh(cyl(.82, .22), M.node); body.position.y = .11; body.castShadow = true; const r1 = new THREE.Mesh(tor(.82, .04), md.locked ? M.lock : M.route); r1.position.y = .225; const r2 = new THREE.Mesh(tor(.56, .03), md.locked ? M.lock : M.route); r2.position.y = .225; g.add(body, r1, r2); scene.add(g); }
+  function mkMask(pos){ const g = new THREE.Group(); g.position.copy(pos); const body = new THREE.Mesh(cyl(.48, .1), M.node); body.position.y = .05; const rd = new THREE.Group(); for (let i = 0; i < 16; i++){ const a = i/16*Math.PI*2, d = new THREE.Mesh(dotGeo, M.lock); d.position.set(Math.cos(a)*.5, .11, Math.sin(a)*.5); rd.add(d); } g.add(body, rd); scene.add(g); }
+  const originMesh = new THREE.Mesh(new THREE.OctahedronGeometry(.32), M.route); originMesh.scale.set(1, 1.25, 1); originMesh.position.copy(origin).add(V(0, .42, 0)); originMesh.castShadow = true; scene.add(originMesh);
+  MODS.forEach(mkModule);
+  M1.heads.forEach((p, i) => mkStep(p, 0, i === 5 ? 'exam' : 'step'));
+  M2.heads.forEach((p, i) => mkStep(p, 1, i === 4 ? 'exam' : 'step'));
+  M3.heads.forEach(mkMask);
+  const KIDS = M1.fan.kids.map(mkReinf);
+  const nodeOf = (m, i) => NODES.filter(n => n.m === m)[i];
+  const pin = new THREE.Group();
+  const stem = new THREE.Mesh(new THREE.CylinderGeometry(.025, .025, .62, 8), M.ink); stem.position.y = .31;
+  const headS = new THREE.Mesh(new THREE.SphereGeometry(.2, 24, 16), M.signal); headS.position.y = .76; headS.castShadow = true;
+  const pulse = new THREE.Mesh(new THREE.RingGeometry(.3, .36, 48), M.signalFlat); pulse.rotation.x = -Math.PI/2; pulse.position.y = .02;
+  pin.add(stem, headS, pulse); scene.add(pin);
+  const doneRingMat = basic({ transparent: true, opacity: 0, depthWrite: false });
+  const doneRing = new THREE.Mesh(new THREE.RingGeometry(.7, .78, 64), doneRingMat); doneRing.rotation.x = -Math.PI/2; doneRing.position.copy(examPos).add(V(0, .05, 0)); scene.add(doneRing);
+  let ringT = -1;
+  function applyTheme(){
+    const P = themeFromCSS();
+    hemi.color.copy(C(P.hemiSky)); hemi.groundColor.copy(C(P.hemiGround)); hemi.intensity = P.hemiI; key.intensity = P.keyI; scene.fog.color.copy(C(P.fog));
+    M.panel.color.copy(C(P.panel)); M.panelLocked.color.copy(C(P.panel)); M.track.color.copy(C(P.track)); M.node.color.copy(C(P.node)); M.ring.color.copy(C(P.ring)); M.lock.color.copy(C(P.lock)); M.check.color.copy(C(P.check)); M.reinf.color.copy(C(P.reinf));
+    M.route.color.copy(C(P.route)); M.glow.color.copy(C(P.route)); M.glow.opacity = P.glow; M.signal.color.copy(C(P.signal)); M.signalFlat.color.copy(C(P.signal)); M.ink.color.copy(C(P.ink)); doneRingMat.color.copy(C(P.route));
+    M.shadow.opacity = P.shadow;
+  }
+
+  /* ---------- labels ---------- */
+  const labelsEl = $('#labels');
+  const mk = (cls, html) => { const d = document.createElement('div'); d.className = cls; if (html) d.innerHTML = html; labelsEl.appendChild(d); return d; };
+  const rootL = mk('mr'), chipL = MODS.map(() => mk('mc'));
+  const stepL = [...M1.heads.map((_, i) => ({ m: 0, i })), ...M2.heads.map((_, i) => ({ m: 1, i }))].map(o => Object.assign(o, { el: mk('ml'), num: mk('mn') }));
+  const kidL = REINF.map(t => mk('ml r', t));
+  const modL = [0, 1].map(() => mk('ml'));
+  const lockSvg = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>';
+  function setTopic(k){
+    topic = k; const t = TOPICS[k];
+    rootL.innerHTML = `<small>Tu ruta</small><b>${t.title}</b>`;
+    modL.forEach((l, m) => l.innerHTML = `<b>${t.mods[m][0]}</b>`);
+    stepL.forEach(s => { s.name = t.mods[s.m][1][s.i]; s.key = ''; });
+    $$('.seg button').forEach(c => c.setAttribute('aria-pressed', c.dataset.t === k));
+    chipL.forEach(c => c._k = '');
+  }
+  $$('.seg button').forEach(c => c.addEventListener('click', () => setTopic(c.dataset.t)));
+
+  /* ---------- chapters and camera ---------- */
+  const NCH = 6;
+  const W = [1.1, 1.5, 1.6, 1.5, 1.8, 1.4];
+  const CENTER = [10, .9, 12.7];
+  // m: the phone framing. sx/sy shift the subject so the text has free paper to sit on.
+  const CAMS = [
+    { sub:CENTER,          d:66,   az:-76, el:54, sx:.3,  sy:-.24, m:{ d:132, az:8,  el:60, sx:0, sy:-.28 } },
+    { sub:CENTER,          d:64,   az:-76, el:48, sx:.14, sy:.1,   m:{ d:124, az:8,  el:58, sx:0, sy:-.24 } },
+    { sub:[8.4, .2, 1.2],  d:21,   az:14,  el:52, sx:0,   sy:.14,  m:{ sub:[10, .2, 1.2], d:36, az:10, el:56, sx:0, sy:-.24 } },
+    { sub:[12.6, .25, 2.6],d:19.5, az:18,  el:52, sx:.22, sy:.06,  m:{ d:29,  az:12, el:56, sx:0, sy:-.24 } },
+    { sub:[8.6, .6, 10.4], d:37,   az:10,  el:52, sx:.22, sy:0,    m:{ d:84,  az:8,  el:58, sx:0, sy:-.24 } },
+    { sub:CENTER,          d:68,   az:-74, el:52, sx:.28, sy:-.2,  m:{ d:132, az:8,  el:60, sx:0, sy:-.28 } }
+  ];
+  // where each chapter's text would like to sit at the chapter's resting camera:
+  // r = [left, top, right] as fractions of the stage; a = what its line points at.
+  // The final spot is searched around it so the text never covers the map, its names or the controls.
+  const LAY = {
+    d: [ { r:[.055, .12, .5] }, { r:[.055, .62, .36], a:'origin' }, { r:[.06, .6, .42], a:'token' }, { r:[.05, .52, .36], a:'fan' }, { r:[.045, .38, .32], a:'exam' }, { r:[.055, .12, .46] } ],
+    m: [ { r:[0, .04, 1] }, { r:[0, .04, 1], a:'origin' }, { r:[0, .04, 1], a:'token' }, { r:[0, .04, 1], a:'fan' }, { r:[0, .04, 1], a:'exam' }, { r:[0, .04, 1] } ]
+  };
+  // a longer lens: a calmer, flatter map
+  const FOV = 22, DK = Math.tan(14*Math.PI/180) / Math.tan(FOV/2*Math.PI/180);
+  camera.fov = FOV;
+  const tmpCam = new THREE.PerspectiveCamera(FOV, 1, .5, 600), PLANE = M1.topY + .012;
+  function hitPlane(cam, x, y, Wd, H){ const p = V(x / Wd * 2 - 1, 1 - y / H * 2, .5).unproject(cam); const dir = p.sub(cam.position).normalize(); return cam.position.clone().addScaledVector(dir, (PLANE - cam.position.y) / dir.y); }
+  const isMobile = () => innerWidth < 860;
+  function camFor(i, mob = isMobile()){ const c = CAMS[i], o = mob ? Object.assign({}, c, c.m) : c; return { sub: V(o.sub[0], o.sub[1], o.sub[2]), d: o.d * DK, az: o.az, el: o.el, sx: o.sx, sy: o.sy }; }
+  function restFor(P){
+    const az = P.az*Math.PI/180, el = P.el*Math.PI/180;
+    const dir = V(Math.cos(el)*Math.sin(az), Math.sin(el), Math.cos(el)*Math.cos(az));
+    const right = new THREE.Vector3().crossVectors(V(0,1,0), dir).normalize(), up = new THREE.Vector3().crossVectors(dir, right);
+    const hh = P.d * Math.tan(FOV/2 * Math.PI/180), hw = hh * stage.clientWidth / stage.clientHeight;
+    const tgt = P.sub.clone().addScaledVector(right, -P.sx*hw).addScaledVector(up, -P.sy*hh);
+    return { pos: tgt.clone().addScaledVector(dir, P.d), tgt };
+  }
+  function applyCam(cam, pos, tgt){ cam.aspect = stage.clientWidth / stage.clientHeight; cam.updateProjectionMatrix(); cam.position.copy(pos); cam.lookAt(tgt); cam.updateMatrixWorld(); }
+  const REST = [];
+  function computeRest(){ const mob = isMobile(); for (let i = 0; i < NCH; i++) REST[i] = restFor(camFor(i, mob)); }
+  let total = 0, pinTop = 0, sh = 0;
+  const NAV = 64;
+  function measure(){ sh = innerHeight - NAV; total = W.reduce((a, b) => a + b, 0); $('.journey').style.height = (total * sh + sh) + 'px'; pinTop = $('.journey').getBoundingClientRect().top + scrollY - NAV; }
+  function exactS(){ let y = (scrollY - pinTop) / sh; if (y <= 0) return 0; for (let i = 0; i < W.length; i++){ if (y < W[i]) return i + y / W[i]; y -= W[i]; } return W.length - 0.001; }
+  const pinned = () => scrollY >= pinTop - 2 && scrollY <= pinTop + total*sh;
+  function scrollForChapter(i){ let y = 0; for (let k = 0; k < i; k++) y += W[k]; return pinTop + (y + (i ? .12 : 0)*W[i]) * sh; }
+  window.__goTo = (i, t) => { let y = 0; for (let k = 0; k < i; k++) y += W[k]; scrollTo(0, pinTop + (y + t*W[i]) * sh); };
+  const goChapter = i => scrollTo({ top: scrollForChapter(i), behavior: reduce ? 'auto' : 'smooth' });
+  const dots = [];
+  for (let i = 1; i < NCH; i++){ const li = document.createElement('li'), b = document.createElement('button'); b.type = 'button'; b.setAttribute('aria-label', anns[i].querySelector('h2').textContent); b.addEventListener('click', () => goChapter(i)); li.appendChild(b); $('#vdots').appendChild(li); dots.push(b); }
+
+  /* ---------- story as a pure function of q (q = s - 1: the hero sits before it) ---------- */
+  function tokenU(q){ const i = Math.floor(q), t = q - i; if (q < 1) return 0; if (i === 1) return lerp(0, 2, ease(clamp((t - .08)/.62))); if (i === 2) return lerp(2, 4, ease(clamp((t - .32)/.42))); if (i === 3) return lerp(4, 9, clamp((t - .05)/.7)); return 9; }
+  function tokenPos(u){ const k = Math.min(ITIN.length - 1, Math.floor(u)), f = u >= ITIN.length ? 1 : u - k; return ITIN[k].getPointAt(clamp(reduce ? f : ease(clamp(f)))).clone(); }
+  const fanRise = q => q >= 3 ? 1 : q < 2 ? 0 : ss(.02, .26, q - 2);
+
+  /* ---------- the chapter text: flat on screen, pinned to a spot on the map ---------- */
+  const A = anns.map((el, i) => ({ el, i, anchor: V(0, 0, 0), x: 0, y: 0, w: 0, h: 0, tw: 0, hm: 0, lead: el.querySelector('.lead') }));
+  function project2(cam, p){ const v = p.clone().project(cam); return { x: (v.x + 1)/2 * stage.clientWidth, y: (1 - v.y)/2 * stage.clientHeight, vis: v.z > -1 && v.z < 1 }; }
+  const anchorOf = (k, tok) => ({ origin, token: tok || M1.heads[2], fan: M1.fan.kids[0], exam: examPos }[k]);
+  // everything the text must not cover, seen from chapter i's resting camera
+  function obstaclesFor(i, cam, mob, Wd, H){
+    const O = [], P = p => project2(cam, p);
+    const R2 = (p, r) => { const a = P(p), b = P(V(p.x + r, p.y, p.z)), c = P(V(p.x, p.y, p.z + r)); return Math.max(Math.hypot(b.x - a.x, b.y - a.y), Math.hypot(c.x - a.x, c.y - a.y)); };
+    const box = (x, y, hw, hh, wt) => O.push({ x0: x - hw, y0: y - hh, x1: x + hw, y1: y + hh, wt });
+    const names = i >= 1 && i <= 4; // step names only show while travelling
+    const named = (p, r, wt) => { const c = P(p), rr = R2(p, r); box(c.x, c.y, rr + 4, rr + 4, wt); if (names) O.push({ x0: c.x - 66, y0: c.y + rr, x1: c.x + 66, y1: c.y + rr + 36, wt: 2 }); };
+    NODES.forEach(n => named(n.pos, .62, 3));
+    M3.heads.forEach(p => named(p, .5, 2));
+    MODS.forEach(md => { named(md.disc, .82, 3); const ch = P(V(-.6, md.topY, md.top + .2)); O.push({ x0: ch.x - 14, y0: ch.y - 16, x1: ch.x + 184, y1: ch.y + 16, wt: 2 }); });
+    { const c = P(origin); box(c.x, c.y, 18, 18, 3); if (i === 1 || i === 5) O.push({ x0: c.x - 50, y0: c.y - 72, x1: c.x + 240, y1: c.y - 8, wt: 2 }); }
+    ROUTE.forEach(r => { const n = Math.max(4, Math.ceil(r.L * 1.4)); for (let k = 0; k <= n; k++){ const c = P(r.curve.getPointAt(k / n)); box(c.x, c.y, 7, 7, 1); } });
+    if (i >= 3){ M1.fan.traces.forEach(t => { for (let k = 0; k <= 12; k++){ const c = P(t.getPointAt(k / 12)); box(c.x, c.y, 7, 7, 1); } }); M1.fan.kids.forEach(p => named(p, .4, 3)); }
+    MODS.forEach(md => { const x0 = -1.8, x1 = 21.2, y = md.topY, z0 = md.top, z1 = md.bottom;
+      [[V(x0, y, z0), V(x1, y, z0)], [V(x1, y, z0), V(x1, y, z1)], [V(x1, y, z1), V(x0, y, z1)], [V(x0, y, z1), V(x0, y, z0)]].forEach(([a, b]) => { for (let k = 0; k <= 28; k++){ const c = P(a.clone().lerp(b, k / 28)); box(c.x, c.y, 5, 5, 1); } }); });
+    if (i >= 1){ if (mob) O.push({ x0: 0, y0: H - 76, x1: Wd, y1: H, wt: 6 }); else { O.push({ x0: 0, y0: 0, x1: Wd, y1: 68, wt: 6 }); O.push({ x0: Wd - 50, y0: H/2 - 110, x1: Wd, y1: H/2 + 110, wt: 6 }); } }
+    return O;
+  }
+  // the text is a headline over a narrower body: test both boxes, not one big rectangle
+  function shapeHits(O, shape, x, y, pad){ let hits = 0; for (const [a, b, c, d] of shape){ const X0 = x + a - pad, Y0 = y + b - pad, X1 = x + c + pad, Y1 = y + d + pad; for (const o of O) if (o.x1 > X0 && o.x0 < X1 && o.y1 > Y0 && o.y0 < Y1) hits += o.wt; } return hits; }
+  function bestSlot(i, cam, mob, Wd, H, w, h, shape){
+    const O = obstaclesFor(i, cam, mob, Wd, H), L = (mob ? LAY.m : LAY.d)[i];
+    const m = mob ? 20 : 32, top = i === 0 || mob ? 20 : 80, bot = mob && i ? 84 : 24, pad = mob ? 10 : 18;
+    const dx = mob ? 20 : L.r[0]*Wd, dy = L.r[1]*H, anc = L.a ? project2(cam, anchorOf(L.a)) : null;
+    const xs = []; if (mob) xs.push(20); else for (let x = m; x <= Wd - m - w; x += 12) xs.push(x);
+    let best = null;
+    for (const x of xs) for (let y = top; y <= Math.max(top, H - bot - h); y += 8){
+      const X0 = x - pad, Y0 = y - pad, X1 = x + w + pad, Y1 = y + h + pad; let hits = shapeHits(O, shape, x, y, pad);
+      if (anc && anc.x > X0 - 30 && anc.x < X1 + 30 && anc.y > Y0 - 30 && anc.y < Y1 + 30) hits += 20;
+      let sc = hits * 1000 + Math.hypot(x - dx, (y - dy) * 1.3) * .6;
+      if (anc) sc += Math.max(0, Math.hypot(anc.x - (x + w/2), anc.y - (y + h/2)) - 300) * .3;
+      if (!best || sc < best.sc) best = { sc, x, y, hits };
+    }
+    return best;
+  }
+  window.__lay = [];
+  // how much the text would cover if it sat at (or just around) its preferred spot
+  function hitsNear(i, cam, mob, Wd, H, w, h, shape){
+    const O = obstaclesFor(i, cam, mob, Wd, H), L = (mob ? LAY.m : LAY.d)[i], pad = mob ? 10 : 18;
+    const x0 = mob ? 20 : L.r[0]*Wd, y0 = L.r[1]*H, anc = L.a ? project2(cam, anchorOf(L.a)) : null; let best = Infinity;
+    for (const [dx, dy] of [[0, 0], [0, -24], [0, 24], [24, 0], [0, -48], [0, 48]]){
+      const X0 = x0 + dx - pad, Y0 = Math.max(20, y0 + dy) - pad, X1 = X0 + w + 2*pad, Y1 = Y0 + h + 2*pad; let hits = shapeHits(O, shape, X0 + pad, Y0 + pad, pad);
+      if (Y1 > H - (mob && i ? 76 : 10) || X1 > Wd - 10) hits += 50;
+      if (anc && anc.x > X0 - 30 && anc.x < X1 + 30 && anc.y > Y0 - 30 && anc.y < Y1 + 30) hits += 20;
+      best = Math.min(best, hits);
+    }
+    return best;
+  }
+  function layoutAnns(){
+    const mob = isMobile(), Wd = stage.clientWidth, H = stage.clientHeight;
+    A.forEach(a => {
+      const L = (mob ? LAY.m : LAY.d)[a.i];
+      const w = Math.round(mob ? Wd - 40 : Math.max(360, (L.r[2] - L.r[0]) * Wd));
+      a.el.style.width = w + 'px'; a.el.style.transform = 'translate(0px,0px)';
+      a.w = a.el.offsetWidth; a.h = a.el.offsetHeight;
+      { const hd = a.el.querySelector('h1,h2'), rg = document.createRange(); rg.selectNodeContents(hd);
+        const e0 = a.el.getBoundingClientRect(); let right = 0; [...rg.getClientRects()].forEach(r => { right = Math.max(right, r.right - e0.left); });
+        a.tw = right; a.hm = hd.offsetHeight / 2;
+        let bw = 0; const ext = el => { const r2 = document.createRange(); r2.selectNodeContents(el); [...r2.getClientRects()].forEach(r => { bw = Math.max(bw, r.right - e0.left); }); };
+        a.el.querySelectorAll(':scope > p').forEach(ext); a.el.querySelectorAll('.acts > *').forEach(c => { bw = Math.max(bw, c.getBoundingClientRect().right - e0.left); });
+        const hh = hd.offsetHeight + 4; a.shape = [[0, 0, Math.ceil(right), hh], [0, hh, Math.ceil(bw || right), a.h]]; }
+      // the camera gives way: pull back and slide the map until the text's spot is clear
+      const base = camFor(a.i, mob); let chosen = base, bestH = Infinity;
+      const shifts = mob ? [[0, 0], [0, -.05], [0, -.1], [0, -.15]] : [[0, 0], [.03, 0], [.03, -.05], [.06, -.06], [0, -.08], [.06, .04], [-.04, 0], [-.04, -.06]];
+      search: for (const dm of [1, 1.08, 1.17, 1.28, 1.4, 1.55]) for (const [ax, ay] of shifts){
+        const P = Object.assign({}, base, { d: base.d * dm, sx: base.sx + ax, sy: base.sy + ay }), R0 = restFor(P);
+        applyCam(tmpCam, R0.pos, R0.tgt);
+        const hits = hitsNear(a.i, tmpCam, mob, Wd, H, a.w, a.h, a.shape) + (dm - 1) * 4;
+        if (hits < bestH){ bestH = hits; chosen = P; }
+        if (hits < (dm - 1) * 4 + .5) break search;
+      }
+      REST[a.i] = restFor(chosen); applyCam(tmpCam, REST[a.i].pos, REST[a.i].tgt);
+      const b = bestSlot(a.i, tmpCam, mob, Wd, H, a.w, a.h, a.shape);
+      a.anchor = hitPlane(tmpCam, b.x, b.y, Wd, H);
+      window.__lay[a.i] = { x: Math.round(b.x), y: Math.round(b.y), w: a.w, h: a.h, hits: b.hits, d: +(chosen.d / base.d).toFixed(2) };
+    });
+  }
+  function drawLead(a, tok){
+    const L = (isMobile() ? LAY.m : LAY.d)[a.i]; if (!L.a || !a.lead) return;
+    const q = project(anchorOf(L.a, tok)), ax = q.x - a.x, ay = q.y - a.y; let sx, sy, d;
+    if (ax > a.tw + 60){ sx = a.tw + 22; sy = a.hm; const k = (ax - sx) * .55; d = `M${sx} ${sy}C${sx + k} ${sy} ${ax - k} ${ay} ${ax} ${ay}`; }
+    else if (ay > a.h + 30){ sx = Math.max(12, Math.min(ax, a.w * .3)); sy = a.h + 18; const k = (ay - sy) * .55; d = `M${sx} ${sy}C${sx} ${sy + k} ${ax} ${ay - k} ${ax} ${ay}`; }
+    else if (ay < -30){ sx = Math.max(12, Math.min(ax, a.tw - 12)); sy = -18; const k = (ay - sy) * .55; d = `M${sx} ${sy}C${sx} ${sy + k} ${ax} ${ay - k} ${ax} ${ay}`; }
+    else { sx = -22; sy = a.hm; const k = (ax - sx) * .55; d = `M${sx} ${sy}C${sx + k} ${sy} ${ax - k} ${ay} ${ax} ${ay}`; }
+    const p = a.lead.querySelector('path'), cs = a.lead.querySelectorAll('circle');
+    p.setAttribute('d', d); cs.forEach(c => { c.setAttribute('cx', ax.toFixed(1)); c.setAttribute('cy', ay.toFixed(1)); });
+  }
+
+  /* ---------- frame ---------- */
+  let sSmooth = 0, lastT = performance.now(), prevQ = 0, active = -2;
+  const v3 = new THREE.Vector3();
+  function project(p){ v3.copy(p).project(camera); return { x: (v3.x + 1)/2 * stage.clientWidth, y: (1 - v3.y)/2 * stage.clientHeight, vis: v3.z < 1 && v3.z > -1 }; }
+  const pxR = (p, r) => { const a = project(p), b = project(V(p.x + r, p.y, p.z)), c2 = project(V(p.x, p.y, p.z + r)); return Math.max(Math.hypot(b.x - a.x, b.y - a.y), Math.hypot(c2.x - a.x, c2.y - a.y)); };
+  // map names: placed by priority, and a name that would collide with one already placed waits its turn
+  let BLK = [], PLACED = [];
+  function place(el, p, o, mode, r, solid = true){
+    const q = project(p), w = el.offsetWidth, h = el.offsetHeight, Wd = stage.clientWidth;
+    let x, y;
+    if (mode === 'center'){ x = q.x - w/2; y = q.y - h/2; }
+    else if (mode === 'left'){ x = q.x - 10; y = q.y - h/2; }
+    else if (mode === 'above'){ x = q.x - w*.2; y = q.y - h - 14; }
+    else { x = Math.min(Wd - w - 6, Math.max(6, q.x - w/2)); y = q.y + (r ? pxR(p, r) * .72 + 5 : 0); }
+    el.style.transform = `translate(${x.toFixed(1)}px, ${y.toFixed(1)}px)`;
+    let show = o > 0 && q.vis && !BLK.some(b => q.x > b.x0 && q.x < b.x1 && q.y > b.y0 && q.y < b.y1);
+    if (show && solid){ const R0 = { x0: x - 4, y0: y - 2, x1: x + w + 4, y1: y + h + 2 }; if (PLACED.some(b => b.x1 > R0.x0 && b.x0 < R0.x1 && b.y1 > R0.y0 && b.y0 < R0.y1)) show = false; else PLACED.push(R0); }
+    el.style.opacity = show ? o : 0;
+  }
+  function setCamera(s){
+    const i = Math.min(NCH - 1, Math.floor(s)), t = s - i, j = Math.min(NCH - 1, i + 1), k = i === j ? 0 : ss(.72, 1, t);
+    applyCam(camera, REST[i].pos.clone().lerp(REST[j].pos, k), REST[i].tgt.clone().lerp(REST[j].tgt, k));
+  }
+  function setNode(n, st){ if (n.state === st) return; n.state = st; const done = st === 'done', cur = st === 'cur'; n.fill.visible = done; n.chk.visible = done; n.cur.visible = cur; n.ring.visible = !done && !cur; }
+  function frame(){
+    const now = performance.now(), dt = Math.min(1/30, (now - lastT)/1000); lastT = now;
+    const se = exactS(), isPinned = pinned();
+    const target = reduce ? (se < 1 ? 0 : Math.floor(se) + .5) : se;
+    sSmooth = reduce ? target : lerp(sSmooth, target, 1 - Math.exp(-5.2 * dt));
+    if (Math.abs(sSmooth - target) < 1e-4 || window.__snap) sSmooth = target;
+    const s = sSmooth, q = Math.max(0, s - 1), u = tokenU(reduce && q >= 1 ? Math.floor(q) + .9 : q), tok = tokenPos(u);
+    const sweepOn = q > .02 && q < 1, head = sweepOn ? lerp(-6, ROUTE_LEN + 4, clamp(((reduce ? .75 : q) - .1)/.6)) : -1;
+    const legFrac = r => { if (r === R.spine[0] || r === R.m[0][0]) return 1; const map = [[R.m[0][1], 0], [R.m[0][2], 1], [R.m[0][3], 4], [R.m[0][4], 5], [R.m[0][5], 6], [R.spine[1], 7], [R.m[1][0], 8]]; for (const [leg, k] of map) if (leg === r) return clamp(u - k); return 0; };
+    ROUTE.forEach(r => { const f = legFrac(r); if (sweepOn && f < 1 && r.m < 2){ const a = (head - 8 - r.start)/r.L, b = (head - r.start)/r.L; frac(r.bright, a, b); frac(r.glow, a, b); } else { frac(r.bright, 0, f); frac(r.glow, 0, f); } });
+    const fr = fanRise(reduce && q >= 2 ? 3 : q);
+    dots3.forEach(im => im.visible = fr > .02);
+    KIDS.forEach((kd, k) => { const r = clamp(fr*1.4 - k*.2); kd.g.visible = r > .01; kd.g.scale.setScalar(reduce ? 1 : Math.max(.001, r)); });
+    KIDS[0].fill.visible = u >= 2.5; fanOn[0].visible = u >= 2.05 && fr > .5; if (fanOn[0].visible) frac(fanOn[0], 0, clamp(u - 2));
+    const VIS = [[0],[1],[2,4],[5],[6],[7]];
+    const doneM1 = [0,1,2,3,4,5].map(i => u >= [0,1,4,5,6,7][i] + .5);
+    M1.heads.forEach((_, i) => setNode(nodeOf(0, i), doneM1[i] ? 'done' : VIS[i].some(v => Math.abs(u - v) < .5) ? 'cur' : 'todo'));
+    M2.heads.forEach((_, i) => setNode(nodeOf(1, i), i === 0 && u >= 8.5 ? 'cur' : 'todo'));
+    chevrons.forEach(c => c.mesh.visible = legFrac(c.leg) < .5);
+    pin.visible = s >= .9;
+    pin.position.copy(tok); pin.position.y += .06;
+    if (!reduce){ const ph = (now % 1600)/1600; pulse.scale.setScalar(1 + ph*1.6); M.signalFlat.opacity = .45*(1 - ph); } else { pulse.scale.setScalar(1); M.signalFlat.opacity = .3; }
+    if (!reduce && prevQ < 3.47 && q >= 3.47) ringT = 0;
+    prevQ = q;
+    if (ringT >= 0){ ringT += dt; const k = clamp(ringT / 1.1); doneRing.scale.setScalar(1 + k*2.2); doneRingMat.opacity = .6*(1 - k); if (k >= 1) ringT = -1; }
+    setCamera(s);
+    renderer.render(scene, camera);
+    // the chapter text rides with its spot on the map
+    A.forEach(a => { const p = project(a.anchor); a.x = p.x; a.y = p.y; a.el.style.transform = `translate(${p.x.toFixed(1)}px, ${p.y.toFixed(1)}px)`; });
+    const chap = Math.min(NCH - 1, Math.floor(se)), tIn = se - chap;
+    const now0 = !isPinned ? -1 : chap === 0 ? (tIn < .86 ? 0 : -1) : (tIn > .03 && (tIn < .86 || chap === NCH - 1)) ? chap : -1;
+    if (now0 !== active){ active = now0; A.forEach(a => { a.el.classList.toggle('on', a.i === active); a.el.querySelectorAll('a').forEach(l => { l.tabIndex = a.i === active ? 0 : -1; }); }); }
+    if (active > 0) drawLead(A[active], tok);
+    $('#stageTop').classList.toggle('on', isPinned && s >= .9);
+    $('#vdotsNav').classList.toggle('on', isPinned && s >= .9);
+    dots.forEach((b, k) => (k + 1 === chap ? b.setAttribute('aria-current', 'step') : b.removeAttribute('aria-current')));
+    // names on the map: never under the controls or the chapter text, never on top of each other
+    const Wd = stage.clientWidth, Hs = stage.clientHeight, mob = isMobile();
+    BLK = [mob ? { x0: 0, y0: Hs - 70, x1: Wd, y1: Hs } : { x0: 0, y0: 0, x1: Wd, y1: 66 }];
+    if (active >= 0){ const a = A[active]; BLK.push({ x0: a.x - 24, y0: a.y - 18, x1: a.x + a.w + 24, y1: a.y + a.h + 18 }); }
+    PLACED = A[active] ? [{ x0: A[active].x - 12, y0: A[active].y - 10, x1: A[active].x + A[active].w + 12, y1: A[active].y + A[active].h + 10 }] : [];
+    const overview = q < .9 || q >= 4, close = q >= .9 && q < 4, hero = s < .9;
+    const steps = stepL.map(sl => {
+      const n = nodeOf(sl.m, sl.i), leg = R.m[sl.m][sl.i], gpos = leg.start + leg.L;
+      let o = 0;
+      if (sweepOn) o = head >= gpos ? (mob ? (head < gpos + 7 ? 1 : 0) : 1) : 0;
+      else if (close) o = sl.m === 0 ? (u < 7.6 ? 1 : .5) : (u >= 7.6 ? 1 : 0);
+      const isCur = n.state === 'cur' && q >= .9;
+      if (mob && o > 0 && !isCur && !sweepOn) o = 0;
+      if (mob && sweepOn && sl.m === 1) o = 0;
+      const ex = sl.i === (sl.m === 0 ? 5 : 4);
+      const html = isCur ? `<small>Estás aquí</small><b>${sl.name}</b>` : sl.name;
+      if (sl.key !== html){ sl.el.innerHTML = html; sl.key = html; }
+      return { sl, n, o, isCur, ex };
+    });
+    steps.filter(t => t.isCur).forEach(t => place(t.sl.el, t.n.pos, t.o, 'below', t.ex ? .72 : .62));
+    MODS.forEach((md, m) => {
+      const done = m === 0 ? doneM1.filter(Boolean).length : 0, n = md.heads.length;
+      const html = md.locked ? `${lockSvg}Módulo ${m + 1}<span>${n} temas</span>` : `<i></i>Módulo ${m + 1}<span>${done} de ${n}</span>${m === 0 ? '<em>Gratis</em>' : ''}`;
+      if (chipL[m]._k !== html){ chipL[m].innerHTML = html; chipL[m]._k = html; }
+      place(chipL[m], V(-.6, md.topY, md.top + .2), overview ? 1 : 0, 'left');
+    });
+    place(rootL, origin.clone().add(V(0, .7, 0)), overview && !mob && !hero ? 1 : 0, 'above');
+    modL.forEach((l, m) => place(l, MODS[m].disc, overview && !mob && !hero ? 1 : 0, 'below', .9));
+    steps.filter(t => !t.isCur).forEach(t => place(t.sl.el, t.n.pos, t.o, 'below', t.ex ? .72 : .62));
+    kidL.forEach((l, k) => place(l, M1.fan.kids[k], fr > .6 && q < 4 && !(mob && k) ? 1 : 0, 'below', .4));
+    steps.forEach(t => { t.sl.num.textContent = t.sl.i + 1; place(t.sl.num, t.n.pos.clone().add(V(0, .17, 0)), t.o > 0 && t.n.state === 'todo' && !t.ex ? t.o : 0, 'center', 0, false); });
+  }
+  let visible = true, raf = 0;
+  new IntersectionObserver(es => { visible = es[0].isIntersecting; if (visible && !raf) loop(); }).observe($('.journey'));
+  function loop(){ raf = 0; if (!visible || document.hidden) return; frame(); raf = requestAnimationFrame(loop); }
+  document.addEventListener('visibilitychange', () => { if (!document.hidden && !raf){ lastT = performance.now(); loop(); } });
+  function resize(){ measure(); renderer.setSize(stage.clientWidth, stage.clientHeight, false); layoutAnns(); frame(); }
+  let rt; addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(resize, 120); });
+  addEventListener('scroll', () => { if (raf) return; const r = $('.journey').getBoundingClientRect(); visible = r.bottom > 0 && r.top < innerHeight; if (visible) loop(); }, { passive: true });
+  $$('[data-jump]').forEach(a => a.addEventListener('click', e => { e.preventDefault(); goChapter(+a.dataset.jump); }));
+  onPalette = () => { applyTheme(); frame(); };
+
+  setTopic('pt'); measure(); renderer.setSize(stage.clientWidth, stage.clientHeight, false);
+  sSmooth = exactS(); applyTheme(); layoutAnns(); frame(); loop();
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { measure(); layoutAnns(); frame(); });
+})();
+</script>
+
+</html>
