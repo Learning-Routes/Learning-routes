@@ -1,4 +1,4 @@
-import type { Actor } from "@learning-routes/core/actions/define";
+import type { Actor } from "@learning-routes/core/actions/actor";
 import { Block } from "@learning-routes/core/blocks/schema";
 import { SNAPSHOT_FORMAT, type Snapshot } from "@learning-routes/core/content/snapshot";
 import {

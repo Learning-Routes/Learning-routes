@@ -1,5 +1,6 @@
+import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
-import { query, URLS } from "./connect";
+import { query, rolledBack, URLS } from "./connect";
 
 // lr_app's privileges, table by table (Platform STEP 2 §1.1, §2): exactly these,
 // granted by migrations. A table missing here, or a privilege added, fails.
@@ -102,5 +103,30 @@ describe("lr_app's table privileges", () => {
       ]),
     );
     expect(actual).toEqual(EXPECTED);
+  });
+});
+
+// The runbook re-runs this file after a restore, which resets lr_app's grants.
+const GRANTS_FILE = new URL("../../drizzle/0013_app_grants.sql", import.meta.url);
+const PRIVILEGES = `select coalesce(string_agg(entry, ',' order by entry), '')
+                      as all
+                 from (select format('%s %s %s', table_name, column_name, privilege_type) as entry
+                         from information_schema.column_privileges
+                        where grantee = 'lr_app'
+                       union all
+                       select format('%s %s', routine_name, privilege_type) from information_schema.routine_privileges
+                        where grantee = 'lr_app') as granted`;
+
+describe("the grants file", () => {
+  it("revokes everything from lr_app and grants the same set again, however often it runs", async () => {
+    const sql = readFileSync(GRANTS_FILE, "utf8").replaceAll("--> statement-breakpoint", "");
+    const before = (await query(URLS.migrator, PRIVILEGES))[0]?.all;
+    await rolledBack(URLS.migrator, async (db) => {
+      await db.query("revoke all on all tables in schema public from lr_app");
+      await db.query(sql);
+      await db.query(sql);
+      const { rows } = await db.query(PRIVILEGES);
+      expect(rows[0]?.all).toBe(before);
+    });
   });
 });

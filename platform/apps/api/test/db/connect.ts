@@ -102,3 +102,12 @@ export async function blockedOrDone(pid: number, work: Promise<unknown>): Promis
     await new Promise((resolve) => setTimeout(resolve, 10));
   }
 }
+
+/**
+ * From here on, the transaction acts as the Worker: lr_app's privileges and
+ * row-level security, as userId (or nobody), until reset role.
+ */
+export async function actAs(db: pg.Client, userId: string | null): Promise<void> {
+  await db.query("set local role lr_app");
+  await db.query("select set_config('app.user_id', $1, true)", [userId ?? ""]);
+}

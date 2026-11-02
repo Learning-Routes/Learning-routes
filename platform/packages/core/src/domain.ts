@@ -206,6 +206,7 @@ export const CreditLedgerEntry = z.strictObject({
 export type Money = z.infer<typeof Money>;
 export type Space = z.infer<typeof Space>;
 export type UserProfile = z.infer<typeof UserProfile>;
+export type SpaceRole = z.infer<typeof SpaceRole>;
 export type Membership = z.infer<typeof Membership>;
 export type Route = z.infer<typeof Route>;
 export type Module = z.infer<typeof Module>;

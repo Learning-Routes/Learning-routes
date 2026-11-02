@@ -3,7 +3,7 @@ import { runAction } from "../../src/actions/define";
 import { ACTION_NAMES } from "../../src/actions/names";
 import { ACTIONS } from "../../src/actions/registry";
 import { GOOD, review } from "../../src/learning/fsrs";
-import { memoryStore, NOW, testCtx } from "./memory-store";
+import { ENROLLMENT, memoryStore, NOW, testCtx } from "./memory-store";
 
 const DAY = 86_400_000;
 const NEW_CARD = {
@@ -17,6 +17,7 @@ const NEW_CARD = {
 const R1 = "0192d3a0-0000-7000-8000-000000000001";
 const R2 = "0192d3a0-0000-7000-8000-000000000002";
 const input = (reviewId: string, at = NOW, rating = GOOD) => ({
+  enrollmentId: ENROLLMENT,
   reviewId,
   cardId: "card-hello",
   rating,

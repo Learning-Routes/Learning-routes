@@ -21,12 +21,15 @@ export const reviewSubmit = defineAction({
   description:
     "Record one spaced-repetition review of a card and schedule its next one. Safe to retry: the same reviewId is applied once.",
   input: z.strictObject({
+    /** The student's enrollment the card belongs to; its row gives the space. */
+    enrollmentId: z.uuid(),
     reviewId: z.uuid(),
     cardId: z.string().min(1),
     rating: z.int().min(1).max(4),
     /** When the student answered (epoch ms); a queued review arrives later. */
     at: z.int().nonnegative(),
   }),
+  target: (input) => ({ kind: "enrollment", id: input.enrollmentId }),
   async run(ctx, input): Promise<ReviewOutput> {
     const owner = ctx.actor.userId;
     const reviewKey = `review:${owner}:${input.reviewId}`;
