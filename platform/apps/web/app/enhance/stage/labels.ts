@@ -115,7 +115,7 @@ export function buildLabels(parent: HTMLElement, model: LandingModel, words: Sta
     moduleIndex,
     index,
     element: label(parent, "lp-ml"),
-    number: label(parent, "lp-mn"),
+    number: label(parent, "lp-mn", String(index + 1)),
     name: "",
     html: "",
   });

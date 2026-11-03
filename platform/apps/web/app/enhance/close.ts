@@ -3,7 +3,7 @@
 // module with the words on its chip, then the form goes where it was going anyway.
 const DRAW_MS = 900;
 
-export function enhanceClose(root: Element, signal: AbortSignal, reduceMotion: boolean) {
+export function enhanceClose(root: Element, reduceMotion: boolean) {
   const form = root.querySelector<HTMLFormElement>(".lp-ask");
   const field = root.querySelector<HTMLInputElement>(".lp-ask input");
   const figure = root.querySelector(".lp-plan");
@@ -12,33 +12,44 @@ export function enhanceClose(root: Element, signal: AbortSignal, reduceMotion: b
     return;
   }
   for (const idea of root.querySelectorAll<HTMLAnchorElement>(".lp-ideas a")) {
-    idea.addEventListener(
-      "click",
-      (event) => {
-        event.preventDefault();
-        field.value = idea.textContent?.trim() ?? "";
-        field.focus();
-      },
-      { signal },
-    );
-  }
-  field.addEventListener("focus", () => figure.classList.add("lp-wait"), { signal });
-  field.addEventListener("blur", () => figure.classList.remove("lp-wait"), { signal });
-  let hasDrawn = false;
-  form.addEventListener(
-    "submit",
-    (event) => {
-      const words = field.value.trim();
-      if (hasDrawn || !words || reduceMotion) {
-        hasDrawn = false; // back from the results, a new search draws again
+    idea.addEventListener("click", (event) => {
+      // A modified click still opens the search, in another tab.
+      if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) {
         return;
       }
       event.preventDefault();
-      chip.textContent = words.charAt(0).toUpperCase() + words.slice(1);
-      figure.classList.add("lp-drawn");
-      hasDrawn = true;
-      setTimeout(() => form.requestSubmit(), DRAW_MS);
-    },
-    { signal },
-  );
+      field.value = new URL(idea.href).searchParams.get("q") ?? "";
+      field.focus();
+    });
+  }
+  field.addEventListener("focus", () => figure.classList.add("lp-wait"));
+  field.addEventListener("blur", () => figure.classList.remove("lp-wait"));
+  const chipWords = chip.textContent;
+  let timer = 0;
+  let isDrawing = false;
+  form.addEventListener("submit", (event) => {
+    const words = field.value.trim();
+    if (reduceMotion || !words) {
+      return;
+    }
+    if (isDrawing) {
+      // The drawing's own submit, or a second Enter: it goes now, and only once.
+      clearTimeout(timer);
+      return;
+    }
+    event.preventDefault();
+    isDrawing = true;
+    chip.textContent = words.charAt(0).toUpperCase() + words.slice(1);
+    figure.classList.add("lp-drawn");
+    timer = window.setTimeout(() => form.requestSubmit(), DRAW_MS);
+  });
+  // Back from the results, the sheet is fresh and a new search draws again.
+  window.addEventListener("pageshow", (event) => {
+    if (event.persisted) {
+      clearTimeout(timer);
+      isDrawing = false;
+      chip.textContent = chipWords;
+      figure.classList.remove("lp-drawn");
+    }
+  });
 }

@@ -64,8 +64,11 @@ export function layoutText(
   height: number,
 ) {
   element.style.width = `${textWidth(index, width)}px`;
+  // Measured at the origin, then put back: the hero stays on screen where it is.
+  const shown = element.style.transform;
   element.style.transform = "translate(0px, 0px)";
   const { w, h, right, headlineHeight, shape } = measureShape(element);
+  element.style.transform = shown;
   const laid = layoutPanel(model, index, width, height, { w, h, shape });
   element.dataset.lay = JSON.stringify({ hits: laid.slot.hits, x: laid.slot.x, y: laid.slot.y });
   const text: PanelText = {

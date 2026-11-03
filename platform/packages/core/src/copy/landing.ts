@@ -69,7 +69,7 @@ export const LANDING_TEXT: Record<LocaleCode, LandingText> = {
   fr: {
     description: `${BRAND} : des parcours construits par celles et ceux qui enseignent le mieux chaque sujet. Vous avancez un sujet à la fois, et le premier module est gratuit.`,
     headline: "Apprenez avec qui l'enseigne le mieux.",
-    lead: "Chaque parcours est construit par qui enseigne le sujet : des modules dans l'ordre, des sujets courts et un examen à la fin de chacun.",
+    lead: "Chaque parcours est construit par qui enseigne le sujet : des modules dans l'ordre, des sujets courts et un examen pour clore chaque module.",
     mapLabel:
       "Un parcours : deux sujets terminés, le sujet actuel en doré et les suivants à venir, avec une halte de pratique supplémentaire et un examen à la fin.",
     mapHere: "Vous êtes ici",

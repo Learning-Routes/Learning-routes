@@ -124,7 +124,7 @@ export function CloseSheet({ locale, teachHref }: { locale: LocaleCode; teachHre
                   name="q"
                   type="search"
                   autoComplete="off"
-                  maxLength={200}
+                  maxLength={80}
                   placeholder={close.placeholder}
                 />
                 <Button type="submit">{close.button}</Button>
@@ -132,7 +132,7 @@ export function CloseSheet({ locale, teachHref }: { locale: LocaleCode; teachHre
               <nav className="lp-ideas" aria-label={close.ideasGroup}>
                 <span>{close.ideasLabel}</span>
                 {EXAMPLE_ROUTE_KEYS.map((key) => (
-                  <a key={key} href={`${catalog}?q=${encodeURIComponent(routes[key].title)}`}>
+                  <a key={key} href={`${catalog}?q=${encodeURIComponent(routes[key].tab)}`}>
                     {routes[key].title}
                   </a>
                 ))}

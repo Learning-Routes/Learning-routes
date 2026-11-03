@@ -69,6 +69,7 @@ export class LandingStage {
   private readonly ring = { time: -1 };
   private active = -2;
   private stageHeight = 0;
+  private width = 0;
   private pinTop = 0;
   private totalWeight = PANEL_WEIGHTS.reduce((sum, weight) => sum + weight, 0);
 
@@ -83,8 +84,26 @@ export class LandingStage {
     this.words = JSON.parse(journey.dataset.words ?? "{}");
   }
 
-  /** Rejects when WebGL fails: the page then stays on its server HTML. Yields between steps. */
+  /** When anything fails the page goes back to its server HTML, as if this never ran. */
   async start() {
+    try {
+      await this.build();
+    } catch (error) {
+      this.dispose();
+      this.journey.classList.remove("lp-gl");
+      this.journey.style.height = "";
+      for (const panel of this.panels) {
+        panel.classList.remove("lp-on");
+        panel.style.width = "";
+        panel.style.transform = "";
+      }
+      throw error;
+    }
+  }
+
+  // Yields between its steps, and measures once the fonts are in.
+  private async build() {
+    await document.fonts.ready;
     const renderer = new WebGLRenderer({ canvas: this.canvas, antialias: true, alpha: true });
     this.renderer = renderer;
     renderer.outputColorSpace = SRGBColorSpace;
@@ -108,6 +127,7 @@ export class LandingStage {
     await nextTask();
     this.journey.classList.add("lp-gl");
     holdHero(at(this.panels, 0), this.stage);
+    this.width = this.stage.clientWidth;
     this.measure();
     renderer.setSize(this.stage.clientWidth, this.stage.clientHeight, false);
     this.eased = this.exactTime();
@@ -120,7 +140,6 @@ export class LandingStage {
     this.frame();
     this.loop();
     this.journey.dataset.stage = "on";
-    void document.fonts.ready.then(() => this.resize());
   }
 
   private async layOutOverTime() {
@@ -186,7 +205,8 @@ export class LandingStage {
   }
 
   private measure() {
-    this.stageHeight = window.innerHeight - HEADER;
+    // The stage's own height: a phone's address bar moving must not move the story.
+    this.stageHeight = this.stage.clientHeight;
     this.journey.style.height = `${this.totalWeight * this.stageHeight + this.stageHeight}px`;
     this.pinTop = this.journey.getBoundingClientRect().top + window.scrollY - HEADER;
   }
@@ -196,14 +216,17 @@ export class LandingStage {
   }
 
   private isPinned() {
-    const y = window.scrollY;
+    // iOS's rubber band scrolls above zero, and the hero must stay on show.
+    const y = Math.max(0, window.scrollY);
     return y >= this.pinTop - 2 && y <= this.pinTop + this.totalWeight * this.stageHeight;
   }
 
   private resize() {
-    if (!this.renderer) {
+    const { clientWidth, clientHeight } = this.stage;
+    if (!this.renderer || (clientWidth === this.width && clientHeight === this.stageHeight)) {
       return;
     }
+    this.width = clientWidth;
     this.measure();
     this.renderer.setSize(this.stage.clientWidth, this.stage.clientHeight, false);
     this.layoutTexts();

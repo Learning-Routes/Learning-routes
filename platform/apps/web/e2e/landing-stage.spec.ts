@@ -145,7 +145,7 @@ test("an idea fills the field, and without JavaScript it is a link to the search
   const page = await context.newPage();
   await page.goto("/es");
   await page.getByRole("link", { name: "Guitarra para empezar" }).click();
-  await expect(page.locator("#lp-want")).toHaveValue("Guitarra para empezar");
+  await expect(page.locator("#lp-want")).toHaveValue("Guitarra");
   await context.close();
   const plain = await browser.newContext({ javaScriptEnabled: false, locale: "es-ES" });
   const noScript = await plain.newPage();

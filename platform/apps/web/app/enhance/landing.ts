@@ -8,7 +8,7 @@ const journey = document.querySelector<HTMLElement>(".lp-journey");
 const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 const close = document.querySelector(".lp-final");
 if (close) {
-  enhanceClose(close, new AbortController().signal, reduceMotion);
+  enhanceClose(close, reduceMotion);
 }
 
 function stayStatic() {

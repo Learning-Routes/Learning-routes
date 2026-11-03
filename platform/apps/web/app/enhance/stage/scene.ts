@@ -29,11 +29,11 @@ import {
 } from "three";
 import { buildMaterials, type Materials } from "./materials";
 import { addStops, type StopParts } from "./scene-stops";
+import { clamp } from "./story";
 
 // The scale model, from v1's landing_stage_controller.js (STEP 41 §2): sheets with thickness,
 // the route as a track with a bright line and a glow, stops, and the pin.
 
-const clamp = (value: number) => Math.min(1, Math.max(0, value));
 // TubeGeometry with 8 radial segments: 48 indices per length segment.
 const INDICES_PER_SEGMENT = 48;
 

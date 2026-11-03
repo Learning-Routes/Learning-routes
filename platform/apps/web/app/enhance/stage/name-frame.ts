@@ -153,7 +153,6 @@ export function placeNames(frame: Frame) {
     );
   });
   for (const { step, stop, opacity } of rows) {
-    step.number.textContent = String(step.index + 1);
     const shows = opacity > 0 && stop.state === "todo" && !stop.isExam;
     const on = point(stop.position.x, stop.position.y + 0.17, stop.position.z);
     placeLabel(
