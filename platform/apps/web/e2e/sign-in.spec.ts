@@ -145,7 +145,7 @@ test("with no script the address never reaches a URL, and the page says what it 
 }) => {
   const context = await browser.newContext({ javaScriptEnabled: false, locale: "es-ES" });
   const page = await context.newPage();
-  await openSignIn(page);
+  await page.goto(`${DEV}/sign-in`);
   await page.getByLabel("Tu correo").fill(EMAIL);
   await page.getByRole("button", { name: "Enviar enlace" }).click();
   await expect(page.getByLabel("Tu correo")).toBeVisible();
