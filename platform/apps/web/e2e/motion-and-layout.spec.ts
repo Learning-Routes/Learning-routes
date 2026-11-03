@@ -4,6 +4,9 @@ import { DEV, SCREENS } from "./screens";
 // Reduced motion, overflow and touch targets on every designed screen (Platform STEP 3
 // §2.3, §5.3).
 
+const CONTROLS =
+  ".button, .theme-button, .nav-link, .brand, .field-input, .catalog-topic, .text-link, .lp-ideas a, .lp-ask input, .app-mode";
+
 test.use({ locale: "es-ES" });
 
 for (const [name, open] of Object.entries(SCREENS)) {
@@ -21,7 +24,40 @@ for (const [name, open] of Object.entries(SCREENS)) {
     await context.close();
   });
 
-  for (const width of [375, 1280]) {
+  test(`${name}: every control meets a 44 px target on a phone, and shows keyboard focus`, async ({
+    browser,
+  }) => {
+    const context = await browser.newContext({
+      viewport: { width: 390, height: 800 },
+      locale: "es-ES",
+      reducedMotion: "reduce",
+    });
+    const page = await context.newPage();
+    await open(page);
+    const small = await page.evaluate(
+      (controls) =>
+        [...document.querySelectorAll<HTMLElement>(controls)]
+          .filter((element) => element.offsetParent !== null)
+          .map((element) => ({
+            text: element.textContent?.trim(),
+            rect: element.getBoundingClientRect(),
+          }))
+          .filter(({ rect }) => rect.height < 44 || rect.width < 44)
+          .map(({ text, rect }) => `${text}: ${Math.round(rect.width)}x${Math.round(rect.height)}`),
+      CONTROLS,
+    );
+    expect(small).toEqual([]);
+    await page.keyboard.press("Tab");
+    const focused = await page.evaluate(() => {
+      const element = document.activeElement as Element;
+      const { outlineStyle, boxShadow } = getComputedStyle(element);
+      return element === document.body || outlineStyle === "solid" || boxShadow !== "none";
+    });
+    expect(focused).toBe(true);
+    await context.close();
+  });
+
+  for (const width of [375, 390, 1280]) {
     test(`${name}: no sideways scroll at ${width} px`, async ({ browser }) => {
       const context = await browser.newContext({
         viewport: { width, height: 800 },

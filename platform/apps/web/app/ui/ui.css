@@ -101,7 +101,11 @@
 }
 
 /* Link */
+/* Each stands alone on its line, so it can carry a full touch target. */
 .text-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--size-touch);
   color: var(--color-link);
   font-weight: var(--weight-label);
   text-decoration: underline;
