@@ -107,9 +107,13 @@ test("without a real GPU the page stays on its text, unless #mapa asks for the m
   await page.goto("/es");
   const stage = page.locator(".lp-journey");
   await expect(stage).toHaveAttribute("data-stage", SETTLED, { timeout: 30_000 });
-  const hasGpu = await page.evaluate(() =>
-    Boolean(new OffscreenCanvas(1, 1).getContext("webgl2", { failIfMajorPerformanceCaveat: true })),
-  );
+  const hasGpu = await page.evaluate(() => {
+    const gl = new OffscreenCanvas(1, 1).getContext("webgl2");
+    const info = gl?.getExtension("WEBGL_debug_renderer_info");
+    const name = info ? String(gl?.getParameter(info.UNMASKED_RENDERER_WEBGL)) : "";
+    const lower = name.toLowerCase();
+    return !["swiftshader", "llvmpipe", "software"].some((word) => lower.includes(word));
+  });
   await expect(stage).toHaveAttribute("data-stage", hasGpu ? "on" : "static");
 });
 
