@@ -88,10 +88,11 @@ export function oauthHarness() {
   const authorize = async (
     cookie: string,
     scope = "routes:read routes:write routes:publish offline_access",
+    clientId = CLIENT_ID,
   ) => {
     const query = new URLSearchParams({
       response_type: "code",
-      client_id: CLIENT_ID,
+      client_id: clientId,
       redirect_uri: REDIRECT_URI,
       scope,
       state: "state-1",

@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it } from "vitest";
 import { APP } from "../auth/harness";
 import { query, URLS } from "../db/connect";
-import { CLIENT_ID, oauthHarness, REDIRECT_URI, RESOURCE } from "./oauth-harness";
+import { CLIENT_DOCUMENT, CLIENT_ID, oauthHarness, REDIRECT_URI, RESOURCE } from "./oauth-harness";
 
 // OAuth for the creator's MCP (Platform STEP 5 §2): a client names itself by its metadata
 // document, a person with a space to teach in says yes on the app's host, and what comes
@@ -181,12 +181,26 @@ describe("refresh", () => {
 });
 
 describe("a client's metadata document", () => {
+  it("survives several first requests at once from a client it has never seen", async () => {
+    const clientId = `https://client.example.test/${crypto.randomUUID()}.json`;
+    oauth.documents.set(clientId, { ...CLIENT_DOCUMENT, client_id: clientId });
+    const { cookie } = await teacher();
+    const answers = await Promise.all(
+      Array.from({ length: 5 }, () => oauth.authorize(cookie, undefined, clientId)),
+    );
+    // Better Auth makes the rest wait a moment (429) while one fetches. None of them breaks.
+    const statuses = answers.map((answer) => answer.status);
+    expect(statuses.every((status) => status === 302 || status === 429)).toBe(true);
+    expect(statuses).toContain(302);
+    expect((await oauth.authorize(cookie, undefined, clientId)).status).toBe(302);
+  });
+
   it("refuses a client whose document is not there", async () => {
     oauth.documents.delete(CLIENT_ID);
     const { cookie } = await teacher();
     const asked = await oauth.authorize(cookie);
     const place = asked.headers.get("location") ?? "";
     expect(place.includes("/conectar")).toBe(false);
-    oauth.documents.set(CLIENT_ID, (await import("./oauth-harness")).CLIENT_DOCUMENT);
+    oauth.documents.set(CLIENT_ID, CLIENT_DOCUMENT);
   });
 });
