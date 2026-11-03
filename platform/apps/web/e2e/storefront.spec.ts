@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 
 const SCRIPT = /<script\b[^>]*>/g;
-const ENHANCEMENT = /^<script type="module" src="\/enhance\/[a-z-]+\.js"[^>]*><\/?/;
+const ENHANCEMENT = /^<script type="module" src="\/enhance\/[a-z-]+\.js"[^>]*>$/;
 const COOKIE = /cookie/i;
 
 for (const path of ["/es", "/es/explorar"]) {
@@ -24,7 +24,7 @@ for (const path of ["/es", "/es/explorar"]) {
     const page = await context.newPage();
     await page.goto(path);
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
-    await expect(page.getByRole("link", { name: "Quiero enseñar" }).first()).toBeVisible();
+    await expect(page.getByRole("link", { name: "Enseñar", exact: true }).first()).toBeVisible();
     await context.close();
   });
 }

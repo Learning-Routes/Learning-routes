@@ -4,7 +4,7 @@ whenIdle(
   {
     requestIdleCallback: window.requestIdleCallback?.bind(window),
     addEventListener: window.addEventListener.bind(window),
-    complete: document.readyState === "complete",
+    isLoaded: document.readyState === "complete",
   },
   () => {
     const page = {
@@ -12,7 +12,8 @@ whenIdle(
       createCanvas: () => document.createElement("canvas"),
     };
     if (threeIsWanted(page)) {
-      void import("./three-parts");
+      // A failed chunk is no failure for the visitor: the server HTML is the page.
+      import("./three-parts").catch(() => undefined);
     }
   },
 );

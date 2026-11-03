@@ -8,7 +8,7 @@ const page = ({ reduce = false, webgl = true, throws = false } = {}) => ({
       if (throws) {
         throw new Error("blocked");
       }
-      return webgl ? {} : null;
+      return webgl ? { getExtension: () => null } : null;
     },
   }),
 });
@@ -29,24 +29,31 @@ describe("threeIsWanted", () => {
 });
 
 describe("whenIdle", () => {
-  test("waits for requestIdleCallback where it exists", () => {
+  const load = (addEventListener: ReturnType<typeof vi.fn>) =>
+    addEventListener.mock.calls[0]?.[1]();
+
+  test("waits for load, then for requestIdleCallback", () => {
     const run = vi.fn();
+    const addEventListener = vi.fn();
     const requestIdleCallback = vi.fn();
-    whenIdle({ requestIdleCallback, addEventListener: vi.fn(), complete: true }, run);
+    whenIdle({ requestIdleCallback, addEventListener, isLoaded: false }, run);
+    expect(requestIdleCallback).not.toHaveBeenCalled();
+    load(addEventListener);
     expect(run).not.toHaveBeenCalled();
     requestIdleCallback.mock.calls[0]?.[0]();
     expect(run).toHaveBeenCalledOnce();
   });
-  test("without it, waits for load", () => {
+  test("without requestIdleCallback, load alone decides", () => {
     const run = vi.fn();
     const addEventListener = vi.fn();
-    whenIdle({ addEventListener, complete: false }, run);
+    whenIdle({ addEventListener, isLoaded: false }, run);
     expect(run).not.toHaveBeenCalled();
-    expect(addEventListener).toHaveBeenCalledWith("load", run, { once: true });
+    load(addEventListener);
+    expect(run).toHaveBeenCalledOnce();
   });
-  test("without it, runs at once when the page has already loaded", () => {
+  test("runs at once when the page has already loaded and has no idle callback", () => {
     const run = vi.fn();
-    whenIdle({ addEventListener: vi.fn(), complete: true }, run);
+    whenIdle({ addEventListener: vi.fn(), isLoaded: true }, run);
     expect(run).toHaveBeenCalledOnce();
   });
 });

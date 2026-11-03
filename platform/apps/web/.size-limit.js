@@ -55,7 +55,7 @@ export default [
   },
   // Any other page's script, each on its own.
   ...readdirSync(ENHANCE)
-    .filter((file) => file !== "landing.js")
+    .filter((file) => file.endsWith(".js") && file !== "landing.js")
     .map((file) => ({
       name: `storefront enhancement: ${file}`,
       path: withImports(`${ENHANCE}/${file}`),
