@@ -1,6 +1,7 @@
 import * as z from "zod";
 import { contentHash, SNAPSHOT_FORMAT, snapshotOf, upcastSnapshot } from "../content/snapshot";
-import { Route } from "../domain";
+import { ROUTE_LEVELS, ROUTE_TOPICS } from "../copy/route-facts";
+import { Money, Route } from "../domain";
 import { Locale, LocalizedText } from "../localized-text";
 import { ActionError, defineAction, inSpace } from "./define";
 import { unwrap } from "./results";
@@ -16,6 +17,10 @@ const RouteFields = z
     sourceLocale: Locale,
     access: Route.shape.access,
     pricing: Route.shape.pricing,
+    topic: z.enum(ROUTE_TOPICS).default("otros"),
+    level: z.enum(ROUTE_LEVELS).default("inicial"),
+    /** The route's one-time price. Left out, the route is not for sale yet. */
+    price: Money.nullish(),
   })
   .refine((route) => route.title[route.sourceLocale] !== undefined, {
     message: "the title needs the source locale",
@@ -31,16 +36,19 @@ export const routeCreate = defineAction({
   async run(ctx, input, given) {
     const scope = inSpace(given);
     // Pricing is set in the app, by an owner, never by an agent or over MCP.
-    if (input.pricing !== "free" && (ctx.actor.via !== "ui" || scope.role !== "owner")) {
+    const setsPrice = input.pricing !== "free" || (input.price ?? null) !== null;
+    if (setsPrice && (ctx.actor.via !== "ui" || scope.role !== "owner")) {
       throw new ActionError("forbidden", "an owner sets a price, in the app");
     }
-    const { spaceId: _, description, ...fields } = input;
+    const { spaceId: _, description, price, ...fields } = input;
     const routeId = ctx.ids.newId();
     const created = unwrap(
       await ctx.repos.routeDrafts.create(scope.spaceId, {
         ...fields,
         id: routeId,
         description: description ?? null,
+        priceMinor: price?.amountMinor ?? null,
+        currency: price?.currency ?? null,
       }),
     );
     return { routeId, revision: created.revision };

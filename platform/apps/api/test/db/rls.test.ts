@@ -7,6 +7,7 @@ const TENANT_TABLES = [
   "action_log",
   "blocks",
   "cards",
+  "catalog_listings",
   "enrollments",
   "lesson_prerequisites",
   "lessons",

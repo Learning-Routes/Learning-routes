@@ -12,6 +12,9 @@ repositoryContract("in memory", async (test) => {
     name: { en: "Space" },
     defaultLocale: "en",
     locales: ["en"],
+    tagline: null,
+    bio: null,
+    brandColor: null,
   });
   state.members.set(`${spaceId}:${ownerId}`, { spaceId, userId: ownerId, role: "owner" });
   await test({

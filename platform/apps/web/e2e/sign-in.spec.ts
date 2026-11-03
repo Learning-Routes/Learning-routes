@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, type Page, test } from "@playwright/test";
 
 // The sign-in screens against a stand-in API: the API's own tests cover what it does.
 // The app's origin in these runs is port 4174, which keeps the theme cookie.
@@ -10,9 +10,15 @@ const NO_TOKEN_IN_URL = /a-token/;
 
 test.use({ locale: "es-ES" });
 
+/** The form is React's once hydrated: a busy runner could otherwise type before that. */
+async function openSignIn(page: Page) {
+  await page.goto(`${DEV}/sign-in`);
+  await expect(page.locator("html")).toHaveAttribute("data-hydrated", "true");
+}
+
 test("a person walks through sign-in with only the keyboard", async ({ page }) => {
   await page.route("**/api/auth/sign-in/magic-link", (route) => route.fulfill({ json: {} }));
-  await page.goto(`${DEV}/sign-in`);
+  await openSignIn(page);
   await expect(page.getByRole("heading", { name: "Entrar" })).toBeFocused();
 
   // Skip the brand and the theme toggle, then type and send with the keyboard alone.
@@ -38,7 +44,7 @@ test("an address with no @ gets told how to fix it, on leaving the field and on 
     requested = true;
     return route.fulfill({ json: {} });
   });
-  await page.goto(`${DEV}/sign-in`);
+  await openSignIn(page);
   const field = page.getByLabel("Tu correo");
   await field.fill("sin arroba");
   await expect(field).not.toHaveAttribute("aria-invalid", "true");
@@ -55,7 +61,7 @@ test("an address with no @ gets told how to fix it, on leaving the field and on 
 test("resending waits, then works, and another address can be used", async ({ page }) => {
   await page.clock.install();
   await page.route("**/api/auth/sign-in/magic-link", (route) => route.fulfill({ json: {} }));
-  await page.goto(`${DEV}/sign-in`);
+  await openSignIn(page);
   await page.getByLabel("Tu correo").fill(EMAIL);
   await page.getByRole("button", { name: "Enviar enlace" }).click();
   await expect(page.getByText("Podrás reenviarlo en")).toBeVisible();
@@ -75,7 +81,7 @@ for (const [status, text] of [
 ] as const) {
   test(`a ${status} reads as words, never a code`, async ({ page }) => {
     await page.route("**/api/auth/sign-in/magic-link", (route) => route.fulfill({ status }));
-    await page.goto(`${DEV}/sign-in`);
+    await openSignIn(page);
     await page.getByLabel("Tu correo").fill(EMAIL);
     await page.getByRole("button", { name: "Enviar enlace" }).click();
     await expect(page.getByText(text)).toBeVisible();
@@ -128,7 +134,7 @@ test("an expired link lands on the screen that asks for another", async ({ page 
 test("the screens follow the browser's language", async ({ browser }) => {
   const context = await browser.newContext({ locale: "fr-FR" });
   const page = await context.newPage();
-  await page.goto(`${DEV}/sign-in`);
+  await openSignIn(page);
   await expect(page.getByRole("heading", { name: "Se connecter" })).toBeVisible();
   await expect(page.locator("html")).toHaveAttribute("lang", "fr");
   await context.close();
@@ -155,7 +161,7 @@ test("with no script the address never reaches a URL, and the page says what it 
 
 test("the theme toggle keeps the screen you are on", async ({ page }) => {
   await page.route("**/api/auth/sign-in/magic-link", (route) => route.fulfill({ json: {} }));
-  await page.goto(`${DEV}/sign-in`);
+  await openSignIn(page);
   await page.getByLabel("Tu correo").fill(EMAIL);
   await page.getByRole("button", { name: "Enviar enlace" }).click();
   await expect(page.getByText(EMAIL)).toBeVisible();
@@ -176,7 +182,7 @@ test("a confirm page reached with no token asks to open the link again, not 'exp
 test("an error stays while the field has focus, and goes on the first keystroke", async ({
   page,
 }) => {
-  await page.goto(`${DEV}/sign-in`);
+  await openSignIn(page);
   const field = page.getByLabel("Tu correo");
   await field.fill("sin arroba");
   await page.keyboard.press("Enter");

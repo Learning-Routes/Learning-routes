@@ -32,6 +32,10 @@ const ROUTE_FIELDS = {
   sourceLocale: "en" as const,
   access: "open" as const,
   pricing: "free" as const,
+  topic: "otros" as const,
+  level: "inicial" as const,
+  priceMinor: null,
+  currency: null,
 };
 
 export function testWorld(): World {
@@ -42,6 +46,9 @@ export function testWorld(): World {
     name: { en: "Space" },
     defaultLocale: "en",
     locales: ["en"],
+    tagline: null,
+    bio: null,
+    brandColor: null,
   });
   for (const [role, userId] of Object.entries(STAFF)) {
     state.members.set(`${SPACE}:${userId}`, { spaceId: SPACE, userId, role: role as SpaceRole });

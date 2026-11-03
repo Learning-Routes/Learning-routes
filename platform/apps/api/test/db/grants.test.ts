@@ -31,6 +31,10 @@ const EXPECTED: Record<string, string[]> = {
   // Learning: a student's own rows. An enrollment is made and changed only
   // through security definer functions (§3).
   cards: ["INSERT", "SELECT"],
+  // Requests are made here; only an operator or a withdrawing owner changes one (RLS).
+  catalog_listings: ["INSERT", "SELECT"],
+  // Anyone may apply, with no account; only an operator reads or decides (RLS).
+  creator_applications: ["INSERT", "SELECT"],
   enrollments: ["SELECT"],
   progress: ["INSERT", "SELECT"],
   reviews: ["INSERT", "SELECT"],
@@ -42,6 +46,15 @@ const EXPECTED: Record<string, string[]> = {
 // space, a parent, a route's revision or published version, or whose row it is.
 const UPDATABLE_COLUMNS: Record<string, string[]> = {
   blocks: ["archived_at", "data", "kind", "position", "updated_at"],
+  catalog_listings: [
+    "decided_at",
+    "decided_by",
+    "decided_version",
+    "featured_position",
+    "note",
+    "status",
+  ],
+  creator_applications: ["decided_at", "status"],
   cards: [
     "difficulty",
     "due_at",
@@ -59,11 +72,15 @@ const UPDATABLE_COLUMNS: Record<string, string[]> = {
   routes: [
     "access",
     "archived_at",
+    "currency",
     "description",
+    "level",
+    "price_minor",
     "pricing",
     "slug",
     "source_locale",
     "title",
+    "topic",
     "updated_at",
   ],
 };
@@ -107,7 +124,9 @@ describe("lr_app's table privileges", () => {
 });
 
 // The runbook re-runs this file after a restore, which resets lr_app's grants.
-const GRANTS_FILE = new URL("../../drizzle/0013_app_grants.sql", import.meta.url);
+const GRANTS_FILES = ["0013_app_grants", "0016_catalog_grants"].map(
+  (tag) => new URL(`../../drizzle/${tag}.sql`, import.meta.url),
+);
 const PRIVILEGES = `select coalesce(string_agg(entry, ',' order by entry), '')
                       as all
                  from (select format('%s %s %s', table_name, column_name, privilege_type) as entry
@@ -119,7 +138,9 @@ const PRIVILEGES = `select coalesce(string_agg(entry, ',' order by entry), '')
 
 describe("the grants file", () => {
   it("revokes everything from lr_app and grants the same set again, however often it runs", async () => {
-    const sql = readFileSync(GRANTS_FILE, "utf8").replaceAll("--> statement-breakpoint", "");
+    const sql = GRANTS_FILES.map((file) =>
+      readFileSync(file, "utf8").replaceAll("--> statement-breakpoint", ""),
+    ).join("\n");
     const before = (await query(URLS.migrator, PRIVILEGES))[0]?.all;
     await rolledBack(URLS.migrator, async (db) => {
       await db.query("revoke all on all tables in schema public from lr_app");

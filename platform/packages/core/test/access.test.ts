@@ -13,6 +13,7 @@ const STAFF = { owner: ANY, coeditor: ANY, assistant: ANY };
 const EDITORS = { owner: ANY, coeditor: ANY };
 const EXPECTED: Record<string, Record<string, string[]>> = {
   "space.get": EVERYONE,
+  "space.update": { owner: ["ui"] },
   "membership.add": { owner: ["ui"] },
   "route.create": EDITORS,
   "route.get": STAFF,

@@ -26,12 +26,36 @@ const FORMAT_1 = {
 };
 
 describe("upcastSnapshot (Platform STEP 2 §2.10)", () => {
-  it("writes format 1 today", () => {
-    expect(SNAPSHOT_FORMAT).toBe(1);
+  it("writes format 2 today", () => {
+    expect(SNAPSHOT_FORMAT).toBe(2);
   });
 
-  it("format 1: reads a snapshot as written, keeping every id", () => {
-    expect(upcastSnapshot(1, FORMAT_1)).toEqual(FORMAT_1);
+  it("format 1: reads a snapshot as today's, keeping every id, with no price and the plainest facts", () => {
+    expect(upcastSnapshot(1, FORMAT_1)).toEqual({
+      ...FORMAT_1,
+      route: {
+        ...FORMAT_1.route,
+        topic: "otros",
+        level: "inicial",
+        priceMinor: null,
+        currency: null,
+      },
+    });
+  });
+
+  it("format 2: carries the route's topic, level and price (Platform STEP 4 §2.2)", () => {
+    const route = {
+      ...FORMAT_1.route,
+      topic: "musica",
+      level: "avanzado",
+      priceMinor: 2900,
+      currency: "EUR",
+    };
+    expect(upcastSnapshot(2, { ...FORMAT_1, route }).route).toEqual(route);
+    expect(() => upcastSnapshot(2, FORMAT_1)).toThrow();
+    expect(() =>
+      upcastSnapshot(2, { ...FORMAT_1, route: { ...route, topic: "cooking" } }),
+    ).toThrow();
   });
 
   it("format 1: refuses a snapshot that does not match it", () => {
@@ -44,6 +68,6 @@ describe("upcastSnapshot (Platform STEP 2 §2.10)", () => {
 
   it("refuses a format it does not know, rather than guessing", () => {
     expect(() => upcastSnapshot(0, FORMAT_1)).toThrow(RangeError);
-    expect(() => upcastSnapshot(2, FORMAT_1)).toThrow(RangeError);
+    expect(() => upcastSnapshot(3, FORMAT_1)).toThrow(RangeError);
   });
 });

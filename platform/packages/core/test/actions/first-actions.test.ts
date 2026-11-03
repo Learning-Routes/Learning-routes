@@ -297,3 +297,70 @@ describe("enrollment.create and enrollment.upgrade", () => {
     expect(world.enrollments.get(enrollmentId as string)?.pinnedVersion).toBe(2);
   });
 });
+
+describe("what a creator's page says (Platform STEP 4 §2.1)", () => {
+  it("an owner sets a brand colour white text can be read on", async () => {
+    const world = testWorld();
+    const result = await call(world, STAFF.owner, "space.update", {
+      spaceId: SPACE,
+      tagline: { en: "Guitar, from zero" },
+      brandColor: "#6A2EA0",
+    });
+    expect(result.ok).toBe(true);
+    expect(world.spaces.get(SPACE)).toMatchObject({
+      tagline: { en: "Guitar, from zero" },
+      brandColor: "#6a2ea0",
+    });
+  });
+
+  it("a colour that fails is refused, with why and the nearest that passes", async () => {
+    const world = testWorld();
+    const result = await call(world, STAFF.owner, "space.update", {
+      spaceId: SPACE,
+      brandColor: "#ffcc00",
+    });
+    expect(result).toMatchObject({ ok: false, code: "invalid" });
+    expect(JSON.stringify(result)).toContain("4.5:1");
+    expect(world.spaces.get(SPACE)?.brandColor ?? null).toBeNull();
+  });
+
+  it("a coeditor may not change it", async () => {
+    const result = await call(testWorld(), STAFF.coeditor, "space.update", {
+      spaceId: SPACE,
+      brandColor: "#6a2ea0",
+    });
+    expect(result).toMatchObject({ ok: false, code: "forbidden" });
+  });
+});
+
+describe("a space's address (Platform STEP 4 review, fix 2)", () => {
+  it("an owner may change it to one that is free", async () => {
+    const world = testWorld();
+    const result = await call(world, STAFF.owner, "space.update", {
+      spaceId: SPACE,
+      slug: "mi-espacio",
+    });
+    expect(result.ok).toBe(true);
+    expect(world.spaces.get(SPACE)?.slug).toBe("mi-espacio");
+  });
+
+  it.each(["app", "docs", "login", "APP"])("%s is refused, saying why", async (slug) => {
+    const world = testWorld();
+    const result = await call(world, STAFF.owner, "space.update", { spaceId: SPACE, slug });
+    expect(result).toMatchObject({
+      ok: false,
+      code: "invalid_input",
+      issues: [{ path: "slug" }],
+    });
+    expect(JSON.stringify(result)).toContain("keeps this address for itself");
+    expect(world.spaces.get(SPACE)?.slug).toBe("space");
+  });
+
+  it.each(["con espacio", "-a", "a-", "Á", "x".repeat(64)])(
+    "%s is refused: it cannot be a host",
+    async (slug) => {
+      const result = await call(testWorld(), STAFF.owner, "space.update", { spaceId: SPACE, slug });
+      expect(result).toMatchObject({ ok: false, code: "invalid_input" });
+    },
+  );
+});

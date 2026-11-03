@@ -106,6 +106,22 @@ async function linksLeft(db: pg.Client, identifiers: string[]) {
 }
 
 describe("user.erase (Platform STEP 2 §2.16)", () => {
+  it("removes an application to teach with the same address, and nobody else's", async () => {
+    await rolledBack(URLS.migrator, async (db) => {
+      const userId = await newUser(db);
+      const { rows } = await db.query(`select email from "user" where id = $1`, [userId]);
+      const email = rows[0]?.email as string;
+      await db.query(
+        `insert into creator_applications (name, email, teaches, locale)
+         values ('Ana', $1, 'guitarra', 'es'), ('Otra', 'otra@example.com', 'piano', 'es')`,
+        [email.toUpperCase()],
+      );
+      await eraseUser(db, userId, TEST_SECRET);
+      const left = await db.query("select email from creator_applications");
+      expect(left.rows.map((row) => row.email)).toEqual(["otra@example.com"]);
+    });
+  });
+
   it("removes every per-user row of one user, and nothing of anyone else's", async () => {
     await rolledBack(URLS.migrator, async (db) => {
       const space = await newSpace(db, "erase");

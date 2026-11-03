@@ -30,6 +30,8 @@ const EDITORS = { owner: ANY_WAY, coeditor: ANY_WAY } as const;
 
 export const PERMISSIONS = {
   "space.get": EVERYONE,
+  // What a creator's public page says: like pricing, set in the app, by an owner.
+  "space.update": { owner: ["ui"] },
   // Memberships change only in the app, and only by an owner.
   "membership.add": { owner: ["ui"] },
   // route.create itself refuses a paid route from anywhere but the app.

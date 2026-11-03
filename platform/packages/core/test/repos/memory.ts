@@ -174,6 +174,21 @@ export function memoryRepos(state: State, actorId = ""): Repos {
         const space = state.spaces.get(spaceId);
         return space ? ok(space) : fail("not_found");
       },
+      update: async (spaceId, page) => {
+        const space = state.spaces.get(spaceId);
+        if (!space) {
+          return fail("not_found");
+        }
+        const taken = [...state.spaces.values()].some(
+          (other) => other.id !== spaceId && other.slug === page.slug,
+        );
+        if (taken) {
+          return fail("conflict");
+        }
+        const given = Object.entries(page).filter(([, value]) => value !== undefined);
+        state.spaces.set(spaceId, { ...space, ...Object.fromEntries(given) });
+        return ok(undefined);
+      },
     },
     memberships: {
       list: async (spaceId) =>

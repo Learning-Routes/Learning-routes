@@ -28,7 +28,8 @@ import { newUser, rolledBack, URLS } from "./connect";
 // the 15 tables gets a typed mapper from core's value to its full row. A column
 // the mapper does not fill fails the types (Row makes every column required); a
 // domain key no column takes fails at run time (mapped() checks every key was
-// read); a value the database refuses fails the insert.
+// read); a value the database refuses fails the insert. The catalog's tables have no
+// domain schema: their rows are tested in catalog-fence.test.ts.
 
 /** Every column of the table, none optional. */
 type Row<T extends Table> = Required<InferInsertModel<T>>;
@@ -67,6 +68,9 @@ const toRow = {
     name: s.name,
     defaultLocale: s.defaultLocale,
     locales: s.locales,
+    tagline: null,
+    bio: null,
+    brandColor: null,
     createdAt: new Date(s.createdAt),
     updatedAt: new Date(s.createdAt),
     archivedAt: null,
@@ -90,6 +94,10 @@ const toRow = {
     sourceLocale: r.sourceLocale,
     access: r.access,
     pricing: r.pricing,
+    topic: "otros",
+    level: "inicial",
+    priceMinor: null,
+    currency: null,
     draftRevision: 0,
     latestPublishedVersion: r.version,
     forkedFromSpaceId: r.forkedFrom?.spaceId ?? null,
@@ -321,6 +329,10 @@ async function insertVersion(client: pg.Client, userId: string) {
       sourceLocale: "en",
       access: "closed",
       pricing: "paid",
+      topic: "otros" as const,
+      level: "inicial" as const,
+      priceMinor: null,
+      currency: null,
     },
     modules: [{ id: ids.module, position: "V", title: { en: "M" } }],
     lessons: [{ id: ids.lesson, moduleId: ids.module, position: "V", title: { en: "L" } }],
@@ -415,7 +427,8 @@ describe("every table holds what core's domain schemas allow", () => {
 
       const { rows } = await client.query(
         `select relname from pg_class where relkind = 'r' and relnamespace = 'public'::regnamespace
-           and relname not in ('user', 'session', 'account', 'verification', 'rate_limit')`,
+           and relname not in ('user', 'session', 'account', 'verification', 'rate_limit',
+                               'catalog_listings', 'creator_applications')`,
       );
       expect(rows.map((row: { relname: string }) => row.relname).sort()).toEqual(
         [...TABLES].sort(),

@@ -14,12 +14,14 @@ export const SCREENS: Record<string, (page: Page) => Promise<unknown>> = {
   "sign-in": (page) => page.goto(`${DEV}/sign-in`),
   "sign-in-invalid": async (page) => {
     await page.goto(`${DEV}/sign-in`);
+    await page.locator('html[data-hydrated="true"]').waitFor({ state: "attached" });
     await page.getByLabel("Tu correo").fill("sin arroba");
     await page.getByRole("button", { name: "Enviar enlace" }).click();
   },
   "sign-in-sent": async (page) => {
     await page.route("**/api/auth/sign-in/magic-link", (route) => route.fulfill({ json: {} }));
     await page.goto(`${DEV}/sign-in`);
+    await page.locator('html[data-hydrated="true"]').waitFor({ state: "attached" });
     await page.getByLabel("Tu correo").fill(EMAIL);
     await page.getByRole("button", { name: "Enviar enlace" }).click();
     await page.getByRole("heading", { name: "Revisa tu correo" }).waitFor();

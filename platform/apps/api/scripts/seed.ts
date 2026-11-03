@@ -25,6 +25,12 @@ import { newId } from "../src/ids";
 const LOCAL = "postgres://lr_migrator:local-only-migrator@localhost:54318/learning_routes";
 const SLUG = "english-unlimited";
 const SAMPLE = "primeros-pasos";
+const SAMPLE_FACTS = {
+  topic: "otros",
+  level: "inicial",
+  priceMinor: null,
+  currency: null,
+} as const;
 
 /** A repository's value; the seed stops at the first refusal. */
 function must<T>(result: RepoResult<T>, step: string): T {
@@ -94,6 +100,7 @@ async function sampleRoute(db: pg.Client, spaceId: string, ownerId: string) {
       sourceLocale: "es",
       access: "open",
       pricing: "free",
+      ...SAMPLE_FACTS,
     }),
     "create the sample route",
   );

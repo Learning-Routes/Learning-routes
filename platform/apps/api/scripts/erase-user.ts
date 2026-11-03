@@ -65,6 +65,10 @@ export async function eraseUser(db: pg.Client, userId: string, authSecret: strin
     [userId],
   );
   if (found[0] !== undefined) {
+    // An application to teach names the address, not the user (Platform STEP 4 §2.4).
+    await db.query("delete from creator_applications where lower(email) = lower($1)", [
+      found[0].email,
+    ]);
     await db.query("delete from rate_limit where key = $1", [
       await emailRateKey(authSecret, found[0].email),
     ]);

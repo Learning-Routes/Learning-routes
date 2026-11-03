@@ -11,9 +11,8 @@ export const actionLog = pgTable(
   "action_log",
   {
     id: id(),
-    spaceId: uuid()
-      .notNull()
-      .references(() => spaces.id),
+    // Null for an operator's action that belongs to no space (Platform STEP 4 §6.4).
+    spaceId: uuid().references(() => spaces.id),
     // No foreign key, so erasing the user leaves the record whole.
     actorUserId: uuid().notNull(),
     actorVia: text().$type<ActorKind>().notNull(),
