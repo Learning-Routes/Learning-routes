@@ -48,7 +48,7 @@ export function HeroRoute({ words, className }: { words: LandingText; className?
       <text className="hero-label-extra" x="378" y="358">
         {words.mapExtra}
       </text>
-      <text className="hero-label" x="466" y="98" textAnchor="end">
+      <text className="hero-label" x="438" y="92" textAnchor="end">
         {words.mapExam}
       </text>
       <text className="hero-label" x="100" y="566">

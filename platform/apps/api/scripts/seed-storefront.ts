@@ -12,6 +12,14 @@ import pg from "pg";
 
 const LOCAL = "postgres://lr_migrator:local-only-migrator@localhost:54318/learning_routes";
 const LOCAL_HOST = /@localhost:54318\//;
+const MODULE_TITLES = [
+  "Primeros pasos",
+  "Seguir adelante",
+  "Ganar soltura",
+  "Practicar en serio",
+  "Ir más lejos",
+  "Cerrar el círculo",
+];
 const NOBODY = "00000000-0000-7000-8000-000000000000";
 
 interface Fixture {
@@ -127,7 +135,7 @@ function snapshotOf(routeId: string, route: Fixture["routes"][number]): Snapshot
   const modules = route.lessons.map((_, index) => ({
     id: uuidFrom(`${routeId}:module:${index}`),
     position: positionOf(index),
-    title: { es: `${route.title}: módulo ${index + 1}` },
+    title: { es: MODULE_TITLES[index] ?? `Parte ${index + 1}` },
   }));
   const lessons = route.lessons.flatMap((count, moduleIndex) =>
     Array.from({ length: count }, (_, index) => ({

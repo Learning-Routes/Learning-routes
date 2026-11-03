@@ -236,6 +236,12 @@
   stroke-width: 14;
   stroke-linecap: round;
 }
+/* Narrow, it would run behind the title. */
+@media (max-width: 47.99rem) {
+  .landing-teach-line {
+    display: none;
+  }
+}
 .landing-teach-text {
   position: relative;
   flex: 1 1 min(100%, 28rem);
