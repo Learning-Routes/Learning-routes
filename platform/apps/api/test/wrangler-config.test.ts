@@ -6,6 +6,7 @@ import { parseJsonc } from "./jsonc";
 const config: any = parseJsonc(readFileSync(new URL("../wrangler.jsonc", import.meta.url), "utf8"));
 
 const LR_APP_LOCAL = /^postgres:\/\/lr_app:[^@]+@localhost:54318\//;
+const LR_PUBLIC_LOCAL = /^postgres:\/\/lr_public:[^@]+@localhost:54318\//;
 const HYPERDRIVE_ID = /^[0-9a-f]{32}$/;
 
 describe("the API Worker's configuration (Platform STEP 2 §1.3)", () => {
@@ -35,6 +36,26 @@ describe("the API Worker's configuration (Platform STEP 2 §1.3)", () => {
     expect(config.send_email).toEqual([
       { name: "EMAIL", allowed_sender_addresses: [config.vars.EMAIL_FROM] },
     ]);
+  });
+
+  it("purges the edge cache from a queue it both feeds and consumes, one consumer at a time", () => {
+    const [producer] = config.queues.producers;
+    const [consumer] = config.queues.consumers;
+    expect(producer.binding).toBe("PURGE_QUEUE");
+    expect(consumer.queue).toBe(producer.queue);
+    expect(consumer.max_concurrency).toBe(1);
+    expect(config.secrets.required).toContain("CLOUDFLARE_PURGE_TOKEN");
+  });
+
+  it("the web Worker reads only through DB_PUBLIC, as lr_public, never as lr_app", () => {
+    const web = parseJsonc(
+      readFileSync(new URL("../../web/wrangler.jsonc", import.meta.url), "utf8"),
+      // biome-ignore lint/suspicious/noExplicitAny: a parsed config, checked field by field below
+    ) as any;
+    expect(web.hyperdrive).toHaveLength(1);
+    expect(web.hyperdrive[0].binding).toBe("DB_PUBLIC");
+    expect(web.hyperdrive[0].localConnectionString).toMatch(LR_PUBLIC_LOCAL);
+    expect(web.compatibility_flags).toContain("nodejs_compat");
   });
 
   it("keeps no invocation log, which would carry each request's full URL", () => {
