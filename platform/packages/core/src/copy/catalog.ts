@@ -63,7 +63,8 @@ export const CATALOG_TEXT: Record<LocaleCode, CatalogText> = {
     noResultsInTopic: "No encontramos rutas de {topic}",
     clearFilters: "Quitar los filtros",
     teachTitle: "¿Enseñas algo que sabes bien?",
-    teachBody: "Convierte lo que sabes en una ruta y empieza a recibir estudiantes.",
+    teachBody:
+      "Conviértelo en una ruta con tu propia página, y véndela a tus estudiantes. Tu asistente te ayuda a armarla y tú decides cada paso.",
     teachAction: "Quiero enseñar",
     paginationLabel: "Páginas de resultados",
     previous: "Anteriores",
@@ -93,7 +94,8 @@ export const CATALOG_TEXT: Record<LocaleCode, CatalogText> = {
     noResultsInTopic: "We found no routes in {topic}",
     clearFilters: "Clear the filters",
     teachTitle: "Do you teach something you know well?",
-    teachBody: "Turn what you know into a route and start welcoming students.",
+    teachBody:
+      "Turn it into a route with your own page, and sell it to your students. Your assistant helps you build it, and you decide every step.",
     teachAction: "I want to teach",
     paginationLabel: "Result pages",
     previous: "Previous",
@@ -122,7 +124,8 @@ export const CATALOG_TEXT: Record<LocaleCode, CatalogText> = {
     noResultsInTopic: "Não encontramos rotas de {topic}",
     clearFilters: "Limpar os filtros",
     teachTitle: "Você ensina algo que sabe bem?",
-    teachBody: "Transforme o que você sabe em uma rota e comece a receber estudantes.",
+    teachBody:
+      "Transforme isso em uma rota com sua própria página e venda para seus estudantes. Seu assistente ajuda a montá-la e você decide cada passo.",
     teachAction: "Quero ensinar",
     paginationLabel: "Páginas de resultados",
     previous: "Anteriores",
@@ -152,7 +155,8 @@ export const CATALOG_TEXT: Record<LocaleCode, CatalogText> = {
     noResultsInTopic: "Aucun parcours trouvé en {topic}",
     clearFilters: "Effacer les filtres",
     teachTitle: "Vous enseignez ce que vous connaissez bien ?",
-    teachBody: "Faites de votre savoir un parcours et accueillez vos premiers élèves.",
+    teachBody:
+      "Faites-en un parcours avec votre page, et vendez-le à vos élèves. Votre assistant vous aide à le construire, et vous décidez de chaque étape.",
     teachAction: "Je veux enseigner",
     paginationLabel: "Pages de résultats",
     previous: "Précédents",
@@ -181,7 +185,8 @@ export const CATALOG_TEXT: Record<LocaleCode, CatalogText> = {
     noResultsInTopic: "Nessun percorso trovato in {topic}",
     clearFilters: "Togli i filtri",
     teachTitle: "Insegni qualcosa che conosci bene?",
-    teachBody: "Trasforma ciò che sai in un percorso e inizia ad accogliere studenti.",
+    teachBody:
+      "Trasformalo in un percorso con la tua pagina, e vendilo ai tuoi studenti. Il tuo assistente ti aiuta a costruirlo e tu decidi ogni passo.",
     teachAction: "Voglio insegnare",
     paginationLabel: "Pagine dei risultati",
     previous: "Precedenti",

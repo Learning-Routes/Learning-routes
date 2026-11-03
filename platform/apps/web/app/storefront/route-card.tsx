@@ -34,16 +34,20 @@ export function RouteCard({
   route,
   locale,
   href,
+  headingLevel: Heading = "h2",
 }: {
   route: PublicRoute;
   locale: LocaleCode;
   href: string;
+  headingLevel?: "h2" | "h3";
 }) {
   const creator = inLocale(route.spaceName, locale);
   return (
     <a className="route-card" href={href}>
       <RouteLineMark route={route} />
-      <h2 className="route-card-title">{inLocale(route.title, locale, route.sourceLocale)}</h2>
+      <Heading className="route-card-title">
+        {inLocale(route.title, locale, route.sourceLocale)}
+      </Heading>
       <p className="route-card-creator">{filled(CATALOG_TEXT[locale].withCreator, { creator })}</p>
       <p className="route-card-facts">{routeFacts(locale, route)}</p>
     </a>

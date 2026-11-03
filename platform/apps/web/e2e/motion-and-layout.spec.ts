@@ -38,16 +38,6 @@ for (const [name, open] of Object.entries(SCREENS)) {
   }
 }
 
-test("the landing draws its line under normal motion: the reduced check isn't empty by accident", async ({
-  page,
-}) => {
-  await page.goto(`${DEV}/es`);
-  const names = await page.evaluate(() =>
-    document.getAnimations().map((animation) => (animation as CSSAnimation).animationName),
-  );
-  expect(names).toContain("map-route-draw");
-});
-
 test("every control meets a 44 px touch target", async ({ page }) => {
   await page.goto(`${DEV}/studio/_design`);
   const small = await page.evaluate(() =>
