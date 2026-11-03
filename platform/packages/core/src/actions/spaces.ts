@@ -3,10 +3,24 @@ import { checkBrandColor } from "../brand-color";
 import { SpaceRole } from "../domain";
 import { LocalizedText } from "../localized-text";
 import { checkMembershipChange } from "../memberships";
+import { isReservedSlug } from "../reserved-slugs";
 import { ActionError, defineAction, inSpace } from "./define";
 import { refused, unwrap } from "./results";
 
 // A space and who belongs to it (Platform STEP 2 §6).
+
+const HOST_LABEL = /^[a-z0-9]+(-[a-z0-9]+)*$/;
+const MAX_HOST_LABEL = 63;
+
+/** A space's address, which is its host. Whatever makes a space uses this too. */
+export const SpaceSlug = z
+  .string()
+  .refine((slug) => !isReservedSlug(slug), {
+    message: "the platform keeps this address for itself: choose another",
+    abort: true,
+  })
+  .regex(HOST_LABEL, "lower-case letters and numbers, joined by hyphens")
+  .max(MAX_HOST_LABEL);
 
 export const spaceGet = defineAction({
   name: "space.get",
@@ -21,9 +35,11 @@ export const spaceGet = defineAction({
 export const spaceUpdate = defineAction({
   name: "space.update",
   kind: "mutation",
-  description: "Change a space's tagline, bio or brand colour. Owners only, from the app only.",
+  description:
+    "Change a space's address, tagline, bio or brand colour. Owners only, from the app only.",
   input: z.strictObject({
     spaceId: z.uuid(),
+    slug: SpaceSlug.optional(),
     tagline: LocalizedText.nullish(),
     bio: LocalizedText.nullish(),
     brandColor: z.string().nullish(),
