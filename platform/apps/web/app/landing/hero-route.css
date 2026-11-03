@@ -1,0 +1,82 @@
+/* The route drawn on the Open Graph images (scripts/render-og.tsx). Tokens only. */
+.hero-route {
+  display: block;
+  width: 100%;
+  height: auto;
+  /* Reserves the drawing's room before anything else loads. */
+  aspect-ratio: 1;
+}
+.hero-road,
+.hero-done,
+.hero-ahead,
+.hero-extra,
+.hero-check {
+  fill: none;
+  stroke-linecap: round;
+}
+.hero-road {
+  stroke: var(--color-faint);
+  stroke-width: 26;
+}
+.hero-done {
+  stroke: var(--color-accent);
+  stroke-width: 10;
+}
+.hero-ahead {
+  stroke: var(--color-muted);
+  stroke-width: 5;
+  stroke-dasharray: 2 14;
+}
+.hero-extra {
+  stroke: var(--color-positive);
+  stroke-width: 4;
+  stroke-dasharray: 2 9;
+}
+.hero-check {
+  stroke: var(--color-card);
+  stroke-width: 3.5;
+  stroke-linejoin: round;
+}
+.hero-stop-done {
+  fill: var(--color-positive);
+}
+.hero-stop-extra {
+  fill: var(--color-card);
+  stroke: var(--color-positive);
+  stroke-width: 3;
+}
+.hero-here-glow {
+  fill: var(--color-highlight);
+  fill-opacity: 0.16;
+}
+.hero-here {
+  fill: var(--color-card);
+  stroke: var(--color-highlight);
+  stroke-width: 6;
+}
+.hero-stop-ahead {
+  fill: var(--color-card);
+  stroke: var(--color-muted);
+  stroke-width: 4;
+}
+.hero-exam {
+  fill: var(--color-txt);
+}
+.hero-route text {
+  font-family: var(--font-sans);
+}
+.hero-label-strong {
+  fill: var(--color-txt);
+  font-size: 22px;
+  font-weight: 800;
+}
+.hero-label {
+  fill: var(--color-sub);
+  font-size: 17px;
+}
+.hero-label-extra {
+  fill: var(--color-positive);
+  font-size: 15px;
+}
+
+/* The steps */

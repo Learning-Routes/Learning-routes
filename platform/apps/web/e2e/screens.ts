@@ -21,7 +21,19 @@ async function enrolled(page: Page) {
 }
 
 export const SCREENS: Record<string, (page: Page) => Promise<unknown>> = {
-  landing: (page) => page.goto(`${DEV}/es`),
+  // The map where WebGL exists, once it has settled.
+  landing: async (page) => {
+    await page.goto(`${DEV}/es`);
+    await page.locator(".lp-journey[data-stage]").waitFor({ state: "attached" });
+  },
+  // Without WebGL, the panels stack as text.
+  "landing-no-webgl": async (page) => {
+    await page.addInitScript(() => {
+      HTMLCanvasElement.prototype.getContext = () => null;
+    });
+    await page.goto(`${DEV}/es`);
+    await page.locator('.lp-journey[data-stage="static"]').waitFor({ state: "attached" });
+  },
   catalog: (page) => page.goto(`${DEV}/es/explorar`),
   "creator-page": (page) => page.goto(creatorHost("mariana-ortega")),
   "route-page": (page) => page.goto(`${creatorHost("mariana-ortega")}/portugues-para-viajar`),

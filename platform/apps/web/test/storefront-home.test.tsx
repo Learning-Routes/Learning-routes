@@ -7,6 +7,7 @@ import type { Route } from "../app/routes/storefront/+types/home";
 import StorefrontHome, { meta } from "../app/routes/storefront/home";
 
 const H1 = /<h1[ >]/g;
+const SCRIPT = /<script[^>]*>/g;
 const ROUTE = {
   routeId: "r1",
   spaceSlug: "ana",
@@ -37,10 +38,11 @@ describe("the storefront home", () => {
     expect(html).toContain("Aprende con quien mejor lo enseña.");
   });
 
-  it("has one h1, and no script of its own", () => {
+  it("has one h1, and only its module script from /enhance/", () => {
     const html = render();
     expect(html.match(H1)).toHaveLength(1);
-    expect(html).not.toContain("<script");
+    expect(html.match(SCRIPT)).toHaveLength(1);
+    expect(html.match(SCRIPT)?.[0]).toContain('type="module"');
   });
 
   it("has a description and an Open Graph image in the page's language", () => {

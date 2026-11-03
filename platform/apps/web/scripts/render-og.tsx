@@ -18,7 +18,7 @@ const css = [
     "./fonts/",
     `file://${TOKENS}/fonts/`,
   ),
-  readFileSync(resolve(WEB, "app/landing/landing.css"), "utf8"),
+  readFileSync(resolve(WEB, "app/landing/hero-route.css"), "utf8"),
   `body { margin: 0; width: ${WIDTH}px; height: ${HEIGHT}px; overflow: hidden; background: var(--gradient-stage);
      font-family: var(--font-sans); color: var(--color-txt); }
    .og-map { position: absolute; right: 24px; top: 15px; width: 600px; height: 600px; }
