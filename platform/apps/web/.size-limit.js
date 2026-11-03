@@ -1,7 +1,9 @@
 // JavaScript budgets on the built client (STEP 46 §2.4), gzip. Run after the build.
 import { readdirSync, readFileSync } from "node:fs";
+import { dirname, join } from "node:path";
 
 const CLIENT = "build/client";
+const ENHANCE = `${CLIENT}/enhance`;
 const MANIFEST_PREFIX = /^window\.__reactRouterManifest=/;
 
 const manifestFile = readdirSync(`${CLIENT}/assets`).find((file) => file.startsWith("manifest-"));
@@ -14,6 +16,18 @@ const manifest = JSON.parse(
     .replace(/;\s*$/, ""),
 );
 
+// A script and everything it imports, as the browser would fetch it.
+const IMPORTED = /(?:from\s*|import\s*\(?\s*)["'`](\.[^"'`]+)["'`]/g;
+function withImports(file, seen = new Set()) {
+  if (!seen.has(file)) {
+    seen.add(file);
+    for (const [, path] of readFileSync(file, "utf8").matchAll(IMPORTED)) {
+      withImports(join(dirname(file), path), seen);
+    }
+  }
+  return [...seen];
+}
+
 // What a page of these routes loads: the manifest, the entry, and each route's module and imports.
 function pageScripts(routeIds) {
   const paths = [`/assets/${manifestFile}`, manifest.entry.module, ...manifest.entry.imports];
@@ -25,13 +39,29 @@ function pageScripts(routeIds) {
 
 export default [
   {
-    // Static CSS, one file for every surface (Platform STEP 3 §2.2). The storefront
-    // ships no JavaScript at all: e2e/storefront.spec.ts checks it has no script.
+    // Static CSS, one file for every surface (Platform STEP 3 §2.2). No storefront
+    // script may block the first paint: e2e/storefront.spec.ts checks that.
     name: "storefront CSS",
     path: [`${CLIENT}/assets/*.css`],
     limit: "20 KB",
     gzip: true,
   },
+  // Enhancement JavaScript, loaded after the first paint (ADR 0008). three.js only here.
+  {
+    name: "landing enhancement, three.js included",
+    path: withImports(`${ENHANCE}/landing.js`),
+    limit: "190 KB",
+    gzip: true,
+  },
+  // Any other page's script, each on its own.
+  ...readdirSync(ENHANCE)
+    .filter((file) => file !== "landing.js")
+    .map((file) => ({
+      name: `storefront enhancement: ${file}`,
+      path: withImports(`${ENHANCE}/${file}`),
+      limit: "15 KB",
+      gzip: true,
+    })),
   {
     name: "app entry + studio route",
     path: pageScripts(["root", "routes/studio"]),
