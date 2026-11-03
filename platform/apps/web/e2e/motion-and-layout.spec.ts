@@ -34,6 +34,12 @@ for (const [name, open] of Object.entries(SCREENS)) {
     });
     const page = await context.newPage();
     await open(page);
+    // Styles in, and a hydrated page's own move of focus done, so neither lands mid-check.
+    await page.waitForLoadState("load");
+    await page.waitForFunction(
+      () =>
+        !("__reactRouterContext" in window) || document.documentElement.dataset.hydrated === "true",
+    );
     const small = await page.evaluate(
       (controls) =>
         [...document.querySelectorAll<HTMLElement>(controls)]
