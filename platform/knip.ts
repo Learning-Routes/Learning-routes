@@ -17,6 +17,8 @@ export default {
     "apps/web": {
       // Each is built on its own by vite.config.ts, and a page names it by its address.
       entry: ["app/enhance/landing.ts"],
+      // Read from disk by scripts/render-og.tsx.
+      ignore: ["app/landing/hero-route.css"],
     },
     "apps/api": {
       // Read by Better Auth's CLI through pnpm db:auth-schema.
