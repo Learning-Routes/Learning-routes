@@ -1,3 +1,4 @@
+import { RESERVED_SLUGS } from "@learning-routes/core/reserved-slugs";
 import type pg from "pg";
 import { describe, expect, it } from "vitest";
 import { actAs, attempt, newUser, rolledBack, URLS } from "./connect";
@@ -6,6 +7,8 @@ import { newRoute, newSpace } from "./fixtures";
 // The second fence for the catalog (Platform STEP 4 §2.3–§2.5), as raw SQL under lr_app:
 // it holds whatever the actions in core decide.
 
+const RESERVED_CHECK = /spaces_slug_not_reserved/;
+const FORGED = /only an operator/;
 const DUPLICATE = /duplicate key/;
 const REFUSED = /row-level security|permission denied/;
 
@@ -151,3 +154,94 @@ async function operatorOutside(db: pg.Client): Promise<string> {
   await db.query("reset role");
   return operator(db);
 }
+
+describe("the decision record (Platform STEP 4 review, fix 1)", () => {
+  const FORGERIES: [string, string][] = [
+    ["note", "note = 'approved by nobody'"],
+    ["decided_at", "decided_at = now()"],
+    ["decided_by", "decided_by = uuidv7()"],
+    ["decided_version", "decided_version = 7"],
+    ["featured_position", "featured_position = 1"],
+  ];
+
+  async function listedByOwner(db: pg.Client, status: string, featured: number | null = null) {
+    const fixture = await ownedRoute(db);
+    await db.query(
+      "insert into catalog_listings (route_id, space_id, status, featured_position) values ($1, $2, $3, $4)",
+      [fixture.routeId, fixture.spaceId, status, featured],
+    );
+    return fixture;
+  }
+
+  it.each(FORGERIES)("an owner cannot write %s, even while withdrawing", async (_, change) => {
+    await rolledBack(URLS.migrator, async (db) => {
+      const { routeId, owner } = await listedByOwner(db, "requested");
+      await actAs(db, owner);
+      expect(
+        await attempt(
+          db,
+          `update catalog_listings set status = 'withdrawn', ${change} where route_id = $1`,
+          [routeId],
+        ),
+      ).toMatch(FORGED);
+    });
+  });
+
+  it("an owner can still withdraw, which leaves the record as it was", async () => {
+    await rolledBack(URLS.migrator, async (db) => {
+      const { routeId, owner } = await listedByOwner(db, "requested");
+      await actAs(db, owner);
+      expect(
+        await attempt(db, "update catalog_listings set status = 'withdrawn' where route_id = $1", [
+          routeId,
+        ]),
+      ).toBeNull();
+    });
+  });
+
+  it("withdrawing takes a route off the landing, and that is all it may do to its place", async () => {
+    await rolledBack(URLS.migrator, async (db) => {
+      const { routeId, owner } = await listedByOwner(db, "approved", 2);
+      await actAs(db, owner);
+      expect(
+        await attempt(
+          db,
+          "update catalog_listings set status = 'withdrawn', featured_position = null where route_id = $1",
+          [routeId],
+        ),
+      ).toBeNull();
+    });
+  });
+
+  it("an operator can still decide, and write every one of them", async () => {
+    await rolledBack(URLS.migrator, async (db) => {
+      const { routeId } = await listedByOwner(db, "requested");
+      const op = await operator(db);
+      await actAs(db, op);
+      expect(
+        await attempt(
+          db,
+          `update catalog_listings
+              set status = 'approved', note = 'Todo en orden', decided_at = now(),
+                  decided_by = $2, decided_version = 1, featured_position = 3
+            where route_id = $1`,
+          [routeId, op],
+        ),
+      ).toBeNull();
+    });
+  });
+});
+
+describe("a space's address (Platform STEP 4 review, fix 2)", () => {
+  it.each(RESERVED_SLUGS)("the database refuses %s", async (slug) => {
+    await rolledBack(URLS.migrator, async (db) => {
+      expect(
+        await attempt(
+          db,
+          `insert into spaces (slug, name, default_locale, locales) values ($1, '{"en": "S"}', 'en', '{en}')`,
+          [slug],
+        ),
+      ).toMatch(RESERVED_CHECK);
+    });
+  });
+});
