@@ -15,7 +15,8 @@ function RouteLineMark({ route }: { route: PublicRoute }) {
   return (
     <svg className="route-line" viewBox="0 0 320 100" aria-hidden="true">
       <path className="route-line-road" d={line.path} />
-      <path className="route-line-way" d={line.path} stroke={color} />
+      <path className="route-line-way" d={line.path} pathLength={1} stroke={color} />
+      <path className="route-line-runner" d={line.path} pathLength={1} />
       <circle className="route-line-start" cx={line.start.x} cy={line.start.y} r="9" fill={color} />
       <rect
         className="route-line-end"

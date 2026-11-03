@@ -143,3 +143,57 @@
     fill: var(--color-accent);
   }
 }
+
+/* Its moment (Platform STEP 6 §3): on hover or focus, the card's line draws from start to end and
+   a gold dot runs it. CSS only. Take `moment` off the page's root to turn it off. */
+.route-line-runner {
+  fill: none;
+  stroke: var(--color-highlight);
+  stroke-width: 14;
+  stroke-linecap: round;
+  stroke-dasharray: 0 2;
+  opacity: 0;
+}
+@media (prefers-reduced-motion: no-preference) {
+  @media (hover: hover) and (pointer: fine) {
+    .moment .route-card:hover .route-line-way {
+      animation: route-line-draw 900ms var(--ease-out) both;
+    }
+    .moment .route-card:hover .route-line-runner {
+      animation: route-line-run 900ms var(--ease-out) both;
+    }
+  }
+  .moment .route-card:focus-visible .route-line-way {
+    animation: route-line-draw 900ms var(--ease-out) both;
+  }
+  .moment .route-card:focus-visible .route-line-runner {
+    animation: route-line-run 900ms var(--ease-out) both;
+  }
+  /* Filtering moves each card to its new place. Where attr() can't name it (Safari, for now), the
+     page cross-fades, and Firefox simply navigates. */
+  @supports (view-transition-name: attr(data-vt type(<custom-ident>))) {
+    .moment .catalog-grid > li {
+      view-transition-name: attr(data-vt type(<custom-ident>));
+    }
+  }
+}
+@keyframes route-line-draw {
+  from {
+    stroke-dasharray: 1 1;
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dasharray: 1 1;
+    stroke-dashoffset: 0;
+  }
+}
+@keyframes route-line-run {
+  from {
+    opacity: 1;
+    stroke-dashoffset: 0;
+  }
+  to {
+    opacity: 1;
+    stroke-dashoffset: -1;
+  }
+}

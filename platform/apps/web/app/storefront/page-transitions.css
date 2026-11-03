@@ -1,0 +1,15 @@
+/* Going between storefront pages (Platform STEP 6 §3): the browser's own cross-document transition,
+   same origin only. Chrome and Safari; Firefox navigates as usual. */
+@media (prefers-reduced-motion: no-preference) {
+  @view-transition {
+    navigation: auto;
+  }
+  ::view-transition-group(*) {
+    animation-duration: var(--motion-300);
+    animation-timing-function: var(--ease-out);
+  }
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation-duration: var(--motion-200);
+  }
+}

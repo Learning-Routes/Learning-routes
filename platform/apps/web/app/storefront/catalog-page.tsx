@@ -116,7 +116,7 @@ export function CatalogPage({ view }: { view: CatalogView }) {
   return (
     <>
       <PlatformHeader locale={locale} appOrigin={appOrigin} />
-      <main className="catalog">
+      <main className="catalog moment">
         <h1 className="catalog-title">{words.title}</h1>
         {/* Plain GET: the results are server-rendered, with or without JavaScript. */}
         <search>
@@ -146,7 +146,8 @@ export function CatalogPage({ view }: { view: CatalogView }) {
         ) : (
           <ul className="catalog-grid">
             {routes.map((route) => (
-              <li key={route.routeId}>
+              // Names the card across pages, so filtering moves it instead of replacing it.
+              <li key={route.routeId} data-vt={`route-${route.routeId}`}>
                 <RouteCard
                   route={route}
                   locale={locale}

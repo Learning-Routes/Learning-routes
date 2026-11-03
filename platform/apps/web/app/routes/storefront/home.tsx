@@ -9,6 +9,7 @@ import { CloseSheet } from "../../landing/close-sheet";
 import "../../landing/landing.css";
 import { LandingStageSection } from "../../landing/stage";
 import "../../storefront/catalog.css";
+import "../../storefront/page-transitions.css";
 import { storefrontHeaders } from "../../storefront/cache";
 import { EnhancementScript } from "../../storefront/enhancement-script";
 import { publicReads } from "../../storefront/public-reads.server";

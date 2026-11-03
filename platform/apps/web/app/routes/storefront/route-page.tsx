@@ -5,6 +5,7 @@ import { pageContext } from "../../context";
 import { storefrontHeaders } from "../../storefront/cache";
 import { RoutePage } from "../../storefront/creator-pages";
 import "../../storefront/creator.css";
+import "../../storefront/page-transitions.css";
 import { courseData } from "../../storefront/course-data";
 import { pageLocale, withLang } from "../../storefront/page-locale";
 import { publicReads } from "../../storefront/public-reads.server";
