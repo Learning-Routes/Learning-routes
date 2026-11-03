@@ -35,6 +35,10 @@ export const CATALOG_SEARCHES = {
 
 export const PUBLIC_READS = {
   ...CATALOG_SEARCHES,
+  chosenToStart: `select ${ROUTE_COLUMNS} from public_catalog
+                   where featured_position is not null order by featured_position limit 3`,
+  newestToStart: `select ${ROUTE_COLUMNS} from public_catalog
+                   order by approved_at desc, route_id limit 3`,
   spaceBySlug: `select id, slug, name, default_locale, locales
                   from public_spaces where slug = $1`,
   routeBySlug: `select ${ROUTE_COLUMNS} from public_routes where space_slug = $1 and slug = $2`,
@@ -153,6 +157,15 @@ export function publicRead(db: Queryable) {
         routes: rows.slice(0, CATALOG_PAGE_SIZE).map(routeFrom),
         hasNext: rows.length > CATALOG_PAGE_SIZE,
       };
+    },
+    /** The landing's three: those an operator chose or, with none chosen, the newest. */
+    async routesToStart(): Promise<PublicRoute[]> {
+      const chosen = await db.query(PUBLIC_READS.chosenToStart, []);
+      const rows =
+        chosen.rows.length > 0
+          ? chosen.rows
+          : (await db.query(PUBLIC_READS.newestToStart, [])).rows;
+      return rows.map(routeFrom);
     },
     async routesOfSpace(spaceId: string): Promise<PublicRoute[]> {
       const { rows } = await db.query(PUBLIC_READS.routesOfSpace, [spaceId]);

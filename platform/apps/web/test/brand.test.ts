@@ -31,7 +31,9 @@ describe("the visible name while the platform is built", () => {
 
   it("titles the pages", () => {
     const loaderData = { lang: "es", origin: "https://new.learningroutes.com" } as const;
-    expect(storefrontMeta({ loaderData } as Route.MetaArgs)).toContainEqual({ title: BRAND });
+    expect(storefrontMeta({ loaderData } as unknown as Route.MetaArgs)).toContainEqual({
+      title: BRAND,
+    });
     expect(studioMeta()).toContainEqual({ title: `Enseñar · ${BRAND}` });
   });
 

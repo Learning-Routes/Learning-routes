@@ -1,6 +1,6 @@
 {
   "extends": "./tsconfig.cloudflare.json",
-  "include": ["scripts/**/*", "app/landing/route-map-figure.tsx"],
+  "include": ["scripts/**/*", "app/landing/hero-route.tsx"],
   "compilerOptions": {
     "composite": false,
     "incremental": false,

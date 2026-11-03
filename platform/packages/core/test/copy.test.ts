@@ -90,10 +90,21 @@ describe("the copy check", () => {
   it("keeps each placeholder in every locale", () => {
     for (const locale of LOCALES) {
       expect(SIGN_IN_TEXT[locale].resendIn).toContain("{seconds}");
-      expect(LANDING_TEXT[locale].moduleName).toContain("{n}");
-      expect(LANDING_TEXT[locale].moduleProgress).toContain("{done}");
-      expect(LANDING_TEXT[locale].moduleProgress).toContain("{total}");
-      expect(LANDING_TEXT[locale].moduleTopics).toContain("{n}");
+      const catalog = CATALOG_TEXT[locale];
+      for (const count of [
+        catalog.moduleOne,
+        catalog.moduleMany,
+        catalog.topicOne,
+        catalog.topicMany,
+      ]) {
+        expect(count).toContain("{n}");
+      }
+      for (const name of ["{modules}", "{topics}", "{language}"]) {
+        expect(catalog.facts).toContain(name);
+      }
+      expect(catalog.withCreator).toContain("{creator}");
+      expect(catalog.noResults).toContain("{search}");
+      expect(catalog.noResultsInTopic).toContain("{topic}");
     }
   });
 });
