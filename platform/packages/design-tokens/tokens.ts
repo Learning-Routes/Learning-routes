@@ -28,6 +28,8 @@ export const light = {
   "--color-node-nv3": "#5A4C9E",
   "--color-highlight": "#E79A0F",
   "--color-highlight-violet": "#8B5CF6",
+  "--color-night": "#1D1226",
+  "--color-night-text": "#F5F2F6",
   "--color-code-bg": "#1E1E1E",
   "--color-code-text": "#D4D4D4",
   "--color-accent-hover": "#57248A",

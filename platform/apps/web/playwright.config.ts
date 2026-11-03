@@ -3,6 +3,8 @@ import { defineConfig } from "@playwright/test";
 // The built Worker, served by workerd through `vite preview`. The browser is the
 // installed Chrome (GitHub's Ubuntu runners have it), so nothing is downloaded, except
 // for the visual project, which needs one fixed build so its baselines stay stable.
+// Each server's readiness check is a page the edge never keeps: it runs before the
+// fixtures are seeded, and a cached landing would stay empty for the whole run.
 // Port 4173 runs as production. Port 4174 is the same build with ENVIRONMENT set to
 // development, for the components page, on an app origin that keeps the theme cookie.
 const LOCAL = {
@@ -27,12 +29,12 @@ export default defineConfig({
   webServer: [
     {
       command: "vite preview --port 4173 --strictPort",
-      url: "http://localhost:4173/",
+      url: "http://localhost:4173/sign-in",
       reuseExistingServer: false,
     },
     {
       command: "vite preview --port 4174 --strictPort",
-      url: "http://localhost:4174/",
+      url: "http://localhost:4174/sign-in",
       reuseExistingServer: false,
       env: LOCAL,
     },
