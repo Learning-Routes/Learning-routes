@@ -13,9 +13,10 @@ import type { SpaceRole } from "./domain";
 // - A student reads published versions they are enrolled in, and writes only their
 //   own progress and reviews.
 // - Memberships and pricing change only through the app (via "ui"), never an agent.
-// - The platform operator may do nothing here yet.
+// - The platform operator belongs to no space, and has only the admin actions, through
+//   the app only (Platform STEP 4 §2.5).
 
-type Row = Partial<Record<SpaceRole, readonly ActorKind[]>>;
+type Row = Partial<Record<SpaceRole | "operator", readonly ActorKind[]>>;
 
 const ANY_WAY = ["ui", "mcp", "agent"] as const;
 
@@ -47,11 +48,15 @@ export const PERMISSIONS = {
   // Each acts only on the actor's own enrollment.
   "enrollment.upgrade": EVERYONE,
   "review.submit": EVERYONE,
+  // A listing is a public claim, like a price: an owner asks, in the app.
+  "catalog.request": { owner: ["ui"] },
+  "catalog.withdraw": { owner: ["ui"] },
+  "catalog.decide": { operator: ["ui"] },
 } as const satisfies Record<ActionName, Row>;
 
 /** Whether a role in a space may call an action this way. */
 export function can(role: SpaceRole | "operator", action: string, via: ActorKind): boolean {
-  if (role === "operator" || !Object.hasOwn(PERMISSIONS, action)) {
+  if (!Object.hasOwn(PERMISSIONS, action)) {
     return false;
   }
   const row: Row = PERMISSIONS[action as ActionName];

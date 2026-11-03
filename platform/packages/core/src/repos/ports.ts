@@ -227,12 +227,42 @@ export interface ActionLogEntry {
 }
 
 export interface ActionLog {
-  /** not_found when the actor may not write in the space. */
-  append(spaceId: string, entry: ActionLogEntry): Promise<RepoResult<void>>;
+  /** not_found when the actor may not write in the space. Null: an operator's, in no space. */
+  append(spaceId: string | null, entry: ActionLogEntry): Promise<RepoResult<void>>;
+}
+
+export interface CatalogListing {
+  id: string;
+  spaceId: string;
+  routeId: string;
+  status: "requested" | "approved" | "declined" | "withdrawn";
+  note: string | null;
+  decidedBy: string | null;
+  decidedVersion: number | null;
+  featuredPosition: number | null;
+}
+
+export interface CatalogDecision {
+  status: "approved" | "declined";
+  note: string | null;
+  decidedBy: string;
+  decidedVersion: number | null;
+}
+
+/** Row-level security holds who may do each: an owner asks and withdraws, an operator decides. */
+export interface Catalog {
+  /** conflict while the route has an active request or listing. */
+  request(spaceId: string, routeId: string): Promise<RepoResult<{ listingId: string }>>;
+  /** not_found with nothing active to withdraw. */
+  withdraw(spaceId: string, routeId: string): Promise<RepoResult<void>>;
+  /** An operator's read: a listing has no space until it is read. */
+  get(listingId: string): Promise<RepoResult<CatalogListing>>;
+  decide(listingId: string, decision: CatalogDecision): Promise<RepoResult<void>>;
 }
 
 export interface Repos {
   spaces: Spaces;
+  catalog: Catalog;
   memberships: Memberships;
   routeDrafts: RouteDrafts;
   routeVersions: RouteVersions;

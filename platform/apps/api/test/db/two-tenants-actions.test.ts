@@ -71,6 +71,10 @@ describe("two tenants, through every action", () => {
       const inputs: Record<string, unknown> = {
         "space.get": { spaceId: spaceB },
         "space.update": { spaceId: spaceB, brandColor: "#6a2ea0" },
+        "catalog.request": { routeId: routeB },
+        "catalog.withdraw": { routeId: routeB },
+        // The operator's: to anyone who is not one, it does not exist.
+        "catalog.decide": { listingId: crypto.randomUUID(), decision: "approve" },
         "membership.add": { spaceId: spaceB, userId: a, role: "owner" },
         "route.create": {
           spaceId: spaceB,

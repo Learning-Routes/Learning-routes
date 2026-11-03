@@ -38,6 +38,8 @@ const ROUTE_FIELDS = {
   currency: null,
 };
 
+const MODULE_ID = "0192d3a0-0000-7000-8000-0000000000a1";
+
 export function testWorld(): World {
   const state = memoryState();
   state.spaces.set(SPACE, {
@@ -67,7 +69,13 @@ export function testWorld(): World {
     spaceId: SPACE,
     routeId: ROUTE,
     version: 1,
-    snapshot: { route: ROUTE_FIELDS, modules: [], lessons: [], prerequisites: [], blocks: [] },
+    snapshot: {
+      route: ROUTE_FIELDS,
+      modules: [{ id: MODULE_ID, position: "V", title: { en: "Module" } }],
+      lessons: [],
+      prerequisites: [],
+      blocks: [],
+    },
     contentHash: "0".repeat(64),
     publishedByUserId: STAFF.owner,
   });
@@ -91,6 +99,7 @@ export function memoryTenancy(map: {
   roles: Record<string, SpaceRole>;
 }): Tenancy {
   return {
+    isOperator: async () => false,
     scopeOf: async ({ kind, id }, userId) => {
       const spaceId = map.rows[`${kind}:${id}`];
       return spaceId === undefined
@@ -103,6 +112,7 @@ export function memoryTenancy(map: {
 /** A tenancy read from the twin's own rows. */
 function worldTenancy(world: World): Tenancy {
   return {
+    isOperator: async (userId) => world.operators.has(userId),
     scopeOf: async ({ kind, id }, userId) => {
       const spaceId =
         kind === "space"

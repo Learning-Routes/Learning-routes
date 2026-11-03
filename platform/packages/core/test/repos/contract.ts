@@ -87,6 +87,37 @@ async function publish(
 
 export function repositoryContract(name: string, withFixture: WithFixture) {
   describe(`the repository contract: ${name}`, () => {
+    it("holds one active listing per route, and frees it on withdrawal", async () => {
+      await withFixture(async ({ spaceId, ownerId, actAs }) => {
+        const repos = await actAs(ownerId);
+        const fields = routeFields("listed");
+        value(await repos.routeDrafts.create(spaceId, fields));
+        value(await repos.catalog.request(spaceId, fields.id));
+        expect(await repos.catalog.request(spaceId, fields.id)).toEqual({
+          ok: false,
+          error: "conflict",
+        });
+        value(await repos.catalog.withdraw(spaceId, fields.id));
+        expect(await repos.catalog.withdraw(spaceId, fields.id)).toEqual({
+          ok: false,
+          error: "not_found",
+        });
+        value(await repos.catalog.request(spaceId, fields.id));
+      });
+    });
+
+    it("changes a creator's page, and only what it is given", async () => {
+      await withFixture(async ({ spaceId, ownerId, actAs }) => {
+        const repos = await actAs(ownerId);
+        value(await repos.spaces.update(spaceId, { tagline: { en: "Hello" } }));
+        value(await repos.spaces.update(spaceId, { brandColor: "#123456" }));
+        expect(value(await repos.spaces.get(spaceId))).toMatchObject({
+          tagline: { en: "Hello" },
+          brandColor: "#123456",
+        });
+      });
+    });
+
     it("creates a route as an empty draft at revision 0, and refuses its slug twice", async () => {
       await withFixture(async ({ spaceId, ownerId, actAs }) => {
         const repos = await actAs(ownerId);

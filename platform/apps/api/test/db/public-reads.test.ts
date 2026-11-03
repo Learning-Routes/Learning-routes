@@ -302,6 +302,86 @@ describe("the catalog", () => {
   });
 });
 
+describe("searching the catalog (Platform STEP 4 §3.2)", () => {
+  async function approved(db: pg.Client, slug: string, title: string, topic = "otros") {
+    const spaceId = await newSpace(db, "public-read");
+    const routeId = await newRoute(db, spaceId, slug);
+    const snapshot = snapshotOf(routeId, slug, title);
+    await publish(db, spaceId, routeId, 1, {
+      ...snapshot,
+      route: { ...snapshot.route, topic },
+    });
+    await db.query(
+      "insert into catalog_listings (route_id, space_id, status, decided_at) values ($1, $2, 'approved', now())",
+      [routeId, spaceId],
+    );
+    return routeId;
+  }
+
+  const ask = { locale: "es", topic: null, search: null, page: 1 } as const;
+  const unique = () => `Bajo${crypto.randomUUID().replaceAll("-", "")}`;
+
+  it("finds a title in the page's locale, whatever its case, and forgives a typo", async () => {
+    await rolledBack(URLS.migrator, async (db) => {
+      const word = unique();
+      const routeId = await approved(db, "bajo", `${word} desde cero`);
+      const found = (search: string) =>
+        asStranger(db, () => publicRead(db).catalog({ ...ask, search }));
+      expect((await found(word.toUpperCase())).routes.map((r) => r.routeId)).toEqual([routeId]);
+      expect((await found(`${word}x desde`)).routes.map((r) => r.routeId)).toEqual([routeId]);
+      expect((await found(unique())).routes).toEqual([]);
+    });
+  });
+
+  it("takes what is typed literally: % and _ match themselves, and SQL stays a value", async () => {
+    await rolledBack(URLS.migrator, async (db) => {
+      await approved(db, "plain", "Plain title");
+      for (const search of ["%", "_", "'; drop table spaces; --"]) {
+        const page = await asStranger(db, () => publicRead(db).catalog({ ...ask, search }));
+        expect(page.routes, search).toEqual([]);
+      }
+      expect((await db.query("select 1 from spaces limit 1")).rows).toHaveLength(1);
+    });
+  });
+
+  it("filters by topic", async () => {
+    await rolledBack(URLS.migrator, async (db) => {
+      const musica = await approved(db, "m", "Música", "musica");
+      await approved(db, "n", "Negocios", "negocios");
+      const page = await asStranger(db, () => publicRead(db).catalog({ ...ask, topic: "musica" }));
+      expect(page.routes.map((r) => r.routeId)).toContain(musica);
+      expect(page.routes.every((r) => r.topic === "musica")).toBe(true);
+    });
+  });
+
+  it("pages by 24, and says when there is a next page", async () => {
+    await rolledBack(URLS.migrator, async (db) => {
+      const word = unique();
+      for (let n = 0; n < 25; n++) {
+        await approved(db, `r${n}`, `${word} ${n}`, "ciencias");
+      }
+      const first = await asStranger(db, () =>
+        publicRead(db).catalog({ ...ask, topic: "ciencias", search: word }),
+      );
+      expect(first.routes).toHaveLength(24);
+      expect(first.hasNext).toBe(true);
+      const second = await asStranger(db, () =>
+        publicRead(db).catalog({ ...ask, topic: "ciencias", search: word, page: 2 }),
+      );
+      expect(second.routes).toHaveLength(1);
+      expect(second.hasNext).toBe(false);
+    });
+  });
+
+  it("the search's functions are ones Hyperdrive may cache", async () => {
+    const rows = await query(
+      URLS.migrator,
+      "select proname, provolatile from pg_proc where proname = 'word_similarity'",
+    );
+    expect(rows.map((row: { provolatile: string }) => row.provolatile)).toEqual(["i"]);
+  });
+});
+
 describe("the storefront's queries", () => {
   it("name no function that would keep Hyperdrive from caching them", () => {
     expect(Object.keys(PUBLIC_READS).length).toBeGreaterThan(0);

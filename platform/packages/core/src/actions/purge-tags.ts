@@ -11,6 +11,11 @@ export function purgeTagsAfter(action: string, output: unknown): string[] {
     const { spaceId, routeId } = output as RouteOutput;
     return [`route:${routeId}`, `space:${spaceId}`];
   }
+  if (action === "catalog.decide" || action === "catalog.withdraw") {
+    const { spaceId, routeId } = output as RouteOutput;
+    // `catalog`: the pages that list routes, which a newly approved one is not yet on.
+    return [`route:${routeId}`, `space:${spaceId}`, "catalog"];
+  }
   if (action === "space.update") {
     return [`space:${(output as { spaceId: string }).spaceId}`];
   }

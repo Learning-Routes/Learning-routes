@@ -14,7 +14,8 @@ import { redact } from "./redact";
 
 /** The row an action acts on; its space is the space the action runs in. */
 export interface Target {
-  kind: "space" | "route" | "enrollment";
+  /** "platform": an operator's action, on no space's row (Platform STEP 4 §2.5). */
+  kind: "space" | "route" | "enrollment" | "platform";
   id: string;
   /**
    * An action the actor takes before they belong to the row's space:
@@ -34,6 +35,8 @@ export interface Tenancy {
     target: Target,
     userId: string,
   ): Promise<{ spaceId: string; role: SpaceRole | null } | null>;
+  /** Whether the user is the platform's operator, read from Postgres. */
+  isOperator(userId: string): Promise<boolean>;
 }
 
 /** The space an action runs in, and the actor's role there, found by runAction. */
@@ -95,6 +98,8 @@ export function defineAction<I extends z.ZodType, O>(action: ActionDef<I, O>): A
   return action;
 }
 
+type Allowed = (role: SpaceRole | "operator", action: string, via: ActorKind) => boolean;
+
 const NOT_FOUND = { ok: false, code: "not_found", message: "not found" } as const;
 
 /**
@@ -109,7 +114,7 @@ export async function runAction(
   name: string,
   rawInput: unknown,
   ctx: Ctx,
-  isAllowed: (role: SpaceRole, action: string, via: ActorKind) => boolean = can,
+  isAllowed: Allowed = can,
 ): Promise<ActionResult> {
   const action = Object.hasOwn(registry, name) ? registry[name] : undefined;
   if (!action) {
@@ -124,6 +129,9 @@ export async function runAction(
     return { ok: false, code: "invalid_input", issues };
   }
   const target = action.target(parsed.data);
+  if (target.kind === "platform") {
+    return runAsOperator(action, name, parsed.data, ctx, isAllowed);
+  }
   if (target.self) {
     return runForSelf(action, name, parsed.data, ctx, target, isAllowed);
   }
@@ -146,6 +154,39 @@ export async function runAction(
   return result;
 }
 
+/**
+ * An operator's action. To anyone else it does not exist: not_found, never forbidden.
+ * Logged in the space its output names, or in none.
+ */
+async function runAsOperator(
+  action: ActionDef,
+  name: string,
+  input: unknown,
+  ctx: Ctx,
+  isAllowed: Allowed,
+): Promise<ActionResult> {
+  if (!(await ctx.tenancy.isOperator(ctx.actor.userId))) {
+    return NOT_FOUND;
+  }
+  if (!isAllowed("operator", name, ctx.actor.via)) {
+    return { ok: false, code: "forbidden", message: "not allowed" };
+  }
+  let result: ActionResult;
+  try {
+    result = { ok: true, output: await action.run(ctx, input, null) };
+  } catch (error) {
+    if (!(error instanceof ActionError)) {
+      throw error;
+    }
+    result = { ok: false, code: error.code, message: error.message };
+  }
+  if (action.kind === "mutation" || !result.ok) {
+    const spaceId = result.ok ? (result.output as { spaceId?: unknown } | null)?.spaceId : null;
+    await log(ctx, typeof spaceId === "string" ? spaceId : null, name, input, result);
+  }
+  return result;
+}
+
 /** An action on the actor's own behalf: allowed as the student role it may give them. */
 async function runForSelf(
   action: ActionDef,
@@ -153,7 +194,7 @@ async function runForSelf(
   input: unknown,
   ctx: Ctx,
   target: Target,
-  isAllowed: (role: SpaceRole, action: string, via: ActorKind) => boolean,
+  isAllowed: Allowed,
 ): Promise<ActionResult> {
   if (!isAllowed("student", name, ctx.actor.via)) {
     return { ok: false, code: "forbidden", message: "not allowed" };
@@ -180,7 +221,13 @@ async function runForSelf(
   }
 }
 
-async function log(ctx: Ctx, spaceId: string, name: string, input: unknown, result: ActionResult) {
+async function log(
+  ctx: Ctx,
+  spaceId: string | null,
+  name: string,
+  input: unknown,
+  result: ActionResult,
+) {
   const logged = await ctx.repos.actionLog.append(spaceId, {
     actorUserId: ctx.actor.userId,
     actorVia: ctx.actor.via,
@@ -210,7 +257,7 @@ async function runInScope(
   input: unknown,
   ctx: Ctx,
   scope: Scope,
-  isAllowed: (role: SpaceRole, action: string, via: ActorKind) => boolean,
+  isAllowed: Allowed,
 ): Promise<ActionResult> {
   if (!isAllowed(scope.role, name, ctx.actor.via)) {
     return { ok: false, code: "forbidden", message: "not allowed" };
