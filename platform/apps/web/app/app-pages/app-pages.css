@@ -96,6 +96,13 @@
 .route-line-start-accent {
   fill: var(--color-accent);
 }
+.admin-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
 .admin-list {
   display: flex;
   flex-direction: column;

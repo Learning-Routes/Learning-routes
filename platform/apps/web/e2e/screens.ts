@@ -52,6 +52,13 @@ export const SCREENS: Record<string, (page: Page) => Promise<unknown>> = {
     await page.goto(`${DEV}/admin`);
     await page.getByRole("heading", { name: "Quieren enseñar" }).waitFor();
   },
+  "create-space": async (page) => {
+    const operator = newAddress("operador");
+    await signInContext(page.context(), operator);
+    makeOperator(operator);
+    await page.goto(`${DEV}/admin/crear-espacio`);
+    await page.getByRole("heading", { name: "Crear un espacio" }).waitFor();
+  },
   "catalog-no-results": (page) => page.goto(`${DEV}/es/explorar?q=zzzzzz`),
   components: (page) => page.goto(`${DEV}/studio/_design`),
   "sign-in": (page) => page.goto(`${DEV}/sign-in`),

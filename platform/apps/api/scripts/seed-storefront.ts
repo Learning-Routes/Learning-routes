@@ -223,6 +223,10 @@ async function resetWhatTestsChange(db: pg.Client) {
     `insert into creator_applications (name, email, teaches, link, locale)
      values ('Lucía Vega', 'lucia.vega@example.com', 'Inglés para el trabajo', 'https://example.com/lucia', 'es')`,
   );
+  await db.query(
+    `insert into creator_applications (name, email, teaches, locale, status, decided_at)
+     values ('Diego Ramos', 'diego.ramos@example.com', 'Programación web', 'es', 'invited', timestamptz '2026-10-02')`,
+  );
 }
 
 /** What must never show: an edit nobody published, an archived route, a closed space. */
