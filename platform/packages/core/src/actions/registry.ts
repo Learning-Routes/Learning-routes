@@ -11,6 +11,7 @@ import { connectionGrant, connectionList, connectionRevoke } from "./connections
 import type { ActionDef, ActionResult } from "./define";
 import { blockAdd, blockAddMany, lessonAdd, moduleAdd } from "./drafting";
 import { enrollmentCreate, enrollmentList, enrollmentUpgrade } from "./enrollments";
+import { routeImport } from "./imports";
 import type { ActionName } from "./names";
 import { reviewSubmit } from "./review";
 import { routeCreate, routeGet, routeList, routePublish, routeUpdate } from "./routes";
@@ -32,6 +33,7 @@ export const ACTIONS = {
   "block.add": blockAdd,
   "blocks.add": blockAddMany,
   "route.update": routeUpdate,
+  "route.import": routeImport,
   "route.publish": routePublish,
   "enrollment.create": enrollmentCreate,
   "enrollment.upgrade": enrollmentUpgrade,

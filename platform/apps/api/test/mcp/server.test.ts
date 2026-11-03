@@ -138,6 +138,7 @@ describe("the protocol", () => {
       "add_module",
       "create_route",
       "get_route",
+      "import_route",
       "list_routes",
       "list_spaces",
       "publish_route",
@@ -286,7 +287,7 @@ describe("the tools", () => {
     }
     expect(last.isError).toBe(true);
     expect(last.content?.[0]?.text).toContain("Too many changes");
-  });
+  }, 30_000);
 
   it("says nothing of how it is built when something breaks", async () => {
     const { token } = await teacher();

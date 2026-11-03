@@ -14,6 +14,7 @@ export const ACTION_NAMES = [
   "block.add",
   "blocks.add",
   "route.update",
+  "route.import",
   "route.publish",
   "enrollment.create",
   "enrollment.upgrade",

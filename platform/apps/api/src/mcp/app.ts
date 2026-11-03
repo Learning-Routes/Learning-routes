@@ -49,9 +49,14 @@ export function createMcpApp(deps: McpAppDeps = {}) {
   app.get("/health", (c) => c.json({ ok: true }));
 
   const provider = (c: McpContext) =>
-    withClient(c.env, c.executionCtx, (db) =>
-      createOAuth(c.env, db, fetchClientMetadataResource).handler(c.req.raw),
-    );
+    withClient(c.env, c.executionCtx, async (db) => {
+      const oauth = createOAuth(c.env, db, fetchClientMetadataResource);
+      const answer = await oauth.handler(c.req.raw);
+      // Two first requests from a client it has never seen race to store its metadata, and
+      // the loser fails on the unique client id. By now the row is there. Only a GET is safe
+      // to send twice.
+      return answer.status === 500 && c.req.method === "GET" ? oauth.handler(c.req.raw) : answer;
+    });
 
   app.post(`${AUTH_PATH}/oauth2/consent`, async (c) => {
     const body = (await c.req.raw

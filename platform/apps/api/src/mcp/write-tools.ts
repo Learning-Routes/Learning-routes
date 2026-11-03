@@ -152,6 +152,40 @@ export const WRITE_TOOLS: Tool[] = [
     }),
   }),
   tool({
+    name: "import_route",
+    scope: "routes:write",
+    action: "route.import",
+    description:
+      "Import a whole route from one document: give space_id for a new draft, or route_id and draft_revision to replace an editable route's draft. All of it or nothing; a published version is never touched. Read the format in the resource learning-routes://guides/route-format, and its JSON Schema in learning-routes://schemas/route-document.",
+    annotations: WRITE,
+    input: z.strictObject({
+      space_id: z.uuid().optional().describe("For a new draft: the space's id."),
+      route_id: z.uuid().optional().describe("To replace a draft: the route's id."),
+      draft_revision: DraftRevision.optional(),
+      document: z
+        .record(z.string(), z.unknown())
+        .describe("The route: learning-routes://schemas/route-document."),
+    }),
+    output: z.strictObject({
+      route_id: z.uuid(),
+      draft_revision: z.int(),
+      counts: z.strictObject({ modules: z.int(), lessons: z.int(), blocks: z.int() }),
+      next_step: z.string(),
+    }),
+    toAction: (input) => ({
+      ...(input.space_id ? { spaceId: input.space_id } : {}),
+      ...(input.route_id ? { routeId: input.route_id } : {}),
+      ...(input.draft_revision === undefined ? {} : { expectedRevision: input.draft_revision }),
+      document: input.document,
+    }),
+    toOutput: (output: { routeId: string; counts: Record<string, number> } & Revision) => ({
+      route_id: output.routeId,
+      draft_revision: output.revision,
+      counts: output.counts,
+      next_step: "Revisa el borrador y, cuando quieras, publícalo con publish_route.",
+    }),
+  }),
+  tool({
     name: "publish_route",
     scope: "routes:publish",
     action: "route.publish",

@@ -365,6 +365,18 @@ export function memoryRepos(state: State, actorId = ""): Repos {
             latestPublishedVersion: row.latestPublishedVersion,
           }))
           .sort((a, b) => (a.slug < b.slug ? -1 : 1)),
+      replaceContent: (spaceId, routeId, expected, content) =>
+        edit(spaceId, routeId, expected, (row) => {
+          const known = Object.fromEntries(
+            Object.entries(content.details).filter(([, value]) => value !== undefined),
+          );
+          row.route = { ...row.route, ...known } as typeof row.route;
+          row.modules = content.modules;
+          row.lessons = content.lessons.map((lesson) => ({ ...lesson, archived: false }));
+          row.blocks = content.blocks;
+          row.prerequisites = [];
+          return null;
+        }),
       updateDetails: (spaceId, routeId, expected, details) =>
         edit(spaceId, routeId, expected, (row) => {
           const known = Object.fromEntries(
