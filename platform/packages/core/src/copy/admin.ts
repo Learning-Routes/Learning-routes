@@ -25,7 +25,7 @@ export const ADMIN_TEXT: Record<LocaleCode, AdminText> = {
   es: {
     adminTitle: "Quieren enseñar",
     noApplications: "No hay solicitudes nuevas.",
-    markInvited: "Marcar como invitada",
+    markInvited: "Ya envié la invitación",
     decline: "Rechazar",
     catalogRequests: "Pidieron entrar al catálogo",
     noRequests: "No hay rutas por revisar.",
@@ -41,7 +41,7 @@ export const ADMIN_TEXT: Record<LocaleCode, AdminText> = {
   en: {
     adminTitle: "They want to teach",
     noApplications: "There are no new applications.",
-    markInvited: "Mark as invited",
+    markInvited: "I sent the invitation",
     decline: "Decline",
     catalogRequests: "Asked to join the catalog",
     noRequests: "There are no routes to review.",
@@ -57,7 +57,7 @@ export const ADMIN_TEXT: Record<LocaleCode, AdminText> = {
   pt: {
     adminTitle: "Querem ensinar",
     noApplications: "Não há pedidos novos.",
-    markInvited: "Marcar como convidado",
+    markInvited: "Já enviei o convite",
     decline: "Recusar",
     catalogRequests: "Pediram para entrar no catálogo",
     noRequests: "Não há rotas para revisar.",
@@ -73,7 +73,7 @@ export const ADMIN_TEXT: Record<LocaleCode, AdminText> = {
   fr: {
     adminTitle: "Ils veulent enseigner",
     noApplications: "Aucune nouvelle demande.",
-    markInvited: "Marquer comme invitée",
+    markInvited: "J'ai envoyé l'invitation",
     decline: "Refuser",
     catalogRequests: "Demandes d'entrée au catalogue",
     noRequests: "Aucun parcours à examiner.",
@@ -89,7 +89,7 @@ export const ADMIN_TEXT: Record<LocaleCode, AdminText> = {
   it: {
     adminTitle: "Vogliono insegnare",
     noApplications: "Non ci sono nuove richieste.",
-    markInvited: "Segna come invitata",
+    markInvited: "Ho inviato l'invito",
     decline: "Rifiuta",
     catalogRequests: "Hanno chiesto di entrare nel catalogo",
     noRequests: "Non ci sono percorsi da rivedere.",

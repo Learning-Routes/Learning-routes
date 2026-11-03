@@ -174,7 +174,7 @@ Run every migration through squawk, and follow the naming rules.
 
    No email is sent in this STEP. The page works without signing in.
 4. **Admin, minimal, at `/admin`, operators only, from v2's `Operador`:**
-   - the creator applications, with "Marcar como invitada" or "Rechazar". The real invitation comes in STEP 7;
+   - the creator applications, with "Ya envié la invitación" or "Rechazar". The real invitation comes in STEP 7;
    - the catalog requests, with approve or decline and a note;
    - choosing the landing's "Rutas para empezar".
 

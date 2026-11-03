@@ -61,7 +61,7 @@ test("an operator decides an application, and it leaves the list", async ({ page
   makeOperator(operator);
   await page.goto(`${DEV}/admin`);
   const row = page.locator(".admin-item").filter({ hasText: "Lucía Vega" });
-  await row.getByRole("button", { name: "Marcar como invitada" }).click();
+  await row.getByRole("button", { name: "Ya envié la invitación" }).click();
   await expect(row).toHaveCount(0);
 });
 
