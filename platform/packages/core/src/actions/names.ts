@@ -2,6 +2,7 @@
 // import them at runtime. registry.ts checks that it registers exactly these.
 export const ACTION_NAMES = [
   "space.get",
+  "space.update",
   "membership.add",
   "route.create",
   "route.get",

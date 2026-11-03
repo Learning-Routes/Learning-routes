@@ -11,5 +11,8 @@ export function purgeTagsAfter(action: string, output: unknown): string[] {
     const { spaceId, routeId } = output as RouteOutput;
     return [`route:${routeId}`, `space:${spaceId}`];
   }
+  if (action === "space.update") {
+    return [`space:${(output as { spaceId: string }).spaceId}`];
+  }
   return [];
 }

@@ -1,7 +1,9 @@
 import * as z from "zod";
+import { checkBrandColor } from "../brand-color";
 import { SpaceRole } from "../domain";
+import { LocalizedText } from "../localized-text";
 import { checkMembershipChange } from "../memberships";
-import { defineAction, inSpace } from "./define";
+import { ActionError, defineAction, inSpace } from "./define";
 import { refused, unwrap } from "./results";
 
 // A space and who belongs to it (Platform STEP 2 §6).
@@ -13,6 +15,32 @@ export const spaceGet = defineAction({
   input: z.strictObject({ spaceId: z.uuid() }),
   target: (input) => ({ kind: "space", id: input.spaceId }),
   run: async (ctx, input) => unwrap(await ctx.repos.spaces.get(input.spaceId)),
+});
+
+/** What the creator's page says, and the colour of its actions (Platform STEP 4 §2.1). */
+export const spaceUpdate = defineAction({
+  name: "space.update",
+  kind: "mutation",
+  description: "Change a space's tagline, bio or brand colour. Owners only, from the app only.",
+  input: z.strictObject({
+    spaceId: z.uuid(),
+    tagline: LocalizedText.nullish(),
+    bio: LocalizedText.nullish(),
+    brandColor: z.string().nullish(),
+  }),
+  target: (input) => ({ kind: "space", id: input.spaceId }),
+  async run(ctx, { spaceId, brandColor, ...text }) {
+    if (brandColor === undefined || brandColor === null) {
+      unwrap(await ctx.repos.spaces.update(spaceId, { ...text, brandColor }));
+      return { spaceId };
+    }
+    const checked = checkBrandColor(brandColor);
+    if (!checked.ok) {
+      throw new ActionError("invalid", checked.message);
+    }
+    unwrap(await ctx.repos.spaces.update(spaceId, { ...text, brandColor: checked.color }));
+    return { spaceId };
+  },
 });
 
 /** Adds an existing user by id. Email invitations come later. */
