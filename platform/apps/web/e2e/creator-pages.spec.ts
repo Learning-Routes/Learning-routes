@@ -8,7 +8,7 @@ import { creatorHost } from "./screens";
 const MARIANA = creatorHost("mariana-ortega");
 const ROUTE = `${MARIANA}/portugues-para-viajar`;
 const RUTA = /\/empezar\?ruta=[0-9a-f-]{36}$/;
-const NO_JS_MODULE = /Módulo 1: .*módulo 1/;
+const NO_JS_MODULE = "Módulo 1: Primeros pasos";
 const JSON_LD = 'script[type="application/ld+json"]';
 
 test.describe("with no JavaScript", () => {
