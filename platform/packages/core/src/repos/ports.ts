@@ -26,10 +26,21 @@ export interface SpaceRecord {
   name: LocalizedText;
   defaultLocale: Locale;
   locales: Locale[];
+  tagline: LocalizedText | null;
+  bio: LocalizedText | null;
+  brandColor: string | null;
+}
+
+/** What a creator's page says about them; a field left out stays as it is. */
+export interface SpacePage {
+  tagline?: LocalizedText | null | undefined;
+  bio?: LocalizedText | null | undefined;
+  brandColor?: string | null | undefined;
 }
 
 export interface Spaces {
   get(spaceId: string): Promise<RepoResult<SpaceRecord>>;
+  update(spaceId: string, page: SpacePage): Promise<RepoResult<void>>;
 }
 
 export interface Memberships {

@@ -96,8 +96,21 @@ async function getDraft(db: Db, where: Where): Promise<RepoResult<RouteDraft>> {
   );
   const live = new Set(draftLessons.map((lesson) => lesson.id));
   const { id, slug, title, description, sourceLocale, access, pricing } = route;
+  const { topic, level, priceMinor, currency } = route;
   return ok({
-    route: { id, slug, title, description, sourceLocale, access, pricing },
+    route: {
+      id,
+      slug,
+      title,
+      description,
+      sourceLocale,
+      access,
+      pricing,
+      topic,
+      level,
+      priceMinor,
+      currency,
+    },
     modules: draftModules,
     lessons: draftLessons,
     prerequisites: (await readPrerequisites(db, where)).filter(

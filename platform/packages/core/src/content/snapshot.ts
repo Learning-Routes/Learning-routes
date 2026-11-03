@@ -1,5 +1,6 @@
 import * as z from "zod";
 import { BLOCK_TYPES } from "../blocks/types";
+import { ROUTE_LEVELS, ROUTE_TOPICS } from "../copy/route-facts";
 import { Route } from "../domain";
 import { Locale, LocalizedText } from "../localized-text";
 import { POSITION_KEY } from "./position";
@@ -10,7 +11,7 @@ import { POSITION_KEY } from "./position";
 // snapshot keeps the format it was written in; upcastSnapshot reads every format
 // as today's.
 
-export const SNAPSHOT_FORMAT = 1;
+export const SNAPSHOT_FORMAT = 2;
 
 const Position = z.string().regex(POSITION_KEY);
 
@@ -40,13 +41,33 @@ const SnapshotV1 = z.strictObject({
   ),
 });
 
-export type Snapshot = z.infer<typeof SnapshotV1>;
+// Format 2 adds what a stranger reads on a route's page (Platform STEP 4 §2.2).
+const SnapshotV2 = SnapshotV1.extend({
+  route: SnapshotV1.shape.route.extend({
+    topic: z.enum(ROUTE_TOPICS),
+    level: z.enum(ROUTE_LEVELS),
+    priceMinor: z.int().nonnegative().nullable(),
+    currency: z
+      .string()
+      .regex(/^[A-Z]{3}$/)
+      .nullable(),
+  }),
+});
+
+export type Snapshot = z.infer<typeof SnapshotV2>;
 
 /** Reads a stored snapshot of the given format as today's format. */
 export function upcastSnapshot(format: number, json: unknown): Snapshot {
   switch (format) {
-    case 1:
-      return SnapshotV1.parse(json);
+    case 1: {
+      const old = SnapshotV1.parse(json);
+      return {
+        ...old,
+        route: { ...old.route, topic: "otros", level: "inicial", priceMinor: null, currency: null },
+      };
+    }
+    case 2:
+      return SnapshotV2.parse(json);
     default:
       throw new RangeError(`unknown snapshot format: ${format}`);
   }

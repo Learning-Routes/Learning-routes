@@ -70,6 +70,7 @@ describe("two tenants, through every action", () => {
       const routeA = await newRoute(db, spaceA, "a-route");
       const inputs: Record<string, unknown> = {
         "space.get": { spaceId: spaceB },
+        "space.update": { spaceId: spaceB, brandColor: "#6a2ea0" },
         "membership.add": { spaceId: spaceB, userId: a, role: "owner" },
         "route.create": {
           spaceId: spaceB,

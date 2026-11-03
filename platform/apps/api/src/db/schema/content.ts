@@ -1,4 +1,10 @@
 import { BLOCK_TYPES, type BlockTypeName } from "@learning-routes/core/blocks/types";
+import {
+  ROUTE_LEVELS,
+  ROUTE_TOPICS,
+  type RouteLevel,
+  type RouteTopic,
+} from "@learning-routes/core/copy/route-facts";
 import { Route } from "@learning-routes/core/domain";
 import type { Locale, LocalizedText } from "@learning-routes/core/localized-text";
 import { sql } from "drizzle-orm";
@@ -42,6 +48,11 @@ export const routes = pgTable(
     sourceLocale: text().$type<Locale>().notNull(),
     access: text().$type<Route["access"]>().notNull(),
     pricing: text().$type<Route["pricing"]>().notNull(),
+    topic: text().$type<RouteTopic>().notNull().default("otros"),
+    level: text().$type<RouteLevel>().notNull().default("inicial"),
+    // The route's one-time price; null means not for sale yet. Module 1 is always free.
+    priceMinor: bigint({ mode: "number" }),
+    currency: text(),
     // Bumped on every draft change; an edit names the revision it read (§4.3).
     draftRevision: bigint({ mode: "number" }).notNull().default(0),
     latestPublishedVersion: integer(),
@@ -64,6 +75,12 @@ export const routes = pgTable(
     check("routes_source_locale", sql`app.is_locale_list(array[${t.sourceLocale}])`),
     check("routes_access", sql`${t.access} in (${oneOf(Route.shape.access.options)})`),
     check("routes_pricing", sql`${t.pricing} in (${oneOf(Route.shape.pricing.options)})`),
+    check("routes_topic", sql`${t.topic} in (${oneOf(ROUTE_TOPICS)})`),
+    check("routes_level", sql`${t.level} in (${oneOf(ROUTE_LEVELS)})`),
+    check(
+      "routes_price",
+      sql`(${t.priceMinor} is null and ${t.currency} is null) or (${t.priceMinor} >= 0 and ${t.currency} ~ '^[A-Z]{3}$')`,
+    ),
   ],
 );
 

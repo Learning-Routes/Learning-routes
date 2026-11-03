@@ -46,6 +46,10 @@ const routeFields = (slug: string) => ({
   sourceLocale: "en" as const,
   access: "open" as const,
   pricing: "free" as const,
+  topic: "otros" as const,
+  level: "inicial" as const,
+  priceMinor: null,
+  currency: null,
 });
 
 const module = (position: string) => ({
