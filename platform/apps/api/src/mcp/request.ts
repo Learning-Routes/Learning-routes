@@ -125,6 +125,35 @@ async function bodyOf(request: Request): Promise<string | Response> {
   return depthOf(text) > DEEPEST ? refusal(400, -32600, "This request nests too deeply.") : text;
 }
 
+/** The POST to hand on, re-readable, or the refusal: too large, not JSON, or out of scope. */
+async function checkedPost(
+  request: Request,
+  scopeRefusal: (needed: string) => Response | null,
+): Promise<Request | Response> {
+  const text = await bodyOf(request);
+  if (text instanceof Response) {
+    return text;
+  }
+  let message: unknown;
+  try {
+    message = JSON.parse(text);
+  } catch {
+    return refusal(400, -32700, "This request is not JSON.");
+  }
+  if (Array.isArray(message)) {
+    return refusal(400, -32600, "Batches are not supported.");
+  }
+  // The one kind of answer that never ends, and this server changes nothing to listen for.
+  if ((message as { method?: unknown } | null)?.method === "subscriptions/listen") {
+    return refusal(404, -32601, "This server has no subscriptions.");
+  }
+  const needed = scopeNeeded((message ?? {}) as Parameters<typeof scopeNeeded>[0]);
+  return (
+    (needed === null ? null : scopeRefusal(needed)) ??
+    new Request(request.url, { method: "POST", headers: request.headers, body: text })
+  );
+}
+
 export async function serveMcp(
   request: Request,
   env: Env,
@@ -150,33 +179,22 @@ export async function serveMcp(
   };
   await noteUse(db, caller.userId, caller.clientId, new Date());
 
-  let forward = request;
-  if (request.method === "POST") {
-    const text = await bodyOf(request);
-    if (text instanceof Response) {
-      return text;
-    }
-    let message: unknown;
-    try {
-      message = JSON.parse(text);
-    } catch {
-      return refusal(400, -32700, "This request is not JSON.");
-    }
-    if (Array.isArray(message)) {
-      return refusal(400, -32600, "Batches are not supported.");
-    }
-    const needed = scopeNeeded((message ?? {}) as Parameters<typeof scopeNeeded>[0]);
-    if (needed !== null && !scopes.has(needed)) {
-      return refusal(403, -32003, `This call needs ${needed}.`, {
-        "www-authenticate": insufficient(needed),
-      });
-    }
-    forward = new Request(request.url, {
-      method: "POST",
-      headers: request.headers,
-      body: text,
-    });
+  const forward =
+    request.method === "POST"
+      ? await checkedPost(request, (needed) =>
+          scopes.has(needed)
+            ? null
+            : refusal(403, -32003, `This call needs ${needed}.`, {
+                "www-authenticate": insufficient(needed),
+              }),
+        )
+      : request;
+  if (forward instanceof Response) {
+    return forward;
   }
   const handler = createMcpHandler(() => createServer(env, db, caller), { responseMode: "json" });
-  return handler.fetch(forward);
+  const answer = await handler.fetch(forward);
+  // The handler answers before its tool has finished, with the body still to come. Read it
+  // here: the database connection closes when this function returns.
+  return new Response(await answer.arrayBuffer(), answer);
 }
