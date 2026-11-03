@@ -14,6 +14,7 @@ The Keychain items this runbook uses:
 |---|---|
 | `lr-migrator` | The migrator's connection URL: PlanetScale's default role, which runs migrations and the seed |
 | `lr-app` | The Worker's connection URL: the `lr_app` role, which Hyperdrive connects as |
+| `lr-public` | The storefront's connection URL: the `lr_public` role, which reads the public views and nothing else |
 
 ## Before you start
 
@@ -171,3 +172,50 @@ The Keychain items this runbook uses:
 ## Later
 
 - **A nightly `pg_dump` to R2**, kept for 30 days, as a copy outside PlanetScale. Not built yet; a future STEP.
+
+## The storefront's reads (Platform STEP 4 §1)
+
+Do these once, before running the migrations that come with Platform STEP 4: migration `0014` grants to a role that must already exist.
+
+1. **Create the storefront's role, `lr_public`,** the same way as `lr_app`. It reads the public views and nothing else:
+
+   ```sh
+   psql "$(security find-generic-password -s lr-migrator -w)" -c "create role lr_public login noinherit"
+   psql "$(security find-generic-password -s lr-migrator -w)" -c "grant connect on database postgres to lr_public; grant usage on schema public to lr_public"
+   psql "$(security find-generic-password -s lr-migrator -w)"
+   ```
+
+   In that session, type `\password lr_public`, then `\q`. Save its URL, on port 5432, with the branch id in the user name:
+
+   ```sh
+   security add-generic-password -U -a "$USER" -s lr-public -w
+   ```
+
+2. **Run the migrations,** as in step 3 above.
+
+3. **Create the second Hyperdrive config,** with caching on, which is the default: 60 s, and 15 s stale.
+
+   ```sh
+   pnpm --filter @learning-routes/web exec wrangler hyperdrive create lr-db-public \
+     --connection-string="$(security find-generic-password -s lr-public -w)" \
+     --sslmode verify-full --origin-connection-limit 20
+   ```
+
+   Put the printed id in `apps/web/wrangler.jsonc`, under `hyperdrive`, in a small pull request.
+
+4. **Create the purge queue and the token.** The queue:
+
+   ```sh
+   pnpm --filter @learning-routes/api exec wrangler queues create learning-routes-purge
+   ```
+
+   In Cloudflare, under My Profile, API Tokens, create a token with one permission, **Zone: Cache Purge**, on the one zone. Copy it, set it at wrangler's prompt, then clear the clipboard:
+
+   ```sh
+   pnpm --filter @learning-routes/api exec wrangler secret put CLOUDFLARE_PURGE_TOKEN
+   pbcopy < /dev/null
+   ```
+
+   Put the zone's id in `CLOUDFLARE_ZONE_ID` in `apps/api/wrangler.jsonc`. It isn't a secret.
+
+**After a restore,** `lr_public` needs its grants back. Step 10 re-runs `0013`; also run the last three statements of `apps/api/drizzle/0014_public_reads.sql`.

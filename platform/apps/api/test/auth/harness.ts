@@ -13,6 +13,7 @@ export const APP = "https://app.example.test";
 export function harness() {
   const sent: MagicLinkMessage[] = [];
   const pending: Promise<unknown>[] = [];
+  const purges: { tags: string[] }[] = [];
   const app = createApp({
     emailSender: () => ({ sendMagicLink: async (message) => void sent.push(message) }),
   });
@@ -21,7 +22,8 @@ export function harness() {
     APP_ORIGIN: APP,
     ENVIRONMENT: "test",
     BETTER_AUTH_SECRET: TEST_SECRET,
-  } as Env;
+    PURGE_QUEUE: { send: async (message: { tags: string[] }) => void purges.push(message) },
+  } as unknown as Env;
   const ctx = {
     waitUntil: (promise: Promise<unknown>) => void pending.push(promise),
     passThroughOnException: () => undefined,
@@ -44,7 +46,7 @@ export function harness() {
     return app.request(url, { ...init, headers }, env, ctx);
   };
   const settle = () => Promise.allSettled(pending.splice(0));
-  return { sent, call, settle };
+  return { sent, purges, call, settle };
 }
 
 export const json = (body: unknown, extra: Record<string, string> = {}) => ({

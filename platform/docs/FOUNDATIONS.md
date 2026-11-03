@@ -63,6 +63,7 @@ platform/
   packages/core       the rules: pure, imports no platform
   packages/route-map      the route map's geometry
   packages/design-tokens  colours, type, spacing
+  packages/public-read    the storefront's reads, as lr_public
   apps/web            pages (React Router)
   apps/api            programs (Hono): actions, MCP, webhooks, the database
   docs/               FOUNDATIONS.md, adr/, steps/, runbooks/
@@ -71,7 +72,7 @@ platform/
 These boundaries are enforced by dependency-cruiser and Biome, not by trust:
 
 - `core` imports no Cloudflare, Hono, React, Drizzle, `pg` or `node:` module.
-- Only `apps/api/src/db/` imports Drizzle or `pg`.
+- Only `apps/api/src/db/` imports Drizzle or `pg`, and `packages/public-read` imports `pg`: it is the storefront's one way into the database, through views, and app code never imports it.
 - Only the one AI adapter calls OpenRouter.
 - Browser code imports `core` only through its browser subpaths, which pull in no zod.
 - `apps/web` and `apps/api` never import each other.

@@ -156,3 +156,47 @@ describe("the actor", () => {
     ).toBe(true);
   });
 });
+
+describe("an action that changes a public page (Platform STEP 4 §1.4)", () => {
+  /** A route the user owns, with one module, ready to publish. */
+  async function ownedRoute(userId: string) {
+    const [space] = await query(
+      URLS.migrator,
+      `insert into spaces (slug, name, default_locale, locales) values ('purge-' || uuidv7(), '{"en": "S"}', 'en', '{en}') returning id`,
+    );
+    await query(
+      URLS.migrator,
+      "insert into memberships (space_id, user_id, role) values ($1, $2, 'owner')",
+      [space.id, userId],
+    );
+    const [route] = await query(
+      URLS.migrator,
+      `insert into routes (space_id, slug, title, source_locale, access, pricing)
+       values ($1, 'r', '{"en": "R"}', 'en', 'open', 'free') returning id, draft_revision`,
+      [space.id],
+    );
+    return { spaceId: space.id as string, routeId: route.id as string };
+  }
+
+  it("queues its tags after the commit", async () => {
+    const { cookie, userId } = await signIn();
+    const { spaceId, routeId } = await ownedRoute(userId);
+    const response = await api.call(
+      "/api/a/route.publish",
+      json({ routeId, expectedRevision: 0 }, { cookie }),
+    );
+    expect(response.status).toBe(200);
+    expect(api.purges).toContainEqual({ tags: [`route:${routeId}`, `space:${spaceId}`] });
+  });
+
+  it("queues nothing when it is refused", async () => {
+    const { cookie, userId } = await signIn();
+    const { routeId } = await ownedRoute(userId);
+    const response = await api.call(
+      "/api/a/route.publish",
+      json({ routeId, expectedRevision: 99 }, { cookie }),
+    );
+    expect(response.ok).toBe(false);
+    expect(JSON.stringify(api.purges)).not.toContain(routeId);
+  });
+});

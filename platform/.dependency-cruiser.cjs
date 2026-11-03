@@ -82,6 +82,8 @@ module.exports = {
           "^apps/api/scripts/",
           "^apps/api/drizzle\\.config\\.ts$",
           "^apps/api/test/db/",
+          // The storefront's reads, with no Drizzle and only lr_public (Platform STEP 4 §1).
+          "^packages/public-read/src/",
         ],
       },
       to: {
@@ -90,6 +92,25 @@ module.exports = {
           "node_modules/(drizzle-orm|drizzle-kit|pg|postgres|@planetscale|@neondatabase)/",
         ],
       },
+    },
+    {
+      name: "public-reads-only-in-the-storefront",
+      comment:
+        "lr_public's repository serves the storefront alone: app code and the API use DB, with a session and row-level security (Platform STEP 4 §1.3). A public page can read nothing else.",
+      severity: "error",
+      from: {
+        path: "^apps/",
+        pathNot: ["^apps/web/app/(routes/)?storefront/", "^apps/api/test/db/"],
+      },
+      to: { path: ["^packages/public-read/", "^@learning-routes/public-read"] },
+    },
+    {
+      name: "storefront-loaders-read-only-the-public-repository",
+      comment:
+        "A storefront page is served to strangers and cached for all of them: it never reaches the session's database through the API (Platform STEP 4 §1.3).",
+      severity: "error",
+      from: { path: "^apps/web/app/(routes/)?storefront/" },
+      to: { path: ["^packages/core/src/repos/", "^apps/api/"] },
     },
     {
       name: "only-auth-touches-better-auth-tables",

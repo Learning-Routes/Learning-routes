@@ -7,12 +7,23 @@ const routes = import.meta.glob<unknown>("../app/routes/storefront/*.tsx", {
   import: "handle",
   eager: true,
 });
+// And every one of them says how long the edge may keep it (Platform STEP 4 §1.4).
+const headers = import.meta.glob<unknown>("../app/routes/storefront/*.tsx", {
+  import: "headers",
+  eager: true,
+});
 
 describe("storefront routes", () => {
   it("are all served as plain HTML", () => {
     expect(Object.keys(routes).length).toBeGreaterThan(0);
     for (const [file, handle] of Object.entries(routes)) {
       expect(handle, file).toBe(storefront);
+    }
+  });
+
+  it("all export their cache headers", () => {
+    for (const file of Object.keys(routes)) {
+      expect(headers[file], file).toBeInstanceOf(Function);
     }
   });
 });

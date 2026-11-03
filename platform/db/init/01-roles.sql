@@ -12,16 +12,21 @@ create role lr_migrator login bypassrls password 'local-only-migrator';
 -- give it anything.
 create role lr_app login noinherit password 'local-only-app';
 
+-- The storefront's role (Platform STEP 4 §1): it reads the public views and nothing
+-- else, through a Hyperdrive config with caching on.
+create role lr_public login noinherit password 'local-only-public';
+
 alter database learning_routes owner to lr_migrator;
 revoke all on database learning_routes from public;
-grant connect on database learning_routes to lr_app;
+grant connect on database learning_routes to lr_app, lr_public;
 
 alter schema public owner to lr_migrator;
 revoke create on schema public from public;
-grant usage on schema public to lr_app;
+grant usage on schema public to lr_app, lr_public;
 
 -- TESTS ONLY: lets the migrator act as lr_app (SET ROLE, never inherited), so a
 -- test sets up rows and then reads them under lr_app's row-level security in one
 -- transaction it rolls back. It gives the migrator nothing it lacks; production
 -- needs no such grant.
 grant lr_app to lr_migrator with inherit false, set true;
+grant lr_public to lr_migrator with inherit false, set true;

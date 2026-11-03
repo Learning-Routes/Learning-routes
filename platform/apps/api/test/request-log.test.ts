@@ -1,6 +1,6 @@
 import { Hono } from "hono";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import app from "../src/index";
+import worker from "../src/index";
 import { logEvent, requestLog } from "../src/log";
 
 describe("the API's request log (Platform STEP 2 §1.7)", () => {
@@ -10,7 +10,7 @@ describe("the API's request log (Platform STEP 2 §1.7)", () => {
     const lines: string[] = [];
     vi.spyOn(console, "log").mockImplementation((line: string) => lines.push(line));
 
-    await app.request("/health?token=should-not-appear");
+    await worker.fetch(new Request(`https://api.test${"/health?token=should-not-appear"}`));
 
     expect(lines).toHaveLength(1);
     const entry = JSON.parse(lines[0] as string);

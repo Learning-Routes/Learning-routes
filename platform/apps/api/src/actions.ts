@@ -1,8 +1,10 @@
 import { runAction } from "@learning-routes/core/actions/define";
+import { purgeTagsAfter } from "@learning-routes/core/actions/purge-tags";
 import { ACTIONS } from "@learning-routes/core/actions/registry";
 import type { Hono } from "hono";
 import { createAuth, SESSION_COOKIE } from "./auth/auth";
 import type { EmailSender } from "./auth/email";
+import { queuePurge } from "./cache/purge";
 import { pgRepos } from "./db/repos/index";
 import { pgTenancy } from "./db/tenancy";
 import { type Transaction, transactionAs, withClient } from "./db/with-db";
@@ -54,12 +56,15 @@ export function actionRoutes(app: Hono<{ Bindings: Env }>, emailSender: (env: En
         return c.json({ ok: false, code: "unauthenticated" }, 401);
       }
       const userId = session.user.id;
+      const name = c.req.param("name");
       const result = await transactionAs(db, userId, (tx) =>
-        runAction(ACTIONS, c.req.param("name"), input, ctxFor(tx, userId)),
+        runAction(ACTIONS, name, input, ctxFor(tx, userId)),
       );
-      for (const cookie of renewed.getSetCookie()) {
+      // After the commit, never inside it: the queue is an outside call.
+      await queuePurge(c.env, result.ok ? purgeTagsAfter(name, result.output) : []);
+      renewed.getSetCookie().forEach((cookie) => {
         c.header("set-cookie", cookie, { append: true });
-      }
+      });
       return c.json(result, result.ok ? 200 : STATUS[result.code]);
     });
   });

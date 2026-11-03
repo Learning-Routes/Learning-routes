@@ -99,6 +99,13 @@
       "when": 1793395897949,
       "tag": "0013_app_grants",
       "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1793669355722,
+      "tag": "0014_public_reads",
+      "breakpoints": true
     }
   ]
 }
