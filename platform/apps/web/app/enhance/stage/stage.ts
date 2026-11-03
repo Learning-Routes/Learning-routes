@@ -120,13 +120,7 @@ export class LandingStage {
     this.frame();
     this.loop();
     this.journey.dataset.stage = "on";
-    void document.fonts.ready.then(() => {
-      if (this.renderer) {
-        this.measure();
-        this.layoutTexts();
-        this.frame();
-      }
-    });
+    void document.fonts.ready.then(() => this.resize());
   }
 
   private async layOutOverTime() {
@@ -207,8 +201,11 @@ export class LandingStage {
   }
 
   private resize() {
+    if (!this.renderer) {
+      return;
+    }
     this.measure();
-    this.renderer?.setSize(this.stage.clientWidth, this.stage.clientHeight, false);
+    this.renderer.setSize(this.stage.clientWidth, this.stage.clientHeight, false);
     this.layoutTexts();
     this.frame();
   }
