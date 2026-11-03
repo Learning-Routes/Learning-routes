@@ -2,7 +2,9 @@ import { expect, type Page, test } from "@playwright/test";
 
 const POLICY =
   /^default-src 'self'; script-src 'self' 'nonce-([A-Za-z0-9+/=]{24})'; style-src 'self'; img-src 'self' data:; connect-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'$/;
-const PAGES = ["/es", "/studio"];
+const PUBLIC_POLICY =
+  "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'";
+const PAGES = ["/studio"];
 
 function nonceOf(policy: string | undefined): string {
   const match = POLICY.exec(policy ?? "");
@@ -21,6 +23,13 @@ test.beforeEach(async ({ page }) => {
       w.__csp = [...(w.__csp ?? []), `${e.violatedDirective} ${e.blockedURI}`];
     });
   });
+});
+
+test("a storefront page is cached for everyone, so it carries the strict policy and no nonce", async ({
+  request,
+}) => {
+  const response = await request.get("/es");
+  expect(response.headers()["content-security-policy"]).toBe(PUBLIC_POLICY);
 });
 
 for (const path of PAGES) {

@@ -5,12 +5,15 @@ import { data } from "react-router";
 import { alternates } from "../../alternates";
 import { RouteMapFigure } from "../../landing/route-map-figure";
 import "../../landing/landing.css";
+import { storefrontHeaders } from "../../storefront/cache";
 import { storefront } from "../../surface";
 import { ButtonLink } from "../../ui/button";
 import { NavLink, SiteHeader } from "../../ui/site-header";
 import type { Route } from "./+types/home";
 
 export const handle = storefront;
+
+export const headers: Route.HeadersFunction = () => storefrontHeaders(["catalog"]);
 
 const WITH_TEXT = LOCALES;
 
