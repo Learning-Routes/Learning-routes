@@ -42,4 +42,17 @@ describe("the way to the API", () => {
     expect(sent.headers.get("origin")).toBe("https://app.example.test");
     expect(binding).not.toHaveBeenCalled();
   });
+
+  it("gives a local redirect back to the app's origin", async () => {
+    const fetcher = vi.fn(
+      async () =>
+        new Response(null, { status: 302, headers: { location: "http://localhost:1/mis-rutas" } }),
+    );
+    const client = apiClient(
+      { ENVIRONMENT: "development", API_DEV_ORIGIN: "http://localhost:1" } as never,
+      fetcher as unknown as typeof fetch,
+    );
+    const response = await client(REQUEST());
+    expect(response.headers.get("location")).toBe("https://app.example.test/mis-rutas");
+  });
 });
