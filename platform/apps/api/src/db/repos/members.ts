@@ -1,9 +1,11 @@
 import type { Memberships, Spaces } from "@learning-routes/core/repos/ports";
-import { and, asc, eq, sql } from "drizzle-orm";
+import { and, asc, eq, inArray, sql } from "drizzle-orm";
 import { memberships, spaces } from "../schema/tenancy";
 import { attempt, type Db, fail, ok } from "./shared";
 
 // Spaces and who belongs to them, on Postgres (Platform STEP 2 §4).
+
+const TEACHES = ["owner", "coeditor", "assistant"] as const;
 
 export const spacesRepo = (db: Db): Spaces => ({
   // Through app.create_space, which checks who is asking: lr_app cannot insert a space.
@@ -25,6 +27,19 @@ export const spacesRepo = (db: Db): Spaces => ({
             : "not_found",
       );
     }),
+  async listOwn(userId) {
+    return db
+      .select({
+        id: spaces.id,
+        slug: spaces.slug,
+        name: spaces.name,
+        role: memberships.role,
+      })
+      .from(memberships)
+      .innerJoin(spaces, eq(spaces.id, memberships.spaceId))
+      .where(and(eq(memberships.userId, userId), inArray(memberships.role, [...TEACHES])))
+      .orderBy(asc(spaces.slug));
+  },
   async get(spaceId) {
     const [row] = await db
       .select({

@@ -243,6 +243,19 @@ export const routeDrafts = (db: Db): RouteDrafts => ({
   list: (spaceId) => listRoutes(db, spaceId),
   lockDraft: (spaceId, routeId, expected) =>
     attempt(db, () => lockDraft(db, { spaceId, routeId }, expected)),
+  updateDetails: (spaceId, routeId, expected, details) =>
+    edit(db, { spaceId, routeId }, expected, async () => {
+      await db
+        .update(routes)
+        .set({
+          ...details,
+          topic: details.topic as typeof routes.$inferInsert.topic,
+          level: details.level as typeof routes.$inferInsert.level,
+          updatedAt: new Date(),
+        })
+        .where(and(eq(routes.id, routeId), eq(routes.spaceId, spaceId)));
+      return ok(undefined);
+    }),
   addModule: (spaceId, routeId, expected, module) =>
     edit(db, { spaceId, routeId }, expected, () => insertModule(db, { spaceId, routeId }, module)),
   addLesson: (spaceId, routeId, expected, lesson) =>

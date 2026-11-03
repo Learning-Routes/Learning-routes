@@ -9,12 +9,12 @@ import {
 } from "./catalog";
 import { connectionGrant, connectionList, connectionRevoke } from "./connections";
 import type { ActionDef, ActionResult } from "./define";
-import { blockAdd, lessonAdd, moduleAdd } from "./drafting";
+import { blockAdd, blockAddMany, lessonAdd, moduleAdd } from "./drafting";
 import { enrollmentCreate, enrollmentList, enrollmentUpgrade } from "./enrollments";
 import type { ActionName } from "./names";
 import { reviewSubmit } from "./review";
-import { routeCreate, routeGet, routeList, routePublish } from "./routes";
-import { membershipAdd, spaceCreate, spaceGet, spaceUpdate } from "./spaces";
+import { routeCreate, routeGet, routeList, routePublish, routeUpdate } from "./routes";
+import { membershipAdd, spaceCreate, spaceGet, spaceList, spaceUpdate } from "./spaces";
 
 // Every action the platform has. `satisfies` holds it to ACTION_NAMES: a name
 // missing here, or an action not named there, does not compile.
@@ -22,6 +22,7 @@ export const ACTIONS = {
   "space.get": spaceGet,
   "space.update": spaceUpdate,
   "space.create": spaceCreate,
+  "space.list": spaceList,
   "membership.add": membershipAdd,
   "route.create": routeCreate,
   "route.get": routeGet,
@@ -29,6 +30,8 @@ export const ACTIONS = {
   "module.add": moduleAdd,
   "lesson.add": lessonAdd,
   "block.add": blockAdd,
+  "blocks.add": blockAddMany,
+  "route.update": routeUpdate,
   "route.publish": routePublish,
   "enrollment.create": enrollmentCreate,
   "enrollment.upgrade": enrollmentUpgrade,

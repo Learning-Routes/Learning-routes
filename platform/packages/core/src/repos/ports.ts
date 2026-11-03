@@ -5,6 +5,7 @@ import type { Card } from "../learning/fsrs";
 import type { Locale, LocalizedText } from "../localized-text";
 import type { Member } from "../memberships";
 import type { Applications, Catalog } from "./catalog-ports";
+import type { Connections, OwnSpace } from "./connection-ports";
 import type { RepoResult } from "./repo-result";
 
 export type {
@@ -53,6 +54,8 @@ export interface Spaces {
   get(spaceId: string): Promise<RepoResult<SpaceRecord>>;
   /** An operator's. invalid: nobody has signed in with the address. conflict: the slug is taken. */
   create(space: NewSpace): Promise<RepoResult<{ spaceId: string }>>;
+  /** The spaces the user teaches in. */
+  listOwn(userId: string): Promise<OwnSpace[]>;
   update(spaceId: string, page: SpacePage): Promise<RepoResult<void>>;
 }
 
@@ -83,6 +86,14 @@ export interface RouteSummary {
   title: LocalizedText;
   revision: number;
   latestPublishedVersion: number | null;
+}
+
+/** What an edit may change about a draft; a field left out stays as it is. */
+export interface RouteDetails {
+  title?: LocalizedText | undefined;
+  description?: LocalizedText | null | undefined;
+  topic?: string | undefined;
+  level?: string | undefined;
 }
 
 /** An edit's answer: the draft's new revision. */
@@ -118,6 +129,12 @@ export interface RouteDrafts {
     routeId: string,
     expectedRevision: number,
     block: DraftBlock,
+  ): Promise<Revised>;
+  updateDetails(
+    spaceId: string,
+    routeId: string,
+    expectedRevision: number,
+    details: RouteDetails,
   ): Promise<Revised>;
   /** Takes a lesson out of the draft; its id stays reserved, and older versions keep it. */
   archiveLesson(
@@ -258,21 +275,7 @@ export interface ActionLog {
   append(spaceId: string | null, entry: ActionLogEntry): Promise<RepoResult<void>>;
 }
 
-/** An assistant connected to a person's account. */
-export interface ConnectionRecord {
-  clientId: string;
-  clientName: string;
-  scopes: string[];
-  lastUsedAt: string | null;
-}
-
-export interface Connections {
-  /** Whether they teach anywhere: owner, coeditor or assistant of a space. */
-  canConnect(userId: string): Promise<boolean>;
-  list(userId: string): Promise<ConnectionRecord[]>;
-  /** Ends it at once: its consent and every token. False when there was nothing to end. */
-  revoke(userId: string, clientId: string): Promise<boolean>;
-}
+export type { ConnectionRecord, Connections, OwnSpace } from "./connection-ports";
 
 export interface Repos {
   connections: Connections;

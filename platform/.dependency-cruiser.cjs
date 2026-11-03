@@ -132,6 +132,14 @@ module.exports = {
       to: { path: "^apps/api/src/db/schema/auth\\.ts$" },
     },
     {
+      name: "mcp-tools-go-through-core",
+      comment:
+        "Every MCP tool is a core action: tools.ts and server.ts reach the database only through runAction's repositories (Platform STEP 5 §3).",
+      severity: "error",
+      from: { path: "^apps/api/src/mcp/(tools|server)\\.ts$" },
+      to: { path: ["^apps/api/src/db/schema/", "(^|/)node_modules/drizzle-orm/"] },
+    },
+    {
       name: "web-and-api-stay-apart",
       severity: "error",
       from: { path: "^apps/(web|api)/" },

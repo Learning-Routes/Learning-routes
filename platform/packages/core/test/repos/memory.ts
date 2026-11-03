@@ -191,6 +191,13 @@ export function memoryRepos(state: State, actorId = ""): Repos {
       },
     },
     spaces: {
+      listOwn: async (userId) =>
+        [...state.members.values()].flatMap((member) => {
+          const space = state.spaces.get(member.spaceId);
+          return member.userId === userId && member.role !== "student" && space
+            ? [{ id: space.id, slug: space.slug, name: space.name, role: member.role }]
+            : [];
+        }),
       get: async (spaceId) => {
         const space = state.spaces.get(spaceId);
         return space ? ok(space) : fail("not_found");
@@ -358,6 +365,14 @@ export function memoryRepos(state: State, actorId = ""): Repos {
             latestPublishedVersion: row.latestPublishedVersion,
           }))
           .sort((a, b) => (a.slug < b.slug ? -1 : 1)),
+      updateDetails: (spaceId, routeId, expected, details) =>
+        edit(spaceId, routeId, expected, (row) => {
+          const known = Object.fromEntries(
+            Object.entries(details).filter(([, value]) => value !== undefined),
+          );
+          row.route = { ...row.route, ...known } as typeof row.route;
+          return null;
+        }),
       addModule: (spaceId, routeId, expected, module) =>
         edit(spaceId, routeId, expected, (row) => {
           if (row.modules.some((entry) => entry.position === module.position)) {
