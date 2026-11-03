@@ -1,3 +1,4 @@
+import { RESERVED_SLUGS } from "@learning-routes/core/reserved-slugs";
 import { describe, expect, it } from "vitest";
 import { creatorSlugOf, INTERNAL_PREFIX, internalRequest } from "../workers/hosts";
 
@@ -10,6 +11,12 @@ describe("which host belongs to a creator", () => {
   it("takes the one label under the creators' domain", () => {
     expect(creatorSlugOf("mariana.learningroutes.com", HOSTS)).toBe("mariana");
     expect(creatorSlugOf("MARIANA.learningroutes.com", HOSTS)).toBe("mariana");
+  });
+
+  it("never takes an address the platform keeps", () => {
+    for (const slug of RESERVED_SLUGS) {
+      expect(creatorSlugOf(`${slug}.learningroutes.com`, HOSTS), slug).toBeNull();
+    }
   });
 
   it("works with a port, in a local run", () => {
