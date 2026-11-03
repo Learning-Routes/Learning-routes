@@ -1,27 +1,31 @@
 // When three.js may load on the landing (ADR 0008): after the first paint, only with
 // WebGL, and never under reduced motion. Everything else keeps the server HTML.
 
-type WebGLProbe = {
-  getExtension: (name: "WEBGL_lose_context") => { loseContext: () => void } | null;
-};
-
 type Page = {
   matchMedia: (query: string) => { matches: boolean };
-  createContext: () => WebGLProbe | null;
+  hasWebGL: () => Promise<boolean>;
 };
 
-export function threeIsWanted({ matchMedia, createContext }: Page): boolean {
+export async function threeIsWanted({ matchMedia, hasWebGL }: Page): Promise<boolean> {
   if (matchMedia("(prefers-reduced-motion: reduce)").matches) {
     return false;
   }
   try {
-    const probe = createContext();
-    // The scene makes its own context, and browsers limit how many can live.
-    probe?.getExtension("WEBGL_lose_context")?.loseContext();
-    return probe !== null;
+    return await hasWebGL();
   } catch {
     return false;
   }
+}
+
+type WebGLProbe = {
+  getExtension: (name: "WEBGL_lose_context") => { loseContext: () => void } | null;
+};
+
+/** On the main thread, for a browser that can't ask from a worker. The scene makes its own. */
+export function probeHere(createContext: () => WebGLProbe | null): boolean {
+  const probe = createContext();
+  probe?.getExtension("WEBGL_lose_context")?.loseContext();
+  return probe !== null;
 }
 
 type Idle = {

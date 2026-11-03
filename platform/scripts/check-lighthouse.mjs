@@ -17,6 +17,9 @@ const PROXY_PORT = 4176;
 const ORIGIN = `http://localhost:${PORT}`;
 const PAGES = {
   landing: `http://localhost:${PROXY_PORT}/es`,
+  // The map forced on: reported, never failed. A CI runner has no GPU, so there /es stays on its
+  // text, as it does for any visitor without one, and this is the same page in software WebGL.
+  "landing, the map forced": `http://localhost:${PROXY_PORT}/es#mapa`,
   catalog: `http://localhost:${PROXY_PORT}/es/explorar`,
   "route page": `http://mariana-ortega.localhost:${PROXY_PORT}/portugues-para-viajar`,
 };
@@ -27,7 +30,7 @@ const RUNS = 3;
 const targetsFor = (name) => ({
   "largest-contentful-paint": { name: "LCP", limit: 1800, unit: " ms" },
   "cumulative-layout-shift": { name: "CLS", limit: 0.05, unit: "" },
-  "total-blocking-time": { name: "TBT", limit: name === "landing" ? 150 : 1, unit: " ms" },
+  "total-blocking-time": { name: "TBT", limit: name.startsWith("landing") ? 150 : 1, unit: " ms" },
 });
 
 const preview = spawn(
@@ -132,7 +135,7 @@ async function measure(name, page) {
     const shown = unit ? Math.round(value) : value.toFixed(3);
     console.log(`${metric}: ${shown}${unit} (target under ${limit}${unit})${over ? ", over" : ""}`);
   }
-  return isOver;
+  return name.includes("forced") ? false : isOver;
 }
 
 let failed = false;

@@ -6,6 +6,7 @@ import { expect, type Page, test } from "@playwright/test";
 const SEARCH = /\/es\/explorar\?q=guitarra/;
 const IDEA_SEARCH = /\/es\/explorar\?q=Guitarra/;
 const DRAWN = /lp-drawn/;
+const SETTLED = /on|static/;
 const SIZES = [
   { width: 1440, height: 900 },
   { width: 1280, height: 720 },
@@ -13,7 +14,7 @@ const SIZES = [
 ];
 
 async function openStage(page: Page, path = "/es") {
-  await page.goto(path);
+  await page.goto(`${path}#mapa`);
   await expect(page.locator(".lp-journey")).toHaveAttribute("data-stage", "on", {
     timeout: 30_000,
   });
@@ -46,7 +47,7 @@ test("the map arrives without moving the hero, and within the strict CSP", async
       refused.push(message.text());
     }
   });
-  await page.goto("/es");
+  await page.goto("/es#mapa");
   const before = await page.getByRole("heading", { level: 1 }).boundingBox();
   await expect(page.locator(".lp-journey")).toHaveAttribute("data-stage", "on", {
     timeout: 30_000,
@@ -64,7 +65,7 @@ test("three.js loads only after the first paint", async ({ page }) => {
       stage.push(request.url());
     }
   });
-  await page.goto("/es", { waitUntil: "commit" });
+  await page.goto("/es#mapa", { waitUntil: "commit" });
   await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
   await expect(page.locator(".lp-journey")).toHaveAttribute("data-stage", "on", {
     timeout: 30_000,
@@ -82,6 +83,7 @@ for (const [name, setUp] of [
     if (name === "no WebGL") {
       await page.addInitScript(() => {
         HTMLCanvasElement.prototype.getContext = () => null;
+        Reflect.deleteProperty(window, "OffscreenCanvas");
       });
     }
     const stage: string[] = [];
@@ -90,7 +92,7 @@ for (const [name, setUp] of [
         stage.push(request.url());
       }
     });
-    await page.goto("/es");
+    await page.goto("/es#mapa");
     await expect(page.locator(".lp-journey")).toHaveAttribute("data-stage", "static");
     expect(stage).toEqual([]);
     await expect(page.getByRole("heading", { level: 2, name: "Un tema a la vez" })).toBeVisible();
@@ -98,6 +100,18 @@ for (const [name, setUp] of [
     await context.close();
   });
 }
+
+test("without a real GPU the page stays on its text, unless #mapa asks for the map", async ({
+  page,
+}) => {
+  await page.goto("/es");
+  const stage = page.locator(".lp-journey");
+  await expect(stage).toHaveAttribute("data-stage", SETTLED, { timeout: 30_000 });
+  const hasGpu = await page.evaluate(() =>
+    Boolean(new OffscreenCanvas(1, 1).getContext("webgl2", { failIfMajorPerformanceCaveat: true })),
+  );
+  await expect(stage).toHaveAttribute("data-stage", hasGpu ? "on" : "static");
+});
 
 test("the example tabs change the map, and the panels' links only take focus when shown", async ({
   page,

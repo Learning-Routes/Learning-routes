@@ -28,7 +28,12 @@ Every storefront page works fully with JavaScript off.
 **three.js:**
 - is bundled by Vite as a lazily imported chunk and served from our origin, under the strict CSP;
 - is imported only after `requestIdleCallback` (or `load` where that is missing), only when WebGL exists and `prefers-reduced-motion` is not `reduce`;
-- is the only page weight of its kind: no other page imports it.
+- is the only page weight of its kind: no other page imports it;
+- never loads without a real GPU, where the map would crawl and block the page: those visitors get the panels as text. `#mapa` in the address forces it, for the browser tests.
+
+**The WebGL probe runs in a worker,** because a device's first context can block for seconds.
+
+**On CI** the runner has no GPU, so Lighthouse's gate on the landing measures the text. It also reports the map forced on in software WebGL, without failing on it. The map on a real GPU is measured by hand and reported in the pull request.
 
 **Fixed addresses.** Each page's script is built to `/enhance/<page>.js`, unhashed, and imports hashed chunks. A storefront page sits in the edge cache, so a fixed address means a cached page never names a script an earlier deploy removed.
 

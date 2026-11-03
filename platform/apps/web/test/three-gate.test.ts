@@ -1,28 +1,37 @@
 import { describe, expect, test, vi } from "vitest";
-import { threeIsWanted, whenIdle } from "../app/enhance/three-gate";
+import { probeHere, threeIsWanted, whenIdle } from "../app/enhance/three-gate";
 
-const page = ({ reduce = false, webgl = true, throws = false } = {}) => ({
+const page = ({ reduce = false, webgl = true, fails = false } = {}) => ({
   matchMedia: () => ({ matches: reduce }),
-  createContext: () => {
-    if (throws) {
-      throw new Error("blocked");
-    }
-    return webgl ? { getExtension: () => null } : null;
-  },
+  hasWebGL: () => (fails ? Promise.reject(new Error("blocked")) : Promise.resolve(webgl)),
 });
 
 describe("threeIsWanted", () => {
-  test("yes with WebGL and motion allowed", () => {
-    expect(threeIsWanted(page())).toBe(true);
+  test("yes with WebGL and motion allowed", async () => {
+    expect(await threeIsWanted(page())).toBe(true);
   });
-  test("no under reduced motion", () => {
-    expect(threeIsWanted(page({ reduce: true }))).toBe(false);
+  test("no under reduced motion, without even asking for WebGL", async () => {
+    const hasWebGL = vi.fn();
+    const matchMedia = () => ({ matches: true });
+    expect(await threeIsWanted({ matchMedia, hasWebGL })).toBe(false);
+    expect(hasWebGL).not.toHaveBeenCalled();
   });
-  test("no without WebGL", () => {
-    expect(threeIsWanted(page({ webgl: false }))).toBe(false);
+  test("no without WebGL", async () => {
+    expect(await threeIsWanted(page({ webgl: false }))).toBe(false);
   });
-  test("no when asking for WebGL throws", () => {
-    expect(threeIsWanted(page({ throws: true }))).toBe(false);
+  test("no when asking for WebGL fails", async () => {
+    expect(await threeIsWanted(page({ fails: true }))).toBe(false);
+  });
+});
+
+describe("probeHere", () => {
+  test("releases the context it made", () => {
+    const loseContext = vi.fn();
+    expect(probeHere(() => ({ getExtension: () => ({ loseContext }) }))).toBe(true);
+    expect(loseContext).toHaveBeenCalledOnce();
+  });
+  test("says no when there is none", () => {
+    expect(probeHere(() => null)).toBe(false);
   });
 });
 

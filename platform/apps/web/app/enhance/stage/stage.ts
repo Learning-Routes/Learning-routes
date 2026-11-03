@@ -116,9 +116,7 @@ export class LandingStage {
     applyTheme(this.parts, this.journey);
     await this.layOutOverTime();
     this.listen();
-    renderer.compile(this.parts.scene, this.parts.camera);
-    await nextTask();
-    this.frame();
+    await renderer.compileAsync(this.parts.scene, this.parts.camera);
     this.loop();
     this.journey.dataset.stage = "on";
   }
