@@ -19,8 +19,17 @@ describe("fetching a client's metadata document", () => {
       return new Response("{}");
     });
     await fetcher("https://client.example.test/metadata.json");
-    expect(init?.redirect).toBe("error");
+    // "manual", never "error": Workers throws on that, on every fetch.
+    expect(init?.redirect).toBe("manual");
     expect(init?.signal).toBeInstanceOf(AbortSignal);
+  });
+
+  it("refuses a document that answers with a redirect", async () => {
+    const fetcher = boundedMetadataFetch(
+      async () =>
+        new Response(null, { status: 302, headers: { location: "https://other.example.test" } }),
+    );
+    await expect(fetcher("https://client.example.test/metadata.json")).rejects.toThrow("redirect");
   });
 
   it("stops reading a body that is too large", async () => {
