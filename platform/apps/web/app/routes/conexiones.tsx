@@ -91,6 +91,7 @@ export default function Conexiones({ loaderData, actionData }: Route.ComponentPr
           ))}
         </ul>
       )}
+      <TextLink href="/ensenar/conecta">{words.connectAssistant}</TextLink>
       <TextLink href="/studio">{words.backToTeach}</TextLink>
     </main>
   );

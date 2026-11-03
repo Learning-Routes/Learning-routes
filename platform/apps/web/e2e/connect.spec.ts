@@ -122,6 +122,19 @@ test("someone with no space to teach in is told so, and offered no button", asyn
   await expect(page.getByRole("button", { name: "Permitir", exact: true })).toHaveCount(0);
 });
 
+test("Conecta tu asistente gives the address, and copies it", async ({ page, context }) => {
+  const email = newAddress("ensena");
+  await signInContext(context, email);
+  makeTeacher(email);
+  await context.grantPermissions(["clipboard-read", "clipboard-write"]);
+  await page.goto(`${DEV}/ensenar/conecta`);
+  await page.locator("html[data-hydrated]").waitFor();
+  await expect(page.getByText(`${DEV}/mcp`, { exact: true })).toBeVisible();
+  await page.getByRole("button", { name: "Copiar dirección" }).click();
+  await expect(page.getByRole("button", { name: "Copiada" })).toBeVisible();
+  expect(await page.evaluate(() => navigator.clipboard.readText())).toBe(`${DEV}/mcp`);
+});
+
 test("signing in comes back to the question", async ({ page, context }) => {
   const email = newAddress("ensena");
   clearLimits();

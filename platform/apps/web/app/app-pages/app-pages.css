@@ -149,3 +149,14 @@
   flex-wrap: wrap;
   gap: var(--space-3);
 }
+
+.connect-address {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+}
+.connect-code {
+  overflow-wrap: anywhere;
+  font-family: ui-monospace, monospace;
+}

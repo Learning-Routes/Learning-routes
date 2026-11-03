@@ -90,11 +90,12 @@ export function oauthHarness() {
     cookie: string,
     scope = "routes:read routes:write routes:publish offline_access",
     clientId = CLIENT_ID,
+    redirectUri = REDIRECT_URI,
   ) => {
     const query = new URLSearchParams({
       response_type: "code",
       client_id: clientId,
-      redirect_uri: REDIRECT_URI,
+      redirect_uri: redirectUri,
       scope,
       state: "state-1",
       code_challenge: await challengeOf(VERIFIER),

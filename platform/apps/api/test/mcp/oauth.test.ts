@@ -181,6 +181,27 @@ describe("refresh", () => {
 });
 
 describe("a client's metadata document", () => {
+  it("takes a client on any local port, as Claude Code's document asks", async () => {
+    const clientId = `https://client.example.test/${crypto.randomUUID()}.json`;
+    oauth.documents.set(clientId, {
+      client_id: clientId,
+      client_name: "Cliente local",
+      client_uri: "https://client.example.test",
+      redirect_uris: ["http://localhost/callback", "http://127.0.0.1/callback"],
+      grant_types: ["authorization_code", "refresh_token"],
+      response_types: ["code"],
+      token_endpoint_auth_method: "none",
+    });
+    const { cookie } = await teacher();
+    const asked = await oauth.authorize(
+      cookie,
+      undefined,
+      clientId,
+      "http://localhost:54321/callback",
+    );
+    expect(new URL(asked.headers.get("location") ?? "", APP).pathname).toBe("/conectar");
+  });
+
   it("survives several first requests at once from a client it has never seen", async () => {
     const clientId = `https://client.example.test/${crypto.randomUUID()}.json`;
     oauth.documents.set(clientId, { ...CLIENT_DOCUMENT, client_id: clientId });
