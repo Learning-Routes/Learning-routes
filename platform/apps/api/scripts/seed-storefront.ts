@@ -11,6 +11,14 @@ import pg from "pg";
 
 const LOCAL = "postgres://lr_migrator:local-only-migrator@localhost:54318/learning_routes";
 const LOCAL_HOST = /@localhost:54318\//;
+const MODULE_TITLES = [
+  "Primeros pasos",
+  "Seguir adelante",
+  "Ganar soltura",
+  "Practicar en serio",
+  "Ir más lejos",
+  "Cerrar el círculo",
+];
 const NOBODY = "00000000-0000-7000-8000-000000000000";
 
 interface Fixture {
@@ -116,7 +124,7 @@ function snapshotOf(routeId: string, route: Fixture["routes"][number]): Snapshot
   const modules = route.lessons.map((_, index) => ({
     id: uuidFrom(`${routeId}:module:${index}`),
     position: positionOf(index),
-    title: { es: `${route.title}: módulo ${index + 1}` },
+    title: { es: MODULE_TITLES[index] ?? `Parte ${index + 1}` },
   }));
   const lessons = route.lessons.flatMap((count, moduleIndex) =>
     Array.from({ length: count }, (_, index) => ({
@@ -180,6 +188,50 @@ async function seedSpace(db: pg.Client, fixture: Fixture): Promise<string> {
   return id;
 }
 
+/** What must never show: an edit nobody published, an archived route, a closed space. */
+async function seedHidden(db: pg.Client) {
+  const andres = uuidFrom("space:andres-mora");
+  await db.query(
+    `update routes set title = '{"es": "Título que nadie publicó"}'
+      where id = $1`,
+    [uuidFrom(`route:${andres}:guitarra-desde-cero`)],
+  );
+  await seedRoute(db, andres, {
+    slug: "ruta-archivada",
+    title: "Ruta archivada",
+    description: "Nadie la ve.",
+    topic: "arte",
+    level: "inicial",
+    priceMinor: null,
+    lessons: [1],
+    listing: "approved",
+  });
+  await db.query("update routes set archived_at = timestamptz '2026-10-02' where id = $1", [
+    uuidFrom(`route:${andres}:ruta-archivada`),
+  ]);
+  const closed = await seedSpace(db, {
+    space: "espacio-cerrado",
+    name: "Espacio cerrado",
+    tagline: "Ya no está.",
+    bio: "Ya no está.",
+    brandColor: "#5a4c9e",
+    routes: [],
+  });
+  await seedRoute(db, closed, {
+    slug: "su-ruta",
+    title: "Su ruta",
+    description: "Nadie la ve.",
+    topic: "arte",
+    level: "inicial",
+    priceMinor: null,
+    lessons: [1],
+    listing: null,
+  });
+  await db.query("update spaces set archived_at = timestamptz '2026-10-02' where id = $1", [
+    closed,
+  ]);
+}
+
 async function seedRoute(db: pg.Client, spaceId: string, route: Fixture["routes"][number]) {
   const routeId = uuidFrom(`route:${spaceId}:${route.slug}`);
   const snapshot = snapshotOf(routeId, route);
@@ -237,6 +289,7 @@ export async function seedStorefront(url: string): Promise<void> {
         await seedRoute(db, spaceId, route);
       }
     }
+    await seedHidden(db);
   } finally {
     await db.end();
   }

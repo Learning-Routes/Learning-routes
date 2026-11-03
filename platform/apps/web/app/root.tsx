@@ -80,8 +80,9 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
   let stack: string | undefined;
 
   if (isRouteErrorResponse(error)) {
-    message = error.status === 404 ? "404" : "Error";
-    details = error.status === 404 ? "Esta página no existe." : error.statusText || details;
+    const isGone = error.status === 404 || error.status === 410;
+    message = isGone ? String(error.status) : "Error";
+    details = isGone ? "Esta página no existe." : error.statusText || details;
   } else if (import.meta.env.DEV && error instanceof Error) {
     details = error.message;
     stack = error.stack;

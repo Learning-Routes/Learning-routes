@@ -11,6 +11,7 @@ const LOCAL = {
   CLOUDFLARE_INCLUDE_PROCESS_ENV: "true",
   APP_ORIGIN: "http://localhost:4174",
   ENVIRONMENT: "development",
+  PLATFORM_ORIGIN: "http://localhost:4174",
   CREATOR_DOMAIN: "localhost:4174",
 };
 const VISUAL = "visual.spec.ts";

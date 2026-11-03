@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { CATALOG_TEXT } from "../src/copy/catalog";
+import { CREATOR_TEXT } from "../src/copy/creator";
 import { LANDING_TEXT } from "../src/copy/landing";
 import { LEVEL_NAMES, TOPIC_NAMES } from "../src/copy/route-facts";
 import { SIGN_IN_TEXT } from "../src/copy/sign-in";
@@ -73,6 +74,7 @@ describe("the copy check", () => {
     ["sign-in", SIGN_IN_TEXT],
     ["landing", LANDING_TEXT],
     ["catalog", CATALOG_TEXT],
+    ["creator", CREATOR_TEXT],
     ["topics", TOPIC_NAMES],
     ["levels", LEVEL_NAMES],
   ] as const)("%s", (_name, copy) => {
@@ -103,6 +105,9 @@ describe("the copy check", () => {
         expect(catalog.facts).toContain(name);
       }
       expect(catalog.withCreator).toContain("{creator}");
+      expect(CREATOR_TEXT[locale].startPaid).toContain("{price}");
+      expect(CREATOR_TEXT[locale].moduleTitle).toContain("{title}");
+      expect(CREATOR_TEXT[locale].inLanguage).toContain("{language}");
       expect(catalog.noResults).toContain("{search}");
       expect(catalog.noResultsInTopic).toContain("{topic}");
     }
