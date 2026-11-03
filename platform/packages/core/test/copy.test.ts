@@ -4,6 +4,9 @@ import { APP_PAGES_TEXT } from "../src/copy/app-pages";
 import { CATALOG_TEXT } from "../src/copy/catalog";
 import { CREATOR_TEXT } from "../src/copy/creator";
 import { LANDING_TEXT } from "../src/copy/landing";
+import { CLOSE_TEXT } from "../src/copy/landing-close";
+import { EXAMPLE_ROUTES } from "../src/copy/landing-routes";
+import { STAGE_TEXT } from "../src/copy/landing-stage";
 import { LEVEL_NAMES, TOPIC_NAMES } from "../src/copy/route-facts";
 import { SIGN_IN_TEXT } from "../src/copy/sign-in";
 import { UI_COPY } from "../src/copy/ui";
@@ -75,6 +78,9 @@ describe("the copy check", () => {
     ["ui", UI_COPY],
     ["sign-in", SIGN_IN_TEXT],
     ["landing", LANDING_TEXT],
+    ["landing stage", STAGE_TEXT],
+    ["landing close", CLOSE_TEXT],
+    ["example routes", EXAMPLE_ROUTES],
     ["catalog", CATALOG_TEXT],
     ["creator", CREATOR_TEXT],
     ["app pages", APP_PAGES_TEXT],
