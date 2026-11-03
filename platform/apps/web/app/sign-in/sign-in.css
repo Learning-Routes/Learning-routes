@@ -124,3 +124,65 @@
   min-height: var(--size-control);
   color: var(--color-sub);
 }
+
+/* "Revisa tu correo" (Platform STEP 6 §3): the one place for a small delight. */
+.sign-in-sent {
+  display: none;
+}
+.sign-in-sent.moment {
+  display: block;
+  width: 12.5rem;
+  max-width: 100%;
+  overflow: visible;
+}
+.sign-in-sent-line {
+  fill: none;
+  stroke: var(--color-accent);
+  stroke-width: 3;
+  stroke-linecap: round;
+}
+.sign-in-sent-dot {
+  fill: none;
+  stroke: var(--color-highlight);
+  stroke-width: 12;
+  stroke-linecap: round;
+  stroke-dasharray: 0 2;
+  stroke-dashoffset: -1;
+}
+.sign-in-sent-envelope rect,
+.sign-in-sent-envelope path {
+  fill: none;
+  stroke: var(--color-accent);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .sign-in-sent-line {
+    stroke-dasharray: 1 1;
+    animation: sign-in-sent-draw 800ms var(--ease-out) both;
+  }
+  .sign-in-sent-dot {
+    animation: sign-in-sent-run 800ms var(--ease-out) both;
+  }
+}
+@keyframes sign-in-sent-draw {
+  from {
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+@keyframes sign-in-sent-run {
+  from {
+    stroke-dashoffset: 0;
+  }
+  to {
+    stroke-dashoffset: -1;
+  }
+}
+/* One line on this screen, not two: the figure stands in for the steps while the moment is on. */
+.sign-in-page:has(.sign-in-sent.moment) .sign-in-route {
+  display: none;
+}
