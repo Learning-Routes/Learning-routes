@@ -218,8 +218,8 @@
   margin-block: var(--space-16) var(--space-24);
   padding: clamp(var(--space-8), 5vw, var(--space-16));
   border-radius: var(--radius-section);
-  background: var(--color-code-bg);
-  color: var(--color-code-text);
+  background: var(--color-night);
+  color: var(--color-night-text);
 }
 .landing-teach-line {
   position: absolute;

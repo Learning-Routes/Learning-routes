@@ -90,6 +90,9 @@
      level and neither is a verdict. */
   --color-highlight: #E79A0F;
   --color-highlight-violet: #8B5CF6;
+  /* The landing's dark block is dark in both themes, on purpose. */
+  --color-night: #1D1226;
+  --color-night-text: #F5F2F6;
   /* The code playground is a dark editor in both themes, on purpose. */
   --color-code-bg: #1E1E1E;
   --color-code-text: #D4D4D4;
