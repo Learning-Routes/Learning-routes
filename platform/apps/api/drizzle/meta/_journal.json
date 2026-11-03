@@ -106,6 +106,34 @@
       "when": 1793669355722,
       "tag": "0014_public_reads",
       "breakpoints": true
+    },
+    {
+      "idx": 15,
+      "version": "7",
+      "when": 1793670164388,
+      "tag": "0015_catalog",
+      "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "7",
+      "when": 1793670164849,
+      "tag": "0016_catalog_grants",
+      "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1793670221914,
+      "tag": "0017_catalog_rules",
+      "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1793670267148,
+      "tag": "0018_validate_catalog_checks",
+      "breakpoints": true
     }
   ]
 }

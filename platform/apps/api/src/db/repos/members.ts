@@ -14,11 +14,23 @@ export const spacesRepo = (db: Db): Spaces => ({
         name: spaces.name,
         defaultLocale: spaces.defaultLocale,
         locales: spaces.locales,
+        tagline: spaces.tagline,
+        bio: spaces.bio,
+        brandColor: spaces.brandColor,
       })
       .from(spaces)
       .where(eq(spaces.id, spaceId));
     return row === undefined ? fail("not_found") : ok(row);
   },
+  update: (spaceId, page) =>
+    attempt(db, async () => {
+      const updated = await db
+        .update(spaces)
+        .set({ ...page, updatedAt: new Date() })
+        .where(eq(spaces.id, spaceId))
+        .returning({ id: spaces.id });
+      return updated.length === 1 ? ok(undefined) : fail("not_found");
+    }),
 });
 
 export const membershipsRepo = (db: Db): Memberships => ({

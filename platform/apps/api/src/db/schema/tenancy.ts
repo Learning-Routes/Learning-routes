@@ -37,6 +37,11 @@ export const spaces = pgTable(
     name: jsonb().$type<LocalizedText>().notNull(),
     defaultLocale: text().$type<Locale>().notNull(),
     locales: text().array().$type<Locale[]>().notNull(),
+    // What the creator's page says (Platform STEP 4 §2.1). core checks white text on
+    // the colour passes AA; the database checks only that it is a colour.
+    tagline: jsonb().$type<LocalizedText>(),
+    bio: jsonb().$type<LocalizedText>(),
+    brandColor: text(),
     createdAt: createdAt(),
     updatedAt: updatedAt(),
     archivedAt: archivedAt(),
@@ -45,6 +50,9 @@ export const spaces = pgTable(
     check("spaces_name_localized", sql`app.is_localized(${t.name})`),
     check("spaces_locales", sql`app.is_locale_list(${t.locales})`),
     check("spaces_default_locale", sql`${t.defaultLocale} = any (${t.locales})`),
+    check("spaces_tagline_localized", sql`app.is_localized(${t.tagline})`),
+    check("spaces_bio_localized", sql`app.is_localized(${t.bio})`),
+    check("spaces_brand_color", sql`${t.brandColor} ~ '^#[0-9a-f]{6}$'`),
   ],
 );
 

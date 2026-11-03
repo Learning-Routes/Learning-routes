@@ -55,15 +55,16 @@ describe("the security definer functions", () => {
     const callable = [
       "bump_draft",
       "enroll",
+      "is_operator",
       "mark_published",
       "member_space_ids",
       "set_enrollment_status",
       "upgrade_enrollment",
     ];
     expect(rows.map((row: { proname: string }) => row.proname)).toEqual([
-      ...callable.slice(0, 2),
+      ...callable.slice(0, 3),
       "keep_an_owner",
-      ...callable.slice(2),
+      ...callable.slice(3),
     ]);
     for (const row of rows) {
       expect(row).toEqual({

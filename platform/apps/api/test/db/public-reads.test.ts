@@ -7,7 +7,7 @@ import { newRoute, newSpace } from "./fixtures";
 // The storefront's own way into the database (Platform STEP 4 §1): a role that reads
 // views and nothing else, so a stranger's page can show only what a stranger may see.
 
-const PUBLIC_VIEW = /\bfrom public_(spaces|routes)\b/;
+const PUBLIC_VIEW = /\bfrom public_(spaces|routes|catalog)\b/;
 const HASH = "0".repeat(64);
 const PERMISSION_DENIED = /permission denied/;
 // Hyperdrive does not cache a query that names a STABLE or VOLATILE function, and it
@@ -157,7 +157,7 @@ describe("the storefront's role", () => {
         where c.relkind = 'v' and n.nspname = 'public'`,
     );
     expect(views.map((view: { relname: string }) => view.relname)).toEqual(
-      expect.arrayContaining(["public_routes", "public_spaces"]),
+      expect.arrayContaining(["public_catalog", "public_routes", "public_spaces"]),
     );
     for (const view of views) {
       expect(view.rolname, view.relname).toBe("lr_migrator");
@@ -200,7 +200,7 @@ describe("what a stranger can read", () => {
     const columns = await query(
       URLS.migrator,
       `select table_name, column_name from information_schema.columns
-        where table_name in ('public_spaces', 'public_routes')`,
+        where table_name in ('public_spaces', 'public_routes', 'public_catalog')`,
     );
     const names = columns.map((column: { column_name: string }) => column.column_name);
     for (const refused of ["snapshot", "blocks", "email", "user_id", "published_by_user_id"]) {
@@ -251,6 +251,54 @@ describe("what a stranger can read", () => {
       expect(JSON.stringify(space)).not.toContain(member);
       expect(JSON.stringify(space)).not.toContain("@example.com");
     });
+  });
+});
+
+describe("the catalog", () => {
+  async function listed(db: pg.Client, status: string) {
+    const spaceId = await newSpace(db, "public-read");
+    const routeId = await newRoute(db, spaceId, "listed");
+    await publish(db, spaceId, routeId, 1, snapshotOf(routeId, "listed", "Listed"));
+    await db.query(
+      "insert into catalog_listings (route_id, space_id, status) values ($1, $2, $3)",
+      [routeId, spaceId, status],
+    );
+    return routeId;
+  }
+
+  it.each(["requested", "declined", "withdrawn"])("never shows a %s route", async (status) => {
+    await rolledBack(URLS.migrator, async (db) => {
+      const routeId = await listed(db, status);
+      await db.query("set local role lr_public");
+      const { rows } = await db.query("select 1 from public_catalog where route_id = $1", [
+        routeId,
+      ]);
+      expect(rows).toEqual([]);
+    });
+  });
+
+  it("shows an approved route, and keeps its newer version listed", async () => {
+    await rolledBack(URLS.migrator, async (db) => {
+      const routeId = await listed(db, "approved");
+      const { rows: owners } = await db.query("select space_id from routes where id = $1", [
+        routeId,
+      ]);
+      await publish(db, owners[0]?.space_id, routeId, 2, snapshotOf(routeId, "listed", "Newer"));
+      await db.query("set local role lr_public");
+      const { rows } = await db.query(
+        "select version, title, topic, price_minor from public_catalog where route_id = $1",
+        [routeId],
+      );
+      expect(rows).toEqual([
+        { version: 2, title: { es: "Newer" }, topic: "otros", price_minor: null },
+      ]);
+    });
+  });
+
+  it("a stranger cannot read who applied to teach", async () => {
+    await expect(query(URLS.public, "select * from creator_applications")).rejects.toThrow(
+      PERMISSION_DENIED,
+    );
   });
 });
 
