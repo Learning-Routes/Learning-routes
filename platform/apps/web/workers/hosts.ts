@@ -1,9 +1,9 @@
+import { isReservedSlug } from "@learning-routes/core/reserved-slugs";
+
 // A creator's pages live on [slug].CREATOR_DOMAIN (Platform STEP 4 §0, §5). One Worker
 // serves every host, and React Router routes by path, so a creator's host renders from
 // an internal path nobody can ask for directly. The cache key stays the public URL.
 
-/** Not a creator's: hosts the platform keeps, whatever a slug might say. */
-const RESERVED = ["app", "www", "new", "api", "mail", "admin", "staging", "static"];
 const SLUG = /^[a-z0-9]+(-[a-z0-9]+)*$/;
 
 export const INTERNAL_PREFIX = "/_creador";
@@ -21,7 +21,7 @@ export function creatorSlugOf(host: string, { appOrigin, creatorDomain }: Hosts)
     return null;
   }
   const slug = lower.slice(0, -suffix.length);
-  return SLUG.test(slug) && !RESERVED.includes(slug) ? slug : null;
+  return SLUG.test(slug) && !isReservedSlug(slug) ? slug : null;
 }
 
 /** Pages with a session, which exist only on the app's host. */
