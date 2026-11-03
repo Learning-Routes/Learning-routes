@@ -7,17 +7,18 @@ Written by the reviewer, 2 November 2026. Start only after Platform STEP 3 is me
 **The owner approved design v2** (`platform/docs/design/reference/v2/`) as the direction, and the product model:
 - **Students find routes in two places:** the catalog on learningroutes.com, and each creator's own page on `[slug].learningroutes.com` (custom domains later).
 - **Creators join by invitation.** "Quiero enseñar" leaves an application; the owner approves it.
-- **Students pay per route,** with module 1 free. Payment arrives in Platform STEP 8. A platform subscription comes later; leave room for it, build nothing.
+- **Students pay per route,** with module 1 free. Payment arrives in Platform STEP 9. A platform subscription comes later; leave room for it, build nothing.
 - **One account, many roles.** The app has two modes, Aprender and Enseñar, and an admin area for the owner only.
 
 **This STEP covers everything up to "the student is enrolled":** the landing, the catalog, the creator's page, the route page, "Empezar gratis", and "Quiero enseñar".
 
 **The next STEPs:**
 - Platform STEP 5: the creator's MCP;
-- Platform STEP 6: the first deploy;
-- Platform STEP 7, learning: the map, topics, questions, extra practice, exams, reviews, and the "Sigue con el módulo 2" screen;
-- Platform STEP 8: payments;
-- Platform STEP 9: teaching, with the studio, the assistant and invitations.
+- Platform STEP 6: the landing comes back, and every page gets its moment;
+- Platform STEP 7: the first deploy;
+- Platform STEP 8, learning: the map, topics, questions, extra practice, exams, reviews, and the "Sigue con el módulo 2" screen;
+- Platform STEP 9: payments;
+- Platform STEP 10: teaching, with the studio, the assistant and invitations.
 
 **Where each page lives (`FOUNDATIONS.md` §3, ADR 0004):**
 - **Platform host (learningroutes.com):** the landing, the catalog. Server HTML, no JavaScript, no session.
@@ -108,7 +109,7 @@ Run every migration through squawk, and follow the naming rules.
 1. **Actions:**
    - `catalog.request` (owner of the space, `ui` only): requests a listing for a published route. It is refused if the route has no price set and no free module.
    - `catalog.withdraw` (owner).
-   - `catalog.decide` (operator only, `ui` only): approve or decline, with an optional note to the creator. This STEP stores the note; STEP 9 emails it.
+   - `catalog.decide` (operator only, `ui` only): approve or decline, with an optional note to the creator. This STEP stores the note; STEP 10 emails it.
 2. **The catalog page** at learningroutes.com/explorar, as in v2's `Catalogo`:
    - "¿Qué quieres aprender?", a search field and topic filters;
    - one card per route, showing the route's own line, drawn from its module and lesson counts so that no two cards look the same, its title, "Con [creador]" and its module and topic counts in words;
@@ -140,7 +141,7 @@ Run every migration through squawk, and follow the naming rules.
 
 1. **The creator's page** at `[slug].learningroutes.com`, from v2's `Vitrina`:
    - name, tagline, bio;
-   - an initial avatar until photos arrive in STEP 9;
+   - an initial avatar until photos arrive in STEP 10;
    - the creator's routes;
    - the brand colour on the primary actions;
    - "Hecho con Learning Routes" in the footer.
@@ -166,7 +167,7 @@ Run every migration through squawk, and follow the naming rules.
    - A route that is not published, not open or not found shows a plain message with a link back to the catalog.
 2. **Mis rutas, minimal, from v2's `MisRutas`:**
    - the Aprender / Enseñar switch, where Enseñar shows only for members with a teaching role;
-   - one card per enrollment, with the route's line, its title, "Con [creador]" and "Seguir". In this STEP, "Seguir" opens a placeholder page; STEP 7 builds the map;
+   - one card per enrollment, with the route's line, its title, "Con [creador]" and "Seguir". In this STEP, "Seguir" opens a placeholder page; STEP 8 builds the map;
    - the empty state: "Todavía no estudias ninguna ruta.", with a link to the catalog.
 3. **"Quiero enseñar", on the app host,** from v2's `Ensenar`:
    - name, email, what they teach, and an optional link;
@@ -176,7 +177,7 @@ Run every migration through squawk, and follow the naming rules.
 
    No email is sent in this STEP. The page works without signing in.
 4. **Admin, minimal, at `/admin`, operators only, from v2's `Operador`:**
-   - the creator applications, with "Ya envié la invitación" or "Rechazar". The real invitation comes in STEP 9;
+   - the creator applications, with "Ya envié la invitación" or "Rechazar". The real invitation comes in STEP 10;
    - the catalog requests, with approve or decline and a note;
    - choosing the landing's "Rutas para empezar".
 

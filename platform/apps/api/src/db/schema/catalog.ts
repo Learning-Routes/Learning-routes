@@ -28,7 +28,7 @@ export const catalogListings = pgTable(
     routeId: uuid().notNull(),
     spaceId: uuid().notNull(),
     status: text().$type<(typeof LISTING_STATUSES)[number]>().notNull(),
-    // To the creator. This STEP stores it; STEP 9 emails it.
+    // To the creator. This STEP stores it; STEP 10 emails it.
     note: text(),
     requestedAt: createdAt(),
     decidedAt: time(),
