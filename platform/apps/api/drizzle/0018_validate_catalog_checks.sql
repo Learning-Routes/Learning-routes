@@ -8,3 +8,5 @@ alter table routes validate constraint routes_price;
 alter table spaces validate constraint spaces_tagline_localized;
 --> statement-breakpoint
 alter table spaces validate constraint spaces_bio_localized;
+--> statement-breakpoint
+alter table spaces validate constraint spaces_slug_not_reserved;
