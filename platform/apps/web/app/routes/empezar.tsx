@@ -41,7 +41,10 @@ async function enroll({ request, context }: Args, routeId: string) {
     return redirect(SIGN_IN);
   }
   if (enrolled.body?.ok) {
-    return redirect(MY_ROUTES, { headers: cookieHeaders(enrolled.cookies) });
+    const { enrollmentId } = enrolled.body.output as { enrollmentId: string };
+    return redirect(`${MY_ROUTES}?nueva=${encodeURIComponent(enrollmentId)}`, {
+      headers: cookieHeaders(enrolled.cookies),
+    });
   }
   return null;
 }

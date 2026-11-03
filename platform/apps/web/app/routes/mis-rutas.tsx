@@ -3,6 +3,7 @@ import { CATALOG_TEXT } from "@learning-routes/core/copy/catalog";
 import { BRAND, negotiateLocale } from "@learning-routes/core/locales";
 import type { OwnEnrollment } from "@learning-routes/core/repos/ports";
 import { routeLine } from "@learning-routes/route-map/route-line";
+import { useEffect } from "react";
 import { redirect } from "react-router";
 import { runApiAction } from "../app-api.server";
 import "../app-pages/app-pages.css";
@@ -26,6 +27,7 @@ export async function loader({ request, context }: Route.LoaderArgs) {
   }
   return {
     ...answer.body.output,
+    newEnrollment: new URL(request.url).searchParams.get("nueva"),
     locale: negotiateLocale(request.headers.get("accept-language"), "es"),
     platformOrigin: context.get(pageContext).platformOrigin,
   };
@@ -38,17 +40,40 @@ export function meta({ loaderData }: Route.MetaArgs) {
   return [{ title: `${title} · ${BRAND}` }, { name: "robots", content: "noindex" }];
 }
 
-function EnrollmentLine({ lessons, seed }: { lessons: number[]; seed: string }) {
+function EnrollmentLine({
+  lessons,
+  completed,
+  seed,
+  isNew,
+}: {
+  lessons: number[];
+  completed: number;
+  seed: string;
+  isNew: boolean;
+}) {
   const line = routeLine(lessons, seed);
+  const total = lessons.reduce((sum, count) => sum + count, 0);
+  const done = total === 0 ? 0 : Math.min(1, completed / total);
   return (
-    <svg className="route-line" viewBox="0 0 320 100" aria-hidden="true">
+    <svg
+      className={`route-line ${isNew ? "route-line-new" : ""}`.trim()}
+      viewBox="0 0 320 100"
+      aria-hidden="true"
+    >
       <path className="route-line-road" d={line.path} />
-      <path className="route-line-way route-line-way-accent" d={line.path} />
-      <circle
-        className="route-line-start route-line-start-accent"
-        cx={line.start.x}
-        cy={line.start.y}
-        r="9"
+      {/* Done in green, as far as the student has really gone; the gold dot is where they are. */}
+      <path
+        className="route-line-done"
+        d={line.path}
+        pathLength={1}
+        strokeDasharray={`${done} 1`}
+      />
+      <path
+        className="route-line-here"
+        d={line.path}
+        pathLength={1}
+        strokeDasharray="0 2"
+        strokeDashoffset={-done}
       />
       <rect
         className="route-line-end"
@@ -63,7 +88,13 @@ function EnrollmentLine({ lessons, seed }: { lessons: number[]; seed: string }) 
 }
 
 export default function MisRutas({ loaderData }: Route.ComponentProps) {
-  const { enrollments, teaches, locale, platformOrigin } = loaderData;
+  const { enrollments, teaches, locale, platformOrigin, newEnrollment } = loaderData;
+  // The dot arrives once: a reload of this page isn't the first visit.
+  useEffect(() => {
+    if (newEnrollment) {
+      window.history.replaceState(null, "", "/mis-rutas");
+    }
+  }, [newEnrollment]);
   const words = APP_PAGES_TEXT[locale];
   const catalog = `${platformOrigin}/${locale}/explorar`;
   return (
@@ -86,7 +117,7 @@ export default function MisRutas({ loaderData }: Route.ComponentProps) {
           </ul>
         </nav>
       </header>
-      <main className="app-page">
+      <main className="app-page moment">
         <h1 className="app-title">{words.myRoutes}</h1>
         {enrollments.length === 0 ? (
           <EmptyState
@@ -100,7 +131,12 @@ export default function MisRutas({ loaderData }: Route.ComponentProps) {
             <ul className="my-routes">
               {enrollments.map((enrollment) => (
                 <li key={enrollment.enrollmentId} className="my-route">
-                  <EnrollmentLine lessons={enrollment.lessonsPerModule} seed={enrollment.routeId} />
+                  <EnrollmentLine
+                    lessons={enrollment.lessonsPerModule}
+                    completed={enrollment.completedLessons}
+                    seed={enrollment.routeId}
+                    isNew={enrollment.enrollmentId === newEnrollment}
+                  />
                   <h2 className="route-card-title">
                     {inLocale(enrollment.title, locale, enrollment.sourceLocale)}
                   </h2>

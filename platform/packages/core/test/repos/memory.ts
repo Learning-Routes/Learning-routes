@@ -454,6 +454,9 @@ export function memoryRepos(state: State, actorId = ""): Repos {
                   (snapshot?.lessons ?? []).filter((lesson) => lesson.moduleId === module.id)
                     .length,
               ),
+              completedLessons: (snapshot?.lessons ?? []).filter(
+                (lesson) => state.progress.get(`${row.id}:${lesson.id}`)?.status === "completed",
+              ).length,
             };
           }),
       }),

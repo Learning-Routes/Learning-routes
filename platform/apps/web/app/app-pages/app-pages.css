@@ -90,12 +90,6 @@
 .my-route .route-card-creator {
   margin-bottom: var(--space-2);
 }
-.route-line-way-accent {
-  stroke: var(--color-accent);
-}
-.route-line-start-accent {
-  fill: var(--color-accent);
-}
 .admin-head {
   display: flex;
   flex-wrap: wrap;
@@ -138,4 +132,100 @@
 }
 .admin-select {
   width: auto;
+}
+
+/* Mis rutas (Platform STEP 6 §3): the card's line is the student's real progress, done in green, with
+   the gold "estás aquí" dot. The first visit after enrolling brings that dot in once. */
+.route-line-done {
+  fill: none;
+  stroke: var(--color-positive);
+  stroke-width: 6;
+  stroke-linecap: round;
+}
+.route-line-here {
+  fill: none;
+  stroke: var(--color-highlight);
+  stroke-width: 16;
+  stroke-linecap: round;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .moment .route-line-new .route-line-here {
+    animation: route-line-arrive 300ms var(--ease-out) both;
+  }
+}
+@keyframes route-line-arrive {
+  from {
+    stroke-width: 0;
+    opacity: 0;
+  }
+  to {
+    stroke-width: 16;
+    opacity: 1;
+  }
+}
+
+/* Quiero enseñar's moment: the request, drawn as the first station of a new line. */
+.teach-station {
+  display: none;
+}
+.moment .teach-station {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin: 0 0 var(--space-4);
+}
+.teach-station svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+.teach-station figcaption {
+  overflow-wrap: anywhere;
+  font-size: var(--text-title);
+  font-weight: var(--weight-display);
+}
+.teach-station-ahead {
+  fill: none;
+  stroke: var(--color-faint);
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-dasharray: 1 9;
+}
+.teach-station-line {
+  fill: none;
+  stroke: var(--color-accent);
+  stroke-width: 4;
+  stroke-linecap: round;
+  stroke-dasharray: 0.2 1;
+}
+.teach-station-stop {
+  transform-origin: 22px 22px;
+  fill: var(--color-highlight);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .moment .teach-station-line {
+    animation: teach-station-draw 900ms var(--ease-out) both;
+  }
+  .moment .teach-station-stop {
+    animation: teach-station-arrive 300ms var(--ease-out) both;
+  }
+}
+@keyframes teach-station-draw {
+  from {
+    stroke-dasharray: 0 1;
+  }
+  to {
+    stroke-dasharray: 0.2 1;
+  }
+}
+@keyframes teach-station-arrive {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }

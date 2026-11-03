@@ -181,6 +181,8 @@ export interface OwnEnrollment {
   sourceLocale: string;
   creator: LocalizedText;
   lessonsPerModule: number[];
+  /** Lessons this student has completed, for the line on their card. */
+  completedLessons: number;
 }
 
 export interface ProgressRecord {
