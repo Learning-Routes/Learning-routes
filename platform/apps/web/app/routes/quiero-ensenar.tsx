@@ -162,7 +162,7 @@ function ApplicationForm({
   words: AppPagesText;
   locale: string;
   siteKey: string;
-  onSent: (email: string) => void;
+  onSent: (sent: { email: string; teaches: string }) => void;
 }) {
   const nonce = useRouteLoaderData<{ nonce: string }>("root")?.nonce;
   const challenge = useTurnstile(siteKey, nonce);
@@ -191,17 +191,18 @@ function ApplicationForm({
     }
     setSending(true);
     const email = String(form.get("email")).trim();
+    const teaches = String(form.get("teaches")).trim();
     const outcome = await sendApplication({
       name: String(form.get("name")).trim(),
       email,
-      teaches: String(form.get("teaches")).trim(),
+      teaches,
       link: String(form.get("link")).trim() || null,
       locale,
       token: challenge.token.current,
     });
     setSending(false);
     if (outcome === "sent") {
-      onSent(email);
+      onSent({ email, teaches });
       return;
     }
     challenge.reset();
@@ -223,7 +224,7 @@ function ApplicationForm({
 export default function QuieroEnsenar({ loaderData }: Route.ComponentProps) {
   const { locale, siteKey, platformOrigin } = loaderData;
   const words = APP_PAGES_TEXT[locale];
-  const [sentTo, setSentTo] = useState<string | null>(null);
+  const [sent, setSent] = useState<{ email: string; teaches: string } | null>(null);
   return (
     <>
       <SiteHeader
@@ -233,19 +234,30 @@ export default function QuieroEnsenar({ loaderData }: Route.ComponentProps) {
       >
         {null}
       </SiteHeader>
-      <main className="app-page app-page-narrow">
+      <main className="app-page app-page-narrow moment">
         <h1 className="app-title">{words.teachTitle}</h1>
-        {sentTo ? (
-          <Notice tone="success" title={words.doneTitle}>
-            {filled(words.doneBody, { email: sentTo })}
-          </Notice>
+        {sent ? (
+          <>
+            {/* What they asked to teach, as the first station of a new line. */}
+            <figure className="teach-station">
+              <svg viewBox="0 0 320 44" aria-hidden="true">
+                <path className="teach-station-ahead" d="M36 22H316" />
+                <path className="teach-station-line" d="M22 22H316" pathLength={1} />
+                <circle className="teach-station-stop" cx="22" cy="22" r="11" />
+              </svg>
+              <figcaption>{sent.teaches}</figcaption>
+            </figure>
+            <Notice tone="success" title={words.doneTitle}>
+              {filled(words.doneBody, { email: sent.email })}
+            </Notice>
+          </>
         ) : (
           <>
             <p className="app-copy">{words.teachIntro}</p>
             <noscript>
               <Notice tone="info" title={words.needsScript} />
             </noscript>
-            <ApplicationForm words={words} locale={locale} siteKey={siteKey} onSent={setSentTo} />
+            <ApplicationForm words={words} locale={locale} siteKey={siteKey} onSent={setSent} />
             <p className="app-fine">{words.privacy}</p>
           </>
         )}
