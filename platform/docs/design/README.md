@@ -57,4 +57,4 @@ python3 -m http.server 8001
 
 Then open `http://localhost:8001`. The page also loads Archivo from Google Fonts, so it needs a connection.
 
-The storefront can't ship this page's approach: three.js is about 600 KB, and the storefront's budget is 1 KB of JavaScript. The storefront's route is server-rendered SVG, from v2 (Platform STEP 4 §4).
+The rest of the storefront can't ship this page's approach: three.js is about 570 KB (143 KB gzip), and only the landing may load it (ADR 0008). Every other storefront page's route is server-rendered SVG.

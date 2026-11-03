@@ -14,6 +14,10 @@ export default {
       // Run by scripts/check-lighthouse.mjs through pnpm exec, not imported.
       ignoreDependencies: ["lighthouse"],
     },
+    "apps/web": {
+      // Each is built on its own by vite.config.ts, and a page names it by its address.
+      entry: ["app/enhance/landing.ts"],
+    },
     "apps/api": {
       // Read by Better Auth's CLI through pnpm db:auth-schema.
       // The second Worker's entry is named in wrangler.mcp.jsonc, which knip does not read.

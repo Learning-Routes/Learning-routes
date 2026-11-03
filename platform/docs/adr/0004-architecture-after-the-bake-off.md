@@ -13,7 +13,7 @@ The reviewer built twelve frontends against one contract, ran the same browser s
 
 ## The storefront ships no React
 
-A creator's storefront is server HTML with no hydration. A route in `app/routes/storefront/` exports `handle = storefront`, and the root then renders no `<Scripts/>`. The prototype measured 0.3 KB of JavaScript against 111 KB hydrated. Ours is 220 B gzip (`theme.js`), with a 1 KB budget. The student app and the studio are full React apps.
+A creator's storefront is server HTML with no hydration. A route in `app/routes/storefront/` exports `handle = storefront`, and the root then renders no `<Scripts/>`. The prototype measured 0.3 KB of JavaScript against 111 KB hydrated. Ours was 220 B gzip (`theme.js`), with a 1 KB budget; ADR 0008 replaces that budget. The student app and the studio are full React apps.
 
 Every HTML response carries a strict CSP with a fresh nonce: scripts only from our origin or with that nonce, no inline styles, no `unsafe-inline`. That needs a custom `entry.server.tsx`, which ADR 0003 said we did not have; we have one now.
 

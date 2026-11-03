@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// The storefront's performance targets (Platform STEP 3 §4), measured with Lighthouse
+// The storefront's performance targets (ADR 0008), measured with Lighthouse
 // on the built preview, mobile profile. Three runs, the median of each number, since
 // one run is noisy. Prints the numbers; fails over a target. The preview serves files
 // uncompressed and Cloudflare never does, so a small proxy gzips them, as production
@@ -22,11 +22,13 @@ const PAGES = {
 };
 const TEXT = /^(text\/|application\/(javascript|json)|image\/svg)/;
 const RUNS = 3;
-const TARGETS = {
+// ADR 0008: three.js may block a little on the landing, and nothing may elsewhere, so
+// TBT there must round to 0: "under 1 ms".
+const targetsFor = (name) => ({
   "largest-contentful-paint": { name: "LCP", limit: 1800, unit: " ms" },
   "cumulative-layout-shift": { name: "CLS", limit: 0.05, unit: "" },
-  "total-blocking-time": { name: "TBT", limit: 50, unit: " ms" },
-};
+  "total-blocking-time": { name: "TBT", limit: name === "landing" ? 150 : 1, unit: " ms" },
+});
 
 const preview = spawn(
   "pnpm",
@@ -122,7 +124,7 @@ async function measure(name, page) {
   }
   console.log(`\n${name}: ${weightOf(runs[0])}`);
   let isOver = false;
-  for (const [id, { name: metric, limit, unit }] of Object.entries(TARGETS)) {
+  for (const [id, { name: metric, limit, unit }] of Object.entries(targetsFor(name))) {
     const value = median(runs.map((audits) => audits[id].numericValue));
     // A run with no measurement must fail: NaN compares false against any limit.
     const over = !Number.isFinite(value) || value >= limit;

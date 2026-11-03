@@ -3,7 +3,7 @@ import { ActionError, defineAction, inSpace } from "./define";
 import { refused, unwrap } from "./results";
 
 // The catalog (Platform STEP 4 §3.1): an owner asks for a published route to be listed
-// and may withdraw it; only an operator decides. The note goes to the creator in STEP 9.
+// and may withdraw it; only an operator decides. The note goes to the creator in STEP 10.
 
 const NOT_LISTABLE = "publish the route, with a price or at least one module, before listing it";
 

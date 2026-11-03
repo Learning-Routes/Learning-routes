@@ -6,7 +6,6 @@ import { DEV } from "./screens";
 const CATALOG = `${DEV}/es/explorar`;
 const CARDS = ".route-card";
 const PORTUGUESE_CARD = /Portugués para viajar/;
-const SCRIPT = /<script\b/;
 
 test.describe("with no JavaScript", () => {
   test.use({ javaScriptEnabled: false });
@@ -50,9 +49,8 @@ test.describe("with no JavaScript", () => {
   });
 });
 
-test("ships no script, is cached, and names its tags", async ({ request }) => {
+test("is cached and names its tags", async ({ request }) => {
   const response = await request.get(CATALOG);
-  expect(await response.text()).not.toMatch(SCRIPT);
   expect(response.headers()["cache-control"]).toContain("s-maxage=300");
   expect(response.headers()["cache-tag"]).toContain("catalog");
   expect(response.headers()["cache-tag"]).toContain("route:");

@@ -162,7 +162,7 @@ export interface Enrollments {
    * Enrolls the acting user (never anyone else) in a published, open route, as a student
    * unless they hold a role in its space: not_found for a route they cannot see, invalid
    * for a closed one they can. A paid route's module 1 is free, so a paid route enrolls;
-   * paying for the rest is Platform STEP 8's.
+   * paying for the rest is Platform STEP 9's.
    */
   enroll(routeId: string): Promise<RepoResult<{ enrollmentId: string; spaceId: string }>>;
   /**
