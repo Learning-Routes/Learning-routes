@@ -3,6 +3,7 @@
 export const ACTION_NAMES = [
   "space.get",
   "space.update",
+  "space.create",
   "membership.add",
   "route.create",
   "route.get",

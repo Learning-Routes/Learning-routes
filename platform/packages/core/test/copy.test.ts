@@ -113,6 +113,7 @@ describe("the copy check", () => {
       expect(APP_PAGES_TEXT[locale].joiningBody).toContain("{creator}");
       expect(APP_PAGES_TEXT[locale].doneBody).toContain("{email}");
       expect(ADMIN_TEXT[locale].place).toContain("{n}");
+      expect(ADMIN_TEXT[locale].created).toContain("{slug}");
       expect(CREATOR_TEXT[locale].startPaid).toContain("{price}");
       expect(CREATOR_TEXT[locale].moduleTitle).toContain("{title}");
       expect(CREATOR_TEXT[locale].inLanguage).toContain("{language}");

@@ -13,13 +13,14 @@ import { enrollmentCreate, enrollmentList, enrollmentUpgrade } from "./enrollmen
 import type { ActionName } from "./names";
 import { reviewSubmit } from "./review";
 import { routeCreate, routeGet, routeList, routePublish } from "./routes";
-import { membershipAdd, spaceGet, spaceUpdate } from "./spaces";
+import { membershipAdd, spaceCreate, spaceGet, spaceUpdate } from "./spaces";
 
 // Every action the platform has. `satisfies` holds it to ACTION_NAMES: a name
 // missing here, or an action not named there, does not compile.
 export const ACTIONS = {
   "space.get": spaceGet,
   "space.update": spaceUpdate,
+  "space.create": spaceCreate,
   "membership.add": membershipAdd,
   "route.create": routeCreate,
   "route.get": routeGet,

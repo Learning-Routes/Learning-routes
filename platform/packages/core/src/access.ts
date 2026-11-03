@@ -55,6 +55,7 @@ export const PERMISSIONS = {
   "catalog.feature": { operator: ["ui"] },
   "admin.overview": { operator: ["ui"] },
   "application.decide": { operator: ["ui"] },
+  "space.create": { operator: ["ui"] },
   // Only ever the actor's own.
   "enrollment.list": EVERYONE,
 } as const satisfies Record<ActionName, Row>;

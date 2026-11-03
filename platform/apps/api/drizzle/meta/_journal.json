@@ -169,6 +169,20 @@
       "when": 1793673258150,
       "tag": "0023_start_grants",
       "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "7",
+      "when": 1793736373563,
+      "tag": "0024_create_space",
+      "breakpoints": true
+    },
+    {
+      "idx": 25,
+      "version": "7",
+      "when": 1793736374381,
+      "tag": "0025_create_space_grants",
+      "breakpoints": true
     }
   ]
 }

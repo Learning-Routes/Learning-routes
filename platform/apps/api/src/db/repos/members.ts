@@ -1,11 +1,30 @@
 import type { Memberships, Spaces } from "@learning-routes/core/repos/ports";
-import { and, asc, eq } from "drizzle-orm";
+import { and, asc, eq, sql } from "drizzle-orm";
 import { memberships, spaces } from "../schema/tenancy";
 import { attempt, type Db, fail, ok } from "./shared";
 
 // Spaces and who belongs to them, on Postgres (Platform STEP 2 §4).
 
 export const spacesRepo = (db: Db): Spaces => ({
+  // Through app.create_space, which checks who is asking: lr_app cannot insert a space.
+  create: ({ name, slug, locale, ownerEmail }) =>
+    attempt(db, async () => {
+      const localized = JSON.stringify({ [locale]: name });
+      const result = await db.execute<{ outcome: string; space_id: string | null }>(
+        sql`select outcome, space_id from app.create_space(${slug}, ${localized}::jsonb, ${locale}, ${ownerEmail})`,
+      );
+      const [row] = result.rows;
+      if (row?.outcome === "ok" && row.space_id !== null) {
+        return ok({ spaceId: row.space_id });
+      }
+      return fail(
+        row?.outcome === "no_account"
+          ? "invalid"
+          : row?.outcome === "slug_taken"
+            ? "conflict"
+            : "not_found",
+      );
+    }),
   async get(spaceId) {
     const [row] = await db
       .select({

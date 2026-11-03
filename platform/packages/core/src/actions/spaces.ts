@@ -1,7 +1,7 @@
 import * as z from "zod";
 import { checkBrandColor } from "../brand-color";
 import { SpaceRole } from "../domain";
-import { LocalizedText } from "../localized-text";
+import { Locale, LocalizedText } from "../localized-text";
 import { checkMembershipChange } from "../memberships";
 import { isReservedSlug } from "../reserved-slugs";
 import { ActionError, defineAction, inSpace } from "./define";
@@ -29,6 +29,27 @@ export const spaceGet = defineAction({
   input: z.strictObject({ spaceId: z.uuid() }),
   target: (input) => ({ kind: "space", id: input.spaceId }),
   run: async (ctx, input) => unwrap(await ctx.repos.spaces.get(input.spaceId)),
+});
+
+/**
+ * A new space and its owner (Platform STEP 5 §1), until invitations arrive in STEP 9.
+ * invalid: nobody has signed in with that address. conflict: the slug is taken.
+ */
+export const spaceCreate = defineAction({
+  name: "space.create",
+  kind: "mutation",
+  description: "Create a space and its owner, an account that has signed in. Operators only.",
+  input: z.strictObject({
+    name: z.string().trim().min(1).max(200),
+    slug: SpaceSlug,
+    ownerEmail: z.email().max(320),
+    locale: Locale,
+  }),
+  target: () => ({ kind: "platform", id: "platform" }),
+  async run(ctx, input) {
+    const { spaceId } = unwrap(await ctx.repos.spaces.create(input));
+    return { spaceId, slug: input.slug };
+  },
 });
 
 /** What the creator's page says, and the colour of its actions (Platform STEP 4 §2.1). */

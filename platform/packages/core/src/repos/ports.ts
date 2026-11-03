@@ -42,8 +42,17 @@ export interface SpacePage {
   brandColor?: string | null | undefined;
 }
 
+export interface NewSpace {
+  name: string;
+  slug: string;
+  locale: Locale;
+  ownerEmail: string;
+}
+
 export interface Spaces {
   get(spaceId: string): Promise<RepoResult<SpaceRecord>>;
+  /** An operator's. invalid: nobody has signed in with the address. conflict: the slug is taken. */
+  create(space: NewSpace): Promise<RepoResult<{ spaceId: string }>>;
   update(spaceId: string, page: SpacePage): Promise<RepoResult<void>>;
 }
 

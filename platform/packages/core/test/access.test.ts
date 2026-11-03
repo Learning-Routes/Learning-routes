@@ -31,6 +31,7 @@ const EXPECTED: Record<string, Record<string, string[]>> = {
   "catalog.feature": {},
   "admin.overview": {},
   "application.decide": {},
+  "space.create": {},
   "enrollment.list": EVERYONE,
 };
 
@@ -64,6 +65,7 @@ describe("can(role, action, via)", () => {
       "application.decide ui",
       "catalog.decide ui",
       "catalog.feature ui",
+      "space.create ui",
     ]);
   });
 
