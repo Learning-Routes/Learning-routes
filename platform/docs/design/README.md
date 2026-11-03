@@ -4,7 +4,7 @@ The tokens in `packages/design-tokens` are the source of truth. The files in `re
 
 ## The direction: v2, the current target
 
-`reference/v2/` is the target. The owner reviews it first; a separate STEP rebuilds the landing and builds the app screens from it. Until then the shipped screens and the tokens still follow the earlier direction, DM Mono included.
+`reference/v2/` is the target, approved by the owner. Platform STEP 4 built the landing, the catalog, the creator's page, the route page, Mis rutas, "Quiero enseñar" and admin from it. The later STEPs build the rest. Sign-in and the tokens still follow the earlier direction, DM Mono included.
 
 - The route line is the hero of every screen.
 - Each screen has one primary action.
@@ -57,4 +57,4 @@ python3 -m http.server 8001
 
 Then open `http://localhost:8001`. The page also loads Archivo from Google Fonts, so it needs a connection.
 
-The storefront can't ship this page's approach: three.js is about 600 KB, and the storefront's budget is 1 KB of JavaScript. Its map is server-rendered SVG with the same composition (Platform STEP 3 §4).
+The storefront can't ship this page's approach: three.js is about 600 KB, and the storefront's budget is 1 KB of JavaScript. The storefront's route is server-rendered SVG, from v2 (Platform STEP 4 §4).
