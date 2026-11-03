@@ -184,12 +184,6 @@ export function memoryRepos(state: State, actorId = ""): Repos {
         if (!space) {
           return fail("not_found");
         }
-        const taken = [...state.spaces.values()].some(
-          (other) => other.id !== spaceId && other.slug === page.slug,
-        );
-        if (taken) {
-          return fail("conflict");
-        }
         const given = Object.entries(page).filter(([, value]) => value !== undefined);
         state.spaces.set(spaceId, { ...space, ...Object.fromEntries(given) });
         return ok(undefined);
