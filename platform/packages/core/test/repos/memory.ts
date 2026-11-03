@@ -49,8 +49,10 @@ export function memoryState() {
     reviews: new Map<string, { spaceId: string; userId: string } & ReviewRecord>(),
     log: [] as ({ spaceId: string | null } & ActionLogEntry)[],
     listings: new Map<string, CatalogListing>(),
-    applications: new Map<string, ApplicationRecord & { status: string }>(),
+    applications: new Map<string, Omit<ApplicationRecord, "status"> & { status: string }>(),
     operators: new Set<string>(),
+    /** Addresses that have signed in, and whose they are. */
+    accounts: new Map<string, string>(),
     /** Bumped by every commit, so an overlapping one is caught instead of losing writes. */
     commits: 0,
   };
@@ -179,6 +181,28 @@ export function memoryRepos(state: State, actorId = ""): Repos {
         const space = state.spaces.get(spaceId);
         return space ? ok(space) : fail("not_found");
       },
+      create: async ({ slug, name, locale, ownerEmail }) => {
+        const ownerId = state.accounts.get(ownerEmail.toLowerCase());
+        if (ownerId === undefined) {
+          return fail("invalid");
+        }
+        if ([...state.spaces.values()].some((space) => space.slug === slug)) {
+          return fail("conflict");
+        }
+        const spaceId = newId();
+        state.spaces.set(spaceId, {
+          id: spaceId,
+          slug,
+          name: { [locale]: name },
+          defaultLocale: locale,
+          locales: [locale],
+          tagline: null,
+          bio: null,
+          brandColor: null,
+        });
+        state.members.set(`${spaceId}:${ownerId}`, { spaceId, userId: ownerId, role: "owner" });
+        return ok({ spaceId });
+      },
       update: async (spaceId, page) => {
         const space = state.spaces.get(spaceId);
         if (!space) {
@@ -190,7 +214,10 @@ export function memoryRepos(state: State, actorId = ""): Repos {
       },
     },
     applications: {
-      list: async () => [...state.applications.values()].filter((row) => row.status === "new"),
+      list: async () =>
+        [...state.applications.values()].filter(
+          (row) => row.status !== "declined",
+        ) as ApplicationRecord[],
       decide: async (id, status) => {
         const row = state.applications.get(id);
         if (!row) {

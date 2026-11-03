@@ -10,6 +10,7 @@ export default [
   route("mis-rutas/:enrollmentId", "routes/seguir.tsx"),
   route("quiero-ensenar", "routes/quiero-ensenar.tsx"),
   route("admin", "routes/admin.tsx"),
+  route("admin/crear-espacio", "routes/admin-create-space.tsx"),
   route("sign-in", "routes/sign-in.tsx"),
   route("sign-in/confirm", "routes/sign-in-confirm.tsx"),
   route("explorar", "routes/catalog-redirect.tsx"),

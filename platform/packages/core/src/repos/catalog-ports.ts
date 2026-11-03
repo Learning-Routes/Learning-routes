@@ -50,11 +50,12 @@ export interface ApplicationRecord {
   teaches: string;
   link: string | null;
   locale: string;
+  status: "new" | "invited";
 }
 
 /** Operators only, held by row-level security. */
 export interface Applications {
-  /** New applications, oldest first. */
+  /** Those not yet declined, oldest first. */
   list(): Promise<ApplicationRecord[]>;
   decide(id: string, status: "invited" | "declined"): Promise<RepoResult<void>>;
 }

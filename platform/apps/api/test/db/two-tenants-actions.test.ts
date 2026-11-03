@@ -77,6 +77,12 @@ describe("two tenants, through every action", () => {
         "catalog.decide": { listingId: crypto.randomUUID(), decision: "approve" },
         "catalog.feature": { listingId: crypto.randomUUID(), position: 1 },
         "admin.overview": {},
+        "space.create": {
+          name: "Otro",
+          slug: `otro-${crypto.randomUUID()}`,
+          ownerEmail: "a@example.com",
+          locale: "es",
+        },
         "application.decide": { applicationId: crypto.randomUUID(), status: "invited" },
         "membership.add": { spaceId: spaceB, userId: a, role: "owner" },
         "route.create": {

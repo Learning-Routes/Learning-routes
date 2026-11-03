@@ -307,3 +307,77 @@ describe("enrollment.list (Platform STEP 4 §6.2)", () => {
     });
   });
 });
+
+describe("space.create (Platform STEP 5 §1)", () => {
+  const OWNER_ID = "0192d3a0-0000-7000-8000-0000000000c9";
+  const input = (over: object = {}) => ({
+    name: "Ana Prueba",
+    slug: "ana-prueba",
+    ownerEmail: "ana@example.com",
+    locale: "es",
+    ...over,
+  });
+  function world() {
+    const made = worldWithOperator();
+    made.accounts.set("ana@example.com", OWNER_ID);
+    return made;
+  }
+
+  it("an operator makes a space, its owner a member, and the log keeps it", async () => {
+    const made = world();
+    const result = await call(made, OPERATOR, "space.create", input());
+    expect(result).toMatchObject({ ok: true, output: { slug: "ana-prueba" } });
+    const { spaceId } = (result as { output: { spaceId: string } }).output;
+    expect(made.spaces.get(spaceId)).toMatchObject({
+      slug: "ana-prueba",
+      name: { es: "Ana Prueba" },
+      defaultLocale: "es",
+      locales: ["es"],
+    });
+    expect(made.members.get(`${spaceId}:${OWNER_ID}`)?.role).toBe("owner");
+    const entry = made.log.find((row) => row.action === "space.create");
+    expect(entry).toMatchObject({ spaceId, actorUserId: OPERATOR, outcome: "ok" });
+    expect(JSON.stringify(entry)).not.toContain("ana@example.com");
+  });
+
+  it("does not exist for anyone else, and not through an agent or MCP", async () => {
+    const made = world();
+    for (const userId of [STAFF.owner, "a-stranger"]) {
+      expect(await call(made, userId, "space.create", input())).toMatchObject({
+        ok: false,
+        code: "not_found",
+      });
+    }
+    for (const via of ["agent", "mcp"] as const) {
+      expect(await call(made, OPERATOR, "space.create", input(), via)).toMatchObject({
+        ok: false,
+        code: "forbidden",
+      });
+    }
+  });
+
+  it("refuses an address the platform keeps, saying why", async () => {
+    const result = await call(world(), OPERATOR, "space.create", input({ slug: "docs" }));
+    expect(result).toMatchObject({ ok: false, code: "invalid_input" });
+    expect(JSON.stringify(result)).toContain("keeps this address for itself");
+  });
+
+  it("refuses an address nobody has signed in with", async () => {
+    const result = await call(
+      world(),
+      OPERATOR,
+      "space.create",
+      input({ ownerEmail: "nadie@example.com" }),
+    );
+    expect(result).toMatchObject({ ok: false, code: "invalid" });
+  });
+
+  it("refuses a slug another space has", async () => {
+    const made = world();
+    await call(made, OPERATOR, "space.create", input());
+    expect(await call(made, OPERATOR, "space.create", input())).toMatchObject({
+      ok: false,
+      code: "conflict",
+    });
+  });
+});

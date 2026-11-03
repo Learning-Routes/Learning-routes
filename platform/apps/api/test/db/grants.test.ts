@@ -126,9 +126,12 @@ describe("lr_app's table privileges", () => {
 });
 
 // The runbook re-runs this file after a restore, which resets lr_app's grants.
-const GRANTS_FILES = ["0013_app_grants", "0016_catalog_grants", "0023_start_grants"].map(
-  (tag) => new URL(`../../drizzle/${tag}.sql`, import.meta.url),
-);
+const GRANTS_FILES = [
+  "0013_app_grants",
+  "0016_catalog_grants",
+  "0023_start_grants",
+  "0025_create_space_grants",
+].map((tag) => new URL(`../../drizzle/${tag}.sql`, import.meta.url));
 const PRIVILEGES = `select coalesce(string_agg(entry, ',' order by entry), '')
                       as all
                  from (select format('%s %s %s', table_name, column_name, privilege_type) as entry
