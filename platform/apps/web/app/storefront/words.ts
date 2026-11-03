@@ -4,6 +4,7 @@ import type { LocalizedText } from "@learning-routes/core/localized-text";
 
 // How a storefront page says a route's facts, in words (Platform STEP 4 §3.2).
 
+const AND: Record<LocaleCode, string> = { es: "y", en: "and", pt: "e", fr: "et", it: "e" };
 const PLACEHOLDER = /\{(\w+)\}/g;
 
 /** The template with each {name} replaced. */
@@ -36,6 +37,18 @@ function moduleWords(locale: LocaleCode, count: number): string {
 function topicWords(locale: LocaleCode, count: number): string {
   const words = CATALOG_TEXT[locale];
   return filled(count === 1 ? words.topicOne : words.topicMany, { n: count });
+}
+
+/** "3 módulos y 14 temas". */
+export function moduleAndTopicWords(
+  locale: LocaleCode,
+  route: { moduleCount: number; lessonCount: number },
+): string {
+  const [modules, topics] = [
+    moduleWords(locale, route.moduleCount),
+    topicWords(locale, route.lessonCount),
+  ];
+  return `${modules} ${AND[locale]} ${topics}`;
 }
 
 /** "3 módulos y 14 temas, en español". */

@@ -8,9 +8,14 @@ export const DEV = "http://localhost:4174";
 const EMAIL = "lector@example.com";
 const MASKED = "le•••@example.com";
 
+/** A creator's host, in a local run. The browser resolves [slug].localhost by itself. */
+export const creatorHost = (slug: string) => `http://${slug}.localhost:4174`;
+
 export const SCREENS: Record<string, (page: Page) => Promise<unknown>> = {
   landing: (page) => page.goto(`${DEV}/es`),
   catalog: (page) => page.goto(`${DEV}/es/explorar`),
+  "creator-page": (page) => page.goto(creatorHost("mariana-ortega")),
+  "route-page": (page) => page.goto(`${creatorHost("mariana-ortega")}/portugues-para-viajar`),
   "catalog-no-results": (page) => page.goto(`${DEV}/es/explorar?q=zzzzzz`),
   components: (page) => page.goto(`${DEV}/studio/_design`),
   "sign-in": (page) => page.goto(`${DEV}/sign-in`),

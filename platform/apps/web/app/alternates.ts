@@ -12,11 +12,12 @@ export function alternates(
   origin: string,
   withText: readonly Locale[],
   path: (l: Locale) => string,
+  defaultPath = "/",
 ) {
   const link = (hrefLang: string, href: string) =>
     ({ tagName: "link", rel: "alternate", hrefLang, href }) as const;
   return [
     ...withText.map((locale) => link(locale, `${origin}${path(locale)}`)),
-    link("x-default", `${origin}/`),
+    link("x-default", `${origin}${defaultPath}`),
   ];
 }

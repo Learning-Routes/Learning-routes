@@ -18,6 +18,8 @@
   "vars": {
     "APP_ORIGIN": "https://new.learningroutes.com",
     "ENVIRONMENT": "production",
+    // Where the landing and the catalog live, until the switch moves them to the apex.
+    "PLATFORM_ORIGIN": "https://new.learningroutes.com",
     // Each creator's page is [slug].CREATOR_DOMAIN (Platform STEP 4 §0).
     "CREATOR_DOMAIN": "learningroutes.com"
   },

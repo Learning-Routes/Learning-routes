@@ -39,8 +39,9 @@ export const PUBLIC_READS = {
                    where featured_position is not null order by featured_position limit 3`,
   newestToStart: `select ${ROUTE_COLUMNS} from public_catalog
                    order by approved_at desc, route_id limit 3`,
-  spaceBySlug: `select id, slug, name, default_locale, locales
+  spaceBySlug: `select id, slug, name, default_locale, locales, tagline, bio, brand_color
                   from public_spaces where slug = $1`,
+  isRetired: "select 1 from public_retired_spaces where slug = $1",
   routeBySlug: `select ${ROUTE_COLUMNS} from public_routes where space_slug = $1 and slug = $2`,
   routesOfSpace: `select ${ROUTE_COLUMNS} from public_routes
                    where space_id = $1 order by published_at desc, route_id`,
@@ -52,6 +53,9 @@ export interface PublicSpace {
   name: LocalizedText;
   defaultLocale: string;
   locales: string[];
+  tagline: LocalizedText | null;
+  bio: LocalizedText | null;
+  brandColor: string | null;
 }
 
 export interface PublicRoute {
@@ -108,6 +112,9 @@ function spaceFrom(row: Record<string, unknown>): PublicSpace {
     name: row.name,
     defaultLocale: row.default_locale,
     locales: row.locales,
+    tagline: row.tagline,
+    bio: row.bio,
+    brandColor: row.brand_color,
   } as PublicSpace;
 }
 
@@ -141,6 +148,11 @@ export function publicRead(db: Queryable) {
     async spaceBySlug(slug: string): Promise<PublicSpace | null> {
       const { rows } = await db.query(PUBLIC_READS.spaceBySlug, [slug]);
       return rows[0] ? spaceFrom(rows[0]) : null;
+    },
+    /** Whether a slug was a space that is gone: 410, where an unknown one is 404. */
+    async isRetired(slug: string): Promise<boolean> {
+      const { rows } = await db.query(PUBLIC_READS.isRetired, [slug]);
+      return rows.length > 0;
     },
     async routeBySlug(spaceSlug: string, slug: string): Promise<PublicRoute | null> {
       const { rows } = await db.query(PUBLIC_READS.routeBySlug, [spaceSlug, slug]);

@@ -7,7 +7,7 @@ import { newRoute, newSpace } from "./fixtures";
 // The storefront's own way into the database (Platform STEP 4 §1): a role that reads
 // views and nothing else, so a stranger's page can show only what a stranger may see.
 
-const PUBLIC_VIEW = /\bfrom public_(spaces|routes|catalog)\b/;
+const PUBLIC_VIEW = /\bfrom public_(spaces|routes|catalog|retired_spaces)\b/;
 const HASH = "0".repeat(64);
 const PERMISSION_DENIED = /permission denied/;
 // Hyperdrive does not cache a query that names a STABLE or VOLATILE function, and it
@@ -233,7 +233,17 @@ describe("what a stranger can read", () => {
 
       await db.query("update spaces set archived_at = now() where id = $1", [spaceId]);
       expect(await asStranger(db, () => publicRead(db).spaceBySlug(slug))).toBeNull();
+      expect(await asStranger(db, () => publicRead(db).isRetired(slug))).toBe(true);
       expect(await asStranger(db, () => publicRead(db).routeBySlug(slug, "kept"))).toBeNull();
+    });
+  });
+
+  it("a space that exists, or never did, is not retired", async () => {
+    await rolledBack(URLS.migrator, async (db) => {
+      const spaceId = await newSpace(db, "public-read");
+      const slug = await slugOf(db, spaceId);
+      expect(await asStranger(db, () => publicRead(db).isRetired(slug))).toBe(false);
+      expect(await asStranger(db, () => publicRead(db).isRetired("never-was"))).toBe(false);
     });
   });
 

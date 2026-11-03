@@ -1,6 +1,7 @@
 import { createRequestHandler, RouterContextProvider } from "react-router";
 import { pageContext } from "../app/context";
 import { servedFromEdge } from "./edge-cache";
+import { internalRequest } from "./hosts";
 
 const requestHandler = createRequestHandler(
   () => import("virtual:react-router/server-build"),
@@ -24,13 +25,21 @@ export default {
       ctx,
       // The zone's cache; the DOM's CacheStorage type does not know of it.
       (caches as CacheStorage & { default: Cache }).default,
-      (rendered) => {
+      (publicRequest) => {
+        const rendered = internalRequest(publicRequest, {
+          appOrigin: env.APP_ORIGIN,
+          creatorDomain: env.CREATOR_DOMAIN,
+        });
+        if (rendered === null) {
+          return Promise.resolve(new Response(null, { status: 404 }));
+        }
         const nonce = btoa(String.fromCharCode(...crypto.getRandomValues(new Uint8Array(16))));
         const context = new RouterContextProvider();
         context.set(pageContext, {
           nonce,
           appOrigin: env.APP_ORIGIN,
           isDevelopment: String(env.ENVIRONMENT) === "development",
+          platformOrigin: env.PLATFORM_ORIGIN,
           creatorDomain: env.CREATOR_DOMAIN,
           runtime: { env, ctx },
         });

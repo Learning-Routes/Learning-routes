@@ -8,6 +8,12 @@ export default [
   route("sign-in", "routes/sign-in.tsx"),
   route("sign-in/confirm", "routes/sign-in-confirm.tsx"),
   route("explorar", "routes/catalog-redirect.tsx"),
+  route("_brand/:file", "routes/brand-css.ts"),
+  route("sitemap.xml", "routes/storefront/sitemap.ts", { id: "platform-sitemap" }),
+  // What a creator's host renders from (workers/hosts.ts); nobody asks for these directly.
+  route("_creador/:slug", "routes/storefront/creator-page.tsx"),
+  route("_creador/:slug/sitemap.xml", "routes/storefront/sitemap.ts", { id: "creator-sitemap" }),
+  route("_creador/:slug/:routeSlug", "routes/storefront/route-page.tsx"),
   route(":lang", "routes/storefront/home.tsx"),
   route(":lang/explorar", "routes/storefront/catalog.tsx"),
 ] satisfies RouteConfig;
