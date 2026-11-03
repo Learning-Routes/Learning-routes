@@ -102,7 +102,10 @@ module.exports = {
         path: "^apps/",
         pathNot: ["^apps/web/app/(routes/)?storefront/", "^apps/api/test/db/"],
       },
-      to: { path: ["^packages/public-read/", "^@learning-routes/public-read"] },
+      to: {
+        path: ["^packages/public-read/", "^@learning-routes/public-read"],
+        dependencyTypesNot: ["type-only"],
+      },
     },
     {
       name: "storefront-loaders-read-only-the-public-repository",

@@ -10,6 +10,8 @@ const MASKED = "le•••@example.com";
 
 export const SCREENS: Record<string, (page: Page) => Promise<unknown>> = {
   landing: (page) => page.goto(`${DEV}/es`),
+  catalog: (page) => page.goto(`${DEV}/es/explorar`),
+  "catalog-no-results": (page) => page.goto(`${DEV}/es/explorar?q=zzzzzz`),
   components: (page) => page.goto(`${DEV}/studio/_design`),
   "sign-in": (page) => page.goto(`${DEV}/sign-in`),
   "sign-in-invalid": async (page) => {

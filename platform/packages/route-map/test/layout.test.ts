@@ -459,6 +459,7 @@ test("the old satellite layout is gone", async () => {
     "../src/layout.ts",
     "../src/path-sampling.ts",
     "../src/paths.ts",
+    "../src/route-line.ts",
     "../src/route-tree.ts",
     "../src/terrain.ts",
   ]);
