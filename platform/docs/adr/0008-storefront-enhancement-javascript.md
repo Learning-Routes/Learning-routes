@@ -33,7 +33,7 @@ Every storefront page works fully with JavaScript off.
 
 **The WebGL probe runs in a worker,** because a device's first context can block for seconds.
 
-**On CI** the runner has no GPU, so Lighthouse's gate on the landing measures the text. It also reports the map forced on in software WebGL, without failing on it. The map on a real GPU is measured by hand and reported in the pull request.
+**On CI** the runner has no GPU, so Lighthouse's gate on the landing measures the text. It also measures the map forced on in software WebGL, and fails only above a ceiling of 4 s of TBT, to catch a large regression. The map on a real GPU is measured by hand and reported in the pull request.
 
 **Fixed addresses.** Each page's script is built to `/enhance/<page>.js`, unhashed, and imports hashed chunks. A storefront page sits in the edge cache, so a fixed address means a cached page never names a script an earlier deploy removed.
 

@@ -1,5 +1,5 @@
 import { enhanceClose } from "./close";
-import { probeHere, threeIsWanted, whenIdle } from "./three-gate";
+import { probe, threeIsWanted, whenIdle } from "./three-gate";
 
 // The landing's one script (ADR 0008). Everything here adds motion to server HTML that
 // already works: if any of it fails or never runs, the page stays as it is.
@@ -20,30 +20,39 @@ function stayStatic() {
 // `#mapa` asks for the map even without a real GPU: the browser tests need it, on runners with none.
 const anyGpu = window.location.hash === "#mapa";
 
-function askAWorker(): Promise<boolean> {
-  return new Promise((resolve, reject) => {
+const PROBE_LIMIT_MS = 5000;
+
+/** The worker's answer, or null when it can't tell: then this thread asks instead. */
+function askAWorker(): Promise<boolean | null> {
+  return new Promise((resolve) => {
     const worker = new Worker(new URL("./webgl-probe.worker.ts", import.meta.url), {
       type: "module",
       name: anyGpu ? "any-gpu" : "real-gpu",
     });
-    worker.onmessage = ({ data }: MessageEvent<boolean>) => {
+    const finish = (answer: boolean | null) => {
+      clearTimeout(limit);
       worker.terminate();
-      resolve(data);
+      resolve(answer);
     };
-    worker.onerror = reject;
+    const limit = setTimeout(() => finish(null), PROBE_LIMIT_MS);
+    worker.onmessage = ({ data }: MessageEvent<boolean | null>) => finish(data);
+    worker.onerror = () => finish(null);
+    worker.onmessageerror = () => finish(null);
   });
 }
 
-function hasWebGL(): Promise<boolean> {
-  const here = () =>
-    probeHere(() => {
-      const canvas = document.createElement("canvas");
-      const options = { failIfMajorPerformanceCaveat: !anyGpu };
-      // Both ids give a WebGL context, which getContext's overloads can't tell with options.
-      return (canvas.getContext("webgl2", options) ??
-        canvas.getContext("webgl", options)) as WebGLRenderingContext | null;
-    });
-  return "OffscreenCanvas" in window ? askAWorker().catch(here) : Promise.resolve(here());
+function askHere(): boolean {
+  const canvas = document.createElement("canvas");
+  const options = { failIfMajorPerformanceCaveat: !anyGpu };
+  // Both ids give a WebGL context, which getContext's overloads can't tell with options.
+  const context = (canvas.getContext("webgl2", options) ??
+    canvas.getContext("webgl", options)) as WebGLRenderingContext | null;
+  return context ? probe(context, anyGpu) : false;
+}
+
+async function hasWebGL(): Promise<boolean> {
+  const answer = "OffscreenCanvas" in window ? await askAWorker() : null;
+  return answer ?? askHere();
 }
 
 async function start() {

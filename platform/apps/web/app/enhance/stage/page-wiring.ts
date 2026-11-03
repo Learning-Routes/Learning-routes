@@ -1,11 +1,24 @@
 import type { Point } from "@learning-routes/route-map/landing-curves";
-import { type PerspectiveCamera, Vector3 } from "three";
+import { type PerspectiveCamera, type Scene, Vector3, type WebGLRenderer } from "three";
 import type { Projector } from "./labels";
 
 // What ties the stage to the page: its events, and turning map points into stage pixels.
 
 /** Lets the browser paint and answer input between two long steps. */
 export const nextTask = () => new Promise((resolve) => setTimeout(resolve));
+
+const COMPILE_LIMIT_MS = 5000;
+
+/** Off the main thread where the driver can. three.js waits forever if the context is lost. */
+export function compileWithin(
+  renderer: WebGLRenderer,
+  { scene, camera }: { scene: Scene; camera: PerspectiveCamera },
+) {
+  return Promise.race([
+    renderer.compileAsync(scene, camera),
+    new Promise((resolve) => setTimeout(resolve, COMPILE_LIMIT_MS)),
+  ]);
+}
 
 type Handlers = {
   setOnScreen: (isOnScreen: boolean) => void;
@@ -15,12 +28,14 @@ type Handlers = {
   /** `keepsPage`: the page may come back from the back/forward cache. */
   leave: (keepsPage: boolean) => void;
   pickRoute: (key: string) => void;
+  contextLost: () => void;
 };
 
 /** Every listener ends with the signal. Returns the observer, which the caller disconnects. */
 export function listenToPage(
   journey: HTMLElement,
   tabs: HTMLButtonElement[],
+  canvas: HTMLCanvasElement,
   signal: AbortSignal,
   on: Handlers,
 ) {
@@ -45,6 +60,7 @@ export function listenToPage(
   scheme.addEventListener("change", on.repaintTheme, { signal });
   window.addEventListener("pagehide", (event) => on.leave(event.persisted), { signal });
   window.addEventListener("pageshow", on.wake, { signal });
+  canvas.addEventListener("webglcontextlost", on.contextLost, { signal });
   for (const tab of tabs) {
     tab.addEventListener("click", () => on.pickRoute(tab.dataset.route ?? ""), { signal });
   }
@@ -84,6 +100,7 @@ export function markRoute(tabs: HTMLButtonElement[], key: string) {
 export function undoStage(journey: HTMLElement, panels: HTMLElement[]) {
   journey.classList.remove("lp-gl");
   journey.style.height = "";
+  journey.dataset.stage = "static";
   for (const panel of panels) {
     panel.classList.remove("lp-on");
     panel.style.width = "";

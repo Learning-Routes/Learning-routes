@@ -17,8 +17,9 @@ const PROXY_PORT = 4176;
 const ORIGIN = `http://localhost:${PORT}`;
 const PAGES = {
   landing: `http://localhost:${PROXY_PORT}/es`,
-  // The map forced on: reported, never failed. A CI runner has no GPU, so there /es stays on its
-  // text, as it does for any visitor without one, and this is the same page in software WebGL.
+  // The map forced on. A CI runner has no GPU, so there /es stays on its text, as it does for any
+  // visitor without one, and this is the same page in software WebGL: too slow to hold to the
+  // visitors' budget, so it only has a ceiling that catches a large regression.
   "landing, the map forced": `http://localhost:${PROXY_PORT}/es#mapa`,
   catalog: `http://localhost:${PROXY_PORT}/es/explorar`,
   "route page": `http://mariana-ortega.localhost:${PROXY_PORT}/portugues-para-viajar`,
@@ -27,10 +28,15 @@ const TEXT = /^(text\/|application\/(javascript|json)|image\/svg)/;
 const RUNS = 3;
 // ADR 0008: three.js may block a little on the landing, and nothing may elsewhere, so
 // TBT there must round to 0: "under 1 ms".
+const FORCED_MAP_TBT = 4000;
 const targetsFor = (name) => ({
   "largest-contentful-paint": { name: "LCP", limit: 1800, unit: " ms" },
   "cumulative-layout-shift": { name: "CLS", limit: 0.05, unit: "" },
-  "total-blocking-time": { name: "TBT", limit: name.startsWith("landing") ? 150 : 1, unit: " ms" },
+  "total-blocking-time": {
+    name: "TBT",
+    limit: name.includes("forced") ? FORCED_MAP_TBT : name === "landing" ? 150 : 1,
+    unit: " ms",
+  },
 });
 
 const preview = spawn(
@@ -135,7 +141,7 @@ async function measure(name, page) {
     const shown = unit ? Math.round(value) : value.toFixed(3);
     console.log(`${metric}: ${shown}${unit} (target under ${limit}${unit})${over ? ", over" : ""}`);
   }
-  return name.includes("forced") ? false : isOver;
+  return isOver;
 }
 
 let failed = false;

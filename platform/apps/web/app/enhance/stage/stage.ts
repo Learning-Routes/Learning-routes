@@ -10,6 +10,7 @@ import { PCFShadowMap, SRGBColorSpace, WebGLRenderer } from "three";
 import { buildLabels, type Labels, type Projector, showRoute } from "./labels";
 import { placeNames } from "./name-frame";
 import {
+  compileWithin,
   listenToPage,
   markRoute,
   nextTask,
@@ -37,8 +38,7 @@ import {
 } from "./texts";
 import { applyTheme } from "./theme";
 
-// The landing's stage, from v1's landing_stage_controller.js (STEP 41 §2). The text is server
-// HTML and is already on screen; this adds the map behind it. Canvas and names are aria-hidden.
+// The landing's stage, from v1's controller (STEP 41 §2): the map behind the server's text.
 
 const HEADER = 64;
 
@@ -101,7 +101,11 @@ export class LandingStage {
     this.dots = buildPanelDots(
       this.page.dotsList,
       this.page.panels,
-      (panel) => this.goToPanel(panel),
+      (panel) =>
+        window.scrollTo({
+          top: this.pinTop + panelOffset(panel, PANEL_WEIGHTS) * this.stageHeight,
+          behavior: "smooth",
+        }),
       this.listeners.signal,
     );
     this.setRoute(at(this.page.tabs, 0).dataset.route ?? "");
@@ -115,8 +119,9 @@ export class LandingStage {
     this.lastTime = performance.now();
     applyTheme(this.parts, this.journey);
     await this.layOutOverTime();
+    await compileWithin(renderer, this.parts);
     this.listen();
-    await renderer.compileAsync(this.parts.scene, this.parts.camera);
+    this.frame();
     this.loop();
     this.journey.dataset.stage = "on";
   }
@@ -133,20 +138,31 @@ export class LandingStage {
   }
 
   private listen() {
-    this.observer = listenToPage(this.journey, this.page.tabs, this.listeners.signal, {
-      setOnScreen: (isOnScreen) => {
-        this.isOnScreen = isOnScreen;
-        this.wake();
+    this.observer = listenToPage(
+      this.journey,
+      this.page.tabs,
+      this.page.canvas,
+      this.listeners.signal,
+      {
+        setOnScreen: (isOnScreen) => {
+          this.isOnScreen = isOnScreen;
+          this.wake();
+        },
+        wake: () => this.wake(),
+        resize: () => this.resize(),
+        repaintTheme: () => {
+          applyTheme(this.parts, this.journey);
+          this.frame();
+        },
+        leave: (keepsPage) => (keepsPage ? this.stopLoop() : this.dispose()),
+        contextLost: () => {
+          this.dispose();
+          undoStage(this.journey, this.page.panels);
+          this.journey.dataset.stage = "static";
+        },
+        pickRoute: (key) => this.setRoute(key),
       },
-      wake: () => this.wake(),
-      resize: () => this.resize(),
-      repaintTheme: () => {
-        applyTheme(this.parts, this.journey);
-        this.frame();
-      },
-      leave: (keepsPage) => (keepsPage ? this.stopLoop() : this.dispose()),
-      pickRoute: (key) => this.setRoute(key),
-    });
+    );
   }
 
   private stopLoop() {
@@ -154,7 +170,6 @@ export class LandingStage {
     this.frameRequest = 0;
   }
 
-  /** Dispose on navigation: every listener, the observer, the loop and the GL context. */
   dispose() {
     this.stopLoop();
     this.listeners.abort();
@@ -170,11 +185,6 @@ export class LandingStage {
     }
     showRoute(this.labels, route, this.page.words);
     markRoute(this.page.tabs, key);
-  }
-
-  private goToPanel(panel: number) {
-    const y = this.pinTop + panelOffset(panel, PANEL_WEIGHTS) * this.stageHeight;
-    window.scrollTo({ top: y, behavior: "smooth" });
   }
 
   private measure() {

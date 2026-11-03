@@ -17,15 +17,31 @@ export async function threeIsWanted({ matchMedia, hasWebGL }: Page): Promise<boo
   }
 }
 
-type WebGLProbe = {
-  getExtension: (name: "WEBGL_lose_context") => { loseContext: () => void } | null;
-};
+export const SOFTWARE_RENDERERS = [
+  "swiftshader",
+  "llvmpipe",
+  "softpipe",
+  "software",
+  "microsoft basic render driver",
+];
 
-/** On the main thread, for a browser that can't ask from a worker. The scene makes its own. */
-export function probeHere(createContext: () => WebGLProbe | null): boolean {
-  const probe = createContext();
-  probe?.getExtension("WEBGL_lose_context")?.loseContext();
-  return probe !== null;
+/** A browser that hides its renderer's name counts as having a GPU: most of them do. */
+function isSoftwareRenderer(name: string): boolean {
+  const lower = name.toLowerCase();
+  return SOFTWARE_RENDERERS.some((word) => lower.includes(word));
+}
+
+export type WebGLProbe = Pick<WebGLRenderingContext, "getExtension" | "getParameter">;
+
+/**
+ * Asks one context what it runs on, then releases it: the scene makes its own. Without a real GPU
+ * the map would crawl and block the page, so that answers no, unless the page asks anyway.
+ */
+export function probe(context: WebGLProbe, anyGpu: boolean): boolean {
+  const info = context.getExtension("WEBGL_debug_renderer_info");
+  const renderer = info ? String(context.getParameter(info.UNMASKED_RENDERER_WEBGL)) : "";
+  context.getExtension("WEBGL_lose_context")?.loseContext();
+  return anyGpu || !isSoftwareRenderer(renderer);
 }
 
 type Idle = {

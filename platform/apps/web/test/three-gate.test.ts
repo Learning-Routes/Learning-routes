@@ -1,5 +1,5 @@
 import { describe, expect, test, vi } from "vitest";
-import { probeHere, threeIsWanted, whenIdle } from "../app/enhance/three-gate";
+import { probe, threeIsWanted, type WebGLProbe, whenIdle } from "../app/enhance/three-gate";
 
 const page = ({ reduce = false, webgl = true, fails = false } = {}) => ({
   matchMedia: () => ({ matches: reduce }),
@@ -24,14 +24,34 @@ describe("threeIsWanted", () => {
   });
 });
 
-describe("probeHere", () => {
-  test("releases the context it made", () => {
+describe("probe", () => {
+  const context = (renderer: string | null, loseContext = vi.fn()) =>
+    ({
+      getExtension: (name: string) =>
+        name === "WEBGL_lose_context"
+          ? { loseContext }
+          : renderer === null
+            ? null
+            : { UNMASKED_RENDERER_WEBGL: 1 },
+      getParameter: () => renderer,
+    }) as unknown as WebGLProbe;
+
+  test("yes on a real GPU, and it releases the context", () => {
     const loseContext = vi.fn();
-    expect(probeHere(() => ({ getExtension: () => ({ loseContext }) }))).toBe(true);
+    expect(
+      probe(context("ANGLE (Apple, ANGLE Metal Renderer: Apple M3)", loseContext), false),
+    ).toBe(true);
     expect(loseContext).toHaveBeenCalledOnce();
   });
-  test("says no when there is none", () => {
-    expect(probeHere(() => null)).toBe(false);
+  test.each(["Google SwiftShader", "llvmpipe (LLVM 15)", "Microsoft Basic Render Driver"])(
+    "no on %s, unless the page asks anyway",
+    (name) => {
+      expect(probe(context(name), false)).toBe(false);
+      expect(probe(context(name), true)).toBe(true);
+    },
+  );
+  test("a hidden renderer counts as a GPU", () => {
+    expect(probe(context(null), false)).toBe(true);
   });
 });
 
