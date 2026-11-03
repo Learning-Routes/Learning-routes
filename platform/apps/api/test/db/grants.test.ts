@@ -13,6 +13,8 @@ const EXPECTED: Record<string, string[]> = {
   // Only user.erase, as the migrator, deletes a user.
   user: ["INSERT", "SELECT", "UPDATE"],
   verification: READ_WRITE,
+  // Read as nobody by /empezar, to name a route before signing in.
+  public_routes: ["SELECT"],
   // Tenancy. RLS (§3) narrows each to the rows a user may see.
   // A space and its first owner are made by the seed, as the migrator.
   memberships: ["INSERT", "SELECT"],
@@ -124,7 +126,7 @@ describe("lr_app's table privileges", () => {
 });
 
 // The runbook re-runs this file after a restore, which resets lr_app's grants.
-const GRANTS_FILES = ["0013_app_grants", "0016_catalog_grants"].map(
+const GRANTS_FILES = ["0013_app_grants", "0016_catalog_grants", "0023_start_grants"].map(
   (tag) => new URL(`../../drizzle/${tag}.sql`, import.meta.url),
 );
 const PRIVILEGES = `select coalesce(string_agg(entry, ',' order by entry), '')

@@ -198,3 +198,112 @@ describe("what a catalog change makes stale", () => {
     }
   });
 });
+
+describe("what an operator looks after (Platform STEP 4 §6.4)", () => {
+  const APPLICATION = "0192d3a0-0000-7000-8000-0000000000b1";
+
+  function withApplication() {
+    const world = worldWithOperator();
+    world.applications.set(APPLICATION, {
+      id: APPLICATION,
+      name: "Ana Prueba",
+      email: "ana@example.com",
+      teaches: "Guitarra",
+      link: null,
+      locale: "es",
+      status: "new",
+    });
+    return world;
+  }
+
+  it("admin.overview shows new applications and active listings, to operators only", async () => {
+    const world = withApplication();
+    await requested(world);
+    const seen = await call(world, OPERATOR, "admin.overview", {});
+    expect(seen).toMatchObject({
+      ok: true,
+      output: {
+        applications: [{ id: APPLICATION }],
+        listings: [{ status: "requested" }],
+      },
+    });
+    expect(await call(world, STAFF.owner, "admin.overview", {})).toMatchObject({
+      ok: false,
+      code: "not_found",
+    });
+  });
+
+  it("application.decide leaves the list, is logged in no space, without the person's words", async () => {
+    const world = withApplication();
+    expect(
+      await call(world, OPERATOR, "application.decide", {
+        applicationId: APPLICATION,
+        status: "invited",
+      }),
+    ).toMatchObject({ ok: true });
+    expect(world.applications.get(APPLICATION)?.status).toBe("invited");
+    const entry = world.log.find((row) => row.action === "application.decide");
+    expect(entry).toMatchObject({ spaceId: null, actorUserId: OPERATOR, outcome: "ok" });
+    expect(JSON.stringify(entry)).not.toContain("Ana");
+  });
+
+  it("logs an operator's refusal too", async () => {
+    const world = worldWithOperator();
+    expect(
+      await call(world, OPERATOR, "application.decide", {
+        applicationId: APPLICATION,
+        status: "invited",
+      }),
+    ).toMatchObject({ ok: false, code: "not_found" });
+    expect(world.log.map((row) => [row.spaceId, row.outcome])).toEqual([[null, "not_found"]]);
+  });
+
+  it("catalog.feature chooses an approved route for the landing, and takes it off", async () => {
+    const world = worldWithOperator();
+    const listingId = await requested(world);
+    // Not until it is approved.
+    expect(
+      await call(world, OPERATOR, "catalog.feature", { listingId, position: 1 }),
+    ).toMatchObject({ ok: false, code: "not_found" });
+    await call(world, OPERATOR, "catalog.decide", { listingId, decision: "approve" });
+    expect(
+      await call(world, OPERATOR, "catalog.feature", { listingId, position: 2 }),
+    ).toMatchObject({ ok: true, output: { position: 2 } });
+    expect(world.listings.get(listingId)?.featuredPosition).toBe(2);
+    await call(world, OPERATOR, "catalog.feature", { listingId, position: null });
+    expect(world.listings.get(listingId)?.featuredPosition).toBeNull();
+    expect(
+      await call(world, OPERATOR, "catalog.feature", { listingId, position: 4 }),
+    ).toMatchObject({ ok: false, code: "invalid_input" });
+    expect(purgeTagsAfter("catalog.feature", { spaceId: "s", routeId: "r" })).toContain("catalog");
+  });
+
+  it("does not exist for anyone else", async () => {
+    const world = worldWithOperator();
+    const listingId = await requested(world);
+    expect(
+      await call(world, STAFF.owner, "catalog.feature", { listingId, position: 1 }),
+    ).toMatchObject({ ok: false, code: "not_found" });
+    expect(
+      await call(world, STAFF.owner, "application.decide", {
+        applicationId: listingId,
+        status: "invited",
+      }),
+    ).toMatchObject({ ok: false, code: "not_found" });
+  });
+});
+
+describe("enrollment.list (Platform STEP 4 §6.2)", () => {
+  it("answers only with the actor's own, and says whether they teach", async () => {
+    const world = testWorld();
+    const mine = await call(world, "student-1", "enrollment.list", {});
+    expect(mine).toMatchObject({
+      ok: true,
+      output: { teaches: false, enrollments: [{ routeId: ROUTE, lessonsPerModule: [0] }] },
+    });
+    expect(await call(world, STAFF.owner, "enrollment.list", {})).toMatchObject({
+      ok: true,
+      output: { teaches: true, enrollments: [] },
+    });
+  });
+});

@@ -4,6 +4,7 @@ import { NEW_CARD } from "../../src/learning/replay";
 import type { Member } from "../../src/memberships";
 import type {
   ActionLogEntry,
+  ApplicationRecord,
   CatalogListing,
   DraftBlock,
   DraftLesson,
@@ -48,6 +49,7 @@ export function memoryState() {
     reviews: new Map<string, { spaceId: string; userId: string } & ReviewRecord>(),
     log: [] as ({ spaceId: string | null } & ActionLogEntry)[],
     listings: new Map<string, CatalogListing>(),
+    applications: new Map<string, ApplicationRecord & { status: string }>(),
     operators: new Set<string>(),
     /** Bumped by every commit, so an overlapping one is caught instead of losing writes. */
     commits: 0,
@@ -117,7 +119,7 @@ function enroll(
       : fail("invalid");
   }
   const member = state.members.has(`${row.spaceId}:${userId}`);
-  if (row.route.access !== "open" || row.route.pricing !== "free") {
+  if (row.route.access !== "open") {
     return fail(member ? "invalid" : "not_found");
   }
   if (!member) {
@@ -193,6 +195,17 @@ export function memoryRepos(state: State, actorId = ""): Repos {
         return ok(undefined);
       },
     },
+    applications: {
+      list: async () => [...state.applications.values()].filter((row) => row.status === "new"),
+      decide: async (id, status) => {
+        const row = state.applications.get(id);
+        if (!row) {
+          return fail("not_found");
+        }
+        row.status = status;
+        return ok(undefined);
+      },
+    },
     catalog: {
       request: async (spaceId, routeId) => {
         const taken = [...state.listings.values()].some(
@@ -231,6 +244,24 @@ export function memoryRepos(state: State, actorId = ""): Repos {
       get: async (listingId) => {
         const row = state.listings.get(listingId);
         return row ? ok(structuredClone(row)) : fail("not_found");
+      },
+      queue: async () =>
+        [...state.listings.values()]
+          .filter((row) => ["requested", "approved"].includes(row.status))
+          .map((row) => ({
+            ...row,
+            title: { en: "Route" },
+            sourceLocale: "en",
+            creator: { en: "Space" },
+            latestVersion: 1,
+          })),
+      feature: async (listingId, position) => {
+        const row = state.listings.get(listingId);
+        if (!row) {
+          return fail("not_found");
+        }
+        row.featuredPosition = position;
+        return ok(undefined);
       },
       decide: async (listingId, decision) => {
         const row = state.listings.get(listingId);
@@ -383,6 +414,28 @@ export function memoryRepos(state: State, actorId = ""): Repos {
       },
     },
     enrollments: {
+      listOwn: async (userId) => ({
+        teaches: [...state.members.values()].some(
+          (member) => member.userId === userId && member.role !== "student",
+        ),
+        enrollments: [...state.enrollments.values()]
+          .filter((row) => row.userId === userId && row.status === "active")
+          .map((row) => {
+            const { snapshot } = state.versions.get(`${row.routeId}:${row.pinnedVersion}`) ?? {};
+            return {
+              enrollmentId: row.id,
+              routeId: row.routeId,
+              title: snapshot?.route.title ?? { en: "" },
+              sourceLocale: snapshot?.route.sourceLocale ?? "en",
+              creator: state.spaces.get(row.spaceId)?.name ?? { en: "" },
+              lessonsPerModule: (snapshot?.modules ?? []).map(
+                (module) =>
+                  (snapshot?.lessons ?? []).filter((lesson) => lesson.moduleId === module.id)
+                    .length,
+              ),
+            };
+          }),
+      }),
       get: async (spaceId, enrollmentId) => {
         const enrollment = state.enrollments.get(enrollmentId);
         return enrollment?.spaceId === spaceId ? ok(enrollment) : fail("not_found");

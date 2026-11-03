@@ -52,9 +52,9 @@ describe("two tenants, through every action", () => {
         [spaceA, a, spaceB, b],
       );
       const routeB = await newRoute(db, spaceB, "b-route");
-      const paidB = await newRoute(db, spaceB, "b-paid");
-      await db.query("update routes set pricing = 'paid' where id = $1", [paidB]);
-      for (const route of [routeB, paidB]) {
+      const closedB = await newRoute(db, spaceB, "b-closed");
+      await db.query("update routes set access = 'closed' where id = $1", [closedB]);
+      for (const route of [routeB, closedB]) {
         await newVersion(db, spaceB, route, 1);
         await db.query("update routes set latest_published_version = 1 where id = $1", [route]);
       }
@@ -75,6 +75,9 @@ describe("two tenants, through every action", () => {
         "catalog.withdraw": { routeId: routeB },
         // The operator's: to anyone who is not one, it does not exist.
         "catalog.decide": { listingId: crypto.randomUUID(), decision: "approve" },
+        "catalog.feature": { listingId: crypto.randomUUID(), position: 1 },
+        "admin.overview": {},
+        "application.decide": { applicationId: crypto.randomUUID(), status: "invited" },
         "membership.add": { spaceId: spaceB, userId: a, role: "owner" },
         "route.create": {
           spaceId: spaceB,
@@ -100,8 +103,8 @@ describe("two tenants, through every action", () => {
           block: { type: "concept", title: { en: "T" }, body: { en: "B" } },
         },
         "route.publish": { routeId: routeB, expectedRevision: 0 },
-        // A paid route in a space A cannot see.
-        "enrollment.create": { routeId: paidB },
+        // A route in a space A cannot see.
+        "enrollment.create": { routeId: closedB },
         "enrollment.upgrade": { enrollmentId: enrollmentB },
         "review.submit": {
           enrollmentId: enrollmentB,
@@ -112,7 +115,9 @@ describe("two tenants, through every action", () => {
           elapsedMs: 900,
         },
       };
-      expect(Object.keys(inputs).sort()).toEqual([...ACTION_NAMES].sort());
+      // enrollment.list takes no ids: it answers only with the actor's own rows.
+      const named = ACTION_NAMES.filter((name) => name !== "enrollment.list");
+      expect(Object.keys(inputs).sort()).toEqual([...named].sort());
 
       const before = await everyTable(db, [spaceA, spaceB], [a, b]);
       await actAs(db, a);
@@ -124,7 +129,7 @@ describe("two tenants, through every action", () => {
         clock: { now: () => Date.now() },
         ids: { newId: () => crypto.randomUUID() },
       };
-      for (const name of ACTION_NAMES) {
+      for (const name of named) {
         const result = await runAction(ACTIONS, name, inputs[name], ctx);
         expect([name, result]).toEqual([
           name,

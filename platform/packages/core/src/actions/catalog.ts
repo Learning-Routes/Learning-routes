@@ -70,3 +70,44 @@ export const catalogDecide = defineAction({
     return { spaceId, routeId, status };
   },
 });
+
+/** A route on the landing's "Rutas para empezar", from 1 to 3, or off it (§6.4). */
+export const catalogFeature = defineAction({
+  name: "catalog.feature",
+  kind: "mutation",
+  description: "Choose a listed route for the landing, or take it off. Operators only.",
+  input: z.strictObject({ listingId: z.uuid(), position: z.int().min(1).max(3).nullable() }),
+  target: () => ({ kind: "platform", id: "platform" }),
+  async run(ctx, { listingId, position }) {
+    const listing = unwrap(await ctx.repos.catalog.get(listingId));
+    if (listing.status !== "approved") {
+      throw refused("not_found");
+    }
+    unwrap(await ctx.repos.catalog.feature(listingId, position));
+    return { spaceId: listing.spaceId, routeId: listing.routeId, position };
+  },
+});
+
+export const adminOverview = defineAction({
+  name: "admin.overview",
+  kind: "query",
+  description: "What an operator looks after: applications and the catalog. Operators only.",
+  input: z.strictObject({}),
+  target: () => ({ kind: "platform", id: "platform" }),
+  run: async (ctx) => ({
+    applications: await ctx.repos.applications.list(),
+    listings: await ctx.repos.catalog.queue(),
+  }),
+});
+
+export const applicationDecide = defineAction({
+  name: "application.decide",
+  kind: "mutation",
+  description: "Mark an application to teach as invited, or decline it. Operators only.",
+  input: z.strictObject({ applicationId: z.uuid(), status: z.enum(["invited", "declined"]) }),
+  target: () => ({ kind: "platform", id: "platform" }),
+  async run(ctx, { applicationId, status }) {
+    unwrap(await ctx.repos.applications.decide(applicationId, status));
+    return { applicationId, status };
+  },
+});

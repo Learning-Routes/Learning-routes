@@ -188,7 +188,7 @@ describe("signing in with a link", () => {
     const { email, token } = await requestLink();
     const signedIn = await confirm(token);
     expect(signedIn.status).toBe(302);
-    expect(signedIn.headers.get("location")).toBe(`${APP}/studio`);
+    expect(signedIn.headers.get("location")).toBe(`${APP}/mis-rutas`);
     // The whole Set-Cookie, exactly, and no other cookie: __Host- with Secure,
     // Path=/ and no Domain, HttpOnly, SameSite=Lax, for Better Auth's seven days.
     const cookies = signedIn.headers.getSetCookie();
@@ -215,7 +215,7 @@ describe("the screen after the confirm POST", () => {
   const redirect = (location: string) => new Response(null, { status: 302, headers: { location } });
 
   it("lets a sign-in through, and says expired only when the link is the problem", () => {
-    expect(screenAfterConfirm(redirect(`${APP}/studio`))).toBeNull();
+    expect(screenAfterConfirm(redirect(`${APP}/mis-rutas`))).toBeNull();
     expect(screenAfterConfirm(redirect(`${APP}/sign-in?notice=expired&error=INVALID_TOKEN`))).toBe(
       "/sign-in?notice=expired",
     );

@@ -113,18 +113,30 @@ describe("an application to teach", () => {
       const someone = await newUser(db);
       await actAs(db, null);
       expect(await attempt(db, APPLY)).toBeNull();
-      expect((await db.query("select 1 from creator_applications")).rows).toEqual([]);
+      expect(
+        (await db.query("select 1 from creator_applications where email = 'ana@example.com'")).rows,
+      ).toEqual([]);
       await db.query("reset role");
       await actAs(db, someone);
-      expect((await db.query("select 1 from creator_applications")).rows).toEqual([]);
-      const decided = await db.query("update creator_applications set status = 'invited'");
+      expect(
+        (await db.query("select 1 from creator_applications where email = 'ana@example.com'")).rows,
+      ).toEqual([]);
+      const decided = await db.query(
+        "update creator_applications set status = 'invited' where email = 'ana@example.com'",
+      );
       expect(decided.rowCount).toBe(0);
       await db.query("reset role");
       await actAs(db, await operatorOutside(db));
-      expect((await db.query("select 1 from creator_applications")).rows).toHaveLength(1);
-      expect((await db.query("update creator_applications set status = 'invited'")).rowCount).toBe(
-        1,
-      );
+      expect(
+        (await db.query("select 1 from creator_applications where email = 'ana@example.com'")).rows,
+      ).toHaveLength(1);
+      expect(
+        (
+          await db.query(
+            "update creator_applications set status = 'invited' where email = 'ana@example.com'",
+          )
+        ).rowCount,
+      ).toBe(1);
     });
   });
 
@@ -144,7 +156,9 @@ describe("an application to teach", () => {
     await rolledBack(URLS.migrator, async (db) => {
       await db.query(APPLY);
       await actAs(db, null);
-      expect((await db.query("select 1 from creator_applications")).rows).toEqual([]);
+      expect(
+        (await db.query("select 1 from creator_applications where email = 'ana@example.com'")).rows,
+      ).toEqual([]);
     });
   });
 });

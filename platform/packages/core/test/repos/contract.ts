@@ -106,6 +106,38 @@ export function repositoryContract(name: string, withFixture: WithFixture) {
       });
     });
 
+    it("lists only a user's own active enrollments, with a route's shape and no block", async () => {
+      await withFixture(async ({ spaceId, ownerId, learnerId, actAs }) => {
+        const owner = await actAs(ownerId);
+        const fields = routeFields("own-list");
+        value(await owner.routeDrafts.create(spaceId, fields));
+        const firstModule = { id: newId(), position: "V", title: { en: "One" } };
+        value(await owner.routeDrafts.addModule(spaceId, fields.id, 0, firstModule));
+        value(
+          await owner.routeDrafts.addLesson(spaceId, fields.id, 1, lesson(firstModule.id, "V")),
+        );
+        await publish(owner, spaceId, fields.id, 1, ownerId);
+        const learner = await actAs(learnerId);
+        expect(await learner.enrollments.listOwn(learnerId)).toEqual({
+          teaches: false,
+          enrollments: [],
+        });
+        const { enrollmentId } = value(await learner.enrollments.enroll(fields.id));
+        const { enrollments, teaches } = await learner.enrollments.listOwn(learnerId);
+        expect(teaches).toBe(false);
+        expect(enrollments).toEqual([
+          expect.objectContaining({
+            enrollmentId,
+            routeId: fields.id,
+            title: fields.title,
+            lessonsPerModule: [1],
+          }),
+        ]);
+        const asOwner = await actAs(ownerId);
+        expect((await asOwner.enrollments.listOwn(ownerId)).teaches).toBe(true);
+      });
+    });
+
     it("changes a creator's page, and only what it is given", async () => {
       await withFixture(async ({ spaceId, ownerId, actAs }) => {
         const repos = await actAs(ownerId);

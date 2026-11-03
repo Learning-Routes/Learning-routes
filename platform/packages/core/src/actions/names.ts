@@ -17,5 +17,9 @@ export const ACTION_NAMES = [
   "catalog.request",
   "catalog.withdraw",
   "catalog.decide",
+  "catalog.feature",
+  "admin.overview",
+  "application.decide",
+  "enrollment.list",
 ] as const;
 export type ActionName = (typeof ACTION_NAMES)[number];

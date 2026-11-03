@@ -117,7 +117,10 @@ describe("user.erase (Platform STEP 2 §2.16)", () => {
         [email.toUpperCase()],
       );
       await eraseUser(db, userId, TEST_SECRET);
-      const left = await db.query("select email from creator_applications");
+      const left = await db.query(
+        "select email from creator_applications where lower(email) = any($1)",
+        [[email.toLowerCase(), "otra@example.com"]],
+      );
       expect(left.rows.map((row) => row.email)).toEqual(["otra@example.com"]);
     });
   });

@@ -15,7 +15,7 @@ import { redact } from "./redact";
 /** The row an action acts on; its space is the space the action runs in. */
 export interface Target {
   /** "platform": an operator's action, on no space's row (Platform STEP 4 §2.5). */
-  kind: "space" | "route" | "enrollment" | "platform";
+  kind: "space" | "route" | "enrollment" | "platform" | "account";
   id: string;
   /**
    * An action the actor takes before they belong to the row's space:

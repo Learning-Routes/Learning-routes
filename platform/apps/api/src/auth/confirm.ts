@@ -1,7 +1,8 @@
-import type { Hono } from "hono";
+import type { Context, Hono } from "hono";
 import { withClient } from "../db/with-db";
 import { AUTH_PATH, CONFIRM_PATH, createAuth, takeFromWindow } from "./auth";
 import type { EmailSender } from "./email";
+import { DEAD_START_COOKIE, readStartIntent } from "./start-intent";
 
 // What the sign-in link's page needs (Platform STEP 2 review item 11, and Platform
 // STEP 3 §3). The link carries the token in its fragment, which no browser sends, so
@@ -11,7 +12,7 @@ import type { EmailSender } from "./email";
 // signs in on a GET, answers 404.
 
 const PADDING = /=+$/;
-const SIGNED_IN = "/studio";
+const SIGNED_IN = "/mis-rutas";
 const EXPIRED = "/sign-in?notice=expired";
 const LIMITED = "/sign-in?notice=limited";
 const FAILED = "/sign-in?notice=failed";
@@ -102,27 +103,47 @@ export function confirmRoutes(
       : c.json({ email: maskAddress(email) });
   });
 
-  app.post(CONFIRM_PATH, async (c) => {
-    const form = await c.req.formData().catch(() => null);
-    const field = form?.get("token");
-    if (typeof field !== "string" || field.length === 0) {
-      return c.text("Bad request", 400);
+  app.post(CONFIRM_PATH, (c) => confirmSignIn(c, emailSender));
+}
+
+/** The form's POST: the one thing that signs in. */
+async function confirmSignIn(
+  c: Context<{ Bindings: Env }>,
+  emailSender: (env: Env) => EmailSender,
+): Promise<Response> {
+  const form = await c.req.formData().catch(() => null);
+  const field = form?.get("token");
+  if (typeof field !== "string" || field.length === 0) {
+    return c.text("Bad request", 400);
+  }
+  const token = field;
+  // Through Better Auth's handler, so its rate limits and checks apply.
+  const verify = new URL(`${c.env.APP_ORIGIN}${AUTH_PATH}/magic-link/verify`);
+  verify.searchParams.set("token", token);
+  // Back to the route they were joining, if this browser was joining one.
+  const joining = await readStartIntent(
+    c.env.BETTER_AUTH_SECRET,
+    c.req.header("cookie"),
+    Date.now(),
+  );
+  verify.searchParams.set("callbackURL", joining ? `/empezar?ruta=${joining}` : SIGNED_IN);
+  verify.searchParams.set("errorCallbackURL", EXPIRED);
+  const request = new Request(verify, { headers: c.req.raw.headers });
+  try {
+    const response = await withClient(c.env, c.executionCtx, (db) =>
+      createAuth(c.env, db, emailSender(c.env)).handler(request),
+    );
+    const screen = screenAfterConfirm(response);
+    if (screen) {
+      return c.redirect(screen, 303);
     }
-    const token = field;
-    // Through Better Auth's handler, so its rate limits and checks apply.
-    const verify = new URL(`${c.env.APP_ORIGIN}${AUTH_PATH}/magic-link/verify`);
-    verify.searchParams.set("token", token);
-    verify.searchParams.set("callbackURL", SIGNED_IN);
-    verify.searchParams.set("errorCallbackURL", EXPIRED);
-    const request = new Request(verify, { headers: c.req.raw.headers });
-    try {
-      const response = await withClient(c.env, c.executionCtx, (db) =>
-        createAuth(c.env, db, emailSender(c.env)).handler(request),
-      );
-      const screen = screenAfterConfirm(response);
-      return screen ? c.redirect(screen, 303) : response;
-    } catch {
-      return c.redirect(FAILED, 303);
+    // Headers from a fetch handler may be immutable; the sign-in used the cookie up.
+    const signedIn = new Response(response.body, response);
+    if (joining) {
+      signedIn.headers.append("Set-Cookie", DEAD_START_COOKIE);
     }
-  });
+    return signedIn;
+  } catch {
+    return c.redirect(FAILED, 303);
+  }
 }

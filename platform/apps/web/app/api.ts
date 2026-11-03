@@ -25,6 +25,12 @@ export const api = Object.fromEntries(
   ACTION_NAMES.map((name) => [name, (input: ActionInput<typeof name>) => callAction(name, input)]),
 ) as Client;
 
+const REFUSALS: Record<number, "invalid" | "challenge" | "limited"> = {
+  400: "invalid",
+  403: "challenge",
+  429: "limited",
+};
+
 const JSON_POST = { method: "POST", headers: { "content-type": "application/json" } };
 
 /** What came of asking for a sign-in link, in terms a screen can say. */
@@ -64,6 +70,24 @@ export async function peekSignInLink(
       return "limited";
     }
     return response.status === 404 ? "gone" : "failed";
+  } catch {
+    return "failed";
+  }
+}
+
+/** "Quiero enseñar": what came of it, in terms the form can say. */
+export async function sendApplication(
+  application: object,
+): Promise<"sent" | "invalid" | "challenge" | "limited" | "failed"> {
+  try {
+    const response = await fetch("/api/apply", {
+      ...JSON_POST,
+      body: JSON.stringify(application),
+    });
+    if (response.ok) {
+      return "sent";
+    }
+    return REFUSALS[response.status] ?? "failed";
   } catch {
     return "failed";
   }

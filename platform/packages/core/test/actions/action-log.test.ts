@@ -122,13 +122,13 @@ describe("runAction and the action log", () => {
     const world = testWorld();
     const draft = world.drafts.get(ROUTE);
     if (draft) {
-      draft.route = { ...draft.route, pricing: "paid" };
+      draft.route = { ...draft.route, access: "closed" };
     }
     const result = await runAction(
       ACTIONS,
       "enrollment.create",
       { routeId: ROUTE },
-      // A member with no enrollment here: one who has one gets it back, paid or not.
+      // A member with no enrollment here: one who has one gets it back, closed or not.
       testCtx("ui", world, STAFF.coeditor),
     );
     expect(result).toMatchObject({ ok: false, code: "invalid" });

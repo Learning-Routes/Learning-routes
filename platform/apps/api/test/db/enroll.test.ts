@@ -76,21 +76,13 @@ describe("app.enroll", () => {
     });
   });
 
-  it("answers not_found for a paid route the caller cannot see, invalid for one they can", async () => {
+  it("enrolls in a paid route, whose module 1 is free (Platform STEP 4 §6.1)", async () => {
     await rolledBack(URLS.migrator, async (db) => {
       const space = await newSpace(db, "enroll");
       const paid = await published(db, space, "paid", "paid");
-      const stranger = await newUser(db);
-      const student = await newUser(db);
-      await db.query(
-        "insert into memberships (space_id, user_id, role) values ($1, $2, 'student')",
-        [space, student],
-      );
-      await actAs(db, stranger);
-      expect(await enroll(db, paid)).toEqual({ outcome: "not_found", enrollment_id: null });
-      await db.query("reset role");
-      await actAs(db, student);
-      expect(await enroll(db, paid)).toEqual({ outcome: "invalid", enrollment_id: null });
+      const newcomer = await newUser(db);
+      await actAs(db, newcomer);
+      expect(await enroll(db, paid)).toMatchObject({ outcome: "ok" });
     });
   });
 

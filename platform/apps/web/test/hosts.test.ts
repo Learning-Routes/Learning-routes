@@ -1,6 +1,11 @@
 import { RESERVED_SLUGS } from "@learning-routes/core/reserved-slugs";
 import { describe, expect, it } from "vitest";
-import { creatorSlugOf, INTERNAL_PREFIX, internalRequest } from "../workers/hosts";
+import {
+  creatorSlugOf,
+  INTERNAL_PREFIX,
+  internalRequest,
+  isAppPathElsewhere,
+} from "../workers/hosts";
 
 // A creator's pages live on their own host (Platform STEP 4 §5): one Worker, so the host
 // picks the route. Everything else keeps its path.
@@ -80,5 +85,27 @@ describe("the request a page is rendered from", () => {
       headers: { "accept-language": "fr" },
     });
     expect(internalRequest(request, HOSTS)?.headers.get("accept-language")).toBe("fr");
+  });
+});
+
+describe("pages with a session", () => {
+  const elsewhere = (url: string) => isAppPathElsewhere(new URL(url), HOSTS);
+
+  it("exist only on the app's host", () => {
+    for (const path of [
+      "/empezar?ruta=1",
+      "/mis-rutas",
+      "/mis-rutas/1",
+      "/quiero-ensenar",
+      "/admin",
+      "/api/a/x",
+    ]) {
+      expect(elsewhere(`https://new.learningroutes.com${path}`), path).toBe(true);
+      expect(elsewhere(`https://app.learningroutes.com${path}`), path).toBe(false);
+    }
+  });
+
+  it("do not catch a route whose name merely starts the same", () => {
+    expect(elsewhere("https://new.learningroutes.com/administrar")).toBe(false);
   });
 });

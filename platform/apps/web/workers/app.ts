@@ -1,7 +1,8 @@
 import { createRequestHandler, RouterContextProvider } from "react-router";
 import { pageContext } from "../app/context";
+import { apiClient } from "./api-client";
 import { servedFromEdge } from "./edge-cache";
-import { internalRequest } from "./hosts";
+import { creatorSlugOf, internalRequest, isApiPath, isAppPathElsewhere } from "./hosts";
 
 const requestHandler = createRequestHandler(
   () => import("virtual:react-router/server-build"),
@@ -20,16 +21,21 @@ function withoutForeignCookies(request: Request, appOrigin: string): Request {
 
 export default {
   fetch(request, env, ctx) {
+    const url = new URL(request.url);
+    const hosts = { appOrigin: env.APP_ORIGIN, creatorDomain: env.CREATOR_DOMAIN };
+    if (isAppPathElsewhere(url, hosts) && creatorSlugOf(url.host, hosts) === null) {
+      return new Response(null, { status: 404 });
+    }
+    if (isApiPath(url)) {
+      return apiClient(env)(request);
+    }
     return servedFromEdge(
       withoutForeignCookies(request, env.APP_ORIGIN),
       ctx,
       // The zone's cache; the DOM's CacheStorage type does not know of it.
       (caches as CacheStorage & { default: Cache }).default,
       (publicRequest) => {
-        const rendered = internalRequest(publicRequest, {
-          appOrigin: env.APP_ORIGIN,
-          creatorDomain: env.CREATOR_DOMAIN,
-        });
+        const rendered = internalRequest(publicRequest, hosts);
         if (rendered === null) {
           return Promise.resolve(new Response(null, { status: 404 }));
         }
@@ -41,7 +47,8 @@ export default {
           isDevelopment: String(env.ENVIRONMENT) === "development",
           platformOrigin: env.PLATFORM_ORIGIN,
           creatorDomain: env.CREATOR_DOMAIN,
-          runtime: { env, ctx },
+          turnstileSiteKey: env.TURNSTILE_SITE_KEY,
+          runtime: { env, ctx, api: apiClient(env) },
         });
         return requestHandler(rendered, context);
       },

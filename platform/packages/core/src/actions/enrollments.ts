@@ -23,14 +23,24 @@ export async function ownEnrollment(
   return enrollment.value;
 }
 
-/** The only way to become a student (§3.8): the database checks the route is published, open and free. */
+/** The only way to become a student (§3.8): the database checks the route is published and open. */
 export const enrollmentCreate = defineAction({
   name: "enrollment.create",
   kind: "mutation",
-  description: "Enrol in a published, open and free route, as a student of its space.",
+  description: "Enrol in a published, open route, as a student of its space. Module 1 is free.",
   input: z.strictObject({ routeId: z.uuid() }),
   target: (input) => ({ kind: "route", id: input.routeId, self: true }),
   run: async (ctx, input) => unwrap(await ctx.repos.enrollments.enroll(input.routeId)),
+});
+
+/** "Mis rutas" (Platform STEP 4 §6.2): only ever the actor's own. */
+export const enrollmentList = defineAction({
+  name: "enrollment.list",
+  kind: "query",
+  description: "List your own active enrollments, and whether you teach anywhere.",
+  input: z.strictObject({}),
+  target: () => ({ kind: "account", id: "self", self: true }),
+  run: (ctx) => ctx.repos.enrollments.listOwn(ctx.actor.userId),
 });
 
 export const enrollmentUpgrade = defineAction({

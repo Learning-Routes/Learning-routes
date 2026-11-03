@@ -24,6 +24,18 @@ export function creatorSlugOf(host: string, { appOrigin, creatorDomain }: Hosts)
   return SLUG.test(slug) && !isReservedSlug(slug) ? slug : null;
 }
 
+/** Pages with a session, which exist only on the app's host. */
+const APP_ONLY = /^\/(api|empezar|mis-rutas|quiero-ensenar|admin)(\/|$)/;
+
+/** Whether this path needs the app's host, and this is not it. */
+export function isAppPathElsewhere(url: URL, { appOrigin }: Pick<Hosts, "appOrigin">): boolean {
+  return url.host !== new URL(appOrigin).host && APP_ONLY.test(url.pathname);
+}
+
+const API_PATH = /^\/api(\/|$)/;
+
+export const isApiPath = (url: URL) => API_PATH.test(url.pathname);
+
 /** The request to render from, or null when the path is one nobody may ask for. */
 export function internalRequest(request: Request, hosts: Hosts): Request | null {
   const url = new URL(request.url);
