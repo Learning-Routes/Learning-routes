@@ -9,7 +9,10 @@ whenIdle(
   () => {
     const page = {
       matchMedia: window.matchMedia.bind(window),
-      createCanvas: () => document.createElement("canvas"),
+      createContext: () => {
+        const canvas = document.createElement("canvas");
+        return canvas.getContext("webgl2") ?? canvas.getContext("webgl");
+      },
     };
     if (threeIsWanted(page)) {
       // A failed chunk is no failure for the visitor: the server HTML is the page.

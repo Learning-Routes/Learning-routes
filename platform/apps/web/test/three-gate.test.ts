@@ -3,14 +3,12 @@ import { threeIsWanted, whenIdle } from "../app/enhance/three-gate";
 
 const page = ({ reduce = false, webgl = true, throws = false } = {}) => ({
   matchMedia: () => ({ matches: reduce }),
-  createCanvas: () => ({
-    getContext: () => {
-      if (throws) {
-        throw new Error("blocked");
-      }
-      return webgl ? { getExtension: () => null } : null;
-    },
-  }),
+  createContext: () => {
+    if (throws) {
+      throw new Error("blocked");
+    }
+    return webgl ? { getExtension: () => null } : null;
+  },
 });
 
 describe("threeIsWanted", () => {

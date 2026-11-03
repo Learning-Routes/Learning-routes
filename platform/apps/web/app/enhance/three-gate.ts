@@ -7,16 +7,15 @@ type WebGLProbe = {
 
 type Page = {
   matchMedia: (query: string) => { matches: boolean };
-  createCanvas: () => { getContext: (kind: "webgl2" | "webgl") => WebGLProbe | null };
+  createContext: () => WebGLProbe | null;
 };
 
-export function threeIsWanted({ matchMedia, createCanvas }: Page): boolean {
+export function threeIsWanted({ matchMedia, createContext }: Page): boolean {
   if (matchMedia("(prefers-reduced-motion: reduce)").matches) {
     return false;
   }
   try {
-    const canvas = createCanvas();
-    const probe = canvas.getContext("webgl2") ?? canvas.getContext("webgl");
+    const probe = createContext();
     // The scene makes its own context, and browsers limit how many can live.
     probe?.getExtension("WEBGL_lose_context")?.loseContext();
     return probe !== null;
