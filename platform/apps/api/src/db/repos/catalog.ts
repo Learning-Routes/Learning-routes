@@ -1,8 +1,10 @@
+import type { LocalizedText } from "@learning-routes/core/localized-text";
 import type { Catalog, CatalogListing, CatalogQueueItem } from "@learning-routes/core/repos/ports";
-import { and, asc, desc, eq, inArray, isNull } from "drizzle-orm";
+import { and, asc, desc, eq, inArray, isNull, sql } from "drizzle-orm";
 import { catalogListings } from "../schema/catalog";
 import { routes } from "../schema/content";
 import { spaces } from "../schema/tenancy";
+import { routeVersions } from "../schema/versions";
 import { attempt, type Db, fail, ok } from "./shared";
 
 // The catalog's listings on Postgres (Platform STEP 4 §3). Row-level security holds who
@@ -26,14 +28,22 @@ function readQueue(db: Db) {
     db
       .select({
         ...LISTING,
-        title: routes.title,
-        sourceLocale: routes.sourceLocale,
+        // What is published, the same as a stranger reads: never the draft's edits.
+        title: sql<LocalizedText>`${routeVersions.snapshot} #> '{route,title}'`,
+        sourceLocale: sql<string>`${routeVersions.snapshot} #>> '{route,sourceLocale}'`,
         creator: spaces.name,
         latestVersion: routes.latestPublishedVersion,
       })
       .from(catalogListings)
       .innerJoin(routes, eq(routes.id, catalogListings.routeId))
       .innerJoin(spaces, eq(spaces.id, catalogListings.spaceId))
+      .innerJoin(
+        routeVersions,
+        and(
+          eq(routeVersions.routeId, routes.id),
+          eq(routeVersions.version, routes.latestPublishedVersion),
+        ),
+      )
       .where(and(inArray(catalogListings.status, ACTIVE), isNull(routes.archivedAt)))
       // "requested" sorts after "approved", and comes first.
       .orderBy(desc(catalogListings.status), asc(catalogListings.requestedAt)) as Promise<

@@ -1,4 +1,5 @@
 import { APP_PAGES_TEXT, type AppPagesText } from "@learning-routes/core/copy/app-pages";
+import { UI_COPY } from "@learning-routes/core/copy/ui";
 import { BRAND, negotiateLocale } from "@learning-routes/core/locales";
 import { type FormEvent, useEffect, useRef, useState } from "react";
 import { useRouteLoaderData } from "react-router";
@@ -9,6 +10,7 @@ import { filled } from "../storefront/words";
 import { challengePage } from "../surface";
 import { Button } from "../ui/button";
 import { Notice } from "../ui/parts";
+import { SiteHeader } from "../ui/site-header";
 import { TextField } from "../ui/text-field";
 import type { Route } from "./+types/quiero-ensenar";
 
@@ -28,6 +30,7 @@ export function loader({ request, context }: Route.LoaderArgs) {
   return {
     locale: negotiateLocale(request.headers.get("accept-language"), "es"),
     siteKey: context.get(pageContext).turnstileSiteKey,
+    platformOrigin: context.get(pageContext).platformOrigin,
   };
 }
 
@@ -218,26 +221,35 @@ function ApplicationForm({
 }
 
 export default function QuieroEnsenar({ loaderData }: Route.ComponentProps) {
-  const { locale, siteKey } = loaderData;
+  const { locale, siteKey, platformOrigin } = loaderData;
   const words = APP_PAGES_TEXT[locale];
   const [sentTo, setSentTo] = useState<string | null>(null);
   return (
-    <main className="app-page app-page-narrow">
-      <h1 className="app-title">{words.teachTitle}</h1>
-      {sentTo ? (
-        <Notice tone="success" title={words.doneTitle}>
-          {filled(words.doneBody, { email: sentTo })}
-        </Notice>
-      ) : (
-        <>
-          <p className="app-copy">{words.teachIntro}</p>
-          <noscript>
-            <Notice tone="info" title={words.needsScript} />
-          </noscript>
-          <ApplicationForm words={words} locale={locale} siteKey={siteKey} onSent={setSentTo} />
-          <p className="app-fine">{words.privacy}</p>
-        </>
-      )}
-    </main>
+    <>
+      <SiteHeader
+        brand={BRAND}
+        brandHref={`${platformOrigin}/${locale}`}
+        navLabel={UI_COPY[locale].primaryNav}
+      >
+        {null}
+      </SiteHeader>
+      <main className="app-page app-page-narrow">
+        <h1 className="app-title">{words.teachTitle}</h1>
+        {sentTo ? (
+          <Notice tone="success" title={words.doneTitle}>
+            {filled(words.doneBody, { email: sentTo })}
+          </Notice>
+        ) : (
+          <>
+            <p className="app-copy">{words.teachIntro}</p>
+            <noscript>
+              <Notice tone="info" title={words.needsScript} />
+            </noscript>
+            <ApplicationForm words={words} locale={locale} siteKey={siteKey} onSent={setSentTo} />
+            <p className="app-fine">{words.privacy}</p>
+          </>
+        )}
+      </main>
+    </>
   );
 }

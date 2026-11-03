@@ -65,6 +65,15 @@ test("an operator decides an application, and it leaves the list", async ({ page
   await expect(row).toHaveCount(0);
 });
 
+test("an operator reads what is published, never a draft's edit", async ({ page, context }) => {
+  const operator = newAddress("operador");
+  await signInContext(context, operator);
+  makeOperator(operator);
+  await page.goto(`${DEV}/admin`);
+  await expect(page.getByText("Guitarra desde cero, Andrés Mora")).toBeVisible();
+  expect(await page.content()).not.toContain("Título que nadie publicó");
+});
+
 test("a member's address never appears on a public page", async ({ page }) => {
   for (const url of [
     `${DEV}/es/explorar`,
