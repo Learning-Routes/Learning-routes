@@ -110,6 +110,12 @@ describe("before any tool", () => {
 });
 
 describe("the protocol", () => {
+  it("has no subscriptions, the one answer that never ends", async () => {
+    const { token } = await teacher();
+    const response = await oauth.call("/mcp", envelope("subscriptions/listen", {}, token));
+    expect(response.status).toBe(404);
+  });
+
   it("answers server/discover, with its cache fields per user", async () => {
     const { token } = await teacher();
     const response = await oauth.call("/mcp", envelope("server/discover", {}, token));
