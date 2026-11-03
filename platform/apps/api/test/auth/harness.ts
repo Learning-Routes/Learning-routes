@@ -16,12 +16,25 @@ export function harness() {
   const purges: { tags: string[] }[] = [];
   const app = createApp({
     emailSender: () => ({ sendMagicLink: async (message) => void sent.push(message) }),
+    // Turnstile's answer, by token.
+    siteverifyFetch: async (_url, init) => {
+      const token = new URLSearchParams(String(init?.body)).get("response");
+      return new Response(
+        JSON.stringify({
+          success: token === "good-token",
+          action: "apply",
+          hostname: "app.example.test",
+        }),
+      );
+    },
   });
   const env = {
     DB: { connectionString: URLS.app } as Hyperdrive,
     APP_ORIGIN: APP,
     ENVIRONMENT: "test",
     BETTER_AUTH_SECRET: TEST_SECRET,
+    TURNSTILE_SECRET: "test-turnstile-secret",
+    TURNSTILE_HOSTNAMES: "app.example.test",
     PURGE_QUEUE: { send: async (message: { tags: string[] }) => void purges.push(message) },
   } as unknown as Env;
   const ctx = {

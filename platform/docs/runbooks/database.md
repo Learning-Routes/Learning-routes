@@ -112,7 +112,7 @@ The Keychain items this runbook uses:
    pnpm --filter @learning-routes/api exec wrangler deploy
    ```
 
-   In Cloudflare, under Workers, open `learning-routes-api`, then Settings, then Domains & Routes. Add the route `new.learningroutes.com/api/*` in the `learningroutes.com` zone. The host needs a proxied DNS record in that zone; the web Worker will serve the rest of it when it's deployed. Then:
+   In Cloudflare, under Workers, open `learning-routes-api`, then Settings, then Domains & Routes. Add the route `new.learningroutes.com/api/*` in the `learningroutes.com` zone. The host needs a proxied DNS record in that zone; the web Worker will serve the rest of it when it's deployed. (From Platform STEP 4 on, the app's host is `app.learningroutes.com`, and the web Worker reaches this one through a service binding, so this route is only for this first check. Remove it when the web Worker is deployed.) Then:
 
    ```sh
    curl -s https://new.learningroutes.com/api/auth/ok
@@ -155,7 +155,7 @@ The Keychain items this runbook uses:
        If it answers `0`, do step 2 again. Then give the role its exact grants back, and check the one it must never have. The last command must print `f`:
 
        ```sh
-       psql "$(security find-generic-password -s lr-migrator -w)" -v ON_ERROR_STOP=1 -f apps/api/drizzle/0013_app_grants.sql
+       psql "$(security find-generic-password -s lr-migrator -w)" -v ON_ERROR_STOP=1 -f apps/api/drizzle/0013_app_grants.sql -f apps/api/drizzle/0016_catalog_grants.sql -f apps/api/drizzle/0023_start_grants.sql
        psql "$(security find-generic-password -s lr-migrator -w)" -tAc "select has_table_privilege('lr_app', '\"user\"', 'delete')"
        ```
 
@@ -218,4 +218,17 @@ Do these once, before running the migrations that come with Platform STEP 4: mig
 
    Put the zone's id in `CLOUDFLARE_ZONE_ID` in `apps/api/wrangler.jsonc`. It isn't a secret.
 
-**After a restore,** `lr_public` needs its grants back. Step 10 re-runs `0013`; also run the last three statements of `apps/api/drizzle/0014_public_reads.sql`.
+**After a restore,** `lr_public` needs its grants back. Step 10 re-runs lr_app's files; also run `grant usage on schema public to lr_public` and the `grant select` lines at the end of `0014`, `0019` and `0021`.
+
+## Turnstile on "Quiero enseñar" (Platform STEP 4 §6.3)
+
+1. **Create the widget** in Cloudflare, under Turnstile: managed mode, hostname `app.learningroutes.com` only.
+2. **Put its site key,** which isn't a secret, in `TURNSTILE_SITE_KEY` in `apps/web/wrangler.jsonc`, replacing the test key, in a small pull request.
+3. **Set its secret** at wrangler's prompt, from the clipboard, then clear the clipboard:
+
+   ```sh
+   pnpm --filter @learning-routes/api exec wrangler secret put TURNSTILE_SECRET
+   pbcopy < /dev/null
+   ```
+
+Cloudflare's test keys pass only where `ENVIRONMENT` is `development`, so forgetting step 2 or 3 refuses every application rather than letting them all through.

@@ -1,8 +1,15 @@
 import type { z } from "zod";
-import { catalogDecide, catalogRequest, catalogWithdraw } from "./catalog";
+import {
+  adminOverview,
+  applicationDecide,
+  catalogDecide,
+  catalogFeature,
+  catalogRequest,
+  catalogWithdraw,
+} from "./catalog";
 import type { ActionDef, ActionResult } from "./define";
 import { blockAdd, lessonAdd, moduleAdd } from "./drafting";
-import { enrollmentCreate, enrollmentUpgrade } from "./enrollments";
+import { enrollmentCreate, enrollmentList, enrollmentUpgrade } from "./enrollments";
 import type { ActionName } from "./names";
 import { reviewSubmit } from "./review";
 import { routeCreate, routeGet, routeList, routePublish } from "./routes";
@@ -27,6 +34,10 @@ export const ACTIONS = {
   "catalog.request": catalogRequest,
   "catalog.withdraw": catalogWithdraw,
   "catalog.decide": catalogDecide,
+  "catalog.feature": catalogFeature,
+  "admin.overview": adminOverview,
+  "application.decide": applicationDecide,
+  "enrollment.list": enrollmentList,
 } as const satisfies Record<ActionName, ActionDef>;
 
 type Actions = typeof ACTIONS;

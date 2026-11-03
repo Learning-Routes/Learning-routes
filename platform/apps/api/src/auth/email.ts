@@ -89,11 +89,11 @@ export function magicLinkEmail({ url, locale }: Pick<MagicLinkMessage, "url" | "
 
 /** Local development only: the link goes to wrangler dev's log. Refused in production. */
 export const logSender = (env: Pick<Env, "ENVIRONMENT">): EmailSender => ({
-  async sendMagicLink({ url }) {
+  async sendMagicLink({ email, url }) {
     if (env.ENVIRONMENT === "production") {
       throw new Error("the log sender runs only in development");
     }
-    console.log(JSON.stringify({ message: "sign-in link (development only)", url }));
+    console.log(JSON.stringify({ message: "sign-in link (development only)", email, url }));
   },
 });
 

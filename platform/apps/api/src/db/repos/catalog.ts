@@ -1,6 +1,8 @@
-import type { Catalog, CatalogListing } from "@learning-routes/core/repos/ports";
-import { and, eq, inArray } from "drizzle-orm";
+import type { Catalog, CatalogListing, CatalogQueueItem } from "@learning-routes/core/repos/ports";
+import { and, asc, desc, eq, inArray, isNull } from "drizzle-orm";
 import { catalogListings } from "../schema/catalog";
+import { routes } from "../schema/content";
+import { spaces } from "../schema/tenancy";
 import { attempt, type Db, fail, ok } from "./shared";
 
 // The catalog's listings on Postgres (Platform STEP 4 §3). Row-level security holds who
@@ -19,7 +21,38 @@ const LISTING = {
   featuredPosition: catalogListings.featuredPosition,
 };
 
+function readQueue(db: Db) {
+  return (
+    db
+      .select({
+        ...LISTING,
+        title: routes.title,
+        sourceLocale: routes.sourceLocale,
+        creator: spaces.name,
+        latestVersion: routes.latestPublishedVersion,
+      })
+      .from(catalogListings)
+      .innerJoin(routes, eq(routes.id, catalogListings.routeId))
+      .innerJoin(spaces, eq(spaces.id, catalogListings.spaceId))
+      .where(and(inArray(catalogListings.status, ACTIVE), isNull(routes.archivedAt)))
+      // "requested" sorts after "approved", and comes first.
+      .orderBy(desc(catalogListings.status), asc(catalogListings.requestedAt)) as Promise<
+      CatalogQueueItem[]
+    >
+  );
+}
+
 export const catalogRepo = (db: Db): Catalog => ({
+  queue: () => readQueue(db),
+  feature: (listingId, position) =>
+    attempt(db, async () => {
+      const rows = await db
+        .update(catalogListings)
+        .set({ featuredPosition: position })
+        .where(eq(catalogListings.id, listingId))
+        .returning({ id: catalogListings.id });
+      return rows.length === 1 ? ok(undefined) : fail("not_found");
+    }),
   // attempt turns the partial unique index's refusal into conflict.
   request: (spaceId, routeId) =>
     attempt(db, async () => {

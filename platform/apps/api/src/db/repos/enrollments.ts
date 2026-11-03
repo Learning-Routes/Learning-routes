@@ -1,6 +1,9 @@
+import type { LocalizedText } from "@learning-routes/core/localized-text";
 import type { Enrollments, RepoResult } from "@learning-routes/core/repos/ports";
-import { and, eq, sql } from "drizzle-orm";
+import { and, desc, eq, ne, sql } from "drizzle-orm";
 import { enrollments } from "../schema/learning";
+import { memberships, spaces } from "../schema/tenancy";
+import { routeVersions } from "../schema/versions";
 import { attempt, type Db, fail, ok } from "./shared";
 
 // Enrollments on Postgres (Platform STEP 2 §4). Joining is app.enroll's: it acts
@@ -25,7 +28,51 @@ const enroll = (db: Db, routeId: string) =>
       : ok({ enrollmentId: row.enrollment_id, spaceId: enrolled.spaceId });
   });
 
+/** A version's route and shape, never its blocks. */
+async function listOwn(db: Db, userId: string) {
+  const rows = await db
+    .select({
+      enrollmentId: enrollments.id,
+      routeId: enrollments.routeId,
+      route: sql<{
+        title: LocalizedText;
+        sourceLocale: string;
+      }>`${routeVersions.snapshot} -> 'route'`,
+      modules: sql<{ id: string }[]>`${routeVersions.snapshot} -> 'modules'`,
+      lessons: sql<{ moduleId: string }[]>`${routeVersions.snapshot} -> 'lessons'`,
+      creator: spaces.name,
+    })
+    .from(enrollments)
+    .innerJoin(
+      routeVersions,
+      and(
+        eq(routeVersions.routeId, enrollments.routeId),
+        eq(routeVersions.version, enrollments.pinnedVersion),
+      ),
+    )
+    .innerJoin(spaces, eq(spaces.id, enrollments.spaceId))
+    .where(and(eq(enrollments.userId, userId), eq(enrollments.status, "active")))
+    .orderBy(desc(enrollments.id));
+  const teaching = await db
+    .select({ role: memberships.role })
+    .from(memberships)
+    .where(and(eq(memberships.userId, userId), ne(memberships.role, "student")))
+    .limit(1);
+  return {
+    teaches: teaching.length > 0,
+    enrollments: rows.map(({ route, modules, lessons, ...row }) => ({
+      ...row,
+      title: route.title,
+      sourceLocale: route.sourceLocale,
+      lessonsPerModule: modules.map(
+        (module) => lessons.filter((lesson) => lesson.moduleId === module.id).length,
+      ),
+    })),
+  };
+}
+
 export const enrollmentsRepo = (db: Db): Enrollments => ({
+  listOwn: (userId) => listOwn(db, userId),
   async get(spaceId, enrollmentId) {
     const [row] = await db
       .select({

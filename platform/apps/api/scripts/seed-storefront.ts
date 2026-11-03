@@ -2,6 +2,7 @@
 // (Platform STEP 4 §7). LOCAL ONLY: it refuses any database but the local one. Running it
 // again changes nothing. Every name here is invented.
 import { fileURLToPath } from "node:url";
+import { parseArgs } from "node:util";
 import {
   contentHash,
   SNAPSHOT_FORMAT,
@@ -78,6 +79,16 @@ export const STOREFRONT_FIXTURES: Fixture[] = [
         priceMinor: 3900,
         lessons: [8, 7, 7, 7, 6, 6],
         listing: "approved",
+      },
+      {
+        slug: "ruta-para-aprobar",
+        title: "Ruta para aprobar",
+        description: "Pidió entrar al catálogo.",
+        topic: "arte",
+        level: "inicial",
+        priceMinor: null,
+        lessons: [2],
+        listing: "requested",
       },
     ],
   },
@@ -180,6 +191,23 @@ async function seedSpace(db: pg.Client, fixture: Fixture): Promise<string> {
   return id;
 }
 
+/** Back to where the browser tests expect to start, on every run. */
+async function resetWhatTestsChange(db: pg.Client) {
+  const tomas = uuidFrom("space:profe-tomas");
+  await db.query("update catalog_listings set featured_position = null");
+  await db.query(
+    `update catalog_listings set status = 'requested', note = null, decided_at = null,
+            decided_by = null, decided_version = null
+      where route_id = $1`,
+    [uuidFrom(`route:${tomas}:ruta-para-aprobar`)],
+  );
+  await db.query("delete from creator_applications");
+  await db.query(
+    `insert into creator_applications (name, email, teaches, link, locale)
+     values ('Lucía Vega', 'lucia.vega@example.com', 'Inglés para el trabajo', 'https://example.com/lucia', 'es')`,
+  );
+}
+
 /** What must never show: an edit nobody published, an archived route, a closed space. */
 async function seedHidden(db: pg.Client) {
   const andres = uuidFrom("space:andres-mora");
@@ -268,6 +296,36 @@ async function seedRoute(db: pg.Client, spaceId: string, route: Fixture["routes"
   }
 }
 
+/** Makes a signed-in address the operator: the browser tests' admin. */
+async function makeOperator(url: string, email: string) {
+  const db = new pg.Client({ connectionString: url });
+  await db.connect();
+  try {
+    await db.query(
+      `insert into platform_roles (user_id, is_operator)
+       select id, true from "user" where email = $1
+       on conflict (user_id) do update set is_operator = true`,
+      [email],
+    );
+  } finally {
+    await db.end();
+  }
+}
+
+/** wrangler dev's one client address: its per-client counts, and nobody else's. */
+async function clearLimits(url: string) {
+  const db = new pg.Client({ connectionString: url });
+  await db.connect();
+  try {
+    await db.query(
+      `delete from rate_limit where key like '0000:0000:0000:0000:0000:0000:0000:0000|%'
+          or key = 'apply-client:::1' or key = 'magic-link-peek:::1'`,
+    );
+  } finally {
+    await db.end();
+  }
+}
+
 export async function seedStorefront(url: string): Promise<void> {
   if (!LOCAL_HOST.test(url)) {
     throw new Error("the storefront's fixtures go only in the local database");
@@ -282,12 +340,26 @@ export async function seedStorefront(url: string): Promise<void> {
       }
     }
     await seedHidden(db);
+    await resetWhatTestsChange(db);
   } finally {
     await db.end();
   }
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
-  await seedStorefront(process.env.DATABASE_URL_MIGRATOR ?? LOCAL);
-  console.log(JSON.stringify({ message: "storefront fixtures seeded" }));
+  const url = process.env.DATABASE_URL_MIGRATOR ?? LOCAL;
+  if (!LOCAL_HOST.test(url)) {
+    throw new Error("the storefront's fixtures go only in the local database");
+  }
+  const { values } = parseArgs({
+    options: { operator: { type: "string" }, "clear-limits": { type: "boolean" } },
+  });
+  if (values.operator) {
+    await makeOperator(url, values.operator);
+  } else if (values["clear-limits"]) {
+    await clearLimits(url);
+  } else {
+    await seedStorefront(url);
+    console.log(JSON.stringify({ message: "storefront fixtures seeded" }));
+  }
 }

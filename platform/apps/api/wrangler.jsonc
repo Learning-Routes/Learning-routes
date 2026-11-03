@@ -21,11 +21,13 @@
   // non-GET request may carry. ENVIRONMENT is "development" only in .dev.vars,
   // where sign-in links go to the log; anywhere else they are mailed.
   "vars": {
-    "APP_ORIGIN": "https://new.learningroutes.com",
+    "APP_ORIGIN": "https://app.learningroutes.com",
     "ENVIRONMENT": "production",
     "EMAIL_FROM": "sign-in@new.learningroutes.com",
     // A placeholder until the owner adds the zone (docs/runbooks/database.md).
-    "CLOUDFLARE_ZONE_ID": "00000000000000000000000000000000"
+    "CLOUDFLARE_ZONE_ID": "00000000000000000000000000000000",
+    // The hosts a Turnstile token may come from (Platform STEP 4 §6.3).
+    "TURNSTILE_HOSTNAMES": "app.learningroutes.com"
   },
   // Cloudflare Email Sending: sign-in links, from this one address only. The
   // domain is enabled with wrangler email sending enable (docs/runbooks/database.md).
@@ -33,7 +35,7 @@
     { "name": "EMAIL", "allowed_sender_addresses": ["sign-in@new.learningroutes.com"] }
   ],
   // Set with wrangler secret put; locally in .dev.vars (git-ignored).
-  "secrets": { "required": ["BETTER_AUTH_SECRET", "CLOUDFLARE_PURGE_TOKEN"] },
+  "secrets": { "required": ["BETTER_AUTH_SECRET", "CLOUDFLARE_PURGE_TOKEN", "TURNSTILE_SECRET"] },
   // Purging the storefront's edge cache by tag, after the commit (Platform STEP 4 §1.4).
   // One consumer at a time, and at most one batch each 30 s, stays inside the Free
   // plan's 5 purges a minute; the plan is not assumed.

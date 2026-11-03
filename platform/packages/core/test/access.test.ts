@@ -28,6 +28,10 @@ const EXPECTED: Record<string, Record<string, string[]>> = {
   "catalog.request": { owner: ["ui"] },
   "catalog.withdraw": { owner: ["ui"] },
   "catalog.decide": {},
+  "catalog.feature": {},
+  "admin.overview": {},
+  "application.decide": {},
+  "enrollment.list": EVERYONE,
 };
 
 describe("can(role, action, via)", () => {
@@ -55,7 +59,12 @@ describe("can(role, action, via)", () => {
     const allowed = ACTION_NAMES.flatMap((action) =>
       ACTOR_KINDS.filter((via) => can("operator", action, via)).map((via) => `${action} ${via}`),
     );
-    expect(allowed).toEqual(["catalog.decide ui"]);
+    expect(allowed.sort()).toEqual([
+      "admin.overview ui",
+      "application.decide ui",
+      "catalog.decide ui",
+      "catalog.feature ui",
+    ]);
   });
 
   it("refuses an action it does not know", () => {

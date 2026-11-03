@@ -7,3 +7,7 @@ BETTER_AUTH_SECRET=
 # The API token that purges the storefront's edge cache: permission Cache Purge, on the
 # one zone. A local run never uses it, since purging is a no-op there; any value will do.
 CLOUDFLARE_PURGE_TOKEN=
+# Cloudflare's published test key, which always passes and counts only in a local run.
+TURNSTILE_SECRET=1x0000000000000000000000000000000AA
+# Test keys answer with this host.
+TURNSTILE_HOSTNAMES=example.com

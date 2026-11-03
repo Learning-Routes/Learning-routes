@@ -4,6 +4,16 @@ import type { Enrollment, Progress, SpaceRole } from "../domain";
 import type { Card } from "../learning/fsrs";
 import type { Locale, LocalizedText } from "../localized-text";
 import type { Member } from "../memberships";
+import type { Applications, Catalog } from "./catalog-ports";
+
+export type {
+  ApplicationRecord,
+  Applications,
+  Catalog,
+  CatalogDecision,
+  CatalogListing,
+  CatalogQueueItem,
+} from "./catalog-ports";
 
 // The repositories, one port per aggregate (Platform STEP 2 §4). core still
 // imports no database: the API implements these on Postgres, under the acting
@@ -146,9 +156,10 @@ export interface EnrollmentRecord {
 export interface Enrollments {
   get(spaceId: string, enrollmentId: string): Promise<RepoResult<EnrollmentRecord>>;
   /**
-   * Enrolls the acting user (never anyone else) in a published, open and free route, as a student
-   * unless they hold a role in its space: not_found for a route they cannot see,
-   * invalid for a paid or closed one they can.
+   * Enrolls the acting user (never anyone else) in a published, open route, as a student
+   * unless they hold a role in its space: not_found for a route they cannot see, invalid
+   * for a closed one they can. A paid route's module 1 is free, so a paid route enrolls;
+   * paying for the rest is Platform STEP 6's.
    */
   enroll(routeId: string): Promise<RepoResult<{ enrollmentId: string; spaceId: string }>>;
   /**
@@ -156,6 +167,17 @@ export interface Enrollments {
    * version, never back: not_found for anyone else's, or a revoked one.
    */
   upgrade(spaceId: string, enrollmentId: string): Promise<RepoResult<{ pinnedVersion: number }>>;
+  /** The acting user's own active enrollments, newest first, and whether they teach anywhere. */
+  listOwn(userId: string): Promise<{ enrollments: OwnEnrollment[]; teaches: boolean }>;
+}
+
+export interface OwnEnrollment {
+  enrollmentId: string;
+  routeId: string;
+  title: LocalizedText;
+  sourceLocale: string;
+  creator: LocalizedText;
+  lessonsPerModule: number[];
 }
 
 export interface ProgressRecord {
@@ -231,38 +253,10 @@ export interface ActionLog {
   append(spaceId: string | null, entry: ActionLogEntry): Promise<RepoResult<void>>;
 }
 
-export interface CatalogListing {
-  id: string;
-  spaceId: string;
-  routeId: string;
-  status: "requested" | "approved" | "declined" | "withdrawn";
-  note: string | null;
-  decidedBy: string | null;
-  decidedVersion: number | null;
-  featuredPosition: number | null;
-}
-
-export interface CatalogDecision {
-  status: "approved" | "declined";
-  note: string | null;
-  decidedBy: string;
-  decidedVersion: number | null;
-}
-
-/** Row-level security holds who may do each: an owner asks and withdraws, an operator decides. */
-export interface Catalog {
-  /** conflict while the route has an active request or listing. */
-  request(spaceId: string, routeId: string): Promise<RepoResult<{ listingId: string }>>;
-  /** not_found with nothing active to withdraw. */
-  withdraw(spaceId: string, routeId: string): Promise<RepoResult<void>>;
-  /** An operator's read: a listing has no space until it is read. */
-  get(listingId: string): Promise<RepoResult<CatalogListing>>;
-  decide(listingId: string, decision: CatalogDecision): Promise<RepoResult<void>>;
-}
-
 export interface Repos {
   spaces: Spaces;
   catalog: Catalog;
+  applications: Applications;
   memberships: Memberships;
   routeDrafts: RouteDrafts;
   routeVersions: RouteVersions;

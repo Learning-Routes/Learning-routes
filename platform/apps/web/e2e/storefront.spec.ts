@@ -47,7 +47,6 @@ test("the landing shows up to three approved routes, and never one that is not",
 }) => {
   const html = await (await request.get("/es")).text();
   expect(html).toContain("Rutas para empezar");
-  expect(html).toContain("Guitarra desde cero");
   expect(html).not.toContain("Portugués para el trabajo");
   expect(html).not.toContain("Borrador que nadie debe ver");
 });

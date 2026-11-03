@@ -52,6 +52,11 @@ export const PERMISSIONS = {
   "catalog.request": { owner: ["ui"] },
   "catalog.withdraw": { owner: ["ui"] },
   "catalog.decide": { operator: ["ui"] },
+  "catalog.feature": { operator: ["ui"] },
+  "admin.overview": { operator: ["ui"] },
+  "application.decide": { operator: ["ui"] },
+  // Only ever the actor's own.
+  "enrollment.list": EVERYONE,
 } as const satisfies Record<ActionName, Row>;
 
 /** Whether a role in a space may call an action this way. */

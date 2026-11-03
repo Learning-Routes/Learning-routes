@@ -13,6 +13,12 @@ export const pageContext = createContext<{
   platformOrigin: string;
   /** The domain creators' hosts sit under, with its port in a local run. */
   creatorDomain: string;
+  /** Public: Turnstile's widget shows it to everyone. */
+  turnstileSiteKey: string;
   /** For loaders: what the storefront's reads need from this request. */
-  runtime: { env: Pick<Env, "DB_PUBLIC">; ctx: Pick<ExecutionContext, "waitUntil"> };
+  runtime: {
+    env: Pick<Env, "DB_PUBLIC">;
+    ctx: Pick<ExecutionContext, "waitUntil">;
+    api: (request: Request) => Promise<Response>;
+  };
 }>();
