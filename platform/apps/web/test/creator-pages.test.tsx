@@ -1,11 +1,17 @@
 import type { PublicRoute, PublicSpace } from "@learning-routes/public-read/reads";
-import { renderToString } from "react-dom/server";
+import { renderToStaticMarkup, renderToString } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { courseData } from "../app/storefront/course-data";
-import { CreatorPage, priceInWords, RoutePage } from "../app/storefront/creator-pages";
+import {
+  CreatorPage,
+  CreatorWeave,
+  priceInWords,
+  RoutePage,
+} from "../app/storefront/creator-pages";
 import { pageLocale, withLang } from "../app/storefront/page-locale";
 import { sitemapXml } from "../app/storefront/sitemap-xml";
 
+const PATH = /<path/g;
 const SPACE: PublicSpace = {
   id: "s1",
   slug: "mariana-ortega",
@@ -131,5 +137,29 @@ describe("what surrounds them", () => {
 
   it("escapes a sitemap's URLs", () => {
     expect(sitemapXml(["https://a.test/?a=1&b=2"])).toContain("https://a.test/?a=1&amp;b=2");
+  });
+});
+
+describe("the creator's woven hero", () => {
+  const route = (routeId: string, lessons: number) =>
+    ({
+      routeId,
+      modules: [{ lessons: Array.from({ length: lessons }, () => ({ es: "t" })) }],
+    }) as never;
+
+  it("is one bold line for a creator with one route", () => {
+    const html = renderToStaticMarkup(<CreatorWeave routes={[route("a", 3)]} />);
+    expect(html).toContain("creator-weave-one");
+    expect(html.match(PATH)).toHaveLength(1);
+  });
+
+  it("braids a line per route", () => {
+    const html = renderToStaticMarkup(<CreatorWeave routes={[route("a", 3), route("b", 5)]} />);
+    expect(html).not.toContain("creator-weave-one");
+    expect(html.match(PATH)).toHaveLength(2);
+  });
+
+  it("draws nothing for a creator with no routes yet", () => {
+    expect(renderToStaticMarkup(<CreatorWeave routes={[]} />)).toBe("");
   });
 });

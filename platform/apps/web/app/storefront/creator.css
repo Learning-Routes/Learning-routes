@@ -296,3 +296,125 @@
   line-height: 1.5;
   color: var(--color-sub);
 }
+
+/* The creator's moment (Platform STEP 6 §3): their own routes woven into one figure, in the brand
+   colour, drawn once. Take `moment` off the page's root to remove it. */
+.creator-weave {
+  display: none;
+}
+.moment .creator-weave {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+.creator-weave path {
+  fill: none;
+  stroke: var(--color-accent);
+  stroke-width: 1.4;
+  stroke-linecap: round;
+  stroke-opacity: 0.8;
+}
+.creator-weave-one path {
+  stroke-width: 4;
+  stroke-opacity: 1;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .moment .creator-weave path {
+    stroke-dasharray: 1 1;
+    animation: creator-weave-draw 1.4s var(--ease-out) both;
+  }
+  .moment .creator-weave path:nth-child(2) {
+    animation-delay: 80ms;
+  }
+  .moment .creator-weave path:nth-child(3) {
+    animation-delay: 160ms;
+  }
+  .moment .creator-weave path:nth-child(4) {
+    animation-delay: 240ms;
+  }
+  .moment .creator-weave path:nth-child(n + 5) {
+    animation-delay: 320ms;
+  }
+}
+@keyframes creator-weave-draw {
+  from {
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* The route page's moment: the rail draws as you scroll, and the station passing the middle of the
+   screen lights up. Without scroll-driven animations the stations stay as they are. */
+.journey-stations {
+  position: relative;
+}
+@media (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: view()) {
+    .moment .journey-stations::before {
+      content: "";
+      position: absolute;
+      top: 1rem;
+      bottom: 1rem;
+      left: calc(0.75rem - 2px);
+      width: 4px;
+      background: var(--color-accent);
+      transform-origin: top;
+      animation: journey-rail linear both;
+      animation-timeline: view();
+      animation-range: cover 10% cover 75%;
+    }
+    .moment .journey-station::after,
+    .moment .journey-station-free::after {
+      border-left-color: var(--color-faint);
+      border-left-style: dotted;
+    }
+    .moment .journey-station::before,
+    .moment .journey-station-free::before {
+      z-index: 1;
+      animation: journey-light linear both;
+      animation-timeline: view();
+    }
+    .moment .journey-exam::before {
+      z-index: 1;
+    }
+  }
+}
+@keyframes journey-rail {
+  from {
+    transform: scaleY(0);
+  }
+  to {
+    transform: scaleY(1);
+  }
+}
+/* A view timeline runs from the station entering at the bottom to leaving at the top: gold at the middle. */
+@keyframes journey-light {
+  0%,
+  42% {
+    border-color: var(--color-muted);
+    background: var(--color-bg);
+    box-shadow: none;
+  }
+  50% {
+    border-color: var(--color-highlight);
+    background: var(--color-highlight);
+    box-shadow: 0 0 0 6px color-mix(in srgb, var(--color-highlight) 30%, transparent);
+  }
+  58%,
+  100% {
+    border-color: var(--color-accent);
+    background: var(--color-accent);
+    box-shadow: none;
+  }
+}
+/* "Empezar gratis" stays put beside the route, where there is room beside it. */
+@media (min-width: 64rem) {
+  .start-card {
+    position: sticky;
+    top: calc(var(--size-header) + var(--space-6));
+    align-self: flex-start;
+  }
+}

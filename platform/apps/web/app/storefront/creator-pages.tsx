@@ -2,6 +2,7 @@ import { LANGUAGE_NAMES } from "@learning-routes/core/copy/catalog";
 import { CREATOR_TEXT } from "@learning-routes/core/copy/creator";
 import type { LocaleCode } from "@learning-routes/core/locales";
 import type { PublicRoute, PublicSpace } from "@learning-routes/public-read/reads";
+import { routeLine } from "@learning-routes/route-map/route-line";
 import { ButtonLink } from "../ui/button";
 import { EmptyState } from "../ui/parts";
 import { filled, inLocale, moduleAndTopicWords } from "./words";
@@ -78,6 +79,32 @@ function CreatorFooter({
   );
 }
 
+const MOST_LINES = 7;
+
+/** The creator's own routes, braided into one figure and drawn once. One route: one bold line. */
+export function CreatorWeave({ routes }: { routes: PublicRoute[] }) {
+  if (routes.length === 0) {
+    return null;
+  }
+  const lines = routes.slice(0, MOST_LINES).map((route) =>
+    routeLine(
+      route.modules.map((module) => module.lessons.length),
+      route.routeId,
+    ),
+  );
+  return (
+    <svg
+      className={`creator-weave ${lines.length === 1 ? "creator-weave-one" : ""}`.trim()}
+      viewBox="0 0 320 100"
+      aria-hidden="true"
+    >
+      {lines.map((line) => (
+        <path key={line.path} d={line.path} pathLength={1} />
+      ))}
+    </svg>
+  );
+}
+
 export function CreatorPage({
   space,
   routes,
@@ -100,13 +127,14 @@ export function CreatorPage({
           </a>
         ) : null}
       </CreatorHeader>
-      <main className="creator">
+      <main className="creator moment">
         <section className="creator-hero">
           <h1 className="creator-headline">{inLocale(space.tagline, locale) || name}</h1>
           <div className="creator-actions">
             <ButtonLink href="#rutas">{words.seeRoutes}</ButtonLink>
             <span className="creator-free">{words.freeLine}</span>
           </div>
+          <CreatorWeave routes={routes} />
         </section>
         <section id="rutas" className="creator-routes">
           <h2 className="creator-section-title">{words.routesOf}</h2>
@@ -219,7 +247,7 @@ export function RoutePage({
   return (
     <>
       <CreatorHeader space={space} locale={locale} appOrigin={appOrigin} />
-      <div className="route-page">
+      <div className="route-page moment">
         <main className="route-main">
           <div className="route-intro">
             <h1 className="route-title">{inLocale(route.title, locale, route.sourceLocale)}</h1>
