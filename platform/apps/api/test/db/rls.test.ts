@@ -26,7 +26,9 @@ describe("row-level security", () => {
     const rows = await query(
       URLS.migrator,
       `select distinct table_name from information_schema.columns
+        join information_schema.tables using (table_schema, table_name)
         where table_schema = 'public' and column_name in ('space_id', 'user_id')
+          and table_type = 'BASE TABLE'
           and table_name not in ('session', 'account')
         union select 'spaces' order by 1`,
     );

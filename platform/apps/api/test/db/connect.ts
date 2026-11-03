@@ -9,6 +9,9 @@ export const URLS = {
   migrator:
     process.env.DATABASE_URL_MIGRATOR ??
     "postgres://lr_migrator:local-only-migrator@localhost:54318/learning_routes",
+  public:
+    process.env.DATABASE_URL_PUBLIC ??
+    "postgres://lr_public:local-only-public@localhost:54318/learning_routes",
 };
 
 /** The auth secret every test uses: the API harness signs with it, user.erase keys with it. */

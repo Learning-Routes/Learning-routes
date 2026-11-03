@@ -1,0 +1,22 @@
+{
+  "name": "@learning-routes/public-read",
+  "private": true,
+  "license": "SEE LICENSE IN LICENSE.md",
+  "version": "0.0.0",
+  "type": "module",
+  "exports": {
+    "./*": "./src/*.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@learning-routes/core": "workspace:*",
+    "pg": "8.23.1"
+  },
+  "devDependencies": {
+    "@types/node": "22.20.5",
+    "@types/pg": "8.23.1",
+    "typescript": "5.9.3"
+  }
+}
