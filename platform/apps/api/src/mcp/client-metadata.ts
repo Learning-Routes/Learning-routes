@@ -15,9 +15,13 @@ export function boundedMetadataFetch(fetcher: typeof fetch = fetch): ClientMetad
     }
     const response = await fetcher(url, {
       ...init,
-      redirect: "error",
+      // Workers has no redirect: "error"; it throws on every fetch. Refused by hand instead.
+      redirect: "manual",
       signal: AbortSignal.timeout(WAIT_MS),
     });
+    if (response.status >= 300 && response.status < 400) {
+      throw new TypeError("a client's metadata document is served without a redirect");
+    }
     const body = await readAtMost(response, MOST_BYTES);
     return new Response(body, { status: response.status, headers: response.headers });
   };
