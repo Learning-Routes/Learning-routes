@@ -4,6 +4,7 @@ import { NEW_CARD } from "../../src/learning/replay";
 import type { Member } from "../../src/memberships";
 import type {
   ActionLogEntry,
+  CatalogListing,
   DraftBlock,
   DraftLesson,
   DraftModule,
@@ -45,7 +46,9 @@ export function memoryState() {
     progress: new Map<string, { spaceId: string; userId: string } & ProgressRecord>(),
     cards: new Map<string, { spaceId: string; userId: string; itemId: string } & StoredCard>(),
     reviews: new Map<string, { spaceId: string; userId: string } & ReviewRecord>(),
-    log: [] as ({ spaceId: string } & ActionLogEntry)[],
+    log: [] as ({ spaceId: string | null } & ActionLogEntry)[],
+    listings: new Map<string, CatalogListing>(),
+    operators: new Set<string>(),
     /** Bumped by every commit, so an overlapping one is caught instead of losing writes. */
     commits: 0,
   };
@@ -187,6 +190,54 @@ export function memoryRepos(state: State, actorId = ""): Repos {
         }
         const given = Object.entries(page).filter(([, value]) => value !== undefined);
         state.spaces.set(spaceId, { ...space, ...Object.fromEntries(given) });
+        return ok(undefined);
+      },
+    },
+    catalog: {
+      request: async (spaceId, routeId) => {
+        const taken = [...state.listings.values()].some(
+          (row) => row.routeId === routeId && ["requested", "approved"].includes(row.status),
+        );
+        if (taken) {
+          return fail("conflict");
+        }
+        const listingId = newId();
+        state.listings.set(listingId, {
+          id: listingId,
+          spaceId,
+          routeId,
+          status: "requested",
+          note: null,
+          decidedBy: null,
+          decidedVersion: null,
+          featuredPosition: null,
+        });
+        return ok({ listingId });
+      },
+      withdraw: async (spaceId, routeId) => {
+        const active = [...state.listings.values()].find(
+          (row) =>
+            row.spaceId === spaceId &&
+            row.routeId === routeId &&
+            ["requested", "approved"].includes(row.status),
+        );
+        if (!active) {
+          return fail("not_found");
+        }
+        active.status = "withdrawn";
+        active.featuredPosition = null;
+        return ok(undefined);
+      },
+      get: async (listingId) => {
+        const row = state.listings.get(listingId);
+        return row ? ok(structuredClone(row)) : fail("not_found");
+      },
+      decide: async (listingId, decision) => {
+        const row = state.listings.get(listingId);
+        if (!row) {
+          return fail("not_found");
+        }
+        state.listings.set(listingId, { ...row, ...decision });
         return ok(undefined);
       },
     },
@@ -424,7 +475,9 @@ export function memoryRepos(state: State, actorId = ""): Repos {
     },
     actionLog: {
       append: async (spaceId, entry) => {
-        if (entry.actorUserId !== actorId || roleOf(spaceId, actorId) === null) {
+        const allowed =
+          state.operators.has(actorId) || (spaceId !== null && roleOf(spaceId, actorId) !== null);
+        if (entry.actorUserId !== actorId || !allowed) {
           return fail("not_found");
         }
         state.log.push({ spaceId, ...entry });

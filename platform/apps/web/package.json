@@ -18,6 +18,7 @@
   "dependencies": {
     "@learning-routes/core": "workspace:*",
     "@learning-routes/design-tokens": "workspace:*",
+    "@learning-routes/public-read": "workspace:*",
     "@learning-routes/route-map": "workspace:*",
     "isbot": "5.2.2",
     "react": "19.3.0",

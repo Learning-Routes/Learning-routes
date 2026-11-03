@@ -6,7 +6,7 @@ import type { PgDatabase } from "drizzle-orm/pg-core";
 import * as z from "zod";
 import { routes } from "./schema/content";
 import { enrollments } from "./schema/learning";
-import { memberships, spaces } from "./schema/tenancy";
+import { memberships, platformRoles, spaces } from "./schema/tenancy";
 import { routeVersions } from "./schema/versions";
 
 // Where a row lives and who may act there (Platform STEP 2 §3.2), read in one
@@ -20,6 +20,14 @@ type Reader = PgDatabase<NodePgQueryResultHKT, Record<string, unknown>>;
 
 export function pgTenancy(db: Reader): Tenancy {
   return {
+    async isOperator(userId) {
+      // Row-level security shows a user only their own row.
+      const [row] = await db
+        .select({ isOperator: platformRoles.isOperator })
+        .from(platformRoles)
+        .where(eq(platformRoles.userId, userId));
+      return row?.isOperator === true;
+    },
     async scopeOf({ kind, id }, userId) {
       // An id that is not a uuid names no row, and must not reach a uuid column.
       if (!Uuid.safeParse(id).success) {

@@ -25,6 +25,9 @@ const EXPECTED: Record<string, Record<string, string[]>> = {
   "enrollment.create": EVERYONE,
   "enrollment.upgrade": EVERYONE,
   "review.submit": EVERYONE,
+  "catalog.request": { owner: ["ui"] },
+  "catalog.withdraw": { owner: ["ui"] },
+  "catalog.decide": {},
 };
 
 describe("can(role, action, via)", () => {
@@ -48,12 +51,11 @@ describe("can(role, action, via)", () => {
     },
   );
 
-  it("refuses the platform operator everything in this STEP", () => {
-    for (const action of ACTION_NAMES) {
-      for (const via of ACTOR_KINDS) {
-        expect(can("operator", action, via)).toBe(false);
-      }
-    }
+  it("gives the platform operator only the admin actions, through the app only", () => {
+    const allowed = ACTION_NAMES.flatMap((action) =>
+      ACTOR_KINDS.filter((via) => can("operator", action, via)).map((via) => `${action} ${via}`),
+    );
+    expect(allowed).toEqual(["catalog.decide ui"]);
   });
 
   it("refuses an action it does not know", () => {

@@ -1,4 +1,5 @@
 import type { z } from "zod";
+import { catalogDecide, catalogRequest, catalogWithdraw } from "./catalog";
 import type { ActionDef, ActionResult } from "./define";
 import { blockAdd, lessonAdd, moduleAdd } from "./drafting";
 import { enrollmentCreate, enrollmentUpgrade } from "./enrollments";
@@ -23,6 +24,9 @@ export const ACTIONS = {
   "enrollment.create": enrollmentCreate,
   "enrollment.upgrade": enrollmentUpgrade,
   "review.submit": reviewSubmit,
+  "catalog.request": catalogRequest,
+  "catalog.withdraw": catalogWithdraw,
+  "catalog.decide": catalogDecide,
 } as const satisfies Record<ActionName, ActionDef>;
 
 type Actions = typeof ACTIONS;

@@ -134,6 +134,20 @@
       "when": 1793670267148,
       "tag": "0018_validate_catalog_checks",
       "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1793670912153,
+      "tag": "0019_catalog_search",
+      "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1793671290633,
+      "tag": "0020_operator_reads",
+      "breakpoints": true
     }
   ]
 }

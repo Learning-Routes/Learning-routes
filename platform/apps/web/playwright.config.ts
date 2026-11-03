@@ -9,11 +9,13 @@ const LOCAL = {
   CLOUDFLARE_INCLUDE_PROCESS_ENV: "true",
   APP_ORIGIN: "http://localhost:4174",
   ENVIRONMENT: "development",
+  CREATOR_DOMAIN: "localhost:4174",
 };
 const VISUAL = "visual.spec.ts";
 
 export default defineConfig({
   testDir: "e2e",
+  globalSetup: "./e2e/global-setup.ts",
   snapshotPathTemplate: "{testDir}/visual-baselines/{arg}{ext}",
   use: { baseURL: "http://localhost:4173" },
   projects: [

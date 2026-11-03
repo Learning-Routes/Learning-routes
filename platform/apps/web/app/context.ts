@@ -9,4 +9,8 @@ export const pageContext = createContext<{
   nonce: string;
   appOrigin: string;
   isDevelopment: boolean;
+  /** The domain creators' hosts sit under, with its port in a local run. */
+  creatorDomain: string;
+  /** For loaders: what the storefront's reads need from this request. */
+  runtime: { env: Pick<Env, "DB_PUBLIC">; ctx: Pick<ExecutionContext, "waitUntil"> };
 }>();

@@ -1,0 +1,145 @@
+/* The catalog (Platform STEP 4 §3), from v2's Catalogo. Tokens only. */
+.catalog {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  max-width: 85rem;
+  margin-inline: auto;
+  padding: var(--space-8) var(--space-4) var(--space-24);
+  font-variant-numeric: tabular-nums;
+}
+@media (min-width: 48rem) {
+  .catalog {
+    padding-inline: var(--space-10);
+  }
+}
+.catalog-title {
+  margin: 0;
+  font-size: var(--text-display);
+  font-weight: 800;
+  font-stretch: 118%;
+  letter-spacing: -0.045em;
+  line-height: 0.95;
+}
+.catalog-search {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  max-width: 55rem;
+}
+.catalog-search-label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+.catalog-search-input {
+  flex: 1 1 16rem;
+  min-width: 0;
+  width: auto;
+}
+.catalog-topics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.catalog-topic {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--size-touch);
+  padding-inline: var(--space-4);
+  border-radius: var(--radius-section);
+  box-shadow: inset 0 0 0 1px var(--color-faint);
+  color: var(--color-txt);
+  text-decoration: none;
+}
+.catalog-topic[aria-current="true"] {
+  background: var(--color-txt);
+  color: var(--color-bg);
+  box-shadow: none;
+  font-weight: var(--weight-label);
+}
+.catalog-free {
+  margin: 0;
+  color: var(--color-sub);
+}
+.catalog-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 23rem), 1fr));
+  gap: var(--space-6);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.catalog-pages {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+.route-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  height: 100%;
+  padding: var(--space-6);
+  border-radius: var(--radius-section);
+  background: var(--color-card);
+  box-shadow: inset 0 0 0 1px var(--color-border-subtle);
+  color: var(--color-txt);
+  text-decoration: none;
+}
+.route-card:hover {
+  box-shadow: inset 0 0 0 2px var(--color-accent);
+}
+.route-card-title {
+  margin: var(--space-2) 0 0;
+  font-size: var(--text-title);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+.route-card-creator,
+.route-card-facts {
+  margin: 0;
+  color: var(--color-sub);
+}
+.route-card-facts {
+  margin-top: auto;
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--color-border-subtle);
+  font-size: var(--text-small);
+}
+.route-line {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.route-line-road {
+  fill: none;
+  stroke: var(--color-bg-2);
+  stroke-width: 16;
+  stroke-linecap: round;
+}
+.route-line-way {
+  fill: none;
+  stroke-width: 5;
+  stroke-linecap: round;
+  stroke-dasharray: 2 9;
+}
+.route-line-end {
+  fill: var(--color-txt);
+}
+/* A creator's colour is chosen for a light page: here the line takes the accent. */
+@media (prefers-color-scheme: dark) {
+  .route-line-way {
+    stroke: var(--color-accent);
+  }
+  .route-line-start {
+    fill: var(--color-accent);
+  }
+}

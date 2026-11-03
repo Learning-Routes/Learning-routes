@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
+import { CATALOG_TEXT } from "../src/copy/catalog";
 import { LANDING_TEXT } from "../src/copy/landing";
+import { LEVEL_NAMES, TOPIC_NAMES } from "../src/copy/route-facts";
 import { SIGN_IN_TEXT } from "../src/copy/sign-in";
 import { UI_COPY } from "../src/copy/ui";
 import { LOCALES, type LocaleCode } from "../src/locales";
@@ -70,6 +72,9 @@ describe("the copy check", () => {
     ["ui", UI_COPY],
     ["sign-in", SIGN_IN_TEXT],
     ["landing", LANDING_TEXT],
+    ["catalog", CATALOG_TEXT],
+    ["topics", TOPIC_NAMES],
+    ["levels", LEVEL_NAMES],
   ] as const)("%s", (_name, copy) => {
     it.each(LOCALES.filter((locale) => locale !== "es"))(
       "%s has every key Spanish has",

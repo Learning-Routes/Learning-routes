@@ -31,6 +31,8 @@ export default {
           nonce,
           appOrigin: env.APP_ORIGIN,
           isDevelopment: String(env.ENVIRONMENT) === "development",
+          creatorDomain: env.CREATOR_DOMAIN,
+          runtime: { env, ctx },
         });
         return requestHandler(rendered, context);
       },

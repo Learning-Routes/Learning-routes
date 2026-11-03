@@ -17,7 +17,9 @@
   // only in a local run, where /studio/_design exists.
   "vars": {
     "APP_ORIGIN": "https://new.learningroutes.com",
-    "ENVIRONMENT": "production"
+    "ENVIRONMENT": "production",
+    // Each creator's page is [slug].CREATOR_DOMAIN (Platform STEP 4 §0).
+    "CREATOR_DOMAIN": "learningroutes.com"
   },
   // The storefront's reads (Platform STEP 4 §1): caching on, as lr_public, which reads
   // the public views and nothing else. Everything with a session goes through the API.

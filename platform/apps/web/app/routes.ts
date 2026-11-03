@@ -7,5 +7,7 @@ export default [
   route("theme", "routes/theme.ts"),
   route("sign-in", "routes/sign-in.tsx"),
   route("sign-in/confirm", "routes/sign-in-confirm.tsx"),
+  route("explorar", "routes/catalog-redirect.tsx"),
   route(":lang", "routes/storefront/home.tsx"),
+  route(":lang/explorar", "routes/storefront/catalog.tsx"),
 ] satisfies RouteConfig;

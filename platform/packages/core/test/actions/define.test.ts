@@ -34,7 +34,10 @@ const ctx = (via: ActorKind): Ctx => {
       ...base.repos,
       actionLog: { append: async () => ({ ok: true, value: undefined }) },
     },
-    tenancy: { scopeOf: async () => ({ spaceId: "space-1", role: "owner" }) },
+    tenancy: {
+      isOperator: async () => false,
+      scopeOf: async () => ({ spaceId: "space-1", role: "owner" }),
+    },
     clock: { now: () => 1_000 },
   };
 };

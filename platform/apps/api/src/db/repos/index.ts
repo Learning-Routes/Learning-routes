@@ -1,5 +1,6 @@
 import type { Repos } from "@learning-routes/core/repos/ports";
 import { actionLog } from "../schema/log";
+import { catalogRepo } from "./catalog";
 import { routeDrafts } from "./drafts";
 import { enrollmentsRepo } from "./enrollments";
 import { learningRepo, reviewsRepo } from "./learning";
@@ -14,6 +15,7 @@ import { routeVersionsRepo } from "./versions";
 export function pgRepos(db: Db): Repos {
   return {
     spaces: spacesRepo(db),
+    catalog: catalogRepo(db),
     memberships: membershipsRepo(db),
     routeDrafts: routeDrafts(db),
     routeVersions: routeVersionsRepo(db),

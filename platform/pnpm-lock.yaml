@@ -95,6 +95,9 @@ importers:
       '@learning-routes/design-tokens':
         specifier: workspace:*
         version: link:../../packages/design-tokens
+      '@learning-routes/public-read':
+        specifier: workspace:*
+        version: link:../../packages/public-read
       '@learning-routes/route-map':
         specifier: workspace:*
         version: link:../../packages/route-map
