@@ -4,7 +4,7 @@ The tokens in `packages/design-tokens` are the source of truth. The files in `re
 
 ## The direction: v2, the current target
 
-`reference/v2/` is the target. The owner reviews it first; a separate STEP rebuilds the landing and builds the app screens from it. Until then the shipped screens and the tokens still follow the earlier direction, DM Mono included.
+`reference/v2/` is the target, approved by the owner. Platform STEP 4 built the landing, the catalog, the creator's page, the route page, Mis rutas, "Quiero enseñar" and admin from it. The later STEPs build the rest. Sign-in and the tokens still follow the earlier direction, DM Mono included.
 
 - The route line is the hero of every screen.
 - Each screen has one primary action.
