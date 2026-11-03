@@ -209,6 +209,15 @@ async function resetWhatTestsChange(db: pg.Client) {
       where route_id = $1`,
     [uuidFrom(`route:${tomas}:ruta-para-aprobar`)],
   );
+  // A member with an address, so the tests can see that no public page ever shows one.
+  const { rows } = await db.query(
+    `insert into "user" (name, email) values ('Mariana Ortega', 'mariana.ortega@example.com')
+     on conflict (email) do update set name = excluded.name returning id`,
+  );
+  await db.query(
+    `insert into memberships (space_id, user_id, role) values ($1, $2, 'owner') on conflict do nothing`,
+    [uuidFrom("space:mariana-ortega"), rows[0].id],
+  );
   await db.query("delete from creator_applications");
   await db.query(
     `insert into creator_applications (name, email, teaches, link, locale)

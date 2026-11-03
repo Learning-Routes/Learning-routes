@@ -17,7 +17,7 @@ const LOCAL = {
   TURNSTILE_SITE_KEY: "1x00000000000000000000AA",
 };
 const VISUAL = "visual.spec.ts";
-const CHANGES_DATA = ["admin.spec.ts", "teach.spec.ts", "my-routes.spec.ts"];
+const CHANGES_DATA = ["admin.spec.ts", "teach.spec.ts", "my-routes.spec.ts", "whole-path.spec.ts"];
 const API_LOG = ".wrangler/e2e-api.log";
 const API_VARS = Object.entries({
   APP_ORIGIN: "http://localhost:4174",

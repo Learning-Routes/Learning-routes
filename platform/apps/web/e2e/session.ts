@@ -14,7 +14,7 @@ const LOG_LINE = /\{"message":"sign-in link[^\n]*\}/g;
 export const newAddress = (who: string) => `${who}-${crypto.randomUUID()}@example.com`;
 
 /** The newest link the dev sender wrote for this address. */
-async function linkFor(email: string): Promise<string> {
+export async function linkFor(email: string): Promise<string> {
   const deadline = Date.now() + WAIT_MS;
   while (Date.now() < deadline) {
     const lines = readFileSync(API_LOG, "utf8").match(LOG_LINE) ?? [];
