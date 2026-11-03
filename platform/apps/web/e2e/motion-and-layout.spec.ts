@@ -47,13 +47,19 @@ for (const [name, open] of Object.entries(SCREENS)) {
       CONTROLS,
     );
     expect(small).toEqual([]);
-    await page.keyboard.press("Tab");
-    const focused = await page.evaluate(() => {
-      const element = document.activeElement as Element;
-      const { outlineStyle, boxShadow } = getComputedStyle(element);
-      return element === document.body || outlineStyle === "solid" || boxShadow !== "none";
-    });
-    expect(focused).toBe(true);
+    // Each of the first controls shows it, not only the first.
+    for (let press = 0; press < 3; press++) {
+      await page.keyboard.press("Tab");
+      const focus = await page.evaluate(() => {
+        const element = document.activeElement as Element;
+        const { outlineStyle, boxShadow } = getComputedStyle(element);
+        return {
+          onBody: element === document.body,
+          shows: outlineStyle === "solid" || boxShadow !== "none",
+        };
+      });
+      expect(focus).toEqual({ onBody: false, shows: true });
+    }
     await context.close();
   });
 

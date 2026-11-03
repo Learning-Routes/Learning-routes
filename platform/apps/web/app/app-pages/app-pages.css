@@ -180,7 +180,13 @@
   height: auto;
   overflow: visible;
 }
+/* Their own words, however long: three lines, so the message below stays on screen. */
 .teach-station figcaption {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
   overflow-wrap: anywhere;
   font-size: var(--text-title);
   font-weight: var(--weight-display);

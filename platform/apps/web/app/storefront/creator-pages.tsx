@@ -86,12 +86,13 @@ export function CreatorWeave({ routes }: { routes: PublicRoute[] }) {
   if (routes.length === 0) {
     return null;
   }
-  const lines = routes.slice(0, MOST_LINES).map((route) =>
-    routeLine(
+  const lines = routes.slice(0, MOST_LINES).map((route) => ({
+    id: route.routeId,
+    path: routeLine(
       route.modules.map((module) => module.lessons.length),
       route.routeId,
-    ),
-  );
+    ).path,
+  }));
   return (
     <svg
       className={`creator-weave ${lines.length === 1 ? "creator-weave-one" : ""}`.trim()}
@@ -99,7 +100,7 @@ export function CreatorWeave({ routes }: { routes: PublicRoute[] }) {
       aria-hidden="true"
     >
       {lines.map((line) => (
-        <path key={line.path} d={line.path} pathLength={1} />
+        <path key={line.id} d={line.path} pathLength={1} />
       ))}
     </svg>
   );

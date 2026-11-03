@@ -3,7 +3,7 @@ import { CATALOG_TEXT } from "@learning-routes/core/copy/catalog";
 import { BRAND, negotiateLocale } from "@learning-routes/core/locales";
 import type { OwnEnrollment } from "@learning-routes/core/repos/ports";
 import { routeLine } from "@learning-routes/route-map/route-line";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { redirect } from "react-router";
 import { runApiAction } from "../app-api.server";
 import "../app-pages/app-pages.css";
@@ -87,14 +87,32 @@ function EnrollmentLine({
   );
 }
 
+const SEEN_KEY = "lr_arrived";
+
+/** The dot arrives once per enrollment: enrolling is idempotent, so the address alone can't say. */
+function useArrivingEnrollment(enrollmentId: string | null) {
+  const [arriving, setArriving] = useState<string | null>(null);
+  useEffect(() => {
+    if (!enrollmentId) {
+      return;
+    }
+    window.history.replaceState(window.history.state, "", "/mis-rutas");
+    try {
+      const seen: string[] = JSON.parse(localStorage.getItem(SEEN_KEY) ?? "[]");
+      if (!seen.includes(enrollmentId)) {
+        localStorage.setItem(SEEN_KEY, JSON.stringify([...seen, enrollmentId]));
+        setArriving(enrollmentId);
+      }
+    } catch {
+      // Storage is off: the dot is simply there, with no arrival.
+    }
+  }, [enrollmentId]);
+  return arriving;
+}
+
 export default function MisRutas({ loaderData }: Route.ComponentProps) {
   const { enrollments, teaches, locale, platformOrigin, newEnrollment } = loaderData;
-  // The dot arrives once: a reload of this page isn't the first visit.
-  useEffect(() => {
-    if (newEnrollment) {
-      window.history.replaceState(null, "", "/mis-rutas");
-    }
-  }, [newEnrollment]);
+  const arriving = useArrivingEnrollment(newEnrollment);
   const words = APP_PAGES_TEXT[locale];
   const catalog = `${platformOrigin}/${locale}/explorar`;
   return (
@@ -135,7 +153,7 @@ export default function MisRutas({ loaderData }: Route.ComponentProps) {
                     lessons={enrollment.lessonsPerModule}
                     completed={enrollment.completedLessons}
                     seed={enrollment.routeId}
-                    isNew={enrollment.enrollmentId === newEnrollment}
+                    isNew={enrollment.enrollmentId === arriving}
                   />
                   <h2 className="route-card-title">
                     {inLocale(enrollment.title, locale, enrollment.sourceLocale)}

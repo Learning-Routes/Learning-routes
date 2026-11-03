@@ -351,6 +351,14 @@
 .journey-stations {
   position: relative;
 }
+.journey-station {
+  --station-edge: var(--color-muted);
+  --station-fill: var(--color-bg);
+}
+.journey-station-free {
+  --station-edge: var(--color-accent);
+  --station-fill: var(--color-accent);
+}
 @media (prefers-reduced-motion: no-preference) {
   @supports (animation-timeline: view()) {
     .moment .journey-stations::before {
@@ -365,11 +373,6 @@
       animation: journey-rail linear both;
       animation-timeline: view();
       animation-range: cover 10% cover 75%;
-    }
-    .moment .journey-station::after,
-    .moment .journey-station-free::after {
-      border-left-color: var(--color-faint);
-      border-left-style: dotted;
     }
     .moment .journey-station::before,
     .moment .journey-station-free::before {
@@ -390,12 +393,15 @@
     transform: scaleY(1);
   }
 }
-/* A view timeline runs from the station entering at the bottom to leaving at the top: gold at the middle. */
+/* A view timeline runs from the station entering at the bottom to leaving at the top: gold at the
+   middle, and otherwise as the station always looks, so a free module still reads as free. */
 @keyframes journey-light {
   0%,
-  42% {
-    border-color: var(--color-muted);
-    background: var(--color-bg);
+  42%,
+  58%,
+  100% {
+    border-color: var(--station-edge);
+    background: var(--station-fill);
     box-shadow: none;
   }
   50% {
@@ -403,15 +409,10 @@
     background: var(--color-highlight);
     box-shadow: 0 0 0 6px color-mix(in srgb, var(--color-highlight) 30%, transparent);
   }
-  58%,
-  100% {
-    border-color: var(--color-accent);
-    background: var(--color-accent);
-    box-shadow: none;
-  }
 }
 /* "Empezar gratis" stays put beside the route, where there is room beside it. */
-@media (min-width: 64rem) {
+/* 38rem + 21rem + the gap and the page's padding: the width where the two sit side by side. */
+@media (min-width: 67rem) {
   .start-card {
     position: sticky;
     top: calc(var(--size-header) + var(--space-6));

@@ -146,6 +146,13 @@
 
 /* Its moment (Platform STEP 6 §3): on hover or focus, the card's line draws from start to end and
    a gold dot runs it. CSS only. Take `moment` off the page's root to turn it off. */
+.route-line-drawn {
+  fill: none;
+  stroke-width: 5;
+  stroke-linecap: round;
+  stroke-dasharray: 1 1;
+  stroke-dashoffset: 1;
+}
 .route-line-runner {
   fill: none;
   stroke: var(--color-highlight);
@@ -156,14 +163,14 @@
 }
 @media (prefers-reduced-motion: no-preference) {
   @media (hover: hover) and (pointer: fine) {
-    .moment .route-card:hover .route-line-way {
+    .moment .route-card:hover .route-line-drawn {
       animation: route-line-draw 900ms var(--ease-out) both;
     }
     .moment .route-card:hover .route-line-runner {
       animation: route-line-run 900ms var(--ease-out) both;
     }
   }
-  .moment .route-card:focus-visible .route-line-way {
+  .moment .route-card:focus-visible .route-line-drawn {
     animation: route-line-draw 900ms var(--ease-out) both;
   }
   .moment .route-card:focus-visible .route-line-runner {
@@ -179,11 +186,9 @@
 }
 @keyframes route-line-draw {
   from {
-    stroke-dasharray: 1 1;
     stroke-dashoffset: 1;
   }
   to {
-    stroke-dasharray: 1 1;
     stroke-dashoffset: 0;
   }
 }

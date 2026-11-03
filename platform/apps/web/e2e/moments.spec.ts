@@ -24,14 +24,18 @@ test("catalog: a card's line draws and a gold dot runs it, on hover and on keybo
   await page.goto(CATALOG);
   const card = page.locator(".route-card").first();
   await card.hover();
-  expect(await running(page, ".route-line-way")).toContain("route-line-draw");
+  expect(await running(page, ".route-line-drawn")).toContain("route-line-draw");
   expect(await running(page, ".route-line-runner")).toContain("route-line-run");
   await page.mouse.move(0, 0);
-  await page.keyboard.press("Tab");
-  await card.focus();
-  await page.keyboard.press("Shift+Tab");
-  await page.keyboard.press("Tab");
+  await page.waitForTimeout(100);
+  for (let press = 0; press < 30; press++) {
+    await page.keyboard.press("Tab");
+    if (await page.locator(".route-card:focus-visible").count()) {
+      break;
+    }
+  }
   await expect(page.locator(".route-card:focus-visible")).toHaveCount(1);
+  expect(await running(page, ".route-line-drawn")).toContain("route-line-draw");
 });
 
 test("catalog: no card fades in on scroll, and each is named for the page transition", async ({
@@ -97,7 +101,7 @@ test("the switch: without `moment` on the root the catalog is quiet and the weav
   await page.goto(CATALOG);
   await page.evaluate(() => document.querySelector(".moment")?.classList.remove("moment"));
   await page.locator(".route-card").first().hover();
-  expect(await running(page, ".route-line-way, .route-line-runner")).toEqual([]);
+  expect(await running(page, ".route-line-drawn, .route-line-runner")).toEqual([]);
   await page.goto(creatorHost("mariana-ortega"));
   await page.evaluate(() => document.querySelector(".moment")?.classList.remove("moment"));
   await expect(page.locator(".creator-weave")).toBeHidden();
