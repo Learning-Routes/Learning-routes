@@ -9,8 +9,8 @@ type Surface = { storefront?: boolean; challenge?: boolean } | undefined;
 export const streamTimeout = 5_000;
 
 // Only our own files and this response's nonce may run scripts. No page frames
-// anything yet; creators' blocks will get their own origin here. A storefront page runs
-// no script and is cached for every visitor, so it carries no nonce at all.
+// anything yet; creators' blocks will get their own origin here. A storefront page is
+// cached for every visitor, so it carries no nonce: only files from our own origin may run.
 function policy(nonce: string | null, hasChallenge: boolean): string {
   const challenge = hasChallenge ? " https://challenges.cloudflare.com" : "";
   return [

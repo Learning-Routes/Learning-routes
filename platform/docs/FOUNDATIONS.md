@@ -26,7 +26,7 @@ Learning Routes is where creators build learning routes, with AI agents helping,
 |---|---|
 | `packages/core` | The rules ported from v1 and checked against golden fixtures from the Ruby code: grading, FSRS scheduling, lesson parsing, credit cost and spend limits. The action registry and `review.submit`. About 1,750 tests. |
 | `packages/route-map`, `packages/design-tokens` | The route map's geometry and the design tokens (renamed from `journey` and `ui-tokens` in Platform STEP 1). |
-| `apps/web` | React Router 8 on Workers. The storefront is server HTML without hydration (220 B of JavaScript); the app and the studio are React. Strict CSP with a nonce per response. |
+| `apps/web` | React Router 8 on Workers. The storefront is server HTML without hydration, with no blocking JavaScript (ADR 0008); the app and the studio are React. Strict CSP with a nonce per response. |
 | `apps/api` | Hono on Workers. Today only `/health`. |
 | Guardrails | Biome (performance rules, complexity limit 15), knip, dependency-cruiser boundaries, size-limit, a Worker size budget, the 14-day version rule, osv-scanner, and the AI cost gate. |
 | Not yet | The database, accounts, tenancy, MCP, payments, the student experience in React. |
@@ -46,7 +46,7 @@ Technical names keep their final form from the start: packages are `@learning-ro
 
 | Layer | Choice | Why | What would change it |
 |---|---|---|---|
-| Pages | **React Router 8** on Cloudflare Workers | Server-rendered pages people use; the storefront ships no React. ADR 0004. | A storefront that needs more than 1 KB of JavaScript. |
+| Pages | **React Router 8** on Cloudflare Workers | Server-rendered pages people use; the storefront ships no React. ADR 0004. | A storefront that needs more than the budgets of ADR 0008. |
 | API, MCP, webhooks | **Hono** | Small, fast on Workers, standard Request and Response. | Nothing on the horizon. |
 | Rules | **`packages/core`**, pure TypeScript and zod | One place for what is allowed; testable without a platform. ADR 0002. | Never: this is the centre. |
 | Data | **PlanetScale Postgres 18** through **Hyperdrive**, with **Drizzle** and `pg` | Plain Postgres, steady latency, a path to high availability. ADR 0005. | A dump and a new Hyperdrive config; the code stays. |
