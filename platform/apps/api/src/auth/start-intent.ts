@@ -4,7 +4,7 @@ import { secretsEqual } from "../security/secrets-equal";
 // for an hour, on this browser only: the email's link never carries it, and whoever opens
 // a forwarded link joins nothing. __Host- pins it to the app's origin.
 
-export const START_COOKIE = "__Host-lr_start";
+const START_COOKIE = "__Host-lr_start";
 export const DEAD_START_COOKIE = `${START_COOKIE}=; Max-Age=0; Path=/; HttpOnly; Secure; SameSite=Lax`;
 const AN_HOUR_S = 3600;
 

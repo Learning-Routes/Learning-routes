@@ -1,7 +1,7 @@
-import { sql } from "drizzle-orm";
 import type { Hono } from "hono";
 import * as z from "zod";
 import { startIntentCookie } from "./auth/start-intent";
+import { routePreview } from "./db/repos/route-preview";
 import { withDb } from "./db/with-db";
 
 // What /empezar needs before anyone has signed in (Platform STEP 4 §6.1): which route a
@@ -17,21 +17,8 @@ export function startRoutes(app: Hono<{ Bindings: Env }>) {
     if (!routeId.success) {
       return c.json({ code: "not_found" }, 404);
     }
-    const rows = await withDb(c.env, c.executionCtx, null, (tx) =>
-      tx.execute<{ title: unknown; creator: unknown; access: string; source_locale: string }>(
-        sql`select title, space_name as creator, access, source_locale
-              from public_routes where route_id = ${routeId.data}`,
-      ),
-    );
-    const [route] = rows.rows;
-    return route === undefined
-      ? c.json({ code: "not_found" }, 404)
-      : c.json({
-          title: route.title,
-          creator: route.creator,
-          sourceLocale: route.source_locale,
-          isOpen: route.access === "open",
-        });
+    const route = await withDb(c.env, c.executionCtx, null, (tx) => routePreview(tx, routeId.data));
+    return route === null ? c.json({ code: "not_found" }, 404) : c.json(route);
   });
 
   app.post("/api/start/intent", async (c) => {

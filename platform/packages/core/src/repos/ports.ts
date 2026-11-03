@@ -5,6 +5,7 @@ import type { Card } from "../learning/fsrs";
 import type { Locale, LocalizedText } from "../localized-text";
 import type { Member } from "../memberships";
 import type { Applications, Catalog } from "./catalog-ports";
+import type { RepoResult } from "./repo-result";
 
 export type {
   ApplicationRecord,
@@ -21,14 +22,7 @@ export type {
 // contract suite. Every method takes the space and filters on it together with
 // the id; none accepts a raw filter. Times are epoch milliseconds.
 
-/**
- * not_found: no such row for this caller. conflict: a stale revision or a taken
- * unique value. position_taken: a live sibling already holds that position key,
- * so the caller needs a new key, not a fresh read. invalid: the database refused
- * the value.
- */
-export type RepoError = "not_found" | "conflict" | "position_taken" | "invalid";
-export type RepoResult<T> = { ok: true; value: T } | { ok: false; error: RepoError };
+export type { RepoError, RepoResult } from "./repo-result";
 
 export interface SpaceRecord {
   id: string;

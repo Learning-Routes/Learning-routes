@@ -1,5 +1,5 @@
 import type { LocalizedText } from "../localized-text";
-import type { RepoResult } from "./ports";
+import type { RepoResult } from "./repo-result";
 
 // The catalog's listings and the applications to teach (Platform STEP 4 §2, §3, §6).
 
