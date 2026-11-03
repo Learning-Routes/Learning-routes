@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import type { ActorKind } from "../../src/actions/actor";
 import { type ActionResult, runAction } from "../../src/actions/define";
 import { ACTIONS } from "../../src/actions/registry";
+import { SpaceSlug } from "../../src/actions/spaces";
 import { ENROLLMENTS, ROUTE, SPACE, STAFF, testCtx, testWorld, type World } from "./test-ctx";
 
 // The first actions on real data (Platform STEP 2 §6), on the repositories'
@@ -333,34 +334,31 @@ describe("what a creator's page says (Platform STEP 4 §2.1)", () => {
   });
 });
 
-describe("a space's address (Platform STEP 4 review, fix 2)", () => {
-  it("an owner may change it to one that is free", async () => {
+describe("a space's address", () => {
+  it("cannot be changed: that breaks every link to the page, until redirects arrive in STEP 9", async () => {
     const world = testWorld();
     const result = await call(world, STAFF.owner, "space.update", {
       spaceId: SPACE,
       slug: "mi-espacio",
     });
-    expect(result.ok).toBe(true);
-    expect(world.spaces.get(SPACE)?.slug).toBe("mi-espacio");
+    expect(result).toMatchObject({ ok: false, code: "invalid_input" });
+    expect(world.spaces.get(SPACE)?.slug).toBe("space");
   });
 
-  it.each(["app", "docs", "login", "APP"])("%s is refused, saying why", async (slug) => {
-    const world = testWorld();
-    const result = await call(world, STAFF.owner, "space.update", { spaceId: SPACE, slug });
-    expect(result).toMatchObject({
-      ok: false,
-      code: "invalid_input",
-      issues: [{ path: "slug" }],
-    });
-    expect(JSON.stringify(result)).toContain("keeps this address for itself");
-    expect(world.spaces.get(SPACE)?.slug).toBe("space");
+  it.each(["app", "docs", "login", "APP"])("%s is refused, saying why", (slug) => {
+    const parsed = SpaceSlug.safeParse(slug);
+    expect(parsed.success).toBe(false);
+    expect(JSON.stringify(parsed.error?.issues)).toContain("keeps this address for itself");
   });
 
   it.each(["con espacio", "-a", "a-", "Á", "x".repeat(64)])(
     "%s is refused: it cannot be a host",
-    async (slug) => {
-      const result = await call(testWorld(), STAFF.owner, "space.update", { spaceId: SPACE, slug });
-      expect(result).toMatchObject({ ok: false, code: "invalid_input" });
+    (slug) => {
+      expect(SpaceSlug.safeParse(slug).success).toBe(false);
     },
   );
+
+  it("takes a free address", () => {
+    expect(SpaceSlug.parse("mi-espacio")).toBe("mi-espacio");
+  });
 });

@@ -17,7 +17,7 @@ export function priceInWords(minor: number, currency: string, locale: LocaleCode
   return format.format(minor / MINOR_BASE ** digits);
 }
 
-/** The first letter of a name, until photos arrive in STEP 7. */
+/** The first letter of a name, until photos arrive in STEP 9. */
 function Avatar({ name }: { name: string }) {
   return (
     <span className="creator-avatar" aria-hidden="true">

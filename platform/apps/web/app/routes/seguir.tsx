@@ -7,7 +7,7 @@ import "../app-pages/app-pages.css";
 import { ButtonLink } from "../ui/button";
 import type { Route } from "./+types/seguir";
 
-// "Seguir", until Platform STEP 5 builds the map: only for the visitor's own enrollment.
+// "Seguir", until Platform STEP 7 builds the map: only for the visitor's own enrollment.
 
 export async function loader({ request, params, context }: Route.LoaderArgs) {
   const answer = await runApiAction<{ enrollments: OwnEnrollment[] }>(
