@@ -7,18 +7,18 @@ import {
 import type { Point } from "@learning-routes/route-map/landing-curves";
 import { buildLandingModel } from "@learning-routes/route-map/landing-model";
 import { PCFShadowMap, SRGBColorSpace, WebGLRenderer } from "three";
-import {
-  buildLabels,
-  type ExampleRoute,
-  type Labels,
-  type Projector,
-  type StageWords,
-  showRoute,
-} from "./labels";
+import { buildLabels, type Labels, type Projector, showRoute } from "./labels";
 import { placeNames } from "./name-frame";
-import { listenToPage, nextTask, projectorFor, radiusOn } from "./page-wiring";
+import {
+  listenToPage,
+  markRoute,
+  nextTask,
+  projectorFor,
+  radiusOn,
+  undoStage,
+} from "./page-wiring";
 import { buildScene, type SceneParts } from "./scene";
-import { activePanel, lerp, panelOffset, storyTime } from "./story";
+import { activePanel, easedTime, panelOffset, storyTime } from "./story";
 import { aimCamera, type StoryState, updateDoneRing, updateStory } from "./story-frame";
 import {
   anchorOf,
@@ -30,8 +30,10 @@ import {
   markCurrentDot,
   type PanelText,
   required,
+  rideWithSpots,
   roomFor,
   showPanel,
+  stagePage,
 } from "./texts";
 import { applyTheme } from "./theme";
 
@@ -39,18 +41,10 @@ import { applyTheme } from "./theme";
 // HTML and is already on screen; this adds the map behind it. Canvas and names are aria-hidden.
 
 const HEADER = 64;
-const FALLOFF = 5.2;
 
 export class LandingStage {
   private readonly model = buildLandingModel();
-  private readonly stage: HTMLElement;
-  private readonly canvas: HTMLCanvasElement;
-  private readonly top: HTMLElement;
-  private readonly dotsList: HTMLElement;
-  private readonly tabs: HTMLButtonElement[];
-  private readonly panels: HTMLElement[];
-  private readonly routes: Record<string, ExampleRoute>;
-  private readonly words: StageWords;
+  private readonly page: ReturnType<typeof stagePage>;
   private readonly listeners = new AbortController();
   private dots: HTMLButtonElement[] = [];
   private renderer: WebGLRenderer | null = null;
@@ -74,14 +68,7 @@ export class LandingStage {
   private totalWeight = PANEL_WEIGHTS.reduce((sum, weight) => sum + weight, 0);
 
   constructor(private readonly journey: HTMLElement) {
-    this.stage = required(journey, ".lp-stage");
-    this.canvas = required(journey, ".lp-world");
-    this.top = required(journey, ".lp-top");
-    this.dotsList = required(journey, ".lp-vdots ol");
-    this.tabs = [...journey.querySelectorAll<HTMLButtonElement>(".lp-opts button")];
-    this.panels = [...journey.querySelectorAll<HTMLElement>(".lp-ann")];
-    this.routes = JSON.parse(journey.dataset.routes ?? "{}");
-    this.words = JSON.parse(journey.dataset.words ?? "{}");
+    this.page = stagePage(journey);
   }
 
   /** When anything fails the page goes back to its server HTML, as if this never ran. */
@@ -90,13 +77,7 @@ export class LandingStage {
       await this.build();
     } catch (error) {
       this.dispose();
-      this.journey.classList.remove("lp-gl");
-      this.journey.style.height = "";
-      for (const panel of this.panels) {
-        panel.classList.remove("lp-on");
-        panel.style.width = "";
-        panel.style.transform = "";
-      }
+      undoStage(this.journey, this.page.panels);
       throw error;
     }
   }
@@ -104,7 +85,7 @@ export class LandingStage {
   // Yields between its steps, and measures once the fonts are in.
   private async build() {
     await document.fonts.ready;
-    const renderer = new WebGLRenderer({ canvas: this.canvas, antialias: true, alpha: true });
+    const renderer = new WebGLRenderer({ canvas: this.page.canvas, antialias: true, alpha: true });
     this.renderer = renderer;
     renderer.outputColorSpace = SRGBColorSpace;
     renderer.shadowMap.enabled = true;
@@ -114,22 +95,22 @@ export class LandingStage {
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, isCoarse ? 1.5 : 2));
     await nextTask();
     this.parts = buildScene(this.model);
-    this.project = projectorFor(this.parts.camera, this.stage);
+    this.project = projectorFor(this.parts.camera, this.page.stage);
     this.drawnRadius = radiusOn(this.project);
-    this.labels = buildLabels(required(this.journey, ".lp-labels"), this.model, this.words);
+    this.labels = buildLabels(required(this.journey, ".lp-labels"), this.model, this.page.words);
     this.dots = buildPanelDots(
-      this.dotsList,
-      this.panels,
+      this.page.dotsList,
+      this.page.panels,
       (panel) => this.goToPanel(panel),
       this.listeners.signal,
     );
-    this.setRoute(at(this.tabs, 0).dataset.route ?? "");
+    this.setRoute(at(this.page.tabs, 0).dataset.route ?? "");
     await nextTask();
     this.journey.classList.add("lp-gl");
-    holdHero(at(this.panels, 0), this.stage);
-    this.width = this.stage.clientWidth;
+    holdHero(at(this.page.panels, 0), this.page.stage);
+    this.width = this.page.stage.clientWidth;
     this.measure();
-    renderer.setSize(this.stage.clientWidth, this.stage.clientHeight, false);
+    renderer.setSize(this.page.stage.clientWidth, this.page.stage.clientHeight, false);
     this.eased = this.exactTime();
     this.lastTime = performance.now();
     applyTheme(this.parts, this.journey);
@@ -143,9 +124,9 @@ export class LandingStage {
   }
 
   private async layOutOverTime() {
-    const { clientWidth: width, clientHeight: height } = this.stage;
+    const { clientWidth: width, clientHeight: height } = this.page.stage;
     this.texts = [];
-    for (const [index, element] of this.panels.entries()) {
+    for (const [index, element] of this.page.panels.entries()) {
       const { text, rest } = layoutText(element, index, this.model, width, height);
       this.texts[index] = text;
       this.rest[index] = rest;
@@ -154,7 +135,7 @@ export class LandingStage {
   }
 
   private listen() {
-    this.observer = listenToPage(this.journey, this.listeners.signal, {
+    this.observer = listenToPage(this.journey, this.page.tabs, this.listeners.signal, {
       setOnScreen: (isOnScreen) => {
         this.isOnScreen = isOnScreen;
         this.wake();
@@ -166,12 +147,8 @@ export class LandingStage {
         this.frame();
       },
       leave: (keepsPage) => (keepsPage ? this.stopLoop() : this.dispose()),
+      pickRoute: (key) => this.setRoute(key),
     });
-    for (const tab of this.tabs) {
-      tab.addEventListener("click", () => this.setRoute(tab.dataset.route ?? ""), {
-        signal: this.listeners.signal,
-      });
-    }
   }
 
   private stopLoop() {
@@ -189,14 +166,12 @@ export class LandingStage {
   }
 
   private setRoute(key: string) {
-    const route = this.routes[key];
+    const route = this.page.routes[key];
     if (!route) {
       return;
     }
-    showRoute(this.labels, route, this.words);
-    for (const tab of this.tabs) {
-      tab.setAttribute("aria-pressed", String(tab.dataset.route === key));
-    }
+    showRoute(this.labels, route, this.page.words);
+    markRoute(this.page.tabs, key);
   }
 
   private goToPanel(panel: number) {
@@ -206,7 +181,7 @@ export class LandingStage {
 
   private measure() {
     // The stage's own height: a phone's address bar moving must not move the story.
-    this.stageHeight = this.stage.clientHeight;
+    this.stageHeight = this.page.stage.clientHeight;
     this.journey.style.height = `${this.totalWeight * this.stageHeight + this.stageHeight}px`;
     this.pinTop = this.journey.getBoundingClientRect().top + window.scrollY - HEADER;
   }
@@ -222,22 +197,20 @@ export class LandingStage {
   }
 
   private resize() {
-    const { clientWidth, clientHeight } = this.stage;
+    const { clientWidth, clientHeight } = this.page.stage;
     if (!this.renderer || (clientWidth === this.width && clientHeight === this.stageHeight)) {
       return;
     }
     this.width = clientWidth;
     this.measure();
-    this.renderer.setSize(this.stage.clientWidth, this.stage.clientHeight, false);
-    this.layoutTexts();
+    this.renderer.setSize(this.page.stage.clientWidth, this.page.stage.clientHeight, false);
+    ({ texts: this.texts, rest: this.rest } = layoutTexts(
+      this.page.panels,
+      this.model,
+      clientWidth,
+      clientHeight,
+    ));
     this.frame();
-  }
-
-  private layoutTexts() {
-    const { clientWidth: width, clientHeight: height } = this.stage;
-    const { texts, rest } = layoutTexts(this.panels, this.model, width, height);
-    this.texts = texts;
-    this.rest = rest;
   }
 
   private wake() {
@@ -269,26 +242,23 @@ export class LandingStage {
     const delta = Math.min(1 / 30, (now - this.lastTime) / 1000);
     this.lastTime = now;
     const time = this.exactTime();
-    this.eased = lerp(this.eased, time, 1 - Math.exp(-FALLOFF * delta));
-    if (Math.abs(this.eased - time) < 1e-4) {
-      this.eased = time;
-    }
+    this.eased = easedTime(this.eased, time, delta);
     const s = this.eased;
     const story = updateStory(this.parts, this.model, s, now);
     this.previousQ = updateDoneRing(this.parts, this.ring, this.previousQ, story.q, delta);
-    aimCamera(this.parts.camera, this.rest, s, this.stage.clientWidth / this.stage.clientHeight);
+    aimCamera(
+      this.parts.camera,
+      this.rest,
+      s,
+      this.page.stage.clientWidth / this.page.stage.clientHeight,
+    );
     this.renderer.render(this.parts.scene, this.parts.camera);
     this.updateTexts(time, s, story);
   }
 
   // The text rides with its spot; then the controls and the names.
   private updateTexts(time: number, s: number, story: StoryState) {
-    for (const text of this.texts) {
-      const seen = this.project(text.anchor);
-      text.x = seen.x;
-      text.y = seen.y;
-      text.element.style.transform = `translate(${seen.x.toFixed(1)}px, ${seen.y.toFixed(1)}px)`;
-    }
+    rideWithSpots(this.texts, this.project);
     const pinned = this.isPinned();
     const panel = activePanel(time, pinned, PANELS);
     if (panel !== this.active) {
@@ -299,24 +269,24 @@ export class LandingStage {
     if (this.active > 0 && shown) {
       drawLead(
         shown,
-        anchorOf(this.model, shown.index, this.stage.clientWidth, story.token),
+        anchorOf(this.model, shown.index, this.page.stage.clientWidth, story.token),
         this.project,
       );
     }
-    this.top.classList.toggle("lp-on", pinned && s >= 0.9);
-    this.dotsList.parentElement?.classList.toggle("lp-on", pinned && s >= 0.9);
+    this.page.top.classList.toggle("lp-on", pinned && s >= 0.9);
+    this.page.dotsList.parentElement?.classList.toggle("lp-on", pinned && s >= 0.9);
     markCurrentDot(this.dots, Math.min(PANELS - 1, Math.floor(time)));
     placeNames({
       model: this.model,
       parts: this.parts,
       labels: this.labels,
-      words: this.words,
+      words: this.page.words,
       project: this.project,
       drawnRadius: this.drawnRadius,
-      width: this.stage.clientWidth,
+      width: this.page.stage.clientWidth,
       s,
       story,
-      placed: roomFor(this.stage.clientWidth, this.stage.clientHeight, shown),
+      placed: roomFor(this.page.stage.clientWidth, this.page.stage.clientHeight, shown),
     });
   }
 }

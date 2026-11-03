@@ -2,7 +2,7 @@ import { anchorPoint, isPhone, spotFor } from "@learning-routes/route-map/landin
 import type { Point } from "@learning-routes/route-map/landing-curves";
 import type { LandingModel } from "@learning-routes/route-map/landing-model";
 import { layoutPanel, textWidth } from "@learning-routes/route-map/landing-placement";
-import type { Placed, Projector } from "./labels";
+import type { ExampleRoute, Placed, Projector, StageWords } from "./labels";
 import { leadPath } from "./story";
 
 // The panels' text on the map: where each one sits, and the line to what it explains.
@@ -26,6 +26,20 @@ export function required<T extends Element>(root: Element, selector: string): T 
     throw new Error(`the landing's stage has no ${selector}`);
   }
   return element;
+}
+
+/** The server HTML the stage works on. */
+export function stagePage(journey: HTMLElement) {
+  return {
+    stage: required<HTMLElement>(journey, ".lp-stage"),
+    canvas: required<HTMLCanvasElement>(journey, ".lp-world"),
+    top: required<HTMLElement>(journey, ".lp-top"),
+    dotsList: required<HTMLElement>(journey, ".lp-vdots ol"),
+    tabs: [...journey.querySelectorAll<HTMLButtonElement>(".lp-opts button")],
+    panels: [...journey.querySelectorAll<HTMLElement>(".lp-ann")],
+    routes: JSON.parse(journey.dataset.routes ?? "{}") as Record<string, ExampleRoute>,
+    words: JSON.parse(journey.dataset.words ?? "{}") as StageWords,
+  };
 }
 
 /** The text as a headline over a narrower body, as it stands in the page. */
@@ -181,4 +195,14 @@ export function markCurrentDot(dots: HTMLButtonElement[], panel: number) {
       dot.removeAttribute("aria-current");
     }
   });
+}
+
+/** Each panel's text rides with its spot on the map. */
+export function rideWithSpots(texts: PanelText[], project: Projector) {
+  for (const text of texts) {
+    const seen = project(text.anchor);
+    text.x = seen.x;
+    text.y = seen.y;
+    text.element.style.transform = `translate(${seen.x.toFixed(1)}px, ${seen.y.toFixed(1)}px)`;
+  }
 }

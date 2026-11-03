@@ -14,10 +14,16 @@ type Handlers = {
   repaintTheme: () => void;
   /** `keepsPage`: the page may come back from the back/forward cache. */
   leave: (keepsPage: boolean) => void;
+  pickRoute: (key: string) => void;
 };
 
 /** Every listener ends with the signal. Returns the observer, which the caller disconnects. */
-export function listenToPage(journey: HTMLElement, signal: AbortSignal, on: Handlers) {
+export function listenToPage(
+  journey: HTMLElement,
+  tabs: HTMLButtonElement[],
+  signal: AbortSignal,
+  on: Handlers,
+) {
   const observer = new IntersectionObserver(([entry]) =>
     on.setOnScreen(entry?.isIntersecting ?? true),
   );
@@ -39,6 +45,9 @@ export function listenToPage(journey: HTMLElement, signal: AbortSignal, on: Hand
   scheme.addEventListener("change", on.repaintTheme, { signal });
   window.addEventListener("pagehide", (event) => on.leave(event.persisted), { signal });
   window.addEventListener("pageshow", on.wake, { signal });
+  for (const tab of tabs) {
+    tab.addEventListener("click", () => on.pickRoute(tab.dataset.route ?? ""), { signal });
+  }
   return observer;
 }
 
@@ -64,3 +73,20 @@ export const radiusOn = (project: Projector) => (p: Point, radius: number) => {
     Math.hypot(c.x - center.x, c.y - center.y),
   );
 };
+
+export function markRoute(tabs: HTMLButtonElement[], key: string) {
+  for (const tab of tabs) {
+    tab.setAttribute("aria-pressed", String(tab.dataset.route === key));
+  }
+}
+
+/** Back to the server HTML: the stacked panels, as if the stage never ran. */
+export function undoStage(journey: HTMLElement, panels: HTMLElement[]) {
+  journey.classList.remove("lp-gl");
+  journey.style.height = "";
+  for (const panel of panels) {
+    panel.classList.remove("lp-on");
+    panel.style.width = "";
+    panel.style.transform = "";
+  }
+}

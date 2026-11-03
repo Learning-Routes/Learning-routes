@@ -37,6 +37,12 @@ export function tokenPosition(model: LandingModel, u: number) {
   return at(itinerary, leg).getPointAt(ease(clamp(fraction)));
 }
 
+/** The story follows the scroll with a little lag, and lands exactly. */
+export function easedTime(eased: number, time: number, delta: number): number {
+  const next = lerp(eased, time, 1 - Math.exp(-5.2 * delta));
+  return Math.abs(next - time) < 1e-4 ? time : next;
+}
+
 /** Where a scroll offset, in stage heights past the pin, falls: panel plus progress within. */
 export function storyTime(stageHeights: number, weights: readonly number[]): number {
   let y = stageHeights;
