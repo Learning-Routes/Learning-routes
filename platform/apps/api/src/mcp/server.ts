@@ -24,7 +24,7 @@ const A_MINUTE_MS = 60_000;
 const AN_HOUR_MS = 3_600_000;
 
 const INSTRUCTIONS =
-  "Learning Routes: routes are courses, made of modules, lessons and blocks, inside a creator's space. " +
+  "Routes here are courses, made of modules, lessons and blocks, inside a creator's space. " +
   "Call list_spaces first. Writes change a draft that nobody sees; only publish_route changes what students see, so publish only when the person asks. " +
   "Every write takes draft_revision: read it from get_route, and use the one each write returns.";
 

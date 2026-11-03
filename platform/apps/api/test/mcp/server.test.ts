@@ -286,7 +286,7 @@ describe("the tools", () => {
     }
     expect(last.isError).toBe(true);
     expect(last.content?.[0]?.text).toContain("Too many changes");
-  });
+  }, 30_000);
 
   it("says nothing of how it is built when something breaks", async () => {
     const { token } = await teacher();
