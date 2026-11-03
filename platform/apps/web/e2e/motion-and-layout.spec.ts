@@ -47,7 +47,7 @@ for (const [name, open] of Object.entries(SCREENS)) {
       CONTROLS,
     );
     expect(small).toEqual([]);
-    // Each of the first controls shows it, not only the first.
+    // Each of the first controls shows it. A page with fewer lets Tab leave it, back to the body.
     for (let press = 0; press < 3; press++) {
       await page.keyboard.press("Tab");
       const focus = await page.evaluate(() => {
@@ -58,7 +58,11 @@ for (const [name, open] of Object.entries(SCREENS)) {
           shows: outlineStyle === "solid" || boxShadow !== "none",
         };
       });
-      expect(focus).toEqual({ onBody: false, shows: true });
+      expect(focus.onBody && press === 0).toBe(false);
+      if (focus.onBody) {
+        break;
+      }
+      expect(focus.shows).toBe(true);
     }
     await context.close();
   });
