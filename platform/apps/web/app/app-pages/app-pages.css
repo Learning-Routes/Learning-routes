@@ -158,5 +158,5 @@
 }
 .connect-code {
   overflow-wrap: anywhere;
-  font-family: ui-monospace, monospace;
+  font-family: var(--font-mono);
 }

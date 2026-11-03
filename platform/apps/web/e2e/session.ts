@@ -73,6 +73,22 @@ export function makeOperator(email: string) {
 export const OAUTH_CLIENT_ID = "cliente-de-prueba";
 export const OAUTH_REDIRECT = "http://127.0.0.1:43219/callback";
 
+const PKCE_CHALLENGE = "E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM";
+export const PKCE_VERIFIER = "dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk";
+
+/** Where the seeded client sends its person to connect. */
+export const authorizeUrl = (scope = "routes:read routes:write offline_access") =>
+  `${APP}/api/auth/oauth2/authorize?${new URLSearchParams({
+    response_type: "code",
+    client_id: OAUTH_CLIENT_ID,
+    redirect_uri: OAUTH_REDIRECT,
+    scope,
+    state: "estado",
+    code_challenge: PKCE_CHALLENGE,
+    code_challenge_method: "S256",
+    resource: `${APP}/mcp`,
+  })}`;
+
 /** A registered client, in the local database only: a metadata document needs the network. */
 export function seedOAuthClient() {
   execFileSync(
