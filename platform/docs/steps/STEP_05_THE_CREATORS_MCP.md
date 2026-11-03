@@ -67,12 +67,12 @@ Fix the STEP numbers in `FOUNDATIONS.md` and in the earlier STEP files where the
 
 ## §0. Housekeeping
 
-1. Remove the `slug` field from `space.update`, which was added in STEP 4. Changing a page's address breaks every link to it. It returns in STEP 9 with permanent redirects from the old address.
+1. Remove the `slug` field from `space.update`, which was added in STEP 4. Changing a page's address breaks every link to it. It returns in STEP 10 with permanent redirects from the old address.
 2. Fix the later STEP numbers, as in §0 above.
 
 ## §1. Creating a space from admin
 
-The owner needs a real space to test with, and creator invitations wait for STEP 9.
+The owner needs a real space to test with, and creator invitations wait for STEP 10.
 
 1. **A new action, `space.create`:**
    - operator only, `ui` only;
@@ -138,7 +138,7 @@ The owner needs a real space to test with, and creator invitations wait for STEP
    | `update_route_details` | write | Title, description, topic, level and price on the draft |
    | `publish_route` | publish | Publishes the draft. `destructiveHint: true`. The result includes the public URL |
 
-   Add `update_route_details` as a `core` action (`ui` and `mcp`) if it does not exist. Editing and removing modules, lessons and blocks waits for STEP 9, unless it costs less than a day; say which you chose.
+   Add `update_route_details` as a `core` action (`ui` and `mcp`) if it does not exist. Editing and removing modules, lessons and blocks waits for STEP 10, unless it costs less than a day; say which you chose.
 5. **Optimistic locking.** Every write takes the `draft_revision` it read. A stale one returns a clear error, with the current revision, telling the model to call `get_route` again.
 6. **Errors a model can act on.** Return them as tool results with `isError` and a plain message: which field, what was wrong, what to send instead. Internal details never leak, and neither do other spaces' ids or names: outside your spaces, `not_found`.
 7. **Limits:**
@@ -180,7 +180,7 @@ This is the tool creators will use most: they bring a route already written with
 2. **A page on the app host, "Conecta tu asistente", under Enseñar,** saying the same in short, with the URL and a copy button. That is the only JavaScript it needs.
 3. **Testing locally:**
    - the MCP Inspector and Claude Code against `wrangler dev`, written as steps in `docs/mcp.md`;
-   - Claude on the web needs a public URL, so that test waits for STEP 6.
+   - Claude on the web needs a public URL, so that test waits for STEP 7.
 
 ## §6. Tests that prove it
 

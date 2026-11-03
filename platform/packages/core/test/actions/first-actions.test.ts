@@ -335,7 +335,7 @@ describe("what a creator's page says (Platform STEP 4 §2.1)", () => {
 });
 
 describe("a space's address", () => {
-  it("cannot be changed: that breaks every link to the page, until redirects arrive in STEP 9", async () => {
+  it("cannot be changed: that breaks every link to the page, until redirects arrive in STEP 10", async () => {
     const world = testWorld();
     const result = await call(world, STAFF.owner, "space.update", {
       spaceId: SPACE,
