@@ -6,6 +6,7 @@ import type {
   ActionLogEntry,
   ApplicationRecord,
   CatalogListing,
+  ConnectionRecord,
   DraftBlock,
   DraftLesson,
   DraftModule,
@@ -39,6 +40,7 @@ interface DraftRow {
 
 export function memoryState() {
   return {
+    connections: new Map<string, ConnectionRecord & { userId: string }>(),
     spaces: new Map<string, SpaceRecord>(),
     members: new Map<string, { spaceId: string } & Member>(),
     drafts: new Map<string, DraftRow>(),
@@ -176,6 +178,18 @@ export function memoryRepos(state: State, actorId = ""): Repos {
     state.members.get(`${spaceId}:${userId}`)?.role ?? null;
 
   return {
+    connections: {
+      canConnect: async (userId) =>
+        [...state.members.values()].some(
+          (member) => member.userId === userId && member.role !== "student",
+        ),
+      list: async (userId) =>
+        [...state.connections.values()].filter((row) => row.userId === userId),
+      revoke: async (userId, clientId) => {
+        const key = `${userId}:${clientId}`;
+        return state.connections.delete(key);
+      },
+    },
     spaces: {
       get: async (spaceId) => {
         const space = state.spaces.get(spaceId);
@@ -549,8 +563,11 @@ export function memoryRepos(state: State, actorId = ""): Repos {
     },
     actionLog: {
       append: async (spaceId, entry) => {
+        const ownConnection = spaceId === null && entry.action.startsWith("connection.");
         const allowed =
-          state.operators.has(actorId) || (spaceId !== null && roleOf(spaceId, actorId) !== null);
+          ownConnection ||
+          state.operators.has(actorId) ||
+          (spaceId !== null && roleOf(spaceId, actorId) !== null);
         if (entry.actorUserId !== actorId || !allowed) {
           return fail("not_found");
         }

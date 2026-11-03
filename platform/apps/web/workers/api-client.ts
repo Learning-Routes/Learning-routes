@@ -25,3 +25,14 @@ export function apiClient(env: ApiEnv, fetcher: typeof fetch = fetch): ApiFetch 
   }
   return (request) => env.API.fetch(request);
 }
+
+/** The same, to the MCP Worker: it holds the OAuth provider and answers /mcp. */
+export function mcpClient(
+  env: Pick<Env, "MCP" | "ENVIRONMENT"> & { MCP_DEV_ORIGIN?: string },
+): ApiFetch {
+  return apiClient({
+    API: env.MCP as unknown as Env["API"],
+    ENVIRONMENT: env.ENVIRONMENT,
+    API_DEV_ORIGIN: env.MCP_DEV_ORIGIN,
+  });
+}

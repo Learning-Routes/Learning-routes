@@ -33,6 +33,9 @@ const EXPECTED: Record<string, Record<string, string[]>> = {
   "application.decide": {},
   "space.create": {},
   "enrollment.list": EVERYONE,
+  "connection.list": { student: ["ui"] },
+  "connection.grant": { student: ["ui"] },
+  "connection.revoke": { student: ["ui"] },
 };
 
 describe("can(role, action, via)", () => {

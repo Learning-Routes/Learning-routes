@@ -22,5 +22,8 @@ export const ACTION_NAMES = [
   "admin.overview",
   "application.decide",
   "enrollment.list",
+  "connection.list",
+  "connection.grant",
+  "connection.revoke",
 ] as const;
 export type ActionName = (typeof ACTION_NAMES)[number];

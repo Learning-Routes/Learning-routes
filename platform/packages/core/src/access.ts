@@ -30,6 +30,10 @@ const STAFF = { owner: ANY_WAY, coeditor: ANY_WAY, assistant: ANY_WAY } as const
 const EDITORS = { owner: ANY_WAY, coeditor: ANY_WAY } as const;
 
 export const PERMISSIONS = {
+  // A person's own connections, in the app. "student" is how an action for oneself is asked.
+  "connection.list": { student: ["ui"] },
+  "connection.grant": { student: ["ui"] },
+  "connection.revoke": { student: ["ui"] },
   "space.get": EVERYONE,
   // What a creator's public page says: like pricing, set in the app, by an owner.
   "space.update": { owner: ["ui"] },

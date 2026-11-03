@@ -244,6 +244,8 @@ export interface ActionLogEntry {
   actorUserId: string;
   actorVia: ActorKind;
   agentRunId: string | null;
+  /** The OAuth client behind a call through the MCP. */
+  oauthClientId?: string | null;
   action: string;
   /** Already redacted: no secrets, no free text. */
   input: unknown;
@@ -256,7 +258,24 @@ export interface ActionLog {
   append(spaceId: string | null, entry: ActionLogEntry): Promise<RepoResult<void>>;
 }
 
+/** An assistant connected to a person's account. */
+export interface ConnectionRecord {
+  clientId: string;
+  clientName: string;
+  scopes: string[];
+  lastUsedAt: string | null;
+}
+
+export interface Connections {
+  /** Whether they teach anywhere: owner, coeditor or assistant of a space. */
+  canConnect(userId: string): Promise<boolean>;
+  list(userId: string): Promise<ConnectionRecord[]>;
+  /** Ends it at once: its consent and every token. False when there was nothing to end. */
+  revoke(userId: string, clientId: string): Promise<boolean>;
+}
+
 export interface Repos {
+  connections: Connections;
   spaces: Spaces;
   catalog: Catalog;
   applications: Applications;

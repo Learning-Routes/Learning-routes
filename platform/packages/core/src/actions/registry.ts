@@ -7,6 +7,7 @@ import {
   catalogRequest,
   catalogWithdraw,
 } from "./catalog";
+import { connectionGrant, connectionList, connectionRevoke } from "./connections";
 import type { ActionDef, ActionResult } from "./define";
 import { blockAdd, lessonAdd, moduleAdd } from "./drafting";
 import { enrollmentCreate, enrollmentList, enrollmentUpgrade } from "./enrollments";
@@ -39,6 +40,9 @@ export const ACTIONS = {
   "admin.overview": adminOverview,
   "application.decide": applicationDecide,
   "enrollment.list": enrollmentList,
+  "connection.list": connectionList,
+  "connection.grant": connectionGrant,
+  "connection.revoke": connectionRevoke,
 } as const satisfies Record<ActionName, ActionDef>;
 
 type Actions = typeof ACTIONS;

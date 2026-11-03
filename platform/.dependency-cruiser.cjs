@@ -118,11 +118,13 @@ module.exports = {
     {
       name: "only-auth-touches-better-auth-tables",
       comment:
-        "Better Auth's tables (user, session, account, verification) are read and written only by apps/api/src/auth/ (Platform STEP 2 §1.8).",
+        "Better Auth's tables (user, session, account, verification) are read and written only by Better Auth (Platform STEP 2 §1.8).",
       severity: "error",
       from: {
         pathNot: [
           "^apps/api/src/auth/",
+          // The OAuth provider is Better Auth too, in the MCP Worker (Platform STEP 5 §2).
+          "^apps/api/src/mcp/auth\\.ts$",
           "^apps/api/src/db/schema/",
           "^apps/api/drizzle\\.config\\.ts$",
         ],

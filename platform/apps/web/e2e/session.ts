@@ -70,6 +70,35 @@ export function makeOperator(email: string) {
   );
 }
 
+export const OAUTH_CLIENT_ID = "cliente-de-prueba";
+export const OAUTH_REDIRECT = "http://127.0.0.1:43219/callback";
+
+/** A registered client, in the local database only: a metadata document needs the network. */
+export function seedOAuthClient() {
+  execFileSync(
+    "pnpm",
+    [
+      "--filter",
+      "@learning-routes/api",
+      "db:seed-storefront",
+      "--oauth-client",
+      OAUTH_CLIENT_ID,
+      "--oauth-redirect",
+      OAUTH_REDIRECT,
+    ],
+    { stdio: "ignore" },
+  );
+}
+
+/** Makes an address a coeditor of a seeded space, in the local database only. */
+export function makeTeacher(email: string) {
+  execFileSync(
+    "pnpm",
+    ["--filter", "@learning-routes/api", "db:seed-storefront", "--teacher", email],
+    { stdio: "ignore" },
+  );
+}
+
 /** Stands in for Turnstile's script, which is Cloudflare's to test: it earns the test token. */
 export async function stubTurnstile(page: Page) {
   await page.route("https://challenges.cloudflare.com/turnstile/**", (route) => {

@@ -139,3 +139,13 @@
 .admin-select {
   width: auto;
 }
+
+.connect-scopes {
+  margin: 0;
+  padding-inline-start: var(--space-5);
+}
+.connect-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
