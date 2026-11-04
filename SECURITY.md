@@ -10,8 +10,7 @@ Never open a public issue, pull request or discussion about a vulnerability, and
 
 | Part | Supported |
 |---|---|
-| The Rails app at the root, as deployed from `main` to learningroutes.com | Yes |
-| The platform in `platform/`, on `main` | Yes, while it is built; it is not deployed yet |
+| The platform, as deployed from `main` to learningroutes.com | Yes |
 | Older commits, branches and forks | No |
 
 ## What to expect

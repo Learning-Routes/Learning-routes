@@ -1,8 +1,7 @@
 name: OSV-Scanner
 
-# Known vulnerabilities in the platform's dependencies (platform/pnpm-lock.yaml),
-# on every pull request (new ones only) and every week (all of them). The Rails
-# side has bundler-audit in ci.yml.
+# Known vulnerabilities in the platform's dependencies (pnpm-lock.yaml), on every
+# pull request (new ones only) and every week (all of them).
 on:
   pull_request:
   push:
@@ -26,7 +25,7 @@ jobs:
     with:
       scan-args: |-
         -r
-        ./platform
+        ./
 
   scan-pr:
     if: ${{ github.event_name == 'pull_request' }}
@@ -40,4 +39,4 @@ jobs:
     with:
       scan-args: |-
         -r
-        ./platform
+        ./

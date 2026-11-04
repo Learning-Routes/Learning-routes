@@ -1,7 +1,0 @@
-# Audit all gems listed in the Gemfile for known security problems by running bin/bundler-audit.
-# CVEs that are not relevant to the application can be enumerated on the ignore list below.
-#
-# Every entry is held to its reason by test/config/bundler_audit_exemptions_test.rb,
-# which fails when the reason stops being true. Do not add an entry without a test there.
-
-ignore: []
