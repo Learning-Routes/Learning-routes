@@ -1,101 +1,41 @@
 # Learning Routes
 
-AI-powered personalized learning platform. Tell us what you want to master and get a unique learning route with assessments that adapt to your real progress.
+Learning Routes is a platform where creators build learning routes by talking to agents, then publish them on their own page and sell them to their own students. This folder is the new platform. The v1 Rails app around it, at the root of the Learning-routes repository, keeps serving learningroutes.com while the platform is built.
 
-## Tech Stack
+## Layout
 
-- **Ruby 3.3.8** / **Rails 8.1.2**
-- **PostgreSQL 17** (local dev) / **Neon** (cloud database)
-- **Tailwind CSS v4** + **Hotwire** (Turbo + Stimulus)
-- **Solid Queue** / **Solid Cache** / **Solid Cable**
-- **Propshaft** (asset pipeline) + **Importmap**
-- **Kamal 2** deployment to **Hetzner** (Docker)
-- **Cloudflare** for DNS, SSL, CDN, and DDoS protection
-- **Docker Hub** as container registry
+| Path                 | What it is                                                       |
+| -------------------- | ---------------------------------------------------------------- |
+| `apps/web`           | Every page, on React Router 8 running on Cloudflare Workers      |
+| `apps/api`           | The API on Hono and Workers (`GET /health` today)                |
+| `packages/core`      | The domain: schemas and business rules, with no platform imports |
+| `packages/design-tokens` | The Ciruela design tokens and the Archivo and DM Mono fonts |
+| `packages/route-map` | The route map's geometry                                     |
+| `docs/`              | Decisions, lessons from v1 and how we work                       |
 
-## Architecture
+## Install and run
 
-Modular monolith with 6 Rails engines:
+You need Node 22 (`.nvmrc`) and pnpm 10 (`corepack enable` gives you the version in `package.json`).
 
-| Engine | Purpose |
-|---|---|
-| `core` | Users, sessions, authentication, onboarding |
-| `learning_routes_engine` | Learning profiles, routes, steps, FSRS scheduling |
-| `content_engine` | AI-generated content, caching, user notes |
-| `assessments` | Exams, questions, grading, gap analysis |
-| `ai_orchestrator` | Multi-model routing, prompt building, cost tracking |
-| `analytics` | Progress snapshots, study sessions, metrics |
-
-## Infrastructure
-
-```
-Users → Cloudflare (DNS/CDN/SSL) → Hetzner (Docker + Kamal) → Neon (Cloud PostgreSQL)
+```sh
+pnpm install
+pnpm dev        # web on http://localhost:5173, api on http://localhost:8787
+pnpm test
+pnpm typecheck
+pnpm lint
+pnpm build
 ```
 
-| Service | Role | Tier |
-|---|---|---|
-| Cloudflare | DNS, SSL, CDN, proxy | Free |
-| Hetzner | Rails app server (Docker + Kamal 2) | ~$5/mo |
-| Neon | Cloud PostgreSQL 17 database | Free |
-| Docker Hub | Container registry | Free |
+CI runs all of it in `.github/workflows/platform.yml`. Local secrets go in `apps/*/.dev.vars`, which git ignores.
 
-## Design System
+`packages/core` is checked against fixtures captured from v1, the Rails app this platform replaced. v1's code is at the tag `v1-final`.
 
-- **Theme**: Warm cream light (#F5F1EB bg, #1C1812 text, #2C261E accent)
-- **Fonts**: DM Sans (body) + DM Mono (labels/code)
-- **Landing page**: 7 sections (hero, how it works, path, outcomes, features, integrations, CTA)
-- **Auth pages**: Custom styled registration, login, password reset
+## Docs
 
-## Getting Started
-
-```bash
-# Install dependencies
-bundle install
-
-# Setup database
-bin/rails db:create db:migrate db:seed
-
-# Start development server (includes Tailwind watcher)
-bin/dev
-```
-
-> Requires Ruby 3.3.8 (via rbenv), PostgreSQL 17, and API keys for AI providers.
-
-## Development
-
-```bash
-# Run tests
-bin/rails test
-
-# Run tests for a specific engine
-bin/rails test engines/core/test/
-
-# Rails console
-bin/rails console
-```
-
-## Deployment
-
-Deployed via Kamal 2 to Hetzner with Docker Hub as the container registry. DNS and SSL managed through Cloudflare.
-
-```bash
-kamal setup    # First deploy
-kamal deploy   # Subsequent deploys
-```
-
-**Production runs `main`.** `.kamal/hooks/pre-build` refuses to build unless all of these hold:
-- the checkout is on `main`;
-- no tracked file is modified (untracked files are fine: Kamal builds from a clone of HEAD);
-- `HEAD` equals `origin/main` (pull or push first).
-
-For a hotfix the owner has decided to ship from a branch, `KAMAL_ALLOW_BRANCH_DEPLOY=1 kamal deploy` skips only the branch check and prints a warning naming the branch. It is never the default. The hook is tested by `test/deploy/pre_build_hook_test.rb`.
-
-## Domain
-
-**learningroutes.com**
-
-## License
-
-The whole repository, the Rails app and `platform/` alike, is licensed under the Functional Source License, version 1.1, with Apache 2.0 as the future license (FSL-1.1-ALv2). See [`LICENSE.md`](LICENSE.md). Anyone may use the code for any purpose except a Competing Use, as the license defines it. Each version becomes available under Apache 2.0 two years after it is published.
-
-Contributions are made under the Contributor License Agreement in [`CLA.md`](CLA.md). See [`CONTRIBUTING.md`](CONTRIBUTING.md).
+- [Foundations](docs/FOUNDATIONS.md): read this first
+- [ADR 0001: the stack](docs/adr/0001-stack.md)
+- [ADR 0002: what goes in core](docs/adr/0002-core-boundary.md)
+- [ADR 0003: decisions from the v1 port](docs/adr/0003-v1-port-decisions.md)
+- [ADR 0004: the architecture after the bake-off](docs/adr/0004-architecture-after-the-bake-off.md)
+- [Lessons from v1](docs/LESSONS_FROM_V1.md)
+- [Working agreement](docs/WORKING_AGREEMENT.md)

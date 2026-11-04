@@ -1,25 +1,21 @@
 # Paths that need the owner's review (CONTRIBUTING.md, "Reviews").
 
 # The platform's rules.
-/platform/packages/core/ @Garcia-G-G
+/packages/core/ @Garcia-G-G
 
 # The database schema and migrations, and authentication (Platform STEP 2 creates them).
-/platform/apps/api/src/db/ @Garcia-G-G
-/platform/apps/api/drizzle/ @Garcia-G-G
-/platform/apps/api/src/auth/ @Garcia-G-G
+/apps/api/src/db/ @Garcia-G-G
+/apps/api/drizzle/ @Garcia-G-G
+/apps/api/src/auth/ @Garcia-G-G
 
 # CI, workflows and repository settings files.
 /.github/ @Garcia-G-G
 
-# The Rails app's credentials and deploy configuration.
-/config/credentials/ @Garcia-G-G
-/config/deploy*.yml @Garcia-G-G
-
 # The documents that hold the rules.
-/platform/docs/FOUNDATIONS.md @Garcia-G-G
-/platform/docs/adr/ @Garcia-G-G
-/platform/docs/WORKING_AGREEMENT.md @Garcia-G-G
+/docs/FOUNDATIONS.md @Garcia-G-G
+/docs/adr/ @Garcia-G-G
+/docs/WORKING_AGREEMENT.md @Garcia-G-G
 
 # The design: the reference and the tokens that hold it.
-/platform/docs/design/ @Garcia-G-G
-/platform/packages/design-tokens/ @Garcia-G-G
+/docs/design/ @Garcia-G-G
+/packages/design-tokens/ @Garcia-G-G

@@ -1,65 +1,28 @@
-# Docker Compose for local development
-# Usage: docker compose up
-
+# The project keeps its name, so a local database made before the move to the root stays.
+name: platform
+# The local Postgres 18 for development and tests (Platform STEP 2 §1.1). Its roles
+# mirror PlanetScale's (ADR 0005); see db/init/01-roles.sql. Start it with
+# `docker compose up -d` from the root.
+#
+# LOCAL ONLY: the passwords below are fixed development values for this container
+# and are used nowhere else.
 services:
-  web:
-    build:
-      context: .
-      dockerfile: Dockerfile.dev
-    ports:
-      - "3000:3000"
-    depends_on:
-      postgres:
-        condition: service_healthy
-    environment:
-      RAILS_ENV: development
-      DB_HOST: postgres
-      DB_USERNAME: postgres
-      DB_PASSWORD: postgres
-      DB_PORT: 5432
-    volumes:
-      - .:/rails
-      - bundle_cache:/usr/local/bundle
-      - node_modules:/rails/node_modules
-    stdin_open: true
-    tty: true
-    command: bash -c "rm -f tmp/pids/server.pid && bin/rails server -b 0.0.0.0"
-
   postgres:
-    image: postgres:16-alpine
+    image: postgres:18.4
     ports:
-      - "5432:5432"
+      - "54318:5432"
     environment:
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: learning_routes_development
+      POSTGRES_PASSWORD: local-only-superuser
+      POSTGRES_DB: learning_routes
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - lr-postgres:/var/lib/postgresql
+      - ./db/init:/docker-entrypoint-initdb.d:ro
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
-
-  solid_queue_worker:
-    build:
-      context: .
-      dockerfile: Dockerfile.dev
-    depends_on:
-      postgres:
-        condition: service_healthy
-    environment:
-      RAILS_ENV: development
-      DB_HOST: postgres
-      DB_USERNAME: postgres
-      DB_PASSWORD: postgres
-      DB_PORT: 5432
-    volumes:
-      - .:/rails
-      - bundle_cache:/usr/local/bundle
-    command: bin/jobs
+      test: ["CMD-SHELL", "pg_isready -U postgres -d learning_routes"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
 
 volumes:
-  postgres_data:
-  bundle_cache:
-  node_modules:
+  lr-postgres:

@@ -1,8 +1,6 @@
 name: Platform
 
-# The new platform in platform/ (STEP 46 §1): install, typecheck, lint, test and
-# build. Skipped, not left out, when platform/ did not change, because branch
-# protection requires the platform job and a check that never reports blocks a PR.
+# The platform (STEP 46 §1): install, typecheck, lint, test and build.
 on:
   pull_request:
   push:
@@ -16,38 +14,9 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  # Which parts this change touches (.github/scripts/changed-parts.sh). The jobs
-  # below are skipped when platform/ did not change; Rails runs in ci.yml.
-  changes:
-    runs-on: ubuntu-latest
-    outputs:
-      rails: ${{ steps.parts.outputs.rails }}
-      platform: ${{ steps.parts.outputs.platform }}
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          fetch-depth: 0
-          filter: blob:none
-
-      - name: List the parts that changed
-        id: parts
-        env:
-          BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
-          HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
-        run: |
-          if git cat-file -e "$BASE^{commit}" 2>/dev/null; then
-            git diff --name-only "$BASE...$HEAD"
-          fi | .github/scripts/changed-parts.sh | tee -a "$GITHUB_OUTPUT"
-
   platform:
-    needs: changes
-    if: ${{ !cancelled() && needs.changes.outputs.platform != 'false' }}
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: platform
-    # The same image as platform/docker-compose.yml (Platform STEP 2 §1.2). LOCAL
+    # The same image as docker-compose.yml (Platform STEP 2 §1.2). LOCAL
     # ONLY: the password is the fixed development value, used nowhere else.
     services:
       postgres:
@@ -63,15 +32,15 @@ jobs:
           --health-interval 2s --health-timeout 3s --health-retries 30
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      # The pnpm version comes from packageManager in platform/package.json.
+      # The pnpm version comes from packageManager in package.json.
       - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
         with:
-          package_json_file: platform/package.json
+          package_json_file: package.json
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
-          node-version-file: platform/.nvmrc
+          node-version-file: .nvmrc
           cache: pnpm
-          cache-dependency-path: platform/pnpm-lock.yaml
+          cache-dependency-path: pnpm-lock.yaml
       # The role script compose runs on first start; a service container cannot
       # mount it, so it runs here, with the image's own psql.
       - name: Create the database roles
@@ -93,8 +62,8 @@ jobs:
         with:
           name: visual-results
           path: |
-            platform/apps/web/e2e/visual-baselines
-            platform/apps/web/test-results
+            apps/web/e2e/visual-baselines
+            apps/web/test-results
           if-no-files-found: ignore
       # Not gating yet (STEP 46 §2.8): prints each hot function against its
       # baseline; a regression over 30% goes in the pull request description.
