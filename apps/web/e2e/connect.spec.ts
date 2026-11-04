@@ -137,3 +137,30 @@ test("signing in comes back to the question", async ({ page, context }) => {
   await expect(page).toHaveURL(AT_CONSENT);
   await context.clearCookies();
 });
+
+test("each assistant has its own tab, with at most three steps and what to paste", async ({
+  page,
+  context,
+}) => {
+  const email = newAddress("ensena");
+  await signInContext(context, email);
+  makeTeacher(email);
+  await page.goto(`${DEV}/ensenar/conecta`);
+  await page.locator("html[data-hydrated]").waitFor();
+  await page.getByRole("tab", { name: "Claude Code" }).click();
+  await expect(
+    page.getByText(`claude mcp add --transport http --scope user learning-routes ${DEV}/mcp`),
+  ).toBeVisible();
+  await page.keyboard.press("ArrowRight");
+  await expect(page.getByRole("tab", { name: "ChatGPT" })).toBeFocused();
+  await expect(page.getByText("Add custom MCP server")).toBeVisible();
+  for (const name of ["Claude", "Claude Code", "ChatGPT", "Gemini CLI"]) {
+    await page.getByRole("tab", { name, exact: true }).click();
+    expect(await page.locator(".connect-steps li").count()).toBeLessThanOrEqual(3);
+  }
+});
+
+test("signing in for an assistant says so, in one line", async ({ page }) => {
+  await page.goto(`${DEV}/sign-in?client_id=a&sig=b`);
+  await expect(page.getByText("Entra con tu correo para conectar tu asistente.")).toBeVisible();
+});
