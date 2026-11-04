@@ -33,6 +33,7 @@ const EXPECTED: Record<string, Record<string, string[]>> = {
   "application.decide": {},
   "space.create": {},
   "enrollment.list": EVERYONE,
+  "lesson.read": EVERYONE,
   "space.list": { student: ["ui", "mcp"] },
   "route.update": EDITORS,
   "route.import": EDITORS,

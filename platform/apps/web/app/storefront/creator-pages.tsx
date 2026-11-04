@@ -1,80 +1,75 @@
-import { LANGUAGE_NAMES } from "@learning-routes/core/copy/catalog";
 import { CREATOR_TEXT } from "@learning-routes/core/copy/creator";
 import type { LocaleCode } from "@learning-routes/core/locales";
 import type { PublicRoute, PublicSpace } from "@learning-routes/public-read/reads";
+import { braidShapes } from "@learning-routes/route-map/route-shape";
 import { ButtonLink } from "../ui/button";
 import { EmptyState } from "../ui/parts";
-import { filled, inLocale, moduleAndTopicWords } from "./words";
+import { Rising } from "../ui/rising";
+import { arrival, RouteFigure } from "../ui/route-figure";
+import { CreatorFooter, CreatorHeader, type Links, lessonsOf } from "./creator-frame";
+import { EnhancementScript } from "./enhancement-script";
+import { inLocale, moduleAndTopicWords } from "./words";
 
-// A creator's page and a route's page, from v2's Vitrina and Ruta (Platform STEP 4 §5).
+// A creator's page: their portrait, woven from their own routes (docs/design/VISION.md).
 
-const MINOR_BASE = 10;
+const MOST_LINES = 7;
+const BRAID = { width: 560, height: 680 };
+const ROW_BOX = { width: 340, height: 90 };
 
-/** A price in words, in the page's language: 29,00 €. */
-export function priceInWords(minor: number, currency: string, locale: LocaleCode): string {
-  const format = new Intl.NumberFormat(locale, { style: "currency", currency });
-  const digits = format.resolvedOptions().maximumFractionDigits ?? 2;
-  return format.format(minor / MINOR_BASE ** digits);
-}
-
-/** The first letter of a name, until photos arrive in STEP 10. */
-function Avatar({ name }: { name: string }) {
+/** A portrait woven from the creator's routes, in their colour, drawn once. One route: one line. */
+export function CreatorWeave({ routes }: { routes: PublicRoute[] }) {
+  if (routes.length === 0) {
+    return null;
+  }
+  const lines = braidShapes(
+    routes
+      .slice(0, MOST_LINES)
+      .map((route) => ({ lessons: lessonsOf(route), seed: route.routeId })),
+    BRAID,
+  );
   return (
-    <span className="creator-avatar" aria-hidden="true">
-      {[...name][0]?.toUpperCase()}
-    </span>
+    <svg
+      className={`creator-weave${lines.length === 1 ? " creator-weave-one" : ""}`}
+      viewBox={`0 0 ${BRAID.width} ${BRAID.height}`}
+      aria-hidden="true"
+    >
+      {lines.map((line, index) => (
+        <g key={index} className={`weave-line weave-line-${Math.min(index, 3)}`}>
+          <path className="weave-under" d={line.path} />
+          <path className="weave-over" d={line.path} pathLength={1} />
+          {line.stations.map((station) => (
+            <g key={station.at} className={`weave-stop ${arrival(station)}`}>
+              <circle cx={station.x} cy={station.y} r="8" />
+              <circle className="weave-core" cx={station.x} cy={station.y} r="2.6" />
+            </g>
+          ))}
+        </g>
+      ))}
+    </svg>
   );
 }
 
-interface Links {
-  appOrigin: string;
-  platformOrigin: string;
-}
-
-function CreatorHeader({
-  space,
-  locale,
-  appOrigin,
-  children,
-}: {
-  space: PublicSpace;
-  locale: LocaleCode;
-  appOrigin: string;
-  children?: React.ReactNode;
-}) {
-  const name = inLocale(space.name, locale);
+function CreatorRoute({ route, locale }: { route: PublicRoute; locale: LocaleCode }) {
+  const words = CREATOR_TEXT[locale];
   return (
-    <header className="site-header">
-      <a className="brand" href="/">
-        <Avatar name={name} />
-        {name}
+    <li>
+      <a className="creator-route" href={`/${route.slug}`}>
+        <div>
+          <h3 className="creator-route-title">
+            {inLocale(route.title, locale, route.sourceLocale)}
+          </h3>
+          <p className="creator-route-facts">{moduleAndTopicWords(locale, route)}</p>
+          <p className="creator-route-free">{words.firstModuleFree}</p>
+        </div>
+        <RouteFigure
+          lessons={lessonsOf(route)}
+          seed={route.routeId}
+          box={ROW_BOX}
+          className="creator-route-line"
+        />
+        <span className="creator-route-go">{words.seeRoute}</span>
       </a>
-      <nav className="site-nav" aria-label={CREATOR_TEXT[locale].routes}>
-        {children}
-        <a className="nav-link" href={`${appOrigin}/sign-in`}>
-          {CREATOR_TEXT[locale].signIn}
-        </a>
-      </nav>
-    </header>
-  );
-}
-
-function CreatorFooter({
-  space,
-  locale,
-  platformOrigin,
-}: {
-  space: PublicSpace;
-  locale: LocaleCode;
-  platformOrigin: string;
-}) {
-  return (
-    <footer className="creator-footer">
-      <span>{`© ${inLocale(space.name, locale)}`}</span>
-      <a className="text-link" href={platformOrigin}>
-        {CREATOR_TEXT[locale].madeWith}
-      </a>
-    </footer>
+    </li>
   );
 }
 
@@ -88,157 +83,44 @@ export function CreatorPage({
   const words = CREATOR_TEXT[locale];
   const name = inLocale(space.name, locale);
   const bio = inLocale(space.bio, locale);
+  const tagline = inLocale(space.tagline, locale);
   return (
     <>
       <CreatorHeader space={space} locale={locale} appOrigin={appOrigin}>
         <a className="nav-link" href="#rutas">
           {words.routes}
         </a>
-        {bio ? (
-          <a className="nav-link" href="#sobre">
-            {words.about}
-          </a>
-        ) : null}
       </CreatorHeader>
-      <main className="creator">
+      <main className="creator stage moment opening">
         <section className="creator-hero">
-          <h1 className="creator-headline">{inLocale(space.tagline, locale) || name}</h1>
-          <div className="creator-actions">
-            <ButtonLink href="#rutas">{words.seeRoutes}</ButtonLink>
-            <span className="creator-free">{words.freeLine}</span>
+          <div className="creator-who">
+            <h1 className="creator-headline depth-1">
+              <Rising text={name} />
+            </h1>
+            {tagline ? <p className="creator-tagline settle-1">{tagline}</p> : null}
+            {bio ? <p className="creator-bio settle-2">{bio}</p> : null}
+            <div className="creator-actions settle-3">
+              <ButtonLink href="#rutas">{words.seeRoutes}</ButtonLink>
+              <span className="creator-free">{words.freeLine}</span>
+            </div>
           </div>
+          <CreatorWeave routes={routes} />
         </section>
         <section id="rutas" className="creator-routes">
-          <h2 className="creator-section-title">{words.routesOf}</h2>
+          <h2 className="creator-section-title depth-2">{words.routesOf}</h2>
           {routes.length === 0 ? (
             <EmptyState title={words.noRoutes} />
           ) : (
             <ul className="creator-route-list">
               {routes.map((route) => (
-                <li key={route.routeId}>
-                  <a className="creator-route" href={`/${route.slug}`}>
-                    <span className="creator-route-facts">
-                      {moduleAndTopicWords(locale, route)}
-                    </span>
-                    <h3 className="creator-route-title">
-                      {inLocale(route.title, locale, route.sourceLocale)}
-                    </h3>
-                    <p className="creator-route-body">
-                      {inLocale(route.description, locale, route.sourceLocale)}
-                    </p>
-                    <span className="creator-route-free">{words.firstModuleFree}</span>
-                  </a>
-                </li>
+                <CreatorRoute key={route.routeId} route={route} locale={locale} />
               ))}
             </ul>
           )}
         </section>
-        {bio ? (
-          <section id="sobre" className="creator-about">
-            <h2 className="creator-section-title">{words.about}</h2>
-            <p className="creator-about-body">{bio}</p>
-          </section>
-        ) : null}
       </main>
       <CreatorFooter space={space} locale={locale} platformOrigin={platformOrigin} />
-    </>
-  );
-}
-
-function Journey({ route, locale }: { route: PublicRoute; locale: LocaleCode }) {
-  const words = CREATOR_TEXT[locale];
-  const list = new Intl.ListFormat(locale, { type: "conjunction" });
-  return (
-    <section className="journey" aria-labelledby="journey-title">
-      <h2 id="journey-title" className="creator-section-title">
-        {words.journey}
-      </h2>
-      <ol className="journey-stations">
-        {route.modules.map((module, index) => (
-          <li key={module.id} className={index === 0 ? "journey-station-free" : "journey-station"}>
-            <div className="journey-station-head">
-              <h3 className="journey-title">
-                {filled(words.moduleTitle, {
-                  n: index + 1,
-                  title: inLocale(module.title, locale, route.sourceLocale),
-                })}
-              </h3>
-              {index === 0 ? <span className="journey-free">{words.free}</span> : null}
-            </div>
-            <p className="journey-topics">
-              {list.format(
-                module.lessons.map((lesson) => inLocale(lesson, locale, route.sourceLocale)),
-              )}
-            </p>
-          </li>
-        ))}
-        <li className="journey-exam">
-          <h3 className="journey-title">{words.finalExam}</h3>
-        </li>
-      </ol>
-    </section>
-  );
-}
-
-function StartCard({
-  route,
-  locale,
-  appOrigin,
-}: {
-  route: PublicRoute;
-  locale: LocaleCode;
-  appOrigin: string;
-}) {
-  const words = CREATOR_TEXT[locale];
-  const offer =
-    route.priceMinor !== null && route.currency !== null
-      ? filled(words.startPaid, { price: priceInWords(route.priceMinor, route.currency, locale) })
-      : words.startFree;
-  return (
-    <aside className="start-card">
-      <p className="start-title">{words.startTitle}</p>
-      <p className="start-offer">{offer}</p>
-      {/* Only the route's id: the app resolves everything else on the server. */}
-      <ButtonLink className="start-action" href={`${appOrigin}/empezar?ruta=${route.routeId}`}>
-        {words.start}
-      </ButtonLink>
-      <p className="start-note">{words.startNote}</p>
-    </aside>
-  );
-}
-
-export function RoutePage({
-  space,
-  route,
-  locale,
-  appOrigin,
-  platformOrigin,
-}: { space: PublicSpace; route: PublicRoute; locale: LocaleCode } & Links) {
-  const words = CREATOR_TEXT[locale];
-  const language = LANGUAGE_NAMES[locale][route.sourceLocale as LocaleCode] ?? route.sourceLocale;
-  return (
-    <>
-      <CreatorHeader space={space} locale={locale} appOrigin={appOrigin} />
-      <div className="route-page">
-        <main className="route-main">
-          <div className="route-intro">
-            <h1 className="route-title">{inLocale(route.title, locale, route.sourceLocale)}</h1>
-            <p className="route-description">
-              {inLocale(route.description, locale, route.sourceLocale)}
-            </p>
-            <p className="route-facts">
-              {`${moduleAndTopicWords(locale, route)}. ${words.levels[route.level]} ${filled(words.inLanguage, { language })}`}
-            </p>
-          </div>
-          <Journey route={route} locale={locale} />
-          <section className="route-how">
-            <h2 className="creator-section-title">{words.howTitle}</h2>
-            <p className="route-how-body">{words.howBody}</p>
-          </section>
-        </main>
-        <StartCard route={route} locale={locale} appOrigin={appOrigin} />
-      </div>
-      <CreatorFooter space={space} locale={locale} platformOrigin={platformOrigin} />
+      <EnhancementScript page="stage" />
     </>
   );
 }

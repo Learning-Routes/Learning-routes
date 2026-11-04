@@ -5,6 +5,7 @@ import { pageContext } from "../../context";
 import { storefrontHeaders } from "../../storefront/cache";
 import { CreatorPage } from "../../storefront/creator-pages";
 import "../../storefront/creator.css";
+import "../../storefront/page-transitions.css";
 import { pageLocale, withLang } from "../../storefront/page-locale";
 import { publicReads } from "../../storefront/public-reads.server";
 import { inLocale } from "../../storefront/words";

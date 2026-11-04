@@ -7,6 +7,7 @@
   "exports": {
     ".": "./tokens.ts",
     "./tokens.css": "./tokens.css",
+    "./depth.css": "./depth.css",
     "./fonts/*": "./fonts/*"
   },
   "scripts": {

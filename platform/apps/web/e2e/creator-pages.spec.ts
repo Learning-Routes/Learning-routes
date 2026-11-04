@@ -8,7 +8,7 @@ import { creatorHost } from "./screens";
 const MARIANA = creatorHost("mariana-ortega");
 const ROUTE = `${MARIANA}/portugues-para-viajar`;
 const RUTA = /\/empezar\?ruta=[0-9a-f-]{36}$/;
-const NO_JS_MODULE = "Módulo 1: Primeros pasos";
+const NO_JS_MODULE = /Primeros pasos/;
 const JSON_LD = 'script[type="application/ld+json"]';
 
 test.describe("with no JavaScript", () => {
@@ -16,9 +16,8 @@ test.describe("with no JavaScript", () => {
 
   test("the creator's page shows who they are and their routes", async ({ page }) => {
     await page.goto(MARIANA);
-    await expect(page.getByRole("heading", { level: 1 })).toHaveText(
-      "Habla portugués en tu próximo viaje.",
-    );
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Mariana Ortega");
+    await expect(page.getByText("Habla portugués en tu próximo viaje.")).toBeVisible();
     await expect(page.getByRole("link", { name: "Hecho con New Learning Routes" })).toBeVisible();
     await page.getByRole("link", { name: "Portugués para viajar" }).click();
     expect(new URL(page.url()).pathname).toBe("/portugues-para-viajar");

@@ -7,7 +7,6 @@ import type { RouteLevel } from "./route-facts";
 
 export interface CreatorText {
   routes: string;
-  about: string;
   signIn: string;
   seeRoutes: string;
   freeLine: string;
@@ -17,12 +16,13 @@ export interface CreatorText {
   noRoutes: string;
   madeWith: string;
   journey: string;
-  /** {n} is the module's number, {title} its title. */
-  moduleTitle: string;
+  /** {n} is the module's number. */
+  moduleNumber: string;
+  seeRoute: string;
+  /** {creator} is the route's creator. */
+  routeBy: string;
   free: string;
   finalExam: string;
-  howTitle: string;
-  howBody: string;
   startTitle: string;
   startFree: string;
   /** {price} is the route's price, already written out. */
@@ -37,7 +37,6 @@ export interface CreatorText {
 export const CREATOR_TEXT: Record<LocaleCode, CreatorText> = {
   es: {
     routes: "Rutas",
-    about: "Sobre mí",
     signIn: "Entrar",
     seeRoutes: "Ver mis rutas",
     freeLine: "Empiezas gratis con el primer módulo.",
@@ -46,12 +45,11 @@ export const CREATOR_TEXT: Record<LocaleCode, CreatorText> = {
     noRoutes: "Pronto habrá rutas aquí.",
     madeWith: `Hecho con ${BRAND}`,
     journey: "El recorrido",
-    moduleTitle: "Módulo {n}: {title}",
+    moduleNumber: "Módulo {n}",
+    seeRoute: "Ver la ruta",
+    routeBy: "Una ruta de {creator}",
     free: "Gratis",
     finalExam: "Examen final",
-    howTitle: "Cómo se aprende aquí",
-    howBody:
-      "Temas cortos, con práctica y una pregunta cada uno. Si una pregunta cuesta, aparece práctica extra justo ahí. Lo aprendido vuelve en repasos cortos, antes de que se olvide.",
     startTitle: "Empieza gratis, hoy.",
     startFree: "El módulo 1 completo es gratis.",
     startPaid:
@@ -68,7 +66,6 @@ export const CREATOR_TEXT: Record<LocaleCode, CreatorText> = {
   },
   en: {
     routes: "Routes",
-    about: "About me",
     signIn: "Sign in",
     seeRoutes: "See my routes",
     freeLine: "You start free, with the first module.",
@@ -77,12 +74,11 @@ export const CREATOR_TEXT: Record<LocaleCode, CreatorText> = {
     noRoutes: "Routes will be here soon.",
     madeWith: `Made with ${BRAND}`,
     journey: "The journey",
-    moduleTitle: "Module {n}: {title}",
+    moduleNumber: "Module {n}",
+    seeRoute: "See the route",
+    routeBy: "A route by {creator}",
     free: "Free",
     finalExam: "Final exam",
-    howTitle: "How you learn here",
-    howBody:
-      "Short topics, each with practice and a question. If a question is hard, extra practice appears right there. What you learned comes back in short reviews, before you forget it.",
     startTitle: "Start free, today.",
     startFree: "All of module 1 is free.",
     startPaid: "All of module 1 is free. To continue, you pay once for the route: {price}.",
@@ -98,7 +94,6 @@ export const CREATOR_TEXT: Record<LocaleCode, CreatorText> = {
   },
   pt: {
     routes: "Rotas",
-    about: "Sobre mim",
     signIn: "Entrar",
     seeRoutes: "Ver minhas rotas",
     freeLine: "Você começa grátis, com o primeiro módulo.",
@@ -107,12 +102,12 @@ export const CREATOR_TEXT: Record<LocaleCode, CreatorText> = {
     noRoutes: "Em breve haverá rotas aqui.",
     madeWith: `Feito com ${BRAND}`,
     journey: "O percurso",
-    moduleTitle: "Módulo {n}: {title}",
+    // Pending native review.
+    moduleNumber: "Módulo {n}",
+    seeRoute: "Ver a rota",
+    routeBy: "Uma rota de {creator}",
     free: "Grátis",
     finalExam: "Prova final",
-    howTitle: "Como se aprende aqui",
-    howBody:
-      "Temas curtos, cada um com prática e uma pergunta. Se uma pergunta pesar, aparece prática extra ali mesmo. O que você aprendeu volta em revisões curtas, antes de esquecer.",
     startTitle: "Comece grátis, hoje.",
     startFree: "O módulo 1 inteiro é grátis.",
     startPaid: "O módulo 1 inteiro é grátis. Para continuar, você paga uma vez pela rota: {price}.",
@@ -128,7 +123,6 @@ export const CREATOR_TEXT: Record<LocaleCode, CreatorText> = {
   },
   fr: {
     routes: "Parcours",
-    about: "À propos",
     signIn: "Se connecter",
     seeRoutes: "Voir mes parcours",
     freeLine: "Vous commencez gratuitement, avec le premier module.",
@@ -137,12 +131,12 @@ export const CREATOR_TEXT: Record<LocaleCode, CreatorText> = {
     noRoutes: "Des parcours arriveront bientôt ici.",
     madeWith: `Fait avec ${BRAND}`,
     journey: "Le trajet",
-    moduleTitle: "Module {n} : {title}",
+    // Pending native review.
+    moduleNumber: "Module {n}",
+    seeRoute: "Voir le parcours",
+    routeBy: "Un parcours de {creator}",
     free: "Gratuit",
     finalExam: "Examen final",
-    howTitle: "Comment on apprend ici",
-    howBody:
-      "Des sujets courts, chacun avec de la pratique et une question. Si une question est difficile, une pratique supplémentaire apparaît juste là. Ce que vous avez appris revient dans de courtes révisions, avant de l'oublier.",
     startTitle: "Commencez gratuitement, aujourd'hui.",
     startFree: "Tout le module 1 est gratuit.",
     startPaid:
@@ -159,7 +153,6 @@ export const CREATOR_TEXT: Record<LocaleCode, CreatorText> = {
   },
   it: {
     routes: "Percorsi",
-    about: "Chi sono",
     signIn: "Accedi",
     seeRoutes: "Vedi i miei percorsi",
     freeLine: "Inizi gratis, con il primo modulo.",
@@ -168,12 +161,12 @@ export const CREATOR_TEXT: Record<LocaleCode, CreatorText> = {
     noRoutes: "Presto qui ci saranno dei percorsi.",
     madeWith: `Fatto con ${BRAND}`,
     journey: "Il tragitto",
-    moduleTitle: "Modulo {n}: {title}",
+    // Pending native review.
+    moduleNumber: "Modulo {n}",
+    seeRoute: "Vedi il percorso",
+    routeBy: "Un percorso di {creator}",
     free: "Gratis",
     finalExam: "Esame finale",
-    howTitle: "Come si impara qui",
-    howBody:
-      "Argomenti brevi, ognuno con pratica e una domanda. Se una domanda è difficile, la pratica extra appare proprio lì. Ciò che hai imparato torna in brevi ripassi, prima che tu lo dimentichi.",
     startTitle: "Inizia gratis, oggi.",
     startFree: "Tutto il modulo 1 è gratis.",
     startPaid: "Tutto il modulo 1 è gratis. Per continuare, paghi una volta il percorso: {price}.",

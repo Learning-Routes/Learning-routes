@@ -4,6 +4,9 @@ import { DEV, SCREENS } from "./screens";
 // Reduced motion, overflow and touch targets on every designed screen (Platform STEP 3
 // §2.3, §5.3).
 
+const CONTROLS =
+  ".button, .theme-button, .nav-link, .brand, .field-input, .catalog-topic, .text-link, .lp-ideas a, .lp-ask input, .app-mode";
+
 test.use({ locale: "es-ES" });
 
 for (const [name, open] of Object.entries(SCREENS)) {
@@ -21,7 +24,56 @@ for (const [name, open] of Object.entries(SCREENS)) {
     await context.close();
   });
 
-  for (const width of [375, 1280]) {
+  test(`${name}: every control meets a 44 px target on a phone, and shows keyboard focus`, async ({
+    browser,
+  }) => {
+    const context = await browser.newContext({
+      viewport: { width: 390, height: 800 },
+      locale: "es-ES",
+      reducedMotion: "reduce",
+    });
+    const page = await context.newPage();
+    await open(page);
+    // Styles in, and a hydrated page's own move of focus done, so neither lands mid-check.
+    await page.waitForLoadState("load");
+    await page.waitForFunction(
+      () =>
+        !("__reactRouterContext" in window) || document.documentElement.dataset.hydrated === "true",
+    );
+    const small = await page.evaluate(
+      (controls) =>
+        [...document.querySelectorAll<HTMLElement>(controls)]
+          .filter((element) => element.offsetParent !== null)
+          .map((element) => ({
+            text: element.textContent?.trim(),
+            rect: element.getBoundingClientRect(),
+          }))
+          .filter(({ rect }) => rect.height < 44 || rect.width < 44)
+          .map(({ text, rect }) => `${text}: ${Math.round(rect.width)}x${Math.round(rect.height)}`),
+      CONTROLS,
+    );
+    expect(small).toEqual([]);
+    // Each of the first controls shows it. A page with fewer lets Tab leave it, back to the body.
+    for (let press = 0; press < 3; press++) {
+      await page.keyboard.press("Tab");
+      const focus = await page.evaluate(() => {
+        const element = document.activeElement as Element;
+        const { outlineStyle, boxShadow } = getComputedStyle(element);
+        return {
+          onBody: element === document.body,
+          shows: outlineStyle === "solid" || boxShadow !== "none",
+        };
+      });
+      expect(focus.onBody && press === 0).toBe(false);
+      if (focus.onBody) {
+        break;
+      }
+      expect(focus.shows).toBe(true);
+    }
+    await context.close();
+  });
+
+  for (const width of [375, 390, 1280]) {
     test(`${name}: no sideways scroll at ${width} px`, async ({ browser }) => {
       const context = await browser.newContext({
         viewport: { width, height: 800 },

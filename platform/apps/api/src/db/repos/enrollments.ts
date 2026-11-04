@@ -1,7 +1,9 @@
+import { placeInRoute } from "@learning-routes/core/content/lesson-view";
+import type { Snapshot } from "@learning-routes/core/content/snapshot";
 import type { LocalizedText } from "@learning-routes/core/localized-text";
 import type { Enrollments, RepoResult } from "@learning-routes/core/repos/ports";
 import { and, desc, eq, ne, sql } from "drizzle-orm";
-import { enrollments } from "../schema/learning";
+import { enrollments, progress } from "../schema/learning";
 import { memberships, spaces } from "../schema/tenancy";
 import { routeVersions } from "../schema/versions";
 import { attempt, type Db, fail, ok } from "./shared";
@@ -38,9 +40,13 @@ async function listOwn(db: Db, userId: string) {
         title: LocalizedText;
         sourceLocale: string;
       }>`${routeVersions.snapshot} -> 'route'`,
-      modules: sql<{ id: string }[]>`${routeVersions.snapshot} -> 'modules'`,
-      lessons: sql<{ moduleId: string }[]>`${routeVersions.snapshot} -> 'lessons'`,
+      modules: sql<Snapshot["modules"]>`${routeVersions.snapshot} -> 'modules'`,
+      lessons: sql<Snapshot["lessons"]>`${routeVersions.snapshot} -> 'lessons'`,
       creator: spaces.name,
+      completedIds: sql<string[]>`(
+        select coalesce(array_agg(${progress.lessonId}), '{}') from ${progress}
+        where ${progress.enrollmentId} = ${enrollments.id} and ${progress.status} = 'completed'
+      )`,
     })
     .from(enrollments)
     .innerJoin(
@@ -60,13 +66,16 @@ async function listOwn(db: Db, userId: string) {
     .limit(1);
   return {
     teaches: teaching.length > 0,
-    enrollments: rows.map(({ route, modules, lessons, ...row }) => ({
+    enrollments: rows.map(({ route, modules, lessons, completedIds, ...row }) => ({
       ...row,
       title: route.title,
       sourceLocale: route.sourceLocale,
       lessonsPerModule: modules.map(
         (module) => lessons.filter((lesson) => lesson.moduleId === module.id).length,
       ),
+      // A lesson a newer version removed is kept in progress but no longer counts.
+      completedLessons: lessons.filter((lesson) => completedIds.includes(lesson.id)).length,
+      place: placeInRoute({ modules, lessons }, completedIds),
     })),
   };
 }

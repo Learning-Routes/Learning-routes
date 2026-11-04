@@ -120,6 +120,7 @@ describe("two tenants, through every action", () => {
         // A route in a space A cannot see.
         "enrollment.create": { routeId: closedB },
         "enrollment.upgrade": { enrollmentId: enrollmentB },
+        "lesson.read": { enrollmentId: enrollmentB },
         "review.submit": {
           enrollmentId: enrollmentB,
           reviewId: REVIEW_ID,

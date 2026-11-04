@@ -1,0 +1,134 @@
+/* The two registers (docs/design/VISION.md). The stage is the public pages: night, always, with the
+   line glowing. The desk is inside the app: daylight, with the line in ink, and it follows the
+   visitor's theme. Each page's root says which it is. */
+/* Anywhere else, the lit line is the accent. */
+:root {
+  --line-lit: var(--color-accent);
+}
+html:root:has(.stage) {
+  color-scheme: dark;
+  --color-bg: #130e1b;
+  --color-bg-2: #1c1528;
+  --color-card: #1c1528;
+  --color-txt: #f3eef7;
+  --color-sub: #b9aec6;
+  --color-muted: #8c7f9c;
+  --color-faint: #33294a;
+  --color-border-subtle: #33294a;
+  --color-link: #c9a6f2;
+  --color-accent: #6a2ea0;
+  --color-accent-text: #fff;
+  --figure-track: #33294a;
+  --figure-topic: #8c7f9c;
+  --figure-mark: #f3eef7;
+  --figure-ground: #1c1528;
+  --line-lit: color-mix(in oklab, var(--color-accent) 60%, #fff);
+  --depth-face: rgb(255 255 255 / 0.22);
+  --depth-near: color-mix(in oklab, var(--line-lit) 62%, #130e1b);
+  --depth-far: color-mix(in oklab, var(--color-accent) 40%, #130e1b);
+  --depth-glow: color-mix(in oklab, var(--line-lit) 18%, transparent);
+  background: var(--color-bg);
+}
+.desk {
+  --figure-track: var(--color-faint);
+  --figure-topic: var(--color-muted);
+  --figure-mark: var(--color-txt);
+  --figure-ground: var(--color-card);
+  --line-lit: var(--color-accent);
+  --depth-face: rgb(255 255 255 / 0.3);
+  --depth-near: color-mix(in oklab, var(--color-accent) 42%, var(--color-bg));
+  --depth-far: color-mix(in oklab, var(--color-accent) 12%, var(--color-bg));
+  --depth-glow: color-mix(in oklab, var(--color-accent) 8%, transparent);
+}
+
+/* Plum alone is too dark to mark focus on night. */
+html:root:has(.stage) :focus-visible {
+  outline-color: var(--color-highlight);
+}
+html:root:has(.stage) .field-input:focus-visible {
+  box-shadow: inset 0 0 0 2px var(--color-highlight);
+}
+
+/* The header lines up with the stage's page. */
+html:root:has(.stage) .site-header {
+  padding-inline: max(var(--space-4), calc((100vw - 80rem) / 2 + var(--space-10)));
+}
+@media (max-width: 48rem) {
+  html:root:has(.stage) .site-header {
+    padding-inline: var(--space-4);
+  }
+}
+
+/* The headline's words rise out of their own line, once, when the page opens. Each word is clipped
+   only while it rises, so the extrusion is whole once it has landed. All of it is CSS: text paints
+   first, and with reduced motion or no animations it is simply there. */
+.w {
+  display: inline-block;
+  padding: 0 0.14em 0.24em 0;
+  margin: 0 -0.14em -0.24em 0;
+}
+.w > span {
+  display: inline-block;
+}
+.settle-1,
+.settle-2,
+.settle-3,
+.settle-4 {
+  --settle: 0ms;
+}
+.settle-2 {
+  --settle: 90ms;
+}
+.settle-3 {
+  --settle: 180ms;
+}
+.settle-4 {
+  --settle: 270ms;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .opening .w {
+    animation: word-unclip 980ms linear both;
+  }
+  .opening .w > span {
+    animation: word-rise 820ms cubic-bezier(0.2, 0.85, 0.15, 1) both;
+  }
+  .opening .w:nth-child(2) > span {
+    animation-delay: 75ms;
+  }
+  .opening .w:nth-child(3) > span {
+    animation-delay: 150ms;
+  }
+  .opening .w:nth-child(4) > span {
+    animation-delay: 225ms;
+  }
+  .opening .w:nth-child(n + 5) > span {
+    animation-delay: 300ms;
+  }
+  .opening .settle-1,
+  .opening .settle-2,
+  .opening .settle-3,
+  .opening .settle-4 {
+    animation: settle 620ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+    animation-delay: calc(320ms + var(--settle));
+  }
+}
+@keyframes word-rise {
+  from {
+    transform: translateY(110%);
+  }
+}
+@keyframes word-unclip {
+  from,
+  99% {
+    clip-path: inset(-0.3em -0.3em 0 -0.3em);
+  }
+  to {
+    clip-path: none;
+  }
+}
+@keyframes settle {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+}

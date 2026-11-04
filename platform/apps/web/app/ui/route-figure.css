@@ -1,0 +1,151 @@
+/* A route's real shape (route-figure.tsx). Gold is only "you are here", green only "done". */
+.rf {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+.rf path {
+  fill: none;
+  stroke-linecap: round;
+}
+.rf-track {
+  stroke: var(--figure-track, var(--color-faint));
+}
+.rf-done {
+  stroke: var(--color-positive);
+}
+.rf-topic {
+  fill: var(--figure-topic, var(--color-muted));
+}
+.rf-topic-done {
+  fill: var(--color-positive);
+}
+.rf-ring,
+.rf-exam {
+  fill: var(--figure-ground, var(--color-card));
+  stroke: var(--figure-mark, var(--color-txt));
+  stroke-width: 2.2;
+}
+.rf-core {
+  fill: var(--figure-mark, var(--color-txt));
+}
+.rf-halo {
+  fill: var(--color-highlight);
+  opacity: 0.18;
+}
+.rf-here {
+  fill: var(--figure-ground, var(--color-card));
+  stroke: var(--color-highlight);
+  stroke-width: 3.4;
+}
+.rf-drawn {
+  stroke: var(--line-lit, var(--color-accent));
+  stroke-width: 3;
+  stroke-dasharray: 1 1;
+  stroke-dashoffset: 1;
+}
+.rf-runner {
+  stroke: var(--color-highlight);
+  stroke-width: 11;
+  stroke-dasharray: 0 2;
+  opacity: 0;
+}
+
+/* Arrival: the line traces itself, and each station pops in as the line reaches it. */
+.at-0 {
+  --at: 0;
+}
+.at-1 {
+  --at: 0.053;
+}
+.at-2 {
+  --at: 0.105;
+}
+.at-3 {
+  --at: 0.158;
+}
+.at-4 {
+  --at: 0.211;
+}
+.at-5 {
+  --at: 0.263;
+}
+.at-6 {
+  --at: 0.316;
+}
+.at-7 {
+  --at: 0.368;
+}
+.at-8 {
+  --at: 0.421;
+}
+.at-9 {
+  --at: 0.474;
+}
+.at-10 {
+  --at: 0.526;
+}
+.at-11 {
+  --at: 0.579;
+}
+.at-12 {
+  --at: 0.632;
+}
+.at-13 {
+  --at: 0.684;
+}
+.at-14 {
+  --at: 0.737;
+}
+.at-15 {
+  --at: 0.789;
+}
+.at-16 {
+  --at: 0.842;
+}
+.at-17 {
+  --at: 0.895;
+}
+.at-18 {
+  --at: 0.947;
+}
+.at-19 {
+  --at: 1;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .opening .rf-track {
+    stroke-dasharray: 1 1.1;
+    animation: rf-trace var(--figure-time, 1100ms) cubic-bezier(0.55, 0, 0.25, 1)
+      var(--figure-wait, 300ms) both;
+  }
+  .opening .rf-pop {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: rf-pop 420ms cubic-bezier(0.3, 1.7, 0.5, 1) both;
+    animation-delay: calc(var(--figure-wait, 300ms) + var(--at) * var(--figure-time, 1100ms));
+  }
+  .opening .rf-done {
+    animation: rf-late 300ms linear both;
+    animation-delay: calc(var(--figure-wait, 300ms) + var(--figure-time, 1100ms));
+  }
+}
+@keyframes rf-trace {
+  from {
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+@keyframes rf-pop {
+  from {
+    transform: scale(0);
+    opacity: 0;
+  }
+}
+@keyframes rf-late {
+  from {
+    opacity: 0;
+  }
+}

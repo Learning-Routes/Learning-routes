@@ -1,11 +1,14 @@
 import type { PublicRoute, PublicSpace } from "@learning-routes/public-read/reads";
-import { renderToString } from "react-dom/server";
+import { renderToStaticMarkup, renderToString } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { courseData } from "../app/storefront/course-data";
-import { CreatorPage, priceInWords, RoutePage } from "../app/storefront/creator-pages";
+import { priceInWords } from "../app/storefront/creator-frame";
+import { CreatorPage, CreatorWeave } from "../app/storefront/creator-pages";
 import { pageLocale, withLang } from "../app/storefront/page-locale";
+import { RoutePage } from "../app/storefront/route-page-view";
 import { sitemapXml } from "../app/storefront/sitemap-xml";
 
+const WOVEN = /weave-over/g;
 const SPACE: PublicSpace = {
   id: "s1",
   slug: "mariana-ortega",
@@ -77,11 +80,14 @@ describe("a route's page", () => {
 
   it("shows the modules as stations, module 1 free, then the final exam", () => {
     const html = render();
-    expect(html).toContain("Módulo 1: Llegar");
+    expect(html).toContain("Módulo 1");
+    expect(html).toContain("Llegar");
     expect(html).toContain("Gratis");
-    expect(html).toContain("Saludos y Números");
-    expect(html).toContain("Módulo 2: Moverte");
-    expect(html.indexOf("Módulo 2: Moverte")).toBeLessThan(html.indexOf("Examen final"));
+    expect(html).toContain("1. Saludos");
+    expect(html).toContain("2. Números");
+    expect(html).toContain("Módulo 2");
+    expect(html).toContain("Moverte");
+    expect(html.indexOf("Moverte")).toBeLessThan(html.indexOf("Examen final"));
   });
 
   it("says the price in words, and that you pay once", () => {
@@ -131,5 +137,29 @@ describe("what surrounds them", () => {
 
   it("escapes a sitemap's URLs", () => {
     expect(sitemapXml(["https://a.test/?a=1&b=2"])).toContain("https://a.test/?a=1&amp;b=2");
+  });
+});
+
+describe("the creator's woven hero", () => {
+  const route = (routeId: string, lessons: number) =>
+    ({
+      routeId,
+      modules: [{ lessons: Array.from({ length: lessons }, () => ({ es: "t" })) }],
+    }) as never;
+
+  it("is one bold line for a creator with one route", () => {
+    const html = renderToStaticMarkup(<CreatorWeave routes={[route("a", 3)]} />);
+    expect(html).toContain("creator-weave-one");
+    expect(html.match(WOVEN)).toHaveLength(1);
+  });
+
+  it("braids a line per route", () => {
+    const html = renderToStaticMarkup(<CreatorWeave routes={[route("a", 3), route("b", 5)]} />);
+    expect(html).not.toContain("creator-weave-one");
+    expect(html.match(WOVEN)).toHaveLength(2);
+  });
+
+  it("draws nothing for a creator with no routes yet", () => {
+    expect(renderToStaticMarkup(<CreatorWeave routes={[]} />)).toBe("");
   });
 });

@@ -1,3 +1,4 @@
+import { placeInRoute } from "../../src/content/lesson-view";
 import type { SpaceRole } from "../../src/domain";
 import { newBlockId } from "../../src/ids";
 import { NEW_CARD } from "../../src/learning/replay";
@@ -494,6 +495,15 @@ export function memoryRepos(state: State, actorId = ""): Repos {
                 (module) =>
                   (snapshot?.lessons ?? []).filter((lesson) => lesson.moduleId === module.id)
                     .length,
+              ),
+              completedLessons: (snapshot?.lessons ?? []).filter(
+                (lesson) => state.progress.get(`${row.id}:${lesson.id}`)?.status === "completed",
+              ).length,
+              place: placeInRoute(
+                { modules: snapshot?.modules ?? [], lessons: snapshot?.lessons ?? [] },
+                (snapshot?.lessons ?? [])
+                  .map((lesson) => lesson.id)
+                  .filter((id) => state.progress.get(`${row.id}:${id}`)?.status === "completed"),
               ),
             };
           }),

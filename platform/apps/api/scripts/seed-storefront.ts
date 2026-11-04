@@ -131,6 +131,15 @@ export const STOREFRONT_FIXTURES: Fixture[] = [
   },
 ];
 
+const TOPIC_TITLES = [
+  "Lo primero",
+  "Un paso más",
+  "Con tus palabras",
+  "Errores comunes",
+  "Repasar",
+  "Ponerlo a prueba",
+];
+
 function snapshotOf(routeId: string, route: Fixture["routes"][number]): Snapshot {
   const modules = route.lessons.map((_, index) => ({
     id: uuidFrom(`${routeId}:module:${index}`),
@@ -142,7 +151,7 @@ function snapshotOf(routeId: string, route: Fixture["routes"][number]): Snapshot
       id: uuidFrom(`${routeId}:lesson:${moduleIndex}:${index}`),
       moduleId: uuidFrom(`${routeId}:module:${moduleIndex}`),
       position: positionOf(index),
-      title: { es: `Tema ${index + 1}` },
+      title: { es: TOPIC_TITLES[index] ?? `Práctica ${index + 1}` },
     })),
   );
   return {
@@ -162,8 +171,42 @@ function snapshotOf(routeId: string, route: Fixture["routes"][number]): Snapshot
     modules,
     lessons,
     prerequisites: [],
-    blocks: [],
+    blocks: blocksFor(lessons),
   };
+}
+
+/** Something to read and one question in every topic: invented, for the lesson screen. */
+function blocksFor(lessons: { id: string; title: { es: string } }[]) {
+  return lessons.flatMap((lesson) => [
+    {
+      id: uuidFrom(`${lesson.id}-read`),
+      lessonId: lesson.id,
+      position: "V1",
+      kind: "concept" as const,
+      data: {
+        type: "concept",
+        body: {
+          es: `Lo que más te va a servir de «${lesson.title.es}»: empieza por lo que vas a usar mañana.\n\nLo demás llega solo, con la práctica de cada tema.`,
+        },
+      },
+    },
+    {
+      id: uuidFrom(`${lesson.id}-check`),
+      lessonId: lesson.id,
+      position: "V2",
+      kind: "check" as const,
+      data: {
+        type: "check",
+        question: { es: "¿Por dónde conviene empezar?" },
+        options: [
+          { label: { es: "Por todas las reglas a la vez." }, correct: false },
+          { label: { es: "Por lo que vas a usar mañana." }, correct: true },
+          { label: { es: "Por lo más difícil." }, correct: false },
+        ],
+        explanation: { es: "Lo que usas pronto se queda contigo." },
+      },
+    },
+  ]);
 }
 
 // keyBetween's alphabet, in order: enough for a fixture's few siblings.

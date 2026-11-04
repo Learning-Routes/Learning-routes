@@ -141,6 +141,20 @@ function Ask({
   );
 }
 
+/** The one small delight here: the line carries a dot to the envelope, once. */
+function SentFigure() {
+  return (
+    <svg className="sign-in-sent moment" viewBox="0 0 200 48" aria-hidden="true">
+      <path className="sign-in-sent-line" d="M6 24H146" pathLength={1} />
+      <path className="sign-in-sent-dot" d="M6 24H146" pathLength={1} />
+      <g className="sign-in-sent-envelope">
+        <rect x="154" y="10" width="40" height="28" rx="4" />
+        <path d="M156 13l18 14 18-14" />
+      </g>
+    </svg>
+  );
+}
+
 function Sent({
   words,
   email,
@@ -183,6 +197,7 @@ function Sent({
 
   return (
     <>
+      <SentFigure />
       <ScreenTitle>{words.sentTitle}</ScreenTitle>
       <p className="sign-in-copy">
         {words.sentTo} <span className="sign-in-address">{email}</span>

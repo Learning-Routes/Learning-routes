@@ -131,6 +131,7 @@ export function repositoryContract(name: string, withFixture: WithFixture) {
             routeId: fields.id,
             title: fields.title,
             lessonsPerModule: [1],
+            completedLessons: 0,
           }),
         ]);
         const asOwner = await actAs(ownerId);
@@ -530,6 +531,8 @@ export function repositoryContract(name: string, withFixture: WithFixture) {
           total: 2,
           uncounted: 1,
         });
+        const { enrollments: mine } = await student.enrollments.listOwn(learnerId);
+        expect(mine[0]?.completedLessons).toBe(1);
       });
     });
   });

@@ -22,8 +22,6 @@ export interface AppPagesText {
   emptyBody: string;
   exploreRoutes: string;
   exploreMore: string;
-  comingTitle: string;
-  comingBody: string;
   backToMyRoutes: string;
   teachTitle: string;
   teachIntro: string;
@@ -67,8 +65,6 @@ export const APP_PAGES_TEXT: Record<LocaleCode, AppPagesText> = {
     emptyBody: "Elige una y empieza gratis con su primer módulo.",
     exploreRoutes: "Explorar rutas",
     exploreMore: "Explorar más rutas",
-    comingTitle: "Muy pronto podrás seguir aquí.",
-    comingBody: "Tu lugar en esta ruta ya está guardado.",
     backToMyRoutes: "Volver a Mis rutas",
     teachTitle: "Enseña lo que sabes, en una ruta.",
     teachIntro:
@@ -111,8 +107,6 @@ export const APP_PAGES_TEXT: Record<LocaleCode, AppPagesText> = {
     emptyBody: "Choose one and start free with its first module.",
     exploreRoutes: "Explore routes",
     exploreMore: "Explore more routes",
-    comingTitle: "Very soon you can continue here.",
-    comingBody: "Your place in this route is already saved.",
     backToMyRoutes: "Back to My routes",
     teachTitle: "Teach what you know, in a route.",
     teachIntro:
@@ -154,8 +148,6 @@ export const APP_PAGES_TEXT: Record<LocaleCode, AppPagesText> = {
     emptyBody: "Escolha uma e comece grátis com o primeiro módulo.",
     exploreRoutes: "Explorar rotas",
     exploreMore: "Explorar mais rotas",
-    comingTitle: "Muito em breve você poderá continuar aqui.",
-    comingBody: "Seu lugar nesta rota já está salvo.",
     backToMyRoutes: "Voltar para Minhas rotas",
     teachTitle: "Ensine o que você sabe, em uma rota.",
     teachIntro:
@@ -199,8 +191,6 @@ export const APP_PAGES_TEXT: Record<LocaleCode, AppPagesText> = {
     emptyBody: "Choisissez-en un et commencez gratuitement avec son premier module.",
     exploreRoutes: "Explorer les parcours",
     exploreMore: "Explorer d'autres parcours",
-    comingTitle: "Très bientôt, vous pourrez continuer ici.",
-    comingBody: "Votre place dans ce parcours est déjà enregistrée.",
     backToMyRoutes: "Retour à Mes parcours",
     teachTitle: "Enseignez ce que vous savez, en un parcours.",
     teachIntro:
@@ -243,8 +233,6 @@ export const APP_PAGES_TEXT: Record<LocaleCode, AppPagesText> = {
     emptyBody: "Scegline uno e inizia gratis con il primo modulo.",
     exploreRoutes: "Esplora i percorsi",
     exploreMore: "Esplora altri percorsi",
-    comingTitle: "Molto presto potrai continuare qui.",
-    comingBody: "Il tuo posto in questo percorso è già salvato.",
     backToMyRoutes: "Torna a I miei percorsi",
     teachTitle: "Insegna ciò che sai, in un percorso.",
     teachIntro:
