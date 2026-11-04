@@ -1,5 +1,14 @@
 import type { Page } from "@playwright/test";
-import { makeOperator, newAddress, signInContext, stubTurnstile } from "./session";
+import {
+  authorizeUrl,
+  makeOperator,
+  makeTeacher,
+  newAddress,
+  OAUTH_REDIRECT,
+  seedOAuthClient,
+  signInContext,
+  stubTurnstile,
+} from "./session";
 
 // Every designed screen, for the visual, accessibility and motion checks (Platform
 // STEP 3 §5). The API is a stand-in, with fixture data only. Port 4174 is the local
@@ -20,7 +29,35 @@ async function enrolled(page: Page) {
   await page.getByRole("heading", { name: "Mis rutas" }).waitFor();
 }
 
+/** A teacher, signed in, on the assistant's question. */
+async function askedToConnect(page: Page) {
+  seedOAuthClient();
+  const email = newAddress("ensena");
+  await signInContext(page.context(), email);
+  makeTeacher(email);
+  await page.goto(authorizeUrl());
+  await page.locator(".connect-actions").waitFor();
+}
+
 export const SCREENS: Record<string, (page: Page) => Promise<unknown>> = {
+  "connect-consent": askedToConnect,
+  connections: async (page) => {
+    await askedToConnect(page);
+    await page.route(`${OAUTH_REDIRECT}**`, (route) =>
+      route.fulfill({ contentType: "text/plain", body: "ok" }),
+    );
+    await page.getByRole("button", { name: "Permitir", exact: true }).click();
+    await page.waitForURL(`${OAUTH_REDIRECT}**`);
+    await page.goto(`${DEV}/ensenar/conexiones`);
+    await page.getByRole("heading", { name: "Conexiones" }).waitFor();
+  },
+  "connect-assistant": async (page) => {
+    const email = newAddress("ensena");
+    await signInContext(page.context(), email);
+    makeTeacher(email);
+    await page.goto(`${DEV}/ensenar/conecta`);
+    await page.getByRole("heading", { name: "Conecta tu asistente" }).waitFor();
+  },
   // The map where WebGL exists, once it has settled.
   landing: async (page) => {
     await page.goto(`${DEV}/es#mapa`);
@@ -49,10 +86,15 @@ export const SCREENS: Record<string, (page: Page) => Promise<unknown>> = {
     await page.goto(`${DEV}/mis-rutas`);
   },
   "my-routes": enrolled,
-  "keep-going": async (page) => {
+  lesson: async (page) => {
     await enrolled(page);
-    await page.getByRole("link", { name: "Seguir" }).click();
-    await page.getByRole("heading", { name: "Muy pronto podrás seguir aquí." }).waitFor();
+    await page.getByRole("link", { name: "Seguir", exact: true }).first().click();
+    await page.locator(".lesson-title").waitFor();
+  },
+  "connect-no-space": async (page) => {
+    await signInContext(page.context(), newAddress("sin-espacio"));
+    await page.goto(`${DEV}/ensenar/conecta`);
+    await page.getByRole("link", { name: "Quiero enseñar" }).waitFor();
   },
   teach: async (page) => {
     await stubTurnstile(page);

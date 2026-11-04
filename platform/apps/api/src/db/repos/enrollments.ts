@@ -1,3 +1,5 @@
+import { placeInRoute } from "@learning-routes/core/content/lesson-view";
+import type { Snapshot } from "@learning-routes/core/content/snapshot";
 import type { LocalizedText } from "@learning-routes/core/localized-text";
 import type { Enrollments, RepoResult } from "@learning-routes/core/repos/ports";
 import { and, desc, eq, ne, sql } from "drizzle-orm";
@@ -38,8 +40,8 @@ async function listOwn(db: Db, userId: string) {
         title: LocalizedText;
         sourceLocale: string;
       }>`${routeVersions.snapshot} -> 'route'`,
-      modules: sql<{ id: string }[]>`${routeVersions.snapshot} -> 'modules'`,
-      lessons: sql<{ id: string; moduleId: string }[]>`${routeVersions.snapshot} -> 'lessons'`,
+      modules: sql<Snapshot["modules"]>`${routeVersions.snapshot} -> 'modules'`,
+      lessons: sql<Snapshot["lessons"]>`${routeVersions.snapshot} -> 'lessons'`,
       creator: spaces.name,
       completedIds: sql<string[]>`(
         select coalesce(array_agg(${progress.lessonId}), '{}') from ${progress}
@@ -73,6 +75,7 @@ async function listOwn(db: Db, userId: string) {
       ),
       // A lesson a newer version removed is kept in progress but no longer counts.
       completedLessons: lessons.filter((lesson) => completedIds.includes(lesson.id)).length,
+      place: placeInRoute({ modules, lessons }, completedIds),
     })),
   };
 }

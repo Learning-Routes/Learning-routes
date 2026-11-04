@@ -108,10 +108,19 @@ describe("two tenants, through every action", () => {
           expectedRevision: 0,
           block: { type: "concept", title: { en: "T" }, body: { en: "B" } },
         },
+        "route.import": { routeId: routeB, expectedRevision: 0, document: {} },
+        "route.update": { routeId: routeB, expectedRevision: 0, title: { es: "Ajena" } },
+        "blocks.add": {
+          routeId: routeB,
+          expectedRevision: 0,
+          lessonId: crypto.randomUUID(),
+          blocks: [{ type: "concept", body: { es: "Ajeno" } }],
+        },
         "route.publish": { routeId: routeB, expectedRevision: 0 },
         // A route in a space A cannot see.
         "enrollment.create": { routeId: closedB },
         "enrollment.upgrade": { enrollmentId: enrollmentB },
+        "lesson.read": { enrollmentId: enrollmentB },
         "review.submit": {
           enrollmentId: enrollmentB,
           reviewId: REVIEW_ID,
@@ -121,8 +130,15 @@ describe("two tenants, through every action", () => {
           elapsedMs: 900,
         },
       };
-      // enrollment.list takes no ids: it answers only with the actor's own rows.
-      const named = ACTION_NAMES.filter((name) => name !== "enrollment.list");
+      // These take no space's ids: each acts only on the actor's own account.
+      const OWN = [
+        "space.list",
+        "enrollment.list",
+        "connection.list",
+        "connection.grant",
+        "connection.revoke",
+      ];
+      const named = ACTION_NAMES.filter((name) => !OWN.includes(name));
       expect(Object.keys(inputs).sort()).toEqual([...named].sort());
 
       const before = await everyTable(db, [spaceA, spaceB], [a, b]);

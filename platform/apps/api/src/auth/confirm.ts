@@ -1,6 +1,7 @@
 import type { Context, Hono } from "hono";
 import { withClient } from "../db/with-db";
 import { AUTH_PATH, CONFIRM_PATH, createAuth, takeFromWindow } from "./auth";
+import { DEAD_CONNECT_COOKIE, readConnectIntent } from "./connect-intent";
 import type { EmailSender } from "./email";
 import { DEAD_START_COOKIE, readStartIntent } from "./start-intent";
 
@@ -126,7 +127,11 @@ async function confirmSignIn(
     c.req.header("cookie"),
     Date.now(),
   );
-  verify.searchParams.set("callbackURL", joining ? `/empezar?ruta=${joining}` : SIGNED_IN);
+  const connecting = readConnectIntent(c.req.header("cookie"));
+  verify.searchParams.set(
+    "callbackURL",
+    connecting ?? (joining ? `/empezar?ruta=${joining}` : SIGNED_IN),
+  );
   verify.searchParams.set("errorCallbackURL", EXPIRED);
   const request = new Request(verify, { headers: c.req.raw.headers });
   try {
@@ -141,6 +146,9 @@ async function confirmSignIn(
     const signedIn = new Response(response.body, response);
     if (joining) {
       signedIn.headers.append("Set-Cookie", DEAD_START_COOKIE);
+    }
+    if (connecting) {
+      signedIn.headers.append("Set-Cookie", DEAD_CONNECT_COOKIE);
     }
     return signedIn;
   } catch {

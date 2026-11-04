@@ -131,6 +131,15 @@ export const STOREFRONT_FIXTURES: Fixture[] = [
   },
 ];
 
+const TOPIC_TITLES = [
+  "Lo primero",
+  "Un paso más",
+  "Con tus palabras",
+  "Errores comunes",
+  "Repasar",
+  "Ponerlo a prueba",
+];
+
 function snapshotOf(routeId: string, route: Fixture["routes"][number]): Snapshot {
   const modules = route.lessons.map((_, index) => ({
     id: uuidFrom(`${routeId}:module:${index}`),
@@ -142,7 +151,7 @@ function snapshotOf(routeId: string, route: Fixture["routes"][number]): Snapshot
       id: uuidFrom(`${routeId}:lesson:${moduleIndex}:${index}`),
       moduleId: uuidFrom(`${routeId}:module:${moduleIndex}`),
       position: positionOf(index),
-      title: { es: `Tema ${index + 1}` },
+      title: { es: TOPIC_TITLES[index] ?? `Práctica ${index + 1}` },
     })),
   );
   return {
@@ -162,8 +171,42 @@ function snapshotOf(routeId: string, route: Fixture["routes"][number]): Snapshot
     modules,
     lessons,
     prerequisites: [],
-    blocks: [],
+    blocks: blocksFor(lessons),
   };
+}
+
+/** Something to read and one question in every topic: invented, for the lesson screen. */
+function blocksFor(lessons: { id: string; title: { es: string } }[]) {
+  return lessons.flatMap((lesson) => [
+    {
+      id: uuidFrom(`${lesson.id}-read`),
+      lessonId: lesson.id,
+      position: "V1",
+      kind: "concept" as const,
+      data: {
+        type: "concept",
+        body: {
+          es: `Lo que más te va a servir de «${lesson.title.es}»: empieza por lo que vas a usar mañana.\n\nLo demás llega solo, con la práctica de cada tema.`,
+        },
+      },
+    },
+    {
+      id: uuidFrom(`${lesson.id}-check`),
+      lessonId: lesson.id,
+      position: "V2",
+      kind: "check" as const,
+      data: {
+        type: "check",
+        question: { es: "¿Por dónde conviene empezar?" },
+        options: [
+          { label: { es: "Por todas las reglas a la vez." }, correct: false },
+          { label: { es: "Por lo que vas a usar mañana." }, correct: true },
+          { label: { es: "Por lo más difícil." }, correct: false },
+        ],
+        explanation: { es: "Lo que usas pronto se queda contigo." },
+      },
+    },
+  ]);
 }
 
 // keyBetween's alphabet, in order: enough for a fixture's few siblings.
@@ -317,6 +360,55 @@ async function seedRoute(db: pg.Client, spaceId: string, route: Fixture["routes"
   }
 }
 
+/** Makes a signed-in address a coeditor of a seeded space: the browser tests' teacher. */
+async function runOnce(url: string, sql: string, values: unknown[]) {
+  const db = new pg.Client({ connectionString: url });
+  await db.connect();
+  try {
+    await db.query(sql, values);
+  } finally {
+    await db.end();
+  }
+}
+
+async function makeTeacher(url: string, email: string) {
+  await runOnce(
+    url,
+    `insert into memberships (space_id, user_id, role)
+     select s.id, u.id, 'coeditor' from spaces s, "user" u
+      where s.slug = 'mariana-ortega' and lower(u.email) = lower($1)`,
+    [email],
+  );
+}
+
+/** A registered client, for the browser tests: a metadata document needs the network. */
+async function registerOAuthClient(url: string, clientId: string, redirect: string) {
+  const resource = "http://localhost:4174/mcp";
+  // Signing keys are encrypted with the secret: the unit tests', in this same database, is another.
+  await runOnce(url, "delete from jwks", []);
+  await runOnce(
+    url,
+    `insert into oauth_client (client_id, name, redirect_uris, token_endpoint_auth_method,
+                               grant_types, response_types, require_pkce, created_at, updated_at)
+     values ($1, 'Cliente de prueba', array[$2], 'none',
+             '{authorization_code,refresh_token}', '{code}', true, now(), now())
+     on conflict (client_id) do nothing`,
+    [clientId, redirect],
+  );
+  await runOnce(
+    url,
+    `insert into oauth_resource (identifier, name) values ($1, 'MCP')
+     on conflict (identifier) do nothing`,
+    [resource],
+  );
+  await runOnce(
+    url,
+    `insert into oauth_client_resource (client_id, resource_id) values ($1, $2)
+     on conflict (client_id, resource_id) do nothing`,
+    [clientId, resource],
+  );
+}
+
 /** Makes a signed-in address the operator: the browser tests' admin. */
 async function makeOperator(url: string, email: string) {
   const db = new pg.Client({ connectionString: url });
@@ -373,10 +465,20 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
     throw new Error("the storefront's fixtures go only in the local database");
   }
   const { values } = parseArgs({
-    options: { operator: { type: "string" }, "clear-limits": { type: "boolean" } },
+    options: {
+      operator: { type: "string" },
+      teacher: { type: "string" },
+      "oauth-client": { type: "string" },
+      "oauth-redirect": { type: "string" },
+      "clear-limits": { type: "boolean" },
+    },
   });
   if (values.operator) {
     await makeOperator(url, values.operator);
+  } else if (values.teacher) {
+    await makeTeacher(url, values.teacher);
+  } else if (values["oauth-client"] && values["oauth-redirect"]) {
+    await registerOAuthClient(url, values["oauth-client"], values["oauth-redirect"]);
   } else if (values["clear-limits"]) {
     await clearLimits(url);
   } else {

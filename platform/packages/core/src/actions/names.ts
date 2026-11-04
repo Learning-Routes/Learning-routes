@@ -4,6 +4,7 @@ export const ACTION_NAMES = [
   "space.get",
   "space.update",
   "space.create",
+  "space.list",
   "membership.add",
   "route.create",
   "route.get",
@@ -11,6 +12,9 @@ export const ACTION_NAMES = [
   "module.add",
   "lesson.add",
   "block.add",
+  "blocks.add",
+  "route.update",
+  "route.import",
   "route.publish",
   "enrollment.create",
   "enrollment.upgrade",
@@ -22,5 +26,9 @@ export const ACTION_NAMES = [
   "admin.overview",
   "application.decide",
   "enrollment.list",
+  "lesson.read",
+  "connection.list",
+  "connection.grant",
+  "connection.revoke",
 ] as const;
 export type ActionName = (typeof ACTION_NAMES)[number];

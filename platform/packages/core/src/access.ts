@@ -30,6 +30,12 @@ const STAFF = { owner: ANY_WAY, coeditor: ANY_WAY, assistant: ANY_WAY } as const
 const EDITORS = { owner: ANY_WAY, coeditor: ANY_WAY } as const;
 
 export const PERMISSIONS = {
+  // A person's own connections, in the app. "student" is how an action for oneself is asked.
+  // The spaces one teaches in: asked for oneself, and it shows nothing else.
+  "space.list": { student: ["ui", "mcp"] },
+  "connection.list": { student: ["ui"] },
+  "connection.grant": { student: ["ui"] },
+  "connection.revoke": { student: ["ui"] },
   "space.get": EVERYONE,
   // What a creator's public page says: like pricing, set in the app, by an owner.
   "space.update": { owner: ["ui"] },
@@ -37,11 +43,14 @@ export const PERMISSIONS = {
   "membership.add": { owner: ["ui"] },
   // route.create itself refuses a paid route from anywhere but the app.
   "route.create": EDITORS,
+  "route.update": EDITORS,
+  "route.import": EDITORS,
   "route.get": STAFF,
   "route.list": STAFF,
   "module.add": EDITORS,
   "lesson.add": EDITORS,
   "block.add": EDITORS,
+  "blocks.add": EDITORS,
   "route.publish": EDITORS,
   // On the actor's own behalf, allowed as the student role it gives a newcomer.
   "enrollment.create": EVERYONE,
@@ -58,6 +67,7 @@ export const PERMISSIONS = {
   "space.create": { operator: ["ui"] },
   // Only ever the actor's own.
   "enrollment.list": EVERYONE,
+  "lesson.read": EVERYONE,
 } as const satisfies Record<ActionName, Row>;
 
 /** Whether a role in a space may call an action this way. */

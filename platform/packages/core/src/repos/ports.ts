@@ -5,7 +5,10 @@ import type { Card } from "../learning/fsrs";
 import type { Locale, LocalizedText } from "../localized-text";
 import type { Member } from "../memberships";
 import type { Applications, Catalog } from "./catalog-ports";
+import type { Connections, OwnSpace } from "./connection-ports";
+import type { OwnEnrollment } from "./own-enrollment";
 import type { RepoResult } from "./repo-result";
+import type { RouteDetails } from "./route-details";
 
 export type {
   ApplicationRecord,
@@ -53,6 +56,8 @@ export interface Spaces {
   get(spaceId: string): Promise<RepoResult<SpaceRecord>>;
   /** An operator's. invalid: nobody has signed in with the address. conflict: the slug is taken. */
   create(space: NewSpace): Promise<RepoResult<{ spaceId: string }>>;
+  /** The spaces the user teaches in. */
+  listOwn(userId: string): Promise<OwnSpace[]>;
   update(spaceId: string, page: SpacePage): Promise<RepoResult<void>>;
 }
 
@@ -119,6 +124,24 @@ export interface RouteDrafts {
     expectedRevision: number,
     block: DraftBlock,
   ): Promise<Revised>;
+  updateDetails(
+    spaceId: string,
+    routeId: string,
+    expectedRevision: number,
+    details: RouteDetails,
+  ): Promise<Revised>;
+  /** All of the draft's content, replaced in one edit that moves the revision once. */
+  replaceContent(
+    spaceId: string,
+    routeId: string,
+    expectedRevision: number,
+    content: {
+      details: RouteDetails;
+      modules: DraftModule[];
+      lessons: DraftLesson[];
+      blocks: DraftBlock[];
+    },
+  ): Promise<Revised>;
   /** Takes a lesson out of the draft; its id stays reserved, and older versions keep it. */
   archiveLesson(
     spaceId: string,
@@ -174,16 +197,7 @@ export interface Enrollments {
   listOwn(userId: string): Promise<{ enrollments: OwnEnrollment[]; teaches: boolean }>;
 }
 
-export interface OwnEnrollment {
-  enrollmentId: string;
-  routeId: string;
-  title: LocalizedText;
-  sourceLocale: string;
-  creator: LocalizedText;
-  lessonsPerModule: number[];
-  /** Lessons this student has completed, for the line on their card. */
-  completedLessons: number;
-}
+export type { OwnEnrollment } from "./own-enrollment";
 
 export interface ProgressRecord {
   enrollmentId: string;
@@ -246,6 +260,8 @@ export interface ActionLogEntry {
   actorUserId: string;
   actorVia: ActorKind;
   agentRunId: string | null;
+  /** The OAuth client behind a call through the MCP. */
+  oauthClientId?: string | null;
   action: string;
   /** Already redacted: no secrets, no free text. */
   input: unknown;
@@ -258,7 +274,11 @@ export interface ActionLog {
   append(spaceId: string | null, entry: ActionLogEntry): Promise<RepoResult<void>>;
 }
 
+export type { ConnectionRecord, Connections, OwnSpace } from "./connection-ports";
+export type { RouteDetails } from "./route-details";
+
 export interface Repos {
+  connections: Connections;
   spaces: Spaces;
   catalog: Catalog;
   applications: Applications;

@@ -3,7 +3,7 @@ import { data } from "react-router";
 import { alternates } from "../../alternates";
 import { pageContext } from "../../context";
 import { storefrontHeaders } from "../../storefront/cache";
-import { RoutePage } from "../../storefront/creator-pages";
+import { RoutePage } from "../../storefront/route-page-view";
 import "../../storefront/creator.css";
 import "../../storefront/page-transitions.css";
 import { courseData } from "../../storefront/course-data";

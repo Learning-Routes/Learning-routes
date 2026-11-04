@@ -13,6 +13,16 @@ const EXPECTED: Record<string, string[]> = {
   // Only user.erase, as the migrator, deletes a user.
   user: ["INSERT", "SELECT", "UPDATE"],
   verification: READ_WRITE,
+  // The OAuth provider's, in the MCP Worker (Platform STEP 5 §2).
+  jwks: READ_WRITE,
+  oauth_client: READ_WRITE,
+  oauth_resource: READ_WRITE,
+  oauth_client_resource: READ_WRITE,
+  oauth_refresh_token: READ_WRITE,
+  oauth_access_token: READ_WRITE,
+  oauth_consent: READ_WRITE,
+  oauth_client_assertion: READ_WRITE,
+  connection_uses: READ_WRITE,
   // Read as nobody by /empezar, to name a route before signing in.
   public_routes: ["SELECT"],
   // Tenancy. RLS (§3) narrows each to the rows a user may see.
@@ -131,6 +141,7 @@ const GRANTS_FILES = [
   "0016_catalog_grants",
   "0023_start_grants",
   "0025_create_space_grants",
+  "0027_oauth_grants",
 ].map((tag) => new URL(`../../drizzle/${tag}.sql`, import.meta.url));
 const PRIVILEGES = `select coalesce(string_agg(entry, ',' order by entry), '')
                       as all

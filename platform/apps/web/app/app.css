@@ -1,5 +1,8 @@
 @import "@learning-routes/design-tokens/tokens.css";
+@import "@learning-routes/design-tokens/depth.css";
 @import "./ui/ui.css";
+@import "./ui/registers.css";
+@import "./ui/route-figure.css";
 
 *,
 *::before,
