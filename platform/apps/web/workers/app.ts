@@ -1,8 +1,8 @@
 import { createRequestHandler, RouterContextProvider } from "react-router";
 import { pageContext } from "../app/context";
-import { apiClient } from "./api-client";
+import { apiClient, mcpClient } from "./api-client";
 import { servedFromEdge } from "./edge-cache";
-import { creatorSlugOf, internalRequest, isApiPath, isAppPathElsewhere } from "./hosts";
+import { creatorSlugOf, internalRequest, isApiPath, isAppPathElsewhere, isMcpPath } from "./hosts";
 
 const requestHandler = createRequestHandler(
   () => import("virtual:react-router/server-build"),
@@ -26,6 +26,9 @@ export default {
     if (isAppPathElsewhere(url, hosts) && creatorSlugOf(url.host, hosts) === null) {
       return new Response(null, { status: 404 });
     }
+    if (isMcpPath(url, hosts)) {
+      return mcpClient(env)(request);
+    }
     if (isApiPath(url)) {
       return apiClient(env)(request);
     }
@@ -48,7 +51,7 @@ export default {
           platformOrigin: env.PLATFORM_ORIGIN,
           creatorDomain: env.CREATOR_DOMAIN,
           turnstileSiteKey: env.TURNSTILE_SITE_KEY,
-          runtime: { env, ctx, api: apiClient(env) },
+          runtime: { env, ctx, api: apiClient(env), mcp: mcpClient(env) },
         });
         return requestHandler(rendered, context);
       },

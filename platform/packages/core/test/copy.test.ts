@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { ADMIN_TEXT } from "../src/copy/admin";
 import { APP_PAGES_TEXT } from "../src/copy/app-pages";
 import { CATALOG_TEXT } from "../src/copy/catalog";
+import { CONNECT_TEXT } from "../src/copy/connect";
 import { CREATOR_TEXT } from "../src/copy/creator";
 import { LANDING_TEXT } from "../src/copy/landing";
 import { CLOSE_TEXT } from "../src/copy/landing-close";
@@ -120,6 +121,9 @@ describe("the copy check", () => {
       expect(APP_PAGES_TEXT[locale].doneBody).toContain("{email}");
       expect(ADMIN_TEXT[locale].place).toContain("{n}");
       expect(ADMIN_TEXT[locale].created).toContain("{slug}");
+      expect(CONNECT_TEXT[locale].consentTitle).toContain("{client}");
+      expect(CONNECT_TEXT[locale].returnsTo).toContain("{host}");
+      expect(CONNECT_TEXT[locale].lastUsed).toContain("{date}");
       expect(CREATOR_TEXT[locale].startPaid).toContain("{price}");
       expect(CREATOR_TEXT[locale].moduleTitle).toContain("{title}");
       expect(CREATOR_TEXT[locale].inLanguage).toContain("{language}");

@@ -6,6 +6,7 @@ import type {
   ActionLogEntry,
   ApplicationRecord,
   CatalogListing,
+  ConnectionRecord,
   DraftBlock,
   DraftLesson,
   DraftModule,
@@ -39,6 +40,7 @@ interface DraftRow {
 
 export function memoryState() {
   return {
+    connections: new Map<string, ConnectionRecord & { userId: string }>(),
     spaces: new Map<string, SpaceRecord>(),
     members: new Map<string, { spaceId: string } & Member>(),
     drafts: new Map<string, DraftRow>(),
@@ -176,7 +178,26 @@ export function memoryRepos(state: State, actorId = ""): Repos {
     state.members.get(`${spaceId}:${userId}`)?.role ?? null;
 
   return {
+    connections: {
+      canConnect: async (userId) =>
+        [...state.members.values()].some(
+          (member) => member.userId === userId && member.role !== "student",
+        ),
+      list: async (userId) =>
+        [...state.connections.values()].filter((row) => row.userId === userId),
+      revoke: async (userId, clientId) => {
+        const key = `${userId}:${clientId}`;
+        return state.connections.delete(key);
+      },
+    },
     spaces: {
+      listOwn: async (userId) =>
+        [...state.members.values()].flatMap((member) => {
+          const space = state.spaces.get(member.spaceId);
+          return member.userId === userId && member.role !== "student" && space
+            ? [{ id: space.id, slug: space.slug, name: space.name, role: member.role }]
+            : [];
+        }),
       get: async (spaceId) => {
         const space = state.spaces.get(spaceId);
         return space ? ok(space) : fail("not_found");
@@ -344,6 +365,26 @@ export function memoryRepos(state: State, actorId = ""): Repos {
             latestPublishedVersion: row.latestPublishedVersion,
           }))
           .sort((a, b) => (a.slug < b.slug ? -1 : 1)),
+      replaceContent: (spaceId, routeId, expected, content) =>
+        edit(spaceId, routeId, expected, (row) => {
+          const known = Object.fromEntries(
+            Object.entries(content.details).filter(([, value]) => value !== undefined),
+          );
+          row.route = { ...row.route, ...known } as typeof row.route;
+          row.modules = content.modules;
+          row.lessons = content.lessons.map((lesson) => ({ ...lesson, archived: false }));
+          row.blocks = content.blocks;
+          row.prerequisites = [];
+          return null;
+        }),
+      updateDetails: (spaceId, routeId, expected, details) =>
+        edit(spaceId, routeId, expected, (row) => {
+          const known = Object.fromEntries(
+            Object.entries(details).filter(([, value]) => value !== undefined),
+          );
+          row.route = { ...row.route, ...known } as typeof row.route;
+          return null;
+        }),
       addModule: (spaceId, routeId, expected, module) =>
         edit(spaceId, routeId, expected, (row) => {
           if (row.modules.some((entry) => entry.position === module.position)) {
@@ -549,8 +590,11 @@ export function memoryRepos(state: State, actorId = ""): Repos {
     },
     actionLog: {
       append: async (spaceId, entry) => {
+        const ownConnection = spaceId === null && entry.action.startsWith("connection.");
         const allowed =
-          state.operators.has(actorId) || (spaceId !== null && roleOf(spaceId, actorId) !== null);
+          ownConnection ||
+          state.operators.has(actorId) ||
+          (spaceId !== null && roleOf(spaceId, actorId) !== null);
         if (entry.actorUserId !== actorId || !allowed) {
           return fail("not_found");
         }

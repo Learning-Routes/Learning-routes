@@ -199,12 +199,14 @@ async function runForSelf(
   if (!isAllowed("student", name, ctx.actor.via)) {
     return { ok: false, code: "forbidden", message: "not allowed" };
   }
+  // A change to one's own account belongs to no space, and is logged in none.
+  const onAccount = target.kind === "account" && action.kind === "mutation";
   try {
     const output = await action.run(ctx, input, null);
     const { spaceId } = output as { spaceId?: unknown };
     const result: ActionResult = { ok: true, output };
-    if (typeof spaceId === "string") {
-      await log(ctx, spaceId, name, input, result);
+    if (typeof spaceId === "string" || onAccount) {
+      await log(ctx, typeof spaceId === "string" ? spaceId : null, name, input, result);
     }
     return result;
   } catch (error) {
@@ -212,6 +214,10 @@ async function runForSelf(
       throw error;
     }
     const result: ActionResult = { ok: false, code: error.code, message: error.message };
+    if (onAccount) {
+      await log(ctx, null, name, input, result);
+      return result;
+    }
     // A member's refusal is logged in the row's space; to anyone else it does not exist.
     const scope = await ctx.tenancy.scopeOf(target, ctx.actor.userId);
     if (scope?.role) {
@@ -232,6 +238,7 @@ async function log(
     actorUserId: ctx.actor.userId,
     actorVia: ctx.actor.via,
     agentRunId: null,
+    ...(ctx.actor.oauthClientId ? { oauthClientId: ctx.actor.oauthClientId } : {}),
     action: name,
     input: redact(input),
     outcome: result.ok ? "ok" : result.code,

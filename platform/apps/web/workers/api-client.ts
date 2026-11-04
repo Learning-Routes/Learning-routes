@@ -13,15 +13,35 @@ export function apiClient(env: ApiEnv, fetcher: typeof fetch = fetch): ApiFetch 
     return async (request) => {
       const { origin, pathname, search } = new URL(request.url);
       const response = await fetcher(new Request(`${devOrigin}${pathname}${search}`, request));
-      // wrangler dev's proxy writes its own port into a redirect: put the app's back.
+      // wrangler dev's proxy writes its own port into a redirect, and into an OAuth
+      // challenge: put the app's back.
       const location = response.headers.get("location");
-      if (!location?.startsWith(devOrigin)) {
+      const challenge = response.headers.get("www-authenticate");
+      if (!(location?.startsWith(devOrigin) || challenge?.includes(devOrigin))) {
         return response;
       }
       const restored = new Response(response.body, response);
-      restored.headers.set("location", `${origin}${location.slice(devOrigin.length)}`);
+      for (const [name, value] of [
+        ["location", location],
+        ["www-authenticate", challenge],
+      ] as const) {
+        if (value?.includes(devOrigin)) {
+          restored.headers.set(name, value.replaceAll(devOrigin, origin));
+        }
+      }
       return restored;
     };
   }
   return (request) => env.API.fetch(request);
+}
+
+/** The same, to the MCP Worker: it holds the OAuth provider and answers /mcp. */
+export function mcpClient(
+  env: Pick<Env, "MCP" | "ENVIRONMENT"> & { MCP_DEV_ORIGIN?: string },
+): ApiFetch {
+  return apiClient({
+    API: env.MCP as unknown as Env["API"],
+    ENVIRONMENT: env.ENVIRONMENT,
+    API_DEV_ORIGIN: env.MCP_DEV_ORIGIN,
+  });
 }
