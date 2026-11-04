@@ -1,3 +1,4 @@
+import { APP_PAGES_TEXT } from "@learning-routes/core/copy/app-pages";
 import { CONNECT_TEXT } from "@learning-routes/core/copy/connect";
 import { BRAND, negotiateLocale } from "@learning-routes/core/locales";
 import { useState } from "react";
@@ -59,7 +60,7 @@ export default function Conecta({ loaderData }: Route.ComponentProps) {
           <TextLink href="/ensenar/conexiones">{words.seeConnections}</TextLink>
         </>
       ) : (
-        <NoSpaceYet words={words} />
+        <NoSpaceYet words={words} back={APP_PAGES_TEXT[locale].backToMyRoutes} />
       )}
     </main>
   );

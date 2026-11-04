@@ -16,6 +16,8 @@ html:root:has(.stage) {
   --color-faint: #33294a;
   --color-border-subtle: #33294a;
   --color-link: #c9a6f2;
+  --color-accent: #6a2ea0;
+  --color-accent-text: #fff;
   --figure-track: #33294a;
   --figure-topic: #8c7f9c;
   --figure-mark: #f3eef7;
@@ -37,6 +39,14 @@ html:root:has(.stage) {
   --depth-near: color-mix(in oklab, var(--color-accent) 42%, var(--color-bg));
   --depth-far: color-mix(in oklab, var(--color-accent) 12%, var(--color-bg));
   --depth-glow: color-mix(in oklab, var(--color-accent) 8%, transparent);
+}
+
+/* Plum alone is too dark to mark focus on night. */
+html:root:has(.stage) :focus-visible {
+  outline-color: var(--color-highlight);
+}
+html:root:has(.stage) .field-input:focus-visible {
+  box-shadow: inset 0 0 0 2px var(--color-highlight);
 }
 
 /* The header lines up with the stage's page. */

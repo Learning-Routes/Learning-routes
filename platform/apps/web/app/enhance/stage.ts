@@ -22,7 +22,14 @@ function followThePointer() {
       event.clientX - window.innerWidth / 2,
     );
     const away = (towards + Math.PI + Math.PI * 2) % (Math.PI * 2);
-    angle += (Math.max(LOWEST, Math.min(HIGHEST, away)) - angle) * EASE;
+    // Pointer below the light: stay on the side the extrusion already falls towards.
+    const falling =
+      away <= Math.PI
+        ? Math.max(LOWEST, Math.min(HIGHEST, away))
+        : Math.cos(away) > 0
+          ? LOWEST
+          : HIGHEST;
+    angle += (falling - angle) * EASE;
     cancelAnimationFrame(frame);
     frame = requestAnimationFrame(() => {
       root.style.setProperty("--light-x", Math.cos(angle).toFixed(3));

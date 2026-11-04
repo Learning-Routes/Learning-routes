@@ -5,7 +5,7 @@ import { braidShapes } from "@learning-routes/route-map/route-shape";
 import { ButtonLink } from "../ui/button";
 import { EmptyState } from "../ui/parts";
 import { Rising } from "../ui/rising";
-import { RouteFigure } from "../ui/route-figure";
+import { arrival, RouteFigure } from "../ui/route-figure";
 import { CreatorFooter, CreatorHeader, type Links, lessonsOf } from "./creator-frame";
 import { EnhancementScript } from "./enhancement-script";
 import { inLocale, moduleAndTopicWords } from "./words";
@@ -38,7 +38,7 @@ export function CreatorWeave({ routes }: { routes: PublicRoute[] }) {
           <path className="weave-under" d={line.path} />
           <path className="weave-over" d={line.path} pathLength={1} />
           {line.stations.map((station) => (
-            <g key={station.at} className={`weave-stop at-${Math.round(station.at * 19)}`}>
+            <g key={station.at} className={`weave-stop ${arrival(station)}`}>
               <circle cx={station.x} cy={station.y} r="8" />
               <circle className="weave-core" cx={station.x} cy={station.y} r="2.6" />
             </g>
