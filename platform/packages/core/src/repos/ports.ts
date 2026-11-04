@@ -6,6 +6,7 @@ import type { Locale, LocalizedText } from "../localized-text";
 import type { Member } from "../memberships";
 import type { Applications, Catalog } from "./catalog-ports";
 import type { Connections, OwnSpace } from "./connection-ports";
+import type { OwnEnrollment } from "./own-enrollment";
 import type { RepoResult } from "./repo-result";
 import type { RouteDetails } from "./route-details";
 
@@ -196,16 +197,7 @@ export interface Enrollments {
   listOwn(userId: string): Promise<{ enrollments: OwnEnrollment[]; teaches: boolean }>;
 }
 
-export interface OwnEnrollment {
-  enrollmentId: string;
-  routeId: string;
-  title: LocalizedText;
-  sourceLocale: string;
-  creator: LocalizedText;
-  lessonsPerModule: number[];
-  /** Lessons this student has completed, for the line on their card. */
-  completedLessons: number;
-}
+export type { OwnEnrollment } from "./own-enrollment";
 
 export interface ProgressRecord {
   enrollmentId: string;

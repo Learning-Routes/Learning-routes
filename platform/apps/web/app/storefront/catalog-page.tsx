@@ -4,6 +4,8 @@ import type { LocaleCode } from "@learning-routes/core/locales";
 import type { PublicRoute } from "@learning-routes/public-read/reads";
 import { ButtonLink } from "../ui/button";
 import { EmptyState, TextLink } from "../ui/parts";
+import { Rising } from "../ui/rising";
+import { EnhancementScript } from "./enhancement-script";
 import { RouteCard } from "./route-card";
 import { PlatformHeader } from "./site-frame";
 import { filled } from "./words";
@@ -46,7 +48,11 @@ function TopicFilters({ locale, topic, search }: Pick<CatalogView, "locale" | "t
         aria-current={value === topic ? "true" : undefined}
         href={catalogHref({ locale, search, topic: value, page: 1 })}
       >
-        {name}
+        {/* The filled pill slides from the last choice to this one: see the page transition. */}
+        {value === topic ? <span className="catalog-topic-pill" aria-hidden="true" /> : null}
+        <span className="catalog-topic-name" data-vt={`topic-${value ?? "all"}`}>
+          {name}
+        </span>
       </a>
     </li>
   );
@@ -116,10 +122,13 @@ export function CatalogPage({ view }: { view: CatalogView }) {
   return (
     <>
       <PlatformHeader locale={locale} appOrigin={appOrigin} />
-      <main className="catalog moment">
-        <h1 className="catalog-title">{words.title}</h1>
+      {/* A filter's new page moves what's there; only arriving at the catalog opens it. */}
+      <main className={`catalog stage moment${topic || search ? "" : " opening"}`}>
+        <h1 className="catalog-title depth-1">
+          <Rising text={words.title} />
+        </h1>
         {/* Plain GET: the results are server-rendered, with or without JavaScript. */}
-        <search>
+        <search className="settle-1">
           <form className="catalog-search" method="get" action={`/${locale}/explorar`}>
             <label className="catalog-search-label" htmlFor="catalog-q">
               {words.searchLabel}
@@ -139,8 +148,10 @@ export function CatalogPage({ view }: { view: CatalogView }) {
             </button>
           </form>
         </search>
-        <TopicFilters locale={locale} topic={topic} search={search} />
-        <p className="catalog-free">{words.firstFree}</p>
+        <div className="settle-2">
+          <TopicFilters locale={locale} topic={topic} search={search} />
+        </div>
+        <p className="catalog-free settle-3">{words.firstFree}</p>
         {routes.length === 0 ? (
           <NoRoutes view={view} />
         ) : (
@@ -159,6 +170,7 @@ export function CatalogPage({ view }: { view: CatalogView }) {
         )}
         <Pagination view={view} />
       </main>
+      <EnhancementScript page="stage" />
     </>
   );
 }

@@ -67,6 +67,7 @@ export const PERMISSIONS = {
   "space.create": { operator: ["ui"] },
   // Only ever the actor's own.
   "enrollment.list": EVERYONE,
+  "lesson.read": EVERYONE,
 } as const satisfies Record<ActionName, Row>;
 
 /** Whether a role in a space may call an action this way. */

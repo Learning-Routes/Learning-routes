@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { data, Form, redirect } from "react-router";
 import { isFromTheApp, runApiAction } from "../app-api.server";
 import "../app-pages/app-pages.css";
+import { NoSpaceYet } from "../app-pages/no-space-yet";
 import { pageContext } from "../context";
 import { filled } from "../storefront/words";
 import { Button } from "../ui/button";
@@ -102,25 +103,30 @@ export default function Conectar({ loaderData, actionData }: Route.ComponentProp
   }, [goTo]);
   if (!teaches || actionData?.refused) {
     return (
-      <main className="app-page app-page-narrow">
-        <h1 className="app-title">{filled(words.consentTitle, { client: clientName })}</h1>
-        <Notice tone="info" title={words.noSpace} />
+      <main className="desk app-page app-page-narrow">
+        <h1 className="app-title depth-1">{filled(words.consentTitle, { client: clientName })}</h1>
+        <NoSpaceYet words={words} />
       </main>
     );
   }
   return (
-    <main className="app-page app-page-narrow">
-      <h1 className="app-title">{filled(words.consentTitle, { client: clientName })}</h1>
+    <main className="desk opening app-page app-page-narrow">
+      <h1 className="app-title depth-1">{filled(words.consentTitle, { client: clientName })}</h1>
       {goTo ? (
         <Notice tone="success" title={words.answered} />
       ) : (
         <>
           <p className="app-copy">{words.asksTo}</p>
-          <ul className="connect-scopes">
+          {/* Its moment: the two ends, joined by what is allowed. */}
+          <ol className="connect-line moment">
+            <li className="connect-end">{clientName}</li>
             {scopes.map((scope) => (
-              <li key={scope}>{words[SCOPE_WORDS[scope]]}</li>
+              <li key={scope} className="connect-scope">
+                {words[SCOPE_WORDS[scope]]}
+              </li>
             ))}
-          </ul>
+            <li className="connect-end">{filled(words.yourSide, { brand: BRAND })}</li>
+          </ol>
           <p className="app-fine">{filled(words.returnsTo, { host })}</p>
           <Form method="post" className="connect-actions">
             <Button type="submit" name="answer" value="allow">

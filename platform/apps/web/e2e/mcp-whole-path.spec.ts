@@ -114,7 +114,7 @@ test("an assistant imports and publishes a route, until it is disconnected", asy
 
   await page.getByRole("link", { name: "Empezar gratis" }).click();
   await page.getByRole("heading", { name: "Mis rutas" }).waitFor();
-  await expect(page.getByText(HOSTILE_TITLE)).toBeVisible();
+  await expect(page.getByText(HOSTILE_TITLE).first()).toBeVisible();
   expect(await page.evaluate(() => "__pwned" in window)).toBe(false);
 
   await page.goto(`${DEV}/ensenar/conexiones`);

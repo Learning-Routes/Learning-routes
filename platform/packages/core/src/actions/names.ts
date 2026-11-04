@@ -26,6 +26,7 @@ export const ACTION_NAMES = [
   "admin.overview",
   "application.decide",
   "enrollment.list",
+  "lesson.read",
   "connection.list",
   "connection.grant",
   "connection.revoke",

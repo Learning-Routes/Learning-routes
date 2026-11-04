@@ -1,4 +1,5 @@
 import * as z from "zod";
+import { lessonView, placeInRoute } from "../content/lesson-view";
 import type { Repos } from "../repos/ports";
 import { defineAction, inSpace } from "./define";
 import { refused, unwrap } from "./results";
@@ -52,4 +53,37 @@ export const enrollmentUpgrade = defineAction({
   target: (input) => ({ kind: "enrollment", id: input.enrollmentId }),
   run: async (ctx, input, given) =>
     unwrap(await ctx.repos.enrollments.upgrade(inSpace(given).spaceId, input.enrollmentId)),
+});
+
+/** A topic of the actor's own enrollment, at the version they are on. Reads only: saving is STEP 8. */
+export const lessonRead = defineAction({
+  name: "lesson.read",
+  kind: "query",
+  description: "Read a topic of your own enrollment. With no topic, the one you are on.",
+  input: z.strictObject({
+    enrollmentId: z.uuid(),
+    topic: z.int().positive().max(10_000).optional(),
+  }),
+  target: (input) => ({ kind: "enrollment", id: input.enrollmentId }),
+  run: async (ctx, input, given) => {
+    const { spaceId } = inSpace(given);
+    const enrollment = await ownEnrollment(
+      ctx.repos,
+      spaceId,
+      input.enrollmentId,
+      ctx.actor.userId,
+    );
+    const { snapshot } = unwrap(
+      await ctx.repos.routeVersions.get(spaceId, enrollment.routeId, enrollment.pinnedVersion),
+    );
+    const progress = await ctx.repos.learning.progress(spaceId, enrollment.id);
+    const completed = progress
+      .filter((record) => record.status === "completed")
+      .map((record) => record.lessonId);
+    const view = lessonView(snapshot, input.topic ?? placeInRoute(snapshot, completed).number);
+    if (view === null) {
+      throw refused("not_found");
+    }
+    return view;
+  },
 });

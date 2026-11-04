@@ -21,6 +21,10 @@ export interface ConnectText {
   returnsTo: string;
   asksTo: string;
   noSpace: string;
+  wantToTeach: string;
+  backToMyRoutes: string;
+  /** The other end of the line, on the consent page. */
+  yourSide: string;
   connections: string;
   connectAssistant: string;
   noConnections: string;
@@ -52,6 +56,9 @@ export const CONNECT_TEXT: Record<LocaleCode, ConnectText> = {
     returnsTo: "Tu respuesta se envía a {host}.",
     asksTo: "Podrá:",
     noSpace: "Para conectar un asistente necesitas tener un espacio para enseñar.",
+    wantToTeach: "Quiero enseñar",
+    backToMyRoutes: "Volver a Mis rutas",
+    yourSide: "Tu {brand}",
     connections: "Conexiones",
     connectAssistant: "Conecta tu asistente",
     noConnections: "Aún no hay asistentes conectados.",
@@ -80,6 +87,9 @@ export const CONNECT_TEXT: Record<LocaleCode, ConnectText> = {
     returnsTo: "Your answer goes to {host}.",
     asksTo: "It will be able to:",
     noSpace: "To connect an assistant you need a space to teach in.",
+    wantToTeach: "I want to teach",
+    backToMyRoutes: "Back to My routes",
+    yourSide: "Your {brand}",
     connections: "Connections",
     connectAssistant: "Connect your assistant",
     noConnections: "No assistants connected yet.",
@@ -108,6 +118,9 @@ export const CONNECT_TEXT: Record<LocaleCode, ConnectText> = {
     returnsTo: "Sua resposta vai para {host}.",
     asksTo: "Poderá:",
     noSpace: "Para conectar um assistente, você precisa ter um espaço para ensinar.",
+    wantToTeach: "Quero ensinar",
+    backToMyRoutes: "Voltar a Minhas rotas",
+    yourSide: "Seu {brand}",
     connections: "Conexões",
     connectAssistant: "Conecte seu assistente",
     noConnections: "Ainda não há assistentes conectados.",
@@ -136,6 +149,9 @@ export const CONNECT_TEXT: Record<LocaleCode, ConnectText> = {
     returnsTo: "Votre réponse est envoyée à {host}.",
     asksTo: "Il pourra :",
     noSpace: "Pour connecter un assistant, il vous faut un espace pour enseigner.",
+    wantToTeach: "Je veux enseigner",
+    backToMyRoutes: "Retour à Mes parcours",
+    yourSide: "Votre {brand}",
     connections: "Connexions",
     connectAssistant: "Connectez votre assistant",
     noConnections: "Aucun assistant connecté pour l'instant.",
@@ -164,6 +180,9 @@ export const CONNECT_TEXT: Record<LocaleCode, ConnectText> = {
     returnsTo: "La tua risposta va a {host}.",
     asksTo: "Potrà:",
     noSpace: "Per collegare un assistente ti serve uno spazio in cui insegnare.",
+    wantToTeach: "Voglio insegnare",
+    backToMyRoutes: "Torna a I miei percorsi",
+    yourSide: "Il tuo {brand}",
     connections: "Connessioni",
     connectAssistant: "Collega il tuo assistente",
     noConnections: "Ancora nessun assistente collegato.",

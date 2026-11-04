@@ -4,9 +4,10 @@ import { useState } from "react";
 import { redirect } from "react-router";
 import { runApiAction } from "../app-api.server";
 import "../app-pages/app-pages.css";
+import { NoSpaceYet } from "../app-pages/no-space-yet";
 import { pageContext } from "../context";
 import { Button } from "../ui/button";
-import { Notice, TextLink } from "../ui/parts";
+import { TextLink } from "../ui/parts";
 import type { Route } from "./+types/conecta";
 
 // "Conecta tu asistente", under Enseñar (Platform STEP 5 §5): the server's address, and a
@@ -36,8 +37,8 @@ export default function Conecta({ loaderData }: Route.ComponentProps) {
   const words = CONNECT_TEXT[locale];
   const [copied, setCopied] = useState(false);
   return (
-    <main className="app-page app-page-narrow">
-      <h1 className="app-title">{words.connectAssistant}</h1>
+    <main className="desk opening app-page app-page-narrow">
+      <h1 className="app-title depth-1">{words.connectAssistant}</h1>
       {teaches ? (
         <>
           <p className="app-copy">{words.connectIntro}</p>
@@ -58,7 +59,7 @@ export default function Conecta({ loaderData }: Route.ComponentProps) {
           <TextLink href="/ensenar/conexiones">{words.seeConnections}</TextLink>
         </>
       ) : (
-        <Notice tone="info" title={words.noSpace} />
+        <NoSpaceYet words={words} />
       )}
     </main>
   );

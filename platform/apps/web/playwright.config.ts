@@ -25,6 +25,7 @@ const CHANGES_DATA = [
   "teach.spec.ts",
   "my-routes.spec.ts",
   "whole-path.spec.ts",
+  "lesson.spec.ts",
 ];
 const API_LOG = ".wrangler/e2e-api.log";
 const API_VARS = Object.entries({

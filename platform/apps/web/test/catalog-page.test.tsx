@@ -61,7 +61,9 @@ describe("the catalog page", () => {
     expect(html).toContain('action="/es/explorar"');
     expect(html).toContain('name="tema" value="musica"');
     expect(html).toContain('href="/es/explorar?q=guitarra&amp;tema=idiomas"');
-    expect(html).not.toMatch(SCRIPT);
+    // The one script only adds motion, and never blocks: without it all of this still works.
+    expect(html.match(SCRIPT)).toHaveLength(1);
+    expect(html).toContain('<script type="module"');
   });
 
   it("marks the chosen topic", () => {

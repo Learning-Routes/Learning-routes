@@ -86,10 +86,15 @@ export const SCREENS: Record<string, (page: Page) => Promise<unknown>> = {
     await page.goto(`${DEV}/mis-rutas`);
   },
   "my-routes": enrolled,
-  "keep-going": async (page) => {
+  lesson: async (page) => {
     await enrolled(page);
-    await page.getByRole("link", { name: "Seguir" }).click();
-    await page.getByRole("heading", { name: "Muy pronto podrás seguir aquí." }).waitFor();
+    await page.getByRole("link", { name: "Seguir", exact: true }).first().click();
+    await page.locator(".lesson-title").waitFor();
+  },
+  "connect-no-space": async (page) => {
+    await signInContext(page.context(), newAddress("sin-espacio"));
+    await page.goto(`${DEV}/ensenar/conecta`);
+    await page.getByRole("link", { name: "Quiero enseñar" }).waitFor();
   },
   teach: async (page) => {
     await stubTurnstile(page);

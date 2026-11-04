@@ -10,7 +10,7 @@ import {
 import { connectionGrant, connectionList, connectionRevoke } from "./connections";
 import type { ActionDef, ActionResult } from "./define";
 import { blockAdd, blockAddMany, lessonAdd, moduleAdd } from "./drafting";
-import { enrollmentCreate, enrollmentList, enrollmentUpgrade } from "./enrollments";
+import { enrollmentCreate, enrollmentList, enrollmentUpgrade, lessonRead } from "./enrollments";
 import { routeImport } from "./imports";
 import type { ActionName } from "./names";
 import { reviewSubmit } from "./review";
@@ -45,6 +45,7 @@ export const ACTIONS = {
   "admin.overview": adminOverview,
   "application.decide": applicationDecide,
   "enrollment.list": enrollmentList,
+  "lesson.read": lessonRead,
   "connection.list": connectionList,
   "connection.grant": connectionGrant,
   "connection.revoke": connectionRevoke,
