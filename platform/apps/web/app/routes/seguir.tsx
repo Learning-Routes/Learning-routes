@@ -6,7 +6,8 @@ import { useState } from "react";
 import { data, redirect } from "react-router";
 import { runApiAction } from "../app-api.server";
 import "../app-pages/lesson.css";
-import { LessonBar, LessonBlocks, TopicDone } from "../app-pages/lesson-parts";
+import { LessonBar } from "../app-pages/lesson-bar";
+import { isAnswerable, LessonBlocks, TopicDone } from "../app-pages/lesson-parts";
 import { filled, inLocale } from "../storefront/words";
 import { ButtonLink } from "../ui/button";
 import { Rising } from "../ui/rising";
@@ -25,7 +26,10 @@ export async function loader({ request, params, context }: Route.LoaderArgs) {
     throw redirect("/sign-in");
   }
   if (!answer.body?.output) {
-    throw data(null, { status: 404 });
+    // Not found is an answer; a limit or an outage is not, and must not look like one.
+    throw data(null, {
+      status: answer.status === 429 || answer.status >= 500 ? answer.status : 404,
+    });
   }
   return {
     lesson: answer.body.output,
@@ -75,7 +79,7 @@ export default function Seguir({ loaderData }: Route.ComponentProps) {
             />
             {lesson.blocks.length === 0 ? <p className="settle-2">{words.empty}</p> : null}
             <TopicDone
-              shown={done || !lesson.blocks.some((block) => block.kind === "check")}
+              shown={done || !lesson.blocks.some(isAnswerable)}
               celebrate={done}
               locale={locale}
               href={nextHref}
@@ -87,7 +91,7 @@ export default function Seguir({ loaderData }: Route.ComponentProps) {
                     })
                   : words.routeDone
               }
-              action={lesson.next ? words.nextTopic : words.backToMyRoutes}
+              action={lesson.next ? words.nextTopic : APP_PAGES_TEXT[locale].backToMyRoutes}
             />
           </>
         )}

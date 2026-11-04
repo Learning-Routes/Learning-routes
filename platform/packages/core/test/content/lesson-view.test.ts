@@ -72,6 +72,14 @@ describe("placeInRoute", () => {
     expect(placeInRoute(s, [id(101), id(103)]).number).toBe(2);
   });
 
+  it("has no title for a route with no topics, so nobody is sent to one", () => {
+    expect(placeInRoute({ modules: [], lessons: [] }, [])).toEqual({
+      number: 1,
+      title: null,
+      finished: false,
+    });
+  });
+
   it("goes by module first, whatever order the lessons are stored in", () => {
     const s = snapshot("free");
     const shuffled = { ...s, lessons: [...s.lessons].reverse() };

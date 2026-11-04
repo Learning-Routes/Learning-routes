@@ -17,7 +17,6 @@ export interface LessonText {
   nextIs: string;
   nextTopic: string;
   routeDone: string;
-  backToMyRoutes: string;
   /** Until Platform STEP 8 saves progress. */
   notSaved: string;
   lockedTitle: string;
@@ -38,7 +37,6 @@ export const LESSON_TEXT: Record<LocaleCode, LessonText> = {
     nextIs: "Sigue el tema {n}: {title}.",
     nextTopic: "Siguiente tema",
     routeDone: "Era el último tema de esta ruta.",
-    backToMyRoutes: "Volver a Mis rutas",
     notSaved: "Por ahora tu avance no se guarda.",
     lockedTitle: "Este tema es de la ruta completa",
     lockedBody: "El primer módulo es gratis. Muy pronto podrás pagar la ruta para seguir.",
@@ -56,7 +54,6 @@ export const LESSON_TEXT: Record<LocaleCode, LessonText> = {
     nextIs: "Next is topic {n}: {title}.",
     nextTopic: "Next topic",
     routeDone: "That was the last topic on this route.",
-    backToMyRoutes: "Back to My routes",
     notSaved: "Your progress isn't saved yet.",
     lockedTitle: "This topic is part of the full route",
     lockedBody: "The first module is free. You'll soon be able to pay for the route to carry on.",
@@ -74,7 +71,6 @@ export const LESSON_TEXT: Record<LocaleCode, LessonText> = {
     nextIs: "A seguir, o tema {n}: {title}.",
     nextTopic: "Próximo tema",
     routeDone: "Este era o último tema desta rota.",
-    backToMyRoutes: "Voltar a Minhas rotas",
     notSaved: "Por enquanto seu progresso não é salvo.",
     lockedTitle: "Este tema faz parte da rota completa",
     lockedBody: "O primeiro módulo é grátis. Em breve você poderá pagar a rota para continuar.",
@@ -92,7 +88,6 @@ export const LESSON_TEXT: Record<LocaleCode, LessonText> = {
     nextIs: "Ensuite, le sujet {n} : {title}.",
     nextTopic: "Sujet suivant",
     routeDone: "C'était le dernier sujet de ce parcours.",
-    backToMyRoutes: "Retour à Mes parcours",
     notSaved: "Votre progression n'est pas encore enregistrée.",
     lockedTitle: "Ce sujet fait partie du parcours complet",
     lockedBody:
@@ -111,7 +106,6 @@ export const LESSON_TEXT: Record<LocaleCode, LessonText> = {
     nextIs: "Poi c'è l'argomento {n}: {title}.",
     nextTopic: "Argomento successivo",
     routeDone: "Era l'ultimo argomento di questo percorso.",
-    backToMyRoutes: "Torna a I miei percorsi",
     notSaved: "Per ora i tuoi progressi non vengono salvati.",
     lockedTitle: "Questo argomento fa parte del percorso completo",
     lockedBody: "Il primo modulo è gratis. Presto potrai pagare il percorso per continuare.",

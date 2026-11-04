@@ -1,3 +1,4 @@
+import { APP_PAGES_TEXT } from "@learning-routes/core/copy/app-pages";
 import { CONNECT_TEXT, type ConnectText } from "@learning-routes/core/copy/connect";
 import { BRAND, negotiateLocale } from "@learning-routes/core/locales";
 import { useEffect } from "react";
@@ -105,7 +106,7 @@ export default function Conectar({ loaderData, actionData }: Route.ComponentProp
     return (
       <main className="desk app-page app-page-narrow">
         <h1 className="app-title depth-1">{filled(words.consentTitle, { client: clientName })}</h1>
-        <NoSpaceYet words={words} />
+        <NoSpaceYet words={words} back={APP_PAGES_TEXT[locale].backToMyRoutes} />
       </main>
     );
   }

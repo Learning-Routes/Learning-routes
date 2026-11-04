@@ -122,8 +122,8 @@ export function CatalogPage({ view }: { view: CatalogView }) {
   return (
     <>
       <PlatformHeader locale={locale} appOrigin={appOrigin} />
-      {/* A filter's new page moves what's there; only arriving at the catalog opens it. */}
-      <main className={`catalog stage moment${topic || search ? "" : " opening"}`}>
+      {/* A filtered or later page moves what's there, so only the catalog's own address opens. */}
+      <main className={`catalog stage moment${topic || search || view.page > 1 ? "" : " opening"}`}>
         <h1 className="catalog-title depth-1">
           <Rising text={words.title} />
         </h1>

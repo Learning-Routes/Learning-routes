@@ -2,7 +2,8 @@ import { routeShape, type ShapeBox, type Station } from "@learning-routes/route-
 
 const STEPS_ALONG = 19;
 /** A class per step along the line says when a station arrives. The CSP allows no inline style. */
-const arrival = (station: Station) => `at-${Math.round(station.at * STEPS_ALONG)}`;
+export const arrival = (station: Pick<Station, "at">) =>
+  `at-${Math.round(station.at * STEPS_ALONG)}`;
 
 function Mark({
   station,

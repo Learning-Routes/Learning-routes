@@ -1,79 +1,14 @@
-import type { LessonBlock, LessonView } from "@learning-routes/core/content/lesson-view";
+import type { LessonBlock } from "@learning-routes/core/content/lesson-view";
 import { LESSON_TEXT } from "@learning-routes/core/copy/lesson";
 import type { LocaleCode } from "@learning-routes/core/locales";
 import type { LocalizedText } from "@learning-routes/core/localized-text";
-import { useId, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { filled, inLocale } from "../storefront/words";
 import { Button, ButtonLink } from "../ui/button";
 
-const PERCENT = 100;
-const EDGE = 2;
-
-/** Where each of a module's stations sits along the bar, evenly, as a share of its width. */
-const stationAt = (index: number, stations: number) =>
-  `${EDGE + (index * (PERCENT - EDGE * 2)) / stations}%`;
-
-/** The module's line: done in green, the gold dot on this topic, the diamond for its end. */
-export function LessonBar({
-  lesson,
-  locale,
-  done,
-}: {
-  lesson: LessonView;
-  locale: LocaleCode;
-  done: boolean;
-}) {
-  const words = LESSON_TEXT[locale];
-  const stations = lesson.topicsInModule;
-  const place = lesson.topicInModule - 1 + (done ? 1 : 0);
-  const here = stationAt(place, stations);
-  return (
-    <div className="lesson-bar">
-      <p className="lesson-where">
-        {filled(words.whereAmI, {
-          module: lesson.moduleNumber,
-          topic: lesson.topicInModule,
-          total: stations,
-        })}
-      </p>
-      <svg className="lesson-line" width="100%" height="36" aria-hidden="true">
-        <line
-          className="lesson-track"
-          x1={stationAt(0, stations)}
-          x2={stationAt(stations, stations)}
-          y1="18"
-          y2="18"
-        />
-        <line className="lesson-done" x1={stationAt(0, stations)} x2={here} y1="18" y2="18" />
-        {Array.from({ length: stations }, (_, index) => (
-          <circle
-            key={index}
-            className={index < place ? "lesson-stop lesson-stop-done" : "lesson-stop"}
-            cx={stationAt(index, stations)}
-            cy="18"
-            r="4.5"
-          />
-        ))}
-        <svg x={stationAt(stations, stations)} y="18" overflow="visible" aria-hidden="true">
-          <rect
-            className="lesson-end"
-            x="-7"
-            y="-7"
-            width="14"
-            height="14"
-            rx="2"
-            transform="rotate(45)"
-          />
-        </svg>
-        <circle className="lesson-halo" cx={here} cy="18" r="14" />
-        <circle className="lesson-here" cx={here} cy="18" r="8" />
-      </svg>
-      <a className="lesson-exit" href="/mis-rutas">
-        {words.exit}
-      </a>
-    </div>
-  );
-}
+/** A question nobody can get right is the creator's mistake, and never blocks the student. */
+export const isAnswerable = (block: LessonBlock) =>
+  block.kind === "check" && (block.data as unknown as CheckData).options?.some((o) => o.correct);
 
 const BLANK_LINE = /\n{2,}/;
 const paragraphs = (text: string) => text.split(BLANK_LINE).filter(Boolean);
@@ -201,14 +136,14 @@ export function LessonBlocks({
   source: string;
   onAllRight: () => void;
 }) {
-  const checks = blocks.filter((block) => block.kind === "check").length;
+  const checks = blocks.filter(isAnswerable).length;
   const right = useRef(new Set<string>());
   return blocks.map((block) => {
     const text = (field: string) =>
       inLocale(block.data[field] as LocalizedText | null | undefined, locale, source);
     switch (block.kind) {
       case "check":
-        return (
+        return !isAnswerable(block) ? null : (
           <Question
             key={block.id}
             data={block.data as unknown as CheckData}
@@ -262,12 +197,24 @@ export function TopicDone({
   nextLine: string;
   action: string;
 }) {
+  const band = useRef<HTMLDivElement>(null);
+  // The Check button that held focus has just gone: keep the keyboard where the way on is.
+  useEffect(() => {
+    if (celebrate) {
+      band.current?.focus();
+    }
+  }, [celebrate]);
   if (!shown) {
     return null;
   }
   const words = LESSON_TEXT[locale];
   return (
-    <div className={`lesson-done-band${celebrate ? " is-celebrating" : ""}`} role="status">
+    <div
+      ref={band}
+      tabIndex={-1}
+      className={`lesson-done-band${celebrate ? " is-celebrating" : ""}`}
+      role="status"
+    >
       <div>
         {/* Only an answered question earns the words: a topic with none just goes on. */}
         {celebrate ? <p className="lesson-done-title">{words.topicDone}</p> : null}

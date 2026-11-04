@@ -103,7 +103,15 @@ function topicTotal(enrollment: OwnEnrollment) {
   return enrollment.lessonsPerModule.reduce((sum, count) => sum + count, 0);
 }
 
-function CarryOn({ enrollment, locale }: { enrollment: OwnEnrollment; locale: LocaleCode }) {
+function CarryOn({
+  enrollment,
+  locale,
+  isNew,
+}: {
+  enrollment: OwnEnrollment;
+  locale: LocaleCode;
+  isNew: boolean;
+}) {
   const words = MY_ROUTES_TEXT[locale];
   const source = enrollment.sourceLocale;
   return (
@@ -126,7 +134,7 @@ function CarryOn({ enrollment, locale }: { enrollment: OwnEnrollment; locale: Lo
       <ButtonLink className="settle-3" href={`/mis-rutas/${enrollment.enrollmentId}`}>
         {APP_PAGES_TEXT[locale].continue}
       </ButtonLink>
-      <EnrollmentLine enrollment={enrollment} box={NEXT_BOX} />
+      <EnrollmentLine enrollment={enrollment} box={NEXT_BOX} isNew={isNew} />
     </section>
   );
 }
@@ -142,7 +150,7 @@ function MyRoute({
 }) {
   const words = { ...APP_PAGES_TEXT[locale], ...MY_ROUTES_TEXT[locale] };
   const title = inLocale(enrollment.title, locale, enrollment.sourceLocale);
-  const { finished, number } = enrollment.place;
+  const { finished, number, title: topic } = enrollment.place;
   const creator = filled(CATALOG_TEXT[locale].withCreator, {
     creator: inLocale(enrollment.creator, locale),
   });
@@ -154,19 +162,21 @@ function MyRoute({
           {`${creator}. `}
           {finished ? (
             <span className="my-route-finished">{words.routeFinished}</span>
-          ) : (
+          ) : topic ? (
             filled(words.onTopic, { n: number, total: topicTotal(enrollment) })
-          )}
+          ) : null}
         </p>
       </div>
-      <ButtonLink
-        href={`/mis-rutas/${enrollment.enrollmentId}`}
-        emphasis={finished ? "secondary" : "primary"}
-        size="small"
-        aria-label={`${finished ? words.review : words.continue}: ${title}`}
-      >
-        {finished ? words.review : words.continue}
-      </ButtonLink>
+      {finished || topic ? (
+        <ButtonLink
+          href={`/mis-rutas/${enrollment.enrollmentId}`}
+          emphasis={finished ? "secondary" : "primary"}
+          size="small"
+          aria-label={`${finished ? words.review : words.continue}: ${title}`}
+        >
+          {finished ? words.review : words.continue}
+        </ButtonLink>
+      ) : null}
       <EnrollmentLine enrollment={enrollment} box={ITEM_BOX} isNew={isNew} />
     </li>
   );
@@ -177,7 +187,8 @@ export default function MisRutas({ loaderData }: Route.ComponentProps) {
   const arriving = useArrivingEnrollment(newEnrollment);
   const words = { ...APP_PAGES_TEXT[locale], ...MY_ROUTES_TEXT[locale] };
   const catalog = `${platformOrigin}/${locale}/explorar`;
-  const next = enrollments.find((enrollment) => !enrollment.place.finished);
+  // A route with no topics yet has nowhere to carry on to.
+  const next = enrollments.find(({ place }) => !place.finished && place.title !== null);
   return (
     <div className="desk opening">
       <SiteHeader brand={BRAND} brandHref={`${platformOrigin}/${locale}`} navLabel={words.myRoutes}>
@@ -218,7 +229,9 @@ export default function MisRutas({ loaderData }: Route.ComponentProps) {
           </EmptyState>
         ) : (
           <>
-            {next ? <CarryOn enrollment={next} locale={locale} /> : null}
+            {next ? (
+              <CarryOn enrollment={next} locale={locale} isNew={next.enrollmentId === arriving} />
+            ) : null}
             <section aria-labelledby="my-all" className="settle-4">
               <h2 id="my-all" className="my-all-title depth-2">
                 {words.yourRoutes}

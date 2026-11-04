@@ -22,7 +22,6 @@ export interface ConnectText {
   asksTo: string;
   noSpace: string;
   wantToTeach: string;
-  backToMyRoutes: string;
   /** The other end of the line, on the consent page. */
   yourSide: string;
   connections: string;
@@ -57,7 +56,6 @@ export const CONNECT_TEXT: Record<LocaleCode, ConnectText> = {
     asksTo: "Podrá:",
     noSpace: "Para conectar un asistente necesitas tener un espacio para enseñar.",
     wantToTeach: "Quiero enseñar",
-    backToMyRoutes: "Volver a Mis rutas",
     yourSide: "Tu {brand}",
     connections: "Conexiones",
     connectAssistant: "Conecta tu asistente",
@@ -88,7 +86,6 @@ export const CONNECT_TEXT: Record<LocaleCode, ConnectText> = {
     asksTo: "It will be able to:",
     noSpace: "To connect an assistant you need a space to teach in.",
     wantToTeach: "I want to teach",
-    backToMyRoutes: "Back to My routes",
     yourSide: "Your {brand}",
     connections: "Connections",
     connectAssistant: "Connect your assistant",
@@ -119,7 +116,6 @@ export const CONNECT_TEXT: Record<LocaleCode, ConnectText> = {
     asksTo: "Poderá:",
     noSpace: "Para conectar um assistente, você precisa ter um espaço para ensinar.",
     wantToTeach: "Quero ensinar",
-    backToMyRoutes: "Voltar a Minhas rotas",
     yourSide: "Seu {brand}",
     connections: "Conexões",
     connectAssistant: "Conecte seu assistente",
@@ -150,7 +146,6 @@ export const CONNECT_TEXT: Record<LocaleCode, ConnectText> = {
     asksTo: "Il pourra :",
     noSpace: "Pour connecter un assistant, il vous faut un espace pour enseigner.",
     wantToTeach: "Je veux enseigner",
-    backToMyRoutes: "Retour à Mes parcours",
     yourSide: "Votre {brand}",
     connections: "Connexions",
     connectAssistant: "Connectez votre assistant",
@@ -181,7 +176,6 @@ export const CONNECT_TEXT: Record<LocaleCode, ConnectText> = {
     asksTo: "Potrà:",
     noSpace: "Per collegare un assistente ti serve uno spazio in cui insegnare.",
     wantToTeach: "Voglio insegnare",
-    backToMyRoutes: "Torna a I miei percorsi",
     yourSide: "Il tuo {brand}",
     connections: "Connessioni",
     connectAssistant: "Collega il tuo assistente",

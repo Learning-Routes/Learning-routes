@@ -138,5 +138,9 @@ export function drawJourney(list: HTMLElement, reduceMotion: boolean) {
   void document.fonts.ready.then(relayout);
   onScroll();
   window.addEventListener("scroll", () => requestAnimationFrame(onScroll), { passive: true });
-  window.addEventListener("resize", relayout);
+  let waiting = 0;
+  window.addEventListener("resize", () => {
+    cancelAnimationFrame(waiting);
+    waiting = requestAnimationFrame(relayout);
+  });
 }
