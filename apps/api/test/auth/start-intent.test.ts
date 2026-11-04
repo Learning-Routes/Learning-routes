@@ -150,3 +150,57 @@ describe("what /empezar may say about a route", () => {
     expect((await api.call("/api/start/preview?ruta=nonsense")).status).toBe(404);
   });
 });
+
+describe("a link opened on another device", () => {
+  const askWith = async (cookie: string) => {
+    const email = randomEmail();
+    const asked = await api.call("/api/auth/sign-in/magic-link", json({ email }, { cookie }));
+    expect(asked.status).toBe(200);
+    const link = new URL(api.sent.find((entry) => entry.email === email)?.url ?? "");
+    return new URLSearchParams(link.hash.slice(1)).get("token") ?? "";
+  };
+  const open = (token: string, cookie?: string) =>
+    api.call("/api/auth/magic-link/confirm", {
+      method: "POST",
+      headers: {
+        "content-type": "application/x-www-form-urlencoded",
+        ...(cookie ? { cookie } : {}),
+      },
+      body: new URLSearchParams({ token }).toString(),
+    });
+
+  it("still lands on Empezar, with no cookie on that device", async () => {
+    const cookie = cookieValue(await startIntentCookie(TEST_SECRET, ROUTE, Date.now()));
+    const answer = await open(await askWith(cookie));
+    expect(answer.headers.get("location")).toBe(`${APP}/empezar?ruta=${ROUTE}`);
+  });
+
+  it("still goes back to the assistant's request", async () => {
+    const waiting = encodeURIComponent("client_id=a&sig=b");
+    const answer = await open(await askWith(`__Host-lr_connect=${waiting}`));
+    expect(answer.headers.get("location")).toBe(
+      `${APP}/api/auth/oauth2/authorize?client_id=a&sig=b`,
+    );
+  });
+
+  it("follows the link's own intent, not what the other device has", async () => {
+    const cookie = cookieValue(await startIntentCookie(TEST_SECRET, ROUTE, Date.now()));
+    const other = cookieValue(
+      await startIntentCookie(TEST_SECRET, "0192d3a0-0000-7000-8000-000000000002", Date.now()),
+    );
+    const answer = await open(await askWith(cookie), other);
+    expect(answer.headers.get("location")).toBe(`${APP}/empezar?ruta=${ROUTE}`);
+  });
+
+  it("with nothing kept and no cookie, goes to Mis rutas", async () => {
+    const answer = await open(await askWith("other=1"));
+    expect(answer.headers.get("location")).toBe(`${APP}/mis-rutas`);
+  });
+
+  it("never puts the intent in the email's link", async () => {
+    const cookie = cookieValue(await startIntentCookie(TEST_SECRET, ROUTE, Date.now()));
+    const token = await askWith(cookie);
+    const message = api.sent.find((entry) => entry.url.includes(encodeURIComponent(token)));
+    expect(message?.url).not.toContain(ROUTE);
+  });
+});

@@ -3,6 +3,9 @@ import { authOptions } from "./options";
 // What both Workers' Better Auth share, so a session made by one is read by the other: the
 // API signs people in, and the MCP Worker's OAuth provider needs to know who is asking.
 
+const A_DAY_S = 86_400;
+const THIRTY_DAYS_S = 30 * A_DAY_S;
+
 export const AUTH_PATH = "/api/auth";
 
 /** The session cookie: __Host- pins it to the app's own origin (Secure, Path=/, no Domain). */
@@ -16,7 +19,8 @@ export function sharedAuthOptions(env: Pick<Env, "APP_ORIGIN" | "BETTER_AUTH_SEC
     trustedOrigins: [env.APP_ORIGIN],
     secret: env.BETTER_AUTH_SECRET,
     // Off, so a revoked session ends at once instead of living on in a cookie.
-    session: { cookieCache: { enabled: false } },
+    // 30 days on a browser, renewed once a day while it is used (Platform STEP 7 §4).
+    session: { expiresIn: THIRTY_DAYS_S, updateAge: A_DAY_S, cookieCache: { enabled: false } },
     advanced: {
       ...authOptions.advanced,
       // Better Auth would prefix __Secure- itself; the name below carries __Host-
