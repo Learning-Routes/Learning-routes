@@ -4,6 +4,12 @@ import { BRAND, type LocaleCode } from "../locales";
 // Conexiones. Data only. Spanish is the source; a locale missing a string fails the types.
 
 export interface ConnectText {
+  connectIntro: string;
+  serverAddress: string;
+  copyAddress: string;
+  copied: string;
+  inClaudeCode: string;
+  seeConnections: string;
   /** {client} is the client's name, shown as it is. */
   consentTitle: string;
   scopeRead: string;
@@ -30,6 +36,13 @@ export interface ConnectText {
 
 export const CONNECT_TEXT: Record<LocaleCode, ConnectText> = {
   es: {
+    connectIntro:
+      "Pega esta dirección en tu asistente y dale permiso cuando te lo pida. Todo lo que cree se queda en borrador hasta que pidas publicarlo.",
+    serverAddress: "Dirección del servidor",
+    copyAddress: "Copiar dirección",
+    copied: "Copiada",
+    inClaudeCode: "En Claude Code",
+    seeConnections: "Ver tus conexiones",
     consentTitle: `{client} quiere usar tu cuenta de ${BRAND}`,
     scopeRead: "Ver tus rutas",
     scopeWrite: "Crear y cambiar borradores",
@@ -51,6 +64,13 @@ export const CONNECT_TEXT: Record<LocaleCode, ConnectText> = {
     answered: "Listo. Puedes volver a tu asistente.",
   },
   en: {
+    connectIntro:
+      "Paste this address into your assistant and allow it when asked. Everything it creates stays a draft until you ask to publish it.",
+    serverAddress: "Server address",
+    copyAddress: "Copy address",
+    copied: "Copied",
+    inClaudeCode: "In Claude Code",
+    seeConnections: "See your connections",
     consentTitle: `{client} wants to use your ${BRAND} account`,
     scopeRead: "See your routes",
     scopeWrite: "Create and change drafts",
@@ -72,6 +92,13 @@ export const CONNECT_TEXT: Record<LocaleCode, ConnectText> = {
     answered: "Done. You can go back to your assistant.",
   },
   pt: {
+    connectIntro:
+      "Cole este endereço no seu assistente e dê permissão quando ele pedir. Tudo o que ele criar fica em rascunho até você pedir para publicar.",
+    serverAddress: "Endereço do servidor",
+    copyAddress: "Copiar endereço",
+    copied: "Copiado",
+    inClaudeCode: "No Claude Code",
+    seeConnections: "Ver suas conexões",
     consentTitle: `{client} quer usar sua conta do ${BRAND}`,
     scopeRead: "Ver suas rotas",
     scopeWrite: "Criar e alterar rascunhos",
@@ -93,6 +120,13 @@ export const CONNECT_TEXT: Record<LocaleCode, ConnectText> = {
     answered: "Pronto. Você pode voltar ao seu assistente.",
   },
   fr: {
+    connectIntro:
+      "Collez cette adresse dans votre assistant et autorisez-le quand il le demande. Tout ce qu'il crée reste en brouillon jusqu'à ce que vous demandiez de le publier.",
+    serverAddress: "Adresse du serveur",
+    copyAddress: "Copier l'adresse",
+    copied: "Copiée",
+    inClaudeCode: "Dans Claude Code",
+    seeConnections: "Voir vos connexions",
     consentTitle: `{client} veut utiliser votre compte ${BRAND}`,
     scopeRead: "Voir vos parcours",
     scopeWrite: "Créer et modifier des brouillons",
@@ -114,6 +148,13 @@ export const CONNECT_TEXT: Record<LocaleCode, ConnectText> = {
     answered: "C'est fait. Vous pouvez revenir à votre assistant.",
   },
   it: {
+    connectIntro:
+      "Incolla questo indirizzo nel tuo assistente e dagli il permesso quando lo chiede. Tutto ciò che crea resta in bozza finché non chiedi di pubblicarlo.",
+    serverAddress: "Indirizzo del server",
+    copyAddress: "Copia indirizzo",
+    copied: "Copiato",
+    inClaudeCode: "In Claude Code",
+    seeConnections: "Vedi le tue connessioni",
     consentTitle: `{client} vuole usare il tuo account ${BRAND}`,
     scopeRead: "Vedere i tuoi percorsi",
     scopeWrite: "Creare e modificare bozze",

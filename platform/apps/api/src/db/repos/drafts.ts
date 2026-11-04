@@ -9,6 +9,7 @@ import type {
 } from "@learning-routes/core/repos/ports";
 import { and, asc, eq, isNull, sql } from "drizzle-orm";
 import { blocks, lessonPrerequisites, lessons, modules, routes } from "../schema/content";
+import { detailsOf, replaceContent } from "./draft-content";
 import { attempt, type Db, fail, ok } from "./shared";
 
 // A route's draft on Postgres (Platform STEP 2 §4): read in position order, and
@@ -243,16 +244,15 @@ export const routeDrafts = (db: Db): RouteDrafts => ({
   list: (spaceId) => listRoutes(db, spaceId),
   lockDraft: (spaceId, routeId, expected) =>
     attempt(db, () => lockDraft(db, { spaceId, routeId }, expected)),
+  replaceContent: (spaceId, routeId, expected, content) =>
+    edit(db, { spaceId, routeId }, expected, () =>
+      replaceContent(db, { spaceId, routeId }, content),
+    ),
   updateDetails: (spaceId, routeId, expected, details) =>
     edit(db, { spaceId, routeId }, expected, async () => {
       await db
         .update(routes)
-        .set({
-          ...details,
-          topic: details.topic as typeof routes.$inferInsert.topic,
-          level: details.level as typeof routes.$inferInsert.level,
-          updatedAt: new Date(),
-        })
+        .set({ ...detailsOf(details), updatedAt: new Date() })
         .where(and(eq(routes.id, routeId), eq(routes.spaceId, spaceId)));
       return ok(undefined);
     }),

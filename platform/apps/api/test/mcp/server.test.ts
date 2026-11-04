@@ -144,6 +144,7 @@ describe("the protocol", () => {
       "add_module",
       "create_route",
       "get_route",
+      "import_route",
       "list_routes",
       "list_spaces",
       "publish_route",

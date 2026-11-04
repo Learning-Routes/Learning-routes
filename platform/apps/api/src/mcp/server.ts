@@ -10,6 +10,7 @@ import { pgRepos } from "../db/repos/index";
 import { pgTenancy } from "../db/tenancy";
 import { type Database, type Transaction, transactionAs } from "../db/with-db";
 import { newId } from "../ids";
+import { registerGuides } from "./guides";
 import { TOOLS, type Tool } from "./tools";
 
 // The MCP server for one request (Platform STEP 5 §3). Every tool is a core action through
@@ -62,7 +63,9 @@ function refusalText(result: Exclude<ActionResult, { ok: true }>): string {
       .join("; ")}`;
   }
   if (result.code === "conflict" || result.code === "invalid") {
-    return `This was refused: ${result.message}.`;
+    return result.message.startsWith("Nothing")
+      ? result.message
+      : `This was refused: ${result.message}.`;
   }
   return SAY[result.code] ?? "This was refused.";
 }
@@ -167,10 +170,12 @@ export function createServer(env: Env, db: Database, caller: Caller): McpServer 
         "resources/list": PRIVATE,
         "resources/templates/list": PRIVATE,
         "prompts/list": PRIVATE,
+        "resources/read": PRIVATE,
         "server/discover": PRIVATE,
       },
     },
   );
+  registerGuides(server);
   for (const tool of TOOLS) {
     server.registerTool(
       tool.name,

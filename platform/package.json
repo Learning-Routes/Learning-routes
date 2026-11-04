@@ -9,6 +9,7 @@
   },
   "scripts": {
     "dev": "turbo run dev",
+    "dev:mcp": "node scripts/local-mcp.mjs",
     "build": "turbo run build",
     "test": "turbo run test",
     "typecheck": "turbo run typecheck",

@@ -35,6 +35,7 @@ const EXPECTED: Record<string, Record<string, string[]>> = {
   "enrollment.list": EVERYONE,
   "space.list": { student: ["ui", "mcp"] },
   "route.update": EDITORS,
+  "route.import": EDITORS,
   "blocks.add": EDITORS,
   "connection.list": { student: ["ui"] },
   "connection.grant": { student: ["ui"] },

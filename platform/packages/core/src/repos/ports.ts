@@ -7,6 +7,7 @@ import type { Member } from "../memberships";
 import type { Applications, Catalog } from "./catalog-ports";
 import type { Connections, OwnSpace } from "./connection-ports";
 import type { RepoResult } from "./repo-result";
+import type { RouteDetails } from "./route-details";
 
 export type {
   ApplicationRecord,
@@ -88,14 +89,6 @@ export interface RouteSummary {
   latestPublishedVersion: number | null;
 }
 
-/** What an edit may change about a draft; a field left out stays as it is. */
-export interface RouteDetails {
-  title?: LocalizedText | undefined;
-  description?: LocalizedText | null | undefined;
-  topic?: string | undefined;
-  level?: string | undefined;
-}
-
 /** An edit's answer: the draft's new revision. */
 export type Revised = RepoResult<{ revision: number }>;
 
@@ -135,6 +128,18 @@ export interface RouteDrafts {
     routeId: string,
     expectedRevision: number,
     details: RouteDetails,
+  ): Promise<Revised>;
+  /** All of the draft's content, replaced in one edit that moves the revision once. */
+  replaceContent(
+    spaceId: string,
+    routeId: string,
+    expectedRevision: number,
+    content: {
+      details: RouteDetails;
+      modules: DraftModule[];
+      lessons: DraftLesson[];
+      blocks: DraftBlock[];
+    },
   ): Promise<Revised>;
   /** Takes a lesson out of the draft; its id stays reserved, and older versions keep it. */
   archiveLesson(
@@ -276,6 +281,7 @@ export interface ActionLog {
 }
 
 export type { ConnectionRecord, Connections, OwnSpace } from "./connection-ports";
+export type { RouteDetails } from "./route-details";
 
 export interface Repos {
   connections: Connections;

@@ -13,6 +13,7 @@ export default [
   route("admin/crear-espacio", "routes/admin-create-space.tsx"),
   route("conectar", "routes/conectar.tsx"),
   route("ensenar/conexiones", "routes/conexiones.tsx"),
+  route("ensenar/conecta", "routes/conecta.tsx"),
   route("sign-in", "routes/sign-in.tsx"),
   route("sign-in/confirm", "routes/sign-in-confirm.tsx"),
   route("explorar", "routes/catalog-redirect.tsx"),

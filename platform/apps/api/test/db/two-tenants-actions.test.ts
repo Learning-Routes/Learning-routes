@@ -108,6 +108,7 @@ describe("two tenants, through every action", () => {
           expectedRevision: 0,
           block: { type: "concept", title: { en: "T" }, body: { en: "B" } },
         },
+        "route.import": { routeId: routeB, expectedRevision: 0, document: {} },
         "route.update": { routeId: routeB, expectedRevision: 0, title: { es: "Ajena" } },
         "blocks.add": {
           routeId: routeB,

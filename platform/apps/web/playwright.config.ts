@@ -20,6 +20,7 @@ const LOCAL = {
 const VISUAL = "visual.spec.ts";
 const CHANGES_DATA = [
   "connect.spec.ts",
+  "mcp-whole-path.spec.ts",
   "admin.spec.ts",
   "teach.spec.ts",
   "my-routes.spec.ts",
@@ -33,6 +34,7 @@ const API_VARS = Object.entries({
   CLOUDFLARE_PURGE_TOKEN: "local-unused",
   TURNSTILE_SECRET: "1x0000000000000000000000000000000AA",
   TURNSTILE_HOSTNAMES: "example.com",
+  CREATOR_DOMAIN: "localhost:4174",
 })
   .map(([name, value]) => `--var ${name}:${value}`)
   .join(" ");
