@@ -43,6 +43,7 @@ export const MY_ROUTES_TEXT: Record<LocaleCode, MyRoutesText> = {
     review: "Review",
   },
   pt: {
+    // Pending native review.
     explore: "Explorar",
     hello: "Olá, {name}.",
     carryOn: "Continue de onde parou",
@@ -54,6 +55,7 @@ export const MY_ROUTES_TEXT: Record<LocaleCode, MyRoutesText> = {
     review: "Revisar",
   },
   fr: {
+    // Pending native review.
     explore: "Explorer",
     hello: "Bonjour, {name}.",
     carryOn: "Reprenez là où vous en étiez",
@@ -65,6 +67,7 @@ export const MY_ROUTES_TEXT: Record<LocaleCode, MyRoutesText> = {
     review: "Réviser",
   },
   it: {
+    // Pending native review.
     explore: "Esplora",
     hello: "Ciao, {name}.",
     carryOn: "Riprendi da dove eri rimasto",

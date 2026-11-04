@@ -60,6 +60,7 @@ export const LESSON_TEXT: Record<LocaleCode, LessonText> = {
     empty: "This topic has no content yet.",
   },
   pt: {
+    // Pending native review.
     whereAmI: "Módulo {module}, tema {topic} de {total}",
     exit: "Sair",
     question: "Pergunta",
@@ -77,6 +78,7 @@ export const LESSON_TEXT: Record<LocaleCode, LessonText> = {
     empty: "Este tema ainda não tem conteúdo.",
   },
   fr: {
+    // Pending native review.
     whereAmI: "Module {module}, sujet {topic} sur {total}",
     exit: "Quitter",
     question: "Question",
@@ -95,6 +97,7 @@ export const LESSON_TEXT: Record<LocaleCode, LessonText> = {
     empty: "Ce sujet n'a pas encore de contenu.",
   },
   it: {
+    // Pending native review.
     whereAmI: "Modulo {module}, argomento {topic} di {total}",
     exit: "Esci",
     question: "Domanda",
