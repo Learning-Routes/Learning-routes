@@ -1,0 +1,837 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head><body><title>Páginas de Learning Routes</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,200..800&family=Anybody:wdth,wght@50..150,100..900&display=swap">
+<style>
+/* Two registers from the vision: the stage (night, the line glowing) for public pages,
+   the desk (daylight, the line in ink) inside the app. Gold = you are here, green = done,
+   plum = the action. Archivo only; its width axis is the voice. */
+:root{
+  --night:#130E1B; --night-2:#1C1528; --night-3:#271E36; --night-rule:#33294A;
+  --on-night:#F3EEF7; --on-night-2:#B9AEC6; --on-night-3:#8C7F9C;
+  --day:#F6F3F8; --paper:#FFFFFF; --ink:#1D1226; --ink-2:#55485F; --rule:#E3DAE8;
+  --plum:#6A2EA0; --plum-glow:#A874E8; --plum-deep:#42185F;
+  --gold:#F2B33D; --green:#3FCB7A; --green-ink:#127A3D;
+  --brand:#34C3B1; --brand-ink:#08221F;
+  --f:"Archivo",ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--night);color:var(--on-night);font-family:var(--f);font-size:17px;line-height:1.55;-webkit-font-smoothing:antialiased}
+a{color:inherit}
+button{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--gold);outline-offset:3px;border-radius:6px}
+.view{display:none;min-height:100vh}
+.view.on{display:block}
+.wrap{max-width:1240px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+@media(min-width:720px){.wrap{padding-left:max(40px,env(safe-area-inset-left,0px));padding-right:max(40px,env(safe-area-inset-right,0px))}}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* ---------- shared header ---------- */
+.hd{display:flex;align-items:center;justify-content:space-between;gap:16px;padding-block:22px}
+.logo{display:flex;align-items:center;gap:10px;text-decoration:none;font-weight:700;font-size:16px;letter-spacing:-.01em}
+.logo svg{flex:none}
+.hd nav{display:flex;gap:6px;flex-wrap:wrap}
+.hd nav a{text-decoration:none;font-size:15px;font-weight:600;padding:10px 12px;border-radius:10px;color:var(--on-night-2)}
+.hd nav a:hover{color:var(--on-night)}
+.hd nav a[aria-current]{color:var(--on-night)}
+.desk .hd nav a{color:var(--ink-2)}
+.desk .hd nav a[aria-current],.desk .hd nav a:hover{color:var(--ink)}
+
+/* ---------- buttons ---------- */
+.btn{display:inline-flex;align-items:center;justify-content:center;min-height:52px;padding:0 26px;border-radius:12px;border:0;background:var(--plum);color:#fff;font-weight:700;font-size:17px;text-decoration:none;cursor:pointer;box-shadow:inset 0 1px 0 rgba(255,255,255,.22),0 3px 0 0 var(--plum-deep),0 10px 24px -10px rgba(168,116,232,.7);transition:transform .12s ease}
+.btn:active{transform:translateY(2px);box-shadow:inset 0 1px 0 rgba(255,255,255,.22),0 1px 0 0 var(--plum-deep)}
+.btn.ghost{background:transparent;color:inherit;box-shadow:inset 0 0 0 1.5px currentColor}
+.link{color:var(--plum-glow);font-weight:600;text-underline-offset:4px}
+.desk .link{color:var(--plum)}
+
+/* ---------- the example switcher (prototype chrome, kept quiet) ---------- */
+.switch{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(14px + env(safe-area-inset-bottom,0px));z-index:20;display:flex;gap:2px;padding:4px;border-radius:14px;background:rgba(19,14,27,.88);backdrop-filter:blur(10px);box-shadow:0 0 0 1px var(--night-rule),0 14px 30px -12px rgba(0,0,0,.6);max-width:calc(100vw - 24px);overflow-x:auto}
+.switch a{flex:none;text-decoration:none;font-size:14px;font-weight:600;color:var(--on-night-2);padding:9px 12px;border-radius:10px;white-space:nowrap}
+.switch a[aria-current]{background:var(--night-3);color:var(--on-night)}
+
+/* ================= 1. CATÁLOGO (stage) ================= */
+.cat-hero{padding-block:56px 40px;display:grid;grid-template-columns:minmax(0,1fr);gap:28px}
+.cat-hero h1{margin:0;font-size:clamp(48px,9vw,128px);line-height:.9;font-weight:850;font-stretch:118%;letter-spacing:-.045em;text-wrap:balance;max-width:12ch}
+.search{display:flex;gap:10px;flex-wrap:wrap;max-width:760px}
+.search label{flex:1 1 240px;min-width:0;display:flex;align-items:center;gap:12px;min-height:64px;padding:0 20px;border-radius:16px;background:var(--night-2);box-shadow:inset 0 0 0 1.5px var(--night-rule)}
+.search label:focus-within{box-shadow:inset 0 0 0 2px var(--plum-glow)}
+.search input{flex:1;min-width:0;border:0;background:transparent;color:var(--on-night);font:inherit;font-size:20px;outline:none}
+.search input::placeholder{color:var(--on-night-3)}
+.topics{display:flex;gap:4px;flex-wrap:wrap;margin-top:4px}
+.topics button{border:0;background:transparent;padding:10px 14px;border-radius:999px;font-size:16px;font-weight:600;color:var(--on-night-2);cursor:pointer;min-height:44px}
+.topics button[aria-pressed="true"]{background:var(--on-night);color:var(--night)}
+.count{color:var(--on-night-3);font-size:15px;margin:0}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,340px),1fr));gap:20px;padding-block:8px 140px}
+.card{position:relative;display:flex;flex-direction:column;border-radius:20px;background:var(--night-2);text-decoration:none;overflow:hidden;view-transition-class:card;outline:0;box-shadow:inset 0 0 0 1px var(--night-rule)}
+.card:focus-visible{box-shadow:inset 0 0 0 2px var(--gold)}
+.card .line{display:block;width:100%;height:auto;aspect-ratio:34/15}
+.card .body{padding:4px 22px 22px;display:grid;gap:6px}
+.card h3{margin:0;font-size:24px;line-height:1.1;font-weight:780;font-stretch:104%;letter-spacing:-.02em;text-wrap:balance}
+.card .by{margin:0;color:var(--on-night-2);font-size:15px}
+.card .facts{margin:6px 0 0;color:var(--on-night-3);font-size:15px}
+.rt-track{fill:none;stroke:var(--night-rule);stroke-width:7;stroke-linecap:round}
+.rt-draw{fill:none;stroke:var(--plum-glow);stroke-width:3;stroke-linecap:round}
+.rt-st{fill:var(--night-2);stroke:var(--on-night-3);stroke-width:1.8}
+.rt-mod{fill:var(--night-2);stroke:var(--on-night);stroke-width:2.4}
+.rt-exam{fill:var(--on-night)}
+.rt-spur{fill:none;stroke:var(--green);stroke-width:1.8;stroke-dasharray:1 5;stroke-linecap:round}
+.rt-spur-dot{fill:none;stroke:var(--green);stroke-width:1.8}
+.rt-runner{fill:var(--gold)}
+.card .rt-draw{stroke-dasharray:var(--len);stroke-dashoffset:var(--len);transition:stroke-dashoffset 1.1s cubic-bezier(.65,0,.35,1)}
+.card:hover .rt-draw,.card:focus-visible .rt-draw{stroke-dashoffset:0}
+.empty{grid-column:1/-1;padding:60px 0;color:var(--on-night-2)}
+.empty b{display:block;color:var(--on-night);font-size:28px;font-weight:780;margin-bottom:6px}
+::view-transition-group(*.card){animation-duration:.42s;animation-timing-function:cubic-bezier(.3,.7,.2,1)}
+
+/* ================= 2. PÁGINA DEL CREADOR (stage, creator's colour) ================= */
+#creador{--plum:var(--brand);--plum-glow:var(--brand);--plum-deep:#1B7B6F}
+#creador .btn{color:var(--brand-ink)}
+.cr-hero{position:relative;display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);gap:24px;align-items:center;padding-block:24px 64px;min-height:640px}
+.cr-hero .who{position:relative;z-index:1;display:grid;gap:22px}
+.cr-hero h1{margin:0;font-size:clamp(56px,10.5vw,156px);line-height:.84;font-weight:880;font-stretch:112%;letter-spacing:-.05em}
+.cr-hero .tag{margin:0;font-size:clamp(20px,2.2vw,26px);line-height:1.35;max-width:26ch;color:var(--on-night);font-weight:500}
+.cr-hero .bio{margin:0;color:var(--on-night-2);max-width:52ch}
+.braid{width:100%;height:auto;max-height:680px}
+.braid path{fill:none;stroke-linecap:round}
+.cr-routes{padding-block:24px 140px}
+.cr-routes h2,.rp h2,.mr h2{margin:0 0 22px;font-size:clamp(30px,4vw,46px);line-height:1;font-weight:800;font-stretch:108%;letter-spacing:-.035em}
+.row{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr) auto;gap:28px;align-items:center;padding-block:26px;border-top:1px solid var(--night-rule);text-decoration:none}
+.row:last-child{border-bottom:1px solid var(--night-rule)}
+.row h3{margin:0;font-size:clamp(24px,3vw,36px);line-height:1.05;font-weight:780;letter-spacing:-.025em;font-stretch:104%}
+.row p{margin:6px 0 0;color:var(--on-night-2);font-size:15px}
+.row .line{width:100%;height:auto;aspect-ratio:34/9}
+.row .go{font-weight:700;color:var(--brand)}
+.foot{padding-block:28px 100px;color:var(--on-night-3);font-size:14px;border-top:1px solid var(--night-rule)}
+
+/* ================= 3. PÁGINA DE LA RUTA (stage) ================= */
+.rp-hero{padding-block:40px 56px;display:grid;gap:22px;max-width:980px}
+.rp-hero .by{display:flex;align-items:center;gap:12px;color:var(--on-night-2);font-size:16px;text-decoration:none;width:max-content}
+.av{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;font-weight:800;background:var(--brand);color:var(--brand-ink)}
+.rp-hero h1{margin:0;font-size:clamp(48px,8.4vw,120px);line-height:.88;font-weight:860;font-stretch:114%;letter-spacing:-.045em;text-wrap:balance}
+.rp-hero .lede{margin:0;font-size:clamp(19px,2vw,23px);line-height:1.45;max-width:46ch;color:var(--on-night)}
+.rp-hero .facts{margin:0;color:var(--on-night-2);font-size:17px}
+.rp{display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:56px;align-items:start;padding-bottom:140px}
+.journey{position:relative}
+.journey svg{position:absolute;left:0;top:0;width:96px;height:100%;overflow:visible}
+.journey .track{fill:none;stroke:var(--night-rule);stroke-width:8;stroke-linecap:round}
+.journey .lit{fill:none;stroke:var(--plum-glow);stroke-width:3.5;stroke-linecap:round;filter:drop-shadow(0 0 6px rgba(168,116,232,.65))}
+.stops{list-style:none;margin:0;padding:0 0 0 112px;display:grid}
+.stop{position:relative;min-height:74px;display:flex;flex-direction:column;justify-content:center;padding-block:10px;color:var(--on-night-3);transition:color .3s}
+.stop.mod{min-height:120px;padding-top:34px}
+.stop.mod .k{font-size:15px;font-weight:600;color:inherit}
+.stop.mod b{font-size:clamp(24px,2.6vw,32px);line-height:1.1;font-weight:800;letter-spacing:-.025em;color:inherit}
+.stop.mod .free{display:inline-block;margin-left:10px;font-size:14px;font-weight:700;color:var(--green);vertical-align:middle;letter-spacing:0}
+.stop span.t{font-size:18px;font-weight:600}
+.stop.exam b{font-size:24px;font-weight:800}
+.stop.lit{color:var(--on-night)}
+.stop.mid span.t,.stop.mid b{color:var(--gold)}
+.side{position:sticky;top:calc(24px + env(safe-area-inset-top,0px));border-radius:22px;padding:28px;background:var(--night-2);box-shadow:inset 0 0 0 1px var(--night-rule);display:grid;gap:16px}
+.side h3{margin:0;font-size:30px;line-height:1.05;font-weight:820;letter-spacing:-.03em;font-stretch:108%}
+.side p{margin:0;color:var(--on-night-2)}
+.side .price{color:var(--on-night)}
+.side .btn{width:100%}
+.side small{color:var(--on-night-3);font-size:14px}
+.side .mini{width:100%;height:auto}
+
+/* ================= desk register (daylight) ================= */
+.desk{background:var(--day);color:var(--ink);color-scheme:light}
+.desk .logo{color:var(--ink)}
+
+/* ================= 4. MIS RUTAS (desk) ================= */
+.mr-top{display:flex;justify-content:space-between;align-items:flex-end;gap:20px;flex-wrap:wrap;padding-block:36px 30px}
+.mr-top h1{margin:0;font-size:clamp(44px,6.6vw,84px);line-height:.92;font-weight:850;font-stretch:112%;letter-spacing:-.045em}
+.mode{display:inline-flex;padding:4px;border-radius:12px;background:#EDE6F1}
+.mode button{border:0;background:transparent;padding:10px 16px;border-radius:9px;font-weight:650;font-size:15px;color:var(--ink-2);cursor:pointer;min-height:44px}
+.mode button[aria-pressed="true"]{background:var(--paper);color:var(--ink);box-shadow:0 1px 2px rgba(29,18,38,.12)}
+.next{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:20px;align-items:center;padding:30px;border-radius:24px;background:var(--ink);color:var(--on-night);margin-bottom:34px}
+.next .line{grid-column:1/-1;width:100%;height:auto;aspect-ratio:120/14}
+.next p{margin:0;color:var(--on-night-2)}
+.next h2{margin:4px 0 0;font-size:clamp(28px,3.4vw,40px);line-height:1.05;font-weight:820;letter-spacing:-.03em;font-stretch:108%}
+.mr-list{display:grid;gap:14px;padding-bottom:140px}
+.mr-item{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px 24px;align-items:center;padding:22px 24px;border-radius:18px;background:var(--paper);box-shadow:inset 0 0 0 1px var(--rule)}
+.mr-item h3{margin:0;font-size:22px;line-height:1.15;font-weight:760;letter-spacing:-.02em}
+.mr-item p{margin:0;color:var(--ink-2);font-size:15px}
+.mr-item .line{grid-column:1/-1;width:100%;height:auto;aspect-ratio:120/10}
+.mr-item .btn{min-height:46px;font-size:16px;padding:0 20px}
+.done-word{font-weight:700;color:var(--green-ink)}
+.desk .rt-track{stroke:#E7DEEC}
+.desk .rt-st{fill:var(--paper);stroke:#B9ABC4}
+.desk .rt-mod{fill:var(--paper);stroke:var(--ink)}
+.desk .rt-exam{fill:var(--ink)}
+.desk .rt-done{fill:none;stroke:var(--green);stroke-width:4;stroke-linecap:round}
+.rt-st.d,.desk .rt-st.d,.next .rt-st.d{fill:var(--green);stroke:var(--green)}
+.rt-here{fill:var(--paper);stroke:var(--gold);stroke-width:4}
+.next .rt-track{stroke:#3A2E4D}
+.next .rt-st{fill:var(--ink);stroke:#7D6F8C}
+.next .rt-mod{fill:var(--ink);stroke:var(--on-night)}
+.next .rt-exam{fill:var(--on-night)}
+.next .rt-here{fill:var(--ink)}
+.pulse{fill:none;stroke:var(--gold);stroke-width:2;opacity:0}
+
+/* ================= 5. UN TEMA (desk) ================= */
+.ls-bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:rgba(246,243,248,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--rule)}
+.ls-bar .wrap{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:20px;align-items:center;padding-block:12px}
+.ls-bar .where{font-size:15px;color:var(--ink-2);white-space:nowrap}
+.ls-bar .where b{color:var(--ink)}
+.ls-bar .line{width:100%;height:36px}
+.ls-bar .x{font-size:15px;font-weight:600;text-decoration:none;color:var(--ink-2);padding:10px}
+.ls{max-width:720px;margin:0 auto;padding:56px max(16px,env(safe-area-inset-right,0px)) 160px max(16px,env(safe-area-inset-left,0px))}
+.ls .kicker{margin:0;color:var(--ink-2);font-size:16px}
+.ls h1{margin:6px 0 26px;font-size:clamp(44px,7vw,76px);line-height:.95;font-weight:860;font-stretch:110%;letter-spacing:-.045em}
+.ls p{margin:0 0 18px;font-size:19px;line-height:1.65;color:#2C2137}
+.pair{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:28px 0}
+.pair>div{padding:22px;border-radius:18px;background:var(--paper);box-shadow:inset 0 0 0 1px var(--rule)}
+.pair .verb{font-size:34px;font-weight:850;letter-spacing:-.03em;font-stretch:110%;line-height:1}
+.pair .use{margin:8px 0 12px;font-size:15px;color:var(--ink-2);line-height:1.45}
+.pair .ex{margin:0;font-size:19px;font-weight:600;line-height:1.35}
+.pair .ex i{display:block;font-style:normal;font-weight:400;font-size:15px;color:var(--ink-2);margin-top:2px}
+.q{margin-top:40px;padding:28px;border-radius:24px;background:var(--paper);box-shadow:inset 0 0 0 1.5px var(--rule)}
+.q h2{margin:0 0 6px;font-size:16px;font-weight:600;color:var(--ink-2)}
+.q .ask{margin:0 0 18px;font-size:24px;line-height:1.3;font-weight:760;letter-spacing:-.015em}
+.opts{display:grid;gap:10px}
+.opt{display:flex;align-items:center;gap:14px;width:100%;text-align:left;min-height:60px;padding:12px 18px;border-radius:14px;border:0;background:var(--day);box-shadow:inset 0 0 0 1.5px var(--rule);font-size:19px;font-weight:600;cursor:pointer;color:var(--ink)}
+.opt:hover{box-shadow:inset 0 0 0 1.5px #B9ABC4}
+.opt .dot{flex:none;width:22px;height:22px;border-radius:50%;box-shadow:inset 0 0 0 2px #B9ABC4}
+.opt[aria-checked="true"] .dot{box-shadow:inset 0 0 0 7px var(--plum)}
+.opt.right{background:#EAF8EF;box-shadow:inset 0 0 0 2px var(--green)}
+.opt.right .dot{box-shadow:none;background:var(--green)}
+.opt.wrong{background:#FBF0F1;box-shadow:inset 0 0 0 2px #C6424F}
+.q .actions{display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-top:20px}
+.feedback{margin:0;font-size:17px;font-weight:600}
+.feedback.ok{color:var(--green-ink)}
+.feedback.no{color:#A8323E}
+.doneband{display:none;margin-top:22px;padding:22px 24px;border-radius:18px;background:var(--ink);color:var(--on-night);align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.doneband.on{display:flex}
+.doneband b{font-size:24px;font-weight:820;letter-spacing:-.02em}
+.doneband p{margin:2px 0 0;color:var(--on-night-2);font-size:15px}
+
+/* ---------- phone ---------- */
+@media(max-width:860px){
+  .cr-hero{grid-template-columns:1fr;min-height:0}
+  .cr-hero .braid{order:-1;max-height:340px}
+  .row{grid-template-columns:1fr;gap:12px}
+  .rp{grid-template-columns:1fr;gap:28px}
+  .side{position:relative;top:0;order:-1}
+  .ls-bar .wrap{grid-template-columns:minmax(0,1fr) auto}
+  .ls-bar .line{grid-column:1/-1;order:3}
+  .pair{grid-template-columns:1fr}
+  .next{grid-template-columns:1fr}
+  .hd nav a.hide-s{display:none}
+}
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{transition-duration:0s!important;animation-duration:0s!important;scroll-behavior:auto!important}
+}
+
+/* ---------- v2: stations, motion ---------- */
+.rt-track{stroke-width:var(--tw,6)}
+.rt-st{fill:var(--on-night-3);stroke:none}
+.rt-st.d{fill:var(--green)}
+.rt-ring{fill:var(--night-2);stroke:var(--on-night);stroke-width:2.2}
+.rt-core{fill:var(--on-night)}
+.rt-exam{fill:var(--night-2);stroke:var(--on-night);stroke-width:2.2}
+.rt-exam.reached{fill:var(--gold);stroke:var(--gold);transition:fill .25s,stroke .25s}
+.rt-spur{stroke-dasharray:.1 5.5;stroke-width:2.2}
+.rt-spur-dot{fill:var(--night-2);stroke:var(--green);stroke-width:1.8}
+.rt-halo{fill:var(--gold);opacity:.18}
+.rt-here{fill:var(--night-2);stroke:var(--gold);stroke-width:3.4}
+.desk .rt-st{fill:#C9BED2;stroke:none}
+.desk .rt-st.d,.next .rt-st.d{fill:var(--green)}
+.desk .rt-ring{fill:var(--paper);stroke:var(--ink)}
+.desk .rt-core{fill:var(--ink)}
+.desk .rt-exam{fill:var(--paper);stroke:var(--ink)}
+.desk .rt-here{fill:var(--paper)}
+.desk .rt-spur-dot{fill:var(--paper)}
+.next .rt-st{fill:#6F6280;stroke:none}
+.next .rt-ring,.next .rt-exam,.next .rt-here,.next .rt-spur-dot{fill:var(--ink)}
+.next .rt-ring,.next .rt-exam{stroke:var(--on-night)}
+.next .rt-core{fill:var(--on-night)}
+.rt-done{fill:none;stroke:var(--green);stroke-linecap:round}
+.rt-runner{fill:var(--gold);filter:drop-shadow(0 0 6px rgba(242,179,61,.9))}
+
+/* the line traces itself, and each station arrives as the line reaches it */
+.anim .trace{stroke-dasharray:var(--len);animation:trace var(--dur) cubic-bezier(.55,0,.25,1) var(--delay) both}
+.anim .pop{transform-box:fill-box;transform-origin:center;animation:pop .42s cubic-bezier(.3,1.7,.5,1) both;animation-delay:calc(var(--delay) + var(--f) * var(--dur))}
+.anim .late{animation-delay:calc(var(--delay) + var(--dur) + .1s)}
+@keyframes trace{from{stroke-dashoffset:var(--len)}to{stroke-dashoffset:0}}
+@keyframes pop{from{transform:scale(0);opacity:0}}
+
+/* headline words rise out of their own baseline, once, when the page opens */
+.w{display:inline-block;overflow:visible;vertical-align:top;padding-bottom:.14em;margin-bottom:-.14em}
+.w>span{display:inline-block}
+
+/* the active topic slides between choices */
+.topics{position:relative}
+.topics .pill{position:absolute;top:0;left:0;height:44px;border-radius:999px;background:var(--on-night);transition:transform .45s cubic-bezier(.3,1.25,.4,1),width .45s cubic-bezier(.3,1.25,.4,1);z-index:0}
+.topics button{position:relative;z-index:1;transition:color .3s}
+.topics button[aria-pressed="true"]{background:transparent;color:var(--night)}
+
+/* a faint light follows the pointer across the catalog's hero */
+.cat-hero{position:relative;isolation:isolate}
+.cat-hero::before{content:"";position:absolute;inset:-120px 0;z-index:-1;pointer-events:none;background:radial-gradient(520px circle at var(--mx,30%) var(--my,30%),rgba(168,116,232,.16),transparent 65%);transition:background .2s}
+.card{transition:box-shadow .3s}
+.card:hover{box-shadow:inset 0 0 0 1px #4B3E63,0 24px 50px -30px rgba(168,116,232,.55)}
+
+/* switching pages */
+::view-transition-old(root){animation:vt-out .22s ease-in both}
+::view-transition-new(root){animation:vt-in .5s cubic-bezier(.2,.8,.2,1) both}
+@keyframes vt-out{to{opacity:0;transform:scale(.985)}}
+@keyframes vt-in{from{opacity:0;transform:translateY(18px)}}
+html.vt-filter::view-transition-old(root),html.vt-filter::view-transition-new(root){animation:none}
+
+/* the lesson's answers */
+@keyframes nope{20%{transform:translateX(-7px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(2px)}}
+.opt.wrong{animation:nope .42s ease}
+.opt .tick{display:none}
+.opt.right .tick{display:block;margin-left:auto}
+.opt.right .tick path{stroke-dasharray:24;stroke-dashoffset:24;animation:tickdraw .4s .1s ease-out forwards}
+@keyframes tickdraw{to{stroke-dashoffset:0}}
+.doneband.on{animation:bandin .55s cubic-bezier(.2,.9,.2,1) both}
+@keyframes bandin{from{opacity:0;transform:translateY(14px) scale(.98)}}
+
+@media(prefers-reduced-motion:reduce){
+  .anim .trace,.anim .pop,.opt.wrong,.doneband.on{animation:none}
+  .topics .pill{transition:none}
+  ::view-transition-old(root),::view-transition-new(root){animation:none}
+}
+
+/* ---------- titles with depth: the face catches the light, the extrusion falls away from the pointer ---------- */
+:root{--display:var(--f);--face:var(--on-night);--d1:#B98EEA;--d2:#3B1A5E;--glowc:rgba(168,116,232,.28)}
+#creador{--d1:#46D3C1;--d2:#0A3B36;--glowc:rgba(52,195,177,.25)}
+.desk{--face:var(--ink);--d1:#9A6AD6;--d2:#E2D3F2;--glowc:rgba(106,46,160,.12)}
+.next{--face:var(--on-night);--d1:#B98EEA;--d2:#3B1A5E}
+.t3d{font-family:var(--display);color:var(--face);text-shadow:var(--ts,none)}
+.rising .w{overflow:hidden}
+.t3d .w{padding:0 .14em .24em 0;margin:0 -.14em -.24em 0}
+body[data-font="bricolage"]{--display:"Bricolage Grotesque",var(--f)}
+body[data-font="anybody"]{--display:"Anybody",var(--f)}
+body[data-font="bricolage"] .t3d{font-stretch:100%;letter-spacing:-.04em;font-variation-settings:"opsz" 96}
+body[data-font="anybody"] .t3d{font-stretch:140%;letter-spacing:-.03em}
+body[data-font="anybody"] h1.t3d{font-size:clamp(40px,7.4vw,108px)}
+.fontpick{display:flex;align-items:center;gap:2px;margin-left:8px;padding-left:10px;border-left:1px solid var(--night-rule)}
+.fontpick span{font-size:13px;color:var(--on-night-3);padding-right:4px;white-space:nowrap}
+.fontpick button{border:0;background:transparent;font-size:14px;font-weight:600;color:var(--on-night-2);padding:9px 10px;border-radius:10px;cursor:pointer;white-space:nowrap}
+.fontpick button[aria-pressed="true"]{background:var(--night-3);color:var(--on-night)}
+</style>
+
+<!-- ======================= 1. CATÁLOGO ======================= -->
+<main id="catalogo" class="view" aria-labelledby="cat-title">
+  <div class="wrap">
+    <header class="hd">
+      <a class="logo" href="#catalogo"><svg width="30" height="30" viewBox="0 0 28 28" aria-hidden="true"><rect width="28" height="28" rx="7" fill="#6A2EA0"/><path d="M7 20 C 12 20, 12 9, 21 8" stroke="#fff" stroke-width="2.4" fill="none" stroke-linecap="round"/><circle cx="21" cy="8" r="2.6" fill="#F2B33D"/></svg>Learning Routes</a>
+      <nav aria-label="Principal"><a href="#catalogo" aria-current="page">Explorar rutas</a><a href="#creador" class="hide-s">Enseñar</a><a href="#mis-rutas">Entrar</a></nav>
+    </header>
+    <section class="cat-hero">
+      <h1 id="cat-title">¿Qué quieres aprender?</h1>
+      <form class="search" role="search" id="cat-form">
+        <label for="cat-q"><svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M15.5 15.5 21 21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span class="sr">Buscar una ruta</span><input id="cat-q" name="q" type="search" placeholder="Portugués, guitarra, cálculo…" autocomplete="off"></label>
+        <button class="btn" type="submit">Buscar</button>
+      </form>
+      <div class="topics" role="group" aria-label="Temas" id="cat-topics"></div>
+      <p class="count" id="cat-count" aria-live="polite"></p>
+    </section>
+    <section class="grid" id="cat-grid" aria-label="Rutas"></section>
+  </div>
+</main>
+
+<!-- ======================= 2. PÁGINA DEL CREADOR ======================= -->
+<main id="creador" class="view" aria-labelledby="cr-title">
+  <div class="wrap">
+    <header class="hd">
+      <a class="logo" href="#creador"><span class="av" aria-hidden="true">M</span>Mariana Ortega</a>
+      <nav aria-label="Principal"><a href="#creador" aria-current="page">Rutas</a><a href="#mis-rutas">Entrar</a></nav>
+    </header>
+    <section class="cr-hero">
+      <div class="who">
+        <h1 id="cr-title">Mariana<br>Ortega</h1>
+        <p class="tag">Portugués para quienes lo necesitan en el trabajo, desde la primera llamada.</p>
+        <p class="bio">Doce años enseñando portugués a equipos en São Paulo y Lisboa. Sus rutas van al grano: lo que vas a decir mañana en una reunión, primero.</p>
+        <div><a class="btn" href="#ruta">Ver la ruta para empezar</a></div>
+      </div>
+      <svg class="braid" id="braid" viewBox="0 0 560 680" role="img" aria-label="Las líneas de las tres rutas de Mariana, entrelazadas"></svg>
+    </section>
+    <section class="cr-routes" aria-labelledby="cr-routes-t">
+      <h2 id="cr-routes-t">Sus rutas</h2>
+      <div id="cr-list"></div>
+    </section>
+    <footer class="foot">Hecho con Learning Routes</footer>
+  </div>
+</main>
+
+<!-- ======================= 3. PÁGINA DE LA RUTA ======================= -->
+<main id="ruta" class="view" aria-labelledby="rp-title">
+  <div class="wrap">
+    <header class="hd">
+      <a class="logo" href="#creador"><span class="av" aria-hidden="true">M</span>Mariana Ortega</a>
+      <nav aria-label="Principal"><a href="#creador">Rutas</a><a href="#mis-rutas">Entrar</a></nav>
+    </header>
+    <section class="rp-hero">
+      <a class="by" href="#creador"><span class="av" aria-hidden="true">M</span>Una ruta de Mariana Ortega</a>
+      <h1 id="rp-title">Portugués para el trabajo</h1>
+      <p class="lede">De saludar en tu primera llamada a cerrar un acuerdo en una reunión. Temas cortos, con práctica, y un examen al cerrar cada módulo.</p>
+      <p class="facts">3 módulos y 14 temas. Para empezar desde cero. En español.</p>
+    </section>
+    <div class="rp">
+      <section class="journey" aria-labelledby="rp-j">
+        <h2 id="rp-j">El recorrido</h2>
+        <div style="position:relative">
+          <svg id="rp-svg" aria-hidden="true"></svg>
+          <ol class="stops" id="rp-stops"></ol>
+        </div>
+      </section>
+      <aside class="side" aria-labelledby="rp-side-t">
+        <svg class="mini" id="rp-mini" viewBox="0 0 340 90" aria-hidden="true"></svg>
+        <h3 id="rp-side-t">Empieza gratis, hoy.</h3>
+        <p>El módulo 1 completo es gratis. Si te sirve, pagas una vez por la ruta: <b class="price">$24</b>.</p>
+        <a class="btn" href="#mis-rutas">Empezar gratis</a>
+        <small>Sin tarjeta para empezar. Entras con tu correo.</small>
+      </aside>
+    </div>
+  </div>
+</main>
+
+<!-- ======================= 4. MIS RUTAS ======================= -->
+<main id="mis-rutas" class="view desk" aria-labelledby="mr-title">
+  <div class="wrap">
+    <header class="hd">
+      <a class="logo" href="#catalogo"><svg width="30" height="30" viewBox="0 0 28 28" aria-hidden="true"><rect width="28" height="28" rx="7" fill="#6A2EA0"/><path d="M7 20 C 12 20, 12 9, 21 8" stroke="#fff" stroke-width="2.4" fill="none" stroke-linecap="round"/><circle cx="21" cy="8" r="2.6" fill="#F2B33D"/></svg>Learning Routes</a>
+      <nav aria-label="Principal"><a href="#mis-rutas" aria-current="page">Mis rutas</a><a href="#catalogo" class="hide-s">Explorar</a><a href="#mis-rutas">Ana</a></nav>
+    </header>
+    <div class="mr-top">
+      <h1 id="mr-title">Hola, Ana.</h1>
+      <div class="mode" role="group" aria-label="Modo"><button type="button" aria-pressed="true">Aprender</button><button type="button" aria-pressed="false">Enseñar</button></div>
+    </div>
+    <section class="next" aria-labelledby="mr-next-t">
+      <div>
+        <p>Sigues donde lo dejaste</p>
+        <h2 id="mr-next-t">Tema 3: Ser y estar</h2>
+        <p>Portugués para el trabajo, con Mariana Ortega. Vas en el tema 3 de 14.</p>
+      </div>
+      <a class="btn" href="#tema">Seguir</a>
+      <svg class="line" id="mr-next-line" viewBox="0 0 1200 140" aria-hidden="true"></svg>
+    </section>
+    <section class="mr" aria-labelledby="mr-all">
+      <h2 id="mr-all">Tus rutas</h2>
+      <div class="mr-list" id="mr-list"></div>
+    </section>
+  </div>
+</main>
+
+<!-- ======================= 5. UN TEMA ======================= -->
+<main id="tema" class="view desk" aria-labelledby="ls-title">
+  <div class="ls-bar">
+    <div class="wrap">
+      <p class="where" style="margin:0"><b>Módulo 1</b>, tema 3 de 5</p>
+      <svg class="line" id="ls-line" viewBox="0 0 800 36" aria-hidden="true"></svg>
+      <a class="x" href="#mis-rutas">Salir</a>
+    </div>
+  </div>
+  <article class="ls">
+    <p class="kicker">Portugués para el trabajo</p>
+    <h1 id="ls-title">Ser y estar</h1>
+    <p>En portugués, como en español, hay dos verbos para «ser» y «estar». La regla que más te va a servir en el trabajo: <b>ser</b> para lo que eres, y <b>estar</b> para dónde y cómo estás ahora.</p>
+    <div class="pair">
+      <div><div class="verb">ser</div><p class="use">Lo que eres: profesión, origen, cómo es algo.</p><p class="ex">Eu sou engenheira.<i>Soy ingeniera.</i></p></div>
+      <div><div class="verb">estar</div><p class="use">Dónde estás y cómo estás ahora.</p><p class="ex">Eu estou em São Paulo.<i>Estoy en São Paulo.</i></p></div>
+    </div>
+    <p>Una pista: si mañana puede cambiar, casi siempre es <b>estar</b>. Por eso «hoy trabajo desde casa» va con estar.</p>
+    <section class="q" aria-labelledby="q-t">
+      <h2 id="q-t">Pregunta</h2>
+      <p class="ask" id="q-ask">Hoy trabajas desde casa. ¿Cómo lo dices?</p>
+      <div class="opts" role="radiogroup" aria-labelledby="q-ask" id="q-opts">
+        <button type="button" class="opt" role="radio" aria-checked="false" data-ok="0"><span class="dot"></span>Hoje eu sou em casa.</button>
+        <button type="button" class="opt" role="radio" aria-checked="false" data-ok="1"><span class="dot"></span>Hoje eu estou em casa.</button>
+        <button type="button" class="opt" role="radio" aria-checked="false" data-ok="0"><span class="dot"></span>Hoje eu é em casa.</button>
+      </div>
+      <div class="actions"><button class="btn" type="button" id="q-check">Comprobar</button><p class="feedback" id="q-fb" aria-live="polite"></p></div>
+      <div class="doneband" id="q-done"><div><b>Tema hecho.</b><p>Avanzaste al tema 4: Números y horas.</p></div><a class="btn" href="#mis-rutas" style="background:var(--gold);color:var(--ink);box-shadow:0 3px 0 0 #A8761B">Siguiente tema</a></div>
+    </section>
+  </article>
+</main>
+
+<nav class="switch" aria-label="Ejemplos de página" id="switch">
+  <a href="#catalogo">Catálogo</a><a href="#creador">Creador</a><a href="#ruta">Ruta</a><a href="#mis-rutas">Mis rutas</a><a href="#tema">Un tema</a>
+  <div class="fontpick" role="group" aria-label="Letra de los títulos"><span>Letra</span><button type="button" data-font="archivo">Archivo</button><button type="button" data-font="bricolage">Bricolage</button><button type="button" data-font="anybody">Anybody</button></div>
+</nav>
+
+<script>
+(() => {
+const NS = "http://www.w3.org/2000/svg";
+const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const $ = id => document.getElementById(id);
+const el = (tag, attrs = {}, parent) => { const n = document.createElementNS(NS, tag); for (const k in attrs) n.setAttribute(k, attrs[k]); if (parent) parent.appendChild(n); return n; };
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+
+// Each route has a real shape: its modules and topics decide the stations, a seed decides the meander.
+const ROUTES = [
+  { id:"pt",   title:"Portugués para el trabajo", by:"Mariana Ortega", topic:"Idiomas", level:"Para empezar desde cero", mods:[5,4,5], extra:[2], seed:3 },
+  { id:"gt",   title:"Guitarra desde cero", by:"Andrés Mora", topic:"Música", level:"Para empezar desde cero", mods:[4,6,4,3], extra:[5,11], seed:7 },
+  { id:"calc", title:"Cálculo sin miedo", by:"Profe Tomás", topic:"Matemáticas", level:"Si ya viste álgebra", mods:[6,5,6,5,4], extra:[3,9,17], seed:11 },
+  { id:"en",   title:"Inglés para reuniones", by:"Lucía Vega", topic:"Idiomas", level:"Si ya entiendes lo básico", mods:[4,4,5], extra:[6], seed:2 },
+  { id:"web",  title:"Tu primera página web", by:"Diego Ramos", topic:"Programación", level:"Para empezar desde cero", mods:[5,5,6,4], extra:[8,14], seed:5 },
+  { id:"pt2",  title:"Portugués para viajar", by:"Mariana Ortega", topic:"Idiomas", level:"Para empezar desde cero", mods:[4,5], extra:[], seed:9 },
+  { id:"jazz", title:"Armonía para guitarristas", by:"Andrés Mora", topic:"Música", level:"Si ya tocas acordes", mods:[5,5,5], extra:[7], seed:13 },
+  { id:"wa",   title:"Vender por WhatsApp", by:"Camila Rojas", topic:"Negocios", level:"Para empezar desde cero", mods:[3,4,3], extra:[], seed:4 },
+  { id:"acu",  title:"Acuarela, paso a paso", by:"Sofía Paredes", topic:"Arte", level:"Para empezar desde cero", mods:[4,4,4], extra:[4], seed:8 },
+  { id:"pt3",  title:"Portugués: escribir correos", by:"Mariana Ortega", topic:"Idiomas", level:"Si ya entiendes lo básico", mods:[3,4], extra:[3], seed:6 },
+];
+const lessons = r => r.mods.reduce((a, b) => a + b, 0);
+const words = n => ["cero","un","dos","tres","cuatro","cinco","seis"][n] ?? String(n);
+const facts = r => `${r.mods.length === 1 ? "un módulo" : `${words(r.mods.length)} módulos`} y ${lessons(r)} temas. ${r.level}.`.replace(/^./, c => c.toUpperCase());
+function rand(seed) { let s = seed * 9301 + 49297; return () => ((s = (s * 9301 + 49297) % 233280) / 233280); }
+
+/* ---------- the route geometry ----------
+   A smooth meander sampled densely; stations sit at even arc lengths along it, so
+   they never crowd on a bend. Modules and the exam get more room than topics. */
+function curve(r, w, h, orient, pad) {
+  const R = rand(r.seed), freq = .65 + R() * .9, phase = R() * Math.PI * 2, amp = (orient === "h" ? h : w) * (.19 + R() * .07);
+  const S = 240, pts = [], L = [0];
+  for (let i = 0; i <= S; i++) {
+    const t = i / S, wob = Math.sin(t * freq * Math.PI * 2 + phase) * amp + Math.sin(t * 7.3 + phase) * amp * .1;
+    pts.push(orient === "h" ? { x: pad + t * (w - pad * 2), y: h / 2 + wob } : { x: w / 2 + wob, y: pad + t * (h - pad * 2) });
+    if (i) L.push(L[i - 1] + Math.hypot(pts[i].x - pts[i - 1].x, pts[i].y - pts[i - 1].y));
+  }
+  return { pts, L, total: L[S] };
+}
+function pointAt(c, s) {
+  s = clamp(s, 0, c.total); let lo = 0, hi = c.L.length - 1;
+  while (hi - lo > 1) { const m = (lo + hi) >> 1; (c.L[m] <= s ? (lo = m) : (hi = m)); }
+  const f = (s - c.L[lo]) / ((c.L[hi] - c.L[lo]) || 1), a = c.pts[lo], b = c.pts[hi];
+  const len = Math.hypot(b.x - a.x, b.y - a.y) || 1;
+  return { x: a.x + (b.x - a.x) * f, y: a.y + (b.y - a.y) * f, tx: (b.x - a.x) / len, ty: (b.y - a.y) / len, i: lo };
+}
+const dOf = (c, upto = c.total) => { const p = pointAt(c, upto); let d = `M${c.pts[0].x.toFixed(1)} ${c.pts[0].y.toFixed(1)}`; for (let i = 1; i <= p.i; i++) d += `L${c.pts[i].x.toFixed(1)} ${c.pts[i].y.toFixed(1)}`; return d + `L${p.x.toFixed(1)} ${p.y.toFixed(1)}`; };
+function stationsOf(r, c) {
+  const st = []; let n = 0;
+  r.mods.forEach((count, m) => { st.push({ kind:"mod", m, w:1.7 }); for (let i = 0; i < count; i++) st.push({ kind:"st", m, n:n++, w:1 }); });
+  st.push({ kind:"exam", w:1.9 });
+  const sum = st.slice(1).reduce((a, s) => a + (s.w + st[st.indexOf(s) - 1].w) / 2, 0);
+  let acc = 0;
+  st.forEach((s, k) => { if (k) acc += (s.w + st[k - 1].w) / 2; s.s = c.total * acc / sum; s.f = acc / sum; Object.assign(s, pointAt(c, s.s)); });
+  return { st, unit: c.total / sum };
+}
+
+/* Draws a route. Options: done (last finished topic), here (current topic), anim {delay, dur} to trace it in. */
+function drawRoute(svg, r, w, h, { orient = "h", done = -1, here = -1, spurs = true, anim = null, pad = 24 } = {}) {
+  svg.replaceChildren(); svg.setAttribute("viewBox", `0 0 ${w} ${h}`);
+  const c = curve(r, w, h, orient, pad), { st, unit } = stationsOf(r, c);
+  const rL = clamp(unit * .2, 2, 4.2), rM = clamp(unit * .42, 5.5, 9);
+  svg.style.setProperty("--tw", clamp(rL * 2.2, 4, 9));
+  if (anim) { svg.classList.add("anim"); svg.style.setProperty("--delay", anim.delay + "ms"); svg.style.setProperty("--dur", anim.dur + "ms"); }
+  const track = el("path", { d: dOf(c), class:"rt-track" + (anim ? " trace" : "") }, svg);
+  track.style.setProperty("--len", c.total.toFixed(1));
+  let doneEl = null;
+  if (done >= 0) { const s = st.find(q => q.n === done); doneEl = el("path", { d: dOf(c, s.s), class:"rt-done" + (anim ? " trace late" : ""), "stroke-width": clamp(rL * 1.5, 3, 5) }, svg); doneEl.style.setProperty("--len", s.s.toFixed(1)); }
+  const draw = el("path", { d: dOf(c), class:"rt-draw", "stroke-width": clamp(rL * 1.1, 2, 3.4) }, svg);
+  if (spurs) r.extra.forEach((n, k) => {
+    const p = st.find(q => q.n === n); if (!p) return;
+    let nx = -p.ty, ny = p.tx; const inward = orient === "h" ? (h / 2 - p.y) * ny > 0 : (w / 2 - p.x) * nx > 0; if (!inward) { nx = -nx; ny = -ny; }
+    const len = clamp(unit * 1.7, 16, 30), ex = p.x + nx * len + p.tx * len * .55, ey = p.y + ny * len + p.ty * len * .55;
+    el("path", { d:`M${p.x.toFixed(1)} ${p.y.toFixed(1)}Q${(p.x + nx * len).toFixed(1)} ${(p.y + ny * len).toFixed(1)} ${ex.toFixed(1)} ${ey.toFixed(1)}`, class:"rt-spur" + (anim ? " pop" : ""), style:`--f:${p.f}` }, svg);
+    el("circle", { cx:ex.toFixed(1), cy:ey.toFixed(1), r:clamp(rL * 1.05, 3, 4.2), class:"rt-spur-dot" + (anim ? " pop" : ""), style:`--f:${p.f}` }, svg);
+  });
+  let examEl = null, hereEl = null;
+  st.forEach(p => {
+    const cls = anim ? " pop" : "", style = `--f:${p.f.toFixed(3)}`;
+    if (p.kind === "exam") { const s = rM * .95; const g = el("g", { class: cls.trim(), style }, svg); examEl = el("rect", { x:p.x - s, y:p.y - s, width:s * 2, height:s * 2, rx:2, transform:`rotate(45 ${p.x.toFixed(1)} ${p.y.toFixed(1)})`, class:"rt-exam" }, g); }
+    else if (p.kind === "mod") { const g = el("g", { class: cls.trim(), style }, svg); el("circle", { cx:p.x, cy:p.y, r:rM, class:"rt-ring" }, g); el("circle", { cx:p.x, cy:p.y, r:rM * .36, class:"rt-core" }, g); }
+    else if (p.n === here) { const g = el("g", { class: cls.trim(), style }, svg); el("circle", { cx:p.x, cy:p.y, r:rM * 1.9, class:"rt-halo" }, g); hereEl = el("circle", { cx:p.x, cy:p.y, r:rM * .9, class:"rt-here" }, g); }
+    else el("circle", { cx:p.x, cy:p.y, r:rL, class:"rt-st" + (p.n <= done ? " d" : "") + cls, style }, svg);
+  });
+  return { c, st, draw, examEl, hereEl, doneEl, rM };
+}
+
+/* Headline words rise out of their own line, once. */
+function rise(node, delay = 0) {
+  if (!node.dataset.split) {
+    const parts = [];
+    [...node.childNodes].forEach(ch => {
+      if (ch.nodeType === 3) ch.textContent.split(/(\s+)/).forEach(t => { if (!t) return; if (/^\s+$/.test(t)) parts.push(document.createTextNode(" ")); else { const w = document.createElement("span"); w.className = "w"; const i = document.createElement("span"); i.textContent = t; w.appendChild(i); parts.push(w); } });
+      else parts.push(ch);
+    });
+    node.replaceChildren(...parts); node.dataset.split = "1";
+  }
+  if (reduce) return;
+  const ws = node.querySelectorAll(".w>span"); node.classList.add("rising");
+  clearTimeout(node._rt); node._rt = setTimeout(() => node.classList.remove("rising"), delay + ws.length * 75 + 860);
+  ws.forEach((s, i) => s.animate([{ transform:"translateY(110%)" }, { transform:"none" }], { duration:820, delay:delay + i * 75, easing:"cubic-bezier(.2,.85,.15,1)", fill:"backwards" }));
+}
+/* Supporting pieces of an opening: they settle in after the headline. */
+function settle(nodes, delay = 300) {
+  if (reduce) return;
+  nodes.forEach((n, i) => n && n.animate([{ opacity:0, transform:"translateY(14px)" }, { opacity:1, transform:"none" }], { duration:620, delay:delay + i * 90, easing:"cubic-bezier(.2,.8,.2,1)", fill:"backwards" }));
+}
+
+/* ---------------- 1. Catálogo ---------------- */
+const TOPICS = ["Todas", "Idiomas", "Matemáticas", "Programación", "Música", "Negocios", "Arte"];
+let topic = "Todas", query = "";
+const topicsEl = $("cat-topics"), pill = document.createElement("span"); pill.className = "pill"; pill.setAttribute("aria-hidden", "true"); topicsEl.appendChild(pill);
+TOPICS.forEach(t => { const b = document.createElement("button"); b.type = "button"; b.textContent = t; b.setAttribute("aria-pressed", String(t === topic)); b.onclick = () => { topic = t; render(); }; topicsEl.appendChild(b); });
+function movePill() { const b = [...topicsEl.querySelectorAll("button")].find(x => x.getAttribute("aria-pressed") === "true"); if (!b) return; pill.style.width = b.offsetWidth + "px"; pill.style.transform = `translate(${b.offsetLeft}px, ${b.offsetTop}px)`; }
+function card(r, k, opening) {
+  const a = document.createElement("a"); a.className = "card"; a.href = r.id === "pt" ? "#ruta" : "#catalogo"; a.style.viewTransitionName = "c-" + r.id;
+  const svg = el("svg", { class:"line", "aria-hidden":"true" }); a.appendChild(svg);
+  const { draw, examEl, c } = drawRoute(svg, r, 340, 150, { anim: opening && !reduce ? { delay: 420 + k * 110, dur: 1100 } : null });
+  const runner = el("circle", { r:5.5, class:"rt-runner", opacity:0 }, svg);
+  const b = document.createElement("div"); b.className = "body"; b.innerHTML = `<h3></h3><p class="by"></p><p class="facts"></p>`;
+  b.children[0].textContent = r.title; b.children[1].textContent = "Con " + r.by; b.children[2].textContent = facts(r);
+  a.appendChild(b);
+  draw.style.setProperty("--len", c.total.toFixed(1));
+  let raf = 0;
+  const run = () => {
+    if (reduce) return; cancelAnimationFrame(raf); const t0 = performance.now(); runner.setAttribute("opacity", 1); examEl.classList.remove("reached");
+    const step = now => { const t = Math.min(1, (now - t0) / 1150), e = t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2, p = pointAt(c, e * c.total);
+      runner.setAttribute("cx", p.x); runner.setAttribute("cy", p.y);
+      if (t < 1) raf = requestAnimationFrame(step); else { runner.setAttribute("opacity", 0); examEl.classList.add("reached"); } };
+    raf = requestAnimationFrame(step);
+  };
+  const stop = () => { cancelAnimationFrame(raf); runner.setAttribute("opacity", 0); examEl.classList.remove("reached"); };
+  a.addEventListener("pointerenter", run); a.addEventListener("focus", run); a.addEventListener("pointerleave", stop); a.addEventListener("blur", stop);
+  return a;
+}
+const grid = $("cat-grid"), count = $("cat-count");
+function render(opening = false) {
+  const apply = () => {
+    topicsEl.querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", String(b.textContent === topic)));
+    movePill();
+    const q = query.trim().toLowerCase();
+    const list = ROUTES.filter(r => (topic === "Todas" || r.topic === topic) && (!q || (r.title + " " + r.by + " " + r.topic).toLowerCase().includes(q)));
+    grid.replaceChildren(...list.map((r, k) => card(r, k, opening)));
+    if (!list.length) { const e = document.createElement("div"); e.className = "empty"; e.innerHTML = `<b></b>Prueba con otra palabra o <a class="link" href="#catalogo" id="clear">mira todas las rutas</a>.`; e.querySelector("b").textContent = `No encontramos rutas para «${query}».`; grid.appendChild(e); e.querySelector("#clear").onclick = ev => { ev.preventDefault(); query = ""; topic = "Todas"; $("cat-q").value = ""; render(); }; }
+    count.textContent = list.length === 1 ? "Una ruta" : `${list.length} rutas`;
+  };
+  if (!opening && document.startViewTransition && !reduce && grid.children.length) {
+    document.documentElement.classList.add("vt-filter");
+    document.startViewTransition(apply).finished.finally(() => document.documentElement.classList.remove("vt-filter"));
+  } else apply();
+}
+$("cat-form").addEventListener("submit", e => { e.preventDefault(); query = $("cat-q").value; render(); });
+document.querySelector(".cat-hero").addEventListener("pointermove", e => { const b = e.currentTarget.getBoundingClientRect(); e.currentTarget.style.setProperty("--mx", (e.clientX - b.left) + "px"); e.currentTarget.style.setProperty("--my", (e.clientY - b.top) + "px"); });
+addEventListener("resize", movePill);
+function catalog() {
+  rise($("cat-title"));
+  settle([document.querySelector(".search"), topicsEl, count], 360);
+  render(true); requestAnimationFrame(movePill);
+}
+
+/* ---------------- 2. Creador: a portrait woven from her routes ---------------- */
+function creator() {
+  rise($("cr-title"), 120);
+  settle([...document.querySelectorAll("#creador .who > :not(h1)")], 520);
+  const svg = $("braid"); svg.replaceChildren();
+  const mine = ROUTES.filter(r => r.by === "Mariana Ortega"), W = 560, H = 680;
+  mine.forEach((r, i) => {
+    const c = curve({ ...r, seed: r.seed + i * 5 }, W, H, "v", 46);
+    c.pts.forEach((p, k) => { p.x = clamp(W / 2 + (p.x - W / 2) * (1.15 - i * .2) + Math.sin(k / c.pts.length * Math.PI * 2.2 + i * 2.1) * 62, 30, W - 30); });
+    for (let k = 1; k < c.pts.length; k++) c.L[k] = c.L[k - 1] + Math.hypot(c.pts[k].x - c.pts[k - 1].x, c.pts[k].y - c.pts[k - 1].y); c.total = c.L[c.L.length - 1];
+    const d = dOf(c);
+    el("path", { d, stroke:"#251D33", "stroke-width": 15 - i * 3 }, svg);
+    const p = el("path", { d, stroke:"var(--brand)", "stroke-width": 4.6 - i * 1.1, opacity: 1 - i * .26, style:"filter:drop-shadow(0 0 10px rgba(52,195,177,.45))" }, svg);
+    const { st } = stationsOf(r, c);
+    st.filter(s => s.kind !== "st").forEach(s => { const g = el("g", { opacity: 1 - i * .22 }, svg); el("circle", { cx:s.x, cy:s.y, r:8 - i * 1.3, fill:"var(--night)", stroke:"var(--brand)", "stroke-width":2.2 }, g); el("circle", { cx:s.x, cy:s.y, r:2.6 - i * .4, fill:"var(--brand)" }, g);
+      if (!reduce) g.animate([{ opacity:0, transform:"scale(.2)" }, { opacity: 1 - i * .22, transform:"none" }], { duration:420, delay:300 + i * 250 + s.f * (2200 + i * 500), easing:"cubic-bezier(.3,1.7,.5,1)", fill:"backwards" }), g.style.transformBox = "fill-box", g.style.transformOrigin = "center"; });
+    if (!reduce) { p.style.strokeDasharray = c.total; p.animate([{ strokeDashoffset: c.total }, { strokeDashoffset: 0 }], { duration:2200 + i * 500, delay:300 + i * 250, easing:"cubic-bezier(.55,0,.25,1)", fill:"both" }); }
+  });
+  const list = $("cr-list"); list.replaceChildren();
+  mine.forEach((r, k) => {
+    const a = document.createElement("a"); a.className = "row"; a.href = r.id === "pt" ? "#ruta" : "#creador";
+    a.innerHTML = `<div><h3></h3><p></p></div><svg class="line" aria-hidden="true"></svg><span class="go">${r.id === "pt" ? "Empezar gratis" : "Ver la ruta"}</span>`;
+    a.querySelector("h3").textContent = r.title; a.querySelector("p").textContent = facts(r);
+    list.appendChild(a);
+    const svgRow = a.querySelector("svg");
+    const draw = () => { const { draw } = drawRoute(svgRow, r, 340, 90, { spurs:true, anim: reduce ? null : { delay: k * 120, dur: 1000 } }); draw.style.stroke = "var(--brand)"; draw.style.strokeDasharray = "0 9999"; };
+    // rows draw when they come into view, once
+    const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { draw(); io.disconnect(); } }), { threshold:.4 });
+    if (reduce) draw(); else { drawRoute(svgRow, r, 340, 90, { spurs:true }).draw.style.strokeDasharray = "0 9999"; io.observe(a); }
+  });
+}
+
+/* ---------------- 3. Ruta: the route draws itself as you scroll ---------------- */
+const PT = ROUTES[0];
+const PLAN = [
+  { t:"Presentarte y saludar", l:["Saludos", "Presentarte", "Ser y estar", "Números y horas", "Tu primera llamada"] },
+  { t:"Correos y mensajes", l:["Abrir un correo", "Pedir algo con cortesía", "Fechas y plazos", "Responder un mensaje"] },
+  { t:"Reuniones", l:["Abrir una reunión", "Dar tu opinión", "Hablar de números", "Acordar y cerrar", "Despedirte bien"] },
+];
+let rp = null;
+function routePage() {
+  rise($("rp-title"), 80);
+  settle([document.querySelector("#ruta .by"), document.querySelector("#ruta .lede"), document.querySelector("#ruta .facts"), document.querySelector("#ruta .side")], 480);
+  const ol = $("rp-stops"); ol.replaceChildren();
+  PLAN.forEach((m, i) => {
+    const li = document.createElement("li"); li.className = "stop mod";
+    li.innerHTML = `<span class="k">Módulo ${i + 1}</span><b></b>`; li.querySelector("b").textContent = m.t;
+    if (i === 0) { const f = document.createElement("span"); f.className = "free"; f.textContent = "Gratis"; li.querySelector("b").appendChild(f); }
+    ol.appendChild(li);
+    m.l.forEach((t, j) => { const s = document.createElement("li"); s.className = "stop"; s.innerHTML = `<span class="t"></span>`; s.firstChild.textContent = `${j + 1}. ${t}`; ol.appendChild(s); });
+  });
+  const ex = document.createElement("li"); ex.className = "stop exam mod"; ex.innerHTML = "<span class='k'>Al final</span><b>Examen de la ruta</b>"; ol.appendChild(ex);
+  drawRoute($("rp-mini"), PT, 340, 90, { anim: reduce ? null : { delay: 700, dur: 1200 } });
+  requestAnimationFrame(layoutJourney);
+}
+function layoutJourney() {
+  const svg = $("rp-svg"); svg.replaceChildren();
+  const ol = $("rp-stops"), items = [...ol.children], top = ol.getBoundingClientRect().top;
+  const H = ol.offsetHeight; svg.setAttribute("viewBox", `0 0 96 ${H}`); svg.style.height = H + "px";
+  const pts = items.map((li, k) => { const b = li.getBoundingClientRect(), mod = li.classList.contains("mod"); return { x: 48 + Math.sin(k * .5) * 20, y: b.top - top + (mod ? b.height - 30 : b.height / 2), mod, exam: li.classList.contains("exam") }; });
+  // a smooth line through the stations (Catmull-Rom)
+  let d = `M${pts[0].x} ${pts[0].y}`; const lens = [0];
+  const probe = el("path", {}, svg);
+  for (let i = 0; i < pts.length - 1; i++) {
+    const p0 = pts[Math.max(0, i - 1)], p1 = pts[i], p2 = pts[i + 1], p3 = pts[Math.min(pts.length - 1, i + 2)];
+    d += ` C${p1.x + (p2.x - p0.x) / 6} ${p1.y + (p2.y - p0.y) / 6},${p2.x - (p3.x - p1.x) / 6} ${p2.y - (p3.y - p1.y) / 6},${p2.x} ${p2.y}`;
+    probe.setAttribute("d", d); lens.push(probe.getTotalLength());
+  }
+  probe.remove();
+  el("path", { d, class:"track" }, svg);
+  const lit = el("path", { d, class:"lit" }, svg);
+  const marks = pts.map(p => {
+    if (p.exam) return { o: el("rect", { x:p.x - 10, y:p.y - 10, width:20, height:20, rx:3, transform:`rotate(45 ${p.x} ${p.y})`, fill:"var(--night)", stroke:"#4A3E5E", "stroke-width":2.4 }, svg) };
+    if (p.mod) { const o = el("circle", { cx:p.x, cy:p.y, r:11, fill:"var(--night)", stroke:"#4A3E5E", "stroke-width":2.6 }, svg); const i = el("circle", { cx:p.x, cy:p.y, r:4, fill:"#4A3E5E" }, svg); return { o, i }; }
+    return { o: el("circle", { cx:p.x, cy:p.y, r:5, fill:"#4A3E5E" }, svg), dot:true };
+  });
+  const L = lens[lens.length - 1]; lit.style.strokeDasharray = L;
+  rp = { svg, lit, L, lens, items, marks, pts };
+  onScroll();
+}
+function onScroll() {
+  if (!rp || !$("ruta").classList.contains("on")) return;
+  const mid = innerHeight * .55, b = rp.svg.getBoundingClientRect();
+  const y = reduce ? b.height : clamp(mid - b.top, 0, b.height);
+  let k = 0; while (k < rp.pts.length - 1 && rp.pts[k + 1].y <= y) k++;
+  const a = rp.pts[k], n = rp.pts[Math.min(k + 1, rp.pts.length - 1)];
+  const f = n.y > a.y ? clamp((y - a.y) / (n.y - a.y), 0, 1) : 1;
+  rp.lit.style.strokeDashoffset = rp.L - (rp.lens[k] + (rp.lens[Math.min(k + 1, rp.lens.length - 1)] - rp.lens[k]) * f);
+  rp.items.forEach((li, i) => {
+    const on = rp.pts[i].y <= y + 1, isMid = !reduce && i === k && y < b.height - 2;
+    li.classList.toggle("lit", on); li.classList.toggle("mid", isMid);
+    const m = rp.marks[i], col = isMid ? "var(--gold)" : on ? "var(--plum-glow)" : "#4A3E5E";
+    if (m.dot) { m.o.setAttribute("fill", col); m.o.setAttribute("r", isMid ? 7 : 5); }
+    else { m.o.setAttribute("stroke", col); if (m.i) m.i.setAttribute("fill", col); if (rp.pts[i].exam && on) m.o.setAttribute("fill", col); else if (rp.pts[i].exam) m.o.setAttribute("fill", "var(--night)"); }
+  });
+}
+addEventListener("scroll", () => requestAnimationFrame(onScroll), { passive:true });
+addEventListener("resize", () => { if ($("ruta").classList.contains("on")) layoutJourney(); });
+
+/* ---------------- 4. Mis rutas: real progress, the gold dot arrives ---------------- */
+function mine() {
+  rise($("mr-title"));
+  settle([document.querySelector("#mis-rutas .mode"), document.querySelector("#mis-rutas .next > div"), document.querySelector("#mis-rutas .next > .btn")], 320);
+  const nx = $("mr-next-line");
+  const { hereEl, draw } = drawRoute(nx, PT, 1200, 140, { done:1, here:2, anim: reduce ? null : { delay:500, dur:1300 } });
+  draw.remove();
+  if (hereEl && !reduce) { const halo = hereEl.previousSibling; halo.style.transformBox = "fill-box"; halo.style.transformOrigin = "center";
+    halo.animate([{ transform:"scale(.6)", opacity:.5 }, { transform:"scale(1.25)", opacity:0 }], { duration:1600, delay:2000, iterations:Infinity, easing:"ease-out" }); }
+  const list = $("mr-list"); list.replaceChildren();
+  [{ r:PT, done:1, here:2, txt:"Vas en el tema 3 de 14.", act:"Seguir", href:"#tema" },
+   { r:ROUTES[1], done:8, here:9, txt:"Vas en el tema 10 de 17. Te espera una práctica extra.", act:"Seguir", href:"#tema" },
+   { r:ROUTES[3], done:12, here:-1, txt:"", act:"Repasar", href:"#mis-rutas", finished:true }].forEach((o, k) => {
+    const it = document.createElement("article"); it.className = "mr-item";
+    it.innerHTML = `<div><h3></h3><p></p></div><a class="btn"></a><svg class="line" aria-hidden="true"></svg>`;
+    it.querySelector("h3").textContent = o.r.title;
+    const p = it.querySelector("p"); p.textContent = `Con ${o.r.by}. ${o.txt}`;
+    if (o.finished) { const s = document.createElement("span"); s.className = "done-word"; s.textContent = "Ruta terminada."; p.appendChild(s); }
+    const a = it.querySelector("a"); a.textContent = o.act; a.href = o.href; if (o.finished) a.classList.add("ghost");
+    list.appendChild(it);
+    drawRoute(it.querySelector("svg"), o.r, 1200, 100, { done:o.done, here:o.here, anim: reduce ? null : { delay: 900 + k * 180, dur: 1100 } }).draw.remove();
+  });
+  settle([...list.children], 800);
+}
+
+/* ---------------- 5. Un tema: the one celebration is the dot moving on ---------------- */
+function lessonBar(step = 2, animate = false) {
+  const svg = $("ls-line"); svg.replaceChildren();
+  const n = 5, W = Math.max(200, Math.round(svg.getBoundingClientRect().width) || 800), H = 36; svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+  const xs = [...Array(n + 1)].map((_, i) => 18 + i * (W - 36) / n);
+  el("line", { x1:xs[0], y1:H / 2, x2:xs[n], y2:H / 2, stroke:"#E3DAE8", "stroke-width":6, "stroke-linecap":"round" }, svg);
+  const g = el("line", { x1:xs[0], y1:H / 2, x2:xs[step], y2:H / 2, stroke:"var(--green)", "stroke-width":4, "stroke-linecap":"round" }, svg);
+  const dots = xs.map((x, i) => i === n ? el("rect", { x:x - 7, y:H / 2 - 7, width:14, height:14, rx:2, transform:`rotate(45 ${x} ${H / 2})`, fill:"var(--paper)", stroke:"var(--ink)", "stroke-width":2.2 }, svg)
+    : el("circle", { cx:x, cy:H / 2, r:i < step ? 5 : 4, fill: i < step ? "var(--green)" : "#C9BED2" }, svg));
+  const halo = el("circle", { cx:xs[step], cy:H / 2, r:14, fill:"var(--gold)", opacity:.2 }, svg);
+  const here = el("circle", { cx:xs[step], cy:H / 2, r:8, fill:"var(--paper)", stroke:"var(--gold)", "stroke-width":3.4 }, svg);
+  if (reduce) return;
+  if (animate) {
+    const from = xs[step - 1] - xs[step], ease = "cubic-bezier(.6,0,.2,1)";
+    g.animate([{ x2: String(xs[step - 1]) }, { x2: String(xs[step]) }], { duration:750, easing:ease });
+    [here, halo].forEach(c => c.animate([{ transform:`translateX(${from}px)` }, { transform:"translateX(0)" }], { duration:750, easing:ease }));
+    dots[step - 1].animate([{ transform:"scale(1)" }, { transform:"scale(1.8)" }, { transform:"scale(1)" }], { duration:600, delay:250 }); dots[step - 1].style.transformBox = "fill-box"; dots[step - 1].style.transformOrigin = "center";
+  } else {
+    g.animate([{ x2: String(xs[0]) }, { x2: String(xs[step]) }], { duration:900, delay:300, easing:"cubic-bezier(.55,0,.25,1)", fill:"backwards" });
+    [here, halo].forEach(c => { c.style.transformBox = "fill-box"; c.style.transformOrigin = "center"; c.animate([{ transform:"scale(0)" }, { transform:"none" }], { duration:500, delay:1050, easing:"cubic-bezier(.3,1.7,.5,1)", fill:"backwards" }); });
+  }
+}
+function lesson() {
+  rise($("ls-title"), 120);
+  settle([...document.querySelectorAll("#tema .ls > :not(h1)")], 420);
+  lessonBar(2);
+  const opts = [...document.querySelectorAll("#q-opts .opt")], fb = $("q-fb"), done = $("q-done"), check = $("q-check");
+  opts.forEach(o => { o.className = "opt"; o.setAttribute("aria-checked", "false"); o.disabled = false; if (!o.querySelector(".tick")) o.insertAdjacentHTML("beforeend", '<svg class="tick" width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="#127A3D" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>'); });
+  fb.textContent = ""; fb.className = "feedback"; done.classList.remove("on"); check.hidden = false;
+  opts.forEach(o => o.onclick = () => { opts.forEach(x => { x.setAttribute("aria-checked", String(x === o)); x.classList.remove("wrong"); }); fb.textContent = ""; });
+  check.onclick = () => {
+    const pick = opts.find(o => o.getAttribute("aria-checked") === "true");
+    if (!pick) { fb.className = "feedback no"; fb.textContent = "Elige una respuesta para comprobarla."; return; }
+    if (pick.dataset.ok === "1") { pick.classList.add("right"); opts.forEach(o => o.disabled = true); check.hidden = true; fb.className = "feedback ok"; fb.textContent = "Bien: hoy es algo que cambia, así que va con estar."; done.classList.add("on"); lessonBar(3, true); }
+    else { pick.classList.remove("wrong"); void pick.offsetWidth; pick.classList.add("wrong"); fb.className = "feedback no"; fb.textContent = "Todavía no. Piensa si «estar en casa hoy» es algo que mañana puede cambiar."; }
+  };
+}
+
+/* ---------------- views on the hash ---------------- */
+const VIEWS = ["catalogo", "creador", "ruta", "mis-rutas", "tema"];
+const init = { catalogo: catalog, creador: creator, ruta: routePage, "mis-rutas": mine, tema: lesson };
+function show() {
+  const v = VIEWS.includes(location.hash.slice(1)) ? location.hash.slice(1) : "catalogo";
+  VIEWS.forEach(id => $(id).classList.toggle("on", id === v));
+  document.querySelectorAll("#switch a").forEach(a => a.toggleAttribute("aria-current", a.getAttribute("href") === "#" + v));
+  document.body.style.background = (v === "mis-rutas" || v === "tema") ? "var(--day)" : "var(--night)";
+  window.scrollTo(0, 0);
+  init[v]?.();
+  requestAnimationFrame(paintDepth);
+}
+
+/* ---------- depth for titles ---------- */
+const DEPTH = { h1: 14, h2: 7 };
+const mix = (a, b, t) => { const p = h => [1,3,5].map(i => parseInt(h.slice(i, i + 2), 16)); const A = p(a), B = p(b); return "#" + A.map((v, i) => Math.round(v + (B[i] - v) * t).toString(16).padStart(2, "0")).join(""); };
+let ang = Math.PI * .3;
+function paintDepth() {
+  const v = document.querySelector(".view.on"); if (!v) return;
+  const cs = getComputedStyle(v);
+  v.querySelectorAll("h1, h2:not(.q h2)").forEach(h => {
+    h.classList.add("t3d");
+    const cs2 = getComputedStyle(h), d1 = cs2.getPropertyValue("--d1").trim(), d2 = cs2.getPropertyValue("--d2").trim(), glow = cs2.getPropertyValue("--glowc").trim();
+    const n = (h.closest(".desk") && !h.closest(".next") ? .6 : 1) * (h.tagName === "H1" ? DEPTH.h1 : DEPTH.h2) | 0, step = h.tagName === "H1" ? Math.max(.7, parseFloat(cs2.fontSize) / 95) : .8;
+    const dx = Math.cos(ang) * step, dy = Math.sin(ang) * step, out = [];
+    out.push(`${(-dx * .6).toFixed(2)}px ${(-dy * .6).toFixed(2)}px 0 rgba(255,255,255,.35)`);
+    for (let i = 1; i <= n; i++) out.push(`${(dx * i).toFixed(2)}px ${(dy * i).toFixed(2)}px 0 ${mix(d1, d2, (i - 1) / (n - 1))}`);
+    out.push(`${(dx * n * 1.6).toFixed(1)}px ${(dy * n * 1.9).toFixed(1)}px ${n * 2.2}px ${glow}`);
+    h.style.setProperty("--ts", out.join(","));
+  });
+}
+let raf3 = 0;
+addEventListener("pointermove", e => {
+  if (reduce) return;
+  const cx = innerWidth / 2, cy = innerHeight * .35, a = Math.atan2(e.clientY - cy, e.clientX - cx) + Math.PI;
+  // keep the extrusion falling downward, so the light always comes from above
+  const target = clamp(((a % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2), Math.PI * .08, Math.PI * .92);
+  ang += (target - ang) * .35;
+  cancelAnimationFrame(raf3); raf3 = requestAnimationFrame(paintDepth);
+}, { passive:true });
+function setFont(f) {
+  document.body.dataset.font = f;
+  document.querySelectorAll(".fontpick button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.font === f)));
+  try { localStorage.setItem("lr-font", f); } catch (e) {}
+  requestAnimationFrame(() => { paintDepth(); if (typeof movePill === "function") movePill(); });
+}
+document.querySelectorAll(".fontpick button").forEach(b => b.onclick = () => setFont(b.dataset.font));
+let savedFont = "archivo"; try { savedFont = localStorage.getItem("lr-font") || "archivo"; } catch (e) {}
+setFont(savedFont);
+document.fonts?.ready.then(paintDepth);
+
+addEventListener("hashchange", () => { if (document.startViewTransition && !reduce) document.startViewTransition(show); else show(); });
+show();
+})();
+
+</script>
+</body></html>
