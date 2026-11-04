@@ -2,6 +2,14 @@
 
 The tokens in `packages/design-tokens` are the source of truth. The files in `reference/` are the target: they show what the product should look like, and when a screen and a token disagree, a person decides and the token records the answer. Nothing in the app imports from `reference/`.
 
+## The vision
+
+`VISION.md` says what every screen should feel like, and why, and `reference/vision/pages.html` shows the intended motion and depth. Read both before designing a screen. `moments.md` lists each page's moment and how to turn it off.
+
+## The landing
+
+The owner rejected v2's landing. Platform STEP 6 brought back v1's annotated map (STEP 41) on these tokens, and [`moments.md`](moments.md) lists each page's one moment and how to turn it off.
+
 ## The direction: v2, the current target
 
 `reference/v2/` is the target, approved by the owner. Platform STEP 4 built the landing, the catalog, the creator's page, the route page, Mis rutas, "Quiero enseñar" and admin from it. The later STEPs build the rest. Sign-in and the tokens still follow the earlier direction, DM Mono included.
