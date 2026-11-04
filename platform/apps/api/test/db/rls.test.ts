@@ -30,7 +30,8 @@ describe("row-level security", () => {
         join information_schema.tables using (table_schema, table_name)
         where table_schema = 'public' and column_name in ('space_id', 'user_id')
           and table_type = 'BASE TABLE'
-          and table_name not in ('session', 'account')
+          and table_name not in ('session', 'account', 'oauth_client', 'oauth_refresh_token',
+                                 'oauth_access_token', 'oauth_consent', 'connection_uses')
         union select 'spaces' order by 1`,
     );
     expect(rows.map((row: { table_name: string }) => row.table_name)).toEqual(TENANT_TABLES);

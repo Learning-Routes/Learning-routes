@@ -75,6 +75,35 @@ export const routeList = defineAction({
   run: (ctx, input) => ctx.repos.routeDrafts.list(input.spaceId),
 });
 
+export const routeUpdate = defineAction({
+  name: "route.update",
+  kind: "mutation",
+  description: "Change a draft's title, description, topic or level. Never its price or address.",
+  input: z
+    .strictObject({
+      routeId: z.uuid(),
+      expectedRevision: z.int().nonnegative(),
+      title: LocalizedText.optional(),
+      description: LocalizedText.nullish(),
+      topic: z.enum(ROUTE_TOPICS).optional(),
+      level: z.enum(ROUTE_LEVELS).optional(),
+    })
+    .refine((input) => Object.keys(input).length > 2, "nothing to change"),
+  target: (input) => ({ kind: "route", id: input.routeId }),
+  async run(ctx, input, given) {
+    const { routeId, expectedRevision, ...details } = input;
+    const { revision } = unwrap(
+      await ctx.repos.routeDrafts.updateDetails(
+        inSpace(given).spaceId,
+        routeId,
+        expectedRevision,
+        details,
+      ),
+    );
+    return { routeId, revision };
+  },
+});
+
 export const routePublish = defineAction({
   name: "route.publish",
   kind: "mutation",

@@ -9,6 +9,7 @@ import { defineConfig } from "@playwright/test";
 // development, for the components page, on an app origin that keeps the theme cookie.
 const LOCAL = {
   API_DEV_ORIGIN: "http://localhost:8788",
+  MCP_DEV_ORIGIN: "http://localhost:8789",
   CLOUDFLARE_INCLUDE_PROCESS_ENV: "true",
   APP_ORIGIN: "http://localhost:4174",
   ENVIRONMENT: "development",
@@ -17,7 +18,14 @@ const LOCAL = {
   TURNSTILE_SITE_KEY: "1x00000000000000000000AA",
 };
 const VISUAL = "visual.spec.ts";
-const CHANGES_DATA = ["admin.spec.ts", "teach.spec.ts", "my-routes.spec.ts", "whole-path.spec.ts"];
+const CHANGES_DATA = [
+  "connect.spec.ts",
+  "mcp-whole-path.spec.ts",
+  "admin.spec.ts",
+  "teach.spec.ts",
+  "my-routes.spec.ts",
+  "whole-path.spec.ts",
+];
 const API_LOG = ".wrangler/e2e-api.log";
 const API_VARS = Object.entries({
   APP_ORIGIN: "http://localhost:4174",
@@ -26,6 +34,7 @@ const API_VARS = Object.entries({
   CLOUDFLARE_PURGE_TOKEN: "local-unused",
   TURNSTILE_SECRET: "1x0000000000000000000000000000000AA",
   TURNSTILE_HOSTNAMES: "example.com",
+  CREATOR_DOMAIN: "localhost:4174",
 })
   .map(([name, value]) => `--var ${name}:${value}`)
   .join(" ");
@@ -55,6 +64,12 @@ export default defineConfig({
     {
       command: `sh -c 'pnpm --filter @learning-routes/api exec wrangler dev --port 8788 --inspector-port 0 --local-upstream localhost:4174 ${API_VARS} 2>&1 | tee ${API_LOG}'`,
       url: "http://localhost:8788/health",
+      reuseExistingServer: false,
+    },
+    // The MCP Worker: the OAuth provider and the server (Platform STEP 5).
+    {
+      command: `pnpm --filter @learning-routes/api exec wrangler dev --config wrangler.mcp.jsonc --port 8789 --inspector-port 0 --local-upstream localhost:4174 ${API_VARS}`,
+      url: "http://localhost:8789/health",
       reuseExistingServer: false,
     },
     {

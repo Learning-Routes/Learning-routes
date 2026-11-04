@@ -118,16 +118,26 @@ module.exports = {
     {
       name: "only-auth-touches-better-auth-tables",
       comment:
-        "Better Auth's tables (user, session, account, verification) are read and written only by apps/api/src/auth/ (Platform STEP 2 §1.8).",
+        "Better Auth's tables (user, session, account, verification) are read and written only by Better Auth (Platform STEP 2 §1.8).",
       severity: "error",
       from: {
         pathNot: [
           "^apps/api/src/auth/",
+          // The OAuth provider is Better Auth too, in the MCP Worker (Platform STEP 5 §2).
+          "^apps/api/src/mcp/auth\\.ts$",
           "^apps/api/src/db/schema/",
           "^apps/api/drizzle\\.config\\.ts$",
         ],
       },
       to: { path: "^apps/api/src/db/schema/auth\\.ts$" },
+    },
+    {
+      name: "mcp-tools-go-through-core",
+      comment:
+        "Every MCP tool is a core action: tools.ts and server.ts reach the database only through runAction's repositories (Platform STEP 5 §3).",
+      severity: "error",
+      from: { path: "^apps/api/src/mcp/(tools|server)\\.ts$" },
+      to: { path: ["^apps/api/src/db/schema/", "(^|/)node_modules/drizzle-orm/"] },
     },
     {
       name: "web-and-api-stay-apart",

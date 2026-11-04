@@ -22,17 +22,22 @@
     "db:seed-storefront": "tsx scripts/seed-storefront.ts"
   },
   "dependencies": {
+    "@better-auth/cimd": "1.7.12",
+    "@better-auth/mcp": "1.7.12",
+    "@better-auth/oauth-provider": "1.7.12",
     "@learning-routes/core": "workspace:*",
-    "better-auth": "1.7.8",
+    "@modelcontextprotocol/server": "2.3.1",
+    "better-auth": "1.7.12",
     "drizzle-orm": "0.45.4",
     "hono": "4.13.13",
+    "jose": "6.2.12",
     "pg": "8.23.1",
     "zod": "4.6.7"
   },
   "devDependencies": {
     "@learning-routes/public-read": "workspace:*",
     "@types/pg": "8.23.1",
-    "auth": "1.7.8",
+    "auth": "1.7.12",
     "drizzle-kit": "0.31.11",
     "squawk-cli": "2.69.0",
     "tsx": "4.23.15",

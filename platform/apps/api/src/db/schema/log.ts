@@ -17,6 +17,8 @@ export const actionLog = pgTable(
     actorUserId: uuid().notNull(),
     actorVia: text().$type<ActorKind>().notNull(),
     agentRunId: uuid(),
+    // The OAuth client that made the call, for an action through the MCP (Platform STEP 5 §3).
+    oauthClientId: text(),
     action: text().notNull(),
     // Secrets and free text are redacted by core before the insert.
     input: jsonb().notNull(),

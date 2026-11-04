@@ -9,6 +9,12 @@ export default function Studio() {
   return (
     <main>
       <h1>Enseñar</h1>
+      <p>
+        <a href="/ensenar/conecta">Conecta tu asistente</a>
+      </p>
+      <p>
+        <a href="/ensenar/conexiones">Conexiones</a>
+      </p>
     </main>
   );
 }

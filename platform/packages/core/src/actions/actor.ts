@@ -6,4 +6,6 @@ export type ActorKind = (typeof ACTOR_KINDS)[number];
 export interface Actor {
   via: ActorKind;
   userId: string;
+  /** The OAuth client behind a call through the MCP, for the log. */
+  oauthClientId?: string;
 }

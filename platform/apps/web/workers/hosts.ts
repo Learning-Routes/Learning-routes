@@ -25,7 +25,7 @@ export function creatorSlugOf(host: string, { appOrigin, creatorDomain }: Hosts)
 }
 
 /** Pages with a session, which exist only on the app's host. */
-const APP_ONLY = /^\/(api|empezar|mis-rutas|quiero-ensenar|admin)(\/|$)/;
+const APP_ONLY = /^\/(api|empezar|mis-rutas|quiero-ensenar|admin|conectar|ensenar|mcp)(\/|$)/;
 
 /** Whether this path needs the app's host, and this is not it. */
 export function isAppPathElsewhere(url: URL, { appOrigin }: Pick<Hosts, "appOrigin">): boolean {
@@ -35,6 +35,14 @@ export function isAppPathElsewhere(url: URL, { appOrigin }: Pick<Hosts, "appOrig
 const API_PATH = /^\/api(\/|$)/;
 
 export const isApiPath = (url: URL) => API_PATH.test(url.pathname);
+
+/** What the MCP Worker answers (Platform STEP 5): the server, and the OAuth provider it holds. */
+const MCP_PATH =
+  /^\/(mcp(\/|$)|\.well-known\/(oauth-|openid-configuration)|api\/auth\/(oauth2\/|jwks$))/;
+
+export function isMcpPath(url: URL, { appOrigin }: Pick<Hosts, "appOrigin">): boolean {
+  return url.host === new URL(appOrigin).host && MCP_PATH.test(url.pathname);
+}
 
 /** The request to render from, or null when the path is one nobody may ask for. */
 export function internalRequest(request: Request, hosts: Hosts): Request | null {
