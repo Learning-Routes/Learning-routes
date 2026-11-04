@@ -1,0 +1,38 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  // The creator's MCP and its OAuth provider (Platform STEP 5; ADR 0009): the API's budget
+  // cannot hold them. It shares the API's package, and so its repositories.
+  "name": "learning-routes-mcp",
+  "main": "src/mcp/index.ts",
+  "compatibility_date": "2026-10-12",
+  "compatibility_flags": ["nodejs_compat"],
+  "minify": true,
+  // No invocation logs: they carry each request's full URL (see wrangler.jsonc).
+  "observability": {
+    "enabled": true,
+    "logs": { "enabled": true, "head_sampling_rate": 1, "invocation_logs": false },
+    "traces": { "enabled": true, "head_sampling_rate": 0.1 }
+  },
+  // The database is regional: run next to it (ADR 0005).
+  "placement": { "mode": "targeted", "region": "aws:us-east-1" },
+  "vars": {
+    "APP_ORIGIN": "https://app.learningroutes.com",
+    "ENVIRONMENT": "production",
+    // Where a published route's public address lives.
+    "CREATOR_DOMAIN": "learningroutes.com"
+  },
+  // The same secret as the API's: it reads the sessions the API makes.
+  "secrets": { "required": ["BETTER_AUTH_SECRET"] },
+  "queues": {
+    "producers": [{ "binding": "PURGE_QUEUE", "queue": "learning-routes-purge" }]
+  },
+  "hyperdrive": [
+    {
+      "binding": "DB",
+      // A placeholder until the owner creates the Hyperdrive config (see wrangler.jsonc).
+      "id": "00000000000000000000000000000000",
+      // LOCAL ONLY: the lr_app role of platform/docker-compose.yml, never the migrator.
+      "localConnectionString": "postgres://lr_app:local-only-app@localhost:54318/learning_routes"
+    }
+  ]
+}

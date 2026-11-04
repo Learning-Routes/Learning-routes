@@ -20,7 +20,8 @@ export default {
     },
     "apps/api": {
       // Read by Better Auth's CLI through pnpm db:auth-schema.
-      entry: ["src/auth/schema.config.ts"],
+      // The second Worker's entry is named in wrangler.mcp.jsonc, which knip does not read.
+      entry: ["src/auth/schema.config.ts", "src/mcp/index.ts"],
     },
   },
   // CSS @import names packages too (app.css imports the design tokens).

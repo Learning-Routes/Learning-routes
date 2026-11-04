@@ -2,6 +2,7 @@ import type { Repos } from "@learning-routes/core/repos/ports";
 import { actionLog } from "../schema/log";
 import { applicationsRepo } from "./applications";
 import { catalogRepo } from "./catalog";
+import { connectionsRepo } from "./connections";
 import { routeDrafts } from "./drafts";
 import { enrollmentsRepo } from "./enrollments";
 import { learningRepo, reviewsRepo } from "./learning";
@@ -15,6 +16,7 @@ import { routeVersionsRepo } from "./versions";
 
 export function pgRepos(db: Db): Repos {
   return {
+    connections: connectionsRepo(db),
     spaces: spacesRepo(db),
     catalog: catalogRepo(db),
     applications: applicationsRepo(db),

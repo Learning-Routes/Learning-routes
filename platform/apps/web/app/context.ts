@@ -20,5 +20,7 @@ export const pageContext = createContext<{
     env: Pick<Env, "DB_PUBLIC">;
     ctx: Pick<ExecutionContext, "waitUntil">;
     api: (request: Request) => Promise<Response>;
+    /** The MCP Worker, which holds the OAuth provider (Platform STEP 5 §2). */
+    mcp: (request: Request) => Promise<Response>;
   };
 }>();
