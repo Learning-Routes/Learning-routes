@@ -5,7 +5,7 @@ const LINES = {
   es: "Aprende con quien mejor lo enseña.",
   en: "Learn from those who teach it best.",
   pt: "Aprenda com quem melhor ensina.",
-  fr: "Apprenez auprès de qui l&#x27;enseigne le mieux.",
+  fr: "Apprenez avec qui l&#x27;enseigne le mieux.",
   it: "Impara da chi lo insegna meglio.",
 } as const;
 

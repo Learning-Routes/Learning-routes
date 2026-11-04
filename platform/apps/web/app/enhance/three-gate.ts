@@ -1,27 +1,47 @@
 // When three.js may load on the landing (ADR 0008): after the first paint, only with
 // WebGL, and never under reduced motion. Everything else keeps the server HTML.
 
-type WebGLProbe = {
-  getExtension: (name: "WEBGL_lose_context") => { loseContext: () => void } | null;
-};
-
 type Page = {
   matchMedia: (query: string) => { matches: boolean };
-  createContext: () => WebGLProbe | null;
+  hasWebGL: () => Promise<boolean>;
 };
 
-export function threeIsWanted({ matchMedia, createContext }: Page): boolean {
+export async function threeIsWanted({ matchMedia, hasWebGL }: Page): Promise<boolean> {
   if (matchMedia("(prefers-reduced-motion: reduce)").matches) {
     return false;
   }
   try {
-    const probe = createContext();
-    // The scene makes its own context, and browsers limit how many can live.
-    probe?.getExtension("WEBGL_lose_context")?.loseContext();
-    return probe !== null;
+    return await hasWebGL();
   } catch {
     return false;
   }
+}
+
+export const SOFTWARE_RENDERERS = [
+  "swiftshader",
+  "llvmpipe",
+  "softpipe",
+  "software",
+  "microsoft basic render driver",
+];
+
+/** A browser that hides its renderer's name counts as having a GPU: most of them do. */
+function isSoftwareRenderer(name: string): boolean {
+  const lower = name.toLowerCase();
+  return SOFTWARE_RENDERERS.some((word) => lower.includes(word));
+}
+
+export type WebGLProbe = Pick<WebGLRenderingContext, "getExtension" | "getParameter">;
+
+/**
+ * Asks one context what it runs on, then releases it: the scene makes its own. Without a real GPU
+ * the map would crawl and block the page, so that answers no, unless the page asks anyway.
+ */
+export function probe(context: WebGLProbe, anyGpu: boolean): boolean {
+  const info = context.getExtension("WEBGL_debug_renderer_info");
+  const renderer = info ? String(context.getParameter(info.UNMASKED_RENDERER_WEBGL)) : "";
+  context.getExtension("WEBGL_lose_context")?.loseContext();
+  return anyGpu || !isSoftwareRenderer(renderer);
 }
 
 type Idle = {

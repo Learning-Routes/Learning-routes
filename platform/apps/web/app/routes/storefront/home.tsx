@@ -1,19 +1,20 @@
-import { CATALOG_TEXT, LANGUAGE_NAMES } from "@learning-routes/core/copy/catalog";
+import { LANGUAGE_NAMES } from "@learning-routes/core/copy/catalog";
 import { LANDING_TEXT } from "@learning-routes/core/copy/landing";
 import { BRAND, isLocale, LOCALES, type LocaleCode } from "@learning-routes/core/locales";
 import type { PublicRoute } from "@learning-routes/public-read/reads";
 import { data } from "react-router";
 import { alternates } from "../../alternates";
 import { pageContext } from "../../context";
-import { HeroRoute } from "../../landing/hero-route";
+import { CloseSheet } from "../../landing/close-sheet";
 import "../../landing/landing.css";
+import { LandingStageSection } from "../../landing/stage";
 import "../../storefront/catalog.css";
 import { storefrontHeaders } from "../../storefront/cache";
+import { EnhancementScript } from "../../storefront/enhancement-script";
 import { publicReads } from "../../storefront/public-reads.server";
 import { RouteCard } from "../../storefront/route-card";
 import { PlatformHeader } from "../../storefront/site-frame";
 import { storefront } from "../../surface";
-import { ButtonLink } from "../../ui/button";
 import { TextLink } from "../../ui/parts";
 import type { Route } from "./+types/home";
 
@@ -105,60 +106,21 @@ function RoutesToStart({
 
 export default function StorefrontHome({ loaderData }: Route.ComponentProps) {
   const { lang, origin, routes, appOrigin, creatorDomain } = loaderData;
-  const words = LANDING_TEXT[lang];
-  const shared = CATALOG_TEXT[lang];
-  const teach = `${appOrigin}/quiero-ensenar`;
   const { protocol } = new URL(origin);
   return (
-    <>
+    <div className="lp moment">
       <PlatformHeader locale={lang} appOrigin={appOrigin} />
-      <main className="landing">
-        <section className="landing-hero">
-          <div className="landing-hero-text">
-            <h1 className="landing-headline">{words.headline}</h1>
-            <p className="landing-lead">{words.lead}</p>
-            <div className="landing-actions">
-              <ButtonLink href={`/${lang}/explorar`}>{shared.explore}</ButtonLink>
-              <TextLink href={teach}>{words.teachLink}</TextLink>
-            </div>
-          </div>
-          <figure className="landing-hero-figure">
-            <HeroRoute words={words} />
-          </figure>
-        </section>
-        <section className="landing-steps-section">
-          <h2 className="landing-section-title">{words.stepsTitle}</h2>
-          <ol className="landing-steps">
-            {words.steps.map((step, index) => (
-              <li key={step.title} className="landing-step">
-                <span className="landing-step-number">{index + 1}</span>
-                <h3 className="landing-step-title">{step.title}</h3>
-                <p className="landing-step-body">{step.body}</p>
-              </li>
-            ))}
-          </ol>
-        </section>
+      <main className="lp-main">
+        <LandingStageSection locale={lang} />
         <RoutesToStart
           lang={lang}
           routes={routes}
           creatorOrigin={(slug) => `${protocol}//${slug}.${creatorDomain}`}
         />
-        <section className="landing-teach">
-          <svg className="landing-teach-line" viewBox="0 0 600 200" aria-hidden="true">
-            <path d="M0 180 C 120 180, 160 60, 300 70 S 480 160, 600 20" />
-          </svg>
-          <div className="landing-teach-text">
-            <h2 className="landing-teach-title">{shared.teachTitle}</h2>
-            <p className="landing-teach-body">{shared.teachBody}</p>
-          </div>
-          <div className="landing-teach-action">
-            <ButtonLink href={teach} emphasis="secondary">
-              {shared.teachAction}
-            </ButtonLink>
-            <span className="landing-teach-note">{words.teachInvitation}</span>
-          </div>
-        </section>
-        <footer className="landing-footer">
+        <CloseSheet locale={lang} teachHref={`${appOrigin}/quiero-ensenar`} />
+      </main>
+      <footer className="lp-footer">
+        <div className="lp-wrap">
           <span>{BRAND}</span>
           <ul>
             {LOCALES.map((locale) => (
@@ -169,8 +131,9 @@ export default function StorefrontHome({ loaderData }: Route.ComponentProps) {
               </li>
             ))}
           </ul>
-        </footer>
-      </main>
-    </>
+        </div>
+      </footer>
+      <EnhancementScript page="landing" />
+    </div>
   );
 }

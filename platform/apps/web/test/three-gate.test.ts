@@ -1,28 +1,57 @@
 import { describe, expect, test, vi } from "vitest";
-import { threeIsWanted, whenIdle } from "../app/enhance/three-gate";
+import { probe, threeIsWanted, type WebGLProbe, whenIdle } from "../app/enhance/three-gate";
 
-const page = ({ reduce = false, webgl = true, throws = false } = {}) => ({
+const page = ({ reduce = false, webgl = true, fails = false } = {}) => ({
   matchMedia: () => ({ matches: reduce }),
-  createContext: () => {
-    if (throws) {
-      throw new Error("blocked");
-    }
-    return webgl ? { getExtension: () => null } : null;
-  },
+  hasWebGL: () => (fails ? Promise.reject(new Error("blocked")) : Promise.resolve(webgl)),
 });
 
 describe("threeIsWanted", () => {
-  test("yes with WebGL and motion allowed", () => {
-    expect(threeIsWanted(page())).toBe(true);
+  test("yes with WebGL and motion allowed", async () => {
+    expect(await threeIsWanted(page())).toBe(true);
   });
-  test("no under reduced motion", () => {
-    expect(threeIsWanted(page({ reduce: true }))).toBe(false);
+  test("no under reduced motion, without even asking for WebGL", async () => {
+    const hasWebGL = vi.fn();
+    const matchMedia = () => ({ matches: true });
+    expect(await threeIsWanted({ matchMedia, hasWebGL })).toBe(false);
+    expect(hasWebGL).not.toHaveBeenCalled();
   });
-  test("no without WebGL", () => {
-    expect(threeIsWanted(page({ webgl: false }))).toBe(false);
+  test("no without WebGL", async () => {
+    expect(await threeIsWanted(page({ webgl: false }))).toBe(false);
   });
-  test("no when asking for WebGL throws", () => {
-    expect(threeIsWanted(page({ throws: true }))).toBe(false);
+  test("no when asking for WebGL fails", async () => {
+    expect(await threeIsWanted(page({ fails: true }))).toBe(false);
+  });
+});
+
+describe("probe", () => {
+  const context = (renderer: string | null, loseContext = vi.fn()) =>
+    ({
+      getExtension: (name: string) =>
+        name === "WEBGL_lose_context"
+          ? { loseContext }
+          : renderer === null
+            ? null
+            : { UNMASKED_RENDERER_WEBGL: 1 },
+      getParameter: () => renderer,
+    }) as unknown as WebGLProbe;
+
+  test("yes on a real GPU, and it releases the context", () => {
+    const loseContext = vi.fn();
+    expect(
+      probe(context("ANGLE (Apple, ANGLE Metal Renderer: Apple M3)", loseContext), false),
+    ).toBe(true);
+    expect(loseContext).toHaveBeenCalledOnce();
+  });
+  test.each(["Google SwiftShader", "llvmpipe (LLVM 15)", "Microsoft Basic Render Driver"])(
+    "no on %s, unless the page asks anyway",
+    (name) => {
+      expect(probe(context(name), false)).toBe(false);
+      expect(probe(context(name), true)).toBe(true);
+    },
+  );
+  test("a hidden renderer counts as a GPU", () => {
+    expect(probe(context(null), false)).toBe(true);
   });
 });
 
