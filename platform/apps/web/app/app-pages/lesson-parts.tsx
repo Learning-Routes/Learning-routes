@@ -3,7 +3,7 @@ import { LESSON_TEXT } from "@learning-routes/core/copy/lesson";
 import type { LocaleCode } from "@learning-routes/core/locales";
 import type { LocalizedText } from "@learning-routes/core/localized-text";
 import { useEffect, useId, useRef, useState } from "react";
-import { filled, inLocale } from "../storefront/words";
+import { inLocale } from "../storefront/words";
 import { Button, ButtonLink } from "../ui/button";
 
 /** A question nobody can get right is the creator's mistake, and never blocks the student. */
