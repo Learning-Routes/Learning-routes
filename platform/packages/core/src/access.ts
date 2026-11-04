@@ -31,6 +31,8 @@ const EDITORS = { owner: ANY_WAY, coeditor: ANY_WAY } as const;
 
 export const PERMISSIONS = {
   // A person's own connections, in the app. "student" is how an action for oneself is asked.
+  // The spaces one teaches in: asked for oneself, and it shows nothing else.
+  "space.list": { student: ["ui", "mcp"] },
   "connection.list": { student: ["ui"] },
   "connection.grant": { student: ["ui"] },
   "connection.revoke": { student: ["ui"] },
@@ -41,11 +43,14 @@ export const PERMISSIONS = {
   "membership.add": { owner: ["ui"] },
   // route.create itself refuses a paid route from anywhere but the app.
   "route.create": EDITORS,
+  "route.update": EDITORS,
+  "route.import": EDITORS,
   "route.get": STAFF,
   "route.list": STAFF,
   "module.add": EDITORS,
   "lesson.add": EDITORS,
   "block.add": EDITORS,
+  "blocks.add": EDITORS,
   "route.publish": EDITORS,
   // On the actor's own behalf, allowed as the student role it gives a newcomer.
   "enrollment.create": EVERYONE,

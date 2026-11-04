@@ -108,6 +108,14 @@ describe("two tenants, through every action", () => {
           expectedRevision: 0,
           block: { type: "concept", title: { en: "T" }, body: { en: "B" } },
         },
+        "route.import": { routeId: routeB, expectedRevision: 0, document: {} },
+        "route.update": { routeId: routeB, expectedRevision: 0, title: { es: "Ajena" } },
+        "blocks.add": {
+          routeId: routeB,
+          expectedRevision: 0,
+          lessonId: crypto.randomUUID(),
+          blocks: [{ type: "concept", body: { es: "Ajeno" } }],
+        },
         "route.publish": { routeId: routeB, expectedRevision: 0 },
         // A route in a space A cannot see.
         "enrollment.create": { routeId: closedB },
@@ -122,7 +130,13 @@ describe("two tenants, through every action", () => {
         },
       };
       // These take no space's ids: each acts only on the actor's own account.
-      const OWN = ["enrollment.list", "connection.list", "connection.grant", "connection.revoke"];
+      const OWN = [
+        "space.list",
+        "enrollment.list",
+        "connection.list",
+        "connection.grant",
+        "connection.revoke",
+      ];
       const named = ACTION_NAMES.filter((name) => !OWN.includes(name));
       expect(Object.keys(inputs).sort()).toEqual([...named].sort());
 

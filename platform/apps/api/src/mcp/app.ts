@@ -10,6 +10,7 @@ import { newId } from "../ids";
 import { requestLog } from "../log";
 import { createOAuth } from "./auth";
 import { boundedMetadataFetch } from "./client-metadata";
+import { serveMcp } from "./request";
 
 // The MCP Worker's routes (Platform STEP 5). Built by a factory, like the API's, so the tests
 // can serve a client's metadata document themselves; index.ts builds the one Workers run.
@@ -83,6 +84,11 @@ export function createMcpApp(deps: McpAppDeps = {}) {
     });
   });
 
+  app.all("/mcp", (c) =>
+    withClient(c.env, c.executionCtx, (db) =>
+      serveMcp(c.req.raw, c.env, db, createOAuth(c.env, db, fetchClientMetadataResource)),
+    ),
+  );
   app.on(["GET", "POST"], `${AUTH_PATH}/*`, provider);
   app.on(["GET", "HEAD"], "/.well-known/*", provider);
   return app;

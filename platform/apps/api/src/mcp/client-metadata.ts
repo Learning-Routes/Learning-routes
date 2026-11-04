@@ -1,4 +1,5 @@
 import type { ClientMetadataResourceFetch } from "@better-auth/oauth-provider";
+import { readAtMost } from "./read-at-most";
 
 // How a client's metadata document is fetched (CIMD; Platform STEP 5 §2). The address comes
 // from a stranger, so: https only, no redirects, a short wait and a small body. A Worker's
@@ -23,31 +24,9 @@ export function boundedMetadataFetch(fetcher: typeof fetch = fetch): ClientMetad
       throw new TypeError("a client's metadata document is served without a redirect");
     }
     const body = await readAtMost(response, MOST_BYTES);
-    return new Response(body, { status: response.status, headers: response.headers });
-  };
-}
-
-async function readAtMost(response: Response, most: number): Promise<Uint8Array> {
-  const chunks: Uint8Array[] = [];
-  let total = 0;
-  const reader = response.body?.getReader();
-  while (reader) {
-    const { done, value } = await reader.read();
-    if (done) {
-      break;
-    }
-    total += value.length;
-    if (total > most) {
-      await reader.cancel();
+    if (body === null) {
       throw new TypeError("a client's metadata document is too large");
     }
-    chunks.push(value);
-  }
-  const body = new Uint8Array(total);
-  let at = 0;
-  for (const chunk of chunks) {
-    body.set(chunk, at);
-    at += chunk.length;
-  }
-  return body;
+    return new Response(body, { status: response.status, headers: response.headers });
+  };
 }

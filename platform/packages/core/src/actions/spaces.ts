@@ -103,3 +103,12 @@ export const membershipAdd = defineAction({
     return { userId: input.userId, role: input.role };
   },
 });
+
+export const spaceList = defineAction({
+  name: "space.list",
+  kind: "query",
+  description: "List the spaces you teach in, with your role in each.",
+  input: z.strictObject({}),
+  target: () => ({ kind: "account", id: "self", self: true }),
+  run: (ctx) => ctx.repos.spaces.listOwn(ctx.actor.userId),
+});

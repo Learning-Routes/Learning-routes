@@ -1,5 +1,5 @@
 import type { Connections } from "@learning-routes/core/repos/ports";
-import { and, eq, inArray } from "drizzle-orm";
+import { and, eq, inArray, lt } from "drizzle-orm";
 import {
   connectionUses,
   oauthAccessToken,
@@ -14,6 +14,29 @@ import type { Db } from "./shared";
 // security, like the rest of Better Auth's, so every query here names the user.
 
 const TEACHES = ["owner", "coeditor", "assistant"] as const;
+
+const A_MINUTE_MS = 60_000;
+
+/** When this person said yes to this client, or null: what makes a token still good. */
+export async function consentedAt(db: Db, userId: string, clientId: string) {
+  const [row] = await db
+    .select({ createdAt: oauthConsent.createdAt })
+    .from(oauthConsent)
+    .where(and(eq(oauthConsent.userId, userId), eq(oauthConsent.clientId, clientId)));
+  return row?.createdAt ?? null;
+}
+
+/** "Último uso", at most one write a minute for each connection. */
+export async function noteUse(db: Db, userId: string, clientId: string, now: Date) {
+  await db
+    .insert(connectionUses)
+    .values({ userId, clientId, lastUsedAt: now })
+    .onConflictDoUpdate({
+      target: [connectionUses.userId, connectionUses.clientId],
+      set: { lastUsedAt: now },
+      setWhere: lt(connectionUses.lastUsedAt, new Date(now.getTime() - A_MINUTE_MS)),
+    });
+}
 
 export function connectionsRepo(db: Db): Connections {
   return {

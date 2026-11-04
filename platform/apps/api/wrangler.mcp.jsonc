@@ -17,7 +17,9 @@
   "placement": { "mode": "targeted", "region": "aws:us-east-1" },
   "vars": {
     "APP_ORIGIN": "https://app.learningroutes.com",
-    "ENVIRONMENT": "production"
+    "ENVIRONMENT": "production",
+    // Where a published route's public address lives.
+    "CREATOR_DOMAIN": "learningroutes.com"
   },
   // The same secret as the API's: it reads the sessions the API makes.
   "secrets": { "required": ["BETTER_AUTH_SECRET"] },

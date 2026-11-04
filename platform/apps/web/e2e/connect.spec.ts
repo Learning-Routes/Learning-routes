@@ -2,12 +2,14 @@ import { BRAND } from "@learning-routes/core/locales";
 import { expect, type Page, test } from "@playwright/test";
 import { DEV } from "./screens";
 import {
+  authorizeUrl,
   clearLimits,
   linkFor,
   makeTeacher,
   newAddress,
   OAUTH_CLIENT_ID,
   OAUTH_REDIRECT,
+  PKCE_VERIFIER,
   seedOAuthClient,
   signInContext,
 } from "./session";
@@ -15,23 +17,9 @@ import {
 // An assistant connecting (Platform STEP 5 §2): the client is seeded, since a metadata
 // document would need the network. It asks, its person says yes, and "Desconectar" ends it.
 
-const CHALLENGE = "E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM";
-const VERIFIER = "dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk";
-
 const AT_SIGN_IN = /\/sign-in\?/;
 const AT_CONSENT = /\/conectar\?/;
-
-const asked = () =>
-  `${DEV}/api/auth/oauth2/authorize?${new URLSearchParams({
-    response_type: "code",
-    client_id: OAUTH_CLIENT_ID,
-    redirect_uri: OAUTH_REDIRECT,
-    scope: "routes:read routes:write offline_access",
-    state: "estado",
-    code_challenge: CHALLENGE,
-    code_challenge_method: "S256",
-    resource: `${DEV}/mcp`,
-  })}`;
+const asked = () => authorizeUrl();
 
 /** The client's own page: nothing listens there, so the test answers for it. */
 async function clientAnswers(page: Page) {
@@ -74,7 +62,7 @@ test("a teacher says yes, the client gets tokens, and Desconectar ends them", as
       code,
       client_id: OAUTH_CLIENT_ID,
       redirect_uri: OAUTH_REDIRECT,
-      code_verifier: VERIFIER,
+      code_verifier: PKCE_VERIFIER,
       resource: `${DEV}/mcp`,
     },
   });
@@ -120,6 +108,19 @@ test("someone with no space to teach in is told so, and offered no button", asyn
     page.getByText("Para conectar un asistente necesitas tener un espacio para enseñar."),
   ).toBeVisible();
   await expect(page.getByRole("button", { name: "Permitir", exact: true })).toHaveCount(0);
+});
+
+test("Conecta tu asistente gives the address, and copies it", async ({ page, context }) => {
+  const email = newAddress("ensena");
+  await signInContext(context, email);
+  makeTeacher(email);
+  await context.grantPermissions(["clipboard-read", "clipboard-write"]);
+  await page.goto(`${DEV}/ensenar/conecta`);
+  await page.locator("html[data-hydrated]").waitFor();
+  await expect(page.getByText(`${DEV}/mcp`, { exact: true })).toBeVisible();
+  await page.getByRole("button", { name: "Copiar dirección" }).click();
+  await expect(page.getByRole("button", { name: "Copiada" })).toBeVisible();
+  expect(await page.evaluate(() => navigator.clipboard.readText())).toBe(`${DEV}/mcp`);
 });
 
 test("signing in comes back to the question", async ({ page, context }) => {

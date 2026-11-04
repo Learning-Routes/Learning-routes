@@ -1,4 +1,6 @@
+import { withClient } from "../../src/db/with-db";
 import { createMcpApp } from "../../src/mcp/app";
+import { createOAuth } from "../../src/mcp/auth";
 import { APP, harness, json, randomEmail, randomIp } from "../auth/harness";
 import { TEST_SECRET, URLS } from "../db/connect";
 
@@ -48,6 +50,7 @@ export function oauthHarness() {
     APP_ORIGIN: APP,
     ENVIRONMENT: "test",
     BETTER_AUTH_SECRET: TEST_SECRET,
+    CREATOR_DOMAIN: "example.test",
     PURGE_QUEUE: { send: async () => undefined },
   } as unknown as Env;
   const ctx = {
@@ -89,11 +92,12 @@ export function oauthHarness() {
     cookie: string,
     scope = "routes:read routes:write routes:publish offline_access",
     clientId = CLIENT_ID,
+    redirectUri = REDIRECT_URI,
   ) => {
     const query = new URLSearchParams({
       response_type: "code",
       client_id: clientId,
-      redirect_uri: REDIRECT_URI,
+      redirect_uri: redirectUri,
       scope,
       state: "state-1",
       code_challenge: await challengeOf(VERIFIER),
@@ -157,5 +161,76 @@ export function oauthHarness() {
     await api.settle();
     await Promise.allSettled(pending.splice(0));
   };
-  return { api, call, signIn, authorize, consent, exchange, refresh, connect, settle, documents };
+  /** A tool call through /mcp: its result, with the protocol's envelope. */
+  const tool = async (token: string, name: string, args: Record<string, unknown> = {}) => {
+    const response = await call("/mcp", envelope("tools/call", { name, arguments: args }, token));
+    const body = (await response.json()) as {
+      result?: {
+        isError?: boolean;
+        structuredContent?: Record<string, unknown>;
+        content?: { text: string }[];
+      };
+    };
+    return { status: response.status, ...body.result };
+  };
+
+  /** A token signed with the server's real key, saying whatever the test wants. */
+  const signed = (payload: Record<string, unknown>) =>
+    withClient(env, ctx, (db) =>
+      createOAuth(env, db, async () => new Response(null, { status: 404 })).api.signJWT({
+        body: { payload },
+      }),
+    ).then(({ token }) => token);
+
+  return {
+    signed,
+    api,
+    call,
+    signIn,
+    authorize,
+    consent,
+    exchange,
+    refresh,
+    connect,
+    settle,
+    documents,
+    tool,
+  };
+}
+
+export const PROTOCOL = "2026-07-28";
+
+/** One JSON-RPC request of the 2026-07-28 revision, with what its headers must say. */
+export function envelope(
+  method: string,
+  params: Record<string, unknown>,
+  token?: string,
+  headers: Record<string, string> = {},
+) {
+  const name = params.name ?? params.uri;
+  return {
+    method: "POST",
+    client: true as const,
+    headers: {
+      "content-type": "application/json",
+      accept: "application/json, text/event-stream",
+      "mcp-protocol-version": PROTOCOL,
+      "mcp-method": method,
+      ...(typeof name === "string" ? { "mcp-name": name } : {}),
+      ...(token ? { authorization: `Bearer ${token}` } : {}),
+      ...headers,
+    },
+    body: JSON.stringify({
+      jsonrpc: "2.0",
+      id: 1,
+      method,
+      params: {
+        ...params,
+        _meta: {
+          "io.modelcontextprotocol/protocolVersion": PROTOCOL,
+          "io.modelcontextprotocol/clientCapabilities": {},
+        },
+      },
+    }),
+  };
 }

@@ -112,3 +112,47 @@ export const blockAdd = defineAction({
     return { id, revision };
   },
 });
+
+export const blockAddMany = defineAction({
+  name: "blocks.add",
+  kind: "mutation",
+  description: "Add blocks to the end of a lesson of a route's draft: all of them, or none.",
+  input: z.strictObject({
+    routeId: z.uuid(),
+    expectedRevision: z.int().nonnegative(),
+    lessonId: z.uuid(),
+    blocks: z.array(z.record(z.string(), z.unknown())).min(1).max(100),
+  }),
+  target: (input) => ({ kind: "route", id: input.routeId }),
+  async run(ctx, input, given) {
+    const { spaceId } = inSpace(given);
+    const draft = await draftOf(ctx, spaceId, input.routeId);
+    if (!draft.lessons.some((lesson) => lesson.id === input.lessonId)) {
+      throw new ActionError("not_found", "not found");
+    }
+    const siblings = draft.blocks.filter((block) => block.lessonId === input.lessonId);
+    const blocks = input.blocks.map((given) => {
+      const id = ctx.ids.newId();
+      const parsed = Block.safeParse({ ...given, id });
+      if (!parsed.success) {
+        throw new ActionError("invalid", "not a valid block");
+      }
+      const { id: _, type, ...data } = parsed.data;
+      return { id, lessonId: input.lessonId, kind: type, data };
+    });
+    return ctx.repos.transaction(async (repos) => {
+      let revision = input.expectedRevision;
+      for (const block of blocks) {
+        const position = placed(siblings, undefined);
+        siblings.push({ id: block.id, position } as (typeof siblings)[number]);
+        ({ revision } = unwrap(
+          await repos.routeDrafts.addBlock(spaceId, input.routeId, revision, {
+            ...block,
+            position,
+          }),
+        ));
+      }
+      return { ids: blocks.map((block) => block.id), revision };
+    });
+  },
+});
