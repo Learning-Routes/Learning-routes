@@ -102,6 +102,7 @@ export const CREATOR_TEXT: Record<LocaleCode, CreatorText> = {
     noRoutes: "Em breve haverá rotas aqui.",
     madeWith: `Feito com ${BRAND}`,
     journey: "O percurso",
+    // Pending native review.
     moduleNumber: "Módulo {n}",
     seeRoute: "Ver a rota",
     routeBy: "Uma rota de {creator}",
@@ -130,6 +131,7 @@ export const CREATOR_TEXT: Record<LocaleCode, CreatorText> = {
     noRoutes: "Des parcours arriveront bientôt ici.",
     madeWith: `Fait avec ${BRAND}`,
     journey: "Le trajet",
+    // Pending native review.
     moduleNumber: "Module {n}",
     seeRoute: "Voir le parcours",
     routeBy: "Un parcours de {creator}",
@@ -159,6 +161,7 @@ export const CREATOR_TEXT: Record<LocaleCode, CreatorText> = {
     noRoutes: "Presto qui ci saranno dei percorsi.",
     madeWith: `Fatto con ${BRAND}`,
     journey: "Il tragitto",
+    // Pending native review.
     moduleNumber: "Modulo {n}",
     seeRoute: "Vedi il percorso",
     routeBy: "Un percorso di {creator}",

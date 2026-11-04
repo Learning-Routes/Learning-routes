@@ -138,6 +138,7 @@
   margin-inline: var(--space-6);
 }
 .route-card-title {
+  overflow-wrap: anywhere;
   margin-block: var(--space-1) 0;
   font-size: var(--text-title);
   font-weight: 780;

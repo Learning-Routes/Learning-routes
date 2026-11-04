@@ -115,6 +115,7 @@ export const CONNECT_TEXT: Record<LocaleCode, ConnectText> = {
     returnsTo: "Sua resposta vai para {host}.",
     asksTo: "Poderá:",
     noSpace: "Para conectar um assistente, você precisa ter um espaço para ensinar.",
+    // Pending native review.
     wantToTeach: "Quero ensinar",
     yourSide: "Seu {brand}",
     connections: "Conexões",
@@ -145,6 +146,7 @@ export const CONNECT_TEXT: Record<LocaleCode, ConnectText> = {
     returnsTo: "Votre réponse est envoyée à {host}.",
     asksTo: "Il pourra :",
     noSpace: "Pour connecter un assistant, il vous faut un espace pour enseigner.",
+    // Pending native review.
     wantToTeach: "Je veux enseigner",
     yourSide: "Votre {brand}",
     connections: "Connexions",
@@ -175,6 +177,7 @@ export const CONNECT_TEXT: Record<LocaleCode, ConnectText> = {
     returnsTo: "La tua risposta va a {host}.",
     asksTo: "Potrà:",
     noSpace: "Per collegare un assistente ti serve uno spazio in cui insegnare.",
+    // Pending native review.
     wantToTeach: "Voglio insegnare",
     yourSide: "Il tuo {brand}",
     connections: "Connessioni",
