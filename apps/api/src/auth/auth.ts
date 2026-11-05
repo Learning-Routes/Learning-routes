@@ -7,11 +7,14 @@ import { betterAuth } from "better-auth/minimal";
 import { magicLink } from "better-auth/plugins/magic-link";
 import * as tables from "../db/schema/auth";
 import type { Database, Transaction } from "../db/with-db";
+import { readConnectIntent } from "./connect-intent";
 import type { EmailSender } from "./email";
+import { intentIdentifier } from "./magic-token";
 import { authOptions } from "./options";
 import { emailRateKey } from "./rate-key";
 import { takeFromWindow } from "./rate-window";
 import { AUTH_PATH, SESSION_COOKIE, sharedAuthOptions } from "./shared";
+import { readStartIntent } from "./start-intent";
 
 // Better Auth for one request (Platform STEP 2 §5), on withClient's client: a
 // Worker has no long-lived state, so it is built per request from env. The app
@@ -24,6 +27,8 @@ export const CONFIRM_PATH = `${AUTH_PATH}/magic-link/confirm`;
 /** The app's page a link opens; the web Worker serves it. */
 const LINK_PATH = "/sign-in/confirm";
 
+// The email says five minutes.
+const LINK_LIFETIME_S = 300;
 const LINKS_PER_ADDRESS = 5;
 const ADDRESS_WINDOW_MS = 600_000;
 
@@ -51,6 +56,20 @@ async function refuseFloodedInbox(
   }
 }
 
+/** What this browser was doing when it asked for the link, kept with the token (magic-token.ts). */
+async function keepIntent(ctx: EndpointContext, token: string, secret: string) {
+  const cookies = ctx?.request?.headers.get("cookie");
+  const joining = await readStartIntent(secret, cookies, Date.now());
+  const target = readConnectIntent(cookies) ?? (joining ? `/empezar?ruta=${joining}` : null);
+  if (target && ctx) {
+    await ctx.context.internalAdapter.createVerificationValue({
+      identifier: await intentIdentifier(token),
+      value: target,
+      expiresAt: new Date(Date.now() + LINK_LIFETIME_S * 1000),
+    });
+  }
+}
+
 export function createAuth(env: Env, db: Database | Transaction, email: EmailSender) {
   return betterAuth({
     ...authOptions,
@@ -67,12 +86,12 @@ export function createAuth(env: Env, db: Database | Transaction, email: EmailSen
     plugins: [
       magicLink({
         storeToken: "hashed",
-        // The email says five minutes.
-        expiresIn: 300,
+        expiresIn: LINK_LIFETIME_S,
         // The link opens the app's page, which asks first; Better Auth's own link
         // would sign in on a GET, with the token in its query.
         sendMagicLink: async ({ email: address, token }, ctx) => {
           await refuseFloodedInbox(ctx, address, env.BETTER_AUTH_SECRET);
+          await keepIntent(ctx, token, env.BETTER_AUTH_SECRET);
           await email.sendMagicLink({
             email: address,
             // In the fragment: no request, and so no log, ever carries it.

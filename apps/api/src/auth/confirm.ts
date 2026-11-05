@@ -3,6 +3,7 @@ import { withClient } from "../db/with-db";
 import { AUTH_PATH, CONFIRM_PATH, createAuth, takeFromWindow } from "./auth";
 import { DEAD_CONNECT_COOKIE, readConnectIntent } from "./connect-intent";
 import type { EmailSender } from "./email";
+import { identifierOf, intentIdentifier } from "./magic-token";
 import { DEAD_START_COOKIE, readStartIntent } from "./start-intent";
 
 // What the sign-in link's page needs (Platform STEP 2 review item 11, and Platform
@@ -12,7 +13,6 @@ import { DEAD_START_COOKIE, readStartIntent } from "./start-intent";
 // another site that opens the link, signs in nobody. Better Auth's own verify, which
 // signs in on a GET, answers 404.
 
-const PADDING = /=+$/;
 const SIGNED_IN = "/mis-rutas";
 const EXPIRED = "/sign-in?notice=expired";
 const LIMITED = "/sign-in?notice=limited";
@@ -22,15 +22,6 @@ const PEEKS_PER_CLIENT = 30;
 const PEEKS_PER_TOKEN = 10;
 const PEEK_WINDOW_MS = 600_000;
 const ANY_ORIGIN = "https://origin.invalid";
-
-/** How Better Auth stores a token when storeToken is "hashed". */
-async function identifierOf(token: string): Promise<string> {
-  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(token));
-  return btoa(String.fromCharCode(...new Uint8Array(digest)))
-    .replaceAll("+", "-")
-    .replaceAll("/", "_")
-    .replace(PADDING, "");
-}
 
 function addressIn(value: string): string | null {
   try {
@@ -107,6 +98,19 @@ export function confirmRoutes(
   app.post(CONFIRM_PATH, (c) => confirmSignIn(c, emailSender));
 }
 
+async function keptIntent(
+  c: Context<{ Bindings: Env }>,
+  emailSender: (env: Env) => EmailSender,
+  token: string,
+): Promise<string | null> {
+  const identifier = await intentIdentifier(token);
+  return withClient(c.env, c.executionCtx, async (db) => {
+    const { internalAdapter } = await createAuth(c.env, db, emailSender(c.env)).$context;
+    const kept = await internalAdapter.findVerificationValue(identifier);
+    return kept && new Date(kept.expiresAt) > new Date() ? kept.value : null;
+  });
+}
+
 /** The form's POST: the one thing that signs in. */
 async function confirmSignIn(
   c: Context<{ Bindings: Env }>,
@@ -121,16 +125,18 @@ async function confirmSignIn(
   // Through Better Auth's handler, so its rate limits and checks apply.
   const verify = new URL(`${c.env.APP_ORIGIN}${AUTH_PATH}/magic-link/verify`);
   verify.searchParams.set("token", token);
-  // Back to the route they were joining, if this browser was joining one.
+  // Back to what they were doing when they asked for this link, on whichever device opens it. This
+  // browser's own cookies are only for a link that has nothing kept with it.
   const joining = await readStartIntent(
     c.env.BETTER_AUTH_SECRET,
     c.req.header("cookie"),
     Date.now(),
   );
   const connecting = readConnectIntent(c.req.header("cookie"));
+  const kept = await keptIntent(c, emailSender, token);
   verify.searchParams.set(
     "callbackURL",
-    connecting ?? (joining ? `/empezar?ruta=${joining}` : SIGNED_IN),
+    kept ?? connecting ?? (joining ? `/empezar?ruta=${joining}` : SIGNED_IN),
   );
   verify.searchParams.set("errorCallbackURL", EXPIRED);
   const request = new Request(verify, { headers: c.req.raw.headers });

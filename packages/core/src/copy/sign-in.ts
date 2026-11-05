@@ -6,10 +6,13 @@ import { BRAND, type LocaleCode } from "../locales";
 
 export interface SignInText {
   emailSubject: string;
+  emailHeading: string;
   emailIntro: string;
   emailAction: string;
   emailExpiry: string;
   emailIgnore: string;
+  emailFallback: string;
+  emailNoTracking: string;
   title: string;
   intro: string;
   emailLabel: string;
@@ -43,11 +46,14 @@ export interface SignInText {
 
 export const SIGN_IN_TEXT: Record<LocaleCode, SignInText> = {
   es: {
-    emailSubject: `Tu enlace para entrar en ${BRAND}`,
-    emailIntro: `Usa este enlace para entrar en ${BRAND}.`,
-    emailAction: "Entrar",
-    emailExpiry: "Funciona una sola vez y caduca en 5 minutos.",
-    emailIgnore: "Si no lo pediste, ignora este correo: nadie entra sin el enlace.",
+    emailSubject: `Tu enlace para entrar a ${BRAND}`,
+    emailHeading: "Entra con este botón.",
+    emailIntro: `Alguien pidió entrar a ${BRAND} con este correo. Si fuiste tú, toca el botón.`,
+    emailAction: `Entrar a ${BRAND}`,
+    emailExpiry: "El enlace dura 5 minutos y sirve una sola vez.",
+    emailIgnore: "Si no lo pediste, ignora este correo: nadie entra sin este enlace.",
+    emailFallback: "Si el botón no funciona, copia y pega esta dirección en tu navegador:",
+    emailNoTracking: "Este correo no tiene imágenes ni rastreadores.",
     title: "Entrar",
     intro: "Escribe tu correo y te enviamos un enlace para entrar. Dura 5 minutos.",
     emailLabel: "Tu correo",
@@ -79,10 +85,13 @@ export const SIGN_IN_TEXT: Record<LocaleCode, SignInText> = {
   },
   en: {
     emailSubject: `Your sign-in link for ${BRAND}`,
-    emailIntro: `Use this link to sign in to ${BRAND}.`,
-    emailAction: "Sign in",
-    emailExpiry: "It works once and expires in 5 minutes.",
-    emailIgnore: "If you didn't ask for it, ignore this email: no one gets in without the link.",
+    emailHeading: "Sign in with this button.",
+    emailIntro: `Someone asked to sign in to ${BRAND} with this email. If it was you, tap the button.`,
+    emailAction: `Sign in to ${BRAND}`,
+    emailExpiry: "The link lasts 5 minutes and works once.",
+    emailIgnore: "If you didn't ask for it, ignore this email: no one gets in without this link.",
+    emailFallback: "If the button doesn't work, copy and paste this address into your browser:",
+    emailNoTracking: "This email has no images or trackers.",
     title: "Sign in",
     intro: "Enter your email and we'll send you a link to sign in. It lasts 5 minutes.",
     emailLabel: "Your email",
@@ -115,10 +124,13 @@ export const SIGN_IN_TEXT: Record<LocaleCode, SignInText> = {
   },
   pt: {
     emailSubject: `Seu link para entrar no ${BRAND}`,
-    emailIntro: `Use este link para entrar no ${BRAND}.`,
-    emailAction: "Entrar",
-    emailExpiry: "Ele funciona uma vez e expira em 5 minutos.",
-    emailIgnore: "Se você não pediu, ignore este e-mail: ninguém entra sem o link.",
+    emailHeading: "Entre com este botão.",
+    emailIntro: `Alguém pediu para entrar no ${BRAND} com este e-mail. Se foi você, toque no botão.`,
+    emailAction: `Entrar no ${BRAND}`,
+    emailExpiry: "O link dura 5 minutos e funciona uma vez.",
+    emailIgnore: "Se você não pediu, ignore este e-mail: ninguém entra sem este link.",
+    emailFallback: "Se o botão não funcionar, copie e cole este endereço no navegador:",
+    emailNoTracking: "Este e-mail não tem imagens nem rastreadores.",
     title: "Entrar",
     intro: "Digite seu e-mail e enviaremos um link para você entrar. Ele dura 5 minutos.",
     emailLabel: "Seu e-mail",
@@ -150,11 +162,15 @@ export const SIGN_IN_TEXT: Record<LocaleCode, SignInText> = {
   },
   fr: {
     emailSubject: `Votre lien de connexion à ${BRAND}`,
-    emailIntro: `Utilisez ce lien pour vous connecter à ${BRAND}.`,
-    emailAction: "Se connecter",
-    emailExpiry: "Il fonctionne une seule fois et expire dans 5 minutes.",
+    emailHeading: "Connectez-vous avec ce bouton.",
+    emailIntro: `Quelqu'un a demandé à se connecter à ${BRAND} avec cet e-mail. Si c'est vous, touchez le bouton.`,
+    emailAction: `Se connecter à ${BRAND}`,
+    emailExpiry: "Le lien dure 5 minutes et fonctionne une seule fois.",
     emailIgnore:
-      "Si vous ne l'avez pas demandé, ignorez cet e-mail : personne n'entre sans le lien.",
+      "Si vous ne l'avez pas demandé, ignorez cet e-mail : personne n'entre sans ce lien.",
+    emailFallback:
+      "Si le bouton ne fonctionne pas, copiez et collez cette adresse dans votre navigateur :",
+    emailNoTracking: "Cet e-mail ne contient ni images ni traceurs.",
     title: "Se connecter",
     intro: "Saisissez votre e-mail et nous vous enverrons un lien de connexion. Il dure 5 minutes.",
     emailLabel: "Votre e-mail",
@@ -188,10 +204,13 @@ export const SIGN_IN_TEXT: Record<LocaleCode, SignInText> = {
   },
   it: {
     emailSubject: `Il tuo link per accedere a ${BRAND}`,
-    emailIntro: `Usa questo link per accedere a ${BRAND}.`,
-    emailAction: "Accedi",
-    emailExpiry: "Funziona una sola volta e scade tra 5 minuti.",
-    emailIgnore: "Se non l'hai richiesto, ignora questa email: nessuno entra senza il link.",
+    emailHeading: "Accedi con questo pulsante.",
+    emailIntro: `Qualcuno ha chiesto di accedere a ${BRAND} con questa email. Se sei stato tu, tocca il pulsante.`,
+    emailAction: `Accedi a ${BRAND}`,
+    emailExpiry: "Il link dura 5 minuti e funziona una sola volta.",
+    emailIgnore: "Se non l'hai richiesto, ignora questa email: nessuno entra senza questo link.",
+    emailFallback: "Se il pulsante non funziona, copia e incolla questo indirizzo nel browser:",
+    emailNoTracking: "Questa email non contiene immagini né tracker.",
     title: "Accedi",
     intro: "Scrivi la tua email e ti invieremo un link per accedere. Dura 5 minuti.",
     emailLabel: "La tua email",

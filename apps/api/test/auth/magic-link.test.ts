@@ -10,7 +10,7 @@ import { APP, harness, json, randomEmail, randomIp } from "./harness";
 // opens the link, signs in nobody, and no server or log ever sees the token in a URL.
 
 const EXACT_SESSION_COOKIE =
-  /^__Host-lr_session=[^;\s]+; Max-Age=604800; Path=\/; HttpOnly; Secure; SameSite=Lax$/;
+  /^__Host-lr_session=[^;\s]+; Max-Age=2592000; Path=\/; HttpOnly; Secure; SameSite=Lax$/;
 const UUID_V7 = /^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
 const PADDING = /=+$/;
 const PEEK_MAX = 30;
