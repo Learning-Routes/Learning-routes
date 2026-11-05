@@ -132,7 +132,12 @@ async function mcpToken(cookie: string) {
     redirect: "manual",
     headers: { cookie },
   });
-  const page = new URL(asked.headers.get("location") ?? "", APP);
+  // A redirect, or the same address in JSON, which is how it answers a script.
+  const location =
+    asked.headers.get("location") ??
+    ((await asked.json().catch(() => null)) as { url?: string } | null)?.url ??
+    "";
+  const page = new URL(location, APP);
   if (!page.searchParams.get("client_id")) {
     throw new Error(`authorize went to ${page.pathname} (status ${asked.status})`);
   }
