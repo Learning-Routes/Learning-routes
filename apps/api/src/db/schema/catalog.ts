@@ -18,7 +18,8 @@ import { routes } from "./content";
 // The catalog and who may join (Platform STEP 4 §2.3, §2.4).
 
 export const LISTING_STATUSES = ["requested", "approved", "declined", "withdrawn"] as const;
-export const APPLICATION_STATUSES = ["new", "invited", "declined"] as const;
+// joined: the invitation was used, and the space exists.
+export const APPLICATION_STATUSES = ["new", "invited", "declined", "joined"] as const;
 
 /** A route's request to be listed in the catalog, and the operator's answer. */
 export const catalogListings = pgTable(
@@ -84,4 +85,21 @@ export const creatorApplications = pgTable(
     check("creator_applications_status", sql`${t.status} in (${oneOf(APPLICATION_STATUSES)})`),
     check("creator_applications_locale", sql`app.is_locale_list(array[${t.locale}])`),
   ],
+);
+
+// An invitation to teach (Platform STEP 10, pulled forward). The link's token is kept only as a
+// hash, and lr_app holds no privilege here: app.invite_applicant and app.accept_invitation do it all.
+export const creatorInvitations = pgTable(
+  "creator_invitations",
+  {
+    id: id(),
+    applicationId: uuid()
+      .notNull()
+      .references(() => creatorApplications.id, { onDelete: "cascade" }),
+    tokenHash: text().notNull().unique(),
+    expiresAt: timestamp({ withTimezone: true }).notNull(),
+    usedAt: time(),
+    createdAt: createdAt(),
+  },
+  (t) => [index("creator_invitations_application_idx").on(t.applicationId)],
 );

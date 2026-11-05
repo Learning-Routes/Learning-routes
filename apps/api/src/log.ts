@@ -11,6 +11,12 @@ type LogFields = {
   status?: number;
   duration_ms?: number;
   error?: string;
+  rpc?: string;
+  tool?: string;
+  arg_keys?: string[];
+  scopes?: string[];
+  protocol?: string | null;
+  tools?: string[];
 } & { [id: `${string}_id`]: string | null };
 
 /** Writes one structured log line. */

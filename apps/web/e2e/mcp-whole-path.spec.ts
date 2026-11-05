@@ -117,7 +117,7 @@ test("an assistant imports and publishes a route, until it is disconnected", asy
   await expect(page.getByText(HOSTILE_TITLE).first()).toBeVisible();
   expect(await page.evaluate(() => "__pwned" in window)).toBe(false);
 
-  await page.goto(`${DEV}/ensenar/conexiones`);
+  await page.goto(`${DEV}/creador/conexiones`);
   await expect(page.getByText("Último uso:")).toBeVisible();
   await page.getByRole("button", { name: "Desconectar: Cliente de prueba" }).click();
   await expect(page.getByText("Desconectado.")).toBeVisible();

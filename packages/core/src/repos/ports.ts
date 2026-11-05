@@ -4,7 +4,7 @@ import type { Enrollment, Progress, SpaceRole } from "../domain";
 import type { Card } from "../learning/fsrs";
 import type { Locale, LocalizedText } from "../localized-text";
 import type { Member } from "../memberships";
-import type { Applications, Catalog } from "./catalog-ports";
+import type { Applications, Catalog, Invitations } from "./catalog-ports";
 import type { Connections, OwnSpace } from "./connection-ports";
 import type { OwnEnrollment } from "./own-enrollment";
 import type { RepoResult } from "./repo-result";
@@ -17,6 +17,9 @@ export type {
   CatalogDecision,
   CatalogListing,
   CatalogQueueItem,
+  InvitationPreview,
+  InvitationState,
+  Invitations,
 } from "./catalog-ports";
 
 // The repositories, one port per aggregate (Platform STEP 2 §4). core still
@@ -282,6 +285,7 @@ export interface Repos {
   spaces: Spaces;
   catalog: Catalog;
   applications: Applications;
+  invitations: Invitations;
   memberships: Memberships;
   routeDrafts: RouteDrafts;
   routeVersions: RouteVersions;

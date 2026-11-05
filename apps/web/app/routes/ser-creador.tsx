@@ -12,7 +12,7 @@ import { Button } from "../ui/button";
 import { Notice } from "../ui/parts";
 import { SiteHeader } from "../ui/site-header";
 import { TextField } from "../ui/text-field";
-import type { Route } from "./+types/quiero-ensenar";
+import type { Route } from "./+types/ser-creador";
 
 // "Quiero enseñar", from v2's Ensenar (Platform STEP 4 §6.3): no account needed. The API
 // checks the Turnstile token with Siteverify; the widget here only earns one. A token works

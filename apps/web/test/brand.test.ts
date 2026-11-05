@@ -1,8 +1,8 @@
 import { BRAND, PLANNED_HOST } from "@learning-routes/core/locales";
 import { describe, expect, it } from "vitest";
+import { meta as studioMeta } from "../app/routes/creador";
 import type { Route } from "../app/routes/storefront/+types/home";
 import { meta as storefrontMeta } from "../app/routes/storefront/home";
-import { meta as studioMeta } from "../app/routes/studio";
 
 // Every platform source file, as text. The test's own file is outside these globs.
 const sources = {
@@ -34,7 +34,9 @@ describe("the visible name while the platform is built", () => {
     expect(storefrontMeta({ loaderData } as unknown as Route.MetaArgs)).toContainEqual({
       title: BRAND,
     });
-    expect(studioMeta()).toContainEqual({ title: `Enseñar · ${BRAND}` });
+    expect(studioMeta({ loaderData: { locale: "es" } } as never)).toContainEqual({
+      title: `Enseñar · ${BRAND}`,
+    });
   });
 
   it("is written in one place only, so the switch is a one-line change", () => {

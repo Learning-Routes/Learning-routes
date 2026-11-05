@@ -53,9 +53,12 @@ describe("the security definer functions", () => {
         order by p.proname`,
     );
     const callable = [
+      "accept_invitation",
       "bump_draft",
       "create_space",
       "enroll",
+      "invitation_state",
+      "invite_applicant",
       "is_operator",
       "mark_published",
       "member_space_ids",
@@ -63,9 +66,9 @@ describe("the security definer functions", () => {
       "upgrade_enrollment",
     ];
     expect(rows.map((row: { proname: string }) => row.proname)).toEqual([
-      ...callable.slice(0, 4),
+      ...callable.slice(0, 7),
       "keep_an_owner",
-      ...callable.slice(4),
+      ...callable.slice(7),
     ]);
     for (const row of rows) {
       expect(row).toEqual({

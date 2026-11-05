@@ -1,5 +1,5 @@
 import { createApp } from "../../src/app";
-import type { MagicLinkMessage } from "../../src/auth/email";
+import type { InvitationMessage, MagicLinkMessage } from "../../src/auth/email";
 import { TEST_SECRET, URLS } from "../db/connect";
 
 export { TEST_SECRET };
@@ -12,10 +12,14 @@ export const APP = "https://app.example.test";
 
 export function harness() {
   const sent: MagicLinkMessage[] = [];
+  const invitations: InvitationMessage[] = [];
   const pending: Promise<unknown>[] = [];
   const purges: { tags: string[] }[] = [];
   const app = createApp({
-    emailSender: () => ({ sendMagicLink: async (message) => void sent.push(message) }),
+    emailSender: () => ({
+      sendMagicLink: async (message) => void sent.push(message),
+      sendInvitation: async (message) => void invitations.push(message),
+    }),
     // Turnstile's answer, by token.
     siteverifyFetch: async (_url, init) => {
       const token = new URLSearchParams(String(init?.body)).get("response");
@@ -59,7 +63,7 @@ export function harness() {
     return app.request(url, { ...init, headers }, env, ctx);
   };
   const settle = () => Promise.allSettled(pending.splice(0));
-  return { sent, purges, call, settle };
+  return { invitations, sent, purges, call, settle };
 }
 
 export const json = (body: unknown, extra: Record<string, string> = {}) => ({

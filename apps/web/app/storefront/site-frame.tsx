@@ -9,7 +9,7 @@ export function PlatformHeader({ locale, appOrigin }: { locale: LocaleCode; appO
   const words = CATALOG_TEXT[locale];
   return (
     <SiteHeader brand={BRAND} brandHref={`/${locale}`} navLabel={UI_COPY[locale].primaryNav}>
-      <NavLink href={`${appOrigin}/quiero-ensenar`}>{words.teach}</NavLink>
+      <NavLink href={`${appOrigin}/ser-creador`}>{words.teach}</NavLink>
       <NavLink href={`${appOrigin}/sign-in`}>{words.signIn}</NavLink>
       {/* A phone keeps only the button, as v1 did: without it, the header has no way anywhere. */}
       <ButtonLink href={`/${locale}/explorar`} size="small">

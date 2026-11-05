@@ -12,20 +12,36 @@ import {
 
 import type { Route } from "./+types/root";
 import "./app.css";
-import { isLocale } from "@learning-routes/core/locales";
+import { BRAND, isLocale } from "@learning-routes/core/locales";
 import archivo from "@learning-routes/design-tokens/fonts/Archivo-latin.woff2?url";
 import { useEffect } from "react";
 import { pageContext } from "./context";
 import { isStorefront } from "./surface";
 import { themeFromCookie } from "./theme";
+import { ButtonLink } from "./ui/button";
+import { SiteHeader } from "./ui/site-header";
+import "./app-pages/app-pages.css";
 
 export const links: Route.LinksFunction = () => [
   { rel: "preload", href: archivo, as: "font", type: "font/woff2", crossOrigin: "anonymous" },
 ];
 
+const ERROR_WORDS = {
+  gone: {
+    title: "Esta página no existe",
+    body: "Puede que la dirección haya cambiado, o que necesites entrar primero.",
+  },
+  broken: {
+    title: "Algo falló de nuestro lado",
+    body: "Tus datos están a salvo. Vuelve a intentarlo en un momento.",
+  },
+  home: "Ir al inicio",
+};
+
 export function loader({ context, request }: Route.LoaderArgs) {
   return {
     nonce: context.get(pageContext).nonce,
+    platformOrigin: context.get(pageContext).platformOrigin,
     theme: themeFromCookie(request.headers.get("cookie")),
   };
 }
@@ -66,37 +82,40 @@ export function Layout({ children }: { children: React.ReactNode }) {
   );
 }
 
-export default function App() {
-  // Runs only in a hydrated page; the browser tests read it.
+/** Runs only in a hydrated page; the browser tests read it. */
+function useHydratedMark() {
   useEffect(() => {
     document.documentElement.dataset.hydrated = "true";
   }, []);
+}
+
+export default function App() {
+  useHydratedMark();
   return <Outlet />;
 }
 
 export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
-  let message = "Error";
-  let details = "Algo salió mal.";
-  let stack: string | undefined;
-
-  if (isRouteErrorResponse(error)) {
-    const isGone = error.status === 404 || error.status === 410;
-    message = isGone ? String(error.status) : "Error";
-    details = isGone ? "Esta página no existe." : error.statusText || details;
-  } else if (import.meta.env.DEV && error instanceof Error) {
-    details = error.message;
-    stack = error.stack;
-  }
-
+  useHydratedMark();
+  const root = useRouteLoaderData<typeof loader>("root");
+  const gone = isRouteErrorResponse(error) && (error.status === 404 || error.status === 410);
+  const stack = import.meta.env.DEV && error instanceof Error ? error.stack : undefined;
+  const words = gone ? ERROR_WORDS.gone : ERROR_WORDS.broken;
   return (
-    <main>
-      <h1>{message}</h1>
-      <p>{details}</p>
-      {stack && (
-        <pre>
-          <code>{stack}</code>
-        </pre>
-      )}
-    </main>
+    <div className="desk opening">
+      <title>{`${words.title} · ${BRAND}`}</title>
+      <SiteHeader brand={BRAND} brandHref={root?.platformOrigin ?? "/"} navLabel={BRAND}>
+        {null}
+      </SiteHeader>
+      <main className="app-page app-page-narrow">
+        <h1 className="app-title depth-1">{words.title}</h1>
+        <p className="app-copy">{words.body}</p>
+        <ButtonLink href={root?.platformOrigin ?? "/"}>{ERROR_WORDS.home}</ButtonLink>
+        {stack ? (
+          <pre>
+            <code>{stack}</code>
+          </pre>
+        ) : null}
+      </main>
+    </div>
   );
 }

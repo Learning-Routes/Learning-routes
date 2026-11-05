@@ -142,6 +142,7 @@ const GRANTS_FILES = [
   "0023_start_grants",
   "0025_create_space_grants",
   "0027_oauth_grants",
+  "0031_invitation_grants",
 ].map((tag) => new URL(`../../drizzle/${tag}.sql`, import.meta.url));
 const PRIVILEGES = `select coalesce(string_agg(entry, ',' order by entry), '')
                       as all

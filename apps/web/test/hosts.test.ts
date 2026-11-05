@@ -97,7 +97,9 @@ describe("pages with a session", () => {
       "/empezar?ruta=1",
       "/mis-rutas",
       "/mis-rutas/1",
-      "/quiero-ensenar",
+      "/ser-creador",
+      "/creador",
+      "/invitacion",
       "/admin",
       "/api/a/x",
     ]) {

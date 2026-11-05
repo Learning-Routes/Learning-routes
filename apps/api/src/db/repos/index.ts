@@ -5,6 +5,7 @@ import { catalogRepo } from "./catalog";
 import { connectionsRepo } from "./connections";
 import { routeDrafts } from "./drafts";
 import { enrollmentsRepo } from "./enrollments";
+import { invitationsRepo } from "./invitations";
 import { learningRepo, reviewsRepo } from "./learning";
 import { membershipsRepo, spacesRepo } from "./members";
 import { attempt, type Db, ok, underSavepoint } from "./shared";
@@ -20,6 +21,7 @@ export function pgRepos(db: Db): Repos {
     spaces: spacesRepo(db),
     catalog: catalogRepo(db),
     applications: applicationsRepo(db),
+    invitations: invitationsRepo(db),
     memberships: membershipsRepo(db),
     routeDrafts: routeDrafts(db),
     routeVersions: routeVersionsRepo(db),

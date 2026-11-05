@@ -3,6 +3,7 @@ import { BRAND, negotiateLocale } from "@learning-routes/core/locales";
 import type { ConnectionRecord } from "@learning-routes/core/repos/ports";
 import { data, Form, redirect } from "react-router";
 import { isFromTheApp, runApiAction } from "../app-api.server";
+import { AppHeader } from "../app-pages/app-header";
 import "../app-pages/app-pages.css";
 import { filled } from "../storefront/words";
 import { Button } from "../ui/button";
@@ -56,43 +57,48 @@ export default function Conexiones({ loaderData, actionData }: Route.ComponentPr
   };
   const day = new Intl.DateTimeFormat(locale, { dateStyle: "medium", timeZone: "UTC" });
   return (
-    <main className="app-page app-page-narrow">
-      <h1 className="app-title">{words.connections}</h1>
-      {actionData?.disconnected ? <Notice tone="success" title={words.disconnected} /> : null}
-      {connections.length === 0 ? (
-        <p className="app-copy">{words.noConnections}</p>
-      ) : (
-        <ul className="admin-list">
-          {connections.map((connection) => (
-            <li key={connection.clientId} className="admin-item">
-              <div className="admin-item-text">
-                <p className="admin-name">{connection.clientName}</p>
-                <p className="app-fine">
-                  {connection.lastUsedAt
-                    ? filled(words.lastUsed, { date: day.format(new Date(connection.lastUsedAt)) })
-                    : words.neverUsed}
-                </p>
-                <p className="app-fine">
-                  {connection.scopes.flatMap((scope) => scopeWords[scope] ?? []).join(", ")}
-                </p>
-              </div>
-              <Form method="post">
-                <input type="hidden" name="clientId" value={connection.clientId} />
-                <Button
-                  type="submit"
-                  size="small"
-                  emphasis="secondary"
-                  aria-label={`${words.disconnect}: ${connection.clientName}`}
-                >
-                  {words.disconnect}
-                </Button>
-              </Form>
-            </li>
-          ))}
-        </ul>
-      )}
-      <TextLink href="/ensenar/conecta">{words.connectAssistant}</TextLink>
-      <TextLink href="/studio">{words.backToTeach}</TextLink>
-    </main>
+    <div className="desk opening">
+      <AppHeader locale={locale} place="teach" />
+      <main className="app-page app-page-narrow">
+        <h1 className="app-title depth-1">{words.connections}</h1>
+        {actionData?.disconnected ? <Notice tone="success" title={words.disconnected} /> : null}
+        {connections.length === 0 ? (
+          <p className="app-copy">{words.noConnections}</p>
+        ) : (
+          <ul className="admin-list">
+            {connections.map((connection) => (
+              <li key={connection.clientId} className="admin-item">
+                <div className="admin-item-text">
+                  <p className="admin-name">{connection.clientName}</p>
+                  <p className="app-fine">
+                    {connection.lastUsedAt
+                      ? filled(words.lastUsed, {
+                          date: day.format(new Date(connection.lastUsedAt)),
+                        })
+                      : words.neverUsed}
+                  </p>
+                  <p className="app-fine">
+                    {connection.scopes.flatMap((scope) => scopeWords[scope] ?? []).join(", ")}
+                  </p>
+                </div>
+                <Form method="post">
+                  <input type="hidden" name="clientId" value={connection.clientId} />
+                  <Button
+                    type="submit"
+                    size="small"
+                    emphasis="secondary"
+                    aria-label={`${words.disconnect}: ${connection.clientName}`}
+                  >
+                    {words.disconnect}
+                  </Button>
+                </Form>
+              </li>
+            ))}
+          </ul>
+        )}
+        <TextLink href="/creador/conecta">{words.connectAssistant}</TextLink>
+        <TextLink href="/creador">{words.backToTeach}</TextLink>
+      </main>
+    </div>
   );
 }

@@ -7,7 +7,7 @@ import { newAddress, stubTurnstile } from "./session";
 
 test.use({ locale: "es-ES" });
 
-const PAGE = `${DEV}/quiero-ensenar`;
+const PAGE = `${DEV}/ser-creador`;
 const CHALLENGE = /challenges\.cloudflare\.com/;
 
 test("anyone can apply, with no account, and is told what happens next", async ({ page }) => {

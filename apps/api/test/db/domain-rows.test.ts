@@ -429,7 +429,7 @@ describe("every table holds what core's domain schemas allow", () => {
       const { rows } = await client.query(
         `select relname from pg_class where relkind = 'r' and relnamespace = 'public'::regnamespace
            and relname not in ('user', 'session', 'account', 'verification', 'rate_limit',
-                               'catalog_listings', 'creator_applications', 'jwks',
+                               'catalog_listings', 'creator_applications', 'creator_invitations', 'jwks',
                                'oauth_client', 'oauth_resource', 'oauth_client_resource',
                                'oauth_refresh_token', 'oauth_access_token', 'oauth_consent',
                                'oauth_client_assertion', 'connection_uses')`,

@@ -64,6 +64,9 @@ export const PERMISSIONS = {
   "catalog.feature": { operator: ["ui"] },
   "admin.overview": { operator: ["ui"] },
   "application.decide": { operator: ["ui"] },
+  "application.invite": { operator: ["ui"] },
+  // Anyone with the link: the database checks it against the signed-in address.
+  "invitation.accept": { student: ["ui"] },
   "space.create": { operator: ["ui"] },
   // Only ever the actor's own.
   "enrollment.list": EVERYONE,

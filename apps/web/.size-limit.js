@@ -63,10 +63,11 @@ export default [
       gzip: true,
     })),
   {
-    name: "app entry + studio route",
-    path: pageScripts(["root", "routes/studio"]),
-    // Measured 111.82 kB gzip on 28 October 2026; the budget is about 10% above.
-    limit: "123 KB",
+    name: "app entry + creator hub",
+    path: pageScripts(["root", "routes/creador"]),
+    // Measured 128.87 kB gzip on 5 November 2026, when the hub replaced a placeholder; the budget
+    // is about 10% above that.
+    limit: "142 KB",
     gzip: true,
   },
 ];

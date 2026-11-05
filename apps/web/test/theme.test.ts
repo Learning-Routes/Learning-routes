@@ -20,7 +20,7 @@ describe("the theme cookie", () => {
 
 describe("where the toggle goes back to", () => {
   it("is a path on this site", () => {
-    expect(safeNext("/studio?a=1")).toBe("/studio?a=1");
+    expect(safeNext("/creador?a=1")).toBe("/creador?a=1");
   });
 
   it.each([
@@ -32,6 +32,6 @@ describe("where the toggle goes back to", () => {
     "\t//elsewhere.example",
     null,
   ])("never %s", (next) => {
-    expect(safeNext(next)).toBe("/studio");
+    expect(safeNext(next)).toBe("/creador");
   });
 });

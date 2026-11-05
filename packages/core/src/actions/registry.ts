@@ -2,10 +2,12 @@ import type { z } from "zod";
 import {
   adminOverview,
   applicationDecide,
+  applicationInvite,
   catalogDecide,
   catalogFeature,
   catalogRequest,
   catalogWithdraw,
+  invitationAccept,
 } from "./catalog";
 import { connectionGrant, connectionList, connectionRevoke } from "./connections";
 import type { ActionDef, ActionResult } from "./define";
@@ -44,6 +46,8 @@ export const ACTIONS = {
   "catalog.feature": catalogFeature,
   "admin.overview": adminOverview,
   "application.decide": applicationDecide,
+  "application.invite": applicationInvite,
+  "invitation.accept": invitationAccept,
   "enrollment.list": enrollmentList,
   "lesson.read": lessonRead,
   "connection.list": connectionList,

@@ -1,4 +1,4 @@
-import type { LocalizedText } from "../localized-text";
+import type { Locale, LocalizedText } from "../localized-text";
 import type { RepoResult } from "./repo-result";
 
 // The catalog's listings and the applications to teach (Platform STEP 4 §2, §3, §6).
@@ -51,6 +51,32 @@ export interface ApplicationRecord {
   link: string | null;
   locale: string;
   status: "new" | "invited";
+}
+
+/** Where an invitation's link stands: only the database can say. */
+export type InvitationState = "ok" | "expired" | "used" | "unknown";
+
+export interface InvitationPreview {
+  state: InvitationState;
+  email: string | null;
+  name: string | null;
+  locale: Locale | null;
+}
+
+export interface Invitations {
+  /** Operators only; not_found for anyone else, or an application that can't be invited. */
+  invite(input: {
+    applicationId: string;
+    tokenHash: string;
+    expiresAt: number;
+  }): Promise<RepoResult<{ applicationId: string; email: string; name: string; locale: Locale }>>;
+  /** Anyone: holding the token is the permission. */
+  preview(tokenHash: string): Promise<InvitationPreview>;
+  /** The signed-in person's, if the address matches: conflict when the slug is taken. */
+  accept(input: {
+    tokenHash: string;
+    slug: string;
+  }): Promise<RepoResult<{ spaceId: string; slug: string }>>;
 }
 
 /** Operators only, held by row-level security. */

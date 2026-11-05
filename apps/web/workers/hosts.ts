@@ -25,7 +25,8 @@ export function creatorSlugOf(host: string, { appOrigin, creatorDomain }: Hosts)
 }
 
 /** Pages with a session, which exist only on the app's host. */
-const APP_ONLY = /^\/(api|empezar|mis-rutas|quiero-ensenar|admin|conectar|ensenar|mcp)(\/|$)/;
+const APP_ONLY =
+  /^\/(api|empezar|mis-rutas|quiero-ensenar|ser-creador|creador|invitacion|salir|admin|conectar|ensenar|mcp)(\/|$)/;
 
 /** Whether this path needs the app's host, and this is not it. */
 export function isAppPathElsewhere(url: URL, { appOrigin }: Pick<Hosts, "appOrigin">): boolean {

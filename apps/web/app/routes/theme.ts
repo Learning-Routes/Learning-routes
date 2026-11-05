@@ -22,5 +22,5 @@ export async function action({ request, context }: Route.ActionArgs) {
 }
 
 export function loader() {
-  throw data(null, { status: 404 });
+  throw data(null, { status: 405, headers: { Allow: "POST" } });
 }

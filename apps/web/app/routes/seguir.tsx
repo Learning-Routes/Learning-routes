@@ -6,6 +6,7 @@ import { useState } from "react";
 import { data, redirect } from "react-router";
 import { runApiAction } from "../app-api.server";
 import "../app-pages/lesson.css";
+import { AppHeader } from "../app-pages/app-header";
 import { LessonBar } from "../app-pages/lesson-bar";
 import { isAnswerable, LessonBlocks, TopicDone } from "../app-pages/lesson-parts";
 import { filled, inLocale } from "../storefront/words";
@@ -57,6 +58,7 @@ export default function Seguir({ loaderData }: Route.ComponentProps) {
     : "/mis-rutas";
   return (
     <div className="desk opening">
+      <AppHeader locale={locale} place="learn" />
       <LessonBar lesson={lesson} locale={locale} done={done} />
       <article className="lesson">
         <p className="lesson-route settle-1">{inLocale(lesson.routeTitle, locale, source)}</p>

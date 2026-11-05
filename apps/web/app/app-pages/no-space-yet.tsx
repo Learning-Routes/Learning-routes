@@ -8,7 +8,7 @@ export function NoSpaceYet({ words, back }: { words: ConnectText; back: string }
     <>
       <Notice tone="info" title={words.noSpace} />
       <div className="connect-actions">
-        <ButtonLink href="/quiero-ensenar">{words.wantToTeach}</ButtonLink>
+        <ButtonLink href="/ser-creador">{words.wantToTeach}</ButtonLink>
         <ButtonLink href="/mis-rutas" emphasis="secondary">
           {back}
         </ButtonLink>

@@ -31,6 +31,8 @@ const EXPECTED: Record<string, Record<string, string[]>> = {
   "catalog.feature": {},
   "admin.overview": {},
   "application.decide": {},
+  "application.invite": {},
+  "invitation.accept": { student: ["ui"] },
   "space.create": {},
   "enrollment.list": EVERYONE,
   "lesson.read": EVERYONE,
@@ -71,6 +73,7 @@ describe("can(role, action, via)", () => {
     expect(allowed.sort()).toEqual([
       "admin.overview ui",
       "application.decide ui",
+      "application.invite ui",
       "catalog.decide ui",
       "catalog.feature ui",
       "space.create ui",

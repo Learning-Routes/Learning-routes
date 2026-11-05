@@ -390,3 +390,72 @@
   overflow-wrap: anywhere;
   font-family: var(--font-mono);
 }
+
+.nav-form {
+  display: inline-flex;
+  margin: 0;
+}
+.nav-button {
+  border: 0;
+  background: none;
+  cursor: pointer;
+  font: inherit;
+}
+@media (max-width: 40rem) {
+  .site-nav:has(.nav-form) {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+  .site-nav:has(.nav-form) .nav-link {
+    display: inline-flex;
+    padding-inline: var(--space-2);
+  }
+}
+
+.hub-page {
+  gap: var(--space-10);
+}
+.hub-space {
+  display: grid;
+  gap: var(--space-3);
+}
+.hub-space-name {
+  margin: 0;
+  font-size: var(--text-title);
+}
+.hub-space-label {
+  margin-block-end: 0;
+}
+.hub-route-state {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  align-items: center;
+  margin: var(--space-2) 0 0;
+}
+.hub-tools {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+  gap: var(--space-4);
+}
+.hub-tool {
+  display: grid;
+  gap: var(--space-1);
+  padding: var(--space-5) var(--space-6);
+  border-radius: var(--radius-card);
+  background: var(--color-card);
+  box-shadow: inset 0 0 0 1px var(--color-faint);
+  color: var(--color-txt);
+  text-decoration: none;
+}
+.hub-tool:hover {
+  box-shadow: inset 0 0 0 1px var(--color-accent);
+}
+.hub-tool-name {
+  font-weight: var(--weight-label);
+}
+
+.app-page > .button {
+  align-self: flex-start;
+}

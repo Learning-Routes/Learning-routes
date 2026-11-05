@@ -46,7 +46,8 @@ test("another site's link never enrolls by itself: it asks first", async ({ page
 });
 
 test("a person who is not an operator gets 404 on admin", async ({ page, context }) => {
-  expect((await page.goto(`${DEV}/admin`))?.status()).toBe(404);
+  await page.goto(`${DEV}/admin`);
+  await expect(page).toHaveURL(`${DEV}/sign-in`);
   await signInContext(context, newAddress("no-operador"));
   expect((await page.goto(`${DEV}/admin`))?.status()).toBe(404);
 });

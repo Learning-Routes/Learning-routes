@@ -337,11 +337,12 @@ html[data-theme="dark"] .lp {
   vertical-align: top;
 }
 .lp-gl .lp-wr {
-  clip-path: inset(-12% 100% -24% 0);
+  /* Room on every side, for the wide type's depth and descenders: this reveals, it doesn't crop. */
+  clip-path: inset(-40% 100% -40% -10%);
   transition: clip-path 1s var(--ease-out);
 }
 .lp-gl .lp-on .lp-wr {
-  clip-path: inset(-12% -3% -24% -3%);
+  clip-path: inset(-40% -10% -40% -10%);
 }
 .lp-gl .lp-ann p {
   opacity: 0;

@@ -69,7 +69,7 @@ test("a teacher says yes, the client gets tokens, and Desconectar ends them", as
   expect(token.status()).toBe(200);
   const { refresh_token: refreshToken } = await token.json();
 
-  await page.goto(`${DEV}/ensenar/conexiones`);
+  await page.goto(`${DEV}/creador/conexiones`);
   await expect(page.getByText("Cliente de prueba")).toBeVisible();
   await expect(page.getByText("Aún sin usar")).toBeVisible();
   await page.getByRole("button", { name: "Desconectar: Cliente de prueba" }).click();
@@ -115,7 +115,7 @@ test("Conecta tu asistente gives the address, and copies it", async ({ page, con
   await signInContext(context, email);
   makeTeacher(email);
   await context.grantPermissions(["clipboard-read", "clipboard-write"]);
-  await page.goto(`${DEV}/ensenar/conecta`);
+  await page.goto(`${DEV}/creador/conecta`);
   await page.locator("html[data-hydrated]").waitFor();
   await expect(page.getByText(`${DEV}/mcp`, { exact: true })).toBeVisible();
   await page.getByRole("button", { name: "Copiar dirección" }).click();
@@ -145,7 +145,7 @@ test("each assistant has its own tab, with at most three steps and what to paste
   const email = newAddress("ensena");
   await signInContext(context, email);
   makeTeacher(email);
-  await page.goto(`${DEV}/ensenar/conecta`);
+  await page.goto(`${DEV}/creador/conecta`);
   await page.locator("html[data-hydrated]").waitFor();
   await page.getByRole("tab", { name: "Claude Code" }).click();
   await expect(

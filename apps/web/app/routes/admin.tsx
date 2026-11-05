@@ -1,8 +1,9 @@
 import { ADMIN_TEXT, type AdminText } from "@learning-routes/core/copy/admin";
 import { BRAND, type LocaleCode, negotiateLocale } from "@learning-routes/core/locales";
 import type { ApplicationRecord, CatalogQueueItem } from "@learning-routes/core/repos/ports";
-import { data } from "react-router";
-import { isFromTheApp, runApiAction } from "../app-api.server";
+import { data, redirect } from "react-router";
+import { askApi, isFromTheApp, runApiAction } from "../app-api.server";
+import { AppHeader } from "../app-pages/app-header";
 import "../app-pages/app-pages.css";
 import { filled, inLocale } from "../storefront/words";
 import { Button, ButtonLink } from "../ui/button";
@@ -24,6 +25,10 @@ interface Overview {
 
 export async function loader({ request, context }: Route.LoaderArgs) {
   const answer = await runApiAction<Overview>(context, request, "admin.overview", {});
+  // Someone signed out may yet be an operator; to anyone signed in and not one, it doesn't exist.
+  if (answer.status === 401) {
+    throw redirect("/sign-in");
+  }
   if (!answer.body?.ok || !answer.body.output) {
     throw data(null, NOT_HERE);
   }
@@ -61,7 +66,17 @@ export async function action({ request, context }: Route.ActionArgs) {
   if (!isFromTheApp(request, context)) {
     throw data(null, NOT_HERE);
   }
-  const chosen = inputFor(await request.formData());
+  const form = await request.formData();
+  if (form.get("intent") === "invite") {
+    const sent = await askApi<{ ok?: boolean }>(context, request, "/api/invitations/send", {
+      applicationId: String(form.get("id") ?? ""),
+    });
+    if (sent.status === 404 || sent.status === 401) {
+      throw data(null, NOT_HERE);
+    }
+    return { ok: sent.body?.ok === true, invited: sent.body?.ok === true };
+  }
+  const chosen = inputFor(form);
   if (chosen === null) {
     throw data(null, NOT_HERE);
   }
@@ -93,13 +108,20 @@ function Invited({ items, words }: { items: ApplicationRecord[]; words: AdminTex
               <p className="admin-name">{item.name}</p>
               <p className="app-fine admin-email">{item.email}</p>
             </div>
-            <ButtonLink
-              emphasis="secondary"
-              size="small"
-              href={`/admin/crear-espacio?solicitud=${item.id}`}
-            >
-              {words.createSpace}
-            </ButtonLink>
+            <form method="post" className="admin-actions">
+              <input type="hidden" name="intent" value="invite" />
+              <input type="hidden" name="id" value={item.id} />
+              <Button type="submit" emphasis="secondary" size="small">
+                {words.resendInvitation}
+              </Button>
+              <ButtonLink
+                emphasis="quiet"
+                size="small"
+                href={`/admin/crear-espacio?solicitud=${item.id}`}
+              >
+                {words.createSpace}
+              </ButtonLink>
+            </form>
           </li>
         ))}
       </ul>
@@ -126,12 +148,12 @@ function Applications({ items, words }: { items: ApplicationRecord[]; words: Adm
             ) : null}
           </div>
           <form method="post" className="admin-actions">
-            <input type="hidden" name="intent" value="application" />
             <input type="hidden" name="id" value={item.id} />
-            <Button type="submit" name="status" value="invited" emphasis="secondary" size="small">
+            <Button type="submit" name="intent" value="invite" emphasis="secondary" size="small">
               {words.markInvited}
             </Button>
-            <Button type="submit" name="status" value="declined" emphasis="quiet" size="small">
+            <input type="hidden" name="status" value="declined" />
+            <Button type="submit" name="intent" value="application" emphasis="quiet" size="small">
               {words.decline}
             </Button>
           </form>
@@ -232,19 +254,22 @@ export default function Admin({ loaderData }: Route.ComponentProps) {
   const requested = listings.filter((item) => item.status === "requested");
   const approved = listings.filter((item) => item.status === "approved");
   return (
-    <main className="app-page admin">
-      <div className="admin-head">
-        <h1 className="app-title">{words.adminTitle}</h1>
-        <ButtonLink size="small" href="/admin/crear-espacio">
-          {words.createSpace}
-        </ButtonLink>
-      </div>
-      <Applications items={applications.filter((item) => item.status === "new")} words={words} />
-      <Invited items={applications.filter((item) => item.status === "invited")} words={words} />
-      <h2 className="app-section-title">{words.catalogRequests}</h2>
-      <Requests items={requested} words={words} locale={locale} />
-      <h2 className="app-section-title">{words.listedTitle}</h2>
-      <Listed items={approved} words={words} locale={locale} />
-    </main>
+    <div className="desk opening">
+      <AppHeader locale={locale} place="admin" />
+      <main className="app-page admin">
+        <div className="admin-head">
+          <h1 className="app-title">{words.adminTitle}</h1>
+          <ButtonLink size="small" href="/admin/crear-espacio">
+            {words.createSpace}
+          </ButtonLink>
+        </div>
+        <Applications items={applications.filter((item) => item.status === "new")} words={words} />
+        <Invited items={applications.filter((item) => item.status === "invited")} words={words} />
+        <h2 className="app-section-title">{words.catalogRequests}</h2>
+        <Requests items={requested} words={words} locale={locale} />
+        <h2 className="app-section-title">{words.listedTitle}</h2>
+        <Listed items={approved} words={words} locale={locale} />
+      </main>
+    </div>
   );
 }

@@ -84,6 +84,12 @@ describe("two tenants, through every action", () => {
           locale: "es",
         },
         "application.decide": { applicationId: crypto.randomUUID(), status: "invited" },
+        "application.invite": {
+          applicationId: crypto.randomUUID(),
+          tokenHash: "x".repeat(32),
+          expiresAt: Date.now() + 60_000,
+        },
+        "invitation.accept": { tokenHash: "x".repeat(32), slug: `otro-${crypto.randomUUID()}` },
         "membership.add": { spaceId: spaceB, userId: a, role: "owner" },
         "route.create": {
           spaceId: spaceB,

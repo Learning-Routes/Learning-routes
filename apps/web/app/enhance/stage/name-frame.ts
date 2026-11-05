@@ -120,7 +120,7 @@ export function placeNames(frame: Frame) {
   placeLabel(
     {
       element: labels.root,
-      at: point(origin.x, origin.y + 0.7, origin.z),
+      at: point(origin.x, origin.y + 1.4, origin.z),
       opacity: showsWide ? 1 : 0,
       mode: "above",
     },
