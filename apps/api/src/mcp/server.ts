@@ -26,7 +26,11 @@ const AN_HOUR_MS = 3_600_000;
 
 const INSTRUCTIONS =
   "Routes here are courses, made of modules, lessons and blocks, inside a creator's space. " +
-  "Call list_spaces first, and get_route_format before import_route. Writes change a draft that nobody sees; only publish_route changes what students see, so publish only when the person asks. " +
+  "You build them for the creator: this is how routes get made here. Call list_spaces first. " +
+  "To write a new route, call get_route_format, then import_route with the whole route, or build it " +
+  "step by step with create_route, add_module, add_lesson and add_blocks. " +
+  "When the creator already has the course written, use upload_document with their words as they " +
+  "are. Give the creator the preview_url, and publish only when they ask. " +
   "Every write takes draft_revision: read it from get_route, and use the one each write returns.";
 
 export interface Caller {
@@ -127,7 +131,32 @@ async function publicUrl(
   return `${protocol}//${slug}.${(env as Env & { CREATOR_DOMAIN: string }).CREATOR_DOMAIN}/${(route.output as { route: { slug: string } }).route.slug}`;
 }
 
-async function callTool(env: Env, db: Database, caller: Caller, tool: Tool, input: unknown) {
+const PREVIEWED: readonly string[] = ["route.upload", "route.import", "route.get"];
+
+/** Where the person sees the draft (Platform STEP 8 §3). */
+function previewOf(env: Env, output: unknown) {
+  const { routeId, route } = output as { routeId?: string; route?: { id: string } };
+  return `${env.APP_ORIGIN}/creador/rutas/${routeId ?? route?.id}/vista-previa`;
+}
+
+/** "Their space", when they teach in one: upload_document may leave it out. */
+async function withOnlySpace(db: Database, caller: Caller, tool: Tool, input: unknown) {
+  const given = input as { space_id?: string };
+  if (tool.name !== "upload_document" || given.space_id) {
+    return input;
+  }
+  const spaces = await transactionAs(db, caller.userId, (tx) =>
+    runAction(ACTIONS, "space.list", {}, ctxFor(tx, caller)),
+  );
+  const mine = spaces.ok ? (spaces.output as { id: string }[]) : [];
+  return mine.length === 1 ? { ...given, space_id: mine[0]?.id } : null;
+}
+
+async function callTool(env: Env, db: Database, caller: Caller, tool: Tool, given: unknown) {
+  const input = await withOnlySpace(db, caller, tool, given);
+  if (input === null) {
+    return failed("You teach in more than one space, or none: call list_spaces and give space_id.");
+  }
   if (!caller.scopes.has(tool.scope)) {
     return failed(`This connection does not include ${tool.scope}.`);
   }
@@ -144,6 +173,9 @@ async function callTool(env: Env, db: Database, caller: Caller, tool: Tool, inpu
   }
   const { result, url } = await transactionAs(db, caller.userId, async (tx) => {
     const answered = await runAction(ACTIONS, action, tool.toAction(input), ctxFor(tx, caller));
+    if (answered.ok && PREVIEWED.includes(action)) {
+      return { result: answered, url: previewOf(env, answered.output) };
+    }
     if (!(answered.ok && action === "route.publish")) {
       return { result: answered, url: null };
     }

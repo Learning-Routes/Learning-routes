@@ -92,7 +92,7 @@ describe("a route's page", () => {
   });
 
   it("says the price in words, and that you pay once", () => {
-    const html = render();
+    const html = render({ ...ROUTE, pricing: "paid" });
     expect(html).toContain("Empieza gratis, hoy.");
     expect(html).toContain("pagas una vez por la ruta");
     expect(html).toContain("29,00");
@@ -126,7 +126,12 @@ describe("what surrounds them", () => {
   });
 
   it("describes the route as a schema.org Course", () => {
-    const data = courseData({ route: ROUTE, space: SPACE, locale: "es", canonical: "https://c/p" });
+    const data = courseData({
+      route: { ...ROUTE, pricing: "paid" },
+      space: SPACE,
+      locale: "es",
+      canonical: "https://c/p",
+    });
     expect(data).toMatchObject({
       "@type": "Course",
       name: "Portugués para viajar",

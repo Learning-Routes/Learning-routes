@@ -24,7 +24,7 @@ export function courseData({
     url: canonical,
     inLanguage: route.sourceLocale,
     provider: { "@type": "Organization", name: inLocale(space.name, locale) },
-    ...(route.priceMinor !== null && route.currency !== null
+    ...(route.pricing === "paid" && route.priceMinor !== null && route.currency !== null
       ? {
           offers: {
             "@type": "Offer",

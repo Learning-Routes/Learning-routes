@@ -63,7 +63,8 @@ function StartCard({
 }) {
   const words = CREATOR_TEXT[locale];
   const offer =
-    route.priceMinor !== null && route.currency !== null
+    // A price is only an offer once it can be paid (Platform STEP 10).
+    route.pricing === "paid" && route.priceMinor !== null && route.currency !== null
       ? filled(words.startPaid, { price: priceInWords(route.priceMinor, route.currency, locale) })
       : words.startFree;
   return (

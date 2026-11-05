@@ -2,23 +2,21 @@ import { CONNECT_TEXT } from "@learning-routes/core/copy/connect";
 import { CREATOR_HUB_TEXT } from "@learning-routes/core/copy/creator-hub";
 import { BRAND, type LocaleCode, negotiateLocale } from "@learning-routes/core/locales";
 import type { OwnSpace, RouteDraft, RouteSummary } from "@learning-routes/core/repos/ports";
-import { type RouterContextProvider, redirect } from "react-router";
-import { runApiAction } from "../app-api.server";
+import { data, type RouterContextProvider, redirect } from "react-router";
+import { isFromTheApp, runApiAction } from "../app-api.server";
 import { AppHeader } from "../app-pages/app-header";
 import "../app-pages/app-pages.css";
 import { CopyLine } from "../app-pages/copy-line";
+import { HubRoute } from "../app-pages/hub-route";
 import { pageContext } from "../context";
 import { inLocale } from "../storefront/words";
 import { ButtonLink } from "../ui/button";
-import { Badge, Card, EmptyState } from "../ui/parts";
+import { Card, EmptyState, Notice, TextLink } from "../ui/parts";
 import { Rising } from "../ui/rising";
-import { RouteFigure } from "../ui/route-figure";
 import type { Route } from "./+types/creador";
 
 // "Enseñar" (Platform STEP 7), the desk's hub for someone who teaches: each space, its public
 // address, its routes with their real lines, and the way to the assistant.
-
-const LINE_BOX = { width: 1200, height: 100 };
 
 async function routesOf(
   context: Readonly<RouterContextProvider>,
@@ -40,6 +38,9 @@ async function routesOf(
         lessons: modules.map((module) => lessons.filter((l) => l.moduleId === module.id).length),
         published: route.latestPublishedVersion !== null,
         address: `${address}/${route.slug}`,
+        revision: route.revision,
+        priceMinor: draft.body?.output?.route.priceMinor ?? null,
+        currency: draft.body?.output?.route.currency ?? null,
       };
     }),
   );
@@ -64,6 +65,7 @@ export async function loader({ request, context }: Route.LoaderArgs) {
       return {
         id: space.id,
         name: space.name,
+        role: space.role,
         address,
         tagline: page.body?.output?.tagline ?? null,
         routes: await routesOf(context, request, space.id, address),
@@ -78,6 +80,43 @@ export async function loader({ request, context }: Route.LoaderArgs) {
   };
 }
 
+const MINOR_UNITS = 100;
+const AMOUNT = /^\d{1,9}(?:[.,]\d{1,2})?$/;
+
+/** The hub's forms: each one action, which the API checks. */
+export async function action({ request, context }: Route.ActionArgs) {
+  if (!isFromTheApp(request, context)) {
+    throw data(null, { status: 404 });
+  }
+  const form = await request.formData();
+  const field = (name: string) => String(form.get(name) ?? "");
+  const routeId = field("routeId");
+  const expectedRevision = Number(field("revision"));
+  const intent = field("intent");
+  if (intent === "publish") {
+    const answer = await runApiAction(context, request, "route.publish", {
+      routeId,
+      expectedRevision,
+    });
+    return { notice: answer.body?.ok ? "published_ok" : "publishFailed" } as const;
+  }
+  if (intent === "catalog") {
+    const answer = await runApiAction(context, request, "catalog.request", { routeId });
+    return { notice: answer.body?.ok ? "catalogAsked" : "catalogRefused" } as const;
+  }
+  if (intent === "price" && AMOUNT.test(field("amount"))) {
+    const priceMinor = Math.round(Number(field("amount").replace(",", ".")) * MINOR_UNITS);
+    const answer = await runApiAction(context, request, "route.set_price", {
+      routeId,
+      expectedRevision,
+      priceMinor,
+      currency: field("currency"),
+    });
+    return { notice: answer.body?.ok ? "priceSaved" : "publishFailed" } as const;
+  }
+  throw data(null, { status: 400 });
+}
+
 export const headers: Route.HeadersFunction = () => ({ "Cache-Control": "no-store" });
 
 export function meta({ loaderData }: Route.MetaArgs) {
@@ -86,34 +125,6 @@ export function meta({ loaderData }: Route.MetaArgs) {
 }
 
 type Loaded = Route.ComponentProps["loaderData"];
-
-function HubRoute({
-  route,
-  locale,
-}: {
-  route: Loaded["spaces"][0]["routes"][0];
-  locale: LocaleCode;
-}) {
-  const words = CREATOR_HUB_TEXT[locale];
-  return (
-    <li className="my-route hub-route">
-      <div>
-        <h3 className="my-route-title">{inLocale(route.title, locale)}</h3>
-        <p className="hub-route-state">
-          <Badge tone={route.published ? "accent" : "neutral"}>
-            {route.published ? words.published : words.draft}
-          </Badge>
-          {route.published ? (
-            <a className="text-link" href={route.address}>
-              {words.viewPublic}
-            </a>
-          ) : null}
-        </p>
-      </div>
-      <RouteFigure lessons={route.lessons} seed={route.id} box={LINE_BOX} />
-    </li>
-  );
-}
 
 function HubSpace({ space, locale }: { space: Loaded["spaces"][0]; locale: LocaleCode }) {
   const words = CREATOR_HUB_TEXT[locale];
@@ -126,6 +137,9 @@ function HubSpace({ space, locale }: { space: Loaded["spaces"][0]; locale: Local
         <p className={tagline ? "app-copy" : "app-fine"}>{tagline || words.noTagline}</p>
         <p className="app-fine hub-space-label">{words.publicPage}</p>
         <CopyLine text={space.address} label={connect.copyAddress} done={connect.copied} />
+        {space.role === "owner" ? (
+          <TextLink href={`/creador/pagina?espacio=${space.id}`}>{words.editPage}</TextLink>
+        ) : null}
       </Card>
       <section aria-labelledby={`routes-${space.id}`}>
         <h2 id={`routes-${space.id}`} className="my-all-title depth-2">
@@ -136,12 +150,21 @@ function HubSpace({ space, locale }: { space: Loaded["spaces"][0]; locale: Local
             title={words.emptyTitle}
             action={<ButtonLink href="/creador/conecta">{words.emptyAction}</ButtonLink>}
           >
-            {words.emptyBody}
+            <ol className="hub-steps">
+              {words.emptySteps.map((step) => (
+                <li key={step}>{step}</li>
+              ))}
+            </ol>
           </EmptyState>
         ) : (
           <ul className="my-routes">
             {space.routes.map((route) => (
-              <HubRoute key={route.id} route={route} locale={locale} />
+              <HubRoute
+                key={route.id}
+                route={route}
+                locale={locale}
+                isOwner={space.role === "owner"}
+              />
             ))}
           </ul>
         )}
@@ -150,7 +173,7 @@ function HubSpace({ space, locale }: { space: Loaded["spaces"][0]; locale: Local
   );
 }
 
-export default function Creador({ loaderData }: Route.ComponentProps) {
+export default function Creador({ loaderData, actionData }: Route.ComponentProps) {
   const { spaces, isOperator, locale } = loaderData;
   const words = CREATOR_HUB_TEXT[locale];
   const connect = CONNECT_TEXT[locale];
@@ -161,6 +184,7 @@ export default function Creador({ loaderData }: Route.ComponentProps) {
         <h1 className="app-title depth-1">
           <Rising text={words.title} />
         </h1>
+        {actionData ? <Notice tone="info" title={words[actionData.notice]} /> : null}
         {spaces.length === 0 ? (
           <EmptyState
             title={words.noSpaceTitle}

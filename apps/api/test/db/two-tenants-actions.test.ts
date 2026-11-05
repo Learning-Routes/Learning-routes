@@ -100,6 +100,14 @@ describe("two tenants, through every action", () => {
           pricing: "free",
         },
         "route.get": { routeId: routeB },
+        "route.set_price": {
+          routeId: routeB,
+          expectedRevision: 0,
+          priceMinor: 100,
+          currency: "USD",
+        },
+        "route.preview": { routeId: routeB },
+        "route.upload": { spaceId: spaceB, document: "# Robada", format: "markdown" },
         "route.list": { spaceId: spaceB },
         "module.add": { routeId: routeB, expectedRevision: 0, title: { en: "M" } },
         "lesson.add": {

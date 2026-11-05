@@ -56,9 +56,11 @@ export const spaceCreate = defineAction({
 export const spaceUpdate = defineAction({
   name: "space.update",
   kind: "mutation",
-  description: "Change a space's tagline, bio or brand colour. Owners only, from the app only.",
+  description:
+    "Change a space's name, tagline, bio or brand colour. Owners only, from the app only.",
   input: z.strictObject({
     spaceId: z.uuid(),
+    name: LocalizedText.optional(),
     tagline: LocalizedText.nullish(),
     bio: LocalizedText.nullish(),
     brandColor: z.string().nullish(),

@@ -17,8 +17,6 @@ export type {
   CatalogDecision,
   CatalogListing,
   CatalogQueueItem,
-  InvitationPreview,
-  InvitationState,
   Invitations,
 } from "./catalog-ports";
 
@@ -43,6 +41,7 @@ export interface SpaceRecord {
 
 /** What a creator's page says about them; a field left out stays as it is. */
 export interface SpacePage {
+  name?: LocalizedText | undefined;
   tagline?: LocalizedText | null | undefined;
   bio?: LocalizedText | null | undefined;
   brandColor?: string | null | undefined;
@@ -96,6 +95,7 @@ export interface RouteSummary {
 /** An edit's answer: the draft's new revision. */
 export type Revised = RepoResult<{ revision: number }>;
 
+type Price = { priceMinor: number | null; currency: string | null };
 export interface RouteDrafts {
   /** conflict when the slug is taken in the space. */
   create(spaceId: string, route: RouteFields): Promise<Revised>;
@@ -127,6 +127,8 @@ export interface RouteDrafts {
     expectedRevision: number,
     block: DraftBlock,
   ): Promise<Revised>;
+  /** A route sells only once payments exist (STEP 10). */
+  setPrice(spaceId: string, routeId: string, expected: number, price: Price): Promise<Revised>;
   updateDetails(
     spaceId: string,
     routeId: string,

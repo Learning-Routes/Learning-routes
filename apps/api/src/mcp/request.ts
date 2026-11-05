@@ -14,7 +14,8 @@ import { scopeOfTool } from "./tools";
 
 const MOST_BYTES = 1_048_576;
 const DEEPEST = 32;
-const ALL_SCOPES = "routes:read routes:write routes:publish";
+// offline_access too: a client that asks only for what this names, as ChatGPT does, can then refresh.
+const ALL_SCOPES = "offline_access routes:read routes:write routes:publish";
 const LOOPBACK = /^https?:\/\/(localhost|127\.0\.0\.1|\[::1\])(:\d+)?$/;
 
 const refusal = (status: number, code: number, message: string, headers?: HeadersInit) =>
