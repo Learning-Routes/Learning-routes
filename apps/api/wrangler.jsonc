@@ -3,6 +3,9 @@
   "name": "learning-routes-api",
   "main": "src/index.ts",
   "compatibility_date": "2026-10-12",
+  // Reached only through the app's hosts: no workers.dev address, and no preview URLs.
+  "workers_dev": false,
+  "preview_urls": false,
   // pg needs Node's net and tls; Hyperdrive gives it a pooled Postgres connection.
   "compatibility_flags": ["nodejs_compat"],
   // Minified: an unminified Worker ships every name and comment in its dependencies.
@@ -51,9 +54,7 @@
   "hyperdrive": [
     {
       "binding": "DB",
-      // A placeholder until the owner creates the Hyperdrive config
-      // (docs/runbooks/database.md); a dry-run deploy needs no real one.
-      "id": "00000000000000000000000000000000",
+      "id": "6f1a3d1237a542af8b9d4b5329c41ded",
       // LOCAL ONLY: the lr_app role of docker-compose.yml, never the migrator.
       "localConnectionString": "postgres://lr_app:local-only-app@localhost:54318/learning_routes"
     }
