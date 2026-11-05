@@ -32,6 +32,16 @@ export function isAppPathElsewhere(url: URL, { appOrigin }: Pick<Hosts, "appOrig
   return url.host !== new URL(appOrigin).host && APP_ONLY.test(url.pathname);
 }
 
+/** The apex's address for a request to www, or null for any other host. */
+export function apexOf(url: URL, { creatorDomain }: Pick<Hosts, "creatorDomain">): string | null {
+  if (url.host.toLowerCase() !== `www.${creatorDomain.toLowerCase()}`) {
+    return null;
+  }
+  const apex = new URL(url);
+  apex.host = creatorDomain;
+  return apex.toString();
+}
+
 const API_PATH = /^\/api(\/|$)/;
 
 export const isApiPath = (url: URL) => API_PATH.test(url.pathname);

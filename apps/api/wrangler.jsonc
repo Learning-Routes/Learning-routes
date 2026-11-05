@@ -24,8 +24,7 @@
     "APP_ORIGIN": "https://app.learningroutes.com",
     "ENVIRONMENT": "production",
     "EMAIL_FROM": "sign-in@learningroutes.com",
-    // A placeholder until the owner adds the zone (docs/runbooks/database.md).
-    "CLOUDFLARE_ZONE_ID": "00000000000000000000000000000000",
+    "CLOUDFLARE_ZONE_ID": "f31f9bc6fac8035305c2fab2e5ebc35f",
     // The hosts a Turnstile token may come from (Platform STEP 4 §6.3).
     "TURNSTILE_HOSTNAMES": "app.learningroutes.com"
   },

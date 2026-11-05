@@ -1,6 +1,7 @@
 import { RESERVED_SLUGS } from "@learning-routes/core/reserved-slugs";
 import { describe, expect, it } from "vitest";
 import {
+  apexOf,
   creatorSlugOf,
   INTERNAL_PREFIX,
   internalRequest,
@@ -107,5 +108,19 @@ describe("pages with a session", () => {
 
   it("do not catch a route whose name merely starts the same", () => {
     expect(elsewhere("https://learningroutes.com/administrar")).toBe(false);
+  });
+});
+
+describe("www", () => {
+  const hosts = { creatorDomain: "learningroutes.com" };
+
+  it("goes to the apex, keeping the path and the query", () => {
+    const www = new URL("https://www.learningroutes.com/es/explorar?q=a");
+    expect(apexOf(www, hosts)).toBe("https://learningroutes.com/es/explorar?q=a");
+  });
+
+  it("leaves every other host alone", () => {
+    expect(apexOf(new URL("https://learningroutes.com/"), hosts)).toBeNull();
+    expect(apexOf(new URL("https://mariana.learningroutes.com/"), hosts)).toBeNull();
   });
 });
