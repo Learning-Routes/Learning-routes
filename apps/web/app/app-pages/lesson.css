@@ -293,3 +293,172 @@
     order: 3;
   }
 }
+
+.lesson-prose > :first-child {
+  margin-block-start: 0;
+}
+.lesson-prose > :last-child {
+  margin-block-end: 0;
+}
+.lesson-prose h3,
+.lesson-prose h4 {
+  margin-block: var(--space-6) var(--space-2);
+  font-size: var(--text-title);
+  line-height: 1.25;
+}
+.lesson-prose h4 {
+  font-size: var(--text-body);
+}
+.lesson-prose ul,
+.lesson-prose ol {
+  padding-inline-start: var(--space-6);
+}
+.lesson-prose li + li {
+  margin-block-start: var(--space-2);
+}
+.lesson-prose blockquote {
+  margin: var(--space-4) 0;
+  padding-inline-start: var(--space-4);
+  border-inline-start: 3px solid var(--color-faint);
+  color: var(--color-sub);
+}
+.lesson-prose code,
+.lesson-pre {
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 0.9em;
+}
+.lesson-pre {
+  overflow-x: auto;
+  padding: var(--space-4);
+  border-radius: var(--radius-btn);
+  background: var(--color-bg);
+  box-shadow: inset 0 0 0 1px var(--color-faint);
+}
+.lesson-table {
+  overflow-x: auto;
+  margin-block: var(--space-4);
+}
+.lesson-table table {
+  border-collapse: collapse;
+  min-width: 100%;
+}
+.lesson-table th,
+.lesson-table td {
+  padding: var(--space-2) var(--space-3);
+  border-block-end: 1px solid var(--color-faint);
+  text-align: start;
+}
+.lesson-block-title {
+  margin: var(--space-6) 0 var(--space-2);
+  font-size: var(--text-title);
+}
+.lesson-aside-label {
+  margin: 0 0 var(--space-2);
+  color: var(--color-sub);
+  font-size: var(--text-small);
+  font-weight: var(--weight-label);
+}
+.lesson-figure {
+  margin: var(--space-6) 0;
+}
+.lesson-figure img {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 9;
+  object-fit: contain;
+  border-radius: var(--radius-card);
+  background: var(--color-card);
+}
+.lesson-figure figcaption {
+  margin-block-start: var(--space-2);
+  color: var(--color-sub);
+  font-size: var(--text-small);
+}
+.lesson-figure-missing {
+  padding: var(--space-5);
+  border-radius: var(--radius-card);
+  background: var(--color-card);
+  box-shadow: inset 0 0 0 1px var(--color-faint);
+  color: var(--color-sub);
+}
+.lesson-video {
+  margin: var(--space-6) 0;
+}
+.lesson-video-frame {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border: 0;
+  border-radius: var(--radius-card);
+}
+.lesson-video-ask {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  align-items: center;
+  padding: var(--space-5);
+  border-radius: var(--radius-card);
+  background: var(--color-card);
+  box-shadow: inset 0 0 0 1px var(--color-faint);
+}
+.lesson-video-ask .app-fine {
+  margin: 0;
+}
+.lesson-cards {
+  margin: var(--space-6) 0;
+}
+.lesson-cards ul {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
+  gap: var(--space-4);
+  margin: var(--space-4) 0 0;
+  padding: 0;
+  list-style: none;
+}
+.lesson-card {
+  display: grid;
+  width: 100%;
+  min-height: 9rem;
+  padding: var(--space-5);
+  border: 0;
+  border-radius: var(--radius-card);
+  background: var(--color-card);
+  box-shadow: inset 0 0 0 1px var(--color-faint);
+  color: var(--color-txt);
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+}
+.lesson-card:hover {
+  box-shadow: inset 0 0 0 1px var(--color-accent);
+}
+.lesson-card-face {
+  grid-area: 1 / 1;
+  font-weight: var(--weight-label);
+  transition: opacity 0.2s ease;
+}
+.lesson-card-back,
+.lesson-card.is-flipped .lesson-card-front {
+  opacity: 0;
+}
+.lesson-card.is-flipped .lesson-card-back {
+  opacity: 1;
+}
+.lesson-card-hint {
+  align-self: end;
+  color: var(--color-sub);
+  font-size: var(--text-small);
+}
+.lesson-pairs {
+  display: grid;
+  gap: var(--space-2);
+  margin: var(--space-3) 0 0;
+}
+.lesson-pairs dt {
+  font-weight: var(--weight-label);
+}
+.lesson-pairs dd {
+  margin: 0;
+  color: var(--color-sub);
+}

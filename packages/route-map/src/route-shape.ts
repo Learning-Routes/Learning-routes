@@ -8,10 +8,9 @@ const SAMPLES = 240;
 const UNITS_PER_POINT = 5;
 const MODULE_ROOM = 1.7;
 const TOPIC_ROOM = 1;
-const EXAM_ROOM = 1.9;
 const DEFAULT_PAD = 24;
 
-export type StationKind = "module" | "topic" | "exam";
+export type StationKind = "module" | "topic";
 
 export interface Station {
   kind: StationKind;
@@ -19,7 +18,7 @@ export interface Station {
   y: number;
   /** How far along the line, from 0 to 1. */
   at: number;
-  /** The module it belongs to; the exam belongs to none. */
+  /** The module it belongs to. */
   module?: number;
   /** A topic's place in the whole route, from 0. */
   topic?: number;
@@ -136,7 +135,6 @@ function placed(lessonsPerModule: readonly number[], points: readonly Point[]) {
       rooms.push({ kind: "topic", room: TOPIC_ROOM, module, topic: topic++ });
     }
   });
-  rooms.push({ kind: "exam", room: EXAM_ROOM });
   const gaps = rooms
     .slice(1)
     .map((room, index) => (room.room + (rooms[index] as { room: number }).room) / 2);

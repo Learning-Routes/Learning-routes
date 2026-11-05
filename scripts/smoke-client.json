@@ -1,0 +1,11 @@
+{
+  "client_id": "https://cdn.jsdelivr.net/gh/Learning-Routes/Learning-routes@main/scripts/smoke-client.json",
+  "client_name": "Learning Routes smoke test",
+  "client_uri": "https://cdn.jsdelivr.net/gh/Learning-Routes/Learning-routes@main",
+  "redirect_uris": [
+    "https://cdn.jsdelivr.net/gh/Learning-Routes/Learning-routes@main/scripts/smoke-client-callback"
+  ],
+  "token_endpoint_auth_method": "none",
+  "grant_types": ["authorization_code"],
+  "response_types": ["code"]
+}

@@ -4,22 +4,27 @@ import type { EntryContext, RouterContextProvider } from "react-router";
 import { ServerRouter } from "react-router";
 import { pageContext } from "./context";
 
-type Surface = { storefront?: boolean; challenge?: boolean } | undefined;
+type Surface = { storefront?: boolean; challenge?: boolean; lessonMedia?: boolean } | undefined;
 
 export const streamTimeout = 5_000;
 
 // Only our own files and this response's nonce may run scripts. No page frames
 // anything yet; creators' blocks will get their own origin here. A storefront page is
 // cached for every visitor, so it carries no nonce: only files from our own origin may run.
-function policy(nonce: string | null, hasChallenge: boolean): string {
+function policy(nonce: string | null, hasChallenge: boolean, hasMedia: boolean): string {
   const challenge = hasChallenge ? " https://challenges.cloudflare.com" : "";
   return [
     "default-src 'self'",
     nonce === null ? "script-src 'self'" : `script-src 'self' 'nonce-${nonce}'${challenge}`,
     "style-src 'self'",
-    "img-src 'self' data:",
+    hasMedia ? "img-src 'self' data: https:" : "img-src 'self' data:",
+    ...(hasMedia ? ["media-src https:"] : []),
     "connect-src 'self'",
-    hasChallenge ? "frame-src https://challenges.cloudflare.com" : "frame-src 'none'",
+    hasChallenge
+      ? "frame-src https://challenges.cloudflare.com"
+      : hasMedia
+        ? "frame-src https://www.youtube-nocookie.com https://player.vimeo.com"
+        : "frame-src 'none'",
     "object-src 'none'",
     "base-uri 'none'",
     "frame-ancestors 'none'",
@@ -69,6 +74,7 @@ export default async function handleRequest(
     policy(
       surfaceIs(routerContext, "storefront") ? null : nonce,
       surfaceIs(routerContext, "challenge"),
+      surfaceIs(routerContext, "lessonMedia"),
     ),
   );
   return new Response(body, { headers: responseHeaders, status: responseStatusCode });

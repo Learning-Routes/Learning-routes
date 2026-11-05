@@ -10,12 +10,15 @@ import { AppHeader } from "../app-pages/app-header";
 import { LessonBar } from "../app-pages/lesson-bar";
 import { isAnswerable, LessonBlocks, TopicDone } from "../app-pages/lesson-parts";
 import { filled, inLocale } from "../storefront/words";
+import { lessonPage } from "../surface";
 import { ButtonLink } from "../ui/button";
 import { Rising } from "../ui/rising";
 import type { Route } from "./+types/seguir";
 
 // A topic (docs/design/reference/vision/pages.html, "Un tema"): the desk, and the one celebration
 // is the gold dot moving on. Reading only: saving progress waits for Platform STEP 8.
+
+export const handle = lessonPage;
 
 export async function loader({ request, params, context }: Route.LoaderArgs) {
   const wanted = Number(new URL(request.url).searchParams.get("tema"));

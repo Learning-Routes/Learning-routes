@@ -46,9 +46,6 @@ function Journey({ route, locale }: { route: PublicRoute; locale: LocaleCode }) 
               </li>
             )),
           ])}
-          <li className="journey-stop journey-stop-module journey-stop-exam" data-kind="exam">
-            <h3 className="journey-name">{words.finalExam}</h3>
-          </li>
         </ol>
       </div>
     </section>

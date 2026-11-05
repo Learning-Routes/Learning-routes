@@ -19,22 +19,6 @@ function Mark({
   module: number;
 }) {
   const { x, y, kind } = station;
-  if (kind === "exam") {
-    const side = module * 0.95;
-    return (
-      <g className={`rf-pop ${arrival(station)}`}>
-        <rect
-          className="rf-exam"
-          x={x - side}
-          y={y - side}
-          width={side * 2}
-          height={side * 2}
-          rx="2"
-          transform={`rotate(45 ${x} ${y})`}
-        />
-      </g>
-    );
-  }
   if (kind === "module") {
     return (
       <g className={`rf-pop ${arrival(station)}`}>
@@ -63,8 +47,7 @@ function Mark({
 }
 
 /**
- * A route's real shape: a ring and dot for each module, a dot for each topic, a diamond for the
- * exam. `done` and `here` are topics, from 0, and only a student has them. `travels` adds the line
+ * A route's real shape: a ring and dot for each module, and a dot for each topic. `done` and `here` are topics, from 0, and only a student has them. `travels` adds the line
  * and the gold dot a card runs on hover. No modules, no line.
  */
 export function RouteFigure({

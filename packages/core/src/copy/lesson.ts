@@ -22,6 +22,18 @@ export interface LessonText {
   lockedTitle: string;
   lockedBody: string;
   empty: string;
+  tipLabel: string;
+  exampleLabel: string;
+  imageFailed: string;
+  watchVideo: string;
+  /** {host} is where it loads from. */
+  videoLoads: string;
+  openVideo: string;
+  videoMissing: string;
+  flipCard: string;
+  seeAnswer: string;
+  expectedOutput: string;
+  transcript: string;
 }
 
 export const LESSON_TEXT: Record<LocaleCode, LessonText> = {
@@ -41,6 +53,17 @@ export const LESSON_TEXT: Record<LocaleCode, LessonText> = {
     lockedTitle: "Este tema es de la ruta completa",
     lockedBody: "El primer módulo es gratis. Muy pronto podrás pagar la ruta para seguir.",
     empty: "Este tema todavía no tiene contenido.",
+    tipLabel: "Consejo",
+    exampleLabel: "Ejemplo",
+    imageFailed: "No pudimos cargar esta imagen.",
+    watchVideo: "Ver el video",
+    videoLoads: "Se carga de {host} solo cuando lo pidas.",
+    openVideo: "Abrir el video",
+    videoMissing: "Este video no tiene una dirección segura.",
+    flipCard: "Toca para voltear",
+    seeAnswer: "Ver la respuesta",
+    expectedOutput: "Lo que debe salir",
+    transcript: "Transcripción",
   },
   en: {
     whereAmI: "Module {module}, topic {topic} of {total}",
@@ -58,6 +81,17 @@ export const LESSON_TEXT: Record<LocaleCode, LessonText> = {
     lockedTitle: "This topic is part of the full route",
     lockedBody: "The first module is free. You'll soon be able to pay for the route to carry on.",
     empty: "This topic has no content yet.",
+    tipLabel: "Tip",
+    exampleLabel: "Example",
+    imageFailed: "We couldn't load this image.",
+    watchVideo: "Watch the video",
+    videoLoads: "It loads from {host} only when you ask.",
+    openVideo: "Open the video",
+    videoMissing: "This video has no safe address.",
+    flipCard: "Tap to flip",
+    seeAnswer: "See the answer",
+    expectedOutput: "What it should print",
+    transcript: "Transcript",
   },
   pt: {
     // Pending native review.
@@ -76,6 +110,17 @@ export const LESSON_TEXT: Record<LocaleCode, LessonText> = {
     lockedTitle: "Este tema faz parte da rota completa",
     lockedBody: "O primeiro módulo é grátis. Em breve você poderá pagar a rota para continuar.",
     empty: "Este tema ainda não tem conteúdo.",
+    tipLabel: "Dica",
+    exampleLabel: "Exemplo",
+    imageFailed: "Não conseguimos carregar esta imagem.",
+    watchVideo: "Ver o vídeo",
+    videoLoads: "Só carrega do {host} quando você pedir.",
+    openVideo: "Abrir o vídeo",
+    videoMissing: "Este vídeo não tem um endereço seguro.",
+    flipCard: "Toque para virar",
+    seeAnswer: "Ver a resposta",
+    expectedOutput: "O que deve aparecer",
+    transcript: "Transcrição",
   },
   fr: {
     // Pending native review.
@@ -95,6 +140,17 @@ export const LESSON_TEXT: Record<LocaleCode, LessonText> = {
     lockedBody:
       "Le premier module est gratuit. Vous pourrez bientôt payer le parcours pour continuer.",
     empty: "Ce sujet n'a pas encore de contenu.",
+    tipLabel: "Conseil",
+    exampleLabel: "Exemple",
+    imageFailed: "Nous n'avons pas pu charger cette image.",
+    watchVideo: "Voir la vidéo",
+    videoLoads: "Elle se charge depuis {host} seulement à votre demande.",
+    openVideo: "Ouvrir la vidéo",
+    videoMissing: "Cette vidéo n'a pas d'adresse sûre.",
+    flipCard: "Touchez pour retourner",
+    seeAnswer: "Voir la réponse",
+    expectedOutput: "Ce qui doit s'afficher",
+    transcript: "Transcription",
   },
   it: {
     // Pending native review.
@@ -113,5 +169,16 @@ export const LESSON_TEXT: Record<LocaleCode, LessonText> = {
     lockedTitle: "Questo argomento fa parte del percorso completo",
     lockedBody: "Il primo modulo è gratis. Presto potrai pagare il percorso per continuare.",
     empty: "Questo argomento non ha ancora contenuti.",
+    tipLabel: "Consiglio",
+    exampleLabel: "Esempio",
+    imageFailed: "Non siamo riusciti a caricare questa immagine.",
+    watchVideo: "Guarda il video",
+    videoLoads: "Si carica da {host} solo quando lo chiedi.",
+    openVideo: "Apri il video",
+    videoMissing: "Questo video non ha un indirizzo sicuro.",
+    flipCard: "Tocca per girare",
+    seeAnswer: "Vedi la risposta",
+    expectedOutput: "Cosa deve uscire",
+    transcript: "Trascrizione",
   },
 };

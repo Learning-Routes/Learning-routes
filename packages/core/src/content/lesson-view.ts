@@ -1,17 +1,36 @@
 import type { LocalizedText } from "../localized-text";
+import { type MdNode, markdownTree } from "./markdown";
 import type { Snapshot } from "./snapshot";
 
 // A topic as a student reads it (docs/design/reference/vision/pages.html, "Un tema"): where it sits
 // in the route, and its blocks. Paying arrives in Platform STEP 9: until then, what lies past the
 // free first module of a paid route is locked, and never leaves the server.
 
-/** What this screen shows. The exercises and media arrive with Platform STEP 8. */
-const SHOWN_BLOCKS = new Set(["concept", "tip", "example", "summary", "check"]);
-
 export interface LessonBlock {
   id: string;
   kind: string;
   data: Record<string, unknown>;
+  /** The Markdown fields, as trees by locale (Platform STEP 8 §1): the parser stays on the server. */
+  md: Partial<Record<MarkdownField, Record<string, MdNode[]>>>;
+}
+
+const MARKDOWN_FIELDS = ["body", "intro", "situation", "trailing_content"] as const;
+type MarkdownField = (typeof MARKDOWN_FIELDS)[number];
+
+function treesOf(data: Record<string, unknown>): LessonBlock["md"] {
+  const md: LessonBlock["md"] = {};
+  for (const field of MARKDOWN_FIELDS) {
+    const text = data[field];
+    if (text && typeof text === "object") {
+      md[field] = Object.fromEntries(
+        Object.entries(text as Record<string, string>).map(([locale, words]) => [
+          locale,
+          markdownTree(words),
+        ]),
+      );
+    }
+  }
+  return md;
 }
 
 export interface LessonView {
@@ -69,8 +88,8 @@ export function lessonView(snapshot: Snapshot, number: number): LessonView | nul
     blocks: locked
       ? []
       : snapshot.blocks
-          .filter((block) => block.lessonId === lesson.id && SHOWN_BLOCKS.has(block.kind))
-          .map(({ id, kind, data }) => ({ id, kind, data })),
+          .filter((block) => block.lessonId === lesson.id)
+          .map(({ id, kind, data }) => ({ id, kind, data, md: treesOf(data) })),
     next: following ? { number: number + 1, title: following.lesson.title } : null,
   };
 }

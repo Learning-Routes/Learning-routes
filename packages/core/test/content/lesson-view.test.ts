@@ -46,9 +46,10 @@ describe("lessonView", () => {
     expect(lessonView(snapshot("free"), 3)?.next).toBeNull();
   });
 
-  it("sends only the blocks this screen shows", () => {
+  it("sends every block the creator wrote, whatever its kind", () => {
     expect(lessonView(snapshot("free"), 1)?.blocks.map((block) => block.kind)).toEqual([
       "concept",
+      "video",
       "check",
     ]);
   });
