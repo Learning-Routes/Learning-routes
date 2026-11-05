@@ -1,7 +1,9 @@
 #!/usr/bin/env node
 // Read-only checks of the live hosts (Platform STEP 7 §7): every host answers, the headers are
-// right, /mcp asks for a sign-in with the right metadata, and the storefront is cached on the
-// second request. It sends no credentials and changes nothing. Runs after every deploy.
+// right, /mcp asks for a sign-in with the right metadata, the storefront is cached on the second
+// request, and every link from every host's landing leads somewhere. It sends no credentials and
+// changes nothing. Runs after every deploy.
+import { crawl } from "./link-check.mjs";
 
 const APEX = process.env.SMOKE_APEX ?? "https://learningroutes.com";
 const APP = process.env.SMOKE_APP ?? "https://app.learningroutes.com";
@@ -95,6 +97,19 @@ check(
   String(second.headers.get("cf-cache-status")),
 );
 await second.arrayBuffer();
+
+const hosts = [APEX, WWW, APP, ...(CREATOR ? [CREATOR] : [])].map((host) => `${host}/`);
+const { pages, addresses, problems } = await crawl({
+  starts: hosts,
+  appHost: new URL(APP).host,
+});
+check(
+  `links: ${addresses} addresses, ${pages} pages, from ${hosts.length} hosts`,
+  problems.length === 0,
+);
+for (const problem of problems) {
+  console.log(`     ${problem}`);
+}
 
 console.log(failed === 0 ? "all checks passed" : `${failed} failed`);
 process.exit(failed === 0 ? 0 : 1);
