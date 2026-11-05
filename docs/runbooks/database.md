@@ -103,22 +103,20 @@ The Keychain items this runbook uses:
    pbcopy < /dev/null
    ```
 
-   Paste at the prompt. The value is never printed or saved. The app origin isn't a secret: it's `APP_ORIGIN` in `apps/api/wrangler.jsonc` (`https://learningroutes.com`). Change it there if the app moves.
+   Paste at the prompt. The value is never printed or saved. The app origin isn't a secret: it's `APP_ORIGIN` in `apps/api/wrangler.jsonc` (`https://app.learningroutes.com`). Change it there if the app moves.
 
-7. **Deploy the API Worker, route the app's `/api` to it, and check.** No workflow deploys the platform yet, so deploy by hand from `main`, after merging the pull request from step 5:
+7. **Deploy the Workers, and check.** No workflow deploys the platform yet, so deploy by hand from `main`, API first, since the web Worker binds to it:
 
    ```sh
    git switch main && git pull
    pnpm --filter @learning-routes/api exec wrangler deploy
+   pnpm --filter @learning-routes/api exec wrangler deploy --config wrangler.mcp.jsonc
+   pnpm --filter @learning-routes/web build
+   pnpm --filter @learning-routes/web exec wrangler deploy
+   pnpm smoke:prod
    ```
 
-   In Cloudflare, under Workers, open `learning-routes-api`, then Settings, then Domains & Routes. Add the route `learningroutes.com/api/*` in the `learningroutes.com` zone. The host needs a proxied DNS record in that zone; the web Worker will serve the rest of it when it's deployed. (From Platform STEP 4 on, the app's host is `app.learningroutes.com`, and the web Worker reaches this one through a service binding, so this route is only for this first check. Remove it when the web Worker is deployed.) Then:
-
-   ```sh
-   curl -s https://learningroutes.com/api/auth/ok
-   ```
-
-   It answers `{"ok":true}` only if the Worker reached the database through Hyperdrive as `lr_app`. That proves the SQL-created role connects (step 4).
+   The web Worker's `routes` take the apex, `www` and `app` as custom domains, and every other host through the route `*.learningroutes.com/*`. That route needs one proxied record, `AAAA * 100::`; a name with its own DNS-only record, such as mail's, doesn't pass through it.
 
 8. **Sign in once with your own email.** Sign-in links go out through Cloudflare Email Sending, which needs Workers Paid and is in beta. No link ever goes to a log outside local development.
    1. Enable sending for the domain, and add the DNS records it asks for:
@@ -127,7 +125,7 @@ The Keychain items this runbook uses:
       pnpm --filter @learning-routes/api exec wrangler email sending enable learningroutes.com
       ```
 
-   2. Ask for a link at `https://learningroutes.com/api/auth/sign-in/magic-link`: a POST with your email, from the app's own page once it exists, or from the browser console on the app origin.
+   2. Ask for a link at `https://app.learningroutes.com/sign-in`.
    3. Open the link in the email, within five minutes, and choose "Sign in".
 
 9. **Run the seed** with that email, as the default role:
@@ -216,19 +214,15 @@ Do these once, before running the migrations that come with Platform STEP 4: mig
    pbcopy < /dev/null
    ```
 
-   Put the zone's id in `CLOUDFLARE_ZONE_ID` in `apps/api/wrangler.jsonc`. It isn't a secret.
-
 **After a restore,** `lr_public` needs its grants back. Step 10 re-runs lr_app's files; also run `grant usage on schema public to lr_public` and the `grant select` lines at the end of `0014`, `0019` and `0021`.
 
 ## Turnstile on "Quiero enseñar" (Platform STEP 4 §6.3)
 
-1. **Create the widget** in Cloudflare, under Turnstile: managed mode, hostname `app.learningroutes.com` only.
-2. **Put its site key,** which isn't a secret, in `TURNSTILE_SITE_KEY` in `apps/web/wrangler.jsonc`, replacing the test key, in a small pull request.
-3. **Set its secret** at wrangler's prompt, from the clipboard, then clear the clipboard:
+The widget is managed, for `app.learningroutes.com` only, and its site key is in `apps/web/wrangler.jsonc`. It needs its secret on the API Worker. Copy it from the widget's page in Cloudflare, set it at wrangler's prompt, then clear the clipboard:
 
-   ```sh
-   pnpm --filter @learning-routes/api exec wrangler secret put TURNSTILE_SECRET
-   pbcopy < /dev/null
-   ```
+```sh
+pnpm --filter @learning-routes/api exec wrangler secret put TURNSTILE_SECRET
+pbcopy < /dev/null
+```
 
-Cloudflare's test keys pass only where `ENVIRONMENT` is `development`, so forgetting step 2 or 3 refuses every application rather than letting them all through.
+Cloudflare's test keys pass only where `ENVIRONMENT` is `development`, so a missing secret refuses every application rather than letting them all through.

@@ -114,7 +114,7 @@ Open **Enseñar**, then **Conexiones**, and choose **Desconectar**. Access ends 
 
 ## Testing locally
 
-Claude on the web needs a public URL, so that test waits for STEP 7, the first deploy. From ``:
+Claude on the web needs a public URL, so test it against production. From the repository root:
 
 1. `docker compose up -d --wait`
 2. `pnpm install`

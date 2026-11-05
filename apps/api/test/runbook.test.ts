@@ -51,8 +51,9 @@ describe("the database runbook", () => {
     expect(runbook).toContain("rolbypassrls");
   });
 
-  it("deploys the API Worker and routes the app's /api to it before checking it", () => {
+  it("deploys the Workers, gives creators' hosts their route, and checks them", () => {
     expect(runbook).toContain("wrangler deploy");
-    expect(runbook).toContain("learningroutes.com/api/*");
+    expect(runbook).toContain("*.learningroutes.com/*");
+    expect(runbook).toContain("pnpm smoke:prod");
   });
 });

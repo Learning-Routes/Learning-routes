@@ -18,7 +18,7 @@
   "vars": {
     "APP_ORIGIN": "https://app.learningroutes.com",
     "ENVIRONMENT": "production",
-    // Where the landing and the catalog live, until the switch moves them to the apex.
+    // Where the landing and the catalog live.
     "PLATFORM_ORIGIN": "https://learningroutes.com",
     // Each creator's page is [slug].CREATOR_DOMAIN (Platform STEP 4 §0).
     "CREATOR_DOMAIN": "learningroutes.com",
@@ -26,6 +26,14 @@
     // (docs/runbooks/database.md); the API refuses its tokens in production.
     "TURNSTILE_SITE_KEY": "1x00000000000000000000AA"
   },
+  // Named hosts are custom domains, which take precedence over the wildcard route that
+  // gives each creator's page its host.
+  "routes": [
+    { "pattern": "learningroutes.com", "custom_domain": true },
+    { "pattern": "www.learningroutes.com", "custom_domain": true },
+    { "pattern": "app.learningroutes.com", "custom_domain": true },
+    { "pattern": "*.learningroutes.com/*", "zone_name": "learningroutes.com" }
+  ],
   // The API, from pages and for the app's /api: one host, so one session cookie.
   "services": [
     { "binding": "API", "service": "learning-routes-api" },
