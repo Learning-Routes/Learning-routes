@@ -16,6 +16,13 @@ The Keychain items this runbook uses:
 | `lr-app` | The Worker's connection URL: the `lr_app` role, which Hyperdrive connects as |
 | `lr-public` | The storefront's connection URL: the `lr_public` role, which reads the public views and nothing else |
 
+## The plan we run on
+
+- **Size:** a single-node PS-5 ($5 a month), Postgres 18, in AWS us-east-1. São Paulo doesn't sell this size.
+- **Backups:** PlanetScale backs up every 12 hours and keeps each backup for 2 days. Point-in-time recovery runs from the oldest backup to 5 minutes ago.
+- **Upgrade to 3 nodes (PS-5 HA, $15 a month) before the first paid student, in Platform STEP 9.** On the Clusters page, choose "HA Primary + Multi-replica", then "Queue instance changes" and "Apply changes". No migration is needed. A single node is what PlanetScale suggests for non-critical workloads, and it has no replica to fail over to.
+- **Never** run tests against production, or seed it.
+
 ## Before you start
 
 - Platform STEP 2 is merged, and `main` is green.
