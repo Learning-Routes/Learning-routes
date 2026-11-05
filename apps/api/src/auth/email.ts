@@ -44,7 +44,18 @@ const HERE = "#E79A0F";
  */
 export function magicLinkEmail({ url, locale }: Pick<MagicLinkMessage, "url" | "locale">) {
   const words = SIGN_IN_TEXT[locale];
-  const text = [words.emailIntro, "", url, "", words.emailExpiry, words.emailIgnore].join("\n");
+  const text = [
+    words.emailHeading,
+    "",
+    words.emailIntro,
+    "",
+    url,
+    "",
+    words.emailExpiry,
+    words.emailIgnore,
+    "",
+    `${BRAND}. ${words.emailNoTracking}`,
+  ].join("\n");
   const type = "font-family:Arial,Helvetica,sans-serif";
   const html = `<!doctype html>
 <html lang="${locale}">
@@ -71,14 +82,18 @@ export function magicLinkEmail({ url, locale }: Pick<MagicLinkMessage, "url" | "
 <td width="26" height="26" align="center" bgcolor="${ACCENT}" style="border-radius:7px;color:${HERE};${type};font-size:12px;line-height:26px">&#9679;</td>
 <td class="ink" style="padding-left:8px;color:${INK};${type};font-size:15px;font-weight:bold">${escapeHtml(BRAND)}</td>
 </tr></table>
-<p class="ink" style="margin:24px 0 24px;color:${INK};${type};font-size:18px;line-height:1.4">${escapeHtml(words.emailIntro)}</p>
+<h1 class="ink" style="margin:24px 0 8px;color:${INK};${type};font-size:22px;line-height:1.3">${escapeHtml(words.emailHeading)}</h1>
+<p class="ink" style="margin:0 0 8px;color:${INK};${type};font-size:16px;line-height:1.5">${escapeHtml(words.emailIntro)}</p>
+<p class="soft" style="margin:0 0 24px;color:${SOFT_INK};${type};font-size:14px;line-height:1.5">${escapeHtml(words.emailExpiry)}</p>
 <table role="presentation" cellpadding="0" cellspacing="0"><tr>
 <td bgcolor="${ACCENT}" style="border-radius:10px"><a href="${escapeHtml(url)}" style="display:inline-block;padding:14px 24px;color:#FFFFFF;${type};font-size:16px;font-weight:bold;text-decoration:none">${escapeHtml(words.emailAction)}</a></td>
 </tr></table>
-<p class="soft" style="margin:24px 0 8px;color:${SOFT_INK};${type};font-size:14px;line-height:1.5">${escapeHtml(words.emailExpiry)}</p>
-<p class="soft" style="margin:0;color:${SOFT_INK};${type};font-size:14px;line-height:1.5">${escapeHtml(words.emailIgnore)}</p>
+<p class="soft" style="margin:24px 0 8px;color:${SOFT_INK};${type};font-size:14px;line-height:1.5">${escapeHtml(words.emailIgnore)}</p>
+<p class="soft" style="margin:0 0 4px;color:${SOFT_INK};${type};font-size:14px;line-height:1.5">${escapeHtml(words.emailFallback)}</p>
+<p class="soft" style="margin:0;color:${SOFT_INK};${type};font-size:13px;line-height:1.5;word-break:break-all">${escapeHtml(url)}</p>
 </td></tr>
 </table>
+<p class="soft" style="margin:16px 0 0;color:${SOFT_INK};${type};font-size:12px;line-height:1.5">${escapeHtml(BRAND)}. ${escapeHtml(words.emailNoTracking)}</p>
 </td></tr>
 </table>
 </body>
