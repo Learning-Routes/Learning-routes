@@ -12,8 +12,11 @@ import pg from "pg";
 
 const APP = process.env.SMOKE_APP ?? "https://app.learningroutes.com";
 const MAIL = "https://api.mail.tm";
-const CLIENT_ID = `${APP}/smoke-client.json`;
-const REDIRECT_URI = `${APP}/smoke-client-callback`;
+// The client's identity is a public document. A Worker can't fetch its own zone, so this repository's
+// copy on jsDelivr, which serves it as JSON.
+const CLIENT_HOME = "https://cdn.jsdelivr.net/gh/Learning-Routes/Learning-routes@main/scripts";
+const CLIENT_ID = `${CLIENT_HOME}/smoke-client.json`;
+const REDIRECT_URI = `${CLIENT_HOME}/smoke-client-callback`;
 const SCOPES = "routes:read routes:write routes:publish";
 const VERIFIER = "smoke-verifier-long-enough-for-the-forty-three-characters-it-needs";
 const POLLS = 40;
@@ -74,7 +77,12 @@ const post = (path: string, body: unknown, cookie = "") =>
   fetch(`${APP}${path}`, {
     method: "POST",
     redirect: "manual",
-    headers: { "content-type": "application/json", origin: APP, ...(cookie ? { cookie } : {}) },
+    headers: {
+      "accept-language": "es",
+      "content-type": "application/json",
+      origin: APP,
+      ...(cookie ? { cookie } : {}),
+    },
     body: JSON.stringify(body),
   });
 
@@ -89,7 +97,10 @@ const sessionOf = (response: Response) => {
 };
 
 async function signIn(inbox: Awaited<ReturnType<typeof newInbox>>) {
-  await post("/api/auth/sign-in/magic-link", { email: inbox.address });
+  const asked = await post("/api/auth/sign-in/magic-link", { email: inbox.address });
+  if (!asked.ok) {
+    throw new Error(`asking for a sign-in link was refused (status ${asked.status})`);
+  }
   const token = await inbox.linkToken("enlace");
   const confirmed = await fetch(`${APP}/api/auth/magic-link/confirm`, {
     method: "POST",
@@ -122,12 +133,18 @@ async function mcpToken(cookie: string) {
     headers: { cookie },
   });
   const page = new URL(asked.headers.get("location") ?? "", APP);
+  if (!page.searchParams.get("client_id")) {
+    throw new Error(`authorize went to ${page.pathname} (status ${asked.status})`);
+  }
   const consent = await post(
     "/api/auth/oauth2/consent",
     { accept: true, oauth_query: page.search.slice(1) },
     cookie,
   );
-  const { url } = (await consent.json()) as { url: string };
+  const { url, error } = (await consent.json()) as { url?: string; error?: string };
+  if (!url) {
+    throw new Error(`consent was refused (status ${consent.status}): ${error}`);
+  }
   const code = new URL(url).searchParams.get("code") ?? "";
   const answer = await fetch(`${APP}/api/auth/oauth2/token`, {
     method: "POST",

@@ -40,17 +40,6 @@ function lineThrough(points: readonly Point[]) {
 }
 
 function markFor(point: Point, kind: string) {
-  if (kind === "exam") {
-    return svgElement("rect", {
-      class: "journey-mark journey-mark-exam",
-      x: point.x - 10,
-      y: point.y - 10,
-      width: 20,
-      height: 20,
-      rx: 3,
-      transform: `rotate(45 ${point.x} ${point.y})`,
-    });
-  }
   if (kind === "module") {
     const group = svgElement("g", { class: "journey-mark journey-mark-module" });
     group.appendChild(svgElement("circle", { cx: point.x, cy: point.y, r: 11 }));

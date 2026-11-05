@@ -13,7 +13,6 @@ export default [
   route("ser-creador", "routes/ser-creador.tsx"),
   route("invitacion", "routes/invitacion.tsx"),
   route("salir", "routes/salir.ts"),
-  route("smoke-client.json", "routes/smoke-client.ts"),
   route("admin", "routes/admin.tsx"),
   route("admin/crear-espacio", "routes/admin-create-space.tsx"),
   route("conectar", "routes/conectar.tsx"),

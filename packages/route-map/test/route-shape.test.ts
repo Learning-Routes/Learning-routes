@@ -6,11 +6,11 @@ const LESSONS = [5, 4, 5];
 const WHOLE_PATH = /^M[\d.-]+ [\d.-]+(L[\d.-]+ [\d.-]+)+$/;
 
 describe("routeShape", () => {
-  it("has a ring per module, a dot per topic and one exam at the end", () => {
+  it("has a ring per module and a dot per topic, and no exam nobody wrote", () => {
     const { stations } = routeShape(LESSONS, "pt", box);
     expect(stations.filter((s) => s.kind === "module")).toHaveLength(3);
     expect(stations.filter((s) => s.kind === "topic")).toHaveLength(14);
-    expect(stations.map((s) => s.kind).at(-1)).toBe("exam");
+    expect(stations.map((s) => s.kind)).not.toContain("exam");
     expect(stations[0]?.kind).toBe("module");
   });
 
@@ -38,7 +38,7 @@ describe("routeShape", () => {
   it("is the same shape every time, and another route's is different", () => {
     expect(routeShape(LESSONS, "pt", box)).toEqual(routeShape(LESSONS, "pt", box));
     expect(routeShape(LESSONS, "other", box).path).not.toBe(routeShape(LESSONS, "pt", box).path);
-    expect(routeShape([6, 5, 6, 5], "pt", box).stations).toHaveLength(27);
+    expect(routeShape([6, 5, 6, 5], "pt", box).stations).toHaveLength(26);
   });
 
   it("stays inside its box, across and down", () => {
@@ -75,11 +75,11 @@ describe("braidShapes", () => {
     { lessons: [4, 4, 4], seed: "three" },
   ];
 
-  it("gives each route its own line, with only rings and the exam on it", () => {
+  it("gives each route its own line, with only rings on it", () => {
     const lines = braidShapes(routes, { width: 560, height: 680 });
     expect(lines).toHaveLength(3);
     expect(new Set(lines.map((line) => line.path)).size).toBe(3);
-    expect(lines[0]?.stations.map((s) => s.kind)).toEqual(["module", "module", "exam"]);
+    expect(lines[0]?.stations.map((s) => s.kind)).toEqual(["module", "module"]);
   });
 
   it("stays inside the figure", () => {

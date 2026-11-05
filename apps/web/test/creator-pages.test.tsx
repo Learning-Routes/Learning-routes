@@ -87,7 +87,8 @@ describe("a route's page", () => {
     expect(html).toContain("2. Números");
     expect(html).toContain("Módulo 2");
     expect(html).toContain("Moverte");
-    expect(html.indexOf("Moverte")).toBeLessThan(html.indexOf("Examen final"));
+    // No exam the creator didn't write.
+    expect(html).not.toContain("Examen final");
   });
 
   it("says the price in words, and that you pay once", () => {

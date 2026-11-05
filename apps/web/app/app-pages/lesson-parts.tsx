@@ -5,21 +5,11 @@ import type { LocalizedText } from "@learning-routes/core/localized-text";
 import { useEffect, useId, useRef, useState } from "react";
 import { inLocale } from "../storefront/words";
 import { Button, ButtonLink } from "../ui/button";
+import { BlockView } from "./lesson-blocks";
 
 /** A question nobody can get right is the creator's mistake, and never blocks the student. */
 export const isAnswerable = (block: LessonBlock) =>
   block.kind === "check" && (block.data as unknown as CheckData).options?.some((o) => o.correct);
-
-const BLANK_LINE = /\n{2,}/;
-const paragraphs = (text: string) => text.split(BLANK_LINE).filter(Boolean);
-
-function Prose({ text, className }: { text: string; className?: string }) {
-  return paragraphs(text).map((part, index) => (
-    <p key={index} className={className}>
-      {part}
-    </p>
-  ));
-}
 
 interface CheckData {
   question: LocalizedText;
@@ -62,7 +52,8 @@ function Question({
   const feedback = {
     none: "",
     needed: words.pickOne,
-    wrong: words.wrong,
+    // The creator's own explanation, as a hint.
+    wrong: explanation ? `${words.wrong} ${explanation}` : words.wrong,
     right: explanation ? `${words.right} ${explanation}` : words.right,
   }[answer];
   return (
@@ -124,7 +115,7 @@ function Question({
   );
 }
 
-/** What a student reads. Every field is shown as plain text, never as HTML. */
+/** What a student reads: every block a creator brought, each through its own view. */
 export function LessonBlocks({
   blocks,
   locale,
@@ -138,47 +129,23 @@ export function LessonBlocks({
 }) {
   const checks = blocks.filter(isAnswerable).length;
   const right = useRef(new Set<string>());
-  return blocks.map((block) => {
-    const text = (field: string) =>
-      inLocale(block.data[field] as LocalizedText | null | undefined, locale, source);
-    switch (block.kind) {
-      case "check":
-        return !isAnswerable(block) ? null : (
-          <Question
-            key={block.id}
-            data={block.data as unknown as CheckData}
-            locale={locale}
-            source={source}
-            onRight={() => {
-              right.current.add(block.id);
-              if (right.current.size === checks) {
-                onAllRight();
-              }
-            }}
-          />
-        );
-      case "tip":
-      case "example":
-        return (
-          <aside key={block.id} className={`lesson-aside lesson-${block.kind} settle-2`}>
-            <Prose text={text("body")} />
-          </aside>
-        );
-      case "summary":
-        return (
-          <section key={block.id} className="lesson-aside lesson-summary settle-2">
-            <Prose text={text("body")} />
-            <ul>
-              {((block.data.key_points as LocalizedText[] | undefined) ?? []).map((point) => (
-                <li key={inLocale(point, locale, source)}>{inLocale(point, locale, source)}</li>
-              ))}
-            </ul>
-          </section>
-        );
-      default:
-        return <Prose key={block.id} text={text("body")} className="lesson-body settle-2" />;
-    }
-  });
+  const question = (block: LessonBlock) =>
+    isAnswerable(block) ? (
+      <Question
+        data={block.data as unknown as CheckData}
+        locale={locale}
+        source={source}
+        onRight={() => {
+          right.current.add(block.id);
+          if (right.current.size === checks) {
+            onAllRight();
+          }
+        }}
+      />
+    ) : null;
+  return blocks.map((block) => (
+    <BlockView key={block.id} block={block} locale={locale} source={source} question={question} />
+  ));
 }
 
 /** The end of a topic. With a question answered, this is the one celebration. */

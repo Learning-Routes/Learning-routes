@@ -30,7 +30,7 @@ test.describe("with no JavaScript", () => {
       page.getByText("3 módulos y 14 temas. Para empezar desde cero. En español."),
     ).toBeVisible();
     await expect(page.getByRole("heading", { name: NO_JS_MODULE })).toBeVisible();
-    await expect(page.getByRole("heading", { name: "Examen final" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Examen final" })).toHaveCount(0);
     await expect(page.getByText("pagas una vez por la ruta: 29,00")).toBeVisible();
     await expect(page.getByRole("link", { name: "Empezar gratis" })).toHaveAttribute("href", RUTA);
   });

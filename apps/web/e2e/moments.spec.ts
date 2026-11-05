@@ -99,17 +99,17 @@ test("route: with no script, every station is still there with its own mark", as
   const context = await browser.newContext({ javaScriptEnabled: false });
   const page = await context.newPage();
   await page.goto(ROUTE);
-  await expect(page.locator(".journey-stop-exam")).toBeVisible();
+  await expect(page.locator(".journey-stop-exam")).toHaveCount(0);
   expect(await page.locator(".journey-stop").count()).toBeGreaterThan(5);
   await context.close();
 });
 
-test("every route line has its real shape: a ring per module, a dot per topic, one diamond", async ({
+test("every route line has its real shape: a ring per module, a dot per topic, no exam nobody wrote", async ({
   page,
 }) => {
   await page.goto(CATALOG);
   const card = page.locator(".route-card").first();
-  await expect(card.locator(".rf-exam")).toHaveCount(1);
+  await expect(card.locator(".rf-exam")).toHaveCount(0);
   expect(await card.locator(".rf-ring").count()).toBeGreaterThan(0);
   expect(await card.locator(".rf-topic").count()).toBeGreaterThan(0);
 });
