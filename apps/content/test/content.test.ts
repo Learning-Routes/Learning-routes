@@ -44,8 +44,15 @@ describe("a published creation", () => {
       expect(policy).toContain(rule);
     }
     expect(answer.headers.get("x-content-type-options")).toBe("nosniff");
-    expect(answer.headers.get("cache-control")).toContain("immutable");
+    expect(answer.headers.get("cache-control")).toBe("public, max-age=3600");
+    expect(answer.headers.get("content-security-policy")).toContain("sandbox allow-scripts");
+    expect(answer.headers.get("strict-transport-security")).toBeTruthy();
     expect(answer.headers.get("set-cookie")).toBeNull();
+  });
+
+  it("answers a cheap 304 to a cache that already holds it", async () => {
+    const answer = await get(published, [], { headers: { "if-none-match": `"${HASH}"` } });
+    expect(answer.status).toBe(304);
   });
 
   it("is not there when nothing was published under it", async () => {
@@ -109,5 +116,7 @@ describe("the signature both Workers make", () => {
   it("matches this vector, which the API's signer is tested against too", async () => {
     expect(await signatureOf(SECRET, "/d/x", 1_800_000_000)).toMatchSnapshot();
     expect(await isSigned(SECRET, "/d/x", 1, "", 0)).toBe(false);
+    expect(await isSigned(SECRET, "/d/x", 1, "!!!", 0)).toBe(false);
+    await expect(isSigned("short", "/d/x", 1, "", 0)).rejects.toThrow("too short");
   });
 });

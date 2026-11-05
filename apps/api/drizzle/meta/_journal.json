@@ -225,6 +225,20 @@
       "when": 1793893017196,
       "tag": "0031_invitation_grants",
       "breakpoints": true
+    },
+    {
+      "idx": 32,
+      "version": "7",
+      "when": 1793912705944,
+      "tag": "0032_reserve_content_hosts",
+      "breakpoints": true
+    },
+    {
+      "idx": 33,
+      "version": "7",
+      "when": 1793912728572,
+      "tag": "0033_validate_reserved_hosts",
+      "breakpoints": true
     }
   ]
 }

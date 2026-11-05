@@ -1,6 +1,6 @@
 // A draft's address is signed and short-lived (Platform STEP 9 §1): the draft preview gets one,
-// and nobody else can. The API signs with the same secret; test/signing.test.ts holds a vector both
-// sides must agree on.
+// and nobody else can. The API signs with the same secret; a vector both
+// sides must agree on, in test/content.test.ts.
 
 const ENCODER = new TextEncoder();
 /** The longest a signed address may live, whatever it says. */
@@ -28,7 +28,19 @@ export async function signatureOf(secret: string, path: string, expires: number)
   return base64url(await crypto.subtle.sign("HMAC", await keyOf(secret), message(path, expires)));
 }
 
-/** Whether this path's signature is ours, and still in time. */
+const fromBase64url = (text: string) => {
+  try {
+    const binary = atob(text.replaceAll("-", "+").replaceAll("_", "/"));
+    return Uint8Array.from(binary, (char) => char.charCodeAt(0));
+  } catch {
+    return null;
+  }
+};
+
+/** Too short a secret signs nothing: it is the one thing between a draft and everyone. */
+const SHORTEST_SECRET = 32;
+
+/** Whether this path's signature is ours, and still in time. The platform's own check compares. */
 export async function isSigned(
   secret: string,
   path: string,
@@ -36,17 +48,15 @@ export async function isSigned(
   signature: string,
   nowS: number,
 ) {
+  if (secret.length < SHORTEST_SECRET) {
+    throw new Error("CONTENT_SIGNING_SECRET is too short to sign anything");
+  }
   if (!Number.isInteger(expires) || expires < nowS || expires > nowS + LONGEST_S) {
     return false;
   }
-  const expected = await signatureOf(secret, path, expires);
-  // The same length, then every character: no early exit that says how much matched.
-  if (expected.length !== signature.length) {
-    return false;
-  }
-  let differs = 0;
-  for (let at = 0; at < expected.length; at++) {
-    differs |= expected.charCodeAt(at) ^ signature.charCodeAt(at);
-  }
-  return differs === 0;
+  const bytes = fromBase64url(signature);
+  return (
+    bytes !== null &&
+    crypto.subtle.verify("HMAC", await keyOf(secret), bytes, message(path, expires))
+  );
 }

@@ -10,6 +10,9 @@ const LIBRARIES = "https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https:/
 
 export function policyFor(frameAncestors: string) {
   return [
+    // Its own box even when opened straight, not framed: an opaque origin, no popups, no top
+    // navigation, no forms. Header-only, and every engine people use honours it.
+    "sandbox allow-scripts",
     "default-src 'none'",
     `script-src 'unsafe-inline' 'unsafe-eval' ${LIBRARIES}`,
     `style-src 'unsafe-inline' ${LIBRARIES} https://fonts.googleapis.com`,
@@ -48,6 +51,9 @@ export default {
         return plain(403);
       }
     }
+    if (kind === "p" && request.headers.get("if-none-match") === `"${hash}"`) {
+      return plain(304, { ETag: `"${hash}"` });
+    }
     const object = await env.CREATIONS.get(key);
     if (object === null) {
       return plain(404);
@@ -59,9 +65,11 @@ export default {
         "X-Content-Type-Options": "nosniff",
         "Referrer-Policy": "no-referrer",
         "Cross-Origin-Resource-Policy": "cross-origin",
+        "Cross-Origin-Opener-Policy": "same-origin",
+        "Strict-Transport-Security": "max-age=86400",
         "Permissions-Policy": "camera=(), microphone=(), geolocation=(), payment=(), usb=()",
-        // A published creation never changes: a new upload is a new hash.
-        "Cache-Control": kind === "p" ? "public, max-age=31536000, immutable" : "private, no-store",
+        // An hour, then a cheap revalidation: taking a creation down reaches every cache soon.
+        "Cache-Control": kind === "p" ? "public, max-age=3600" : "private, no-store",
         ETag: `"${hash}"`,
       },
     });

