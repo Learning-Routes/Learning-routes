@@ -74,7 +74,12 @@ const post = (path: string, body: unknown, cookie = "") =>
   fetch(`${APP}${path}`, {
     method: "POST",
     redirect: "manual",
-    headers: { "content-type": "application/json", origin: APP, ...(cookie ? { cookie } : {}) },
+    headers: {
+      "accept-language": "es",
+      "content-type": "application/json",
+      origin: APP,
+      ...(cookie ? { cookie } : {}),
+    },
     body: JSON.stringify(body),
   });
 
@@ -89,7 +94,10 @@ const sessionOf = (response: Response) => {
 };
 
 async function signIn(inbox: Awaited<ReturnType<typeof newInbox>>) {
-  await post("/api/auth/sign-in/magic-link", { email: inbox.address });
+  const asked = await post("/api/auth/sign-in/magic-link", { email: inbox.address });
+  if (!asked.ok) {
+    throw new Error(`asking for a sign-in link was refused (status ${asked.status})`);
+  }
   const token = await inbox.linkToken("enlace");
   const confirmed = await fetch(`${APP}/api/auth/magic-link/confirm`, {
     method: "POST",
