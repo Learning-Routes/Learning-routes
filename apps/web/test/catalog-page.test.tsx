@@ -82,7 +82,7 @@ describe("the catalog page", () => {
   it("an empty catalog asks who wants to teach", () => {
     const html = render({ routes: [] });
     expect(html).toContain("¿Enseñas algo que sabes bien?");
-    expect(html).toContain('href="https://app.learningroutes.com/quiero-ensenar"');
+    expect(html).toContain('href="https://app.learningroutes.com/ser-creador"');
   });
 
   it("links to the next and the previous page", () => {

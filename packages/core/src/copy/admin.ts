@@ -24,6 +24,7 @@ export interface AdminText {
   adminTitle: string;
   noApplications: string;
   markInvited: string;
+  resendInvitation: string;
   decline: string;
   catalogRequests: string;
   noRequests: string;
@@ -59,7 +60,8 @@ export const ADMIN_TEXT: Record<LocaleCode, AdminText> = {
     fixEmail: "Escribe un correo con @, como tu@ejemplo.com.",
     adminTitle: "Quieren enseñar",
     noApplications: "No hay solicitudes nuevas.",
-    markInvited: "Ya envié la invitación",
+    markInvited: "Enviar invitación",
+    resendInvitation: "Reenviar invitación",
     decline: "Rechazar",
     catalogRequests: "Pidieron entrar al catálogo",
     noRequests: "No hay rutas por revisar.",
@@ -92,7 +94,8 @@ export const ADMIN_TEXT: Record<LocaleCode, AdminText> = {
     fixEmail: "Enter an email with an @, like you@example.com.",
     adminTitle: "They want to teach",
     noApplications: "There are no new applications.",
-    markInvited: "I sent the invitation",
+    markInvited: "Send invitation",
+    resendInvitation: "Send it again",
     decline: "Decline",
     catalogRequests: "Asked to join the catalog",
     noRequests: "There are no routes to review.",
@@ -125,7 +128,8 @@ export const ADMIN_TEXT: Record<LocaleCode, AdminText> = {
     fixEmail: "Digite um e-mail com @, como voce@exemplo.com.",
     adminTitle: "Querem ensinar",
     noApplications: "Não há pedidos novos.",
-    markInvited: "Já enviei o convite",
+    markInvited: "Enviar convite",
+    resendInvitation: "Reenviar convite",
     decline: "Recusar",
     catalogRequests: "Pediram para entrar no catálogo",
     noRequests: "Não há rotas para revisar.",
@@ -159,7 +163,8 @@ export const ADMIN_TEXT: Record<LocaleCode, AdminText> = {
     fixEmail: "Saisissez un e-mail avec un @, comme vous@exemple.com.",
     adminTitle: "Ils veulent enseigner",
     noApplications: "Aucune nouvelle demande.",
-    markInvited: "J'ai envoyé l'invitation",
+    markInvited: "Envoyer l'invitation",
+    resendInvitation: "Renvoyer l'invitation",
     decline: "Refuser",
     catalogRequests: "Demandes d'entrée au catalogue",
     noRequests: "Aucun parcours à examiner.",
@@ -193,7 +198,8 @@ export const ADMIN_TEXT: Record<LocaleCode, AdminText> = {
     fixEmail: "Scrivi un'email con la @, come tu@esempio.com.",
     adminTitle: "Vogliono insegnare",
     noApplications: "Non ci sono nuove richieste.",
-    markInvited: "Ho inviato l'invito",
+    markInvited: "Invia l'invito",
+    resendInvitation: "Invia di nuovo",
     decline: "Rifiuta",
     catalogRequests: "Hanno chiesto di entrare nel catalogo",
     noRequests: "Non ci sono percorsi da rivedere.",

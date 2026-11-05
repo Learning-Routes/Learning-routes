@@ -87,7 +87,7 @@ function NoRoutes({ view }: { view: CatalogView }) {
   return (
     <EmptyState
       title={words.teachTitle}
-      action={<ButtonLink href={`${appOrigin}/quiero-ensenar`}>{words.teachAction}</ButtonLink>}
+      action={<ButtonLink href={`${appOrigin}/ser-creador`}>{words.teachAction}</ButtonLink>}
     >
       {words.teachBody}
     </EmptyState>

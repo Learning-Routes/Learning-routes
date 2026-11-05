@@ -100,8 +100,12 @@ export function CreatorPage({
             {tagline ? <p className="creator-tagline settle-1">{tagline}</p> : null}
             {bio ? <p className="creator-bio settle-2">{bio}</p> : null}
             <div className="creator-actions settle-3">
-              <ButtonLink href="#rutas">{words.seeRoutes}</ButtonLink>
-              <span className="creator-free">{words.freeLine}</span>
+              {routes.length > 0 ? (
+                <>
+                  <ButtonLink href="#rutas">{words.seeRoutes}</ButtonLink>
+                  <span className="creator-free">{words.freeLine}</span>
+                </>
+              ) : null}
             </div>
           </div>
           <CreatorWeave routes={routes} />

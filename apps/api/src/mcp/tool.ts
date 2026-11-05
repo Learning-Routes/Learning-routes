@@ -15,7 +15,9 @@ export const Text = LocalizedText.describe('Text by locale, like {"es": "Hola"}.
 export interface Tool {
   name: string;
   scope: "routes:read" | "routes:write" | "routes:publish";
-  action: ActionName;
+  /** null for a tool that reads nothing of anyone's: `answers` holds what it says. */
+  action: ActionName | null;
+  answers?: () => Record<string, unknown>;
   description: string;
   annotations: Record<string, boolean>;
   input: z.ZodType;

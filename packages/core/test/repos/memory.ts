@@ -179,6 +179,12 @@ export function memoryRepos(state: State, actorId = ""): Repos {
     state.members.get(`${spaceId}:${userId}`)?.role ?? null;
 
   return {
+    // Only the database can hold these: test/db and test/invitations.test.ts cover them.
+    invitations: {
+      invite: async () => ({ ok: false, error: "not_found" }),
+      preview: async () => ({ state: "unknown", email: null, name: null, locale: null }),
+      accept: async () => ({ ok: false, error: "not_found" }),
+    },
     connections: {
       canConnect: async (userId) =>
         [...state.members.values()].some(

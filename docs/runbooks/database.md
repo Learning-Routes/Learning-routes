@@ -140,7 +140,7 @@ The steps from "Before you start" on are the setup on PlanetScale, for the move 
    1. Enable sending for the domain, and add the DNS records it asks for:
 
       ```sh
-      pnpm --filter @learning-routes/api exec wrangler email sending enable learningroutes.com
+      pnpm --filter @learning-routes/api exec wrangler email sending enable mail.learningroutes.com
       ```
 
    2. Ask for a link at `https://app.learningroutes.com/sign-in`.

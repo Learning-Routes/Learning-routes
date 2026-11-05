@@ -7,7 +7,7 @@ import { pgRepos } from "../db/repos/index";
 import { pgTenancy } from "../db/tenancy";
 import { type Database, transactionAs, withClient } from "../db/with-db";
 import { newId } from "../ids";
-import { requestLog } from "../log";
+import { logEvent, requestLog } from "../log";
 import { createOAuth } from "./auth";
 import { boundedMetadataFetch } from "./client-metadata";
 import { serveMcp } from "./request";
@@ -42,6 +42,23 @@ async function logGrant(db: Database, userId: string, query: URLSearchParams) {
   );
 }
 
+/** Why the provider said no: OAuth's own error words, which name no person and no token. */
+async function logRefusal(path: string, answer: Response) {
+  if (answer.status < 400) {
+    return;
+  }
+  const said = (await answer
+    .clone()
+    .json()
+    .catch(() => null)) as { error?: unknown; error_description?: unknown } | null;
+  logEvent({
+    message: "oauth refused",
+    path,
+    status: answer.status,
+    error: `${said?.error ?? "unknown"}: ${said?.error_description ?? ""}`,
+  });
+}
+
 export function createMcpApp(deps: McpAppDeps = {}) {
   const fetchClientMetadataResource = deps.fetchClientMetadataResource ?? boundedMetadataFetch();
   const app = new Hono<{ Bindings: Env }>();
@@ -52,6 +69,7 @@ export function createMcpApp(deps: McpAppDeps = {}) {
     withClient(c.env, c.executionCtx, async (db) => {
       const oauth = createOAuth(c.env, db, fetchClientMetadataResource);
       const answer = await oauth.handler(c.req.raw);
+      await logRefusal(c.req.path, answer);
       // Two first requests from a client it has never seen race to store its metadata, and
       // the loser fails on the unique client id. By now the row is there. Only a GET is safe
       // to send twice.

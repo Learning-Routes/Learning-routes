@@ -71,10 +71,10 @@ test("another person's enrollment does not exist, and a topic past the end neith
 
 test("with no space yet, connecting an assistant offers two ways forward", async ({ page }) => {
   await signInContext(page.context(), newAddress("sin-espacio"));
-  await page.goto(`${DEV}/ensenar/conecta`);
+  await page.goto(`${DEV}/creador/conecta`);
   await expect(page.getByRole("link", { name: "Quiero enseñar" })).toHaveAttribute(
     "href",
-    "/quiero-ensenar",
+    "/ser-creador",
   );
   await expect(page.getByRole("link", { name: "Volver a Mis rutas" })).toHaveAttribute(
     "href",

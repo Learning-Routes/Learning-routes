@@ -12,6 +12,7 @@
     "cf-typegen": "wrangler types --strict-vars=false",
     "postinstall": "wrangler types --strict-vars=false",
     "db:migrate": "node scripts/migrate.ts",
+    "smoke:new-creator": "tsx scripts/smoke-new-creator.ts",
     "db:lint": "squawk -c .squawk.toml drizzle/*.sql",
     "db:auth-schema": "auth generate --config src/auth/schema.config.ts --adapter drizzle --dialect postgresql --output auth-schema.generated.ts -y",
     "db:generate": "drizzle-kit generate",
@@ -37,6 +38,7 @@
   },
   "devDependencies": {
     "@learning-routes/public-read": "workspace:*",
+    "@modelcontextprotocol/client": "2.3.1",
     "@types/pg": "8.23.1",
     "auth": "1.7.12",
     "drizzle-kit": "0.31.11",

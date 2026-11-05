@@ -3,6 +3,7 @@ import { BRAND, type LocaleCode, negotiateLocale } from "@learning-routes/core/l
 import type { ApplicationRecord, CatalogQueueItem } from "@learning-routes/core/repos/ports";
 import { data } from "react-router";
 import { isFromTheApp, runApiAction } from "../app-api.server";
+import { AppHeader } from "../app-pages/app-header";
 import "../app-pages/app-pages.css";
 import { pageContext } from "../context";
 import { filled } from "../storefront/words";
@@ -166,23 +167,26 @@ export default function AdminCreateSpace({ loaderData, actionData }: Route.Compo
   const words = ADMIN_TEXT[locale];
   const refused = actionData?.values ? actionData : null;
   return (
-    <main className="app-page app-page-narrow">
-      <h1 className="app-title">{words.createSpace}</h1>
-      {actionData?.created && actionData.page ? (
-        <>
-          <Notice tone="success" title={filled(words.created, { slug: actionData.created })} />
-          <ButtonLink href={actionData.page}>{words.seePage}</ButtonLink>
-        </>
-      ) : (
-        <Form
-          words={words}
-          locale={spaceLocale}
-          values={refused?.values ?? { name, slug, email }}
-          fields={refused?.fields ? [...refused.fields] : []}
-          problem={refused?.problem ?? null}
-        />
-      )}
-      <TextLink href="/admin">{words.backToAdmin}</TextLink>
-    </main>
+    <div className="desk opening">
+      <AppHeader locale={locale} place="admin" />
+      <main className="app-page app-page-narrow">
+        <h1 className="app-title">{words.createSpace}</h1>
+        {actionData?.created && actionData.page ? (
+          <>
+            <Notice tone="success" title={filled(words.created, { slug: actionData.created })} />
+            <ButtonLink href={actionData.page}>{words.seePage}</ButtonLink>
+          </>
+        ) : (
+          <Form
+            words={words}
+            locale={spaceLocale}
+            values={refused?.values ?? { name, slug, email }}
+            fields={refused?.fields ? [...refused.fields] : []}
+            problem={refused?.problem ?? null}
+          />
+        )}
+        <TextLink href="/admin">{words.backToAdmin}</TextLink>
+      </main>
+    </div>
   );
 }

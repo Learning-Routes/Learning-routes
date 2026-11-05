@@ -95,3 +95,23 @@ test("stops at its limit instead of walking forever", async () => {
   });
   assert.ok(problems.some((problem) => problem.startsWith("stopped at 5")));
 });
+
+test("fails a page with no shared header or no design tokens, when asked to look", async () => {
+  const pages = {
+    "https://example.test/": `<a href="/bare">b</a><header class="site-header"></header><link rel="stylesheet" href="/a.css">`,
+    "https://example.test/a.css": () =>
+      new Response(":root{--color-accent:red}", { headers: { "content-type": "text/css" } }),
+    "https://example.test/bare": `<h1>Placeholder</h1>`,
+  };
+  const { problems } = await crawl({
+    starts: ["https://example.test/"],
+    appHost: APP,
+    fetcher: site(pages),
+    frame: true,
+  });
+  assert.ok(problems.includes("https://example.test/bare has no shared header"));
+  assert.ok(
+    problems.includes("https://example.test/bare loads no stylesheet with the design tokens"),
+  );
+  assert.ok(!problems.some((problem) => problem.startsWith("https://example.test/ ")));
+});

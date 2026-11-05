@@ -25,6 +25,7 @@
     "sizes": "node scripts/check-sizes.mjs",
     "check": "node scripts/check.mjs",
     "smoke:prod": "node scripts/smoke-prod.mjs",
+    "smoke:new-creator": "pnpm --filter @learning-routes/api smoke:new-creator",
     "ops:bootstrap-owner": "pnpm --filter @learning-routes/api ops:bootstrap-owner"
   },
   "devDependencies": {

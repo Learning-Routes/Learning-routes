@@ -30,10 +30,10 @@ for (const path of ["/es", "/es/explorar"]) {
 }
 
 test("an app page is hydrated", async ({ page, request }) => {
-  const html = await (await request.get("/studio")).text();
+  const html = await (await request.get("/sign-in")).text();
   expect(html).toContain('type="module"');
 
-  await page.goto("/studio");
+  await page.goto("/sign-in");
   await expect(page.locator("html")).toHaveAttribute("data-hydrated", "true");
 });
 

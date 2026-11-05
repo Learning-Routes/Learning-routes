@@ -3,6 +3,7 @@ import { createLocalJWKSet, type JWTPayload, jwtVerify } from "jose";
 import { AUTH_PATH } from "../auth/shared";
 import { consentedAt, noteUse } from "../db/repos/connections";
 import type { Database } from "../db/with-db";
+import { logEvent } from "../log";
 import type { createOAuth } from "./auth";
 import { readAtMost } from "./read-at-most";
 import { type Caller, createServer } from "./server";
@@ -154,6 +155,37 @@ async function checkedPost(
   );
 }
 
+const TOOL_NAME = /"name":"([a-z_]+)","(?:title|description)"/g;
+
+type CallAsked = { method?: string; params?: { name?: unknown; arguments?: object } } | null;
+
+/** What was asked and answered, by name only: no token, and no argument's value. */
+function logCall(
+  request: Request,
+  asked: CallAsked,
+  caller: Caller,
+  status: number,
+  body: ArrayBuffer,
+) {
+  // The names only. An older client's answer comes framed as an event, after "data: ".
+  const tools =
+    asked?.method === "tools/list"
+      ? [...new TextDecoder().decode(body).matchAll(TOOL_NAME)].map((match) => match[1] ?? "")
+      : undefined;
+  logEvent({
+    message: "mcp call",
+    status,
+    client_id: caller.clientId,
+    protocol: request.headers.get("mcp-protocol-version"),
+    scopes: [...caller.scopes],
+    ...(asked?.method ? { rpc: asked.method } : { method: request.method }),
+    ...(asked?.method === "tools/call"
+      ? { tool: String(asked.params?.name), arg_keys: Object.keys(asked.params?.arguments ?? {}) }
+      : {}),
+    ...(tools ? { tools } : {}),
+  });
+}
+
 export async function serveMcp(
   request: Request,
   env: Env,
@@ -192,9 +224,12 @@ export async function serveMcp(
   if (forward instanceof Response) {
     return forward;
   }
+  const asked = (request.method === "POST" ? await forward.clone().json() : null) as CallAsked;
   const handler = createMcpHandler(() => createServer(env, db, caller), { responseMode: "json" });
   const answer = await handler.fetch(forward);
   // The handler answers before its tool has finished, with the body still to come. Read it
   // here: the database connection closes when this function returns.
-  return new Response(await answer.arrayBuffer(), answer);
+  const body = await answer.arrayBuffer();
+  logCall(forward, asked, caller, answer.status, body);
+  return new Response(body, answer);
 }

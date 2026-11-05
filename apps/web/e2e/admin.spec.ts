@@ -55,7 +55,7 @@ test("an operator chooses the landing's routes, and takes them off", async ({ pa
   await expect(row.getByLabel("Lugar en «Rutas para empezar»")).toHaveValue("");
 });
 
-test("an operator marks an application as invited, and can then create its space", async ({
+test("an operator invites an application, and it moves to those invited", async ({
   page,
   context,
 }) => {
@@ -64,8 +64,9 @@ test("an operator marks an application as invited, and can then create its space
   makeOperator(operator);
   await page.goto(`${DEV}/admin`);
   const row = page.locator(".admin-item").filter({ hasText: "Lucía Vega" });
-  await row.getByRole("button", { name: "Ya envié la invitación" }).click();
-  await expect(row.getByRole("button", { name: "Ya envié la invitación" })).toHaveCount(0);
+  await row.getByRole("button", { name: "Enviar invitación", exact: true }).click();
+  await expect(row.getByRole("button", { name: "Enviar invitación", exact: true })).toHaveCount(0);
+  await expect(row.getByRole("button", { name: "Reenviar invitación" })).toBeVisible();
   await expect(row.getByRole("link", { name: "Crear un espacio" })).toBeVisible();
 });
 

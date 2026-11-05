@@ -17,6 +17,7 @@ export interface AppPagesText {
   modeLabel: string;
   learn: string;
   teach: string;
+  signOut: string;
   continue: string;
   emptyTitle: string;
   emptyBody: string;
@@ -60,6 +61,7 @@ export const APP_PAGES_TEXT: Record<LocaleCode, AppPagesText> = {
     modeLabel: "Modo",
     learn: "Aprender",
     teach: "Enseñar",
+    signOut: "Salir",
     continue: "Seguir",
     emptyTitle: "Todavía no estudias ninguna ruta.",
     emptyBody: "Elige una y empieza gratis con su primer módulo.",
@@ -102,6 +104,7 @@ export const APP_PAGES_TEXT: Record<LocaleCode, AppPagesText> = {
     modeLabel: "Mode",
     learn: "Learn",
     teach: "Teach",
+    signOut: "Sign out",
     continue: "Continue",
     emptyTitle: "You're not studying any route yet.",
     emptyBody: "Choose one and start free with its first module.",
@@ -143,6 +146,7 @@ export const APP_PAGES_TEXT: Record<LocaleCode, AppPagesText> = {
     modeLabel: "Modo",
     learn: "Aprender",
     teach: "Ensinar",
+    signOut: "Sair",
     continue: "Continuar",
     emptyTitle: "Você ainda não estuda nenhuma rota.",
     emptyBody: "Escolha uma e comece grátis com o primeiro módulo.",
@@ -186,6 +190,7 @@ export const APP_PAGES_TEXT: Record<LocaleCode, AppPagesText> = {
     modeLabel: "Mode",
     learn: "Apprendre",
     teach: "Enseigner",
+    signOut: "Se déconnecter",
     continue: "Continuer",
     emptyTitle: "Vous ne suivez encore aucun parcours.",
     emptyBody: "Choisissez-en un et commencez gratuitement avec son premier module.",
@@ -228,6 +233,7 @@ export const APP_PAGES_TEXT: Record<LocaleCode, AppPagesText> = {
     modeLabel: "Modalità",
     learn: "Imparare",
     teach: "Insegnare",
+    signOut: "Esci",
     continue: "Continua",
     emptyTitle: "Non stai ancora seguendo nessun percorso.",
     emptyBody: "Scegline uno e inizia gratis con il primo modulo.",

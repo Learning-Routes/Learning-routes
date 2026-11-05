@@ -9,6 +9,7 @@ import {
   isOurOwnNavigation,
   runApiAction,
 } from "../app-api.server";
+import { AppHeader } from "../app-pages/app-header";
 import "../app-pages/app-pages.css";
 import { pageContext } from "../context";
 import { SignInFlow } from "../sign-in/flow";
@@ -104,12 +105,15 @@ export function meta() {
 function Unavailable({ locale, origin }: { locale: LocaleCode; origin: string }) {
   const words = APP_PAGES_TEXT[locale];
   return (
-    <main className="app-page app-page-narrow">
-      <Notice tone="info" title={words.unavailableTitle}>
-        {words.unavailableBody}
-      </Notice>
-      <ButtonLink href={`${origin}/${locale}/explorar`}>{words.seeRoutes}</ButtonLink>
-    </main>
+    <div className="desk opening">
+      <AppHeader locale={locale} />
+      <main className="app-page app-page-narrow">
+        <Notice tone="info" title={words.unavailableTitle}>
+          {words.unavailableBody}
+        </Notice>
+        <ButtonLink href={`${origin}/${locale}/explorar`}>{words.seeRoutes}</ButtonLink>
+      </main>
+    </div>
   );
 }
 
@@ -126,13 +130,16 @@ export default function Empezar({ loaderData }: Route.ComponentProps) {
     return <SignInFlow locale={locale} notice={null} title={joining} intro={body} />;
   }
   return (
-    <main className="app-page app-page-narrow">
-      <h1 className="app-title">{joining}</h1>
-      <form method="post">
-        <button className="button button-primary button-regular" type="submit">
-          <span className="button-label">{words.confirmStart}</span>
-        </button>
-      </form>
-    </main>
+    <div className="desk opening">
+      <AppHeader locale={locale} />
+      <main className="app-page app-page-narrow">
+        <h1 className="app-title depth-1">{joining}</h1>
+        <form method="post">
+          <button className="button button-primary button-regular" type="submit">
+            <span className="button-label">{words.confirmStart}</span>
+          </button>
+        </form>
+      </main>
+    </div>
   );
 }

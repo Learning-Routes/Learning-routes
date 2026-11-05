@@ -6,6 +6,7 @@ import { AUTH_PATH, createAuth } from "./auth/auth";
 import { confirmRoutes } from "./auth/confirm";
 import type { EmailSender } from "./auth/email";
 import { withClient } from "./db/with-db";
+import { invitationRoutes } from "./invitations";
 import { requestLog } from "./log";
 import { appOriginOnly } from "./security/app-origin";
 import { startRoutes } from "./start";
@@ -42,6 +43,7 @@ export function createApp(deps: AppDeps) {
   confirmRoutes(app, deps.emailSender);
   actionRoutes(app, deps.emailSender);
   startRoutes(app);
+  invitationRoutes(app, deps.emailSender);
   applyRoutes(app, deps.emailSender, deps.siteverifyFetch ?? ((...args) => fetch(...args)));
   app.on(["GET", "POST"], `${AUTH_PATH}/*`, (c) =>
     withClient(c.env, c.executionCtx, (db) =>

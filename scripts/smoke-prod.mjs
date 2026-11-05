@@ -102,6 +102,7 @@ const hosts = [APEX, WWW, APP, ...(CREATOR ? [CREATOR] : [])].map((host) => `${h
 const { pages, addresses, problems } = await crawl({
   starts: hosts,
   appHost: new URL(APP).host,
+  frame: true,
 });
 check(
   `links: ${addresses} addresses, ${pages} pages, from ${hosts.length} hosts`,

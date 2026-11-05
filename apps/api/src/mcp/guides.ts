@@ -69,6 +69,9 @@ ${EXAMPLE}
 The full format is the JSON Schema at learning-routes://schemas/route-document.
 `;
 
+/** The same guide, for a client that reads tools and not resources. */
+export const routeFormat = () => ({ guide: GUIDE, json_schema: routeDocumentJsonSchema() });
+
 export function registerGuides(server: McpServer) {
   server.registerResource(
     "route-format",

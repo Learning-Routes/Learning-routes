@@ -4,7 +4,7 @@ const POLICY =
   /^default-src 'self'; script-src 'self' 'nonce-([A-Za-z0-9+/=]{24})'; style-src 'self'; img-src 'self' data:; connect-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'$/;
 const PUBLIC_POLICY =
   "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'";
-const PAGES = ["/studio"];
+const PAGES = ["/sign-in"];
 
 function nonceOf(policy: string | undefined): string {
   const match = POLICY.exec(policy ?? "");
@@ -58,7 +58,7 @@ for (const path of PAGES) {
 test("the browser refuses an inline script without the nonce, and runs one with it", async ({
   page,
 }) => {
-  await page.route("**/studio", async (route) => {
+  await page.route("**/sign-in", async (route) => {
     const response = await route.fetch();
     const nonce = nonceOf(response.headers()["content-security-policy"]);
     const body = (await response.text()).replace(
@@ -67,7 +67,7 @@ test("the browser refuses an inline script without the nonce, and runs one with 
     );
     await route.fulfill({ response, body });
   });
-  await page.goto("/studio");
+  await page.goto("/sign-in");
 
   expect(await page.evaluate(() => "__unsigned" in window)).toBe(false);
   expect(await page.evaluate(() => "__signed" in window)).toBe(true);

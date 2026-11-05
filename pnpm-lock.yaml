@@ -77,6 +77,9 @@ importers:
       '@learning-routes/public-read':
         specifier: workspace:*
         version: link:../../packages/public-read
+      '@modelcontextprotocol/client':
+        specifier: 2.3.1
+        version: 2.3.1
       '@types/pg':
         specifier: 8.23.1
         version: 8.23.1

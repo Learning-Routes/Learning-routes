@@ -9,7 +9,10 @@ const OPEN_GRAPH = /<meta\b[^>]*?property="og:(?:url|image)"[^>]*?content="([^"]
 const NOT_LIVE =
   /(?:https?:)?\/\/(?:localhost|127\.0\.0\.1|0\.0\.0\.0|[a-z0-9.-]+\.(?:workers\.dev|pages\.dev))\b[^"'\s<]*/gi;
 /** The same paths as apps/web/workers/hosts.ts: pages that exist only on the app's host. */
-const APP_ONLY = /^\/(api|empezar|mis-rutas|quiero-ensenar|admin|conectar|ensenar|mcp)(\/|$)/;
+const APP_ONLY =
+  /^\/(api|empezar|mis-rutas|quiero-ensenar|ser-creador|creador|invitacion|salir|admin|conectar|ensenar|mcp)(\/|$)/;
+const SITE_HEADER = /class="site-header"/;
+const STYLESHEET = /<link\b[^>]*?rel="stylesheet"[^>]*?href="([^"]+)"/gi;
 const NOT_A_PAGE = /^(?:mailto:|tel:|sms:|javascript:|data:|blob:|#)/i;
 const REDIRECTS_AT_MOST = 10;
 const AT_ONCE = 6;
@@ -103,15 +106,44 @@ const isOurs = (host, appHost) => {
   return host === domain || host.endsWith(`.${domain}`);
 };
 
+/** A page with no shared header or no design tokens is a placeholder that got out. */
+function frameChecker(fetcher, problems) {
+  const sheets = new Map();
+  const hasTokens = (href) => {
+    if (!sheets.has(href)) {
+      sheets.set(
+        href,
+        fetcher(href)
+          .then((answer) => answer.text())
+          .then((css) => css.includes("--color-accent"))
+          .catch(() => false),
+      );
+    }
+    return sheets.get(href);
+  };
+  return async (html, page) => {
+    if (!SITE_HEADER.test(html)) {
+      problems.add(`${page} has no shared header`);
+    }
+    const hrefs = [...html.matchAll(STYLESHEET)].map((match) => new URL(match[1], page).href);
+    const found = await Promise.all(hrefs.map(hasTokens));
+    if (!found.includes(true)) {
+      problems.add(`${page} loads no stylesheet with the design tokens`);
+    }
+  };
+}
+
 /**
  * Walks from the starts. Our pages are read and followed; anything else is asked once and not
  * followed, and only a DNS error, a 404 or a 5xx counts against another site.
  */
-export async function crawl({ starts, appHost, fetcher = fetch, maxPages = 500 }) {
+export async function crawl({ starts, appHost, fetcher = fetch, maxPages = 500, frame = false }) {
   const problems = new Set();
   const asked = new Map(starts.map((start) => [start, { from: "start", tag: "a" }]));
   const queue = [...starts];
   let pages = 0;
+
+  const checkFrame = frameChecker(fetcher, problems);
 
   const enqueue = (html, page) => {
     for (const link of linksIn(html, page)) {
@@ -152,6 +184,9 @@ export async function crawl({ starts, appHost, fetcher = fetch, maxPages = 500 }
     });
     for (const found of problemsInPage(html, final, appHost)) {
       problems.add(found);
+    }
+    if (frame) {
+      await checkFrame(html, final);
     }
     enqueue(html, final);
   }

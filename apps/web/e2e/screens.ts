@@ -48,16 +48,28 @@ export const SCREENS: Record<string, (page: Page) => Promise<unknown>> = {
     );
     await page.getByRole("button", { name: "Permitir", exact: true }).click();
     await page.waitForURL(`${OAUTH_REDIRECT}**`);
-    await page.goto(`${DEV}/ensenar/conexiones`);
+    await page.goto(`${DEV}/creador/conexiones`);
     await page.getByRole("heading", { name: "Conexiones" }).waitFor();
   },
   "connect-assistant": async (page) => {
     const email = newAddress("ensena");
     await signInContext(page.context(), email);
     makeTeacher(email);
-    await page.goto(`${DEV}/ensenar/conecta`);
+    await page.goto(`${DEV}/creador/conecta`);
     await page.getByRole("heading", { name: "Conecta tu asistente" }).waitFor();
   },
+  "creator-hub": async (page) => {
+    const email = newAddress("ensena");
+    await signInContext(page.context(), email);
+    makeTeacher(email);
+    await page.goto(`${DEV}/creador`);
+    await page.getByRole("heading", { name: "Enseñar", exact: true }).waitFor();
+  },
+  "invitation-unknown": async (page) => {
+    await page.goto(`${DEV}/invitacion#token=not-a-real-token-not-a-real-token`);
+    await page.locator('[data-invitation="unknown"]').waitFor();
+  },
+  "not-found": (page) => page.goto(`${DEV}/es/explorar/no-existe/esto`),
   // The map where WebGL exists, once it has settled.
   landing: async (page) => {
     await page.goto(`${DEV}/es#mapa`);
@@ -93,12 +105,12 @@ export const SCREENS: Record<string, (page: Page) => Promise<unknown>> = {
   },
   "connect-no-space": async (page) => {
     await signInContext(page.context(), newAddress("sin-espacio"));
-    await page.goto(`${DEV}/ensenar/conecta`);
+    await page.goto(`${DEV}/creador/conecta`);
     await page.getByRole("link", { name: "Quiero enseñar" }).waitFor();
   },
   teach: async (page) => {
     await stubTurnstile(page);
-    await page.goto(`${DEV}/quiero-ensenar`);
+    await page.goto(`${DEV}/ser-creador`);
   },
   admin: async (page) => {
     const operator = newAddress("operador");

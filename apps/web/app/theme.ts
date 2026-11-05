@@ -26,12 +26,12 @@ export const themeCookie = (theme: Theme) =>
 /** Where to go back to: a path on this site, or the studio. Parsed as a browser will. */
 export function safeNext(next: unknown): string {
   if (typeof next !== "string" || !next.startsWith("/")) {
-    return "/studio";
+    return "/creador";
   }
   try {
     const url = new URL(next, THIS_SITE);
-    return url.origin === THIS_SITE ? `${url.pathname}${url.search}` : "/studio";
+    return url.origin === THIS_SITE ? `${url.pathname}${url.search}` : "/creador";
   } catch {
-    return "/studio";
+    return "/creador";
   }
 }

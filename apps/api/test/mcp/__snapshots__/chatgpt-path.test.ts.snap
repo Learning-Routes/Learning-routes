@@ -1,0 +1,50 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`the way ChatGPT connects > keeps every tool's name and description the same from one deploy to the next 1`] = `
+[
+  {
+    "description": "List the spaces you can teach in, with your role in each. Start here: every route lives in a space. Call get_route_format before import_route.",
+    "name": "list_spaces",
+  },
+  {
+    "description": "List the routes of one space, with each draft's revision and published version.",
+    "name": "list_routes",
+  },
+  {
+    "description": "Read a route's draft: its details, modules, lessons and blocks, and the draft_revision every write needs.",
+    "name": "get_route",
+  },
+  {
+    "description": "Read how to write a route: the guide, with an example, and the JSON Schema of import_route's document. Call this before import_route.",
+    "name": "get_route_format",
+  },
+  {
+    "description": "Create a free route's empty draft in a space. Nobody sees it until publish_route. A price is set in the app, never here.",
+    "name": "create_route",
+  },
+  {
+    "description": "Change a draft's title, description, topic or level. Never its price or address.",
+    "name": "update_route_details",
+  },
+  {
+    "description": "Add a module to a route's draft.",
+    "name": "add_module",
+  },
+  {
+    "description": "Add a lesson to a module of a route's draft.",
+    "name": "add_lesson",
+  },
+  {
+    "description": "Add blocks to the end of a lesson: all of them, or none. Read the format in the resource learning-routes://guides/route-format.",
+    "name": "add_blocks",
+  },
+  {
+    "description": "Import a whole route from one document: give space_id for a new draft, or route_id and draft_revision to replace an editable route's draft. All of it or nothing; a published version is never touched. Read the format in the resource learning-routes://guides/route-format, and its JSON Schema in learning-routes://schemas/route-document.",
+    "name": "import_route",
+  },
+  {
+    "description": "Publish a route's draft on the creator's public page, where students can start it. Do this only when the person asks. Answers with the public address.",
+    "name": "publish_route",
+  },
+]
+`;

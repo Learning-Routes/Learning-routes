@@ -26,14 +26,16 @@
   "vars": {
     "APP_ORIGIN": "https://app.learningroutes.com",
     "ENVIRONMENT": "production",
-    "EMAIL_FROM": "sign-in@learningroutes.com",
+    "EMAIL_FROM": "sign-in@mail.learningroutes.com",
     "CLOUDFLARE_ZONE_ID": "f31f9bc6fac8035305c2fab2e5ebc35f",
     // The hosts a Turnstile token may come from (Platform STEP 4 §6.3).
     "TURNSTILE_HOSTNAMES": "app.learningroutes.com"
   },
   // Cloudflare Email Sending: sign-in links, from this one address only. The
   // domain is enabled with wrangler email sending enable (docs/runbooks/database.md).
-  "send_email": [{ "name": "EMAIL", "allowed_sender_addresses": ["sign-in@learningroutes.com"] }],
+  "send_email": [
+    { "name": "EMAIL", "allowed_sender_addresses": ["sign-in@mail.learningroutes.com"] }
+  ],
   // Set with wrangler secret put; locally in .dev.vars (git-ignored).
   "secrets": { "required": ["BETTER_AUTH_SECRET", "CLOUDFLARE_PURGE_TOKEN", "TURNSTILE_SECRET"] },
   // Purging the storefront's edge cache by tag, after the commit (Platform STEP 4 §1.4).

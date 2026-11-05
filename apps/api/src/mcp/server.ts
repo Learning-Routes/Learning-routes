@@ -26,7 +26,7 @@ const AN_HOUR_MS = 3_600_000;
 
 const INSTRUCTIONS =
   "Routes here are courses, made of modules, lessons and blocks, inside a creator's space. " +
-  "Call list_spaces first. Writes change a draft that nobody sees; only publish_route changes what students see, so publish only when the person asks. " +
+  "Call list_spaces first, and get_route_format before import_route. Writes change a draft that nobody sees; only publish_route changes what students see, so publish only when the person asks. " +
   "Every write takes draft_revision: read it from get_route, and use the one each write returns.";
 
 export interface Caller {
@@ -81,6 +81,9 @@ async function hasRoomToWrite(db: Database, caller: Caller, tool: Tool, input: u
   if (!perToken) {
     return false;
   }
+  if (tool.action === null) {
+    return true;
+  }
   const target = ACTIONS[tool.action].target(tool.toAction(input) as never);
   const scope = await transactionAs(db, caller.userId, (tx) =>
     pgTenancy(tx).scopeOf(target, caller.userId),
@@ -128,17 +131,20 @@ async function callTool(env: Env, db: Database, caller: Caller, tool: Tool, inpu
   if (!caller.scopes.has(tool.scope)) {
     return failed(`This connection does not include ${tool.scope}.`);
   }
+  if (tool.action === null) {
+    const structuredContent = tool.answers?.() ?? {};
+    return {
+      structuredContent,
+      content: [{ type: "text" as const, text: JSON.stringify(structuredContent) }],
+    };
+  }
+  const { action } = tool;
   if (tool.scope !== "routes:read" && !(await hasRoomToWrite(db, caller, tool, input))) {
     return failed("Too many changes for now. Wait a minute and try again.");
   }
   const { result, url } = await transactionAs(db, caller.userId, async (tx) => {
-    const answered = await runAction(
-      ACTIONS,
-      tool.action,
-      tool.toAction(input),
-      ctxFor(tx, caller),
-    );
-    if (!(answered.ok && tool.action === "route.publish")) {
+    const answered = await runAction(ACTIONS, action, tool.toAction(input), ctxFor(tx, caller));
+    if (!(answered.ok && action === "route.publish")) {
       return { result: answered, url: null };
     }
     const { routeId, spaceId } = answered.output as { routeId: string; spaceId: string };
@@ -152,7 +158,7 @@ async function callTool(env: Env, db: Database, caller: Caller, tool: Tool, inpu
         : refusalText(result),
     );
   }
-  await queuePurge(env, purgeTagsAfter(tool.action, result.output));
+  await queuePurge(env, purgeTagsAfter(action, result.output));
   const structuredContent = tool.toOutput(result.output, url) as Record<string, unknown>;
   return {
     structuredContent,

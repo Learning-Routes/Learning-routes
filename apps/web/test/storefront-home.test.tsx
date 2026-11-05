@@ -70,7 +70,7 @@ describe("the storefront home", () => {
   it('links to the catalog, and to "Quiero enseñar" on the app host', () => {
     const html = render();
     expect(html).toContain('href="/es/explorar"');
-    expect(html).toContain('href="https://app.learningroutes.com/quiero-ensenar"');
+    expect(html).toContain('href="https://app.learningroutes.com/ser-creador"');
     expect(html).toContain("¿Enseñas algo que sabes bien?");
   });
 

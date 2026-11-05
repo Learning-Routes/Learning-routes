@@ -185,6 +185,7 @@ export function oauthHarness() {
   return {
     signed,
     api,
+    verifier: VERIFIER,
     call,
     signIn,
     authorize,

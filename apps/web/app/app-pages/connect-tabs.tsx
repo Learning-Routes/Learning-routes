@@ -8,24 +8,7 @@ import {
 } from "@learning-routes/core/copy/connect-clients";
 import type { LocaleCode } from "@learning-routes/core/locales";
 import { useRef, useState } from "react";
-import { Button } from "../ui/button";
-
-function CopyLine({ text, label, done }: { text: string; label: string; done: string }) {
-  const [copied, setCopied] = useState(false);
-  return (
-    <div className="connect-address">
-      <code className="connect-code">{text}</code>
-      <Button
-        size="small"
-        emphasis="secondary"
-        type="button"
-        onClick={() => navigator.clipboard.writeText(text).then(() => setCopied(true))}
-      >
-        {copied ? done : label}
-      </Button>
-    </div>
-  );
-}
+import { CopyLine } from "./copy-line";
 
 const ARROW_STEP: Record<string, number> = { ArrowRight: 1, ArrowLeft: -1 };
 

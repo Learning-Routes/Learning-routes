@@ -6,6 +6,7 @@ import type { OwnEnrollment } from "@learning-routes/core/repos/ports";
 import { useEffect, useState } from "react";
 import { redirect } from "react-router";
 import { askApi, runApiAction } from "../app-api.server";
+import { AppHeader } from "../app-pages/app-header";
 import "../app-pages/app-pages.css";
 import { pageContext } from "../context";
 import { filled, inLocale } from "../storefront/words";
@@ -13,7 +14,6 @@ import { ButtonLink } from "../ui/button";
 import { EmptyState } from "../ui/parts";
 import { Rising } from "../ui/rising";
 import { RouteFigure } from "../ui/route-figure";
-import { NavLink, SiteHeader } from "../ui/site-header";
 import type { Route } from "./+types/mis-rutas";
 
 // "Mis rutas", minimal, from v2's MisRutas (Platform STEP 4 §6.2).
@@ -191,13 +191,7 @@ export default function MisRutas({ loaderData }: Route.ComponentProps) {
   const next = enrollments.find(({ place }) => !place.finished && place.title !== null);
   return (
     <div className="desk opening">
-      <SiteHeader brand={BRAND} brandHref={`${platformOrigin}/${locale}`} navLabel={words.myRoutes}>
-        <a className="nav-link" aria-current="page" href="/mis-rutas">
-          {words.myRoutes}
-        </a>
-        <NavLink href={catalog}>{words.explore}</NavLink>
-        {name ? <span className="my-name">{name}</span> : null}
-      </SiteHeader>
+      <AppHeader locale={locale} place="learn" teaches={teaches} />
       <main className="app-page my-page moment">
         <div className="my-top">
           <h1 className="app-title depth-1">
@@ -212,7 +206,7 @@ export default function MisRutas({ loaderData }: Route.ComponentProps) {
                   </a>
                 </li>
                 <li>
-                  <a className="app-mode" href="/studio">
+                  <a className="app-mode" href="/creador">
                     {words.teach}
                   </a>
                 </li>

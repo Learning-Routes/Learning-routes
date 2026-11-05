@@ -1,6 +1,6 @@
 import type { CreatorApplication } from "@learning-routes/core/applications";
 import type { ApplicationRecord, Applications } from "@learning-routes/core/repos/ports";
-import { asc, eq, ne } from "drizzle-orm";
+import { asc, eq, notInArray } from "drizzle-orm";
 import { creatorApplications } from "../schema/catalog";
 import { attempt, type Db, fail, ok } from "./shared";
 
@@ -25,7 +25,7 @@ export const applicationsRepo = (db: Db): Applications => ({
         status: creatorApplications.status,
       })
       .from(creatorApplications)
-      .where(ne(creatorApplications.status, "declined"))
+      .where(notInArray(creatorApplications.status, ["declined", "joined"]))
       .orderBy(asc(creatorApplications.createdAt)) as Promise<ApplicationRecord[]>,
   decide: (id, status) =>
     attempt(db, async () => {

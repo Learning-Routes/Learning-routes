@@ -1,4 +1,5 @@
 import * as z from "zod";
+import { routeFormat } from "./guides";
 import { RouteId, type Tool, tool } from "./tool";
 import { WRITE_TOOLS } from "./write-tools";
 
@@ -26,7 +27,7 @@ export const TOOLS: Tool[] = [
     scope: "routes:read",
     action: "space.list",
     description:
-      "List the spaces you can teach in, with your role in each. Start here: every route lives in a space.",
+      "List the spaces you can teach in, with your role in each. Start here: every route lives in a space. Call get_route_format before import_route.",
     annotations: READ,
     input: z.strictObject({}),
     output: z.strictObject({
@@ -105,6 +106,19 @@ export const TOOLS: Tool[] = [
       lessons: draft.lessons,
       blocks: draft.blocks,
     }),
+  }),
+  tool({
+    name: "get_route_format",
+    scope: "routes:read",
+    action: null,
+    answers: routeFormat,
+    description:
+      "Read how to write a route: the guide, with an example, and the JSON Schema of import_route's document. Call this before import_route.",
+    annotations: READ,
+    input: z.strictObject({}),
+    output: z.strictObject({ guide: z.string(), json_schema: z.record(z.string(), z.unknown()) }),
+    toAction: () => ({}),
+    toOutput: (output: unknown) => output,
   }),
   ...WRITE_TOOLS,
 ];

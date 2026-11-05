@@ -118,7 +118,7 @@ export default function StorefrontHome({ loaderData }: Route.ComponentProps) {
           routes={routes}
           creatorOrigin={(slug) => `${protocol}//${slug}.${creatorDomain}`}
         />
-        <CloseSheet locale={lang} teachHref={`${appOrigin}/quiero-ensenar`} />
+        <CloseSheet locale={lang} teachHref={`${appOrigin}/ser-creador`} />
       </main>
       <footer className="lp-footer">
         <div className="lp-wrap">
