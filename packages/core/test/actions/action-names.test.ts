@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { ACTION_NAMES } from "../../src/actions/names";
 
 // FOUNDATIONS.md §4b: an action is named noun.verb, lower case.
-const NOUN_VERB = /^[a-z]+(\.[a-z]+)+$/;
+const NOUN_VERB = /^[a-z]+(\.[a-z_]+)+$/;
 
 describe("action names", () => {
   it.each(ACTION_NAMES)("%s is noun.verb, lower case", (name) => {

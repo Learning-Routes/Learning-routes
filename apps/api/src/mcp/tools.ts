@@ -27,7 +27,7 @@ export const TOOLS: Tool[] = [
     scope: "routes:read",
     action: "space.list",
     description:
-      "List the spaces you can teach in, with your role in each. Start here: every route lives in a space. Call get_route_format before import_route.",
+      "List the spaces you can teach in, with your role in each. Start here: every route lives in a space. Use upload_document for a course they already made; call get_route_format before import_route.",
     annotations: READ,
     input: z.strictObject({}),
     output: z.strictObject({
@@ -88,17 +88,22 @@ export const TOOLS: Tool[] = [
       modules: z.array(z.record(z.string(), z.unknown())),
       lessons: z.array(z.record(z.string(), z.unknown())),
       blocks: z.array(z.record(z.string(), z.unknown())),
+      preview_url: z.string().nullable(),
     }),
     toAction: (input) => ({ routeId: input.route_id }),
-    toOutput: (draft: {
-      route: { id: string };
-      revision: number;
-      latestPublishedVersion: number | null;
-      modules: unknown[];
-      lessons: unknown[];
-      blocks: unknown[];
-    }) => ({
+    toOutput: (
+      draft: {
+        route: { id: string };
+        revision: number;
+        latestPublishedVersion: number | null;
+        modules: unknown[];
+        lessons: unknown[];
+        blocks: unknown[];
+      },
+      url,
+    ) => ({
       route_id: draft.route.id,
+      preview_url: url,
       draft_revision: draft.revision,
       published_version: draft.latestPublishedVersion,
       route: draft.route,

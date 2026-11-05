@@ -43,6 +43,7 @@ export interface SpaceRecord {
 
 /** What a creator's page says about them; a field left out stays as it is. */
 export interface SpacePage {
+  name?: LocalizedText | undefined;
   tagline?: LocalizedText | null | undefined;
   bio?: LocalizedText | null | undefined;
   brandColor?: string | null | undefined;
@@ -126,6 +127,13 @@ export interface RouteDrafts {
     routeId: string,
     expectedRevision: number,
     block: DraftBlock,
+  ): Promise<Revised>;
+  /** The price a creator set. A route sells only once payments exist. */
+  setPrice(
+    spaceId: string,
+    routeId: string,
+    expected: number,
+    price: { priceMinor: number | null; currency: string | null },
   ): Promise<Revised>;
   updateDetails(
     spaceId: string,

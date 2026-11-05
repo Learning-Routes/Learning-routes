@@ -30,11 +30,17 @@ export interface ConnectClientsText {
   tabsLabel: string;
   copyCommand: string;
   steps: Record<ConnectClient, readonly string[]>;
+  /** What a plan must include, where the product says so. Checked 5 November 2026. */
+  plans: Partial<Record<ConnectClient, string>>;
 }
 
 export const CONNECT_CLIENTS_TEXT: Record<LocaleCode, ConnectClientsText> = {
   es: {
     tabsLabel: "Tu asistente",
+    plans: {
+      chatgpt:
+        "Para crear rutas desde ChatGPT necesitas un plan Business, Enterprise o Edu, según OpenAI. En Pro solo puede leer. En otros planes, confírmalo con OpenAI, o usa Claude.",
+    },
     copyCommand: "Copiar comando",
     steps: {
       claude: [
@@ -61,6 +67,10 @@ export const CONNECT_CLIENTS_TEXT: Record<LocaleCode, ConnectClientsText> = {
   },
   en: {
     tabsLabel: "Your assistant",
+    plans: {
+      chatgpt:
+        "To create routes from ChatGPT you need a Business, Enterprise or Edu plan, OpenAI says. On Pro it can only read. On other plans, check with OpenAI, or use Claude.",
+    },
     copyCommand: "Copy command",
     steps: {
       claude: [
@@ -88,6 +98,10 @@ export const CONNECT_CLIENTS_TEXT: Record<LocaleCode, ConnectClientsText> = {
   pt: {
     // Pending native review.
     tabsLabel: "Seu assistente",
+    plans: {
+      chatgpt:
+        "Para criar rotas pelo ChatGPT você precisa de um plano Business, Enterprise ou Edu, segundo a OpenAI. No Pro ele só pode ler. Em outros planos, confirme com a OpenAI ou use o Claude.",
+    },
     copyCommand: "Copiar comando",
     steps: {
       claude: [
@@ -115,6 +129,10 @@ export const CONNECT_CLIENTS_TEXT: Record<LocaleCode, ConnectClientsText> = {
   fr: {
     // Pending native review.
     tabsLabel: "Votre assistant",
+    plans: {
+      chatgpt:
+        "Pour créer des parcours depuis ChatGPT, il faut une offre Business, Enterprise ou Edu, selon OpenAI. Avec Pro, il peut seulement lire. Pour les autres offres, vérifiez auprès d'OpenAI, ou utilisez Claude.",
+    },
     copyCommand: "Copier la commande",
     steps: {
       claude: [
@@ -142,6 +160,10 @@ export const CONNECT_CLIENTS_TEXT: Record<LocaleCode, ConnectClientsText> = {
   it: {
     // Pending native review.
     tabsLabel: "Il tuo assistente",
+    plans: {
+      chatgpt:
+        "Per creare percorsi da ChatGPT serve un piano Business, Enterprise o Edu, secondo OpenAI. Con Pro può solo leggere. Per gli altri piani, verifica con OpenAI, o usa Claude.",
+    },
     copyCommand: "Copia comando",
     steps: {
       claude: [

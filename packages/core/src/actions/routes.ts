@@ -27,6 +27,8 @@ const RouteFields = z
     path: ["title"],
   });
 
+const CURRENCY = /^[A-Z]{3}$/;
+
 export const routeCreate = defineAction({
   name: "route.create",
   kind: "mutation",
@@ -99,6 +101,34 @@ export const routeUpdate = defineAction({
         expectedRevision,
         details,
       ),
+    );
+    return { routeId, revision };
+  },
+});
+
+/** The price is the owner's, in the app: an assistant may only read it. */
+export const routeSetPrice = defineAction({
+  name: "route.set_price",
+  kind: "mutation",
+  description: "Save a route's price, for when payments arrive. Owners only, from the app only.",
+  input: z
+    .strictObject({
+      routeId: z.uuid(),
+      expectedRevision: z.int().nonnegative(),
+      priceMinor: z.int().positive().nullable(),
+      currency: z.string().regex(CURRENCY).nullable(),
+    })
+    .refine(
+      (input) => (input.priceMinor === null) === (input.currency === null),
+      "price and currency go together",
+    ),
+  target: (input) => ({ kind: "route", id: input.routeId }),
+  async run(ctx, { routeId, expectedRevision, priceMinor, currency }, given) {
+    const { revision } = unwrap(
+      await ctx.repos.routeDrafts.setPrice(inSpace(given).spaceId, routeId, expectedRevision, {
+        priceMinor,
+        currency,
+      }),
     );
     return { routeId, revision };
   },

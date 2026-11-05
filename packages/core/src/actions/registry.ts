@@ -13,10 +13,17 @@ import { connectionGrant, connectionList, connectionRevoke } from "./connections
 import type { ActionDef, ActionResult } from "./define";
 import { blockAdd, blockAddMany, lessonAdd, moduleAdd } from "./drafting";
 import { enrollmentCreate, enrollmentList, enrollmentUpgrade, lessonRead } from "./enrollments";
-import { routeImport } from "./imports";
+import { routeImport, routePreview, routeUpload } from "./imports";
 import type { ActionName } from "./names";
 import { reviewSubmit } from "./review";
-import { routeCreate, routeGet, routeList, routePublish, routeUpdate } from "./routes";
+import {
+  routeCreate,
+  routeGet,
+  routeList,
+  routePublish,
+  routeSetPrice,
+  routeUpdate,
+} from "./routes";
 import { membershipAdd, spaceCreate, spaceGet, spaceList, spaceUpdate } from "./spaces";
 
 // Every action the platform has. `satisfies` holds it to ACTION_NAMES: a name
@@ -35,7 +42,10 @@ export const ACTIONS = {
   "block.add": blockAdd,
   "blocks.add": blockAddMany,
   "route.update": routeUpdate,
+  "route.set_price": routeSetPrice,
   "route.import": routeImport,
+  "route.upload": routeUpload,
+  "route.preview": routePreview,
   "route.publish": routePublish,
   "enrollment.create": enrollmentCreate,
   "enrollment.upgrade": enrollmentUpgrade,

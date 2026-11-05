@@ -44,7 +44,10 @@ export const PERMISSIONS = {
   // route.create itself refuses a paid route from anywhere but the app.
   "route.create": EDITORS,
   "route.update": EDITORS,
+  "route.set_price": { owner: ["ui"] },
   "route.import": EDITORS,
+  "route.upload": EDITORS,
+  "route.preview": STAFF,
   "route.get": STAFF,
   "route.list": STAFF,
   "module.add": EDITORS,

@@ -152,6 +152,70 @@ export const WRITE_TOOLS: Tool[] = [
     }),
   }),
   tool({
+    name: "upload_document",
+    scope: "routes:write",
+    action: "route.upload",
+    description:
+      "Bring a document the creator already made, as it is: paste its Markdown or HTML, word for word, with no rewriting. The server makes the route: # is the title, ## a module, ### a lesson. It answers with a report of what went where, and a preview link to give the person. Sending the same document again changes nothing. Prefer this to import_route when the creator has the course already.",
+    annotations: {
+      readOnlyHint: false,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: false,
+    },
+    input: z.strictObject({
+      space_id: z
+        .uuid()
+        .optional()
+        .describe("The space's id. Leave it out if they have one space."),
+      document: z.string().describe("The creator's document, word for word."),
+      format: z
+        .enum(["markdown", "html"])
+        .optional()
+        .describe("markdown unless it is a pasted page."),
+      title: z.string().optional().describe("Only if the document has no # title."),
+      locale: z.string().optional().describe("The document's language, like es or en."),
+    }),
+    output: z.strictObject({
+      route_id: z.uuid(),
+      draft_revision: z.int(),
+      counts: z.strictObject({ modules: z.int(), lessons: z.int(), blocks: z.int() }),
+      report: z.array(
+        z.strictObject({
+          line: z.int(),
+          kind: z.enum(["imported", "plain_text", "skipped"]),
+          what: z.string(),
+          why: z.string().optional(),
+        }),
+      ),
+      already_uploaded: z.boolean(),
+      preview_url: z.string().nullable(),
+    }),
+    toAction: (input) => ({
+      spaceId: input.space_id,
+      document: input.document,
+      format: input.format ?? "markdown",
+      ...(input.title ? { title: input.title } : {}),
+      ...(input.locale ? { locale: input.locale } : {}),
+    }),
+    toOutput: (
+      output: {
+        routeId: string;
+        counts: { modules: number; lessons: number; blocks: number };
+        report: unknown[];
+        repeated: boolean;
+      } & Revision,
+      url,
+    ) => ({
+      route_id: output.routeId,
+      draft_revision: output.revision,
+      counts: output.counts,
+      report: output.report,
+      already_uploaded: output.repeated,
+      preview_url: url,
+    }),
+  }),
+  tool({
     name: "import_route",
     scope: "routes:write",
     action: "route.import",
@@ -171,6 +235,7 @@ export const WRITE_TOOLS: Tool[] = [
       draft_revision: z.int(),
       counts: z.strictObject({ modules: z.int(), lessons: z.int(), blocks: z.int() }),
       next_step: z.string(),
+      preview_url: z.string().nullable(),
     }),
     toAction: (input) => ({
       ...(input.space_id ? { spaceId: input.space_id } : {}),
@@ -178,10 +243,11 @@ export const WRITE_TOOLS: Tool[] = [
       ...(input.draft_revision === undefined ? {} : { expectedRevision: input.draft_revision }),
       document: input.document,
     }),
-    toOutput: (output: { routeId: string; counts: Record<string, number> } & Revision) => ({
+    toOutput: (output: { routeId: string; counts: Record<string, number> } & Revision, url) => ({
       route_id: output.routeId,
       draft_revision: output.revision,
       counts: output.counts,
+      preview_url: url,
       next_step: "Revisa el borrador y, cuando quieras, publícalo con publish_route.",
     }),
   }),

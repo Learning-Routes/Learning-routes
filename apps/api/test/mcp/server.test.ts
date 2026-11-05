@@ -150,6 +150,7 @@ describe("the protocol", () => {
       "list_spaces",
       "publish_route",
       "update_route_details",
+      "upload_document",
     ]);
     for (const tool of result.tools) {
       expect(tool.inputSchema).toMatchObject({ type: "object" });

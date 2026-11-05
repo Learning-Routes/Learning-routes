@@ -399,7 +399,7 @@
   border: 0;
   background: none;
   cursor: pointer;
-  font: inherit;
+  font-family: inherit;
 }
 @media (max-width: 40rem) {
   .site-nav:has(.nav-form) {
@@ -458,4 +458,59 @@
 
 .app-page > .button {
   align-self: flex-start;
+}
+
+.preview-band {
+  margin: 0;
+  padding: var(--space-2) var(--space-4);
+  background: var(--color-highlight);
+  color: #1d1226;
+  font-size: var(--text-small);
+  font-weight: var(--weight-label);
+  text-align: center;
+}
+.preview-page {
+  display: grid;
+  grid-template-columns: minmax(14rem, 20rem) minmax(0, 1fr);
+  gap: var(--space-8);
+  max-width: 72rem;
+  margin-inline: auto;
+  padding: var(--space-8) var(--space-4) var(--space-20);
+}
+.preview-outline ol {
+  margin: var(--space-2) 0 var(--space-5);
+  padding-inline-start: var(--space-5);
+}
+.preview-outline li + li {
+  margin-block-start: var(--space-1);
+}
+.preview-outline [aria-current="page"] {
+  font-weight: var(--weight-label);
+}
+@media (max-width: 48rem) {
+  .preview-page {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.hub-route-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  align-items: flex-start;
+  margin-block-start: var(--space-3);
+}
+.hub-price-form {
+  display: grid;
+  gap: var(--space-3);
+  margin-block: var(--space-3);
+  max-width: 18rem;
+}
+.hub-steps {
+  margin: 0;
+  padding-inline-start: var(--space-5);
+  text-align: start;
+}
+.hub-steps li + li {
+  margin-block-start: var(--space-2);
 }

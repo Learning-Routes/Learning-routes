@@ -3,7 +3,7 @@
 exports[`the way ChatGPT connects > keeps every tool's name and description the same from one deploy to the next 1`] = `
 [
   {
-    "description": "List the spaces you can teach in, with your role in each. Start here: every route lives in a space. Call get_route_format before import_route.",
+    "description": "List the spaces you can teach in, with your role in each. Start here: every route lives in a space. Use upload_document for a course they already made; call get_route_format before import_route.",
     "name": "list_spaces",
   },
   {
@@ -37,6 +37,10 @@ exports[`the way ChatGPT connects > keeps every tool's name and description the 
   {
     "description": "Add blocks to the end of a lesson: all of them, or none. Read the format in the resource learning-routes://guides/route-format.",
     "name": "add_blocks",
+  },
+  {
+    "description": "Bring a document the creator already made, as it is: paste its Markdown or HTML, word for word, with no rewriting. The server makes the route: # is the title, ## a module, ### a lesson. It answers with a report of what went where, and a preview link to give the person. Sending the same document again changes nothing. Prefer this to import_route when the creator has the course already.",
+    "name": "upload_document",
   },
   {
     "description": "Import a whole route from one document: give space_id for a new draft, or route_id and draft_revision to replace an editable route's draft. All of it or nothing; a published version is never touched. Read the format in the resource learning-routes://guides/route-format, and its JSON Schema in learning-routes://schemas/route-document.",

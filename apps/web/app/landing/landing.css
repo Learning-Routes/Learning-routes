@@ -344,6 +344,13 @@ html[data-theme="dark"] .lp {
 .lp-gl .lp-on .lp-wr {
   clip-path: inset(-40% -10% -40% -10%);
 }
+/* The hero is the page's largest paint: when the stage takes over, it stays as it was, with no
+   reveal for the browser to wait for. Scrolling past it still hides it. */
+.lp-gl .lp-hero.lp-on .lp-wr,
+.lp-gl .lp-hero.lp-on p,
+.lp-gl .lp-hero.lp-on .lp-acts {
+  transition: none;
+}
 .lp-gl .lp-ann p {
   opacity: 0;
   transition: opacity 0.5s ease 0.35s;

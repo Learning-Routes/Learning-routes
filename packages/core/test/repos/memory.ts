@@ -384,6 +384,11 @@ export function memoryRepos(state: State, actorId = ""): Repos {
           row.prerequisites = [];
           return null;
         }),
+      setPrice: (spaceId, routeId, expected, price) =>
+        edit(spaceId, routeId, expected, (row) => {
+          row.route = { ...row.route, ...price } as typeof row.route;
+          return null;
+        }),
       updateDetails: (spaceId, routeId, expected, details) =>
         edit(spaceId, routeId, expected, (row) => {
           const known = Object.fromEntries(

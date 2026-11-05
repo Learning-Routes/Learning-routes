@@ -57,6 +57,7 @@ export function ConnectTabs({ locale, address }: { locale: LocaleCode; address: 
         ))}
       </div>
       <div id="connect-panel" role="tabpanel" aria-labelledby={`tab-${open}`}>
+        {clients.plans[open] ? <p className="app-fine">{clients.plans[open]}</p> : null}
         <ol className="connect-steps">
           {clients.steps[open].map((step) => (
             <li key={step}>{step}</li>

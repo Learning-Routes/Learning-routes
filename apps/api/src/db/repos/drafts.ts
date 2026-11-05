@@ -248,6 +248,14 @@ export const routeDrafts = (db: Db): RouteDrafts => ({
     edit(db, { spaceId, routeId }, expected, () =>
       replaceContent(db, { spaceId, routeId }, content),
     ),
+  setPrice: (spaceId, routeId, expected, price) =>
+    edit(db, { spaceId, routeId }, expected, async () => {
+      await db
+        .update(routes)
+        .set({ ...price, updatedAt: new Date() })
+        .where(and(eq(routes.id, routeId), eq(routes.spaceId, spaceId)));
+      return ok(undefined);
+    }),
   updateDetails: (spaceId, routeId, expected, details) =>
     edit(db, { spaceId, routeId }, expected, async () => {
       await db

@@ -31,7 +31,8 @@ test.describe("with no JavaScript", () => {
     ).toBeVisible();
     await expect(page.getByRole("heading", { name: NO_JS_MODULE })).toBeVisible();
     await expect(page.getByRole("heading", { name: "Examen final" })).toHaveCount(0);
-    await expect(page.getByText("pagas una vez por la ruta: 29,00")).toBeVisible();
+    // A price is no offer until it can be paid (Platform STEP 10).
+    await expect(page.getByText("pagas una vez por la ruta: 29,00")).toHaveCount(0);
     await expect(page.getByRole("link", { name: "Empezar gratis" })).toHaveAttribute("href", RUTA);
   });
 });
