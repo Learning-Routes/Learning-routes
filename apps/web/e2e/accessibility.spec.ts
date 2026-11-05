@@ -23,10 +23,13 @@ for (const [name, open] of Object.entries(SCREENS)) {
         // Every page wears the shared header and the design tokens: without them it is a
         // placeholder, which must never reach production.
         await expect(page.locator(".site-header").first()).toBeVisible();
-        const accent = await page.evaluate(() =>
-          getComputedStyle(document.documentElement).getPropertyValue("--color-accent").trim(),
-        );
-        expect(accent).not.toBe("");
+        await expect
+          .poll(() =>
+            page.evaluate(() =>
+              getComputedStyle(document.documentElement).getPropertyValue("--color-accent").trim(),
+            ),
+          )
+          .not.toBe("");
         const { violations } = await new AxeBuilder({ page })
           .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"])
           .analyze();

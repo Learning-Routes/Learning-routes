@@ -414,8 +414,7 @@
 }
 
 .hub-page {
-  display: grid;
-  gap: var(--space-7);
+  gap: var(--space-10);
 }
 .hub-space {
   display: grid;
@@ -423,7 +422,7 @@
 }
 .hub-space-name {
   margin: 0;
-  font-size: var(--text-h2);
+  font-size: var(--text-title);
 }
 .hub-space-label {
   margin-block-end: 0;
@@ -455,4 +454,8 @@
 }
 .hub-tool-name {
   font-weight: var(--weight-label);
+}
+
+.app-page > .button {
+  align-self: flex-start;
 }
