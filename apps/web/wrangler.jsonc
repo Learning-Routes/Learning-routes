@@ -22,9 +22,8 @@
     "PLATFORM_ORIGIN": "https://learningroutes.com",
     // Each creator's page is [slug].CREATOR_DOMAIN (Platform STEP 4 §0).
     "CREATOR_DOMAIN": "learningroutes.com",
-    // Public. Cloudflare's test key until the owner creates the widget
-    // (docs/runbooks/database.md); the API refuses its tokens in production.
-    "TURNSTILE_SITE_KEY": "1x00000000000000000000AA"
+    // Public. Local runs use Cloudflare's test key (.dev.vars, playwright.config.ts).
+    "TURNSTILE_SITE_KEY": "0x4AAAAAAF07D4JJqafpfnPC"
   },
   // Named hosts are custom domains, which take precedence over the wildcard route that
   // gives each creator's page its host.

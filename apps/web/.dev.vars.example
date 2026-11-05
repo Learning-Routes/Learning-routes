@@ -1,0 +1,2 @@
+# Copy to .dev.vars. Cloudflare's always-passing test key, for local runs only.
+TURNSTILE_SITE_KEY=1x00000000000000000000AA
