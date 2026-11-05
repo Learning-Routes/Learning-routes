@@ -42,7 +42,7 @@ Technical names keep their final form from the start: packages are `@learning-ro
 | Pages | **React Router 8** on Cloudflare Workers | Server-rendered pages people use; the storefront ships no React. ADR 0004. | A storefront that needs more than the budgets of ADR 0008. |
 | API, MCP, webhooks | **Hono** | Small, fast on Workers, standard Request and Response. | Nothing on the horizon. |
 | Rules | **`packages/core`**, pure TypeScript and zod | One place for what is allowed; testable without a platform. ADR 0002. | Never: this is the centre. |
-| Data | **PlanetScale Postgres 18** through **Hyperdrive**, with **Drizzle** and `pg` | Plain Postgres, steady latency, a path to high availability. ADR 0005. | A dump and a new Hyperdrive config; the code stays. |
+| Data | **PlanetScale Postgres 18** ([Neon's free plan until the first paid student](adr/0010-neon-free-until-the-first-paid-student.md)) through **Hyperdrive**, with **Drizzle** and `pg` | Plain Postgres, steady latency, a path to high availability. ADR 0005. | A dump and a new Hyperdrive config; the code stays. |
 | Live agent sessions | **Durable Objects** (SQLite) | State next to the code that runs it; survives restarts. | — |
 | Accounts | **Better Auth**, at least 1.6.22, magic link only | Runs on Workers, our database, our tables. Has had advisories: pin and watch. | Repeated advisories without fast fixes. |
 | AI | **OpenRouter**, only through `core/ai/gate.ts` | One key and one bill; zero-data-retention providers only. | — |

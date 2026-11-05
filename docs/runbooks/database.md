@@ -12,16 +12,27 @@ The Keychain items this runbook uses:
 
 | Item | Holds |
 |---|---|
-| `lr-migrator` | The migrator's connection URL: PlanetScale's default role, which runs migrations and the seed |
+| `lr-migrator` | The migrator's connection URL, which runs migrations and the one-off for the owner |
 | `lr-app` | The Worker's connection URL: the `lr_app` role, which Hyperdrive connects as |
 | `lr-public` | The storefront's connection URL: the `lr_public` role, which reads the public views and nothing else |
+| `lr-auth-secret` | The secret both the API and the MCP Worker sign and read sessions with. Changing it signs everyone out |
 
 ## The plan we run on
 
-- **Size:** a single-node PS-5 ($5 a month), Postgres 18, in AWS us-east-1. São Paulo doesn't sell this size.
-- **Backups:** PlanetScale backs up every 12 hours and keeps each backup for 2 days. Point-in-time recovery runs from the oldest backup to 5 minutes ago.
-- **Upgrade to 3 nodes (PS-5 HA, $15 a month) before the first paid student, in Platform STEP 9.** On the Clusters page, choose "HA Primary + Multi-replica", then "Queue instance changes" and "Apply changes". No migration is needed. A single node is what PlanetScale suggests for non-critical workloads, and it has no replica to fail over to.
+- **Today:** Neon's free plan, Postgres 18, in AWS us-east-1, until the first paid student ([ADR 0010](../adr/0010-neon-free-until-the-first-paid-student.md)). It costs nothing.
+- **Backups today:** Neon's restore history reaches back 6 hours, limited to 1 GB of changes. There are no scheduled backups on this plan.
+- **Watch:** 100 compute hours and 5 GB of transfer a month. Past either, the compute stops until the next month. Past 1 GB of storage, writes are blocked. Neon's console shows all three.
 - **Never** run tests against production, or seed it.
+
+The steps from "Before you start" on are the setup on PlanetScale, for the move below.
+
+### On Neon: what differs from the steps below
+
+- Connect as `lr_migrator`, not the default role. Neon's default role, `lr_owner`, only made the roles and is used for nothing else.
+- Connection URLs use the host without `-pooler`, since Hyperdrive does the pooling. User names carry no branch id.
+- Neon doesn't accept a hashed password in SQL. Each password is random, sent over TLS to `alter role`, and kept only in the Keychain and in Hyperdrive's config.
+- Hyperdrive's `verify-full` needs a CA id. Upload ISRG Root X1 with `wrangler cert upload certificate-authority --name isrg-root-x1 --ca-cert isrgrootx1.pem`, and pass `--ca-certificate-id` to `wrangler hyperdrive create`.
+- `lr_owner` needs `grant lr_migrator to lr_owner with inherit false, set true` once, so that it can hand over the `public` schema.
 
 ## Before you start
 
@@ -170,6 +181,31 @@ The Keychain items this runbook uses:
        ```sh
        pnpm --filter @learning-routes/api exec wrangler hyperdrive update <id> --connection-string="$(security find-generic-password -s lr-app -w)"
        ```
+
+## Moving to PlanetScale
+
+Do this before the first paid student. It has no code change.
+
+1. **Make the new database** with steps 1 to 3 above: the roles, then no migrations, since the restore brings them. Use the PS-5 HA plan ($15 a month). Save the three new URLs under new Keychain items, and keep the old ones until the end.
+2. **Stop writes,** so nothing is lost between the dump and the switch: point `learningroutes.com` and `app.learningroutes.com` at a holding page.
+3. **Dump from Neon, as the migrator, with a Postgres 18 client:**
+
+   ```sh
+   pg_dump --format=custom --no-owner --no-privileges --file=lr.dump "$(security find-generic-password -s lr-migrator -w)"
+   ```
+
+   The dump holds people's data. It goes in no repository, log or pull request, and is deleted at the end.
+
+4. **Restore into PlanetScale, as its default role:**
+
+   ```sh
+   pg_restore --no-owner --no-privileges --exit-on-error --dbname="$NEW_MIGRATOR_URL" lr.dump
+   ```
+
+5. **Give the grants back,** with the grants files of step 10 above and the `lr_public` lines after it. Then run the grants check: every privilege must match `apps/api/test/db/grants.test.ts`, read-only.
+6. **Point both Hyperdrive configs at the new database,** with `wrangler hyperdrive update <id> --connection-string=...`. The ids don't change, so no Worker is redeployed. PlanetScale's certificate may need its own CA id.
+7. **Check,** with `pnpm smoke:prod`. Compare the row counts of `user`, `spaces` and `routes` with Neon's. Then take the holding page down.
+8. **Delete the dump, and keep the Neon project for a week** in case something is missing. Then delete it.
 
 ## Also to set up
 

@@ -3,6 +3,9 @@
   "name": "learning-routes-web",
   "compatibility_date": "2026-10-12",
   "main": "./workers/app.ts",
+  // Reached only through its own hosts: no workers.dev address, and no preview URLs.
+  "workers_dev": false,
+  "preview_urls": false,
   // pg needs Node's net and tls; Hyperdrive gives it a pooled Postgres connection.
   "compatibility_flags": ["nodejs_compat"],
   // Workers Logs and Traces: every log line kept, one trace in ten sampled.
@@ -43,8 +46,7 @@
   "hyperdrive": [
     {
       "binding": "DB_PUBLIC",
-      // A placeholder until the owner creates the config (docs/runbooks/database.md).
-      "id": "00000000000000000000000000000000",
+      "id": "5f6364e7889c4625ac5a1cfa9e1507f3",
       // LOCAL ONLY: the lr_public role of docker-compose.yml.
       "localConnectionString": "postgres://lr_public:local-only-public@localhost:54318/learning_routes"
     }
