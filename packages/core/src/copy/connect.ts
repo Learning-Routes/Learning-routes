@@ -5,10 +5,8 @@ import { BRAND, type LocaleCode } from "../locales";
 
 export interface ConnectText {
   connectIntro: string;
-  serverAddress: string;
   copyAddress: string;
   copied: string;
-  inClaudeCode: string;
   seeConnections: string;
   /** {client} is the client's name, shown as it is. */
   consentTitle: string;
@@ -21,6 +19,8 @@ export interface ConnectText {
   returnsTo: string;
   asksTo: string;
   noSpace: string;
+  /** On the sign-in page, when an assistant is waiting. */
+  signInToConnect: string;
   wantToTeach: string;
   /** The other end of the line, on the consent page. */
   yourSide: string;
@@ -41,10 +41,8 @@ export const CONNECT_TEXT: Record<LocaleCode, ConnectText> = {
   es: {
     connectIntro:
       "Pega esta dirección en tu asistente y dale permiso cuando te lo pida. Todo lo que cree se queda en borrador hasta que pidas publicarlo.",
-    serverAddress: "Dirección del servidor",
     copyAddress: "Copiar dirección",
     copied: "Copiada",
-    inClaudeCode: "En Claude Code",
     seeConnections: "Ver tus conexiones",
     consentTitle: `{client} quiere usar tu cuenta de ${BRAND}`,
     scopeRead: "Ver tus rutas",
@@ -55,6 +53,7 @@ export const CONNECT_TEXT: Record<LocaleCode, ConnectText> = {
     returnsTo: "Tu respuesta se envía a {host}.",
     asksTo: "Podrá:",
     noSpace: "Para conectar un asistente necesitas tener un espacio para enseñar.",
+    signInToConnect: "Entra con tu correo para conectar tu asistente.",
     wantToTeach: "Quiero enseñar",
     yourSide: "Tu {brand}",
     connections: "Conexiones",
@@ -71,10 +70,8 @@ export const CONNECT_TEXT: Record<LocaleCode, ConnectText> = {
   en: {
     connectIntro:
       "Paste this address into your assistant and allow it when asked. Everything it creates stays a draft until you ask to publish it.",
-    serverAddress: "Server address",
     copyAddress: "Copy address",
     copied: "Copied",
-    inClaudeCode: "In Claude Code",
     seeConnections: "See your connections",
     consentTitle: `{client} wants to use your ${BRAND} account`,
     scopeRead: "See your routes",
@@ -85,6 +82,7 @@ export const CONNECT_TEXT: Record<LocaleCode, ConnectText> = {
     returnsTo: "Your answer goes to {host}.",
     asksTo: "It will be able to:",
     noSpace: "To connect an assistant you need a space to teach in.",
+    signInToConnect: "Sign in with your email to connect your assistant.",
     wantToTeach: "I want to teach",
     yourSide: "Your {brand}",
     connections: "Connections",
@@ -101,10 +99,8 @@ export const CONNECT_TEXT: Record<LocaleCode, ConnectText> = {
   pt: {
     connectIntro:
       "Cole este endereço no seu assistente e dê permissão quando ele pedir. Tudo o que ele criar fica em rascunho até você pedir para publicar.",
-    serverAddress: "Endereço do servidor",
     copyAddress: "Copiar endereço",
     copied: "Copiado",
-    inClaudeCode: "No Claude Code",
     seeConnections: "Ver suas conexões",
     consentTitle: `{client} quer usar sua conta do ${BRAND}`,
     scopeRead: "Ver suas rotas",
@@ -115,6 +111,7 @@ export const CONNECT_TEXT: Record<LocaleCode, ConnectText> = {
     returnsTo: "Sua resposta vai para {host}.",
     asksTo: "Poderá:",
     noSpace: "Para conectar um assistente, você precisa ter um espaço para ensinar.",
+    signInToConnect: "Entre com seu e-mail para conectar seu assistente.",
     // Pending native review.
     wantToTeach: "Quero ensinar",
     yourSide: "Seu {brand}",
@@ -132,10 +129,8 @@ export const CONNECT_TEXT: Record<LocaleCode, ConnectText> = {
   fr: {
     connectIntro:
       "Collez cette adresse dans votre assistant et autorisez-le quand il le demande. Tout ce qu'il crée reste en brouillon jusqu'à ce que vous demandiez de le publier.",
-    serverAddress: "Adresse du serveur",
     copyAddress: "Copier l'adresse",
     copied: "Copiée",
-    inClaudeCode: "Dans Claude Code",
     seeConnections: "Voir vos connexions",
     consentTitle: `{client} veut utiliser votre compte ${BRAND}`,
     scopeRead: "Voir vos parcours",
@@ -146,6 +141,7 @@ export const CONNECT_TEXT: Record<LocaleCode, ConnectText> = {
     returnsTo: "Votre réponse est envoyée à {host}.",
     asksTo: "Il pourra :",
     noSpace: "Pour connecter un assistant, il vous faut un espace pour enseigner.",
+    signInToConnect: "Connectez-vous avec votre e-mail pour connecter votre assistant.",
     // Pending native review.
     wantToTeach: "Je veux enseigner",
     yourSide: "Votre {brand}",
@@ -163,10 +159,8 @@ export const CONNECT_TEXT: Record<LocaleCode, ConnectText> = {
   it: {
     connectIntro:
       "Incolla questo indirizzo nel tuo assistente e dagli il permesso quando lo chiede. Tutto ciò che crea resta in bozza finché non chiedi di pubblicarlo.",
-    serverAddress: "Indirizzo del server",
     copyAddress: "Copia indirizzo",
     copied: "Copiato",
-    inClaudeCode: "In Claude Code",
     seeConnections: "Vedi le tue connessioni",
     consentTitle: `{client} vuole usare il tuo account ${BRAND}`,
     scopeRead: "Vedere i tuoi percorsi",
@@ -177,6 +171,7 @@ export const CONNECT_TEXT: Record<LocaleCode, ConnectText> = {
     returnsTo: "La tua risposta va a {host}.",
     asksTo: "Potrà:",
     noSpace: "Per collegare un assistente ti serve uno spazio in cui insegnare.",
+    signInToConnect: "Accedi con la tua email per collegare il tuo assistente.",
     // Pending native review.
     wantToTeach: "Voglio insegnare",
     yourSide: "Il tuo {brand}",

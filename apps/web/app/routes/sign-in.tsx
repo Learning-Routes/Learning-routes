@@ -1,3 +1,4 @@
+import { CONNECT_TEXT } from "@learning-routes/core/copy/connect";
 import { SIGN_IN_TEXT } from "@learning-routes/core/copy/sign-in";
 import { BRAND, negotiateLocale } from "@learning-routes/core/locales";
 import { data, redirect } from "react-router";
@@ -24,12 +25,14 @@ function connectCookie(url: URL): HeadersInit | undefined {
 export function loader({ request }: Route.LoaderArgs) {
   const url = new URL(request.url);
   const notice = url.searchParams.get("notice");
+  const waiting = connectCookie(url);
   return data(
     {
       locale: negotiateLocale(request.headers.get("accept-language"), "es"),
       notice: isNotice(notice) ? notice : null,
+      connecting: waiting !== undefined,
     },
-    { headers: connectCookie(url) },
+    { headers: waiting },
   );
 }
 
@@ -45,5 +48,12 @@ export function meta({ loaderData }: Route.MetaArgs) {
 }
 
 export default function SignIn({ loaderData }: Route.ComponentProps) {
-  return <SignInFlow {...loaderData} />;
+  const { locale, notice, connecting } = loaderData;
+  return (
+    <SignInFlow
+      locale={locale}
+      notice={notice}
+      {...(connecting ? { intro: CONNECT_TEXT[locale].signInToConnect } : {})}
+    />
+  );
 }
