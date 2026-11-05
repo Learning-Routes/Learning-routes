@@ -1,4 +1,5 @@
 import { CREATOR_HUB_TEXT } from "@learning-routes/core/copy/creator-hub";
+import { CREATOR_PAGE_TEXT } from "@learning-routes/core/copy/creator-page";
 import { BRAND, negotiateLocale } from "@learning-routes/core/locales";
 import type { LocalizedText } from "@learning-routes/core/localized-text";
 import { data, Form, redirect } from "react-router";
@@ -41,7 +42,7 @@ export async function loader({ request, context }: Route.LoaderArgs) {
 export const headers: Route.HeadersFunction = () => ({ "Cache-Control": "no-store" });
 
 export function meta({ loaderData }: Route.MetaArgs) {
-  const words = CREATOR_HUB_TEXT[loaderData?.locale ?? "es"];
+  const words = CREATOR_PAGE_TEXT[loaderData?.locale ?? "es"];
   return [{ title: `${words.editTitle} · ${BRAND}` }, { name: "robots", content: "noindex" }];
 }
 
@@ -68,7 +69,7 @@ export async function action({ request, context }: Route.ActionArgs) {
 
 export default function CreadorPagina({ loaderData, actionData }: Route.ComponentProps) {
   const { page, spaceId, locale } = loaderData;
-  const words = CREATOR_HUB_TEXT[locale];
+  const words = { ...CREATOR_HUB_TEXT[locale], ...CREATOR_PAGE_TEXT[locale] };
   const source = page.defaultLocale;
   return (
     <div className="desk opening">

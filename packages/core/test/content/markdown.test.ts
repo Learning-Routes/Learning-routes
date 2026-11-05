@@ -132,4 +132,3 @@ describe("the rest of what a document holds", () => {
     expect(safeHttps("https://example.com/a?b=1#c")).toBe("https://example.com/a?b=1#c");
   });
 });
-

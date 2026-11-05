@@ -37,14 +37,6 @@ export interface CreatorHubText {
   catalogAsked: string;
   catalogRefused: string;
   editPage: string;
-  editTitle: string;
-  nameLabel: string;
-  taglineLabel: string;
-  bioLabel: string;
-  colorLabel: string;
-  colorHint: string;
-  save: string;
-  saved: string;
   emptySteps: readonly [string, string, string];
 }
 
@@ -85,15 +77,6 @@ export const CREATOR_HUB_TEXT: Record<LocaleCode, CreatorHubText> = {
     catalogAsked: "Pedido enviado. Lo revisaremos pronto.",
     catalogRefused: "Publica la ruta primero; solo así puede entrar al catálogo.",
     editPage: "Editar tu página",
-    editTitle: "Editar tu página",
-    nameLabel: "Nombre",
-    taglineLabel: "Frase corta",
-    bioLabel: "Sobre ti",
-    colorLabel: "Color de tu marca",
-    colorHint:
-      "Seis dígitos, como #6a2ea0. Si no contrasta con el blanco, te sugerimos uno que sí.",
-    save: "Guardar",
-    saved: "Guardado.",
     emptySteps: [
       "Conecta tu asistente en Claude, ChatGPT o donde hiciste el curso.",
       `Dile: «Sube este documento a ${BRAND} tal como está».`,
@@ -136,18 +119,9 @@ export const CREATOR_HUB_TEXT: Record<LocaleCode, CreatorHubText> = {
     catalogAsked: "Request sent. We'll review it soon.",
     catalogRefused: "Publish the route first: only then can it join the catalog.",
     editPage: "Edit your page",
-    editTitle: "Edit your page",
-    nameLabel: "Name",
-    taglineLabel: "Short line",
-    bioLabel: "About you",
-    colorLabel: "Your brand colour",
-    colorHint:
-      "Six digits, like #6a2ea0. If it doesn't contrast with white, we'll suggest one that does.",
-    save: "Save",
-    saved: "Saved.",
     emptySteps: [
       "Connect your assistant in Claude, ChatGPT or wherever you made the course.",
-      'Tell it: `Upload this document to ${BRAND} as it is.`',
+      `Tell it: "Upload this document to ${BRAND} as it is."`,
       "Open the preview and, when you like it, publish it.",
     ] as const,
   },
@@ -187,14 +161,6 @@ export const CREATOR_HUB_TEXT: Record<LocaleCode, CreatorHubText> = {
     catalogAsked: "Pedido enviado. Vamos revisar em breve.",
     catalogRefused: "Publique a rota primeiro: só assim ela pode entrar no catálogo.",
     editPage: "Editar sua página",
-    editTitle: "Editar sua página",
-    nameLabel: "Nome",
-    taglineLabel: "Frase curta",
-    bioLabel: "Sobre você",
-    colorLabel: "Cor da sua marca",
-    colorHint: "Seis dígitos, como #6a2ea0. Se não contrastar com o branco, sugerimos outra.",
-    save: "Salvar",
-    saved: "Salvo.",
     emptySteps: [
       "Conecte seu assistente no Claude, ChatGPT ou onde fez o curso.",
       `Diga: «Envie este documento ao ${BRAND} como está».`,
@@ -238,15 +204,6 @@ export const CREATOR_HUB_TEXT: Record<LocaleCode, CreatorHubText> = {
     catalogAsked: "Demande envoyée. Nous la verrons bientôt.",
     catalogRefused: "Publiez d'abord le parcours : c'est la condition pour entrer au catalogue.",
     editPage: "Modifier votre page",
-    editTitle: "Modifier votre page",
-    nameLabel: "Nom",
-    taglineLabel: "Phrase courte",
-    bioLabel: "À propos de vous",
-    colorLabel: "Couleur de votre marque",
-    colorHint:
-      "Six chiffres, comme #6a2ea0. Si elle contraste mal avec le blanc, nous en proposerons une autre.",
-    save: "Enregistrer",
-    saved: "Enregistré.",
     emptySteps: [
       "Connectez votre assistant dans Claude, ChatGPT ou là où vous avez fait le cours.",
       `Dites-lui : « Envoie ce document à ${BRAND} tel quel. »`,
@@ -290,15 +247,6 @@ export const CREATOR_HUB_TEXT: Record<LocaleCode, CreatorHubText> = {
     catalogAsked: "Richiesta inviata. La vedremo presto.",
     catalogRefused: "Pubblica prima il percorso: solo così può entrare nel catalogo.",
     editPage: "Modifica la tua pagina",
-    editTitle: "Modifica la tua pagina",
-    nameLabel: "Nome",
-    taglineLabel: "Frase breve",
-    bioLabel: "Su di te",
-    colorLabel: "Il colore del tuo marchio",
-    colorHint:
-      "Sei cifre, come #6a2ea0. Se non contrasta con il bianco, te ne suggeriamo un altro.",
-    save: "Salva",
-    saved: "Salvato.",
     emptySteps: [
       "Collega il tuo assistente in Claude, ChatGPT o dove hai fatto il corso.",
       `Digli: «Carica questo documento su ${BRAND} così com'è».`,

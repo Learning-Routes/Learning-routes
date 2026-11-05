@@ -126,7 +126,12 @@ describe("what surrounds them", () => {
   });
 
   it("describes the route as a schema.org Course", () => {
-    const data = courseData({ route: { ...ROUTE, pricing: "paid" }, space: SPACE, locale: "es", canonical: "https://c/p" });
+    const data = courseData({
+      route: { ...ROUTE, pricing: "paid" },
+      space: SPACE,
+      locale: "es",
+      canonical: "https://c/p",
+    });
     expect(data).toMatchObject({
       "@type": "Course",
       name: "Portugués para viajar",

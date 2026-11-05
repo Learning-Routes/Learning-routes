@@ -181,3 +181,57 @@ describe("a page pasted from a browser", () => {
     expect(JSON.stringify(result.document)).toContain("| A |");
   });
 });
+
+describe("the rest of what a document can hold", () => {
+  it("reads a question with no explanation, two cards in a row, and a video link", () => {
+    const result = structured(`# R
+
+## M
+
+### T
+
+¿Cuál?
+
+- a ✅
+- b
+
+Ejercicio: uno
+
+Respuesta: 1
+
+Ejercicio: dos
+
+Respuesta: 2
+
+[El video](https://youtu.be/dQw4w9WgXcQ)
+
+![](https://example.com/sin-alt.png)
+`);
+    expect(kinds(result)).toEqual(["check", "cards", "video", "visual"]);
+    const cards = lessonsOf(result)[0]?.blocks[1] as { cards: unknown[] };
+    expect(cards.cards).toHaveLength(2);
+    const check = lessonsOf(result)[0]?.blocks[0] as { explanation?: unknown };
+    expect(check.explanation).toBeUndefined();
+  });
+
+  it("keeps deeper headings and dividers out of the structure", () => {
+    const result = structured("# R\n\n## M\n\n### T\n\n#### Más hondo\n\nTexto.\n\n---\n\nFin.");
+    expect(kinds(result)).toEqual(["concept", "concept"]);
+    expect(result.report.some((item) => item.kind === "skipped")).toBe(true);
+  });
+});
+
+describe("a pasted page's odd corners", () => {
+  it("drops comments and the tags it doesn't know, and keeps the words", () => {
+    const markdown = htmlToMarkdown(
+      "<!-- nota --><ol><li>uno</li></ol><a>sin destino</a><code>x</code><p>a&amp;b&nbsp;c<br>d</p><iframe>oculto</iframe><span>texto</span>",
+    );
+    expect(markdown).not.toContain("nota");
+    expect(markdown).not.toContain("oculto");
+    expect(markdown).toContain("- uno");
+    expect(markdown).toContain("sin destino");
+    expect(markdown).toContain("`x`");
+    expect(markdown).toContain("a&b c");
+    expect(markdown).toContain("texto");
+  });
+});
