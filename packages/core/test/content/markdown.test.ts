@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { type MdNode, markdownTree } from "../../src/content/markdown";
+import { type MdNode, markdownTree, safeHttps } from "../../src/content/markdown";
 
 // What a student reads of a creator's Markdown (Platform STEP 8 §1). The tree is the allowlist:
 // each node names a kind the page knows how to draw, and nothing else can get through.
@@ -111,3 +111,25 @@ describe("a hostile document", () => {
     expect(() => markdownTree("*".repeat(50_000))).not.toThrow();
   });
 });
+
+describe("the rest of what a document holds", () => {
+  it("keeps a code block as code, a line break as a break, and drops a divider", () => {
+    const tree = markdownTree("```\nlet x = 1\n```\n\nuno  \ndos\n\n---\n\nfin");
+    expect(tree[0]).toEqual({ t: "pre", v: "let x = 1" });
+    expect(kinds(tree)).toContain("br");
+    expect(kinds(tree)).not.toContain("hr");
+    expect(texts(tree)).toContain("fin");
+  });
+
+  it("drops a link's definition, and keeps the words of one it can't follow", () => {
+    expect(markdownTree("[a]: https://example.com")).toEqual([]);
+    expect(texts(markdownTree("[uno][nada]"))).toContain("uno");
+  });
+
+  it("refuses anything that isn't an address", () => {
+    expect(safeHttps(undefined)).toBeNull();
+    expect(safeHttps(42)).toBeNull();
+    expect(safeHttps("https://example.com/a?b=1#c")).toBe("https://example.com/a?b=1#c");
+  });
+});
+
