@@ -31,6 +31,11 @@ const CHECKS = [
   ],
   ["Worker size budgets", "pnpm", ["worker-size"], "builds"],
   ["browser tests", "pnpm", ["--filter", "@learning-routes/web", "e2e"], "builds"],
+  [
+    "creations stay in their box (three engines)",
+    "pnpm",
+    ["--filter", "@learning-routes/content", "e2e"],
+  ],
   ["storefront performance (Lighthouse)", "node", ["scripts/check-lighthouse.mjs"], "builds"],
 ];
 

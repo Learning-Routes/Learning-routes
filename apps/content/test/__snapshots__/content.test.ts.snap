@@ -1,0 +1,3 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`the signature both Workers make > matches this vector, which the API's signer is tested against too 1`] = `"Jk2OoF0SYoRh9OvAqE8qiDv-PAAjZ7_359ZnleZCSnI"`;

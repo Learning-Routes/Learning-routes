@@ -1,0 +1,38 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Escape attempts</title>
+<script>
+  // A hostile creation: every way out it should not have. Each result goes to the parent, which is
+  // the one thing a creation may do.
+  const results = {};
+  const attempt = async (name, run) => {
+    try {
+      const outcome = await run();
+      results[name] = outcome === "blocked" ? "blocked" : `escaped: ${outcome}`;
+    } catch {
+      results[name] = "blocked";
+    }
+  };
+  (async () => {
+    await attempt("read the parent page", () => String(window.parent.document.title));
+    await attempt("fetch the API", async () => {
+      const answer = await fetch(`${location.search.slice(1)}/api/auth/get-session`, { credentials: "include" });
+      return `status ${answer.status}`;
+    });
+    await attempt("read cookies", () => {
+      // biome-ignore lint/suspicious/noDocumentCookie: a hostile fixture tries exactly this
+      document.cookie = "planted=1";
+      return document.cookie.includes("planted") ? "cookie set" : "blocked";
+    });
+    await attempt("open a popup", () => (window.open("https://example.com/") ? "opened" : "blocked"));
+    await attempt("store data", () => {
+      localStorage.setItem("x", "1");
+      return "localStorage works";
+    });
+    await attempt("navigate the top window", () => {
+      window.top.location.href = "https://example.com/escaped";
+      return "blocked";
+    });
+    window.parent.postMessage({ escape: results }, "*");
+  })();
+</script>

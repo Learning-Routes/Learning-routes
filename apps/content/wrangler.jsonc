@@ -1,0 +1,24 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  // Creators' interactive creations (Platform STEP 9 §1), on a host that shares nothing with the
+  // app: no cookie, no session, no database. It reads R2 and answers with a strict policy.
+  "name": "learning-routes-content",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-10-12",
+  "workers_dev": false,
+  "preview_urls": false,
+  "minify": true,
+  "observability": {
+    "enabled": true,
+    "logs": { "enabled": true, "head_sampling_rate": 1, "invocation_logs": false },
+    "traces": { "enabled": true, "head_sampling_rate": 0.1 }
+  },
+  "routes": [{ "pattern": "contenido.learningroutes.com", "custom_domain": true }],
+  "vars": {
+    // The pages a creation may be framed by.
+    "FRAME_ANCESTORS": "https://app.learningroutes.com https://*.learningroutes.com https://learningroutes.com"
+  },
+  // The same secret as the API's CONTENT_SIGNING_SECRET: it signs a draft's short-lived address.
+  "secrets": { "required": ["CONTENT_SIGNING_SECRET"] },
+  "r2_buckets": [{ "binding": "CREATIONS", "bucket_name": "learning-routes-creations" }]
+}
