@@ -27,7 +27,7 @@ export const TOOLS: Tool[] = [
     scope: "routes:read",
     action: "space.list",
     description:
-      "List the spaces you can teach in, with your role in each. Start here: every route lives in a space. Use upload_document for a course they already made; call get_route_format before import_route.",
+      "List the spaces you can teach in, with your role in each. Start here: every route lives in a space. To build a route, call get_route_format, then import_route; for a course they already wrote, upload_document.",
     annotations: READ,
     input: z.strictObject({}),
     output: z.strictObject({

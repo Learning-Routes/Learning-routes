@@ -156,7 +156,7 @@ export const WRITE_TOOLS: Tool[] = [
     scope: "routes:write",
     action: "route.upload",
     description:
-      "Bring a document the creator already made, as it is: paste its Markdown or HTML, word for word, with no rewriting. The server makes the route: # is the title, ## a module, ### a lesson. It answers with a report of what went where, and a preview link to give the person. Sending the same document again changes nothing. Prefer this to import_route when the creator has the course already.",
+      "Bring a document the creator already made, as it is: paste its Markdown or HTML, word for word, with no rewriting. The server makes the route: # is the title, ## a module, ### a lesson. It answers with a report of what went where, and a preview link to give the person. Sending the same document again changes nothing. Use this when the creator already has the course; to write a new one, use import_route.",
     annotations: {
       readOnlyHint: false,
       destructiveHint: false,

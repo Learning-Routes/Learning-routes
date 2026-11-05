@@ -4,7 +4,7 @@ Written by the reviewer, 5 November 2026, after testing production as a real use
 
 ## 0. What the live test found
 
-The purpose of the MCP, in the owner's words, is that **a creator brings what they already made** in ChatGPT, Claude or anywhere else, and it arrives intact. Writing the course is not the creator's assistant's job: generating routes is a product feature we will own later, in the studio. Today the import path depends on the creator's model restructuring content into our schema, and then the platform loses part of it.
+The purpose of the MCP, in the owner's words, is that **a creator brings what they already made** in ChatGPT, Claude or anywhere else, and it arrives intact. **Models build the routes** (the owner's correction): the creator's own assistant through the MCP today, and our assistant in the studio later. Nobody hand-builds a route in a form, so the MCP's route tools are the main way routes get made, and they must be excellent. Today the import path depends on the creator's model restructuring content into our schema, and then the platform loses part of it.
 
 **What was measured (production, 5 November 2026):**
 

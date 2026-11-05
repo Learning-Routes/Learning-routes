@@ -26,7 +26,11 @@ const AN_HOUR_MS = 3_600_000;
 
 const INSTRUCTIONS =
   "Routes here are courses, made of modules, lessons and blocks, inside a creator's space. " +
-  "Call list_spaces first. To bring a course the creator already made, use upload_document with their words as they are, and give them its preview_url. Call get_route_format before import_route. Writes change a draft that nobody sees; only publish_route changes what students see, so publish only when the person asks. " +
+  "You build them for the creator: this is how routes get made here. Call list_spaces first. " +
+  "To write a new route, call get_route_format, then import_route with the whole route, or build it " +
+  "step by step with create_route, add_module, add_lesson and add_blocks. " +
+  "When the creator already has the course written, use upload_document with their words as they " +
+  "are. Give the creator the preview_url, and publish only when they ask. " +
   "Every write takes draft_revision: read it from get_route, and use the one each write returns.";
 
 export interface Caller {

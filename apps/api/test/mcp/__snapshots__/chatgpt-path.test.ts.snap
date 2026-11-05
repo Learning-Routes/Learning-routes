@@ -3,7 +3,7 @@
 exports[`the way ChatGPT connects > keeps every tool's name and description the same from one deploy to the next 1`] = `
 [
   {
-    "description": "List the spaces you can teach in, with your role in each. Start here: every route lives in a space. Use upload_document for a course they already made; call get_route_format before import_route.",
+    "description": "List the spaces you can teach in, with your role in each. Start here: every route lives in a space. To build a route, call get_route_format, then import_route; for a course they already wrote, upload_document.",
     "name": "list_spaces",
   },
   {
@@ -39,7 +39,7 @@ exports[`the way ChatGPT connects > keeps every tool's name and description the 
     "name": "add_blocks",
   },
   {
-    "description": "Bring a document the creator already made, as it is: paste its Markdown or HTML, word for word, with no rewriting. The server makes the route: # is the title, ## a module, ### a lesson. It answers with a report of what went where, and a preview link to give the person. Sending the same document again changes nothing. Prefer this to import_route when the creator has the course already.",
+    "description": "Bring a document the creator already made, as it is: paste its Markdown or HTML, word for word, with no rewriting. The server makes the route: # is the title, ## a module, ### a lesson. It answers with a report of what went where, and a preview link to give the person. Sending the same document again changes nothing. Use this when the creator already has the course; to write a new one, use import_route.",
     "name": "upload_document",
   },
   {
