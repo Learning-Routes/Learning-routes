@@ -14,6 +14,7 @@ const WORKERS = [
   { name: "apps/web", cwd: "apps/web", budget: 250 },
   { name: "apps/api", cwd: "apps/api", budget: 300 },
   { name: "learning-routes-mcp", cwd: "apps/api", budget: 500, config: "wrangler.mcp.jsonc" },
+  { name: "apps/content", cwd: "apps/content", budget: 20 },
 ];
 const STARTUP_PROFILED = new Set(["apps/api"]);
 const STARTUP = /Active: ([\d.]+) ms/;

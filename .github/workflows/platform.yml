@@ -48,7 +48,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
       # The visual tests' one fixed browser build, tied to the pinned @playwright/test.
       - name: Install the visual tests' browser
-        run: pnpm --filter @learning-routes/web exec playwright install --with-deps chromium
+        run: pnpm --filter @learning-routes/web exec playwright install --with-deps chromium firefox webkit
       # Every check a contributor runs, in the same command (Platform STEP 1 §4.6):
       # types, lint, boundaries, knip, sizes, shortcuts, names, fixtures, versions,
       # tests with coverage, builds, budgets and the browser tests in the

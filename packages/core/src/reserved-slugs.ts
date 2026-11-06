@@ -9,6 +9,9 @@ export const RESERVED_SLUGS = [
   "new",
   "www",
   "api",
+  // Creators' interactive creations (Platform STEP 9 §1), now and if the host ever moves.
+  "contenido",
+  "content",
   // Mail: send is the return path of v1's mail, in use today.
   "mail",
   "email",
