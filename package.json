@@ -29,11 +29,11 @@
     "ops:bootstrap-owner": "pnpm --filter @learning-routes/api ops:bootstrap-owner"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.5.15",
-    "dependency-cruiser": "18.6.0",
-    "knip": "6.41.0",
+    "@biomejs/biome": "2.6.2",
+    "dependency-cruiser": "18.7.0",
+    "knip": "6.42.1",
     "lighthouse": "13.5.0",
-    "turbo": "2.11.8",
+    "turbo": "2.11.10",
     "typescript": "5.9.3"
   }
 }
