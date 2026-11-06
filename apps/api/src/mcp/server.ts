@@ -9,11 +9,11 @@ import { queuePurge } from "../cache/purge";
 import { pgRepos } from "../db/repos/index";
 import { pgTenancy } from "../db/tenancy";
 import { type Database, type Transaction, transactionAs } from "../db/with-db";
-import { storeAfterCommit } from "../files";
 import { newId } from "../ids";
-import { fetchAsset } from "./fetch-asset";
 import { registerGuides } from "./guides";
+import { failed } from "./tool";
 import { TOOLS, type Tool } from "./tools";
+import { filesStored, withAsset } from "./upload-steps";
 
 // The MCP server for one request (Platform STEP 5 §3). Every tool is a core action through
 // runAction with via "mcp", so the permission table, row-level security and the action log
@@ -53,8 +53,6 @@ function ctxFor(tx: Transaction, caller: Caller) {
     ids: { newId },
   };
 }
-
-const failed = (text: string) => ({ isError: true, content: [{ type: "text" as const, text }] });
 
 const SAY: Record<string, string> = {
   not_found: "not_found: there is no such thing in your spaces.",
@@ -178,47 +176,6 @@ async function urlOf(env: Env, tx: Transaction, caller: Caller, action: string, 
   return publicUrl(env, tx, caller, routeId, spaceId);
 }
 
-/**
- * An asset from an address is taken before the transaction: no outside call runs inside one.
- * Only for an editor of the space: nobody else makes the server fetch anything.
- */
-async function withAsset(db: Database, caller: Caller, input: unknown) {
-  const { source_url: address, space_id: spaceId } = input as {
-    source_url?: string;
-    space_id?: string;
-  };
-  if (!address) {
-    return { input };
-  }
-  const scope = await transactionAs(db, caller.userId, (tx) =>
-    pgTenancy(tx).scopeOf({ kind: "space", id: String(spaceId) }, caller.userId),
-  );
-  if (!(scope?.role === "owner" || scope?.role === "coeditor")) {
-    return { refusal: failed(SAY.not_found as string) };
-  }
-  const taken = await fetchAsset(address);
-  return taken.ok
-    ? { input: { ...(input as object), fetched: taken.bytes } }
-    : { refusal: failed(`Nothing was stored: ${taken.why}.`) };
-}
-
-/** The committed action's files, in R2; a refusal to give when they did not save. */
-async function filesStored(env: Env, tool: Tool, action: string, input: unknown, output: unknown) {
-  try {
-    await storeAfterCommit(env, action, input, output);
-    return null;
-  } catch (error) {
-    console.error(
-      JSON.stringify({ message: "storing a file failed", tool: tool.name, error: String(error) }),
-    );
-    return failed(
-      action === "route.publish"
-        ? "The route was published, but one of its interactive creations could not be put online, so it will not open for students yet. Tell the person, and upload that creation again before the next publish."
-        : "Nothing is lost, but the file did not save. Send the same file again: nothing will be doubled.",
-    );
-  }
-}
-
 async function callTool(env: Env, db: Database, caller: Caller, tool: Tool, given: unknown) {
   const spaced = await withOnlySpace(db, caller, tool, given);
   if (spaced === null) {
@@ -238,7 +195,7 @@ async function callTool(env: Env, db: Database, caller: Caller, tool: Tool, give
   if (tool.scope !== "routes:read" && !(await hasRoomToWrite(db, caller, tool, spaced))) {
     return failed("Too many changes for now. Wait a minute and try again.");
   }
-  const { input, refusal } = await withAsset(db, caller, spaced);
+  const { input, refusal } = await withAsset(db, caller.userId, spaced);
   if (refusal) {
     return refusal;
   }

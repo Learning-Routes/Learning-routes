@@ -37,3 +37,9 @@ export function tool<I extends z.ZodType>(
 ): Tool {
   return spec as unknown as Tool;
 }
+
+/** A tool's refusal, in words a model can pass on. */
+export const failed = (text: string) => ({
+  isError: true,
+  content: [{ type: "text" as const, text }],
+});

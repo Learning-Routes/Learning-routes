@@ -1,4 +1,3 @@
-import type { ActorKind } from "../actions/actor";
 import type { Snapshot } from "../content/snapshot";
 import type { Enrollment, Progress, SpaceRole } from "../domain";
 import type { Card } from "../learning/fsrs";
@@ -6,6 +5,8 @@ import type { Locale, LocalizedText } from "../localized-text";
 import type { Member } from "../memberships";
 import type { Applications, Catalog, Invitations } from "./catalog-ports";
 import type { Connections, OwnSpace } from "./connection-ports";
+import type { StoredFiles } from "./file-ports";
+import type { ActionLog } from "./log-ports";
 import type { OwnEnrollment } from "./own-enrollment";
 import type { RepoResult } from "./repo-result";
 import type { RouteDetails } from "./route-details";
@@ -261,41 +262,9 @@ export interface Reviews {
   ): Promise<RepoResult<{ review: ReviewRecord; duplicate: boolean }>>;
 }
 
-export interface ActionLogEntry {
-  actorUserId: string;
-  actorVia: ActorKind;
-  agentRunId: string | null;
-  /** The OAuth client behind a call through the MCP. */
-  oauthClientId?: string | null;
-  action: string;
-  /** Already redacted: no secrets, no free text. */
-  input: unknown;
-  outcome: string;
-  routeRevision: number | null;
-}
-
-export interface ActionLog {
-  /** not_found when the actor may not write in the space. Null: an operator's, in no space. */
-  append(spaceId: string | null, entry: ActionLogEntry): Promise<RepoResult<void>>;
-}
-
-export interface StoredFile {
-  key: string;
-  kind: "creation" | "asset";
-  contentType: string;
-  bytes: number;
-}
-
-/** What a space keeps on the content host, for its quota (Platform STEP 9 §2). Never changed. */
-export interface StoredFiles {
-  /** The bytes a space stores, every file once; uploads to the space take turns from here. */
-  usage(spaceId: string): Promise<number>;
-  has(spaceId: string, key: string): Promise<boolean>;
-  /** Keeps a file's row; one already kept is left as it is. */
-  record(spaceId: string, file: StoredFile): Promise<RepoResult<void>>;
-}
-
 export type { ConnectionRecord, Connections, OwnSpace } from "./connection-ports";
+export type { StoredFile, StoredFiles } from "./file-ports";
+export type { ActionLog, ActionLogEntry } from "./log-ports";
 export type { RouteDetails } from "./route-details";
 
 export interface Repos {
