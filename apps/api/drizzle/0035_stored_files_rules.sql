@@ -12,6 +12,3 @@ create policy stored_files_select on stored_files for select to lr_app
 --> statement-breakpoint
 create policy stored_files_insert on stored_files for insert to lr_app
   with check (space_id = any ((select app.member_space_ids('{owner,coeditor}'))::uuid[]));
---> statement-breakpoint
--- Safe to run again: the database runbook re-runs it after a restore.
-grant select, insert on stored_files to lr_app;

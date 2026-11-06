@@ -55,7 +55,7 @@ exports[`the way ChatGPT connects > keeps every tool's name and description the 
     "name": "upload_creation",
   },
   {
-    "description": "Keep an image, a sound or a short video the creator has, and get its address to use in blocks (image_url, audio_url, video_url) or inside a creation. Give the file in base64, or an https address to take it from. Its type is read from its bytes: PNG, JPEG, GIF, WebP or SVG up to 5 MB; MP3, WAV, OGG or M4A up to 15 MB; MP4 or WebM up to 25 MB. The same file twice is one file.",
+    "description": "Keep an image, a sound or a short video the creator has, and get its address to use in blocks (image_url, audio_url, video_url) or inside a creation. Give the file in base64 (up to about 2.5 MB this way), or an https address to take it from. Its type is read from its bytes: PNG, JPEG, GIF, WebP or SVG up to 5 MB; MP3, WAV, OGG or M4A up to 15 MB; MP4 or WebM up to 25 MB. The same file twice is one file.",
     "name": "upload_asset",
   },
 ]
