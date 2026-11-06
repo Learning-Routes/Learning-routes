@@ -13,7 +13,10 @@
     "logs": { "enabled": true, "head_sampling_rate": 1, "invocation_logs": false },
     "traces": { "enabled": true, "head_sampling_rate": 0.1 }
   },
-  "routes": [{ "pattern": "contenido.learningroutes.com", "custom_domain": true }],
+  // A route, not a custom domain: the web Worker's *.learningroutes.com/* route outranks a custom
+  // domain on the same zone, and only a more specific route outranks it. The zone's proxied
+  // wildcard record and certificate already cover the name.
+  "routes": [{ "pattern": "contenido.learningroutes.com/*", "zone_name": "learningroutes.com" }],
   "vars": {
     // The pages a creation may be framed by.
     "FRAME_ANCESTORS": "https://app.learningroutes.com https://*.learningroutes.com https://learningroutes.com"
