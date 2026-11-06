@@ -18,11 +18,14 @@ const v1 = registry.cases[0]?.output;
 // v1's type names, in the glossary's words (the fixture keeps v1's).
 const inGlossary = (types: string[] = []) => types.map(fromV1Type).sort();
 
+// The platform's own: interactive creations came after v1 (Platform STEP 9).
+const v1Only = (types: readonly string[]) => types.filter((type) => type !== "interactive").sort();
+
 describe("registry (block_registry.json)", () => {
   it("lists v1's types, authored and system", () => {
-    expect([...BLOCK_TYPES].sort()).toEqual(inGlossary(v1?.types));
+    expect(v1Only(BLOCK_TYPES)).toEqual(inGlossary(v1?.types));
     expect([...AUTHORED_BLOCK_TYPES].sort()).toEqual(inGlossary(v1?.authored_types));
-    expect([...SYSTEM_BLOCK_TYPES].sort()).toEqual(inGlossary(v1?.system_types));
+    expect(v1Only(SYSTEM_BLOCK_TYPES)).toEqual(inGlossary(v1?.system_types));
   });
 
   it("has v1's fences and headings", () => {

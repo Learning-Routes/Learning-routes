@@ -19,6 +19,8 @@ export const ACTION_NAMES = [
   "route.upload",
   "route.preview",
   "route.publish",
+  "creation.upload",
+  "asset.upload",
   "enrollment.create",
   "enrollment.upgrade",
   "review.submit",

@@ -147,6 +147,16 @@ const BLOCKS = {
     gating: false,
     defaultTitle: { en: "Video", es: "Vídeo" },
   },
+  // A creator's own creation, run in its box on the content host (Platform STEP 9). Only
+  // upload_creation makes one, since it must point at a file that was stored.
+  interactive: {
+    fence: null,
+    headings: [],
+    authored: false,
+    gradable: false,
+    gating: false,
+    defaultTitle: { en: "Activity", es: "Actividad" },
+  },
 } as const satisfies Record<string, BlockSpec>;
 
 export type BlockTypeName = keyof typeof BLOCKS;

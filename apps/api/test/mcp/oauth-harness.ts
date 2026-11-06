@@ -31,8 +31,41 @@ async function challengeOf(verifier: string) {
 
 const FORM = { "content-type": "application/x-www-form-urlencoded" };
 
+/** R2's twin: what the Worker wrote, by key. */
+function memoryBucket() {
+  const objects = new Map<string, { bytes: Uint8Array; contentType: string }>();
+  const bytesOf = (value: unknown) =>
+    typeof value === "string"
+      ? new TextEncoder().encode(value)
+      : new Uint8Array(value as ArrayBuffer);
+  return {
+    objects,
+    put: async (
+      key: string,
+      value: unknown,
+      options?: { httpMetadata?: { contentType?: string } },
+    ) => {
+      objects.set(key, {
+        bytes: bytesOf(value),
+        contentType: String(options?.httpMetadata?.contentType),
+      });
+    },
+    head: async (key: string) => (objects.has(key) ? {} : null),
+    get: async (key: string) => {
+      const found = objects.get(key);
+      return found
+        ? {
+            arrayBuffer: async () => found.bytes.slice().buffer,
+            httpMetadata: { contentType: found.contentType },
+          }
+        : null;
+    },
+  };
+}
+
 export function oauthHarness() {
   const api = harness();
+  const bucket = memoryBucket();
   const pending: Promise<unknown>[] = [];
   const documents = new Map<string, unknown>([[CLIENT_ID, CLIENT_DOCUMENT]]);
   const app = createMcpApp({
@@ -52,6 +85,8 @@ export function oauthHarness() {
     BETTER_AUTH_SECRET: TEST_SECRET,
     CREATOR_DOMAIN: "example.test",
     PURGE_QUEUE: { send: async () => undefined },
+    CONTENT_ORIGIN: "https://content.example.test",
+    CREATIONS: bucket,
   } as unknown as Env;
   const ctx = {
     waitUntil: (promise: Promise<unknown>) => void pending.push(promise),
@@ -196,6 +231,7 @@ export function oauthHarness() {
     settle,
     documents,
     tool,
+    objects: bucket.objects,
   };
 }
 

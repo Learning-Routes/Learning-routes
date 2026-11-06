@@ -150,6 +150,8 @@ describe("the protocol", () => {
       "list_spaces",
       "publish_route",
       "update_route_details",
+      "upload_asset",
+      "upload_creation",
       "upload_document",
     ]);
     for (const tool of result.tools) {

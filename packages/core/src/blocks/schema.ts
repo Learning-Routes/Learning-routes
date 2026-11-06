@@ -8,6 +8,8 @@ import { LocalizedText } from "../localized-text";
 // biome-ignore lint/suspicious/noExplicitAny: the builder takes any text schema
 type TextSchema = z.ZodType<any, any>;
 
+const SHA256 = /^[0-9a-f]{64}$/;
+
 // What a student reads, and the check of what they read.
 function textBlocks<T extends TextSchema, C extends z.ZodRawShape>(text: T, common: C) {
   const optionalText = text.nullish();
@@ -145,6 +147,14 @@ function mediaBlocks<T extends TextSchema, C extends z.ZodRawShape>(text: T, com
       published_at: z.string().nullish(),
       source: z.string().nullish(),
       voice: z.string().nullish(),
+    }),
+    // creation: the SHA-256 of the stored file, which names it on the content host.
+    z.strictObject({
+      type: z.literal("interactive"),
+      ...common,
+      creation: z.string().regex(SHA256),
+      description: optionalText,
+      alt_text: optionalText,
     }),
   ] as const;
 }

@@ -205,3 +205,26 @@ export const lessonPrerequisites = pgTable(
     check("lesson_prerequisites_not_itself", sql`${t.lessonId} <> ${t.requiresLessonId}`),
   ],
 );
+
+// What a space keeps on the content host (Platform STEP 9 §2): a creation or an asset, named
+// by its key in R2, which carries the file's SHA-256. Kept once, never changed: the quota
+// sums it.
+export const storedFiles = pgTable(
+  "stored_files",
+  {
+    id: id(),
+    spaceId: uuid()
+      .notNull()
+      .references(() => spaces.id, { onDelete: "restrict" }),
+    key: text().notNull(),
+    kind: text().$type<"creation" | "asset">().notNull(),
+    contentType: text().notNull(),
+    bytes: bigint({ mode: "number" }).notNull(),
+    createdAt: createdAt(),
+  },
+  (t) => [
+    unique("stored_files_space_id_key_key").on(t.spaceId, t.key),
+    check("stored_files_kind", sql`${t.kind} in ('creation', 'asset')`),
+    check("stored_files_bytes_positive", sql`${t.bytes} > 0`),
+  ],
+);

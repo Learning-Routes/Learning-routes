@@ -120,3 +120,55 @@ describe("the signature both Workers make", () => {
     await expect(isSigned("short", "/d/x", 1, "", 0)).rejects.toThrow("too short");
   });
 });
+
+describe("an asset", () => {
+  const PNG_KEY = `a/${SPACE}/${HASH}.png`;
+  const assets = (contentType: string) =>
+    ({
+      CREATIONS: {
+        get: async (key: string, options?: { range?: Headers }) => {
+          if (key !== PNG_KEY) {
+            return null;
+          }
+          const ranged = options?.range?.get("range") === "bytes=2-5";
+          return {
+            body: ranged ? "2345" : "0123456789",
+            size: 10,
+            range: ranged ? { offset: 2, length: 4 } : undefined,
+            httpMetadata: { contentType },
+          };
+        },
+      },
+    }) as unknown as Env;
+  const fetchAsset = (path: string, contentType: string, init: RequestInit = {}) =>
+    worker.fetch(
+      new Request(`https://content.example.test${path}`, init) as never,
+      assets(contentType),
+    );
+
+  it("is served by the type its bytes had, with nothing in it allowed to run", async () => {
+    const answer = await fetchAsset(`/a/${SPACE}/${HASH}.png`, "image/png");
+    expect(answer.status).toBe(200);
+    expect(answer.headers.get("content-type")).toBe("image/png");
+    const policy = answer.headers.get("content-security-policy") ?? "";
+    expect(policy).toContain("default-src 'none'");
+    expect(policy.endsWith("sandbox")).toBe(true);
+    expect(policy).not.toContain("script");
+    expect(answer.headers.get("x-content-type-options")).toBe("nosniff");
+    expect(answer.headers.get("set-cookie")).toBeNull();
+  });
+
+  it("answers a range, as audio and video ask", async () => {
+    const answer = await fetchAsset(`/a/${SPACE}/${HASH}.png`, "image/png", {
+      headers: { range: "bytes=2-5" },
+    });
+    expect(answer.status).toBe(206);
+    expect(answer.headers.get("content-range")).toBe("bytes 2-5/10");
+    expect(await answer.text()).toBe("2345");
+  });
+
+  it("is not there under another name or extension", async () => {
+    expect((await fetchAsset(`/a/${SPACE}/${HASH}.html`, "text/html")).status).toBe(404);
+    expect((await fetchAsset(`/a/${SPACE}/${HASH}.jpg`, "image/jpeg")).status).toBe(404);
+  });
+});

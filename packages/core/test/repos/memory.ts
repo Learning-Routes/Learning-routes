@@ -21,6 +21,7 @@ import type {
   RouteVersion,
   SpaceRecord,
   StoredCard,
+  StoredFile,
 } from "../../src/repos/ports";
 
 // The repositories' in-memory twin (Platform STEP 2 §4): plain maps, with the same
@@ -56,6 +57,7 @@ export function memoryState() {
     operators: new Set<string>(),
     /** Addresses that have signed in, and whose they are. */
     accounts: new Map<string, string>(),
+    files: new Map<string, { spaceId: string } & StoredFile>(),
     /** Bumped by every commit, so an overlapping one is caught instead of losing writes. */
     commits: 0,
   };
@@ -620,6 +622,27 @@ export function memoryRepos(state: State, actorId = ""): Repos {
           return fail("not_found");
         }
         state.log.push({ spaceId, ...entry });
+        return ok(undefined);
+      },
+    },
+    storedFiles: {
+      // Row-level security shows a space's files to its staff, and takes them from editors.
+      usage: async (spaceId) =>
+        roleOf(spaceId, actorId) === null
+          ? 0
+          : [...state.files.values()]
+              .filter((file) => file.spaceId === spaceId)
+              .reduce((sum, file) => sum + file.bytes, 0),
+      has: async (spaceId, key) =>
+        roleOf(spaceId, actorId) !== null && state.files.has(`${spaceId}:${key}`),
+      record: async (spaceId, file) => {
+        const role = roleOf(spaceId, actorId);
+        if (role !== "owner" && role !== "coeditor") {
+          return fail("not_found");
+        }
+        if (!state.files.has(`${spaceId}:${file.key}`)) {
+          state.files.set(`${spaceId}:${file.key}`, { spaceId, ...file });
+        }
         return ok(undefined);
       },
     },

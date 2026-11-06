@@ -158,6 +158,16 @@ describe("what doesn't map", () => {
     expect(problemsIn(risky.document).ok).toBe(true);
   });
 
+  it("points an interactive creation, or a link to one, at upload_creation", () => {
+    const made = structured(
+      "# R\n\n## M\n\n```html\n<button>Do</button>\n<script>play()</script>\n```\n\nhttps://claude.ai/public/artifacts/0192d3a0-piano",
+    );
+    const pointed = made.report.filter(
+      (item) => item.why === "send it as it is with upload_creation",
+    );
+    expect(pointed.map((item) => item.line)).toEqual([5, 7, 10]);
+  });
+
   it("skips an image that isn't https, and says why", () => {
     const http = structured("# R\n\n## M\n\n![a](http://x.example/a.png)");
     const skipped = http.report.find((item) => item.kind === "skipped");

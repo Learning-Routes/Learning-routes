@@ -5,6 +5,10 @@ import { isSigned } from "./signing";
 // ours. It sets no cookie and reads none. A published creation is public and immutable; a draft's
 // needs the API's short-lived signature.
 
+const ASSET =
+  /^\/a\/([0-9a-f-]{36})\/([0-9a-f]{64})\.(png|jpg|gif|webp|svg|mp3|wav|ogg|m4a|mp4|webm)$/;
+// An asset is a picture, a sound or a video, never a page: nothing in it runs, an SVG included.
+const ASSET_POLICY = "default-src 'none'; img-src data:; style-src 'unsafe-inline'; sandbox";
 const PATH = /^\/(p|d)\/([0-9a-f-]{36})\/([0-9a-f-]{36})\/([0-9a-f]{64})\.html$/;
 const LIBRARIES = "https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://unpkg.com";
 
@@ -31,12 +35,49 @@ export function policyFor(frameAncestors: string) {
 const plain = (status: number, extra: HeadersInit = {}) =>
   new Response(null, { status, headers: { "X-Content-Type-Options": "nosniff", ...extra } });
 
+/** An asset, by the type its bytes had on upload, in ranges for audio and video. */
+async function asset(request: Request, env: Env, key: string, hash: string) {
+  if (request.headers.get("if-none-match") === `"${hash}"`) {
+    return plain(304, { ETag: `"${hash}"` });
+  }
+  const object = await env.CREATIONS.get(key, { range: request.headers });
+  if (object === null) {
+    return plain(404);
+  }
+  const headers = new Headers({
+    "Content-Type": object.httpMetadata?.contentType ?? "application/octet-stream",
+    "Content-Security-Policy": ASSET_POLICY,
+    "X-Content-Type-Options": "nosniff",
+    "Referrer-Policy": "no-referrer",
+    "Cross-Origin-Resource-Policy": "cross-origin",
+    "Strict-Transport-Security": "max-age=86400",
+    "Accept-Ranges": "bytes",
+    "Cache-Control": "public, max-age=3600",
+    ETag: `"${hash}"`,
+  });
+  const range = object.range as { offset?: number; length?: number; suffix?: number } | undefined;
+  const ranged = request.headers.has("range") && range !== undefined;
+  const offset = range?.suffix === undefined ? (range?.offset ?? 0) : object.size - range.suffix;
+  const length = range?.suffix ?? range?.length ?? object.size - offset;
+  if (ranged) {
+    headers.set("Content-Range", `bytes ${offset}-${offset + length - 1}/${object.size}`);
+  }
+  headers.set("Content-Length", String(ranged ? length : object.size));
+  const body = request.method === "HEAD" ? null : (object as R2ObjectBody).body;
+  return new Response(body, { status: ranged ? 206 : 200, headers });
+}
+
 export default {
   async fetch(request, env) {
     if (request.method !== "GET" && request.method !== "HEAD") {
       return plain(405, { Allow: "GET, HEAD" });
     }
     const url = new URL(request.url);
+    const isAsset = ASSET.exec(url.pathname);
+    if (isAsset) {
+      const [, spaceId, hash, extension] = isAsset;
+      return asset(request, env, `a/${spaceId}/${hash}.${extension}`, String(hash));
+    }
     const found = PATH.exec(url.pathname);
     if (!found) {
       return plain(404);

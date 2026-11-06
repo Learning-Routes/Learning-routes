@@ -279,6 +279,22 @@ export interface ActionLog {
   append(spaceId: string | null, entry: ActionLogEntry): Promise<RepoResult<void>>;
 }
 
+export interface StoredFile {
+  key: string;
+  kind: "creation" | "asset";
+  contentType: string;
+  bytes: number;
+}
+
+/** What a space keeps on the content host, for its quota (Platform STEP 9 §2). Never changed. */
+export interface StoredFiles {
+  /** The bytes a space stores, every file once. */
+  usage(spaceId: string): Promise<number>;
+  has(spaceId: string, key: string): Promise<boolean>;
+  /** Keeps a file's row; one already kept is left as it is. */
+  record(spaceId: string, file: StoredFile): Promise<RepoResult<void>>;
+}
+
 export type { ConnectionRecord, Connections, OwnSpace } from "./connection-ports";
 export type { RouteDetails } from "./route-details";
 
@@ -295,6 +311,7 @@ export interface Repos {
   learning: Learning;
   reviews: Reviews;
   actionLog: ActionLog;
+  storedFiles: StoredFiles;
   /** One unit of work: everything fn writes is kept together, or nothing is. */
   transaction<T>(fn: (repos: Repos) => Promise<T>): Promise<T>;
 }

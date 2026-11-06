@@ -19,6 +19,7 @@ const TENANT_TABLES = [
   "route_versions",
   "routes",
   "spaces",
+  "stored_files",
   "user_profiles",
 ];
 

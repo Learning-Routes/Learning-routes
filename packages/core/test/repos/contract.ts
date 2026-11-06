@@ -151,6 +151,24 @@ export function repositoryContract(name: string, withFixture: WithFixture) {
       });
     });
 
+    it("keeps a space's file once, sums its bytes, and shows it to nobody outside", async () => {
+      await withFixture(async ({ spaceId, ownerId, learnerId, actAs }) => {
+        const repos = await actAs(ownerId);
+        const file = { key: "a/x.png", kind: "asset", contentType: "image/png", bytes: 7 } as const;
+        value(await repos.storedFiles.record(spaceId, file));
+        value(await repos.storedFiles.record(spaceId, { ...file, bytes: 9 }));
+        expect(await repos.storedFiles.usage(spaceId)).toBe(7);
+        expect(await repos.storedFiles.has(spaceId, file.key)).toBe(true);
+        const outsider = await actAs(learnerId);
+        expect(await outsider.storedFiles.usage(spaceId)).toBe(0);
+        expect(await outsider.storedFiles.has(spaceId, file.key)).toBe(false);
+        expect(await outsider.storedFiles.record(spaceId, { ...file, key: "b" })).toEqual({
+          ok: false,
+          error: "not_found",
+        });
+      });
+    });
+
     it("creates a route as an empty draft at revision 0, and refuses its slug twice", async () => {
       await withFixture(async ({ spaceId, ownerId, actAs }) => {
         const repos = await actAs(ownerId);

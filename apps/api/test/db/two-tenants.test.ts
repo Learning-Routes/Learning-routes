@@ -54,6 +54,10 @@ async function world(db: pg.Client) {
       "insert into action_log (space_id, actor_user_id, actor_via, action, input, outcome) values ($1, uuidv7(), 'ui', 'route.create', '{}', 'ok')",
       [space],
     );
+    await db.query(
+      "insert into stored_files (space_id, key, kind, content_type, bytes) values ($1, 'x.png', 'asset', 'image/png', 10)",
+      [space],
+    );
   }
   const learner = async (userId: string, space: string, route: string) => {
     const enrollment = await newEnrollment(db, space, route, userId);
@@ -94,6 +98,7 @@ const SPACE_TABLES = [
   "cards",
   "reviews",
   "action_log",
+  "stored_files",
 ];
 
 async function visibleSpaces(db: pg.Client, table: string): Promise<string[]> {
@@ -136,6 +141,13 @@ describe("two tenants, raw SQL under row-level security", () => {
         ]),
       ).rejects.toThrow(RLS);
       await db.query("rollback to savepoint s");
+      await expect(
+        db.query(
+          "insert into stored_files (space_id, key, kind, content_type, bytes) values ($1, 'stolen', 'asset', 'image/png', 1)",
+          [w.spaceB],
+        ),
+      ).rejects.toThrow(RLS);
+      await db.query("rollback to savepoint s");
       const updated = await db.query(`update routes set title = '{"en": "mine"}' where id = $1`, [
         w.routes.b,
       ]);
@@ -158,7 +170,14 @@ describe("two tenants, raw SQL under row-level security", () => {
     await rolledBack(URLS.migrator, async (db) => {
       const w = await world(db);
       await actAs(db, w.student);
-      for (const table of ["routes", "modules", "lessons", "blocks", "lesson_prerequisites"]) {
+      for (const table of [
+        "routes",
+        "modules",
+        "lessons",
+        "blocks",
+        "lesson_prerequisites",
+        "stored_files",
+      ]) {
         const { rows } = await db.query(`select count(*)::int as n from ${table}`);
         expect([table, rows[0]?.n]).toEqual([table, 0]);
       }

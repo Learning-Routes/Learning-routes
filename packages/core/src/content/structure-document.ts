@@ -98,6 +98,33 @@ function reportIntro(builder: Builder, nodes: Node[]) {
   }
 }
 
+// An interactive creation inside the document, or a link to one, arrives apart and intact
+// (Platform STEP 9 §2): the report points it at upload_creation.
+const CREATIONS = [
+  /<script\b/gi,
+  /```html[^\n]*\n[\s\S]*?<script\b/gi,
+  /https:\/\/(?:claude\.site\/artifacts|claude\.ai\/public\/artifacts|chatgpt\.com\/canvas\/shared)\/\S+/gi,
+];
+const lineAt = (source: string, index: number) => source.slice(0, index).split("\n").length;
+
+function creationsIn(source: string) {
+  const lines = new Set<number>();
+  for (const pattern of CREATIONS) {
+    for (const found of source.matchAll(pattern)) {
+      lines.add(lineAt(source, found.index));
+    }
+  }
+  return [...lines]
+    .sort((a, b) => a - b)
+    .slice(0, 20)
+    .map((line) => ({
+      line,
+      kind: "skipped" as const,
+      what: "an interactive creation",
+      why: "send it as it is with upload_creation",
+    }));
+}
+
 export function structureDocument(input: {
   source: string;
   format: "markdown" | "html";
@@ -138,7 +165,8 @@ export function structureDocument(input: {
     source_locale: input.locale,
     modules: builder.modules.filter((module) => module.lessons.length > 0),
   } as RouteDocument;
-  return { document, report: builder.report, problems };
+  const report = [...builder.report, ...creationsIn(input.source)];
+  return { document, report, problems };
 }
 
 export type { ReportItem } from "./structure-builder";

@@ -24,7 +24,7 @@ const CODE_KEYS = new Set([
 /** A copy of an action's input that is safe to keep in the action log. */
 export function redact(value: unknown, key = ""): unknown {
   // A whole route: someone's words, and up to a megabyte of them, in a log kept for good.
-  if (SECRET_KEY.test(key) || key === "document") {
+  if (SECRET_KEY.test(key) || key === "document" || value instanceof Uint8Array) {
     return REDACTED;
   }
   if (value === null || typeof value === "number" || typeof value === "boolean") {

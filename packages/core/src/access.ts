@@ -55,6 +55,8 @@ export const PERMISSIONS = {
   "block.add": EDITORS,
   "blocks.add": EDITORS,
   "route.publish": EDITORS,
+  "creation.upload": EDITORS,
+  "asset.upload": EDITORS,
   // On the actor's own behalf, allowed as the student role it gives a newcomer.
   "enrollment.create": EVERYONE,
   // Each acts only on the actor's own enrollment.

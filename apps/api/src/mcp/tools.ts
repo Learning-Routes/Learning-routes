@@ -1,6 +1,7 @@
 import * as z from "zod";
 import { routeFormat } from "./guides";
 import { RouteId, type Tool, tool } from "./tool";
+import { UPLOAD_TOOLS } from "./upload-tools";
 import { WRITE_TOOLS } from "./write-tools";
 
 export type { Tool };
@@ -126,6 +127,7 @@ export const TOOLS: Tool[] = [
     toOutput: (output: unknown) => output,
   }),
   ...WRITE_TOOLS,
+  ...UPLOAD_TOOLS,
 ];
 
 /** The scope a tool needs; null for a name that is no tool, which the SDK answers. */
