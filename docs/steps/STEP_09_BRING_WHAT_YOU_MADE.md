@@ -134,6 +134,50 @@ The danger is real: we would be running a stranger's code. Every rule below exis
    - the lesson's LCP with a creation on it, which must stay under 1.8 s because the frame loads after the text;
    - the Worker sizes.
 
+## §6. The visual and motion pass, on every page in production
+
+**The owner's verdict on production: "literal nada tiene animaciones, nada tiene nada".**
+
+The reviewer checked in the browser. Animations exist in the code, but nobody feels them:
+- the page-open rise is too short and too small to notice;
+- the creator hub's route lines are nearly empty (a ring and two dots);
+- "Enseñar" has no depth;
+- the lesson page is flat, and still shows raw Markdown because STEP 8 isn't deployed;
+- most buttons, cards and links have no hover, press or focus feedback beyond the browser default;
+- moving between app pages is an instant cut.
+
+The bar is `docs/design/reference/vision/pages.html`. Open it next to production and close every gap.
+
+1. **Audit first.** For every page in production:
+   - record it, at 1440 and 390, signed in and out;
+   - put the recording next to the same page in the prototype;
+   - list each difference in a table in the PR, with the fix.
+
+   The pages are: landing, catalog, creator page, route page, sign-in (each state), Mis rutas, lesson, the creator hub and its subpages, consent, ser-creador, admin, 404 and errors.
+2. **Motion every page must have, consistent everywhere:**
+   - **On opening:**
+     - the headline's words rise visibly, about 800 ms, staggered;
+     - the supporting pieces settle after it;
+     - every route line traces itself while its stations pop in as the line reaches them.
+   - **Moving between pages:** cross-document View Transitions between all app pages and between storefront pages, not only on the catalog filter.
+   - **Pointer and keyboard:**
+     - every interactive element answers hover, press and focus;
+     - buttons press down;
+     - cards lift their border and glow;
+     - links underline in;
+     - the catalog card's gold runner works on touch too, as a first tap.
+   - **Progress:**
+     - a correct answer draws the check;
+     - the dot moves one station, and finishing a topic gets the band's entrance;
+     - a wrong answer gives a short shake and shows the hint.
+   - **Waiting:** skeletons in the page's own shapes, a route line that pulses gently while loading, and buttons that show they're working while a request runs.
+   - **Feedback:** saving, copying, publishing and disconnecting confirm with a small toast in the page's voice.
+3. **Finish, with the 3D titles and the real route shape everywhere:**
+   - every h1 and section h2 has the professional depth from VISION, including the hub, admin, consent and the lesson;
+   - every route line everywhere, the hub included, is the route's real shape with even station spacing.
+4. **Reduced motion** keeps every page complete and still, as VISION says.
+5. **Proof:** production recordings of every page before and after, attached to the PR, plus a short recording of the full student path and the full creator path.
+
 ## Report, in one message
 
 - **PRs:** each one, with its screenshots and a recording of the piano playing in a published lesson.
