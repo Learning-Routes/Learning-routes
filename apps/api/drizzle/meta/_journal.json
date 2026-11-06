@@ -239,6 +239,27 @@
       "when": 1793912728572,
       "tag": "0033_validate_reserved_hosts",
       "breakpoints": true
+    },
+    {
+      "idx": 34,
+      "version": "7",
+      "when": 1793995539079,
+      "tag": "0034_stored_files",
+      "breakpoints": true
+    },
+    {
+      "idx": 35,
+      "version": "7",
+      "when": 1793995566201,
+      "tag": "0035_stored_files_rules",
+      "breakpoints": true
+    },
+    {
+      "idx": 36,
+      "version": "7",
+      "when": 1793996960328,
+      "tag": "0036_stored_files_grants",
+      "breakpoints": true
     }
   ]
 }

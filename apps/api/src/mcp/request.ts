@@ -12,7 +12,8 @@ import { scopeOfTool } from "./tools";
 // One request to /mcp (Platform STEP 5 §3): what every call passes before any tool. The MCP
 // SDK answers the protocol; it never reads a token, so all of that is here.
 
-const MOST_BYTES = 1_048_576;
+// A 2 MB creation, escaped as JSON, with room to spare (Platform STEP 9 §2).
+const MOST_BYTES = 4 * 1_048_576;
 const DEEPEST = 32;
 // offline_access too: a client that asks only for what this names, as ChatGPT does, can then refresh.
 const ALL_SCOPES = "offline_access routes:read routes:write routes:publish";

@@ -48,6 +48,7 @@ const SAMPLES: Record<string, Record<string, unknown>> = {
   audio: { audio_url: "https://example.com/a.mp3", transcript: es("Lo que dice") },
   audio_explainer: { body: es("Explicación"), audio_url: "https://example.com/a.mp3" },
   video: { body: es("Mira"), video_url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ" },
+  interactive: { title: es("Piano"), creation: "a".repeat(64), description: es("Toca las notas") },
 };
 
 // The tree core makes on the server, for the fields it makes one for.

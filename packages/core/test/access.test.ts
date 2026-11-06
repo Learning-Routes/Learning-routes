@@ -41,6 +41,8 @@ const EXPECTED: Record<string, Record<string, string[]>> = {
   "route.import": EDITORS,
   "route.set_price": { owner: ["ui"] },
   "route.upload": EDITORS,
+  "creation.upload": EDITORS,
+  "asset.upload": EDITORS,
   "route.preview": STAFF,
   "blocks.add": EDITORS,
   "connection.list": { student: ["ui"] },

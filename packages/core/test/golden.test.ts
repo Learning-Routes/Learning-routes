@@ -27,6 +27,9 @@ async function failures(sections: unknown[]) {
   return failed;
 }
 
+// The platform's own: interactive creations came after v1 (Platform STEP 9).
+const v1Only = (types: readonly string[]) => types.filter((type) => type !== "interactive").sort();
+
 describe("golden fixtures", () => {
   it("every section the v1 parser produced imports as a Block", async () => {
     const sections = lessonParser.cases.flatMap((c): unknown[] =>
@@ -51,8 +54,8 @@ describe("golden fixtures", () => {
 
     // The fixture keeps v1's type names; the registry uses the glossary's.
     const inGlossary = (types: string[] = []) => types.map(fromV1Type).sort();
-    expect(inGlossary(registry?.types)).toEqual([...BLOCK_TYPES].sort());
+    expect(inGlossary(registry?.types)).toEqual(v1Only(BLOCK_TYPES));
     expect(inGlossary(registry?.authored_types)).toEqual([...AUTHORED_BLOCK_TYPES].sort());
-    expect(inGlossary(registry?.system_types)).toEqual([...SYSTEM_BLOCK_TYPES].sort());
+    expect(inGlossary(registry?.system_types)).toEqual(v1Only(SYSTEM_BLOCK_TYPES));
   });
 });

@@ -159,6 +159,13 @@ export const BLOCK_VIEWS = {
   audio: (context) => <Listening context={context} url={context.block.data.audio_url} />,
   audio_explainer: (context) => <Listening context={context} url={context.block.data.audio_url} />,
   video: (context) => <Video context={context} />,
+  // The creation's frame comes with STEP 9 §3; until then, what the creator wrote about it.
+  interactive: ({ block, text }) => (
+    <section className="lesson-aside settle-2">
+      {block.data.description ? <p>{text(block.data.description)}</p> : null}
+      {block.data.alt_text ? <p>{text(block.data.alt_text)}</p> : null}
+    </section>
+  ),
 } satisfies Record<BlockTypeName, (context: ViewContext) => ReactNode>;
 
 /** One block, with whatever the author wrote after it. */

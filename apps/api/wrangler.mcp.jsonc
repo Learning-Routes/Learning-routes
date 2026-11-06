@@ -22,13 +22,18 @@
     "APP_ORIGIN": "https://app.learningroutes.com",
     "ENVIRONMENT": "production",
     // Where a published route's public address lives.
-    "CREATOR_DOMAIN": "learningroutes.com"
+    "CREATOR_DOMAIN": "learningroutes.com",
+    // Where an asset's address points: the content host (Platform STEP 9 §1).
+    "CONTENT_ORIGIN": "https://contenido.learningroutes.com"
   },
   // The same secret as the API's: it reads the sessions the API makes.
   "secrets": { "required": ["BETTER_AUTH_SECRET"] },
   "queues": {
     "producers": [{ "binding": "PURGE_QUEUE", "queue": "learning-routes-purge" }]
   },
+  // Creations and assets (Platform STEP 9 §2): written after the commit, served by the
+  // content Worker (apps/content), never from here.
+  "r2_buckets": [{ "binding": "CREATIONS", "bucket_name": "learning-routes-creations" }],
   "hyperdrive": [
     {
       "binding": "DB",

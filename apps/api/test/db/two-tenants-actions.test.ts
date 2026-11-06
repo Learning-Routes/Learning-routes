@@ -131,6 +131,17 @@ describe("two tenants, through every action", () => {
           blocks: [{ type: "concept", body: { es: "Ajeno" } }],
         },
         "route.publish": { routeId: routeB, expectedRevision: 0 },
+        "creation.upload": {
+          routeId: routeB,
+          expectedRevision: 0,
+          lessonId: lessons[0]?.id,
+          title: { es: "Ajena" },
+          source: "<p>x</p>",
+        },
+        "asset.upload": {
+          spaceId: spaceB,
+          file: Uint8Array.from([0x47, 0x49, 0x46, 0x38, 0x39, 0x61]),
+        },
         // A route in a space A cannot see.
         "enrollment.create": { routeId: closedB },
         "enrollment.upgrade": { enrollmentId: enrollmentB },

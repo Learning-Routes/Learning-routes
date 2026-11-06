@@ -32,7 +32,16 @@ const DocBlock = blockSchemas(
   {},
 );
 
-const DocLesson = z.strictObject({ title: LocalizedText, blocks: z.array(DocBlock) });
+// An interactive block points at a stored file, so only upload_creation makes one.
+const DocLesson = z.strictObject({
+  title: LocalizedText,
+  blocks: z.array(
+    DocBlock.refine(
+      (block) => block.type !== "interactive",
+      "an interactive block comes only from upload_creation",
+    ),
+  ),
+});
 const DocModule = z.strictObject({ title: LocalizedText, lessons: z.array(DocLesson) });
 
 const RouteDocumentSchema = z

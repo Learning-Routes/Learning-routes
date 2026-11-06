@@ -1,4 +1,5 @@
 import * as z from "zod";
+import { creationsIn } from "../content/creations";
 import { contentHash, SNAPSHOT_FORMAT, snapshotOf, upcastSnapshot } from "../content/snapshot";
 import { ROUTE_LEVELS, ROUTE_TOPICS } from "../copy/route-facts";
 import { Money, Route } from "../domain";
@@ -182,6 +183,8 @@ export const routePublish = defineAction({
         version,
         contentHash: hash,
         revision: draft.revision,
+        // Copied to the published place after the commit, so students can run them.
+        creations: creationsIn(snapshot.blocks),
       };
     });
   },

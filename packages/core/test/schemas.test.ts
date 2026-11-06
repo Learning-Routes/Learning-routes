@@ -29,10 +29,10 @@ describe("LocalizedText", () => {
 });
 
 describe("Block", () => {
-  it("has 13 authored and 3 system types", () => {
+  it("has 13 authored and 4 system types", () => {
     expect(AUTHORED_BLOCK_TYPES).toHaveLength(13);
-    expect(SYSTEM_BLOCK_TYPES).toEqual(["audio", "audio_explainer", "video"]);
-    expect(BLOCK_TYPES).toHaveLength(16);
+    expect(SYSTEM_BLOCK_TYPES).toEqual(["audio", "audio_explainer", "video", "interactive"]);
+    expect(BLOCK_TYPES).toHaveLength(17);
   });
 
   it("parses a check with localized text", () => {

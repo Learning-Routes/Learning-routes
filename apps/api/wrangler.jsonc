@@ -29,7 +29,9 @@
     "EMAIL_FROM": "sign-in@mail.learningroutes.com",
     "CLOUDFLARE_ZONE_ID": "f31f9bc6fac8035305c2fab2e5ebc35f",
     // The hosts a Turnstile token may come from (Platform STEP 4 §6.3).
-    "TURNSTILE_HOSTNAMES": "app.learningroutes.com"
+    "TURNSTILE_HOSTNAMES": "app.learningroutes.com",
+    // Where an asset's address points: the content host (Platform STEP 9 §1).
+    "CONTENT_ORIGIN": "https://contenido.learningroutes.com"
   },
   // Cloudflare Email Sending: sign-in links, from this one address only. The
   // domain is enabled with wrangler email sending enable (docs/runbooks/database.md).
@@ -53,6 +55,9 @@
       }
     ]
   },
+  // Creations and assets (Platform STEP 9 §2): written after the commit, served by the
+  // content Worker (apps/content), never from here.
+  "r2_buckets": [{ "binding": "CREATIONS", "bucket_name": "learning-routes-creations" }],
   "hyperdrive": [
     {
       "binding": "DB",

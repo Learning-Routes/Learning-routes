@@ -90,10 +90,10 @@ describe("before any tool", () => {
     expect(challenge).toMatch(METADATA);
   });
 
-  it("refuses a body over 1 MB", async () => {
+  it("refuses a body over 4 MB", async () => {
     const { token } = await teacher();
     const init = envelope("tools/list", {}, token);
-    const response = await oauth.call("/mcp", { ...init, body: " ".repeat(1_048_577) });
+    const response = await oauth.call("/mcp", { ...init, body: " ".repeat(4 * 1_048_576 + 1) });
     expect(response.status).toBe(413);
   });
 
@@ -150,6 +150,8 @@ describe("the protocol", () => {
       "list_spaces",
       "publish_route",
       "update_route_details",
+      "upload_asset",
+      "upload_creation",
       "upload_document",
     ]);
     for (const tool of result.tools) {

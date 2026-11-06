@@ -9,6 +9,7 @@ import { invitationsRepo } from "./invitations";
 import { learningRepo, reviewsRepo } from "./learning";
 import { membershipsRepo, spacesRepo } from "./members";
 import { attempt, type Db, ok, underSavepoint } from "./shared";
+import { storedFilesRepo } from "./stored-files";
 import { routeVersionsRepo } from "./versions";
 
 // The repositories on Postgres (Platform STEP 2 §4), as lr_app under the acting
@@ -36,6 +37,7 @@ export function pgRepos(db: Db): Repos {
           return ok(undefined);
         }),
     },
+    storedFiles: storedFilesRepo(db),
     transaction: (fn) => underSavepoint(db, () => fn(pgRepos(db))),
   };
 }

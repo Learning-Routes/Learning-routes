@@ -171,7 +171,7 @@ The steps from "Before you start" on are the setup on PlanetScale, for the move 
        If it answers `0`, do step 2 again. Then give the role its exact grants back, and check the one it must never have. The last command must print `f`:
 
        ```sh
-       psql "$(security find-generic-password -s lr-migrator -w)" -v ON_ERROR_STOP=1 -f apps/api/drizzle/0013_app_grants.sql -f apps/api/drizzle/0016_catalog_grants.sql -f apps/api/drizzle/0023_start_grants.sql -f apps/api/drizzle/0025_create_space_grants.sql -f apps/api/drizzle/0027_oauth_grants.sql
+       psql "$(security find-generic-password -s lr-migrator -w)" -v ON_ERROR_STOP=1 -f apps/api/drizzle/0013_app_grants.sql -f apps/api/drizzle/0016_catalog_grants.sql -f apps/api/drizzle/0023_start_grants.sql -f apps/api/drizzle/0025_create_space_grants.sql -f apps/api/drizzle/0027_oauth_grants.sql -f apps/api/drizzle/0031_invitation_grants.sql -f apps/api/drizzle/0036_stored_files_grants.sql
        psql "$(security find-generic-password -s lr-migrator -w)" -tAc "select has_table_privilege('lr_app', '\"user\"', 'delete')"
        ```
 

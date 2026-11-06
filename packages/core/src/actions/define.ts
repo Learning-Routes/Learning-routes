@@ -293,7 +293,8 @@ export function mcpTools(registry: Registry) {
   return Object.entries(registry).map(([name, action]) => ({
     name,
     description: action.description,
-    inputSchema: z.toJSONSchema(action.input, { io: "input" }),
+    // asset.upload's bytes come from the server, never a caller: "any" in the schema.
+    inputSchema: z.toJSONSchema(action.input, { io: "input", unrepresentable: "any" }),
     annotations: { readOnlyHint: action.kind === "query" },
   }));
 }

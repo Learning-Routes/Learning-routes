@@ -31,10 +31,50 @@ async function challengeOf(verifier: string) {
 
 const FORM = { "content-type": "application/x-www-form-urlencoded" };
 
-export function oauthHarness() {
+/** R2's twin: what the Worker wrote, by key. */
+function memoryBucket() {
+  const objects = new Map<string, { bytes: Uint8Array; contentType: string }>();
+  const bytesOf = (value: unknown) =>
+    typeof value === "string"
+      ? new TextEncoder().encode(value)
+      : new Uint8Array(value as ArrayBuffer);
+  return {
+    objects,
+    put: async (
+      key: string,
+      value: unknown,
+      options?: { httpMetadata?: { contentType?: string } },
+    ) => {
+      objects.set(key, {
+        bytes: bytesOf(value),
+        contentType: String(options?.httpMetadata?.contentType),
+      });
+    },
+    head: async (key: string) => (objects.has(key) ? {} : null),
+    get: async (key: string) => {
+      const found = objects.get(key);
+      return found
+        ? {
+            arrayBuffer: async () => found.bytes.slice().buffer,
+            httpMetadata: { contentType: found.contentType },
+          }
+        : null;
+    },
+  };
+}
+
+/**
+ * The API and the MCP Worker, with one client. A test file may name its own client: each client's
+ * metadata document is fetched at most once a minute, so files that connect at once on a fresh
+ * database would otherwise wait on each other.
+ */
+export function oauthHarness(clientId = CLIENT_ID) {
   const api = harness();
+  const bucket = memoryBucket();
   const pending: Promise<unknown>[] = [];
-  const documents = new Map<string, unknown>([[CLIENT_ID, CLIENT_DOCUMENT]]);
+  const documents = new Map<string, unknown>([
+    [clientId, { ...CLIENT_DOCUMENT, client_id: clientId }],
+  ]);
   const app = createMcpApp({
     fetchClientMetadataResource: async (input) => {
       const found = documents.get(String(input));
@@ -52,6 +92,8 @@ export function oauthHarness() {
     BETTER_AUTH_SECRET: TEST_SECRET,
     CREATOR_DOMAIN: "example.test",
     PURGE_QUEUE: { send: async () => undefined },
+    CONTENT_ORIGIN: "https://content.example.test",
+    CREATIONS: bucket,
   } as unknown as Env;
   const ctx = {
     waitUntil: (promise: Promise<unknown>) => void pending.push(promise),
@@ -91,12 +133,12 @@ export function oauthHarness() {
   const authorize = async (
     cookie: string,
     scope = "routes:read routes:write routes:publish offline_access",
-    clientId = CLIENT_ID,
+    client = clientId,
     redirectUri = REDIRECT_URI,
   ) => {
     const query = new URLSearchParams({
       response_type: "code",
-      client_id: clientId,
+      client_id: client,
       redirect_uri: redirectUri,
       scope,
       state: "state-1",
@@ -121,7 +163,7 @@ export function oauthHarness() {
       body: new URLSearchParams({
         grant_type: "authorization_code",
         code,
-        client_id: CLIENT_ID,
+        client_id: clientId,
         redirect_uri: REDIRECT_URI,
         code_verifier: VERIFIER,
         resource: RESOURCE,
@@ -136,7 +178,7 @@ export function oauthHarness() {
       body: new URLSearchParams({
         grant_type: "refresh_token",
         refresh_token: token,
-        client_id: CLIENT_ID,
+        client_id: clientId,
         resource: RESOURCE,
       }).toString(),
     });
@@ -196,6 +238,7 @@ export function oauthHarness() {
     settle,
     documents,
     tool,
+    objects: bucket.objects,
   };
 }
 

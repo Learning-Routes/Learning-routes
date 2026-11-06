@@ -25,6 +25,7 @@ import {
   routeUpdate,
 } from "./routes";
 import { membershipAdd, spaceCreate, spaceGet, spaceList, spaceUpdate } from "./spaces";
+import { assetUpload, creationUpload } from "./uploads";
 
 // Every action the platform has. `satisfies` holds it to ACTION_NAMES: a name
 // missing here, or an action not named there, does not compile.
@@ -47,6 +48,8 @@ export const ACTIONS = {
   "route.upload": routeUpload,
   "route.preview": routePreview,
   "route.publish": routePublish,
+  "creation.upload": creationUpload,
+  "asset.upload": assetUpload,
   "enrollment.create": enrollmentCreate,
   "enrollment.upgrade": enrollmentUpgrade,
   "review.submit": reviewSubmit,

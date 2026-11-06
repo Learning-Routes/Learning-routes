@@ -32,6 +32,13 @@ function placed(
   return position;
 }
 
+/** An interactive block points at a stored file, so only upload_creation makes one. */
+function onlyByUpload(type: string) {
+  if (type === "interactive") {
+    throw new ActionError("invalid", "an interactive block comes only from upload_creation");
+  }
+}
+
 export const moduleAdd = defineAction({
   name: "module.add",
   kind: "mutation",
@@ -93,6 +100,7 @@ export const blockAdd = defineAction({
     if (!parsed.success) {
       throw new ActionError("invalid", "not a valid block");
     }
+    onlyByUpload(parsed.data.type);
     const draft = await draftOf(ctx, spaceId, input.routeId);
     if (!draft.lessons.some((lesson) => lesson.id === input.lessonId)) {
       throw new ActionError("not_found", "not found");
@@ -137,6 +145,7 @@ export const blockAddMany = defineAction({
       if (!parsed.success) {
         throw new ActionError("invalid", "not a valid block");
       }
+      onlyByUpload(parsed.data.type);
       const { id: _, type, ...data } = parsed.data;
       return { id, lessonId: input.lessonId, kind: type, data };
     });

@@ -432,7 +432,8 @@ describe("every table holds what core's domain schemas allow", () => {
                                'catalog_listings', 'creator_applications', 'creator_invitations', 'jwks',
                                'oauth_client', 'oauth_resource', 'oauth_client_resource',
                                'oauth_refresh_token', 'oauth_access_token', 'oauth_consent',
-                               'oauth_client_assertion', 'connection_uses')`,
+                               'oauth_client_assertion', 'connection_uses',
+                               'stored_files')`,
       );
       expect(rows.map((row: { relname: string }) => row.relname).sort()).toEqual(
         [...TABLES].sort(),

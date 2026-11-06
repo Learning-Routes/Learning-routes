@@ -11,7 +11,9 @@ import { pgTenancy } from "../db/tenancy";
 import { type Database, type Transaction, transactionAs } from "../db/with-db";
 import { newId } from "../ids";
 import { registerGuides } from "./guides";
+import { failed } from "./tool";
 import { TOOLS, type Tool } from "./tools";
+import { filesStored, withAsset } from "./upload-steps";
 
 // The MCP server for one request (Platform STEP 5 §3). Every tool is a core action through
 // runAction with via "mcp", so the permission table, row-level security and the action log
@@ -30,7 +32,9 @@ const INSTRUCTIONS =
   "To write a new route, call get_route_format, then import_route with the whole route, or build it " +
   "step by step with create_route, add_module, add_lesson and add_blocks. " +
   "When the creator already has the course written, use upload_document with their words as they " +
-  "are. Give the creator the preview_url, and publish only when they ask. " +
+  "are. An interactive creation they made, like a piano or a game in one HTML file, goes in " +
+  "with upload_creation exactly as it is: never offer to rebuild it. Their images, sound and " +
+  "video go in with upload_asset. Give the creator the preview_url, and publish only when they ask. " +
   "Every write takes draft_revision: read it from get_route, and use the one each write returns.";
 
 export interface Caller {
@@ -49,8 +53,6 @@ function ctxFor(tx: Transaction, caller: Caller) {
     ids: { newId },
   };
 }
-
-const failed = (text: string) => ({ isError: true, content: [{ type: "text" as const, text }] });
 
 const SAY: Record<string, string> = {
   not_found: "not_found: there is no such thing in your spaces.",
@@ -131,7 +133,12 @@ async function publicUrl(
   return `${protocol}//${slug}.${(env as Env & { CREATOR_DOMAIN: string }).CREATOR_DOMAIN}/${(route.output as { route: { slug: string } }).route.slug}`;
 }
 
-const PREVIEWED: readonly string[] = ["route.upload", "route.import", "route.get"];
+const PREVIEWED: readonly string[] = [
+  "route.upload",
+  "route.import",
+  "route.get",
+  "creation.upload",
+];
 
 /** Where the person sees the draft (Platform STEP 8 §3). */
 function previewOf(env: Env, output: unknown) {
@@ -139,10 +146,12 @@ function previewOf(env: Env, output: unknown) {
   return `${env.APP_ORIGIN}/creador/rutas/${routeId ?? route?.id}/vista-previa`;
 }
 
-/** "Their space", when they teach in one: upload_document may leave it out. */
+const SPACE_OPTIONAL: readonly string[] = ["upload_document", "upload_asset"];
+
+/** "Their space", when they teach in one: upload_document and upload_asset may leave it out. */
 async function withOnlySpace(db: Database, caller: Caller, tool: Tool, input: unknown) {
   const given = input as { space_id?: string };
-  if (tool.name !== "upload_document" || given.space_id) {
+  if (!SPACE_OPTIONAL.includes(tool.name) || given.space_id) {
     return input;
   }
   const spaces = await transactionAs(db, caller.userId, (tx) =>
@@ -152,9 +161,24 @@ async function withOnlySpace(db: Database, caller: Caller, tool: Tool, input: un
   return mine.length === 1 ? { ...given, space_id: mine[0]?.id } : null;
 }
 
+/** Where the answer points: the draft's preview, the route's public page, or the asset. */
+async function urlOf(env: Env, tx: Transaction, caller: Caller, action: string, output: unknown) {
+  if (action === "asset.upload") {
+    return `${env.CONTENT_ORIGIN}/${(output as { key: string }).key}`;
+  }
+  if (PREVIEWED.includes(action)) {
+    return previewOf(env, output);
+  }
+  if (action !== "route.publish") {
+    return null;
+  }
+  const { routeId, spaceId } = output as { routeId: string; spaceId: string };
+  return publicUrl(env, tx, caller, routeId, spaceId);
+}
+
 async function callTool(env: Env, db: Database, caller: Caller, tool: Tool, given: unknown) {
-  const input = await withOnlySpace(db, caller, tool, given);
-  if (input === null) {
+  const spaced = await withOnlySpace(db, caller, tool, given);
+  if (spaced === null) {
     return failed("You teach in more than one space, or none: call list_spaces and give space_id.");
   }
   if (!caller.scopes.has(tool.scope)) {
@@ -168,19 +192,20 @@ async function callTool(env: Env, db: Database, caller: Caller, tool: Tool, give
     };
   }
   const { action } = tool;
-  if (tool.scope !== "routes:read" && !(await hasRoomToWrite(db, caller, tool, input))) {
+  if (tool.scope !== "routes:read" && !(await hasRoomToWrite(db, caller, tool, spaced))) {
     return failed("Too many changes for now. Wait a minute and try again.");
   }
+  const { input, refusal } = await withAsset(db, caller.userId, spaced);
+  if (refusal) {
+    return refusal;
+  }
+  const actionInput = tool.toAction(input);
   const { result, url } = await transactionAs(db, caller.userId, async (tx) => {
-    const answered = await runAction(ACTIONS, action, tool.toAction(input), ctxFor(tx, caller));
-    if (answered.ok && PREVIEWED.includes(action)) {
-      return { result: answered, url: previewOf(env, answered.output) };
-    }
-    if (!(answered.ok && action === "route.publish")) {
-      return { result: answered, url: null };
-    }
-    const { routeId, spaceId } = answered.output as { routeId: string; spaceId: string };
-    return { result: answered, url: await publicUrl(env, tx, caller, routeId, spaceId) };
+    const answered = await runAction(ACTIONS, action, actionInput, ctxFor(tx, caller));
+    return {
+      result: answered,
+      url: answered.ok ? await urlOf(env, tx, caller, action, answered.output) : null,
+    };
   });
   if (!result.ok) {
     const routeId = (input as { route_id?: string }).route_id;
@@ -189,6 +214,10 @@ async function callTool(env: Env, db: Database, caller: Caller, tool: Tool, give
         ? await staleText(db, caller, routeId)
         : refusalText(result),
     );
+  }
+  const notStored = await filesStored(env, tool, action, actionInput, result.output);
+  if (notStored) {
+    return notStored;
   }
   await queuePurge(env, purgeTagsAfter(action, result.output));
   const structuredContent = tool.toOutput(result.output, url) as Record<string, unknown>;

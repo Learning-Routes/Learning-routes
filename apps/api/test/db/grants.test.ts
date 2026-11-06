@@ -50,6 +50,8 @@ const EXPECTED: Record<string, string[]> = {
   enrollments: ["SELECT"],
   progress: ["INSERT", "SELECT"],
   reviews: ["INSERT", "SELECT"],
+  // A space's files on the content host: kept, never changed (Platform STEP 9 §2).
+  stored_files: ["INSERT", "SELECT"],
   // The record of who did what: append-only.
   action_log: ["INSERT", "SELECT"],
 };
@@ -143,6 +145,7 @@ const GRANTS_FILES = [
   "0025_create_space_grants",
   "0027_oauth_grants",
   "0031_invitation_grants",
+  "0036_stored_files_grants",
 ].map((tag) => new URL(`../../drizzle/${tag}.sql`, import.meta.url));
 const PRIVILEGES = `select coalesce(string_agg(entry, ',' order by entry), '')
                       as all
