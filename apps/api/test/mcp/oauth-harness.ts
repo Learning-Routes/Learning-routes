@@ -63,11 +63,18 @@ function memoryBucket() {
   };
 }
 
-export function oauthHarness() {
+/**
+ * The API and the MCP Worker, with one client. A test file may name its own client: each client's
+ * metadata document is fetched at most once a minute, so files that connect at once on a fresh
+ * database would otherwise wait on each other.
+ */
+export function oauthHarness(clientId = CLIENT_ID) {
   const api = harness();
   const bucket = memoryBucket();
   const pending: Promise<unknown>[] = [];
-  const documents = new Map<string, unknown>([[CLIENT_ID, CLIENT_DOCUMENT]]);
+  const documents = new Map<string, unknown>([
+    [clientId, { ...CLIENT_DOCUMENT, client_id: clientId }],
+  ]);
   const app = createMcpApp({
     fetchClientMetadataResource: async (input) => {
       const found = documents.get(String(input));
@@ -126,12 +133,12 @@ export function oauthHarness() {
   const authorize = async (
     cookie: string,
     scope = "routes:read routes:write routes:publish offline_access",
-    clientId = CLIENT_ID,
+    client = clientId,
     redirectUri = REDIRECT_URI,
   ) => {
     const query = new URLSearchParams({
       response_type: "code",
-      client_id: clientId,
+      client_id: client,
       redirect_uri: redirectUri,
       scope,
       state: "state-1",
@@ -156,7 +163,7 @@ export function oauthHarness() {
       body: new URLSearchParams({
         grant_type: "authorization_code",
         code,
-        client_id: CLIENT_ID,
+        client_id: clientId,
         redirect_uri: REDIRECT_URI,
         code_verifier: VERIFIER,
         resource: RESOURCE,
@@ -171,7 +178,7 @@ export function oauthHarness() {
       body: new URLSearchParams({
         grant_type: "refresh_token",
         refresh_token: token,
-        client_id: CLIENT_ID,
+        client_id: clientId,
         resource: RESOURCE,
       }).toString(),
     });

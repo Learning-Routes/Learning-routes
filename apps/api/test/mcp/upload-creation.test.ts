@@ -6,7 +6,8 @@ import { oauthHarness } from "./oauth-harness";
 // upload_creation and upload_asset (Platform STEP 9 §2): what the creator made arrives byte for
 // byte, in R2 after the commit, and publishing puts its creations where students can run them.
 
-const oauth = oauthHarness();
+// Its own client: connecting at the same time as other files must not wait on their fetch.
+const oauth = oauthHarness("https://client.example.test/uploads.json");
 afterEach(() => oauth.settle());
 
 const PIANO = `<!doctype html><title>Piano</title>
