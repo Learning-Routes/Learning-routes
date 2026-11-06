@@ -8,6 +8,8 @@ import { attempt, type Db, ok } from "./shared";
 
 export const storedFilesRepo = (db: Db): StoredFiles => ({
   async usage(spaceId) {
+    // Uploads to one space take turns from here to the commit, so two cannot both fit the quota.
+    await db.execute(sql`select pg_advisory_xact_lock(hashtext(${`stored_files:${spaceId}`}))`);
     const [row] = await db
       .select({ bytes: sql<string>`coalesce(sum(${storedFiles.bytes}), 0)` })
       .from(storedFiles)

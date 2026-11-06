@@ -288,7 +288,7 @@ export interface StoredFile {
 
 /** What a space keeps on the content host, for its quota (Platform STEP 9 §2). Never changed. */
 export interface StoredFiles {
-  /** The bytes a space stores, every file once. */
+  /** The bytes a space stores, every file once; uploads to the space take turns from here. */
   usage(spaceId: string): Promise<number>;
   has(spaceId: string, key: string): Promise<boolean>;
   /** Keeps a file's row; one already kept is left as it is. */

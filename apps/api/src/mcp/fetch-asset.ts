@@ -37,6 +37,10 @@ export async function fetchAsset(
       await response.body?.cancel();
       return { ok: false, why: `source_url answered ${response.status}` };
     }
+    if (Number(response.headers.get("content-length")) > MOST_BYTES) {
+      await response.body?.cancel();
+      return { ok: false, why: "the file at source_url is larger than 25 MB" };
+    }
     const bytes = await readAtMost(response, MOST_BYTES);
     return bytes === null
       ? { ok: false, why: "the file at source_url is larger than 25 MB" }

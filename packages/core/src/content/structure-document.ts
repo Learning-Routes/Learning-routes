@@ -100,29 +100,44 @@ function reportIntro(builder: Builder, nodes: Node[]) {
 
 // An interactive creation inside the document, or a link to one, arrives apart and intact
 // (Platform STEP 9 §2): the report points it at upload_creation.
+// Linear on purpose: each pattern stops at the first few, and lines are counted in one pass.
 const CREATIONS = [
   /<script\b/gi,
-  /```html[^\n]*\n[\s\S]*?<script\b/gi,
-  /https:\/\/(?:claude\.site\/artifacts|claude\.ai\/public\/artifacts|chatgpt\.com\/canvas\/shared)\/\S+/gi,
+  /https:\/\/(?:claude\.site\/artifacts|claude\.ai\/public\/artifacts|chatgpt\.com\/canvas\/shared)\/\S{1,200}/gi,
 ];
-const lineAt = (source: string, index: number) => source.slice(0, index).split("\n").length;
+const MOST_POINTED = 20;
 
 function creationsIn(source: string) {
-  const lines = new Set<number>();
+  const at: number[] = [];
   for (const pattern of CREATIONS) {
     for (const found of source.matchAll(pattern)) {
-      lines.add(lineAt(source, found.index));
+      at.push(found.index);
+      if (at.length % MOST_POINTED === 0) {
+        break;
+      }
     }
   }
-  return [...lines]
-    .sort((a, b) => a - b)
-    .slice(0, 20)
-    .map((line) => ({
-      line,
-      kind: "skipped" as const,
-      what: "an interactive creation",
-      why: "send it as it is with upload_creation",
-    }));
+  at.sort((a, b) => a - b);
+  const lines = new Set<number>();
+  let line = 1;
+  let from = 0;
+  for (const index of at) {
+    for (
+      let next = source.indexOf("\n", from);
+      next !== -1 && next < index;
+      next = source.indexOf("\n", next + 1)
+    ) {
+      line += 1;
+      from = next + 1;
+    }
+    lines.add(line);
+  }
+  return [...lines].slice(0, MOST_POINTED).map((each) => ({
+    line: each,
+    kind: "skipped" as const,
+    what: "an interactive creation",
+    why: "send it as it is with upload_creation",
+  }));
 }
 
 export function structureDocument(input: {

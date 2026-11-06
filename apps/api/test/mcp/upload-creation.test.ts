@@ -12,6 +12,7 @@ afterEach(() => oauth.settle());
 const PIANO = `<!doctype html><title>Piano</title>
 <button onclick="new AudioContext()">Do</button>
 <script>fetch("https://example.com/notes")</script>`;
+const ASSET_URL = /^https:\/\/content\.example\.test\/a\/[0-9a-f-]{36}\/[0-9a-f]{64}\.png$/;
 const PNG = Uint8Array.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0, 0, 0, 13]);
 
 async function teacherWithRoute() {
@@ -79,7 +80,7 @@ describe("upload_creation", () => {
       draft_revision: output.draft_revision,
     });
     expect(published.isError).toBeFalsy();
-    expect(oauth.objects.has(String(key).replace(/^draft\//, "pub/"))).toBe(true);
+    expect(oauth.objects.has(`pub/${String(key).slice("draft/".length)}`)).toBe(true);
   });
 
   it("refuses an interactive block written by hand", async () => {
@@ -102,9 +103,7 @@ describe("upload_asset", () => {
     });
     const output = answer.structuredContent as { url: string; content_type: string };
     expect(output.content_type).toBe("image/png");
-    expect(output.url).toMatch(
-      /^https:\/\/content\.example\.test\/a\/[0-9a-f-]{36}\/[0-9a-f]{64}\.png$/,
-    );
+    expect(output.url).toMatch(ASSET_URL);
     const key = output.url.replace("https://content.example.test/", "");
     expect(oauth.objects.get(key)?.contentType).toBe("image/png");
   });
@@ -115,6 +114,18 @@ describe("upload_asset", () => {
       data_base64: btoa("<html><script>alert(1)</script>"),
     });
     expect(answer.isError).toBe(true);
+  });
+});
+
+describe("upload_asset from an address", () => {
+  it("fetches nothing for someone who cannot edit the space", async () => {
+    const { token } = await teacherWithRoute();
+    const answer = await oauth.tool(token, "upload_asset", {
+      space_id: crypto.randomUUID(),
+      source_url: "https://example.com/a.png",
+    });
+    expect(answer.isError).toBe(true);
+    expect(JSON.stringify(answer)).toContain("not_found");
   });
 });
 

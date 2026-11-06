@@ -165,7 +165,14 @@ describe("what doesn't map", () => {
     const pointed = made.report.filter(
       (item) => item.why === "send it as it is with upload_creation",
     );
-    expect(pointed.map((item) => item.line)).toEqual([5, 7, 10]);
+    expect(pointed.map((item) => item.line)).toEqual([7, 10]);
+  });
+
+  it("reads a large document of scripts in linear time", () => {
+    const started = Date.now();
+    const pointed = structured(`# R\n\n## M\n\n${"<script>\n".repeat(90_000)}`).report;
+    expect(Date.now() - started).toBeLessThan(5000);
+    expect(pointed.filter((item) => item.why?.includes("upload_creation"))).toHaveLength(20);
   });
 
   it("skips an image that isn't https, and says why", () => {

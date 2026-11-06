@@ -167,6 +167,23 @@ describe("an asset", () => {
     expect(await answer.text()).toBe("2345");
   });
 
+  it("answers 416 to a range R2 cannot serve", async () => {
+    const refusing = {
+      CREATIONS: {
+        get: async () => {
+          throw new TypeError("unsatisfiable range");
+        },
+      },
+    } as unknown as Env;
+    const answer = await worker.fetch(
+      new Request(`https://content.example.test/a/${SPACE}/${HASH}.png`, {
+        headers: { range: "bytes=0-1,5-6" },
+      }) as never,
+      refusing,
+    );
+    expect(answer.status).toBe(416);
+  });
+
   it("is not there under another name or extension", async () => {
     expect((await fetchAsset(`/a/${SPACE}/${HASH}.html`, "text/html")).status).toBe(404);
     expect((await fetchAsset(`/a/${SPACE}/${HASH}.jpg`, "image/jpeg")).status).toBe(404);

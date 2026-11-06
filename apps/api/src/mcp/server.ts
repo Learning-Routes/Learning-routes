@@ -178,11 +178,23 @@ async function urlOf(env: Env, tx: Transaction, caller: Caller, action: string, 
   return publicUrl(env, tx, caller, routeId, spaceId);
 }
 
-/** An asset from an address is taken before the transaction: no outside call runs inside one. */
-async function withAsset(input: unknown) {
-  const { source_url: address } = input as { source_url?: string };
+/**
+ * An asset from an address is taken before the transaction: no outside call runs inside one.
+ * Only for an editor of the space: nobody else makes the server fetch anything.
+ */
+async function withAsset(db: Database, caller: Caller, input: unknown) {
+  const { source_url: address, space_id: spaceId } = input as {
+    source_url?: string;
+    space_id?: string;
+  };
   if (!address) {
     return { input };
+  }
+  const scope = await transactionAs(db, caller.userId, (tx) =>
+    pgTenancy(tx).scopeOf({ kind: "space", id: String(spaceId) }, caller.userId),
+  );
+  if (!(scope?.role === "owner" || scope?.role === "coeditor")) {
+    return { refusal: failed(SAY.not_found as string) };
   }
   const taken = await fetchAsset(address);
   return taken.ok
@@ -226,7 +238,7 @@ async function callTool(env: Env, db: Database, caller: Caller, tool: Tool, give
   if (tool.scope !== "routes:read" && !(await hasRoomToWrite(db, caller, tool, spaced))) {
     return failed("Too many changes for now. Wait a minute and try again.");
   }
-  const { input, refusal } = await withAsset(spaced);
+  const { input, refusal } = await withAsset(db, caller, spaced);
   if (refusal) {
     return refusal;
   }

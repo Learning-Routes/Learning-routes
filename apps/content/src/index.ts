@@ -40,7 +40,11 @@ async function asset(request: Request, env: Env, key: string, hash: string) {
   if (request.headers.get("if-none-match") === `"${hash}"`) {
     return plain(304, { ETag: `"${hash}"` });
   }
-  const object = await env.CREATIONS.get(key, { range: request.headers });
+  // R2 refuses a range it cannot serve, such as several at once: 416, never a 500.
+  const object = await env.CREATIONS.get(key, { range: request.headers }).catch(() => undefined);
+  if (object === undefined) {
+    return plain(416, { "Content-Range": "bytes */*" });
+  }
   if (object === null) {
     return plain(404);
   }
@@ -57,8 +61,9 @@ async function asset(request: Request, env: Env, key: string, hash: string) {
   });
   const range = object.range as { offset?: number; length?: number; suffix?: number } | undefined;
   const ranged = request.headers.has("range") && range !== undefined;
-  const offset = range?.suffix === undefined ? (range?.offset ?? 0) : object.size - range.suffix;
-  const length = range?.suffix ?? range?.length ?? object.size - offset;
+  const offset =
+    range?.suffix === undefined ? (range?.offset ?? 0) : Math.max(0, object.size - range.suffix);
+  const length = Math.min(range?.length ?? object.size - offset, object.size - offset);
   if (ranged) {
     headers.set("Content-Range", `bytes ${offset}-${offset + length - 1}/${object.size}`);
   }

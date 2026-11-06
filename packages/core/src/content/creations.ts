@@ -19,7 +19,9 @@ export const SPACE_QUOTA_BYTES = 1024 * MB;
 export type AssetKind = keyof typeof ASSET_MOST_BYTES;
 
 export async function sha256Hex(bytes: Uint8Array): Promise<string> {
-  const digest = new Uint8Array(await crypto.subtle.digest("SHA-256", bytes));
+  const digest = new Uint8Array(
+    await crypto.subtle.digest("SHA-256", bytes as Uint8Array<ArrayBuffer>),
+  );
   return Array.from(digest, (byte) => byte.toString(16).padStart(2, "0")).join("");
 }
 
@@ -56,7 +58,7 @@ const startsWith = (bytes: Uint8Array, signature: readonly number[]) =>
 
 /** An SVG's first tag, past a BOM, an XML declaration, comments and a doctype. */
 const SVG_START =
-  /^(?:\u00EF\u00BB\u00BF)?\s*(<\?xml[^>]*>\s*)?(<!--[\s\S]*?-->\s*)*(<!DOCTYPE svg[^>]*>\s*)?<svg[\s>]/i;
+  /^(?:\u00EF\u00BB\u00BF)?\s*(<\?xml[^>]*>\s*)?(?:<!--(?:[^-]|-(?!->))*-->\s*)*(<!DOCTYPE svg[^>]*>\s*)?<svg[\s>]/i;
 
 const SIGNATURES: [(bytes: Uint8Array) => boolean, Sniffed][] = [
   [
@@ -138,8 +140,10 @@ const LIMITS: [RegExp, string][] = [
   [/<iframe\b/i, "Incluye otra página dentro: aquí no puede."],
 ];
 
+// What a host name looks like: anything else in the source is never echoed back.
+const HOSTNAME = /^[a-z0-9.-]{1,253}(?::[0-9]{1,5})?$/;
 const LOADED =
-  /<(script|link|img|audio|video|source)\b[^>]*?\s(?:src|href)\s*=\s*["']?(https?:)?\/\/([^/"'\s>]+)/gi;
+  /<(script|link|img|audio|video|source)\b[^<>]{0,2048}?\s(?:src|href)\s*=\s*["']?(https?:)?\/\/([^/"'\s>]+)/gi;
 
 /**
  * What a creation will not be able to do here, from a static reading of its source. Advice for
@@ -150,6 +154,9 @@ export function limitsOf(source: string): string[] {
   const hosts = new Set<string>();
   for (const [, tag, , host] of source.matchAll(LOADED)) {
     const name = (host ?? "").toLowerCase();
+    if (!HOSTNAME.test(name)) {
+      continue;
+    }
     const allowed =
       tag?.toLowerCase() === "script"
         ? SCRIPT_HOSTS

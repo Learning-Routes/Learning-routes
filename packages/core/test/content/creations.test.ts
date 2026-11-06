@@ -33,6 +33,13 @@ describe("sniffAsset", () => {
     expect(sniffAsset(file)?.contentType).toBe(contentType);
   });
 
+  it("gives up on a run of comments at once, never backtracking", () => {
+    const started = Date.now();
+    expect(sniffAsset(text("<!---->".repeat(600)))).toBeNull();
+    expect(sniffAsset(text("<!-- a -->".repeat(400)))).toBeNull();
+    expect(Date.now() - started).toBeLessThan(200);
+  });
+
   it("names nothing else, whatever it is called", () => {
     expect(sniffAsset(text("<!doctype html><svg>"))).toBeNull();
     expect(sniffAsset(text("<html><body><svg></svg>"))).toBeNull();
@@ -66,6 +73,16 @@ describe("limitsOf", () => {
     expect(limits).toContain(
       "Carga archivos de evil.example: aquí no puede. Súbelos con upload_asset.",
     );
+  });
+});
+
+describe("limitsOf, on a large creation", () => {
+  it("reads unclosed tags in linear time, and echoes no odd host", () => {
+    const started = Date.now();
+    limitsOf("<img ".repeat(400_000));
+    limitsOf(`<img ${" ".repeat(2_000_000)}`);
+    expect(Date.now() - started).toBeLessThan(2000);
+    expect(limitsOf('<img src="https://ex<b>ample/x">')).toEqual([]);
   });
 });
 

@@ -27,7 +27,8 @@ export const UPLOAD_TOOLS: Tool[] = [
     action: "creation.upload",
     description:
       "Bring an interactive creation the creator already made, like a piano, a game, a quiz or a simulator: one HTML file with its scripts and styles, up to 2 MB. Send the file exactly as it is: never rebuild, shorten or rewrite it, and never offer to remake it. It becomes an interactive block in a lesson and runs in its own box, where it cannot reach the internet, save data, open windows or show alerts. Answers with the block, the preview link to give the person, and what the creation will not be able to do here. Sending the same file to the same lesson again changes nothing.",
-    annotations: UPLOAD,
+    // Not idempotent with module_id: each call makes a new lesson.
+    annotations: { ...UPLOAD, idempotentHint: false },
     input: z.strictObject({
       route_id: RouteId,
       draft_revision: DraftRevision,
@@ -88,7 +89,7 @@ export const UPLOAD_TOOLS: Tool[] = [
     scope: "routes:write",
     action: "asset.upload",
     description:
-      "Keep an image, a sound or a short video the creator has, and get its address to use in blocks (image_url, audio_url, video_url) or inside a creation. Give the file in base64, or an https address to take it from. Its type is read from its bytes: PNG, JPEG, GIF, WebP or SVG up to 5 MB; MP3, WAV, OGG or M4A up to 15 MB; MP4 or WebM up to 25 MB. The same file twice is one file.",
+      "Keep an image, a sound or a short video the creator has, and get its address to use in blocks (image_url, audio_url, video_url) or inside a creation. Give the file in base64 (up to about 2.5 MB this way), or an https address to take it from. Its type is read from its bytes: PNG, JPEG, GIF, WebP or SVG up to 5 MB; MP3, WAV, OGG or M4A up to 15 MB; MP4 or WebM up to 25 MB. The same file twice is one file.",
     annotations: { ...UPLOAD, openWorldHint: true },
     input: z
       .strictObject({
