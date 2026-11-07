@@ -38,29 +38,37 @@ async function keep(repos: Repos, spaceId: string, file: StoredFile) {
   unwrap(await repos.storedFiles.record(spaceId, file));
 }
 
+const CreationIn = z
+  .strictObject({
+    routeId: z.uuid(),
+    expectedRevision: z.int().nonnegative(),
+    lessonId: z.uuid().optional(),
+    moduleId: z.uuid().optional(),
+    lessonTitle: LocalizedText.optional(),
+    // Instead of a lesson: the interactive block whose file this replaces (Platform STEP 9 §4).
+    blockId: z.uuid().optional(),
+    title: LocalizedText.optional(),
+    description: LocalizedText.nullish(),
+    altText: LocalizedText.nullish(),
+    shape: z.enum(CREATION_SHAPES).nullish(),
+    source: z.string().min(1).max(CREATION_MOST_BYTES),
+  })
+  .refine(
+    (input) =>
+      input.blockId
+        ? input.lessonId === undefined && input.moduleId === undefined
+        : input.title !== undefined &&
+          (input.lessonId ? input.moduleId === undefined : input.moduleId && input.lessonTitle),
+    "a block_id to replace; or a title, and a lesson_id or a module_id with the new lesson's title",
+  );
+type CreationInput = z.infer<typeof CreationIn>;
+
 export const creationUpload = defineAction({
   name: "creation.upload",
   kind: "mutation",
   description:
     "Bring an interactive creation, one HTML file kept exactly as given, as a block of a lesson.",
-  input: z
-    .strictObject({
-      routeId: z.uuid(),
-      expectedRevision: z.int().nonnegative(),
-      lessonId: z.uuid().optional(),
-      moduleId: z.uuid().optional(),
-      lessonTitle: LocalizedText.optional(),
-      title: LocalizedText,
-      description: LocalizedText.nullish(),
-      altText: LocalizedText.nullish(),
-      shape: z.enum(CREATION_SHAPES).nullish(),
-      source: z.string().min(1).max(CREATION_MOST_BYTES),
-    })
-    .refine(
-      (input) =>
-        input.lessonId ? input.moduleId === undefined : input.moduleId && input.lessonTitle,
-      "a lesson_id, or a module_id with the new lesson's title",
-    ),
+  input: CreationIn,
   target: (input) => ({ kind: "route", id: input.routeId }),
   async run(ctx, input, given) {
     const { spaceId } = inSpace(given);
@@ -74,19 +82,18 @@ export const creationUpload = defineAction({
     const hash = await sha256Hex(bytes);
     const key = creationKey("draft", spaceId, input.routeId, hash);
     const answer = { spaceId, routeId: input.routeId, key, limits: limitsOf(input.source) };
+    const file = { key, kind: "creation", contentType: "text/html", bytes: bytes.length } as const;
     return ctx.repos.transaction(async (repos) => {
       const draft = unwrap(await repos.routeDrafts.get(spaceId, input.routeId));
+      if (input.blockId) {
+        return { ...answer, ...(await replaceIn(repos, draft, input, hash, file)) };
+      }
       const place = await placeOf(ctx, repos, draft, input, hash);
       if (place.blockId) {
         return { ...answer, ...place, blockId: place.blockId, repeated: true };
       }
       const { lessonId } = place;
-      await keep(repos, spaceId, {
-        key,
-        kind: "creation",
-        contentType: "text/html",
-        bytes: bytes.length,
-      });
+      await keep(repos, spaceId, file);
       const blockId = ctx.ids.newId();
       const siblings = draft.blocks.filter((block) => block.lessonId === lessonId);
       const { revision } = unwrap(
@@ -96,7 +103,7 @@ export const creationUpload = defineAction({
           position: String(positionAfter(siblings, undefined)),
           kind: "interactive",
           data: {
-            title: input.title,
+            title: input.title as LocalizedText,
             creation: hash,
             shape: input.shape ?? null,
             description: input.description ?? null,
@@ -109,7 +116,47 @@ export const creationUpload = defineAction({
   },
 });
 
-type CreationInput = z.infer<typeof creationUpload.input>;
+/** A new file for an interactive block already in the draft: its id, lesson and place stay. */
+async function replaceIn(
+  repos: Repos,
+  draft: RouteDraft,
+  input: CreationInput,
+  hash: string,
+  file: StoredFile,
+) {
+  const block = draft.blocks.find(
+    (entry) => entry.id === input.blockId && entry.kind === "interactive",
+  );
+  if (block === undefined) {
+    throw new ActionError("not_found", "not found");
+  }
+  const at = { lessonId: block.lessonId, blockId: block.id };
+  if ((block.data as { creation?: string }).creation === hash) {
+    return { ...at, revision: draft.revision, repeated: true };
+  }
+  await keep(repos, draft.spaceId, file);
+  const given = {
+    title: input.title,
+    description: input.description,
+    alt_text: input.altText,
+    shape: input.shape,
+  };
+  const data = {
+    ...block.data,
+    ...Object.fromEntries(Object.entries(given).filter(([, value]) => value !== undefined)),
+    creation: hash,
+  };
+  const { revision } = unwrap(
+    await repos.routeDrafts.setBlockData(
+      draft.spaceId,
+      input.routeId,
+      input.expectedRevision,
+      block.id,
+      data,
+    ),
+  );
+  return { ...at, revision, repeated: false };
+}
 
 /**
  * The lesson a creation goes in: the one named, or a new one at the end of the module. The

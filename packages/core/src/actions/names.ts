@@ -13,6 +13,7 @@ export const ACTION_NAMES = [
   "lesson.add",
   "block.add",
   "blocks.add",
+  "block.remove",
   "route.update",
   "route.set_price",
   "route.import",

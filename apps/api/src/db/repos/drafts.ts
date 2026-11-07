@@ -1,5 +1,4 @@
 import type {
-  DraftBlock,
   DraftLesson,
   DraftModule,
   RepoResult,
@@ -9,6 +8,7 @@ import type {
 } from "@learning-routes/core/repos/ports";
 import { and, asc, eq, isNull, sql } from "drizzle-orm";
 import { blocks, lessonPrerequisites, lessons, modules, routes } from "../schema/content";
+import { addBlock, changeBlock, isLiveLesson } from "./draft-blocks";
 import { detailsOf, replaceContent } from "./draft-content";
 import { attempt, type Db, fail, ok } from "./shared";
 
@@ -181,29 +181,6 @@ const edit = (db: Db, where: Where, expected: number, change: () => Promise<Repo
     return revision === null ? fail("conflict") : ok({ revision: Number(revision) });
   });
 
-const isLiveLesson = async (db: Db, where: Where, lessonId: string) =>
-  (
-    await db
-      .select({ id: lessons.id })
-      .from(lessons)
-      .where(
-        and(
-          eq(lessons.id, lessonId),
-          eq(lessons.routeId, where.routeId),
-          eq(lessons.spaceId, where.spaceId),
-          isNull(lessons.archivedAt),
-        ),
-      )
-  ).length === 1;
-
-async function addBlock(db: Db, where: Where, block: DraftBlock): Promise<RepoResult<void>> {
-  if (!(await isLiveLesson(db, where, block.lessonId))) {
-    return fail("not_found");
-  }
-  await db.insert(blocks).values({ ...block, spaceId: where.spaceId });
-  return ok(undefined);
-}
-
 async function archiveLesson(db: Db, where: Where, lessonId: string): Promise<RepoResult<void>> {
   if (!(await isLiveLesson(db, where, lessonId))) {
     return fail("not_found");
@@ -270,6 +247,14 @@ export const routeDrafts = (db: Db): RouteDrafts => ({
     edit(db, { spaceId, routeId }, expected, () => insertLesson(db, { spaceId, routeId }, lesson)),
   addBlock: (spaceId, routeId, expected, block) =>
     edit(db, { spaceId, routeId }, expected, () => addBlock(db, { spaceId, routeId }, block)),
+  archiveBlock: (spaceId, routeId, expected, blockId) =>
+    edit(db, { spaceId, routeId }, expected, () =>
+      changeBlock(db, { spaceId, routeId }, blockId, { archivedAt: new Date() }),
+    ),
+  setBlockData: (spaceId, routeId, expected, blockId, data) =>
+    edit(db, { spaceId, routeId }, expected, () =>
+      changeBlock(db, { spaceId, routeId }, blockId, { data }),
+    ),
   archiveLesson: (spaceId, routeId, expected, lessonId) =>
     edit(db, { spaceId, routeId }, expected, () =>
       archiveLesson(db, { spaceId, routeId }, lessonId),

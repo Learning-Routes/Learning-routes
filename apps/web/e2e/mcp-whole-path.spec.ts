@@ -115,7 +115,7 @@ test("an assistant imports and publishes a route, until it is disconnected", asy
       route_id: routeId,
       draft_revision: draft.structuredContent?.draft_revision,
       lesson_id: lessons[0]?.id,
-      title: { es: "Botón de prueba" },
+      title: { es: `Botón ${slug}` },
       description: { es: "Pulsa Listo cuando acabes." },
       alt_text: { es: "Un botón que dice Listo." },
       shape: "wide",
@@ -169,6 +169,24 @@ test("an assistant imports and publishes a route, until it is disconnected", asy
   await page.getByRole("heading", { name: "Mis rutas" }).waitFor();
   await expect(page.getByText(HOSTILE_TITLE).first()).toBeVisible();
   expect(await page.evaluate(() => "__pwned" in window)).toBe(false);
+
+  // The creator's hub: the creation's card, a new version in its block, then out of the draft.
+  await page.goto(`${DEV}/creador`);
+  const card = page.locator(".hub-creation", { hasText: `Botón ${slug}` });
+  await expect(card.getByText("En el tema «Qué necesitas»")).toBeVisible();
+  await card.locator("summary", { hasText: "Reemplazar" }).click();
+  await card.locator('input[type="file"]').setInputFiles({
+    name: "boton.html",
+    mimeType: "text/html",
+    buffer: Buffer.from(`${CREATION}<p>v2</p>`),
+  });
+  await card.getByRole("button", { name: "Reemplazar" }).click();
+  await expect(page.getByText("Creación reemplazada. Revísala en la vista previa.")).toBeVisible();
+  const replaced = page.locator(".hub-creation", { hasText: `Botón ${slug}` });
+  await replaced.locator("summary", { hasText: "Quitar" }).click();
+  await replaced.getByRole("button", { name: "Quitar del borrador" }).click();
+  await expect(page.getByText("Creación quitada del borrador.")).toBeVisible();
+  await expect(page.locator(".hub-creation", { hasText: `Botón ${slug}` })).toHaveCount(0);
 
   await page.goto(`${DEV}/creador/conexiones`);
   await expect(page.getByText("Último uso:")).toBeVisible();

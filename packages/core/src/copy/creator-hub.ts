@@ -37,7 +37,7 @@ export interface CreatorHubText {
   catalogAsked: string;
   catalogRefused: string;
   editPage: string;
-  emptySteps: readonly [string, string, string];
+  emptySteps: readonly [string, string, string, string];
 }
 
 export const CREATOR_HUB_TEXT: Record<LocaleCode, CreatorHubText> = {
@@ -81,6 +81,7 @@ export const CREATOR_HUB_TEXT: Record<LocaleCode, CreatorHubText> = {
       "Conecta tu asistente en Claude, ChatGPT o donde hiciste el curso.",
       `Dile: «Sube este documento a ${BRAND} tal como está».`,
       "Abre la vista previa y, cuando te guste, publícala.",
+      "¿Hiciste algo interactivo, como un juego o un simulador? Pídele a tu asistente que lo suba tal cual.",
     ] as const,
   },
   en: {
@@ -123,6 +124,7 @@ export const CREATOR_HUB_TEXT: Record<LocaleCode, CreatorHubText> = {
       "Connect your assistant in Claude, ChatGPT or wherever you made the course.",
       `Tell it: "Upload this document to ${BRAND} as it is."`,
       "Open the preview and, when you like it, publish it.",
+      "Made something interactive, like a game or a simulator? Ask your assistant to upload it as it is.",
     ] as const,
   },
   pt: {
@@ -165,6 +167,7 @@ export const CREATOR_HUB_TEXT: Record<LocaleCode, CreatorHubText> = {
       "Conecte seu assistente no Claude, ChatGPT ou onde fez o curso.",
       `Diga: «Envie este documento ao ${BRAND} como está».`,
       "Abra a prévia e, quando gostar, publique.",
+      "Fez algo interativo, como um jogo ou um simulador? Peça ao seu assistente que o envie tal como está.",
     ] as const,
   },
   fr: {
@@ -208,6 +211,7 @@ export const CREATOR_HUB_TEXT: Record<LocaleCode, CreatorHubText> = {
       "Connectez votre assistant dans Claude, ChatGPT ou là où vous avez fait le cours.",
       `Dites-lui : « Envoie ce document à ${BRAND} tel quel. »`,
       "Ouvrez l'aperçu et, quand il vous plaît, publiez-le.",
+      "Vous avez fait quelque chose d'interactif, comme un jeu ou un simulateur ? Demandez à votre assistant de l'envoyer tel quel.",
     ] as const,
   },
   it: {
@@ -251,6 +255,7 @@ export const CREATOR_HUB_TEXT: Record<LocaleCode, CreatorHubText> = {
       "Collega il tuo assistente in Claude, ChatGPT o dove hai fatto il corso.",
       `Digli: «Carica questo documento su ${BRAND} così com'è».`,
       "Apri l'anteprima e, quando ti piace, pubblicala.",
+      "Hai fatto qualcosa di interattivo, come un gioco o un simulatore? Chiedi al tuo assistente di caricarlo così com'è.",
     ] as const,
   },
 };

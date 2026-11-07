@@ -165,3 +165,27 @@ export const blockAddMany = defineAction({
     });
   },
 });
+
+/** Takes a block out of the draft (Platform STEP 9 §4). Published versions keep it. */
+export const blockRemove = defineAction({
+  name: "block.remove",
+  kind: "mutation",
+  description: "Take a block out of a route's draft. Published versions keep it.",
+  input: z.strictObject({
+    routeId: z.uuid(),
+    expectedRevision: z.int().nonnegative(),
+    blockId: z.uuid(),
+  }),
+  target: (input) => ({ kind: "route", id: input.routeId }),
+  async run(ctx, input, given) {
+    const { spaceId } = inSpace(given);
+    return unwrap(
+      await ctx.repos.routeDrafts.archiveBlock(
+        spaceId,
+        input.routeId,
+        input.expectedRevision,
+        input.blockId,
+      ),
+    );
+  },
+});

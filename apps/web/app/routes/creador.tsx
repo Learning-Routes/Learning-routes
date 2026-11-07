@@ -1,6 +1,8 @@
 import { CONNECT_TEXT } from "@learning-routes/core/copy/connect";
+import { CREATOR_CREATIONS_TEXT } from "@learning-routes/core/copy/creator-creations";
 import { CREATOR_HUB_TEXT } from "@learning-routes/core/copy/creator-hub";
 import { BRAND, type LocaleCode, negotiateLocale } from "@learning-routes/core/locales";
+import type { LocalizedText } from "@learning-routes/core/localized-text";
 import type { OwnSpace, RouteDraft, RouteSummary } from "@learning-routes/core/repos/ports";
 import { data, type RouterContextProvider, redirect } from "react-router";
 import { isFromTheApp, runApiAction } from "../app-api.server";
@@ -10,6 +12,7 @@ import { CopyLine } from "../app-pages/copy-line";
 import { HubRoute } from "../app-pages/hub-route";
 import { pageContext } from "../context";
 import { inLocale } from "../storefront/words";
+import { creatorHub } from "../surface";
 import { ButtonLink } from "../ui/button";
 import { Card, EmptyState, Notice, TextLink } from "../ui/parts";
 import { Rising } from "../ui/rising";
@@ -17,6 +20,21 @@ import type { Route } from "./+types/creador";
 
 // "Enseñar" (Platform STEP 7), the desk's hub for someone who teaches: each space, its public
 // address, its routes with their real lines, and the way to the assistant.
+
+/** The API's answer to route.get, for the app: with each creation's signed thumbnail. */
+type Draft = RouteDraft & { thumbnails?: Record<string, string> };
+
+/** A route's interactive blocks, each with the thumbnail the content host keeps for it. */
+function creationsOf(draft: Draft | undefined) {
+  return (draft?.blocks ?? [])
+    .filter((block) => block.kind === "interactive")
+    .map((block) => ({
+      blockId: block.id,
+      title: block.data.title as LocalizedText,
+      lesson: draft?.lessons.find((lesson) => lesson.id === block.lessonId)?.title ?? {},
+      thumbnail: draft?.thumbnails?.[block.id] ?? null,
+    }));
+}
 
 async function routesOf(
   context: Readonly<RouterContextProvider>,
@@ -27,7 +45,7 @@ async function routesOf(
   const listed = await runApiAction<RouteSummary[]>(context, request, "route.list", { spaceId });
   return Promise.all(
     (listed.body?.output ?? []).map(async (route) => {
-      const draft = await runApiAction<RouteDraft>(context, request, "route.get", {
+      const draft = await runApiAction<Draft>(context, request, "route.get", {
         routeId: route.id,
       });
       const modules = draft.body?.output?.modules ?? [];
@@ -41,10 +59,13 @@ async function routesOf(
         revision: route.revision,
         priceMinor: draft.body?.output?.route.priceMinor ?? null,
         currency: draft.body?.output?.route.currency ?? null,
+        creations: creationsOf(draft.body?.output),
       };
     }),
   );
 }
+
+export const handle = creatorHub;
 
 export async function loader({ request, context }: Route.LoaderArgs) {
   const owned = await runApiAction<OwnSpace[]>(context, request, "space.list", {});
@@ -81,12 +102,19 @@ export async function loader({ request, context }: Route.LoaderArgs) {
 }
 
 const MINOR_UNITS = 100;
+const FORM_ROOM = 64 * 1024;
+// Core's CREATION_MOST_BYTES, which browser code may not import; the API checks it again.
+const CREATION_MOST_BYTES = 2 * 1_048_576;
 const AMOUNT = /^\d{1,9}(?:[.,]\d{1,2})?$/;
 
 /** The hub's forms: each one action, which the API checks. */
 export async function action({ request, context }: Route.ActionArgs) {
   if (!isFromTheApp(request, context)) {
     throw data(null, { status: 404 });
+  }
+  // A creation is at most 2 MB, and a body larger than that and its few fields is never read.
+  if (Number(request.headers.get("content-length")) > CREATION_MOST_BYTES + FORM_ROOM) {
+    throw data(null, { status: 413 });
   }
   const form = await request.formData();
   const field = (name: string) => String(form.get(name) ?? "");
@@ -114,7 +142,36 @@ export async function action({ request, context }: Route.ActionArgs) {
     });
     return { notice: answer.body?.ok ? "priceSaved" : "publishFailed" } as const;
   }
+  if (intent === "replace" || intent === "remove") {
+    return { creation: await creationChange(context, request, form) } as const;
+  }
   throw data(null, { status: 400 });
+}
+
+/** A creation's new version in its block, or the block out of the draft. */
+async function creationChange(
+  context: Readonly<RouterContextProvider>,
+  request: Request,
+  form: FormData,
+) {
+  const ids = {
+    routeId: String(form.get("routeId") ?? ""),
+    expectedRevision: Number(form.get("revision")),
+    blockId: String(form.get("blockId") ?? ""),
+  };
+  if (form.get("intent") === "remove") {
+    const answer = await runApiAction(context, request, "block.remove", ids);
+    return answer.body?.ok ? "removed" : "failed";
+  }
+  const file = form.get("file");
+  if (!(file instanceof File) || file.size === 0 || file.size > CREATION_MOST_BYTES) {
+    return "failed";
+  }
+  const answer = await runApiAction(context, request, "creation.upload", {
+    ...ids,
+    source: await file.text(),
+  });
+  return answer.body?.ok ? "replaced" : "failed";
 }
 
 export const headers: Route.HeadersFunction = () => ({ "Cache-Control": "no-store" });
@@ -184,7 +241,13 @@ export default function Creador({ loaderData, actionData }: Route.ComponentProps
         <h1 className="app-title depth-1">
           <Rising text={words.title} />
         </h1>
-        {actionData ? <Notice tone="info" title={words[actionData.notice]} /> : null}
+        {actionData?.notice ? <Notice tone="info" title={words[actionData.notice]} /> : null}
+        {actionData?.creation ? (
+          <Notice
+            tone={actionData.creation === "failed" ? "error" : "info"}
+            title={CREATOR_CREATIONS_TEXT[locale][actionData.creation]}
+          />
+        ) : null}
         {spaces.length === 0 ? (
           <EmptyState
             title={words.noSpaceTitle}

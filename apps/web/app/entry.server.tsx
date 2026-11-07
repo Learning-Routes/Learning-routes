@@ -4,7 +4,9 @@ import type { EntryContext, RouterContextProvider } from "react-router";
 import { ServerRouter } from "react-router";
 import { pageContext } from "./context";
 
-type Surface = { storefront?: boolean; challenge?: boolean; lessonMedia?: boolean } | undefined;
+type Surface =
+  | { storefront?: boolean; challenge?: boolean; lessonMedia?: boolean; creationImages?: boolean }
+  | undefined;
 
 export const streamTimeout = 5_000;
 
@@ -16,13 +18,18 @@ function policy(
   hasChallenge: boolean,
   hasMedia: boolean,
   contentOrigin: string,
+  hasCreationImages: boolean,
 ): string {
   const challenge = hasChallenge ? " https://challenges.cloudflare.com" : "";
   return [
     "default-src 'self'",
     nonce === null ? "script-src 'self'" : `script-src 'self' 'nonce-${nonce}'${challenge}`,
     "style-src 'self'",
-    hasMedia ? "img-src 'self' data: https:" : "img-src 'self' data:",
+    hasMedia
+      ? "img-src 'self' data: https:"
+      : hasCreationImages
+        ? `img-src 'self' data: ${contentOrigin}`
+        : "img-src 'self' data:",
     ...(hasMedia ? ["media-src https:"] : []),
     "connect-src 'self'",
     hasChallenge
@@ -81,6 +88,7 @@ export default async function handleRequest(
       surfaceIs(routerContext, "challenge"),
       surfaceIs(routerContext, "lessonMedia"),
       contentOrigin,
+      surfaceIs(routerContext, "creationImages"),
     ),
   );
   return new Response(body, { headers: responseHeaders, status: responseStatusCode });

@@ -93,6 +93,7 @@ export function oauthHarness(clientId = CLIENT_ID) {
     CREATOR_DOMAIN: "example.test",
     PURGE_QUEUE: { send: async () => undefined },
     CONTENT_ORIGIN: "https://content.example.test",
+    CONTENT_SIGNING_SECRET: "test-only-content-secret-0123456789abcdef",
     CREATIONS: bucket,
   } as unknown as Env;
   const ctx = {

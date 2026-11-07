@@ -26,12 +26,55 @@ export async function signatureOf(secret: string, path: string, expires: number)
 type Frames = { blocks: { frame?: string }[] } | null | undefined;
 
 /** The views of lesson.read and route.preview, with each frame a whole address. */
+type Signer = Pick<Env, "CONTENT_ORIGIN" | "CONTENT_SIGNING_SECRET">;
+const HALF_HOUR_S = 1800;
+const HASH = /^[0-9a-f]{64}$/;
+
+/**
+ * A creation's thumbnail, at its signed address (Platform STEP 9 §4). The expiry is rounded to the
+ * half hour, so a card's address stays the same, and cached, for that long: always under the hour
+ * the content host allows.
+ */
+export async function thumbnailAddress(
+  env: Signer,
+  where: { spaceId: string; routeId: string; hash: string },
+  nowS = Math.floor(Date.now() / 1000),
+) {
+  const path = `/t/${where.spaceId}/${where.routeId}/${where.hash}.webp`;
+  const expires = (Math.floor(nowS / HALF_HOUR_S) + 2) * HALF_HOUR_S;
+  const signature = await signatureOf(env.CONTENT_SIGNING_SECRET, path, expires);
+  return `${env.CONTENT_ORIGIN}${path}?e=${expires}&s=${signature}`;
+}
+
+type Draft = {
+  spaceId: string;
+  route: { id: string };
+  blocks: { id: string; kind: string; data: Record<string, unknown> }[];
+  thumbnails?: Record<string, string>;
+};
+
+/** route.get, for the app: each interactive block's thumbnail, by block id. */
+async function withThumbnails(env: Signer, draft: Draft, nowS: number) {
+  draft.thumbnails = {};
+  for (const block of draft.blocks) {
+    const hash = String(block.data.creation);
+    if (block.kind === "interactive" && HASH.test(hash)) {
+      const where = { spaceId: draft.spaceId, routeId: draft.route.id, hash };
+      draft.thumbnails[block.id] = await thumbnailAddress(env, where, nowS);
+    }
+  }
+}
+
 export async function withFrames(
-  env: Pick<Env, "CONTENT_ORIGIN" | "CONTENT_SIGNING_SECRET">,
+  env: Signer,
   name: string,
   output: unknown,
   nowS = Math.floor(Date.now() / 1000),
 ) {
+  if (name === "route.get") {
+    await withThumbnails(env, output as Draft, nowS);
+    return output;
+  }
   const view = (
     name === "lesson.read"
       ? output

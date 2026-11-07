@@ -396,6 +396,53 @@ export function repositoryContract(name: string, withFixture: WithFixture) {
       });
     });
 
+    it("changes one block's data, or takes it out, and finds no block in another route", async () => {
+      await withFixture(async ({ spaceId, ownerId, actAs }) => {
+        const repos = await actAs(ownerId);
+        const fields = routeFields("blocks");
+        let revision = value(await repos.routeDrafts.create(spaceId, fields)).revision;
+        const m = module("V");
+        revision = value(
+          await repos.routeDrafts.addModule(spaceId, fields.id, revision, m),
+        ).revision;
+        const l = lesson(m.id, "V");
+        revision = value(
+          await repos.routeDrafts.addLesson(spaceId, fields.id, revision, l),
+        ).revision;
+        const block = {
+          id: newId(),
+          lessonId: l.id,
+          position: "V",
+          kind: "concept" as const,
+          data: { body: { es: "Uno" } },
+        };
+        revision = value(
+          await repos.routeDrafts.addBlock(spaceId, fields.id, revision, block),
+        ).revision;
+        const data = { body: { es: "Dos" } };
+        revision = value(
+          await repos.routeDrafts.setBlockData(spaceId, fields.id, revision, block.id, data),
+        ).revision;
+        expect(value(await repos.routeDrafts.get(spaceId, fields.id)).blocks[0]?.data).toEqual(
+          data,
+        );
+
+        const other = routeFields("other-blocks");
+        const otherRevision = value(await repos.routeDrafts.create(spaceId, other)).revision;
+        expect(
+          await repos.routeDrafts.archiveBlock(spaceId, other.id, otherRevision, block.id),
+        ).toEqual({ ok: false, error: "not_found" });
+
+        revision = value(
+          await repos.routeDrafts.archiveBlock(spaceId, fields.id, revision, block.id),
+        ).revision;
+        expect(value(await repos.routeDrafts.get(spaceId, fields.id)).blocks).toEqual([]);
+        expect(
+          await repos.routeDrafts.setBlockData(spaceId, fields.id, revision, block.id, data),
+        ).toEqual({ ok: false, error: "not_found" });
+      });
+    });
+
     it("locks a draft at the revision its caller read, and refuses a stale one", async () => {
       await withFixture(async ({ spaceId, ownerId, actAs }) => {
         const repos = await actAs(ownerId);

@@ -22,5 +22,7 @@
   },
   // The same secret as the API's CONTENT_SIGNING_SECRET: it signs a draft's short-lived address.
   "secrets": { "required": ["CONTENT_SIGNING_SECRET"] },
-  "r2_buckets": [{ "binding": "CREATIONS", "bucket_name": "learning-routes-creations" }]
+  "r2_buckets": [{ "binding": "CREATIONS", "bucket_name": "learning-routes-creations" }],
+  // A creation's thumbnail, taken once by Browser Run and kept in R2 (Platform STEP 9 §4).
+  "browser": { "binding": "BROWSER" }
 }

@@ -54,6 +54,7 @@ export const PERMISSIONS = {
   "lesson.add": EDITORS,
   "block.add": EDITORS,
   "blocks.add": EDITORS,
+  "block.remove": EDITORS,
   "route.publish": EDITORS,
   "creation.upload": EDITORS,
   "asset.upload": EDITORS,

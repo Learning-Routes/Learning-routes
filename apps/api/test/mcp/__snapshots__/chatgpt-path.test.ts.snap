@@ -51,7 +51,7 @@ exports[`the way ChatGPT connects > keeps every tool's name and description the 
     "name": "publish_route",
   },
   {
-    "description": "Bring an interactive creation the creator already made, like a piano, a game, a quiz or a simulator: one HTML file with its scripts and styles, up to 2 MB. Send the file exactly as it is: never rebuild, shorten or rewrite it, and never offer to remake it. It becomes an interactive block in a lesson and runs in its own box, where it cannot reach the internet, save data, open windows or show alerts. Answers with the block, the preview link to give the person, and what the creation will not be able to do here. Sending the same file to the same lesson again changes nothing.",
+    "description": "Bring an interactive creation the creator already made, like a piano, a game, a quiz or a simulator: one HTML file with its scripts and styles, up to 2 MB. Send the file exactly as it is: never rebuild, shorten or rewrite it, and never offer to remake it. It becomes an interactive block in a lesson and runs in its own box, where it cannot reach the internet, save data, open windows or show alerts. Answers with the block, the preview link to give the person, and what the creation will not be able to do here. Sending the same file to the same lesson again changes nothing. To put a new version in place of one already uploaded, send it with that block_id.",
     "name": "upload_creation",
   },
   {
