@@ -39,7 +39,15 @@
     { "name": "EMAIL", "allowed_sender_addresses": ["sign-in@mail.learningroutes.com"] }
   ],
   // Set with wrangler secret put; locally in .dev.vars (git-ignored).
-  "secrets": { "required": ["BETTER_AUTH_SECRET", "CLOUDFLARE_PURGE_TOKEN", "TURNSTILE_SECRET"] },
+  "secrets": {
+    "required": [
+      "BETTER_AUTH_SECRET",
+      "CLOUDFLARE_PURGE_TOKEN",
+      "TURNSTILE_SECRET",
+      // The content host's: it signs a draft creation's short-lived address (Platform STEP 9 §3).
+      "CONTENT_SIGNING_SECRET"
+    ]
+  },
   // Purging the storefront's edge cache by tag, after the commit (Platform STEP 4 §1.4).
   // One consumer at a time, and at most one batch each 30 s, stays inside the Free
   // plan's 5 purges a minute; the plan is not assumed.

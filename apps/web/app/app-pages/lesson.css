@@ -405,6 +405,31 @@
 .lesson-video-ask .app-fine {
   margin: 0;
 }
+/* A creation's own proportions, chosen on upload (wide is the video frame's 16:9); the page
+   allows no inline style. */
+.lesson-creation-box {
+  position: relative;
+}
+.lesson-creation-box[data-shape="standard"] {
+  aspect-ratio: 4 / 3;
+}
+.lesson-creation-box[data-shape="square"] {
+  aspect-ratio: 1;
+}
+.lesson-creation-box[data-shape="tall"] {
+  aspect-ratio: 3 / 4;
+}
+.lesson-creation-frame {
+  position: absolute;
+  height: 100%;
+  background: #fff;
+}
+/* Over a frame that never loaded, too. */
+.lesson-creation-needs {
+  position: relative;
+  margin: 0;
+  padding: var(--space-5);
+}
 .lesson-cards {
   margin: var(--space-6) 0;
 }

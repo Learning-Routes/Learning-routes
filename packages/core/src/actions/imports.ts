@@ -194,7 +194,12 @@ export const routePreview = defineAction({
     const draft = unwrap(await ctx.repos.routeDrafts.get(spaceId, input.routeId));
     // Nothing is locked for whoever makes the route.
     const open = { ...draft, route: { ...draft.route, pricing: "free" as const } };
-    const view = lessonView(open as Snapshot, input.topic ?? 1);
+    const space = unwrap(await ctx.repos.spaces.get(spaceId));
+    const view = lessonView(open as Snapshot, input.topic ?? 1, {
+      spaceId,
+      kind: "d",
+      creator: space.name,
+    });
     return {
       view,
       route: draft.route,

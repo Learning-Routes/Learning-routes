@@ -80,7 +80,12 @@ export const lessonRead = defineAction({
     const completed = progress
       .filter((record) => record.status === "completed")
       .map((record) => record.lessonId);
-    const view = lessonView(snapshot, input.topic ?? placeInRoute(snapshot, completed).number);
+    const space = unwrap(await ctx.repos.spaces.get(spaceId));
+    const view = lessonView(snapshot, input.topic ?? placeInRoute(snapshot, completed).number, {
+      spaceId,
+      kind: "p",
+      creator: space.name,
+    });
     if (view === null) {
       throw refused("not_found");
     }

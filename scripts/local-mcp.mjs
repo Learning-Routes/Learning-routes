@@ -12,6 +12,7 @@ const VARS = Object.entries({
   BETTER_AUTH_SECRET: "local-only-mcp-secret-0123456789abcdef0123456789",
   CLOUDFLARE_PURGE_TOKEN: "local-unused",
   TURNSTILE_SECRET: "1x0000000000000000000000000000000AA",
+  CONTENT_SIGNING_SECRET: "local-only-mcp-content-secret-0123456789abcdef",
   TURNSTILE_HOSTNAMES: "example.com",
 }).flatMap(([name, value]) => ["--var", `${name}:${value}`]);
 

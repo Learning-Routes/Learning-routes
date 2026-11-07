@@ -42,8 +42,16 @@ export default [
     // Static CSS, one file for every surface (Platform STEP 3 §2.2). No storefront
     // script may block the first paint: e2e/storefront.spec.ts checks that.
     name: "storefront CSS",
-    path: [`${CLIENT}/assets/*.css`],
+    path: [`${CLIENT}/assets/*.css`, `!${CLIENT}/assets/lesson-*.css`],
     limit: "20 KB",
+    gzip: true,
+  },
+  {
+    // A lesson's own stylesheet, loaded only by a topic and a draft's preview. Measured 2.2 kB
+    // gzip on 6 November 2026, with the creation block; the budget is about 10% above that.
+    name: "lesson CSS",
+    path: [`${CLIENT}/assets/lesson-*.css`],
+    limit: "2.5 KB",
     gzip: true,
   },
   // Enhancement JavaScript, loaded after the first paint (ADR 0008). three.js only here.

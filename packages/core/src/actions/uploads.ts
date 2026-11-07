@@ -1,4 +1,5 @@
 import * as z from "zod";
+import { CREATION_SHAPES } from "../blocks/schema";
 import {
   ASSET_MOST_BYTES,
   assetKey,
@@ -52,6 +53,7 @@ export const creationUpload = defineAction({
       title: LocalizedText,
       description: LocalizedText.nullish(),
       altText: LocalizedText.nullish(),
+      shape: z.enum(CREATION_SHAPES).nullish(),
       source: z.string().min(1).max(CREATION_MOST_BYTES),
     })
     .refine(
@@ -96,6 +98,7 @@ export const creationUpload = defineAction({
           data: {
             title: input.title,
             creation: hash,
+            shape: input.shape ?? null,
             description: input.description ?? null,
             alt_text: input.altText ?? null,
           },

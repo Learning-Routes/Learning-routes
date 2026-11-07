@@ -69,6 +69,7 @@ const render = (kind: string, data: Record<string, unknown>) =>
       blocks={[lessonBlock(kind, data)]}
       locale="es"
       source="es"
+      creator="Ana"
       onAllRight={() => undefined}
     />,
   );
@@ -87,6 +88,20 @@ describe("the lesson page", () => {
     if (words) {
       expect(html).toContain(words);
     }
+  });
+
+  it("waits for the page to run before framing a creation, and says who made it", () => {
+    const html = render("interactive", {
+      ...(SAMPLES.interactive as object),
+      alt_text: es("Un teclado de una octava"),
+      shape: "wide",
+    });
+    expect(html).not.toContain("<iframe");
+    expect(html).toContain('data-shape="wide"');
+    expect(html).toContain("necesita un navegador moderno con JavaScript");
+    expect(html).toContain("Hecho por Ana. Funciona dentro de esta página.");
+    expect(html).toContain("Un teclado de una octava");
+    expect(html).toContain('role="status"');
   });
 
   it("draws Markdown, never its marks", () => {

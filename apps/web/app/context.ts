@@ -13,6 +13,8 @@ export const pageContext = createContext<{
   platformOrigin: string;
   /** The domain creators' hosts sit under, with its port in a local run. */
   creatorDomain: string;
+  /** Where creators' creations run (Platform STEP 9 §1); a lesson may frame it. */
+  contentOrigin: string;
   /** Public: Turnstile's widget shows it to everyone. */
   turnstileSiteKey: string;
   /** For loaders: what the storefront's reads need from this request. */
