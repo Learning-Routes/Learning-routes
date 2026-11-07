@@ -21,8 +21,8 @@ test.use({ locale: "es-ES" });
 const HOSTILE_TITLE = "<script>window.__pwned = 1</script>Pan de masa madre";
 const PROTOCOL = "2026-07-28";
 // The content host (wrangler.jsonc's CONTENT_ORIGIN), answered here so no test reaches it.
-const CONTENT = "https://contenido.learningroutes.com";
-const SIGNED_DRAFT = /^https:\/\/contenido\.learningroutes\.com\/d\/.+\?e=\d+&s=/;
+const CONTENT = "https://lrusercontent.com";
+const SIGNED_DRAFT = /^https:\/\/lrusercontent\.com\/d\/.+\?e=\d+&s=/;
 const CREATION =
   "<!doctype html><button onclick=\"parent.postMessage({type:'lr:done'},'*')\">Listo</button>";
 

@@ -26,7 +26,7 @@
     // Each creator's page is [slug].CREATOR_DOMAIN (Platform STEP 4 §0).
     "CREATOR_DOMAIN": "learningroutes.com",
     // Where creators' creations run; a lesson page may frame it (Platform STEP 9 §3).
-    "CONTENT_ORIGIN": "https://contenido.learningroutes.com",
+    "CONTENT_ORIGIN": "https://lrusercontent.com",
     // Public. Local runs use Cloudflare's test key (.dev.vars, playwright.config.ts).
     "TURNSTILE_SITE_KEY": "0x4AAAAAAF07D4JJqafpfnPC"
   },
