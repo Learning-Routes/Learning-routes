@@ -6,6 +6,8 @@ import { DEV } from "./screens";
 const CATALOG = `${DEV}/es/explorar`;
 const CARDS = ".route-card";
 const PORTUGUESE_CARD = /Portugués para viajar/;
+const PORTUGUESE_PAGE = /portugues-para-viajar/;
+const TOUCHED = /touched/;
 
 test.describe("with no JavaScript", () => {
   test.use({ javaScriptEnabled: false });
@@ -64,4 +66,18 @@ test("/explorar goes to the source locale's catalog", async ({ request }) => {
 
 test("a locale that does not exist has no catalog", async ({ request }) => {
   expect((await request.get(`${DEV}/xx/explorar`)).status()).toBe(404);
+});
+
+test.describe("on a touch screen", () => {
+  test.use({ hasTouch: true, isMobile: true, viewport: { width: 390, height: 844 } });
+
+  test("a card's first tap runs its gold dot, and the second opens the route", async ({ page }) => {
+    await page.goto(CATALOG);
+    const card = page.locator(CARDS, { hasText: PORTUGUESE_CARD });
+    await card.tap();
+    await expect(card).toHaveClass(TOUCHED);
+    expect(page.url()).toBe(CATALOG);
+    await card.tap();
+    await page.waitForURL(PORTUGUESE_PAGE);
+  });
 });

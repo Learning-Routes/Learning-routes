@@ -11,6 +11,7 @@ import { pageContext } from "../context";
 import { filled } from "../storefront/words";
 import { Button } from "../ui/button";
 import { Notice } from "../ui/parts";
+import { Rising } from "../ui/rising";
 import type { Route } from "./+types/conectar";
 
 // The consent screen (Platform STEP 5 §2): an assistant asks, on the app's host, and its
@@ -109,7 +110,7 @@ export default function Conectar({ loaderData, actionData }: Route.ComponentProp
         <AppHeader locale={locale} />
         <main className="app-page app-page-narrow">
           <h1 className="app-title depth-1">
-            {filled(words.consentTitle, { client: clientName })}
+            <Rising text={filled(words.consentTitle, { client: clientName })} />
           </h1>
           <NoSpaceYet words={words} back={APP_PAGES_TEXT[locale].backToMyRoutes} />
         </main>
@@ -120,7 +121,9 @@ export default function Conectar({ loaderData, actionData }: Route.ComponentProp
     <div className="desk opening">
       <AppHeader locale={locale} />
       <main className="app-page app-page-narrow">
-        <h1 className="app-title depth-1">{filled(words.consentTitle, { client: clientName })}</h1>
+        <h1 className="app-title depth-1">
+          <Rising text={filled(words.consentTitle, { client: clientName })} />
+        </h1>
         {goTo ? (
           <Notice tone="success" title={words.answered} />
         ) : (

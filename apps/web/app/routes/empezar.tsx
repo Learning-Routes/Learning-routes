@@ -17,6 +17,7 @@ import "../sign-in/sign-in.css";
 import { filled, inLocale } from "../storefront/words";
 import { ButtonLink } from "../ui/button";
 import { Notice } from "../ui/parts";
+import { Rising } from "../ui/rising";
 import type { Route } from "./+types/empezar";
 
 // "Empezar gratis" (Platform STEP 4 §6.1). The link carries a route's id and nothing else;
@@ -133,7 +134,9 @@ export default function Empezar({ loaderData }: Route.ComponentProps) {
     <div className="desk opening">
       <AppHeader locale={locale} />
       <main className="app-page app-page-narrow">
-        <h1 className="app-title depth-1">{joining}</h1>
+        <h1 className="app-title depth-1">
+          <Rising text={joining} />
+        </h1>
         <form method="post">
           <button className="button button-primary button-regular" type="submit">
             <span className="button-label">{words.confirmStart}</span>

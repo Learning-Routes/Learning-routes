@@ -109,10 +109,18 @@
   color: var(--color-link);
   font-weight: var(--weight-label);
   text-decoration: underline;
+  text-decoration-color: color-mix(in oklab, currentColor 45%, transparent);
+  text-decoration-thickness: 1px;
   text-underline-offset: 0.2em;
+  transition:
+    color var(--motion-150) var(--ease-out),
+    text-decoration-color var(--motion-150) var(--ease-out);
 }
-.text-link:hover {
+/* The underline comes in: it darkens and thickens. */
+.text-link:is(:hover, :focus-visible) {
   color: var(--color-txt);
+  text-decoration-color: currentColor;
+  text-decoration-thickness: 2px;
 }
 
 /* TextField */
@@ -203,6 +211,37 @@
 }
 .notice:focus {
   outline: none;
+}
+/* A toast: the same notice, floating at the foot of the screen, and gone after a few seconds. With
+   reduced motion it stays where it is, in the page, as a plain notice. */
+@media (prefers-reduced-motion: no-preference) {
+  .notice-toast {
+    position: fixed;
+    inset-inline: var(--space-4);
+    bottom: var(--space-5);
+    z-index: 20;
+    width: fit-content;
+    max-width: 32rem;
+    margin-inline: auto;
+    background: var(--color-card);
+    box-shadow: var(--shadow-card);
+    animation:
+      toast-in 360ms cubic-bezier(0.2, 0.9, 0.2, 1) both,
+      toast-out 300ms ease-in 4.5s forwards;
+  }
+}
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.98);
+  }
+}
+@keyframes toast-out {
+  to {
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(8px);
+  }
 }
 .notice-title {
   margin: 0;

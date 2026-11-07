@@ -9,6 +9,7 @@ import { ConnectTabs } from "../app-pages/connect-tabs";
 import { NoSpaceYet } from "../app-pages/no-space-yet";
 import { pageContext } from "../context";
 import { TextLink } from "../ui/parts";
+import { Rising } from "../ui/rising";
 import type { Route } from "./+types/conecta";
 
 // "Conecta tu asistente", under Enseñar (Platform STEP 5 §5): the server's address, and a
@@ -40,7 +41,9 @@ export default function Conecta({ loaderData }: Route.ComponentProps) {
     <div className="desk opening">
       <AppHeader locale={locale} place="teach" />
       <main className="app-page app-page-narrow">
-        <h1 className="app-title depth-1">{words.connectAssistant}</h1>
+        <h1 className="app-title depth-1">
+          <Rising text={words.connectAssistant} />
+        </h1>
         {teaches ? (
           <>
             <p className="app-copy">{words.connectIntro}</p>

@@ -21,6 +21,8 @@ import { themeFromCookie } from "./theme";
 import { ButtonLink } from "./ui/button";
 import { SiteHeader } from "./ui/site-header";
 import "./app-pages/app-pages.css";
+import { useProgressHints } from "./ui/progress-hints";
+import { Rising } from "./ui/rising";
 
 export const links: Route.LinksFunction = () => [
   { rel: "preload", href: archivo, as: "font", type: "font/woff2", crossOrigin: "anonymous" },
@@ -91,6 +93,7 @@ function useHydratedMark() {
 
 export default function App() {
   useHydratedMark();
+  useProgressHints();
   return <Outlet />;
 }
 
@@ -107,7 +110,9 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
         {null}
       </SiteHeader>
       <main className="app-page app-page-narrow">
-        <h1 className="app-title depth-1">{words.title}</h1>
+        <h1 className="app-title depth-1">
+          <Rising text={words.title} />
+        </h1>
         <p className="app-copy">{words.body}</p>
         <ButtonLink href={root?.platformOrigin ?? "/"}>{ERROR_WORDS.home}</ButtonLink>
         {stack ? (

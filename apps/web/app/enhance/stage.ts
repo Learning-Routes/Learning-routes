@@ -47,6 +47,24 @@ function followThePointer() {
 if (!reduceMotion) {
   followThePointer();
 }
+/** Touch has no hover: a card's first tap runs its gold dot, and the second opens it. */
+function runOnFirstTap() {
+  let armed: Element | null = null;
+  document.addEventListener("pointerdown", (event) => {
+    const card = (event.target as Element | null)?.closest(".moment .route-card");
+    if (event.pointerType !== "touch" || !card || card === armed) {
+      return;
+    }
+    armed?.classList.remove("touched");
+    armed = card;
+    card.classList.add("touched");
+    card.addEventListener("click", (click) => click.preventDefault(), { once: true });
+  });
+}
+if (!reduceMotion) {
+  runOnFirstTap();
+}
+
 const journey = document.querySelector<HTMLElement>(".moment .journey-stops");
 if (journey) {
   drawJourney(journey, reduceMotion);

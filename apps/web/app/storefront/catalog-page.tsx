@@ -133,15 +133,33 @@ export function CatalogPage({ view }: { view: CatalogView }) {
             <label className="catalog-search-label" htmlFor="catalog-q">
               {words.searchLabel}
             </label>
-            <input
-              id="catalog-q"
-              className="field-input catalog-search-input"
-              type="search"
-              name="q"
-              maxLength={80}
-              defaultValue={search ?? ""}
-              placeholder={words.searchExample}
-            />
+            <span className="catalog-search-field">
+              <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
+                <circle
+                  cx="10.5"
+                  cy="10.5"
+                  r="6.5"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                />
+                <path
+                  d="M15.5 15.5 21 21"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                />
+              </svg>
+              <input
+                id="catalog-q"
+                className="field-input catalog-search-input"
+                type="search"
+                name="q"
+                maxLength={80}
+                defaultValue={search ?? ""}
+                placeholder={words.searchExample}
+              />
+            </span>
             {topic ? <input type="hidden" name="tema" value={topic} /> : null}
             <button className="button button-primary button-regular" type="submit">
               <span className="button-label">{words.search}</span>

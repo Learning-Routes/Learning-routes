@@ -8,6 +8,7 @@ import "../app-pages/app-pages.css";
 import { filled, inLocale } from "../storefront/words";
 import { Button, ButtonLink } from "../ui/button";
 import { EmptyState } from "../ui/parts";
+import { Rising } from "../ui/rising";
 import { TextField } from "../ui/text-field";
 import type { Route } from "./+types/admin";
 
@@ -100,7 +101,7 @@ function Invited({ items, words }: { items: ApplicationRecord[]; words: AdminTex
   }
   return (
     <>
-      <h2 className="app-section-title">{words.invitedTitle}</h2>
+      <h2 className="app-section-title depth-2">{words.invitedTitle}</h2>
       <ul className="admin-list">
         {items.map((item) => (
           <li key={item.id} className="admin-item">
@@ -258,16 +259,18 @@ export default function Admin({ loaderData }: Route.ComponentProps) {
       <AppHeader locale={locale} place="admin" />
       <main className="app-page admin">
         <div className="admin-head">
-          <h1 className="app-title">{words.adminTitle}</h1>
+          <h1 className="app-title depth-1">
+            <Rising text={words.adminTitle} />
+          </h1>
           <ButtonLink size="small" href="/admin/crear-espacio">
             {words.createSpace}
           </ButtonLink>
         </div>
         <Applications items={applications.filter((item) => item.status === "new")} words={words} />
         <Invited items={applications.filter((item) => item.status === "invited")} words={words} />
-        <h2 className="app-section-title">{words.catalogRequests}</h2>
+        <h2 className="app-section-title depth-2">{words.catalogRequests}</h2>
         <Requests items={requested} words={words} locale={locale} />
-        <h2 className="app-section-title">{words.listedTitle}</h2>
+        <h2 className="app-section-title depth-2">{words.listedTitle}</h2>
         <Listed items={approved} words={words} locale={locale} />
       </main>
     </div>
