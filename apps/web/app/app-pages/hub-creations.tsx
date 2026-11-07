@@ -18,11 +18,12 @@ export interface HubCreation {
 
 function Thumbnail({ src, missing }: { src: string | null; missing: string }) {
   const [broken, setBroken] = useState(src === null);
+  const [loaded, setLoaded] = useState(false);
   const image = useRef<HTMLImageElement>(null);
   // An image that failed before the page ran sent its error to no one.
   useEffect(() => {
-    if (image.current?.complete && image.current.naturalWidth === 0) {
-      setBroken(true);
+    if (image.current?.complete) {
+      image.current.naturalWidth === 0 ? setBroken(true) : setLoaded(true);
     }
   }, []);
   return broken ? (
@@ -30,11 +31,12 @@ function Thumbnail({ src, missing }: { src: string | null; missing: string }) {
   ) : (
     <img
       ref={image}
-      className="hub-creation-thumb"
+      className={`hub-creation-thumb${loaded ? "" : " is-loading"}`}
       src={src ?? undefined}
       alt=""
       loading="lazy"
       decoding="async"
+      onLoad={() => setLoaded(true)}
       onError={() => setBroken(true)}
     />
   );

@@ -103,6 +103,8 @@ export async function loader({ request, context }: Route.LoaderArgs) {
 
 const MINOR_UNITS = 100;
 const FORM_ROOM = 64 * 1024;
+/** The hub's answers that confirm, as a toast; a refusal stays on the page. */
+const SUCCEEDED: readonly string[] = ["published_ok", "catalogAsked", "priceSaved"];
 // Core's CREATION_MOST_BYTES, which browser code may not import; the API checks it again.
 const CREATION_MOST_BYTES = 2 * 1_048_576;
 const AMOUNT = /^\d{1,9}(?:[.,]\d{1,2})?$/;
@@ -241,10 +243,17 @@ export default function Creador({ loaderData, actionData }: Route.ComponentProps
         <h1 className="app-title depth-1">
           <Rising text={words.title} />
         </h1>
-        {actionData?.notice ? <Notice tone="info" title={words[actionData.notice]} /> : null}
+        {actionData?.notice ? (
+          <Notice
+            tone="info"
+            title={words[actionData.notice]}
+            toast={SUCCEEDED.includes(actionData.notice)}
+          />
+        ) : null}
         {actionData?.creation ? (
           <Notice
             tone={actionData.creation === "failed" ? "error" : "info"}
+            toast={actionData.creation !== "failed"}
             title={CREATOR_CREATIONS_TEXT[locale][actionData.creation]}
           />
         ) : null}

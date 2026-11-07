@@ -8,6 +8,7 @@ import "../app-pages/app-pages.css";
 import { filled } from "../storefront/words";
 import { Button } from "../ui/button";
 import { Notice, TextLink } from "../ui/parts";
+import { Rising } from "../ui/rising";
 import type { Route } from "./+types/conexiones";
 
 // "Conexiones", under Enseñar (Platform STEP 5 §2): each assistant connected to this
@@ -60,8 +61,12 @@ export default function Conexiones({ loaderData, actionData }: Route.ComponentPr
     <div className="desk opening">
       <AppHeader locale={locale} place="teach" />
       <main className="app-page app-page-narrow">
-        <h1 className="app-title depth-1">{words.connections}</h1>
-        {actionData?.disconnected ? <Notice tone="success" title={words.disconnected} /> : null}
+        <h1 className="app-title depth-1">
+          <Rising text={words.connections} />
+        </h1>
+        {actionData?.disconnected ? (
+          <Notice tone="success" title={words.disconnected} toast />
+        ) : null}
         {connections.length === 0 ? (
           <p className="app-copy">{words.noConnections}</p>
         ) : (

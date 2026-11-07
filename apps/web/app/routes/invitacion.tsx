@@ -7,6 +7,7 @@ import { pageContext } from "../context";
 import { filled } from "../storefront/words";
 import { Button, ButtonLink } from "../ui/button";
 import { EmptyState, Notice } from "../ui/parts";
+import { Rising } from "../ui/rising";
 import { SiteHeader } from "../ui/site-header";
 import { TextField } from "../ui/text-field";
 import type { Route } from "./+types/invitacion";
@@ -175,7 +176,11 @@ export default function Invitacion({ loaderData }: Route.ComponentProps) {
         {null}
       </SiteHeader>
       <main className="app-page app-page-narrow moment" data-invitation={peeked.state}>
-        {peeked.state === "ok" ? <h1 className="app-title depth-1">{words.title}</h1> : null}
+        {peeked.state === "ok" ? (
+          <h1 className="app-title depth-1">
+            <Rising text={words.title} />
+          </h1>
+        ) : null}
         {peeked.state === "checking" ? <p className="app-copy">{words.checking}</p> : null}
         {peeked.state === "ok" ? (
           <Confirm

@@ -10,6 +10,7 @@ import { LessonBlocks } from "../app-pages/lesson-parts";
 import "../app-pages/lesson.css";
 import { inLocale } from "../storefront/words";
 import { lessonPage } from "../surface";
+import { Rising } from "../ui/rising";
 import type { Route } from "./+types/vista-previa";
 
 // A draft, as a student would read it, for those who make it (Platform STEP 8 §3). Nothing a student
@@ -63,7 +64,9 @@ export default function VistaPrevia({ loaderData }: Route.ComponentProps) {
       </p>
       <div className="preview-page">
         <nav className="preview-outline" aria-label={words.previewOutline}>
-          <h1 className="app-title">{inLocale(route.title, locale, source)}</h1>
+          <h1 className="app-title depth-1">
+            <Rising text={inLocale(route.title, locale, source)} />
+          </h1>
           {outline.map((module, index) => (
             <section key={index}>
               <h2 className="my-route-title">{inLocale(module.title, locale, source)}</h2>
@@ -88,7 +91,7 @@ export default function VistaPrevia({ loaderData }: Route.ComponentProps) {
         </nav>
         {view ? (
           <article className="lesson">
-            <h2 className="lesson-title">{inLocale(view.title, locale, source)}</h2>
+            <h2 className="lesson-title depth-1">{inLocale(view.title, locale, source)}</h2>
             <LessonBlocks
               blocks={view.blocks}
               locale={locale}

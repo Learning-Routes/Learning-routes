@@ -10,6 +10,7 @@ import { filled } from "../storefront/words";
 import { challengePage } from "../surface";
 import { Button } from "../ui/button";
 import { Notice } from "../ui/parts";
+import { Rising } from "../ui/rising";
 import { SiteHeader } from "../ui/site-header";
 import { TextField } from "../ui/text-field";
 import type { Route } from "./+types/ser-creador";
@@ -234,8 +235,10 @@ export default function QuieroEnsenar({ loaderData }: Route.ComponentProps) {
       >
         {null}
       </SiteHeader>
-      <main className="app-page app-page-narrow moment">
-        <h1 className="app-title">{words.teachTitle}</h1>
+      <main className="app-page app-page-narrow moment opening">
+        <h1 className="app-title depth-1">
+          <Rising text={words.teachTitle} />
+        </h1>
         {sent ? (
           <>
             {/* What they asked to teach, as the first station of a new line. */}

@@ -26,8 +26,11 @@ export function Notice({
   title,
   children,
   ref,
+  toast = false,
 }: {
   tone: "success" | "info" | "error";
+  /** A small confirmation that floats above the page and goes after a moment (Platform STEP 9 §6). */
+  toast?: boolean;
   title: string;
   children?: ReactNode;
   /** To move focus here when it arrives with the page, which a live role doesn't announce. */
@@ -36,7 +39,7 @@ export function Notice({
   return (
     <div
       ref={ref}
-      className={`notice notice-${tone}`}
+      className={`notice notice-${tone}${toast ? " notice-toast" : ""}`}
       role={tone === "error" ? "alert" : "status"}
       tabIndex={-1}
     >

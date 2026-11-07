@@ -7,7 +7,6 @@ import { pageContext } from "../../context";
 import { storefrontHeaders } from "../../storefront/cache";
 import { CatalogPage, catalogHref } from "../../storefront/catalog-page";
 import "../../storefront/catalog.css";
-import "../../storefront/page-transitions.css";
 import { publicReads } from "../../storefront/public-reads.server";
 import { filled } from "../../storefront/words";
 import { storefront } from "../../surface";

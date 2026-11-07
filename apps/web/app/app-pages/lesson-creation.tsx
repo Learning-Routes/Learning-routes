@@ -63,7 +63,7 @@ export function Creation({ context }: { context: ViewContext }) {
       {description ? <p>{description}</p> : null}
       <div
         ref={box}
-        className="lesson-video-frame lesson-creation-box"
+        className={`lesson-video-frame lesson-creation-box${near && !loaded && !failed ? " is-loading" : ""}`}
         data-shape={block.data.shape ?? "standard"}
       >
         {near && block.frame ? (

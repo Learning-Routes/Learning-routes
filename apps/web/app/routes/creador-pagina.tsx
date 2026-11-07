@@ -9,6 +9,7 @@ import "../app-pages/app-pages.css";
 import { inLocale } from "../storefront/words";
 import { Button } from "../ui/button";
 import { Notice, TextLink } from "../ui/parts";
+import { Rising } from "../ui/rising";
 import { TextField } from "../ui/text-field";
 import type { Route } from "./+types/creador-pagina";
 
@@ -75,8 +76,10 @@ export default function CreadorPagina({ loaderData, actionData }: Route.Componen
     <div className="desk opening">
       <AppHeader locale={locale} place="teach" />
       <main className="app-page app-page-narrow">
-        <h1 className="app-title depth-1">{words.editTitle}</h1>
-        {actionData?.saved ? <Notice tone="success" title={words.saved} /> : null}
+        <h1 className="app-title depth-1">
+          <Rising text={words.editTitle} />
+        </h1>
+        {actionData?.saved ? <Notice tone="success" title={words.saved} toast /> : null}
         {actionData && !actionData.saved ? (
           <Notice tone="error" title={actionData.message ?? words.colorHint} />
         ) : null}

@@ -9,6 +9,7 @@ import { pageContext } from "../context";
 import { filled } from "../storefront/words";
 import { Button, ButtonLink } from "../ui/button";
 import { Notice, TextLink } from "../ui/parts";
+import { Rising } from "../ui/rising";
 import { TextField } from "../ui/text-field";
 import type { Route } from "./+types/admin-create-space";
 
@@ -170,7 +171,9 @@ export default function AdminCreateSpace({ loaderData, actionData }: Route.Compo
     <div className="desk opening">
       <AppHeader locale={locale} place="admin" />
       <main className="app-page app-page-narrow">
-        <h1 className="app-title">{words.createSpace}</h1>
+        <h1 className="app-title depth-1">
+          <Rising text={words.createSpace} />
+        </h1>
         {actionData?.created && actionData.page ? (
           <>
             <Notice tone="success" title={filled(words.created, { slug: actionData.created })} />
