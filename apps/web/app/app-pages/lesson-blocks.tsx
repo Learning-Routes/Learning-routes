@@ -4,6 +4,7 @@ import type { LocalizedText } from "@learning-routes/core/localized-text";
 import type { ReactNode } from "react";
 import { inLocale } from "../storefront/words";
 import type { ViewContext } from "./lesson-context";
+import { Creation } from "./lesson-creation";
 import { Cards, Figure, safeAddress, Video } from "./lesson-media";
 import { Markdown } from "./markdown-view";
 
@@ -159,13 +160,7 @@ export const BLOCK_VIEWS = {
   audio: (context) => <Listening context={context} url={context.block.data.audio_url} />,
   audio_explainer: (context) => <Listening context={context} url={context.block.data.audio_url} />,
   video: (context) => <Video context={context} />,
-  // The creation's frame comes with STEP 9 §3; until then, what the creator wrote about it.
-  interactive: ({ block, text }) => (
-    <section className="lesson-aside settle-2">
-      {block.data.description ? <p>{text(block.data.description)}</p> : null}
-      {block.data.alt_text ? <p>{text(block.data.alt_text)}</p> : null}
-    </section>
-  ),
+  interactive: (context) => <Creation context={context} />,
 } satisfies Record<BlockTypeName, (context: ViewContext) => ReactNode>;
 
 /** One block, with whatever the author wrote after it. */
@@ -174,7 +169,8 @@ export function BlockView({
   locale,
   source,
   question,
-}: Pick<ViewContext, "block" | "locale" | "source" | "question">) {
+  creator,
+}: Pick<ViewContext, "block" | "locale" | "source" | "question" | "creator">) {
   const View = BLOCK_VIEWS[block.kind as BlockTypeName] as (context: ViewContext) => ReactNode;
   const text = (value: unknown) =>
     inLocale(value as LocalizedText | null | undefined, locale, source);
@@ -182,7 +178,16 @@ export function BlockView({
     const trees = block.md[field];
     return trees?.[locale] ?? trees?.[source] ?? Object.values(trees ?? {})[0];
   };
-  const context = { block, locale, source, question, text, md, words: LESSON_TEXT[locale] };
+  const context = {
+    block,
+    locale,
+    source,
+    question,
+    text,
+    md,
+    creator,
+    words: LESSON_TEXT[locale],
+  };
   const title = text(block.data.title);
   return (
     <>

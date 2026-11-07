@@ -12,6 +12,15 @@ export interface LessonBlock {
   data: Record<string, unknown>;
   /** The Markdown fields, as trees by locale (Platform STEP 8 §1): the parser stays on the server. */
   md: Partial<Record<MarkdownField, Record<string, MdNode[]>>>;
+  /** An interactive block's creation on the content host (Platform STEP 9 §3), as a path. */
+  frame?: string;
+}
+
+/** Where a lesson is read: a published version (p) or its draft (d), in which space. */
+export interface LessonPlace {
+  spaceId: string;
+  kind: "p" | "d";
+  creator: LocalizedText;
 }
 
 const MARKDOWN_FIELDS = ["body", "intro", "situation", "trailing_content"] as const;
@@ -35,6 +44,8 @@ function treesOf(data: Record<string, unknown>): LessonBlock["md"] {
 
 export interface LessonView {
   locked: boolean;
+  /** Whose space it is: an interactive block says who made it. */
+  creator: LocalizedText;
   routeTitle: LocalizedText;
   sourceLocale: string;
   title: LocalizedText;
@@ -61,7 +72,11 @@ function topicsInOrder(snapshot: Outline) {
 }
 
 /** The topic with this number, from 1, or null when the route has no such topic. */
-export function lessonView(snapshot: Snapshot, number: number): LessonView | null {
+export function lessonView(
+  snapshot: Snapshot,
+  number: number,
+  place: LessonPlace,
+): LessonView | null {
   const topics = topicsInOrder(snapshot);
   const topic = topics[number - 1];
   if (topic === undefined) {
@@ -73,6 +88,7 @@ export function lessonView(snapshot: Snapshot, number: number): LessonView | nul
   const following = topics[number];
   return {
     locked,
+    creator: place.creator,
     routeTitle: snapshot.route.title,
     sourceLocale: snapshot.route.sourceLocale,
     title: lesson.title,
@@ -89,7 +105,17 @@ export function lessonView(snapshot: Snapshot, number: number): LessonView | nul
       ? []
       : snapshot.blocks
           .filter((block) => block.lessonId === lesson.id)
-          .map(({ id, kind, data }) => ({ id, kind, data, md: treesOf(data) })),
+          .map(({ id, kind, data }) => ({
+            id,
+            kind,
+            data,
+            md: treesOf(data),
+            ...(kind === "interactive"
+              ? {
+                  frame: `/${place.kind}/${place.spaceId}/${snapshot.route.id}/${data.creation}.html`,
+                }
+              : {}),
+          })),
     next: following ? { number: number + 1, title: following.lesson.title } : null,
   };
 }

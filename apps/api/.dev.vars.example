@@ -9,5 +9,8 @@ BETTER_AUTH_SECRET=
 CLOUDFLARE_PURGE_TOKEN=
 # Cloudflare's published test key, which always passes and counts only in a local run.
 TURNSTILE_SECRET=1x0000000000000000000000000000000AA
+# Signs a draft creation's address on the content host; the content Worker needs the same value.
+# Make one with: openssl rand -base64 32
+CONTENT_SIGNING_SECRET=
 # Test keys answer with this host.
 TURNSTILE_HOSTNAMES=example.com

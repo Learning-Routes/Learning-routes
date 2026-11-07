@@ -10,6 +10,8 @@ export interface ViewContext {
   locale: LocaleCode;
   source: string;
   words: LessonText;
+  /** Whose space the lesson is in, in the reader's language. */
+  creator: string;
   text: (value: unknown) => string;
   /** A Markdown field, in the reader's language. */
   md: (field: keyof LessonBlock["md"]) => MdNode[] | undefined;

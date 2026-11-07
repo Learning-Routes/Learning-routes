@@ -93,6 +93,7 @@ export default function VistaPrevia({ loaderData }: Route.ComponentProps) {
               blocks={view.blocks}
               locale={locale}
               source={source}
+              creator={inLocale(view.creator, locale, source)}
               onAllRight={() => undefined}
             />
           </article>

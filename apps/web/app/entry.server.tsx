@@ -8,10 +8,15 @@ type Surface = { storefront?: boolean; challenge?: boolean; lessonMedia?: boolea
 
 export const streamTimeout = 5_000;
 
-// Only our own files and this response's nonce may run scripts. No page frames
-// anything yet; creators' blocks will get their own origin here. A storefront page is
-// cached for every visitor, so it carries no nonce: only files from our own origin may run.
-function policy(nonce: string | null, hasChallenge: boolean, hasMedia: boolean): string {
+// Only our own files and this response's nonce may run scripts. A lesson frames video players
+// and creators' creations, which live on the content host. A storefront page is cached for every
+// visitor, so it carries no nonce: only files from our own origin may run.
+function policy(
+  nonce: string | null,
+  hasChallenge: boolean,
+  hasMedia: boolean,
+  contentOrigin: string,
+): string {
   const challenge = hasChallenge ? " https://challenges.cloudflare.com" : "";
   return [
     "default-src 'self'",
@@ -23,7 +28,7 @@ function policy(nonce: string | null, hasChallenge: boolean, hasMedia: boolean):
     hasChallenge
       ? "frame-src https://challenges.cloudflare.com"
       : hasMedia
-        ? "frame-src https://www.youtube-nocookie.com https://player.vimeo.com"
+        ? `frame-src https://www.youtube-nocookie.com https://player.vimeo.com ${contentOrigin}`
         : "frame-src 'none'",
     "object-src 'none'",
     "base-uri 'none'",
@@ -48,7 +53,7 @@ export default async function handleRequest(
   routerContext: EntryContext,
   loadContext: RouterContextProvider,
 ) {
-  const { nonce } = loadContext.get(pageContext);
+  const { nonce, contentOrigin } = loadContext.get(pageContext);
   let shellRendered = false;
   const body = await renderToReadableStream(
     <ServerRouter context={routerContext} url={request.url} nonce={nonce} />,
@@ -75,6 +80,7 @@ export default async function handleRequest(
       surfaceIs(routerContext, "storefront") ? null : nonce,
       surfaceIs(routerContext, "challenge"),
       surfaceIs(routerContext, "lessonMedia"),
+      contentOrigin,
     ),
   );
   return new Response(body, { headers: responseHeaders, status: responseStatusCode });

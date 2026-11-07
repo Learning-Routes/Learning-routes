@@ -34,6 +34,15 @@ export interface LessonText {
   seeAnswer: string;
   expectedOutput: string;
   transcript: string;
+  /** An interactive block with no title of its own. */
+  activity: string;
+  /** {creator} is whose space it is. */
+  madeBy: string;
+  fullScreen: string;
+  /** When a creation says it was finished, through lr:done. */
+  creationDone: string;
+  /** Without JavaScript, or when the frame does not load. */
+  creationNeeds: string;
 }
 
 export const LESSON_TEXT: Record<LocaleCode, LessonText> = {
@@ -64,6 +73,12 @@ export const LESSON_TEXT: Record<LocaleCode, LessonText> = {
     seeAnswer: "Ver la respuesta",
     expectedOutput: "Lo que debe salir",
     transcript: "Transcripción",
+    activity: "Actividad",
+    madeBy: "Hecho por {creator}. Funciona dentro de esta página.",
+    fullScreen: "Pantalla completa",
+    creationDone: "Lo terminaste.",
+    creationNeeds:
+      "Esta actividad necesita un navegador moderno con JavaScript activado. El resto del tema funciona igual.",
   },
   en: {
     whereAmI: "Module {module}, topic {topic} of {total}",
@@ -92,6 +107,12 @@ export const LESSON_TEXT: Record<LocaleCode, LessonText> = {
     seeAnswer: "See the answer",
     expectedOutput: "What it should print",
     transcript: "Transcript",
+    activity: "Activity",
+    madeBy: "Made by {creator}. It runs inside this page.",
+    fullScreen: "Full screen",
+    creationDone: "You finished it.",
+    creationNeeds:
+      "This activity needs a modern browser with JavaScript turned on. The rest of the topic works as usual.",
   },
   pt: {
     // Pending native review.
@@ -121,6 +142,12 @@ export const LESSON_TEXT: Record<LocaleCode, LessonText> = {
     seeAnswer: "Ver a resposta",
     expectedOutput: "O que deve aparecer",
     transcript: "Transcrição",
+    activity: "Atividade",
+    madeBy: "Feito por {creator}. Funciona dentro desta página.",
+    fullScreen: "Tela cheia",
+    creationDone: "Você terminou.",
+    creationNeeds:
+      "Esta atividade precisa de um navegador moderno com JavaScript ativado. O resto do tema funciona normalmente.",
   },
   fr: {
     // Pending native review.
@@ -151,6 +178,12 @@ export const LESSON_TEXT: Record<LocaleCode, LessonText> = {
     seeAnswer: "Voir la réponse",
     expectedOutput: "Ce qui doit s'afficher",
     transcript: "Transcription",
+    activity: "Activité",
+    madeBy: "Créé par {creator}. Fonctionne dans cette page.",
+    fullScreen: "Plein écran",
+    creationDone: "Vous l'avez terminé.",
+    creationNeeds:
+      "Cette activité a besoin d'un navigateur récent avec JavaScript activé. Le reste du sujet fonctionne normalement.",
   },
   it: {
     // Pending native review.
@@ -180,5 +213,11 @@ export const LESSON_TEXT: Record<LocaleCode, LessonText> = {
     seeAnswer: "Vedi la risposta",
     expectedOutput: "Cosa deve uscire",
     transcript: "Trascrizione",
+    activity: "Attività",
+    madeBy: "Creato da {creator}. Funziona dentro questa pagina.",
+    fullScreen: "Schermo intero",
+    creationDone: "L'hai finito.",
+    creationNeeds:
+      "Questa attività ha bisogno di un browser recente con JavaScript attivo. Il resto dell'argomento funziona come sempre.",
   },
 };

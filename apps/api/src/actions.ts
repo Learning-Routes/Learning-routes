@@ -9,6 +9,7 @@ import { pgRepos } from "./db/repos/index";
 import { pgTenancy } from "./db/tenancy";
 import { type Transaction, transactionAs, withClient } from "./db/with-db";
 import { storeQuietly } from "./files";
+import { withFrames } from "./frames";
 import { newId } from "./ids";
 
 // The app's way into the action registry (Platform STEP 2 §5.7): POST
@@ -70,6 +71,9 @@ export function actionRoutes(app: Hono<{ Bindings: Env }>, emailSender: (env: En
         runAction(ACTIONS, name, input, ctxFor(tx, userId)),
       );
       await afterCommit(c.env, name, input, result);
+      if (result.ok) {
+        await withFrames(c.env, name, result.output);
+      }
       renewed.getSetCookie().forEach((cookie) => {
         c.header("set-cookie", cookie, { append: true });
       });

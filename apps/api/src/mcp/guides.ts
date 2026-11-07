@@ -52,6 +52,8 @@ Para reemplazar un borrador, pasa route_id y el draft_revision que leíste con g
 - Un curso escrito: upload_document, con sus palabras tal cual.
 - Una creación interactiva, como un piano, un juego o un simulador en un solo archivo HTML: upload_creation, tal cual, hasta 2 MB. Nunca la reconstruyas, la acortes ni la reescribas, ni ofrezcas rehacerla.
 - Aquí corre en su propia caja. No puede pedir datos a internet, guardar datos en el navegador, abrir ventanas ni mostrar alert, confirm o prompt. Puede cargar bibliotecas de cdnjs.cloudflare.com, cdn.jsdelivr.net y unpkg.com, y fuentes de Google Fonts. upload_creation dice qué no podrá hacer.
+- Dale su forma con shape: wide (16:9), standard (4:3, la de siempre), square (1:1) o tall (3:4), según cómo esté diseñada.
+- Cuando el estudiante la termina, la creación puede avisar con parent.postMessage({ type: "lr:done" }, "*"). La lección dice "Lo terminaste". Cualquier otro mensaje se ignora. Agrégalo solo si el creador lo pide: es la única línea que se puede sumar a su archivo.
 - Imágenes, sonido y video: upload_asset, en base64 o desde una dirección https. Usa la dirección que devuelve en image_url, audio_url o video_url, o dentro de una creación.
 
 # How to write a route
@@ -72,6 +74,8 @@ To replace a draft, pass route_id and the draft_revision you read with get_route
 - A written course: upload_document, with their words as they are.
 - An interactive creation, like a piano, a game or a simulator in one HTML file: upload_creation, as it is, up to 2 MB. Never rebuild, shorten or rewrite it, and never offer to remake it.
 - Here it runs in its own box. It cannot reach the internet, save data in the browser, open windows or show alert, confirm or prompt. It can load libraries from cdnjs.cloudflare.com, cdn.jsdelivr.net and unpkg.com, and fonts from Google Fonts. upload_creation says what it will not be able to do.
+- Give it its shape: wide (16:9), standard (4:3, the default), square (1:1) or tall (3:4), from how it is laid out.
+- When the student finishes it, the creation can say so with parent.postMessage({ type: "lr:done" }, "*"). The lesson then shows "Lo terminaste". Any other message is ignored. Add it only if the creator asks: it is the one line their file may gain.
 - Images, sound and video: upload_asset, in base64 or from an https address. Use the address it returns in image_url, audio_url or video_url, or inside a creation.
 
 # Example

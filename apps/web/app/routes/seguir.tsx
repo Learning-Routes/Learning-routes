@@ -80,6 +80,7 @@ export default function Seguir({ loaderData }: Route.ComponentProps) {
               blocks={lesson.blocks}
               locale={locale}
               source={source}
+              creator={inLocale(lesson.creator, locale, source)}
               onAllRight={() => setDone(true)}
             />
             {lesson.blocks.length === 0 ? <p className="settle-2">{words.empty}</p> : null}

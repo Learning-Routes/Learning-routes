@@ -13,6 +13,7 @@ const blocks = [
   { kind: "concept", data: { type: "concept", body: { es: "Lee esto" } } },
   { kind: "video", data: { type: "video", url: "https://example.com/a" } },
   { kind: "check", data: { type: "check", question: { es: "¿Sí?" }, options: [] } },
+  { kind: "interactive", data: { type: "interactive", creation: "a".repeat(64) } },
 ].map((block, n) => ({ ...block, id: id(200 + n), lessonId: id(101), position: `V${n + 1}` }));
 
 const snapshot = (pricing: "free" | "paid"): Snapshot =>
@@ -27,9 +28,11 @@ const snapshot = (pricing: "free" | "paid"): Snapshot =>
     blocks,
   }) as unknown as Snapshot;
 
+const PLACE = { spaceId: id(5), kind: "p" as const, creator: { es: "Ana" } };
+
 describe("lessonView", () => {
   it("says where the topic is, in its module and in the route", () => {
-    expect(lessonView(snapshot("free"), 2)).toMatchObject({
+    expect(lessonView(snapshot("free"), 2, PLACE)).toMatchObject({
       locked: false,
       title: { es: "Tema 2" },
       moduleNumber: 1,
@@ -43,26 +46,40 @@ describe("lessonView", () => {
   });
 
   it("has no next topic at the end of the route", () => {
-    expect(lessonView(snapshot("free"), 3)?.next).toBeNull();
+    expect(lessonView(snapshot("free"), 3, PLACE)?.next).toBeNull();
   });
 
   it("sends every block the creator wrote, whatever its kind", () => {
-    expect(lessonView(snapshot("free"), 1)?.blocks.map((block) => block.kind)).toEqual([
+    expect(lessonView(snapshot("free"), 1, PLACE)?.blocks.map((block) => block.kind)).toEqual([
       "concept",
       "video",
       "check",
+      "interactive",
     ]);
   });
 
+  it("points an interactive block at its creation, published or draft, and says who made it", () => {
+    const published = lessonView(snapshot("free"), 1, PLACE);
+    expect(published?.creator).toEqual({ es: "Ana" });
+    expect(published?.blocks.map((block) => block.frame)).toEqual([
+      undefined,
+      undefined,
+      undefined,
+      `/p/${id(5)}/${id(1)}/${"a".repeat(64)}.html`,
+    ]);
+    const draft = lessonView(snapshot("free"), 1, { ...PLACE, kind: "d" });
+    expect(draft?.blocks[3]?.frame).toBe(`/d/${id(5)}/${id(1)}/${"a".repeat(64)}.html`);
+  });
+
   it("serves the first module of a paid route, and nothing past it", () => {
-    expect(lessonView(snapshot("paid"), 2)?.locked).toBe(false);
-    const locked = lessonView(snapshot("paid"), 3);
+    expect(lessonView(snapshot("paid"), 2, PLACE)?.locked).toBe(false);
+    const locked = lessonView(snapshot("paid"), 3, PLACE);
     expect(locked).toMatchObject({ locked: true, blocks: [], topicNumber: 3 });
   });
 
   it("has nothing for a topic the route does not have", () => {
-    expect(lessonView(snapshot("free"), 4)).toBeNull();
-    expect(lessonView(snapshot("free"), 0)).toBeNull();
+    expect(lessonView(snapshot("free"), 4, PLACE)).toBeNull();
+    expect(lessonView(snapshot("free"), 0, PLACE)).toBeNull();
   });
 });
 

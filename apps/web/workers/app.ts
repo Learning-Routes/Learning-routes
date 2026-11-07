@@ -67,6 +67,7 @@ function answer(request: Request, env: Env, ctx: ExecutionContext): Promise<Resp
         isDevelopment: String(env.ENVIRONMENT) === "development",
         platformOrigin: env.PLATFORM_ORIGIN,
         creatorDomain: env.CREATOR_DOMAIN,
+        contentOrigin: env.CONTENT_ORIGIN,
         turnstileSiteKey: env.TURNSTILE_SITE_KEY,
         runtime: { env, ctx, api: apiClient(env), mcp: mcpClient(env) },
       });

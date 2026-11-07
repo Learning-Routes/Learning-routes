@@ -20,6 +20,11 @@ test.use({ locale: "es-ES" });
 
 const HOSTILE_TITLE = "<script>window.__pwned = 1</script>Pan de masa madre";
 const PROTOCOL = "2026-07-28";
+// The content host (wrangler.jsonc's CONTENT_ORIGIN), answered here so no test reaches it.
+const CONTENT = "https://contenido.learningroutes.com";
+const SIGNED_DRAFT = /^https:\/\/contenido\.learningroutes\.com\/d\/.+\?e=\d+&s=/;
+const CREATION =
+  "<!doctype html><button onclick=\"parent.postMessage({type:'lr:done'},'*')\">Listo</button>";
 
 type Called = { structuredContent?: Record<string, unknown>; isError?: boolean };
 
@@ -96,11 +101,59 @@ test("an assistant imports and publishes a route, until it is disconnected", asy
     },
   })) as Called;
   expect(imported.isError).toBeFalsy();
+  const routeId = imported.structuredContent?.route_id;
+
+  // A creation, kept as it is, plays in the draft's preview (Platform STEP 9 §3).
+  const draft = (await client.callTool({
+    name: "get_route",
+    arguments: { route_id: routeId },
+  })) as Called;
+  const lessons = draft.structuredContent?.lessons as { id: string }[];
+  const uploaded = (await client.callTool({
+    name: "upload_creation",
+    arguments: {
+      route_id: routeId,
+      draft_revision: draft.structuredContent?.draft_revision,
+      lesson_id: lessons[0]?.id,
+      title: { es: "Botón de prueba" },
+      description: { es: "Pulsa Listo cuando acabes." },
+      alt_text: { es: "Un botón que dice Listo." },
+      shape: "wide",
+      html: CREATION,
+    },
+  })) as Called;
+  expect(uploaded.isError).toBeFalsy();
+  await page.route(`${CONTENT}/**`, (route) =>
+    route.fulfill({
+      contentType: "text/html",
+      headers: { "content-security-policy": "sandbox allow-scripts" },
+      body: CREATION,
+    }),
+  );
+  await page.goto(`${DEV}/creador/rutas/${routeId}/vista-previa`);
+  const frame = page.locator(".lesson-creation-frame");
+  await expect(frame).toHaveAttribute("src", SIGNED_DRAFT);
+  await expect(frame).toHaveAttribute("sandbox", "allow-scripts");
+  await expect(page.getByText("Un botón que dice Listo.")).toBeVisible();
+  // The page's own message is not the frame's, so it changes nothing.
+  await page.evaluate(() => window.postMessage({ type: "lr:done" }, "*"));
+  await page
+    .frameLocator(".lesson-creation-frame")
+    .getByRole("button", { name: "Listo" })
+    .waitFor();
+  await expect(page.getByText("Lo terminaste.")).toHaveCount(0);
+  // The section settles in on arrival; a click inside the frame lands where it rests.
+  await page
+    .locator(".lesson-creation")
+    .evaluate((section) => Promise.all(section.getAnimations().map((each) => each.finished)));
+  await page.frameLocator(".lesson-creation-frame").getByRole("button", { name: "Listo" }).click();
+  await expect(page.getByText("Lo terminaste.")).toBeVisible();
+
   const published = (await client.callTool({
     name: "publish_route",
     arguments: {
-      route_id: imported.structuredContent?.route_id,
-      draft_revision: imported.structuredContent?.draft_revision,
+      route_id: routeId,
+      draft_revision: uploaded.structuredContent?.draft_revision,
     },
   })) as Called;
   expect(published.isError).toBeFalsy();

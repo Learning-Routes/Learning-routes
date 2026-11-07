@@ -9,6 +9,7 @@ import { LocalizedText } from "../localized-text";
 type TextSchema = z.ZodType<any, any>;
 
 const SHA256 = /^[0-9a-f]{64}$/;
+export const CREATION_SHAPES = ["wide", "standard", "square", "tall"] as const;
 
 // What a student reads, and the check of what they read.
 function textBlocks<T extends TextSchema, C extends z.ZodRawShape>(text: T, common: C) {
@@ -153,6 +154,8 @@ function mediaBlocks<T extends TextSchema, C extends z.ZodRawShape>(text: T, com
       type: z.literal("interactive"),
       ...common,
       creation: z.string().regex(SHA256),
+      // The frame's proportions: wide 16:9, standard 4:3, square 1:1, tall 3:4.
+      shape: z.enum(CREATION_SHAPES).nullish(),
       description: optionalText,
       alt_text: optionalText,
     }),

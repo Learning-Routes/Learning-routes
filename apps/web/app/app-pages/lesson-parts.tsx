@@ -120,11 +120,14 @@ export function LessonBlocks({
   blocks,
   locale,
   source,
+  creator,
   onAllRight,
 }: {
   blocks: LessonBlock[];
   locale: LocaleCode;
   source: string;
+  /** Whose space it is, in the reader's language. */
+  creator: string;
   onAllRight: () => void;
 }) {
   const checks = blocks.filter(isAnswerable).length;
@@ -144,7 +147,14 @@ export function LessonBlocks({
       />
     ) : null;
   return blocks.map((block) => (
-    <BlockView key={block.id} block={block} locale={locale} source={source} question={question} />
+    <BlockView
+      key={block.id}
+      block={block}
+      locale={locale}
+      source={source}
+      question={question}
+      creator={creator}
+    />
   ));
 }
 

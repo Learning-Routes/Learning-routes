@@ -1,3 +1,4 @@
+import { CREATION_SHAPES } from "@learning-routes/core/blocks/schema";
 import * as z from "zod";
 import { DraftRevision, RouteId, Text, type Tool, tool } from "./tool";
 
@@ -43,6 +44,12 @@ export const UPLOAD_TOOLS: Tool[] = [
       alt_text: Text.nullish().describe(
         "What it shows and does, in words, for someone who cannot use it.",
       ),
+      shape: z
+        .enum(CREATION_SHAPES)
+        .nullish()
+        .describe(
+          "The creation's proportions, from how it is laid out: wide 16:9, standard 4:3 (the default), square 1:1, tall 3:4.",
+        ),
       html: z
         .string()
         .describe("The whole HTML file, exactly as the creator has it, scripts included."),
@@ -64,6 +71,7 @@ export const UPLOAD_TOOLS: Tool[] = [
       title: input.title,
       description: input.description,
       altText: input.alt_text,
+      shape: input.shape,
       source: input.html,
     }),
     toOutput: (
