@@ -27,7 +27,7 @@ export const UPLOAD_TOOLS: Tool[] = [
     scope: "routes:write",
     action: "creation.upload",
     description:
-      "Bring an interactive creation the creator already made, like a piano, a game, a quiz or a simulator: one HTML file with its scripts and styles, up to 2 MB. Send the file exactly as it is: never rebuild, shorten or rewrite it, and never offer to remake it. It becomes an interactive block in a lesson and runs in its own box, where it cannot reach the internet, save data, open windows or show alerts. Answers with the block, the preview link to give the person, and what the creation will not be able to do here. Sending the same file to the same lesson again changes nothing.",
+      "Bring an interactive creation the creator already made, like a piano, a game, a quiz or a simulator: one HTML file with its scripts and styles, up to 2 MB. Send the file exactly as it is: never rebuild, shorten or rewrite it, and never offer to remake it. It becomes an interactive block in a lesson and runs in its own box, where it cannot reach the internet, save data, open windows or show alerts. Answers with the block, the preview link to give the person, and what the creation will not be able to do here. Sending the same file to the same lesson again changes nothing. To put a new version in place of one already uploaded, send it with that block_id.",
     // Not idempotent with module_id: each call makes a new lesson.
     annotations: { ...UPLOAD, idempotentHint: false },
     input: z.strictObject({
@@ -39,7 +39,15 @@ export const UPLOAD_TOOLS: Tool[] = [
         .optional()
         .describe("Instead of lesson_id: a new lesson for it, at the end of this module."),
       lesson_title: Text.optional().describe("The new lesson's title, with module_id."),
-      title: Text.describe("The creation's name, as the student sees it."),
+      block_id: z
+        .uuid()
+        .optional()
+        .describe(
+          "Instead of a lesson: the interactive block, from get_route, whose file this new version replaces. The block keeps its place and what was written about it unless you send new words.",
+        ),
+      title: Text.optional().describe(
+        "The creation's name, as the student sees it. Needed unless block_id is given.",
+      ),
       description: Text.nullish().describe("One or two lines for the student: what to do with it."),
       alt_text: Text.nullish().describe(
         "What it shows and does, in words, for someone who cannot use it.",
@@ -68,6 +76,7 @@ export const UPLOAD_TOOLS: Tool[] = [
       ...(input.lesson_id ? { lessonId: input.lesson_id } : {}),
       ...(input.module_id ? { moduleId: input.module_id } : {}),
       ...(input.lesson_title ? { lessonTitle: input.lesson_title } : {}),
+      ...(input.block_id ? { blockId: input.block_id } : {}),
       title: input.title,
       description: input.description,
       altText: input.alt_text,

@@ -84,6 +84,43 @@ describe("upload_creation", () => {
     expect(oauth.objects.has(`pub/${String(key).slice("draft/".length)}`)).toBe(true);
   });
 
+  it("puts a new version in the same block, which keeps its place and its words", async () => {
+    const { token, routeId, revision, lessonId } = await teacherWithRoute();
+    const first = await oauth.tool(token, "upload_creation", {
+      route_id: routeId,
+      draft_revision: revision,
+      lesson_id: lessonId,
+      title: { es: "Piano" },
+      description: { es: "Toca una escala." },
+      html: PIANO,
+    });
+    const { block_id, draft_revision } = first.structuredContent as {
+      block_id: string;
+      draft_revision: number;
+    };
+    const newer = `${PIANO}\n<p>v2</p>`;
+    const replaced = await oauth.tool(token, "upload_creation", {
+      route_id: routeId,
+      draft_revision,
+      block_id,
+      html: newer,
+    });
+    expect(replaced.isError).toBeFalsy();
+    expect(replaced.structuredContent).toMatchObject({ block_id, lesson_id: lessonId });
+    const read = await oauth.tool(token, "get_route", { route_id: routeId });
+    const blocks = (read.structuredContent as { blocks: { id: string; data: object }[] }).blocks;
+    const interactive = blocks.filter((block) => block.id === block_id);
+    expect(interactive).toHaveLength(1);
+    expect(interactive[0]?.data).toMatchObject({
+      title: { es: "Piano" },
+      description: { es: "Toca una escala." },
+    });
+    const stored = [...oauth.objects.values()].map((object) =>
+      new TextDecoder().decode(object.bytes),
+    );
+    expect(stored).toContain(newer);
+  });
+
   it("refuses an interactive block written by hand", async () => {
     const { token, routeId, revision, lessonId } = await teacherWithRoute();
     const answer = await oauth.tool(token, "add_blocks", {

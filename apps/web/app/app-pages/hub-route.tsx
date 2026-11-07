@@ -7,6 +7,7 @@ import { Button } from "../ui/button";
 import { Badge, TextLink } from "../ui/parts";
 import { RouteFigure } from "../ui/route-figure";
 import { TextField } from "../ui/text-field";
+import { type HubCreation, HubCreations } from "./hub-creations";
 
 const LINE_BOX = { width: 1200, height: 100 };
 const CURRENCIES = ["USD", "EUR", "MXN", "COP", "CRC"];
@@ -21,6 +22,7 @@ export interface HubRouteData {
   revision: number;
   priceMinor: number | null;
   currency: string | null;
+  creations: HubCreation[];
 }
 
 /** One form, one button: each action works with no script, and the API checks who is asking. */
@@ -113,6 +115,12 @@ export function HubRoute({
         </div>
       </div>
       <RouteFigure lessons={route.lessons} seed={route.id} box={LINE_BOX} />
+      <HubCreations
+        creations={route.creations}
+        routeId={route.id}
+        revision={route.revision}
+        locale={locale}
+      />
     </li>
   );
 }

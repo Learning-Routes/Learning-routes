@@ -27,7 +27,8 @@
     "CONTENT_ORIGIN": "https://lrusercontent.com"
   },
   // The same secret as the API's: it reads the sessions the API makes.
-  "secrets": { "required": ["BETTER_AUTH_SECRET"] },
+  // CONTENT_SIGNING_SECRET signs the address of a creation's thumbnail (Platform STEP 9 §4).
+  "secrets": { "required": ["BETTER_AUTH_SECRET", "CONTENT_SIGNING_SECRET"] },
   "queues": {
     "producers": [{ "binding": "PURGE_QUEUE", "queue": "learning-routes-purge" }]
   },

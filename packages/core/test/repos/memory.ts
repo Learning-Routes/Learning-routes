@@ -433,6 +433,24 @@ export function memoryRepos(state: State, actorId = ""): Repos {
           row.blocks.push(block);
           return null;
         }),
+      archiveBlock: (spaceId, routeId, expected, blockId) =>
+        edit(spaceId, routeId, expected, (row) => {
+          const index = row.blocks.findIndex((entry) => entry.id === blockId);
+          if (index === -1) {
+            return "not_found";
+          }
+          row.blocks.splice(index, 1);
+          return null;
+        }),
+      setBlockData: (spaceId, routeId, expected, blockId, data) =>
+        edit(spaceId, routeId, expected, (row) => {
+          const target = row.blocks.find((entry) => entry.id === blockId);
+          if (target === undefined) {
+            return "not_found";
+          }
+          target.data = structuredClone(data);
+          return null;
+        }),
       archiveLesson: (spaceId, routeId, expected, lessonId) =>
         edit(spaceId, routeId, expected, (row) => {
           const target = row.lessons.find((entry) => entry.id === lessonId && !entry.archived);

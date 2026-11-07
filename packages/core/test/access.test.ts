@@ -45,6 +45,7 @@ const EXPECTED: Record<string, Record<string, string[]>> = {
   "asset.upload": EDITORS,
   "route.preview": STAFF,
   "blocks.add": EDITORS,
+  "block.remove": EDITORS,
   "connection.list": { student: ["ui"] },
   "connection.grant": { student: ["ui"] },
   "connection.revoke": { student: ["ui"] },

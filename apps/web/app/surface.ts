@@ -9,6 +9,9 @@ export const challengePage = { challenge: true } as const;
 /** A route module exports `handle = lessonPage` for a creator's images, sound and video. */
 export const lessonPage = { lessonMedia: true } as const;
 
+/** A route module exports `handle = creatorHub` for the thumbnails of a creator's creations. */
+export const creatorHub = { creationImages: true } as const;
+
 export function isStorefront(matches: UIMatch[]): boolean {
   return matches.some(
     (match) => (match.handle as { storefront?: boolean } | undefined)?.storefront,

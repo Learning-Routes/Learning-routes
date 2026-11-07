@@ -130,6 +130,7 @@ describe("two tenants, through every action", () => {
           lessonId: crypto.randomUUID(),
           blocks: [{ type: "concept", body: { es: "Ajeno" } }],
         },
+        "block.remove": { routeId: routeB, expectedRevision: 0, blockId: crypto.randomUUID() },
         "route.publish": { routeId: routeB, expectedRevision: 0 },
         "creation.upload": {
           routeId: routeB,

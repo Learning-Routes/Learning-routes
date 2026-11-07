@@ -1,15 +1,19 @@
 import { creationKey } from "@learning-routes/core/content/creations";
+import { thumbnailAddress } from "./frames";
 
 // The files behind an upload or a publish (Platform STEP 9 §2), written to R2 after the action's
 // commit, never inside it. Every key carries the file's SHA-256, so writing one again writes the
 // same bytes: a retry is always safe.
+
+/** Browser Run takes a few seconds; the upload's answer waits no longer than this for it. */
+const THUMBNAIL_WAIT_MS = 20_000;
 
 type Uploaded = { key: string; contentType?: string };
 type Published = { spaceId: string; routeId: string; creations?: string[] };
 
 /** Writes what the committed action stored. Throws when R2 refuses: the caller says so. */
 export async function storeAfterCommit(
-  env: { CREATIONS: R2Bucket },
+  env: { CREATIONS: R2Bucket; CONTENT_ORIGIN: string; CONTENT_SIGNING_SECRET: string },
   action: string,
   input: unknown,
   output: unknown,
@@ -19,6 +23,7 @@ export async function storeAfterCommit(
     await env.CREATIONS.put(key, (input as { source: string }).source, {
       httpMetadata: { contentType: "text/html; charset=utf-8" },
     });
+    await askForThumbnail(env, output as Uploaded & { spaceId: string; routeId: string });
   }
   if (action === "asset.upload") {
     const { key, contentType } = output as Uploaded;
@@ -40,6 +45,25 @@ export async function storeAfterCommit(
   }
 }
 
+/**
+ * A new creation's thumbnail, taken now and once (Platform STEP 9 §4), at the address only the API
+ * signs. Never the upload's failure: a card asks again.
+ */
+async function askForThumbnail(
+  env: { CONTENT_ORIGIN: string; CONTENT_SIGNING_SECRET: string },
+  { key, spaceId, routeId }: Uploaded & { spaceId: string; routeId: string },
+) {
+  try {
+    const hash = key.slice(key.lastIndexOf("/") + 1, -".html".length);
+    await fetch(await thumbnailAddress(env, { spaceId, routeId, hash }), {
+      method: "HEAD",
+      signal: AbortSignal.timeout(THUMBNAIL_WAIT_MS),
+    });
+  } catch {
+    // The hub's card asks for it again.
+  }
+}
+
 /** A published route's creations, copied from the draft's place to the public one. */
 async function publishCreations(bucket: R2Bucket, { spaceId, routeId, creations = [] }: Published) {
   for (const hash of creations) {
@@ -58,7 +82,7 @@ async function publishCreations(bucket: R2Bucket, { spaceId, routeId, creations 
 
 /** The same, for the app's actions: a failure is logged, since the commit already answered. */
 export async function storeQuietly(
-  env: { CREATIONS: R2Bucket },
+  env: { CREATIONS: R2Bucket; CONTENT_ORIGIN: string; CONTENT_SIGNING_SECRET: string },
   action: string,
   input: unknown,
   output: unknown,

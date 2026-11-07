@@ -54,6 +54,52 @@ describe("creation.upload", () => {
     expect(world.files.size).toBe(1);
   });
 
+  it("replaces a block's file and keeps the block, its place and what the creator wrote", async () => {
+    const world = withLesson();
+    await upload(world, { lessonId: LESSON, description: { es: "Toca" }, shape: "wide" });
+    const blockId = String(world.drafts.get(ROUTE)?.blocks.at(-1)?.id);
+    const before = world.drafts.get(ROUTE)?.blocks.at(-1)?.data.creation;
+    const newer = `${PIANO}<p>v2</p>`;
+    const answer = await upload(world, {
+      blockId,
+      expectedRevision: 1,
+      title: undefined,
+      source: newer,
+    });
+    expect(answer).toMatchObject({ ok: true, output: { blockId, lessonId: LESSON, revision: 2 } });
+    const blocks = world.drafts.get(ROUTE)?.blocks ?? [];
+    expect(blocks).toHaveLength(1);
+    expect(blocks[0]?.data).toMatchObject({
+      title: { es: "Piano" },
+      description: { es: "Toca" },
+      shape: "wide",
+    });
+    expect(blocks[0]?.data.creation).not.toBe(before);
+    expect((answer as { output: { key: string } }).output.key).toBe(
+      `draft/${SPACE}/${ROUTE}/${blocks[0]?.data.creation}.html`,
+    );
+    expect(world.files.size).toBe(2);
+    const same = await upload(world, { blockId, expectedRevision: 2, source: newer });
+    expect(same).toMatchObject({ ok: true, output: { repeated: true, revision: 2 } });
+  });
+
+  it("replaces only an interactive block of this route, and names one block or one lesson", async () => {
+    const world = withLesson();
+    const stranger = "0192d3a0-0000-7000-8000-0000000000ff";
+    expect(await upload(world, { blockId: stranger })).toMatchObject({
+      ok: false,
+      code: "not_found",
+    });
+    expect(await upload(world, { blockId: stranger, lessonId: LESSON })).toMatchObject({
+      ok: false,
+      code: "invalid_input",
+    });
+    expect(await upload(world, { lessonId: LESSON, title: undefined })).toMatchObject({
+      ok: false,
+      code: "invalid_input",
+    });
+  });
+
   it("can make the lesson it goes in", async () => {
     const world = withLesson();
     const answer = await upload(world, { moduleId: MODULE, lessonTitle: { es: "Piano" } });
@@ -158,5 +204,25 @@ describe("asset.upload", () => {
 
   it("never logs the bytes", () => {
     expect(redact({ spaceId: SPACE, file: PNG })).toEqual({ spaceId: SPACE, file: "[redacted]" });
+  });
+});
+
+describe("block.remove", () => {
+  it("takes a block out of the draft, once, for an editor only", async () => {
+    const world = withLesson();
+    await upload(world, { lessonId: LESSON });
+    const blockId = String(world.drafts.get(ROUTE)?.blocks.at(-1)?.id);
+    const remove = (expectedRevision: number, userId: string) =>
+      runAction(
+        ACTIONS,
+        "block.remove",
+        { routeId: ROUTE, expectedRevision, blockId },
+        testCtx("ui", world, userId),
+      );
+    expect(await remove(1, STAFF.assistant)).toMatchObject({ ok: false, code: "forbidden" });
+    expect(await remove(0, STAFF.owner)).toMatchObject({ ok: false, code: "conflict" });
+    expect(await remove(1, STAFF.owner)).toMatchObject({ ok: true, output: { revision: 2 } });
+    expect(world.drafts.get(ROUTE)?.blocks).toEqual([]);
+    expect(await remove(2, STAFF.owner)).toMatchObject({ ok: false, code: "not_found" });
   });
 });

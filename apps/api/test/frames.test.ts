@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { signatureOf, withFrames } from "../src/frames";
+import { signatureOf, thumbnailAddress, withFrames } from "../src/frames";
 
 const SECRET = "test-only-content-secret-0123456789abcdef";
 const ENV = { CONTENT_ORIGIN: "https://content.example.test", CONTENT_SIGNING_SECRET: SECRET };
@@ -33,7 +33,7 @@ describe("a lesson's frames", () => {
     await withFrames(ENV, "lesson.read", lesson, NOW);
     expect(lesson.blocks[0]?.frame).toBe(`${ENV.CONTENT_ORIGIN}${PUBLISHED}`);
     const other = { blocks: [{ frame: DRAFT }] };
-    await withFrames(ENV, "route.get", other, NOW);
+    await withFrames(ENV, "route.list", other, NOW);
     expect(other.blocks[0]?.frame).toBe(DRAFT);
     await withFrames(ENV, "route.preview", { view: null }, NOW);
   });
@@ -42,5 +42,30 @@ describe("a lesson's frames", () => {
     const odd = { view: { blocks: [{ frame: `/d/${ID}/../x.html` }, { frame: "/d/x" }] } };
     await withFrames(ENV, "route.preview", odd, NOW);
     expect(odd.view.blocks).toEqual([{}, {}]);
+  });
+
+  it("gives each creation of a draft its thumbnail's signed address, for under an hour", async () => {
+    const hash = "b".repeat(64);
+    const draft = {
+      spaceId: ID,
+      route: { id: ID },
+      blocks: [
+        { id: "x1", kind: "interactive", data: { creation: hash } },
+        { id: "x2", kind: "interactive", data: { creation: "../../a" } },
+        { id: "x3", kind: "concept", data: {} },
+      ],
+    };
+    await withFrames(ENV, "route.get", draft, NOW);
+    const thumbnails = (draft as { thumbnails?: Record<string, string> }).thumbnails ?? {};
+    expect(Object.keys(thumbnails)).toEqual(["x1"]);
+    const url = new URL(String(thumbnails.x1));
+    expect(url.pathname).toBe(`/t/${ID}/${ID}/${hash}.webp`);
+    const expires = Number(url.searchParams.get("e"));
+    expect(expires).toBeGreaterThan(NOW + 1800);
+    expect(expires).toBeLessThanOrEqual(NOW + 3600);
+    expect(url.searchParams.get("s")).toBe(await signatureOf(SECRET, url.pathname, expires));
+    expect(await thumbnailAddress(ENV, { spaceId: ID, routeId: ID, hash }, NOW + 60)).toBe(
+      thumbnails.x1,
+    );
   });
 });

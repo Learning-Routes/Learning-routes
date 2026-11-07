@@ -128,6 +128,16 @@ export interface RouteDrafts {
     expectedRevision: number,
     block: DraftBlock,
   ): Promise<Revised>;
+  /** Takes a block out of the draft (not_found unless it is live in the route); versions keep it. */
+  archiveBlock(spaceId: string, routeId: string, at: number, blockId: string): Promise<Revised>;
+  /** A live block's data, replaced whole; its id, lesson and place stay. */
+  setBlockData(
+    spaceId: string,
+    routeId: string,
+    expectedRevision: number,
+    blockId: string,
+    data: DraftBlock["data"],
+  ): Promise<Revised>;
   /** A route sells only once payments exist (STEP 10). */
   setPrice(spaceId: string, routeId: string, expected: number, price: Price): Promise<Revised>;
   updateDetails(
