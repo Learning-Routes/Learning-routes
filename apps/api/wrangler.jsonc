@@ -31,7 +31,7 @@
     // The hosts a Turnstile token may come from (Platform STEP 4 §6.3).
     "TURNSTILE_HOSTNAMES": "app.learningroutes.com",
     // Where an asset's address points: the content host (Platform STEP 9 §1).
-    "CONTENT_ORIGIN": "https://contenido.learningroutes.com"
+    "CONTENT_ORIGIN": "https://lrusercontent.com"
   },
   // Cloudflare Email Sending: sign-in links, from this one address only. The
   // domain is enabled with wrangler email sending enable (docs/runbooks/database.md).

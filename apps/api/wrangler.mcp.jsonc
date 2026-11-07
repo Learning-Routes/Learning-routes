@@ -24,7 +24,7 @@
     // Where a published route's public address lives.
     "CREATOR_DOMAIN": "learningroutes.com",
     // Where an asset's address points: the content host (Platform STEP 9 §1).
-    "CONTENT_ORIGIN": "https://contenido.learningroutes.com"
+    "CONTENT_ORIGIN": "https://lrusercontent.com"
   },
   // The same secret as the API's: it reads the sessions the API makes.
   "secrets": { "required": ["BETTER_AUTH_SECRET"] },

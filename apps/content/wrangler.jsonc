@@ -13,13 +13,12 @@
     "logs": { "enabled": true, "head_sampling_rate": 1, "invocation_logs": false },
     "traces": { "enabled": true, "head_sampling_rate": 0.1 }
   },
-  // A route, not a custom domain: the web Worker's *.learningroutes.com/* route outranks a custom
-  // domain on the same zone, and only a more specific route outranks it. The zone's proxied
-  // wildcard record and certificate already cover the name.
-  "routes": [{ "pattern": "contenido.learningroutes.com/*", "zone_name": "learningroutes.com" }],
+  // Its own registrable domain, so nothing a creator uploads shares a site, a cookie or a parent
+  // domain with the app. The custom domain makes its own proxied record and certificate.
+  "routes": [{ "pattern": "lrusercontent.com", "custom_domain": true }],
   "vars": {
-    // The pages a creation may be framed by.
-    "FRAME_ANCESTORS": "https://app.learningroutes.com https://*.learningroutes.com https://learningroutes.com"
+    // The pages a creation may be framed by: the app, and the creators' hosts.
+    "FRAME_ANCESTORS": "https://app.learningroutes.com https://*.learningroutes.com"
   },
   // The same secret as the API's CONTENT_SIGNING_SECRET: it signs a draft's short-lived address.
   "secrets": { "required": ["CONTENT_SIGNING_SECRET"] },
