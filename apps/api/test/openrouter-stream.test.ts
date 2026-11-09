@@ -126,13 +126,35 @@ describe("streaming from OpenRouter", () => {
       () => undefined,
       sse([data({ error: { message: "overloaded" } }), "data: [DONE]\n"]),
     );
-    expect(midway).toMatchObject({ ok: false, status: 502 });
+    expect(midway).toMatchObject({ ok: false, status: 502, reached: true });
     const refused = await streamFromOpenRouter(
       allowed(),
       "k",
       () => undefined,
       (async () => new Response("no", { status: 402 })) as unknown as typeof fetch,
     );
-    expect(refused).toEqual({ ok: false, status: 402, usage: null });
+    expect(refused).toEqual({ ok: false, status: 402, usage: null, reached: false });
+  });
+
+  it("counts a broken stream as a call that reached a model, so it is still metered", async () => {
+    const broken = await streamFromOpenRouter(
+      allowed(),
+      "k",
+      () => undefined,
+      sse([data({ choices: [{ delta: { content: "Ho" } }] }), "data: {not json\n"]),
+    );
+    expect(broken).toEqual({ ok: false, status: 502, usage: null, reached: true });
+  });
+
+  it("gives up on a stream that takes too long", async () => {
+    const sent: RequestInit[] = [];
+    await streamFromOpenRouter(allowed(), "k", () => undefined, (async (
+      _url: unknown,
+      init: RequestInit,
+    ) => {
+      sent.push(init);
+      return new Response("no", { status: 500 });
+    }) as unknown as typeof fetch);
+    expect(sent[0]?.signal).toBeInstanceOf(AbortSignal);
   });
 });

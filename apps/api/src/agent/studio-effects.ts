@@ -6,6 +6,7 @@ import type { RouteDraft } from "@learning-routes/core/repos/ports";
 import { builtOf, lessonPreviewOf, plannedOf } from "@learning-routes/core/studio/draft";
 import { askText, type StudioCall } from "@learning-routes/core/studio/studio-tools";
 import type { ContentTool } from "@learning-routes/core/studio/turn";
+import { pgTenancy } from "../db/tenancy";
 import { type Database, transactionAs, withClient } from "../db/with-db";
 import { type Caller, callTool, ctxFor } from "../mcp/call-tool";
 import { TOOLS } from "../mcp/tools";
@@ -60,6 +61,16 @@ export class Effects {
         spaceId: this.agent.name,
       };
       return work(db, caller);
+    });
+  }
+
+  /** Whether this creator still edits the space. */
+  stillEditor(): Promise<boolean> {
+    return this.db(async (db, caller) => {
+      const scope = await transactionAs(db, caller.userId, (tx) =>
+        pgTenancy(tx).scopeOf({ kind: "space", id: String(caller.spaceId) }, caller.userId),
+      );
+      return scope?.role === "owner" || scope?.role === "coeditor";
     });
   }
 
