@@ -1,0 +1,669 @@
+/* The creator's assistant (Platform STEP 10). One deliberate world: night, whatever the theme,
+   because the map is the trail at dusk from VISION. Gold is "you are here", green is "built",
+   plum is the action. Labels are page text placed over the scene by studio-map.ts. */
+
+.studio {
+  --studio-night: #0d0913;
+  --studio-text: #f2eef5;
+  --studio-sub: #bdb2c8;
+  --studio-muted: #8e809c;
+  --studio-edge: #3f3350;
+  --studio-plum: #9a5be0;
+  --studio-plum-deep: #6a2ea0;
+  --studio-gold: #e9a23b;
+  --studio-green: #46b883;
+  --studio-paper: #f5f2ee;
+  --studio-font: "Geist", "Helvetica Neue", Arial, sans-serif;
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  background: var(--studio-night);
+  color: var(--studio-text);
+  font-family: var(--studio-font);
+  font-size: 1rem;
+  line-height: 1.55;
+  color-scheme: dark;
+  -webkit-font-smoothing: antialiased;
+}
+.studio :focus-visible {
+  outline: 2px solid var(--studio-gold);
+  outline-offset: 3px;
+}
+.studio-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+.studio-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+.studio-shade {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(to top, rgb(13 9 19 / 0.94) 0%, rgb(13 9 19 / 0.6) 24%, transparent 46%),
+    linear-gradient(to bottom, rgb(13 9 19 / 0.75), transparent 20%);
+}
+.studio-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+}
+
+/* The legend and the steps */
+.studio-top {
+  position: absolute;
+  z-index: 6;
+  top: env(safe-area-inset-top, 0px);
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding-block: 20px;
+  padding-left: max(24px, env(safe-area-inset-left, 0px));
+  padding-right: max(24px, env(safe-area-inset-right, 0px));
+}
+.studio-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--studio-text);
+  font-weight: 600;
+  font-size: 0.9375rem;
+  text-decoration: none;
+}
+.studio-route {
+  margin-top: 22px;
+  animation: studio-settle 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.studio-route-title {
+  margin: 0;
+  font-weight: 600;
+  font-size: 1.625rem;
+  line-height: 1.15;
+  letter-spacing: -0.025em;
+}
+.studio-route-summary {
+  margin: 2px 0 0;
+  font-size: 0.875rem;
+  color: var(--studio-sub);
+}
+.studio-route-state {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 8px 0 0;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--studio-sub);
+}
+.studio-route-state::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--studio-muted);
+}
+.studio-route-state.is-live {
+  color: #9ee3c1;
+}
+.studio-route-state.is-live::before {
+  background: var(--studio-green);
+}
+.studio-where {
+  margin-left: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+  text-align: right;
+}
+.studio-where p {
+  margin: 0;
+  font-weight: 500;
+  font-size: 0.875rem;
+  color: var(--studio-sub);
+}
+.studio-ticks {
+  display: flex;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.studio-ticks li {
+  width: 20px;
+  height: 2px;
+  border-radius: 1px;
+  background: var(--studio-edge);
+  transition: background 0.5s;
+}
+.studio-ticks .is-done {
+  background: var(--studio-green);
+}
+.studio-ticks .is-now {
+  background: var(--studio-gold);
+}
+
+/* Map markers, placed by studio-map.ts */
+.studio-mark {
+  position: absolute;
+  left: 0;
+  top: 0;
+  will-change: transform;
+  transition: opacity 0.4s;
+}
+.studio-mark.is-entering {
+  opacity: 0;
+}
+.studio-mark-dot,
+.studio-mark-ring,
+.studio-mark-walk,
+.studio-mark-here {
+  position: absolute;
+  border-radius: 50%;
+}
+.studio-mark-dot {
+  width: 10px;
+  height: 10px;
+  margin: -5px 0 0 -5px;
+  background: var(--studio-night);
+  box-shadow: inset 0 0 0 2px #b9abcb;
+}
+.studio-mark-dot.is-built {
+  background: var(--studio-green);
+  box-shadow: 0 0 0 3px rgb(70 184 131 / 0.18);
+}
+.studio-mark-dot.is-new {
+  box-shadow:
+    inset 0 0 0 2px var(--studio-plum),
+    0 0 0 3px rgb(154 91 224 / 0.2);
+}
+.studio-mark-ring {
+  width: 20px;
+  height: 20px;
+  margin: -10px 0 0 -10px;
+  background: var(--studio-night);
+  box-shadow:
+    inset 0 0 0 2.5px #e6ddf0,
+    inset 0 0 0 6px var(--studio-night),
+    inset 0 0 0 10px #e6ddf0;
+}
+.studio-mark-ring.is-built {
+  box-shadow:
+    inset 0 0 0 2.5px var(--studio-green),
+    inset 0 0 0 6px var(--studio-night),
+    inset 0 0 0 10px var(--studio-green),
+    0 0 0 4px rgb(70 184 131 / 0.16);
+}
+.studio-mark-walk {
+  width: 12px;
+  height: 12px;
+  margin: -6px 0 0 -6px;
+  background: #ede6f5;
+  box-shadow: 0 0 0 3px rgb(13 9 19 / 0.9);
+}
+.studio-mark-here {
+  width: 16px;
+  height: 16px;
+  margin: -8px 0 0 -8px;
+  background: var(--studio-gold);
+  box-shadow:
+    0 0 0 3px rgb(13 9 19 / 0.9),
+    0 0 0 9px rgb(233 162 59 / 0.18),
+    0 0 24px rgb(233 162 59 / 0.55);
+}
+.studio-mark-here::after {
+  content: "";
+  position: absolute;
+  inset: -9px;
+  border-radius: 50%;
+  border: 1px solid rgb(233 162 59 / 0.5);
+  animation: studio-ping 2.2s cubic-bezier(0.2, 0.6, 0.2, 1) infinite;
+}
+.studio-label {
+  position: absolute;
+  left: 14px;
+  top: -9px;
+  white-space: nowrap;
+  font-size: 0.8125rem;
+  line-height: 1.25;
+  color: var(--studio-sub);
+  text-shadow:
+    0 1px 2px var(--studio-night),
+    0 0 10px var(--studio-night),
+    0 0 18px var(--studio-night);
+}
+.studio-label b {
+  display: block;
+  font-weight: 600;
+  font-size: 0.9375rem;
+  color: var(--studio-text);
+  letter-spacing: -0.01em;
+}
+.studio-branch {
+  position: absolute;
+  left: 0;
+  top: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 36px;
+  padding: 0 14px 0 10px;
+  border: 0;
+  border-radius: 999px;
+  background: rgb(23 17 31 / 0.92);
+  box-shadow:
+    inset 0 0 0 1px #4a3b5c,
+    0 8px 24px rgb(0 0 0 / 0.4);
+  color: var(--studio-text);
+  font: 500 0.875rem var(--studio-font);
+  white-space: nowrap;
+  pointer-events: auto;
+  cursor: pointer;
+  animation: studio-settle 0.5s 0.35s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.studio-branch::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #b9abcb;
+}
+.studio-branch.is-hot,
+.studio-branch:hover {
+  background: rgb(52 30 74 / 0.96);
+  box-shadow:
+    inset 0 0 0 1.5px var(--studio-gold),
+    0 8px 24px rgb(0 0 0 / 0.4);
+}
+.studio-branch.is-hot::before,
+.studio-branch:hover::before {
+  background: var(--studio-gold);
+}
+
+/* The subtitles */
+.studio-stage {
+  position: absolute;
+  z-index: 6;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  padding-block: 0 max(28px, env(safe-area-inset-bottom, 0px));
+  padding-left: max(20px, env(safe-area-inset-left, 0px));
+  padding-right: max(20px, env(safe-area-inset-right, 0px));
+}
+.studio-stage.is-first {
+  bottom: auto;
+  top: 50%;
+  transform: translateY(-10%);
+}
+.studio-status {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 22px;
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--studio-muted);
+}
+.studio-status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--studio-plum);
+  animation: studio-pulse 1s ease-in-out infinite;
+}
+.studio-say {
+  margin: 0;
+  max-width: 34ch;
+  text-align: center;
+  font-weight: 500;
+  font-size: clamp(1.25rem, 2vw, 1.625rem);
+  line-height: 1.35;
+  letter-spacing: -0.015em;
+  text-wrap: balance;
+}
+.studio-stage.is-first .studio-say {
+  max-width: 14ch;
+  font-weight: 600;
+  font-size: clamp(2.5rem, 5.4vw, 4.25rem);
+  line-height: 1.02;
+  letter-spacing: -0.04em;
+}
+.studio-word {
+  display: inline-block;
+  white-space: pre;
+  animation: studio-word 0.45s cubic-bezier(0.2, 0.75, 0.2, 1) both;
+}
+.studio-options {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+}
+.studio-option {
+  min-height: 44px;
+  padding: 0 18px;
+  border: 0;
+  border-radius: 12px;
+  background: rgb(23 17 31 / 0.85);
+  box-shadow: inset 0 0 0 1px var(--studio-edge);
+  color: var(--studio-text);
+  font: 500 0.9375rem var(--studio-font);
+  cursor: pointer;
+  transition:
+    box-shadow 0.2s,
+    background 0.2s;
+}
+.studio-option:hover,
+.studio-option.is-hot {
+  background: rgb(52 30 74 / 0.9);
+  box-shadow: inset 0 0 0 1.5px var(--studio-gold);
+}
+.studio-option.is-primary {
+  background: var(--studio-plum-deep);
+  box-shadow: none;
+}
+.studio-option.is-primary:hover {
+  background: #7b3bb8;
+}
+.studio-ask {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: min(640px, 100%);
+  padding: 6px 6px 6px 8px;
+  border-radius: 14px;
+  background: rgb(23 17 31 / 0.88);
+  box-shadow: inset 0 0 0 1px var(--studio-edge);
+  transition: box-shadow 0.2s;
+}
+.studio-stage.is-first .studio-ask {
+  width: min(680px, 100%);
+  margin-top: 10px;
+}
+.studio-ask:focus-within {
+  box-shadow: inset 0 0 0 1.5px var(--studio-plum);
+}
+.studio-ask input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--studio-text);
+  font: 1rem var(--studio-font);
+  padding: 11px 0;
+}
+.studio-ask input:focus-visible {
+  outline: none;
+}
+.studio-ask input::placeholder {
+  color: var(--studio-muted);
+}
+.studio-attach,
+.studio-send {
+  flex: none;
+  width: 40px;
+  height: 40px;
+  border: 0;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+.studio-attach {
+  background: transparent;
+  color: var(--studio-muted);
+}
+.studio-attach:hover {
+  background: rgb(255 255 255 / 0.06);
+  color: var(--studio-text);
+}
+.studio-send {
+  background: var(--studio-plum-deep);
+  color: #fff;
+}
+.studio-send:hover {
+  background: #7b3bb8;
+}
+.studio-hint {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--studio-muted);
+}
+.studio-confirm {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  max-width: 520px;
+  padding: 18px 20px;
+  border-radius: 16px;
+  background: rgb(23 17 31 / 0.94);
+  box-shadow: inset 0 0 0 1.5px var(--studio-plum);
+  text-align: center;
+}
+.studio-confirm h2 {
+  margin: 0;
+  font-weight: 600;
+  font-size: 1.125rem;
+}
+.studio-confirm p {
+  margin: 0;
+  font-size: 0.9375rem;
+  color: var(--studio-sub);
+}
+
+/* A lesson's preview, pinned beside its station */
+.studio-note {
+  position: absolute;
+  z-index: 5;
+  right: 24px;
+  top: 96px;
+  width: 296px;
+  padding: 18px;
+  border-radius: 16px;
+  background: var(--studio-paper);
+  color: #1d1226;
+  box-shadow: 0 30px 70px rgb(0 0 0 / 0.55);
+  animation: studio-settle 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.studio-note.is-pinned {
+  left: 0;
+  top: 0;
+  right: auto;
+}
+.studio-note-format {
+  margin: 0;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #6a2ea0;
+}
+.studio-note-title {
+  margin: 6px 0;
+  font-weight: 600;
+  font-size: 1.25rem;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+.studio-note-body {
+  margin: 0 0 12px;
+  font-size: 0.875rem;
+  color: #55475f;
+}
+.studio-note-prompt {
+  margin: 0 0 8px;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+.studio-note-options {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.studio-note-options li {
+  display: grid;
+  place-items: center;
+  height: 36px;
+  border-radius: 8px;
+  box-shadow: inset 0 0 0 1px #e2d9e8;
+  font-size: 0.875rem;
+  font-variant-numeric: tabular-nums;
+}
+.studio-note-options .is-answer {
+  box-shadow: inset 0 0 0 1.5px #2e7d52;
+  background: #eef7f1;
+  color: #1f5c3b;
+  font-weight: 600;
+}
+.studio-note-link {
+  display: inline-block;
+  margin-top: 12px;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: #57248a;
+}
+.studio-leader {
+  position: absolute;
+  z-index: 4;
+  left: 0;
+  top: 0;
+  height: 1px;
+  background: rgb(245 242 238 / 0.5);
+  transform-origin: 0 0;
+  opacity: 0;
+  transition: opacity 0.5s;
+  pointer-events: none;
+}
+.studio-leader.is-on {
+  opacity: 1;
+}
+
+/* Without the map: the route as a list */
+.studio-list {
+  position: absolute;
+  z-index: 2;
+  left: max(24px, env(safe-area-inset-left, 0px));
+  top: 180px;
+  max-width: 320px;
+}
+.studio-list h2 {
+  margin: 0 0 8px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--studio-sub);
+}
+.studio-list ol {
+  margin: 0;
+  padding-left: 18px;
+  font-size: 0.875rem;
+}
+.studio-list .is-built {
+  color: #9ee3c1;
+}
+
+.studio-toast {
+  position: absolute;
+  z-index: 7;
+  left: 50%;
+  top: calc(env(safe-area-inset-top, 0px) + 22px);
+  transform: translate(-50%, -14px);
+  opacity: 0;
+  padding: 11px 16px;
+  border-radius: 12px;
+  background: var(--studio-paper);
+  color: #1d1226;
+  font-weight: 500;
+  font-size: 0.9375rem;
+  box-shadow: 0 20px 50px rgb(0 0 0 / 0.45);
+  transition:
+    opacity 0.45s,
+    transform 0.45s cubic-bezier(0.2, 0.8, 0.2, 1);
+  pointer-events: none;
+}
+.studio-toast.is-on {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+@keyframes studio-settle {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+@keyframes studio-word {
+  from {
+    opacity: 0;
+    transform: translateY(0.2em);
+  }
+}
+@keyframes studio-ping {
+  from {
+    transform: scale(0.6);
+    opacity: 1;
+  }
+  to {
+    transform: scale(2.2);
+    opacity: 0;
+  }
+}
+@keyframes studio-pulse {
+  50% {
+    opacity: 0.25;
+  }
+}
+
+@media (max-width: 720px) {
+  .studio-ticks {
+    display: none;
+  }
+  .studio-route-title {
+    font-size: 1.25rem;
+  }
+  .studio-note {
+    width: calc(100vw - 32px);
+  }
+  .studio-label {
+    font-size: 0.75rem;
+  }
+  .studio-label b {
+    font-size: 0.8125rem;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .studio-word,
+  .studio-branch,
+  .studio-route,
+  .studio-note {
+    animation: none;
+  }
+  .studio-mark-here::after,
+  .studio-status-dot {
+    animation: none;
+  }
+  .studio-toast,
+  .studio-leader,
+  .studio-mark {
+    transition: none;
+  }
+}

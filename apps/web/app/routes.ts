@@ -3,6 +3,7 @@ import { index, type RouteConfig, route } from "@react-router/dev/routes";
 export default [
   index("routes/locale-redirect.tsx"),
   route("creador", "routes/creador.tsx"),
+  route("creador/asistente", "routes/asistente.tsx"),
   route("creador/pagina", "routes/creador-pagina.tsx"),
   route("creador/conecta", "routes/conecta.tsx"),
   route("creador/conexiones", "routes/conexiones.tsx"),
