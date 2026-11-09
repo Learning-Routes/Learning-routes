@@ -28,9 +28,10 @@
     // Every assistant together, a day: $20.
     "AGENT_DAILY_MICROCENTS": "20000000"
   },
-  // The same secrets as the MCP's. OPENROUTER_API_KEY is optional: without it the assistant says it
-  // is not switched on yet, and calls no model.
-  "secrets": { "required": ["BETTER_AUTH_SECRET", "CONTENT_SIGNING_SECRET"] },
+  // BETTER_AUTH_SECRET, the API's, to read its sessions. No CONTENT_SIGNING_SECRET: the assistant
+  // uploads no creations, so it asks for no thumbnails. OPENROUTER_API_KEY is optional: without it
+  // the assistant says it is not switched on yet, and calls no model.
+  "secrets": { "required": ["BETTER_AUTH_SECRET"] },
   "durable_objects": {
     "bindings": [
       { "name": "Studio", "class_name": "Studio" },
