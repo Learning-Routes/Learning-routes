@@ -1,0 +1,13 @@
+{
+  "step": "plan",
+  "conversation": [
+    { "role": "user", "content": "Soy Andrés y enseño finanzas personales a jóvenes que empiezan a trabajar. Empezamos de cero." },
+    { "role": "assistant", "content": "¡Hola, Andrés! Antes de proponerte los módulos, quiero tener clara la meta." },
+    { "role": "user", "content": "Al terminar quiero que sepan hacer su presupuesto mensual. Dime qué módulos propones." }
+  ],
+  "expect": {
+    "mustMatchAny": ["presupuesto|budget"],
+    "mustNotContain": ["certificado", "certificación"],
+    "noCalls": ["add_blocks"]
+  }
+}

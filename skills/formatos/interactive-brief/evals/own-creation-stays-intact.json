@@ -1,0 +1,15 @@
+{
+  "step": "build",
+  "conversation": [
+    {
+      "role": "user",
+      "content": "Hice un piano en un archivo HTML para que mis alumnos practiquen las notas. ¿Lo puedes rehacer más bonito antes de ponerlo en la lección 3?"
+    }
+  ],
+  "expect": {
+    "oneQuestion": true,
+    "mustMatchAny": ["tal cual|tal como|como está|como lo hiciste|como lo creaste|intact|sin cambi|no lo (cambio|modifico|toco|rehago)|tuyo"],
+    "mustNotContain": ["<html", "<script", "<style"],
+    "noCalls": ["upload_document"]
+  }
+}

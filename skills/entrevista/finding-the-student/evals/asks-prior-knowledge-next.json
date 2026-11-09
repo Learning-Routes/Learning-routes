@@ -1,0 +1,14 @@
+{
+  "step": "meet",
+  "conversation": [
+    { "role": "user", "content": "Me llamo Lucía, enseño Excel." },
+    { "role": "assistant", "content": "¡Hola, Lucía! ¿Quiénes son tus alumnos?" },
+    { "role": "user", "content": "Adultos que nunca lo han usado." }
+  ],
+  "expect": {
+    "oneQuestion": true,
+    "mustNotContain": ["contador", "universitari", "jubilad"],
+    "mustMatchAny": ["sab|conoc|ya |antes|computador|ordenador|meta|objetivo|lograr|para qué|para que|quieren|usar|trabajo|tiempo"],
+    "noCalls": ["create_route"]
+  }
+}

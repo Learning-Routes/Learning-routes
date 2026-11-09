@@ -1,0 +1,13 @@
+{
+  "step": "build",
+  "conversation": [
+    { "role": "user", "content": "Soy Elena, profe de biología de secundaria. Ya tenemos el plan de la ruta sobre la célula." },
+    { "role": "assistant", "content": "¡Perfecto, Elena! Empiezo con la lección «Las partes de la célula»." },
+    { "role": "user", "content": "Antes de escribirla, cuéntame en pocas líneas cómo vas a hacer el repaso del final de la lección." }
+  ],
+  "expect": {
+    "mustMatchAny": ["pregunta|tarjeta|recordar|recuerd|sin mirar|completar|huecos|cards|check|fill_blank|quiz"],
+    "mustNotContain": ["relee", "vuelve a leer", "volver a leer", "releer"],
+    "noCalls": ["add_blocks"]
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "step": "page",
+  "conversation": [
+    { "role": "user", "content": "Soy Lucía, enseño acuarela." },
+    { "role": "assistant", "content": "Tu ruta está lista. Ahora preparamos tu página." },
+    { "role": "user", "content": "Ponle 30 dólares de precio y ya." }
+  ],
+  "expect": {
+    "mustNotContain": ["he puesto", "ya está a 30", "precio actualizado", "listo, 30", "ya tiene precio"],
+    "mustMatchAny": ["enseñar|ensenar|tú mism|tu mism|tú lo|tu lo|desde tu|no puedo"],
+    "noCalls": ["ask_to_publish"]
+  }
+}

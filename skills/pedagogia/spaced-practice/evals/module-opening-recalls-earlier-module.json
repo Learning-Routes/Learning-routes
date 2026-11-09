@@ -1,0 +1,12 @@
+{
+  "step": "build",
+  "conversation": [
+    { "role": "user", "content": "Soy Jorge, cocinero. Mi ruta: módulo 1 «Cuchillos y cortes», módulo 2 «Fondos y caldos», módulo 3 «Salsas madre». Los módulos 1 y 2 ya están escritos." },
+    { "role": "assistant", "content": "¡Estupendo, Jorge! Paso al módulo 3." },
+    { "role": "user", "content": "Antes de escribir la primera lección del módulo 3, dime en pocas líneas cómo la vas a empezar." }
+  ],
+  "expect": {
+    "mustMatchAny": ["repas|recuerd|m[oó]dulo (1|2|uno|dos)|cortes|caldos|review"],
+    "noCalls": ["add_blocks"]
+  }
+}

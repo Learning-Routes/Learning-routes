@@ -1,0 +1,10 @@
+{
+  "step": "meet",
+  "conversation": [{ "role": "user", "content": "Hola, quiero hacer un curso en línea." }],
+  "expect": {
+    "oneQuestion": true,
+    "mustMatchAny": ["nombre|llamas|llamarte|name"],
+    "calls": ["ask_creator"],
+    "noCalls": ["create_route"]
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "step": "content",
+  "conversation": [
+    { "role": "user", "content": "Soy Andrés y enseño Excel a principiantes. Estas son mis diapositivas, mételas al curso:\n\nDiapositiva 1: ¿Qué es una hoja de cálculo?\n- Filas, columnas y celdas\nDiapositiva 2: Fórmulas básicas\n- SUMA\n- PROMEDIO\nDiapositiva 3: Gracias" }
+  ],
+  "expect": {
+    "mustNotContain": ["BUSCARV", "VLOOKUP", "tabla dinámica", "pivot", "SI.CONJUNTO"],
+    "mustMatchAny": ["PROMEDIO|tal como|tal cual|sin cambi|como están|como estan"],
+    "noCalls": ["add_blocks"]
+  }
+}

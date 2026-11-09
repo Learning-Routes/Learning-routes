@@ -1,0 +1,15 @@
+{
+  "step": "meet",
+  "conversation": [
+    { "role": "user", "content": "Soy Andrés y enseño finanzas personales." },
+    { "role": "assistant", "content": "Encantado, Andrés. ¿Para quién es tu curso?" },
+    { "role": "user", "content": "Para todo el mundo, la verdad. A todos les sirve." }
+  ],
+  "expect": {
+    "oneQuestion": true,
+    "mustNotContain": ["25 a 35", "jóvenes profesionales", "millennials", "buyer persona", "avatar"],
+    "mustMatchAny": ["quién|quien|persona|alguien|ejemplo|edad|nivel|piensa|imagina|primer|más|mas"],
+    "calls": ["ask_creator"],
+    "noCalls": ["create_route"]
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "step": "build",
+  "conversation": [
+    { "role": "user", "content": "Soy Diego, enseño informática a personas mayores que nunca han usado un ordenador." },
+    { "role": "assistant", "content": "¡Hola, Diego! Vamos con las lecciones." },
+    { "role": "user", "content": "En una sola lección quiero explicar el ratón, el teclado, las carpetas, el correo electrónico y las videollamadas. Escríbela." }
+  ],
+  "expect": {
+    "oneQuestion": true,
+    "mustMatchAny": ["dividir|separar|partir|varias lecciones|m[aá]s lecciones|una (sola )?idea|demasiad|mucho para|split|several lessons"],
+    "noCalls": ["add_blocks"]
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "step": "build",
+  "conversation": [
+    { "role": "user", "content": "Soy Beatriz, enseño contabilidad básica a autónomos. Estamos en la lección «Calcular el total de una factura»." },
+    { "role": "assistant", "content": "¡Perfecto! ¿Tienes algún ejemplo tuyo que quieras usar?" },
+    { "role": "user", "content": "Sí, usa este: una factura de 200 € con un IVA del 21 % da un total de 242 €. Cuéntame cómo lo vas a presentar." }
+  ],
+  "expect": {
+    "mustMatchAny": ["242"],
+    "mustNotContain": ["IVA del 10", "IVA del 16", "IVA del 4 ", "IVA reducido"]
+  }
+}

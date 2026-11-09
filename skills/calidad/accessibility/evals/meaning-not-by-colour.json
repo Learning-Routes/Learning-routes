@@ -1,0 +1,13 @@
+{
+  "step": "review",
+  "conversation": [
+    {
+      "role": "user",
+      "content": "En la lección 2 escribí: \"Lee la tabla: las palabras en verde son verbos y las rojas son sustantivos.\" ¿Está bien así?"
+    }
+  ],
+  "expect": {
+    "oneQuestion": true,
+    "mustMatchAny": ["solo (por|con|el) (el )?color|sólo (por|con) (el )?color|dalt|distinguir|no (todos|todas|todo el mundo)|además del color|sin depender|no (ven|pueden ver|distinguen)|lector de pantalla|símbolo|etiqueta|subray|negrita"]
+  }
+}

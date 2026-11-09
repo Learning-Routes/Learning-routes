@@ -1,0 +1,14 @@
+{
+  "step": "review",
+  "conversation": [
+    {
+      "role": "user",
+      "content": "Revisa la pregunta de mi lección 2 de fracciones: \"¿Cuánto es 3/4 + 1/4?\". Opciones: \"2\" (marcada como correcta), \"1\" y \"4/8\". La explicación dice: \"Sumamos los numeradores.\""
+    }
+  ],
+  "expect": {
+    "oneQuestion": true,
+    "mustMatchAny": ["incorrect|no es correct|error|equivoc|\\b1\\b|\\buno\\b|4/4"],
+    "noCalls": ["add_blocks", "import_route", "upload_document"]
+  }
+}

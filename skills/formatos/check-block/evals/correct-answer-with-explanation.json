@@ -1,0 +1,14 @@
+{
+  "step": "build",
+  "conversation": [
+    {
+      "role": "user",
+      "content": "Estamos en la lección de capitales de Oceanía. Escribe una pregunta de opción múltiple sobre la capital de Australia, con su explicación."
+    }
+  ],
+  "expect": {
+    "oneQuestion": true,
+    "mustMatchAny": ["canberra"],
+    "noCalls": ["upload_document", "import_route"]
+  }
+}

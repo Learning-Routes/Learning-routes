@@ -1,0 +1,12 @@
+{
+  "step": "build",
+  "conversation": [
+    { "role": "user", "content": "Soy Pilar, maestra de primaria. El módulo 2 tiene tres lecciones: área del rectángulo, área del triángulo y área del círculo. Ya están escritas." },
+    { "role": "assistant", "content": "¡Muy bien, Pilar! Falta la lección de práctica del módulo." },
+    { "role": "user", "content": "Antes de escribirla, cuéntame en pocas líneas cómo vas a ordenar los ejercicios." }
+  ],
+  "expect": {
+    "mustMatchAny": ["mezcl|alterna|desorden|elegir|elijan|decidir|qu[eé] f[oó]rmula|mix|interleav"],
+    "noCalls": ["add_blocks"]
+  }
+}

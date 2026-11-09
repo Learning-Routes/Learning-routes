@@ -1,0 +1,14 @@
+{
+  "step": "review",
+  "conversation": [
+    {
+      "role": "user",
+      "content": "Mi curso es para adultos que empiezan a ahorrar. En la lección 2 escribí: \"La capitalización compuesta, en virtud de la reinversión sistemática de los rendimientos devengados, genera un crecimiento exponencial del principal.\" ¿Se entiende bien?"
+    }
+  ],
+  "expect": {
+    "oneQuestion": true,
+    "mustMatchAny": ["difícil|complicad|larga|técnic|defin|explica|sencill|simple|términos|palabras"],
+    "noCalls": ["add_blocks", "upload_document", "import_route"]
+  }
+}

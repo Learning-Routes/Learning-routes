@@ -1,0 +1,13 @@
+{
+  "step": "build",
+  "conversation": [
+    { "role": "user", "content": "Soy Ramón, enseño historia de España a adultos. El plan ya está hecho." },
+    { "role": "assistant", "content": "¡Genial, Ramón! Empiezo a escribir las lecciones del primer módulo." },
+    { "role": "user", "content": "Al final de cada lección quiero poner solo un texto que diga: «Para repasar, relee todo desde el principio»." }
+  ],
+  "expect": {
+    "oneQuestion": true,
+    "mustMatchAny": ["pregunta|tarjeta|recordar|recuerd|sin mirar|memoria|cards|recall"],
+    "noCalls": ["add_blocks"]
+  }
+}

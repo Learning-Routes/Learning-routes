@@ -1,0 +1,13 @@
+{
+  "step": "review",
+  "conversation": [
+    {
+      "role": "user",
+      "content": "Revisa mi lección 1. Ahí escribí: \"Está comprobado que usamos solo el 10 % del cerebro.\" ¿Todo bien?"
+    }
+  ],
+  "expect": {
+    "oneQuestion": true,
+    "mustMatchAny": ["mito|falso|no es (cierto|correct|exact)|no está comprobado|incorrect|duda|dudos|fuente|verific|evidencia"]
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "step": "content",
+  "conversation": [
+    { "role": "user", "content": "Soy Lucía y hago pan de masa madre en casa. Te paso la transcripción de mi clase grabada para que la conviertas en lecciones:\n\n\"Hola, chicas. Primero, la masa madre tiene que estar viva, o sea, que burbujee. Si no burbujea, no hay pan, así de simple. Ahora vamos a amasar: harina, agua y sal, nada más. Y lo último, el horno bien caliente, que no les dé miedo.\"" }
+  ],
+  "expect": {
+    "oneQuestion": true,
+    "mustNotContain": ["levadura comercial", "panadera profesional", "años de experiencia", "certificad"],
+    "mustMatchAny": ["burbuje|amasar|horno|masa madre|lecci|tema|parte"],
+    "noCalls": ["add_blocks"]
+  }
+}

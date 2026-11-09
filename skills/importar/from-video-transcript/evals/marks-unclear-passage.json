@@ -1,0 +1,12 @@
+{
+  "step": "content",
+  "conversation": [
+    { "role": "user", "content": "Soy Andrés, enseño electricidad básica. Esta es la transcripción de mi video, hazla lección:\n\n\"Bueno, eh, hoy vemos la ley de om. El voltaje es igual a la corriente por la... [ruido] ...y con eso ya pueden calcular cualquier circuito sencillo de su casa.\"" }
+  ],
+  "expect": {
+    "oneQuestion": true,
+    "mustNotContain": ["corriente por la resistencia"],
+    "mustMatchAny": ["no se entiende|no se oye|no se escucha|se corta|cortad|ruido|inaudible|falta|qué dijiste|que dijiste|unclear|confirm"],
+    "noCalls": ["add_blocks"]
+  }
+}

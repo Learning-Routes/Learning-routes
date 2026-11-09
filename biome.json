@@ -13,7 +13,8 @@
       "!packages/design-tokens/tokens.css",
       "!packages/design-tokens/depth.css",
       "!docs/design/reference",
-      "!pnpm-lock.yaml"
+      "!pnpm-lock.yaml",
+      "!packages/core/src/studio/skills.gen.ts"
     ]
   },
   "formatter": {

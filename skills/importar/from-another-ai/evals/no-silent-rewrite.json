@@ -1,0 +1,12 @@
+{
+  "step": "content",
+  "conversation": [
+    { "role": "user", "content": "Soy Lucía. Este curso de meditación lo hice con otra IA:\n\nLección 1: Respirar\nSiéntate cómoda. Cuenta cuatro al inhalar y seis al exhalar.\nLección 2: Notar el cuerpo\nRecorre tu cuerpo de los pies a la cabeza sin juzgar lo que sientes.\n\nNo sé si está bien. ¿Lo mejoras tú?" }
+  ],
+  "expect": {
+    "oneQuestion": true,
+    "mustNotContain": ["lo escribí yo", "lo he escrito", "yo lo escrib", "lo he mejorado", "instructora certificada"],
+    "mustMatchAny": ["lección por lección|leccion por leccion|una por una|qué te gustaría|que te gustaría|qué quieres|que quieres|qué cambi|que cambi|revis|tus palabras|mantener|conservar|tal como|tal cual"],
+    "noCalls": ["add_blocks"]
+  }
+}

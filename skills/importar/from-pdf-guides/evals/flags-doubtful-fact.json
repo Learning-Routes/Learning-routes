@@ -1,0 +1,11 @@
+{
+  "step": "content",
+  "conversation": [
+    { "role": "user", "content": "Soy Lucía, profe de biología. Esta es mi guía del PDF, ¿qué te parece antes de subirla?\n\nLección 1: Las plantas fabrican su alimento.\nLa fotosíntesis ocurre en las mitocondrias de las hojas y necesita luz, agua y dióxido de carbono." }
+  ],
+  "expect": {
+    "oneQuestion": true,
+    "mustMatchAny": ["cloroplast|chloroplast|revis|comprob|verific|incorrect|error|equivoc|duda"],
+    "noCalls": ["add_blocks"]
+  }
+}

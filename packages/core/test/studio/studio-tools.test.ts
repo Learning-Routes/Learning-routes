@@ -10,6 +10,7 @@ describe("the assistant's own tools", () => {
       "set_step",
       "show_lesson",
       "ask_to_publish",
+      "load_skill",
     ]);
     for (const tool of STUDIO_TOOLS) {
       expect(tool.function.parameters).toMatchObject({ type: "object" });
@@ -66,6 +67,14 @@ describe("the assistant's own tools", () => {
         options: [{ label: "Colegio", decision: "Para colegio" }],
       }).ok,
     ).toBe(false);
+  });
+
+  it("load a skill by its name", () => {
+    expect(call("load_skill", { name: "retrieval-practice" })).toEqual({
+      ok: true,
+      call: { name: "load_skill", skill: "retrieval-practice" },
+    });
+    expect(call("load_skill", { name: "../secret" }).ok).toBe(false);
   });
 
   it("know only the guided steps, and ids that look like ids", () => {

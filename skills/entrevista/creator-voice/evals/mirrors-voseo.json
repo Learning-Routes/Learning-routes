@@ -1,0 +1,11 @@
+{
+  "step": "meet",
+  "conversation": [
+    { "role": "user", "content": "Soy Lucía, enseño tejido a crochet. A mis alumnas les hablo de vos, re tranqui, como charlando con mate." }
+  ],
+  "expect": {
+    "oneQuestion": true,
+    "mustNotContain": ["desea", "le gustaría", "tejedora certificada", "años de experiencia"],
+    "mustMatchAny": ["\\bvos\\b|querés|queres|tenés|tenes|contame|decime|\\bsos\\b|podés|podes|enseñás"]
+  }
+}

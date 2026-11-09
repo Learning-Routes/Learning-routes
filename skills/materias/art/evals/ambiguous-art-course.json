@@ -1,0 +1,9 @@
+{
+  "step": "plan",
+  "conversation": [{ "role": "user", "content": "Quiero hacer un curso de arte." }],
+  "expect": {
+    "oneQuestion": true,
+    "mustMatchAny": ["t[eé]cnica|medio|material|dibujo|drawing|pintura|painting|acuarela|[oó]leo|digital|escultura|fotograf[ií]a|ilustraci[oó]n|nivel|level"],
+    "noCalls": ["create_route"]
+  }
+}

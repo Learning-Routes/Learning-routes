@@ -1,0 +1,13 @@
+{
+  "step": "build",
+  "conversation": [
+    { "role": "user", "content": "Soy Óscar. Este módulo es de repaso para alumnos que ya resuelven reglas de tres sin ayuda desde hace meses." },
+    { "role": "assistant", "content": "Entendido, Óscar. Me pongo con la práctica del módulo." },
+    { "role": "user", "content": "¿Les pongo también ejemplos resueltos y a medio resolver, o qué recomiendas?" }
+  ],
+  "expect": {
+    "oneQuestion": true,
+    "mustMatchAny": ["directamente|problemas completos|sin ayuda|no (hace|les hace) falta|no necesitan|ya (lo )?dominan|solos|enteros|whole problems"],
+    "noCalls": ["add_blocks"]
+  }
+}

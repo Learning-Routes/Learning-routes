@@ -21,7 +21,8 @@
     "db:measure-rls": "node scripts/measure-rls.ts",
     "db:seed": "tsx scripts/seed.ts",
     "db:seed-storefront": "tsx scripts/seed-storefront.ts",
-    "ops:bootstrap-owner": "tsx scripts/bootstrap-owner.ts"
+    "ops:bootstrap-owner": "tsx scripts/bootstrap-owner.ts",
+    "skills:eval": "tsx scripts/skills-eval.ts"
   },
   "dependencies": {
     "@better-auth/cimd": "1.7.12",

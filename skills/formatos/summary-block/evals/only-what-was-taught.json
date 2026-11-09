@@ -1,0 +1,14 @@
+{
+  "step": "build",
+  "conversation": [
+    {
+      "role": "user",
+      "content": "La lección 2 explica tres cosas: la evaporación, la condensación y la precipitación. Escribe el resumen para cerrarla."
+    }
+  ],
+  "expect": {
+    "oneQuestion": true,
+    "mustMatchAny": ["evapora"],
+    "mustNotContain": ["infiltración", "transpiración", "escorrentía", "sublimación"]
+  }
+}
