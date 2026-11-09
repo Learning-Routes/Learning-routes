@@ -23,6 +23,8 @@
     "CONTENT_ORIGIN": "https://lrusercontent.com",
     // Microcents (a millionth of a dollar). Each space's assistant, a month: $5.
     "AGENT_SPACE_MONTHLY_MICROCENTS": "5000000",
+    // Each creator, a day, in one space: $2.
+    "AGENT_USER_DAILY_MICROCENTS": "2000000",
     // Every assistant together, a day: $20.
     "AGENT_DAILY_MICROCENTS": "20000000"
   },

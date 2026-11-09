@@ -6,13 +6,14 @@ import type { RouteDraft } from "@learning-routes/core/repos/ports";
 import { builtOf, lessonPreviewOf, plannedOf } from "@learning-routes/core/studio/draft";
 import { askText, type StudioCall } from "@learning-routes/core/studio/studio-tools";
 import type { ContentTool } from "@learning-routes/core/studio/turn";
+import { pgTenancy } from "../db/tenancy";
 import { type Database, transactionAs, withClient } from "../db/with-db";
 import { type Caller, callTool, ctxFor } from "../mcp/call-tool";
 import { TOOLS } from "../mcp/tools";
 import { readSessions } from "./auth";
 import { contentTool } from "./content-tools";
+import type { Seat, StudioPlace } from "./conversation";
 import type { AgentEnv } from "./env";
-import type { Studio } from "./studio";
 
 // What the assistant's turns do outside the model (Platform STEP 10 §1): content tools through the
 // MCP's own runner with via "agent", the page's events read from the real draft, and publishing,
@@ -21,12 +22,6 @@ import type { Studio } from "./studio";
 /** A tool's answer, as the model reads it: never longer than this. */
 const MOST_RESULT_CHARS = 12_000;
 const SCHEME = /^https?:\/\//;
-
-interface Seat {
-  userId: string;
-  conversationId: string;
-  locale: LocaleCode;
-}
 
 type Answer = { isError?: boolean; content: { text: string }[]; structuredContent?: unknown };
 
@@ -42,7 +37,7 @@ function formatted(draft: RouteDraft, locale: string): string | null {
 
 export class Effects {
   constructor(
-    private readonly agent: Studio,
+    private readonly agent: StudioPlace,
     private readonly env: AgentEnv,
     private readonly waitFor: Pick<ExecutionContext, "waitUntil">,
     private readonly seat: Seat,
@@ -63,6 +58,16 @@ export class Effects {
     });
   }
 
+  /** Whether this creator still edits the space. */
+  stillEditor(): Promise<boolean> {
+    return this.db(async (db, caller) => {
+      const scope = await transactionAs(db, caller.userId, (tx) =>
+        pgTenancy(tx).scopeOf({ kind: "space", id: String(caller.spaceId) }, caller.userId),
+      );
+      return scope?.role === "owner" || scope?.role === "coeditor";
+    });
+  }
+
   private draft(db: Database, caller: Caller, routeId: string): Promise<RouteDraft | null> {
     return transactionAs(db, caller.userId, async (tx) => {
       const read = await runAction(ACTIONS, "route.get", { routeId }, ctxFor(tx, caller));
@@ -72,7 +77,7 @@ export class Effects {
     });
   }
 
-  private emit = (event: Parameters<Studio["emit"]>[1]) =>
+  private emit = (event: Parameters<StudioPlace["emit"]>[1]) =>
     this.agent.emit(this.seat.conversationId, event, true);
 
   runContentTool = async (name: ContentTool, argumentsText: string) => {

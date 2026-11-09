@@ -1,6 +1,6 @@
 import { gate } from "@learning-routes/core/ai/gate";
 import type { ModelId } from "@learning-routes/core/ai/models";
-import { budgetOf } from "@learning-routes/core/studio/budget";
+import { budgetOf, limitsOf } from "@learning-routes/core/studio/budget";
 import { trimHistory } from "@learning-routes/core/studio/prompt";
 import { STUDIO_TOOLS } from "@learning-routes/core/studio/studio-tools";
 import type { TurnDeps } from "@learning-routes/core/studio/turn";
@@ -24,8 +24,11 @@ const HISTORY_TOKENS = 40_000;
 const STREAM_EVERY_MS = 120;
 
 export interface SpendBook {
-  /** Charged this month and today, in microcents. */
-  spent(now: number): { month: number; today: number };
+  /**
+   * In microcents: the space's month, this creator's day in the space, and when the space's calls
+   * of the last minute were made.
+   */
+  spent(now: number): { month: number; userToday: number; lastMinute: number[] };
   record(row: {
     model: ModelId;
     microcents: number;
@@ -48,32 +51,55 @@ function throttled(onText: (text: string) => void) {
   };
 }
 
-async function meter(env: AgentEnv, book: SpendBook, model: ModelId, streamed: Streamed) {
+/**
+ * What a call cost, in the space's book and the platform's day. A call that reached a model but
+ * came back without its cost is booked at the gate's worst case, so no call is ever free to the budget.
+ */
+async function meter(
+  env: AgentEnv,
+  book: SpendBook,
+  model: ModelId,
+  streamed: Streamed,
+  worstCase: number,
+) {
   const usage = streamed.usage;
-  if (usage?.cost.kind !== "known") {
+  const known = usage?.cost.kind === "known" ? usage.cost.microcents : null;
+  if (known === null && !(streamed.ok || streamed.reached)) {
     return;
   }
+  const microcents = known ?? worstCase;
   book.record({
     model,
-    microcents: usage.cost.microcents,
-    promptTokens: usage.promptTokens,
-    cachedTokens: usage.cachedTokens,
-    completionTokens: usage.completionTokens,
-    isCharged: streamed.ok,
+    microcents,
+    promptTokens: usage?.promptTokens ?? 0,
+    cachedTokens: usage?.cachedTokens ?? 0,
+    completionTokens: usage?.completionTokens ?? 0,
+    isCharged: streamed.ok || known === null,
   });
-  await env.LEDGER.get(env.LEDGER.idFromName("global")).add(usage.cost.microcents);
+  await env.LEDGER.get(env.LEDGER.idFromName("global")).add(microcents);
 }
 
 export function modelCall(
   env: AgentEnv,
   book: SpendBook,
-  conversation: { id: string; system: string },
+  conversation: { id: string; system: () => string },
 ): TurnDeps["call"] {
-  const monthly = Number(env.AGENT_SPACE_MONTHLY_MICROCENTS);
+  const limits = limitsOf({
+    spaceMonthly: env.AGENT_SPACE_MONTHLY_MICROCENTS,
+    userDaily: env.AGENT_USER_DAILY_MICROCENTS,
+    daily: env.AGENT_DAILY_MICROCENTS,
+  });
+  if (env.OPENROUTER_API_KEY && !limits) {
+    console.error(JSON.stringify({ message: "studio limits are not configured" }));
+  }
   return async (model, messages, onText) => {
     const now = Date.now();
     const spent = book.spent(now);
-    if (budgetOf(spent.month, monthly) === "out" || !env.OPENROUTER_API_KEY) {
+    // No key, no limits or no month left: the assistant says so, and calls no model.
+    if (
+      !(env.OPENROUTER_API_KEY && limits) ||
+      budgetOf(spent.month, limits.spaceMonthly) === "out"
+    ) {
       return { ok: false, why: "budgetOut" };
     }
     const decision = gate(
@@ -83,23 +109,22 @@ export function modelCall(
         promptCache: true,
         // Never a user id: the conversation's own id keeps its calls on one provider's cache.
         sessionId: `studio-${conversation.id}`,
-        system: conversation.system,
+        system: conversation.system(),
         messages: trimHistory(messages, HISTORY_TOKENS),
         tools: MODEL_TOOLS,
         stream: true,
       },
       {
-        // The space's month is the per-space ceiling; the gate's "user" is this space, today.
         limits: {
-          dailyMicrocents: Number(env.AGENT_DAILY_MICROCENTS),
-          userDailyMicrocents: monthly,
-          ratePerMinute: null,
+          dailyMicrocents: limits.daily,
+          userDailyMicrocents: limits.userDaily,
+          ratePerMinute: limits.perMinute,
         },
         spend: {
           globalToday: await env.LEDGER.get(env.LEDGER.idFromName("global")).today(),
-          userToday: spent.today,
+          userToday: spent.userToday,
         },
-        consumedAt: [],
+        consumedAt: spent.lastMinute,
         now,
       },
     );
@@ -112,7 +137,7 @@ export function modelCall(
       env.OPENROUTER_API_KEY,
       throttled(onText),
     );
-    await meter(env, book, model, streamed);
+    await meter(env, book, model, streamed, decision.estimateMicrocents);
     if (!streamed.ok) {
       console.error(JSON.stringify({ message: "studio call failed", status: streamed.status }));
       return { ok: false, why: "failed" };

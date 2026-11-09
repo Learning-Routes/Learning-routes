@@ -127,6 +127,8 @@ module.exports = {
           "^apps/api/src/auth/",
           // The OAuth provider is Better Auth too, in the MCP Worker (Platform STEP 5 §2).
           "^apps/api/src/mcp/auth\\.ts$",
+          // The assistant's Worker reads the sessions the API makes (Platform STEP 10).
+          "^apps/api/src/agent/auth\\.ts$",
           "^apps/api/src/db/schema/",
           "^apps/api/drizzle\\.config\\.ts$",
         ],

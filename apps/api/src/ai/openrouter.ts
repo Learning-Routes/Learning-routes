@@ -15,11 +15,13 @@ export function sendToOpenRouter(
   allowed: Allowed,
   apiKey: string,
   fetcher: typeof fetch = fetch,
+  signal?: AbortSignal,
 ): Promise<Response> {
   return fetcher(ENDPOINT, {
     method: "POST",
     headers: { authorization: `Bearer ${apiKey}`, "content-type": "application/json" },
     body: JSON.stringify(allowed.request),
+    ...(signal ? { signal } : {}),
   });
 }
 
@@ -65,8 +67,14 @@ type ToolCall = { id: string; type: "function"; function: { name: string; argume
 
 export type Streamed =
   | { ok: true; content: string; toolCalls: ToolCall[]; usage: Settled | null }
-  /** usage is what the failed call still cost, when OpenRouter said; null when nothing reached a model. */
-  | { ok: false; status: number; usage: Settled | null };
+  /**
+   * usage is what the failed call cost, when OpenRouter said. reached: whether it got to a model,
+   * so it may have cost something even without a usage.
+   */
+  | { ok: false; status: number; usage: Settled | null; reached: boolean };
+
+/** The longest a streamed answer may take, start to end. */
+const STREAM_MS = 90_000;
 
 interface Chunk {
   error?: unknown;
@@ -111,32 +119,58 @@ export async function streamFromOpenRouter(
   onText: (textSoFar: string) => void,
   fetcher: typeof fetch = fetch,
 ): Promise<Streamed> {
-  const response = await sendToOpenRouter(allowed, apiKey, fetcher);
+  let response: Response;
+  try {
+    response = await sendToOpenRouter(allowed, apiKey, fetcher, AbortSignal.timeout(STREAM_MS));
+  } catch {
+    return { ok: false, status: 504, usage: null, reached: false };
+  }
   if (!(response.ok && response.body)) {
-    return { ok: false, status: response.status, usage: null };
+    return { ok: false, status: response.status, usage: null, reached: false };
   }
-  let content = "";
-  let usage: Settled | null = null;
-  const calls: ToolCall[] = [];
-  for await (const chunk of events(response.body)) {
-    if (chunk.usage) {
-      usage = settle({ usage: chunk.usage });
+  const answer = { content: "", usage: null as Settled | null, calls: [] as ToolCall[] };
+  try {
+    for await (const chunk of events(response.body)) {
+      if (chunk.usage) {
+        answer.usage = settle({ usage: chunk.usage });
+      }
+      if (chunk.error) {
+        return { ok: false, status: 502, usage: answer.usage, reached: true };
+      }
+      take(answer, chunk, onText);
     }
-    if (chunk.error) {
-      return { ok: false, status: 502, usage };
-    }
-    const delta = chunk.choices?.[0]?.delta;
-    if (delta?.content) {
-      content += delta.content;
-      onText(content);
-    }
-    for (const piece of delta?.tool_calls ?? []) {
-      calls[piece.index] ??= { id: "", type: "function", function: { name: "", arguments: "" } };
-      const call = calls[piece.index] as ToolCall;
-      call.id ||= piece.id ?? "";
-      call.function.name += piece.function?.name ?? "";
-      call.function.arguments += piece.function?.arguments ?? "";
-    }
+  } catch {
+    // A broken event or a timeout mid-stream: the call reached a model all the same.
+    return { ok: false, status: 502, usage: answer.usage, reached: true };
   }
-  return { ok: true, content, toolCalls: calls.filter(Boolean), usage };
+  return {
+    ok: true,
+    content: answer.content,
+    toolCalls: answer.calls.filter(Boolean),
+    usage: answer.usage,
+  };
+}
+
+/** One event's words and tool-call pieces, added to the answer so far. */
+function take(
+  answer: { content: string; calls: ToolCall[] },
+  chunk: Chunk,
+  onText: (textSoFar: string) => void,
+) {
+  const delta = chunk.choices?.[0]?.delta;
+  if (delta?.content) {
+    answer.content += delta.content;
+    onText(answer.content);
+  }
+  for (const piece of delta?.tool_calls ?? []) {
+    answer.calls[piece.index] ??= {
+      id: "",
+      type: "function",
+      function: { name: "", arguments: "" },
+    };
+    const call = answer.calls[piece.index] as ToolCall;
+    call.id ||= piece.id ?? "";
+    call.function.name += piece.function?.name ?? "";
+    call.function.arguments += piece.function?.arguments ?? "";
+  }
 }

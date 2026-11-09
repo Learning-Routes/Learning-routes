@@ -1,13 +1,14 @@
 import type { ModelMessage } from "@learning-routes/core/ai/gate";
 import { AGENT_TEXT, type WorkingOn } from "@learning-routes/core/copy/agent";
 import { LOCALES, type LocaleCode } from "@learning-routes/core/locales";
-import { budgetOf, monthOf } from "@learning-routes/core/studio/budget";
+import { budgetOf } from "@learning-routes/core/studio/budget";
 import { STUDIO_PROMPT, studioContext } from "@learning-routes/core/studio/prompt";
 import type { StudioEvent, StudioOption, StudioStep } from "@learning-routes/core/studio/session";
 import { type ContentTool, runTurn } from "@learning-routes/core/studio/turn";
 import { Agent, type Connection, type ConnectionContext } from "agents";
 import * as z from "zod";
 import { newId } from "../ids";
+import { type ConversationRow, dayOf, monthOf, type Seat, type StudioPlace } from "./conversation";
 import { type AgentEnv, USER_HEADER } from "./env";
 import { modelCall, type SpendBook } from "./model";
 import { Effects } from "./studio-effects";
@@ -23,30 +24,20 @@ const Input = z.discriminatedUnion("type", [
 ]);
 type Input = z.infer<typeof Input>;
 
-interface Seat {
-  userId: string;
-  conversationId: string;
-  locale: LocaleCode;
-}
-
-export interface ConversationRow {
-  id: string;
-  user_id: string;
-  locale: string;
-  step: string;
-  options: string;
-  route_id: string | null;
-  shown_lessons: string | null;
-  pending_publish: string | null;
-  warned_month: string | null;
-}
+/** Turns that may wait behind the running one. */
+const MOST_WAITING = 2;
+/** Conversations a creator keeps in a space; past it, "new" goes on with the latest. */
+const MOST_CONVERSATIONS = 50;
+/** The newest model messages read for a turn; trimHistory sends what fits of them. */
+const MOST_MESSAGES = 400;
 
 const localeOf = (given: string | null): LocaleCode =>
   (LOCALES as readonly string[]).includes(given ?? "") ? (given as LocaleCode) : "es";
 
-export class Studio extends Agent<AgentEnv> {
-  // Not state: only the order of this instance's turns while it is awake.
+export class Studio extends Agent<AgentEnv> implements StudioPlace {
+  // Not state: only the order of this instance's turns while it is awake, and how many wait.
   private turns: Promise<void> = Promise.resolve();
+  private waiting = 0;
 
   override async onStart() {
     this.sql`create table if not exists conversations (id text primary key, user_id text not null,
@@ -67,6 +58,11 @@ export class Studio extends Agent<AgentEnv> {
   // Our protocol only: the SDK's own messages would be noise to the page.
   override shouldSendProtocolMessages() {
     return false;
+  }
+
+  // The SDK's synced state is not used: a page may not write it.
+  override validateStateChange(): void {
+    throw new Error("the assistant keeps no client state");
   }
 
   override async onConnect(connection: Connection, { request }: ConnectionContext) {
@@ -90,26 +86,37 @@ export class Studio extends Agent<AgentEnv> {
   override async onMessage(connection: Connection, message: string | ArrayBuffer) {
     const seat = connection.state as Seat | undefined;
     const read = typeof message === "string" ? Input.safeParse(safeJson(message)) : null;
-    if (!(seat && read?.success)) {
+    // One turn runs and one more may wait; a flood of messages beyond that is dropped.
+    if (!(seat && read?.success) || this.waiting >= MOST_WAITING) {
       return;
     }
+    this.waiting += 1;
     this.turns = this.turns
-      .then(() => this.answer(seat, read.data))
+      .then(() => this.answer(connection, seat, read.data))
       .catch((error: unknown) => {
-        console.error(JSON.stringify({ message: "studio turn failed", error: String(error) }));
+        console.error(
+          JSON.stringify({
+            message: "studio turn failed",
+            error: error instanceof Error ? error.name : "unknown",
+          }),
+        );
         this.emit(
           seat.conversationId,
           { type: "said", text: AGENT_TEXT[seat.locale].failed },
           true,
         );
+      })
+      .finally(() => {
+        this.waiting -= 1;
       });
     await this.turns;
   }
 
   private conversationFor(userId: string, locale: LocaleCode, isNew: boolean): string {
-    const [latest] = this.sql<{ id: string }>`select id from conversations where user_id = ${userId}
-      order by created_at desc limit 1`;
-    if (latest && !isNew) {
+    const [latest] = this.sql<{ id: string; count: number }>`select id,
+      (select count(*) from conversations where user_id = ${userId}) as count
+      from conversations where user_id = ${userId} order by created_at desc limit 1`;
+    if (latest && (!isNew || latest.count >= MOST_CONVERSATIONS)) {
       return latest.id;
     }
     const id = newId();
@@ -152,44 +159,59 @@ export class Studio extends Agent<AgentEnv> {
     }
   }
 
+  /** The newest model messages, oldest first. */
   private history(conversationId: string): ModelMessage[] {
-    return this.sql<{
-      body: string;
-    }>`select body from messages where conversation_id = ${conversationId}
-      order by seq`.map((row) => JSON.parse(row.body) as ModelMessage);
+    return this.sql<{ body: string }>`select body from messages
+      where conversation_id = ${conversationId} order by seq desc limit ${MOST_MESSAGES}`
+      .map((row) => JSON.parse(row.body) as ModelMessage)
+      .reverse();
   }
 
-  private remember(conversationId: string, from: number, messages: ModelMessage[]) {
-    messages.slice(from).forEach((message, at) => {
+  private remember(conversationId: string, added: ModelMessage[]) {
+    const [last] = this.sql<{ seq: number }>`select coalesce(max(seq), 0) as seq from messages
+      where conversation_id = ${conversationId}`;
+    added.forEach((message, at) => {
       this.sql`insert into messages (conversation_id, seq, body)
-        values (${conversationId}, ${from + at + 1}, ${JSON.stringify(message)})`;
+        values (${conversationId}, ${(last?.seq ?? 0) + at + 1}, ${JSON.stringify(message)})`;
     });
   }
 
-  private book(conversationId: string): SpendBook {
+  private book(seat: Seat): SpendBook {
+    const conversationId = seat.conversationId;
     return {
       spent: (now) => {
-        const [row] = this.sql<{ month: number; today: number }>`select
-          coalesce(sum(case when month = ${monthOf(now)} then microcents end), 0) as month,
-          coalesce(sum(case when day = ${new Date(now).toISOString().slice(0, 10)} then microcents end), 0) as today
-          from spend where is_charged = 1`;
-        return { month: row?.month ?? 0, today: row?.today ?? 0 };
+        const day = dayOf(now);
+        const [row] = this.sql<{ month: number; userToday: number }>`select
+          coalesce(sum(case when month = ${monthOf(now)} and is_charged = 1 then microcents end), 0) as month,
+          coalesce(sum(case when day = ${day} and is_charged = 1 and conversation_id in
+            (select id from conversations where user_id = ${seat.userId}) then microcents end), 0) as userToday
+          from spend`;
+        const lastMinute = this.sql<{
+          at: number;
+        }>`select at from spend where at > ${now - 60_000}`.map((call) => call.at);
+        return { month: row?.month ?? 0, userToday: row?.userToday ?? 0, lastMinute };
       },
       record: (row) => {
         const now = Date.now();
         this
           .sql`insert into spend (at, month, day, conversation_id, model, prompt_tokens, cached_tokens,
           completion_tokens, microcents, is_charged) values (${now}, ${monthOf(now)},
-          ${new Date(now).toISOString().slice(0, 10)}, ${conversationId}, ${row.model}, ${row.promptTokens},
+          ${dayOf(now)}, ${conversationId}, ${row.model}, ${row.promptTokens},
           ${row.cachedTokens}, ${row.completionTokens}, ${row.microcents}, ${row.isCharged ? 1 : 0})`;
         console.log(JSON.stringify({ message: "studio model call", ...row }));
       },
     };
   }
 
-  private async answer(seat: Seat, input: Input) {
+  private async answer(connection: Connection, seat: Seat, input: Input) {
     const words = AGENT_TEXT[seat.locale];
     const effects = new Effects(this, this.env, this.ctx, seat);
+    // The role is checked again on every turn: someone removed from the space since they connected
+    // gets nothing more, not even the space's model budget.
+    if (!(await effects.stillEditor())) {
+      connection.close(1008, "not an editor");
+      return;
+    }
     const row = this.conversation(seat.conversationId);
     if (input.type === "publish") {
       await effects.publish(input.isConfirmed);
@@ -219,12 +241,10 @@ export class Studio extends Agent<AgentEnv> {
     const messages = this.history(seat.conversationId);
     const before = messages.length;
     messages.push({ role: "user", content: text });
+    const system = STUDIO_PROMPT + studioContext({ spaceId: this.name, locale: seat.locale });
     const deps = {
       step: row.step as StudioStep,
-      call: modelCall(this.env, this.book(seat.conversationId), {
-        id: seat.conversationId,
-        system: STUDIO_PROMPT + studioContext({ spaceId: this.name, locale: seat.locale }),
-      }),
+      call: modelCall(this.env, this.book(seat), { id: seat.conversationId, system: () => system }),
       runContentTool: effects.runContentTool,
       studio: effects.studio,
       afterWrite: effects.afterWrite,
@@ -242,14 +262,14 @@ export class Studio extends Agent<AgentEnv> {
     try {
       await runTurn(messages, deps);
     } finally {
-      this.remember(seat.conversationId, before, messages);
+      this.remember(seat.conversationId, messages.slice(before));
     }
   }
 
   private warnWhenLow(seat: Seat) {
     const now = Date.now();
     const row = this.conversation(seat.conversationId);
-    const spent = this.book(seat.conversationId).spent(now).month;
+    const spent = this.book(seat).spent(now).month;
     if (
       budgetOf(spent, Number(this.env.AGENT_SPACE_MONTHLY_MICROCENTS)) === "low" &&
       row.warned_month !== monthOf(now)

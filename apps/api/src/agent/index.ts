@@ -14,6 +14,8 @@ import { type AgentEnv, USER_HEADER } from "./env";
 export { SpendLedger } from "./ledger";
 export { Studio } from "./studio";
 
+import type { Studio } from "./studio";
+
 const EDITORS: readonly string[] = ["owner", "coeditor"];
 
 const refuse = (status: number) => new Response(null, { status });
@@ -45,7 +47,10 @@ export default {
     const headers = new Headers(request.headers);
     headers.delete("cookie");
     headers.set(USER_HEADER, userId);
-    const studio = await getAgentByName(env.Studio, spaceId);
+    const studio = await getAgentByName(
+      env.Studio as unknown as DurableObjectNamespace<Studio>,
+      spaceId,
+    );
     return studio.fetch(new Request(request, { headers }));
   },
 } satisfies ExportedHandler<AgentEnv>;
