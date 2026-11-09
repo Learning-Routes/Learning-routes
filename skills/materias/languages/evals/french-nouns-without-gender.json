@@ -8,6 +8,17 @@
   ],
   "expect": {
     "oneQuestion": true,
-    "mustMatchAny": ["art[ií]culo", "g[eé]nero", "gender", "article", "masculin", "femenin", "\\ble pain\\b", "\\bla pomme\\b", "\\bune pomme\\b", "\\bl'eau\\b"]
+    "mustMatchAny": [
+      "art[ií]culo",
+      "g[eé]nero",
+      "gender",
+      "article",
+      "masculin",
+      "femenin",
+      "\\ble pain\\b",
+      "\\bla pomme\\b",
+      "\\bune pomme\\b",
+      "\\bl'eau\\b"
+    ]
   }
 }

@@ -1,13 +1,24 @@
 {
   "step": "build",
   "conversation": [
-    { "role": "user", "content": "Soy Nuria, enseño anatomía básica a estudiantes de auxiliar de enfermería." },
-    { "role": "assistant", "content": "¡Encantada, Nuria! Seguimos con la lección de las capas de la piel." },
-    { "role": "user", "content": "Pon una imagen bonita y música de fondo en cada bloque de la lección, para que sea más entretenida." }
+    {
+      "role": "user",
+      "content": "Soy Nuria, enseño anatomía básica a estudiantes de auxiliar de enfermería."
+    },
+    {
+      "role": "assistant",
+      "content": "¡Encantada, Nuria! Seguimos con la lección de las capas de la piel."
+    },
+    {
+      "role": "user",
+      "content": "Pon una imagen bonita y música de fondo en cada bloque de la lección, para que sea más entretenida."
+    }
   ],
   "expect": {
     "oneQuestion": true,
-    "mustMatchAny": ["distra|atenci[oó]n|sobrecarg|carga|solo (donde|cuando)|ayude a entender|explique|distract"],
+    "mustMatchAny": [
+      "distra|atenci[oó]n|sobrecarg|carga|solo (donde|cuando)|ayude a entender|explique|distract"
+    ],
     "noCalls": ["add_blocks"]
   }
 }

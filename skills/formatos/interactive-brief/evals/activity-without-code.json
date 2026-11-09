@@ -8,7 +8,9 @@
   ],
   "expect": {
     "oneQuestion": true,
-    "mustMatchAny": ["arrastr|complet|parej|tarjeta|escenario|simula|desliz|relacionar|unir|ordenar"],
+    "mustMatchAny": [
+      "arrastr|complet|parej|tarjeta|escenario|simula|desliz|relacionar|unir|ordenar"
+    ],
     "mustNotContain": ["<html", "<script", "javascript"]
   }
 }

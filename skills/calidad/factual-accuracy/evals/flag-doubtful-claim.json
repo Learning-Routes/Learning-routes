@@ -8,6 +8,8 @@
   ],
   "expect": {
     "oneQuestion": true,
-    "mustMatchAny": ["mito|falso|no es (cierto|correct|exact)|no está comprobado|incorrect|duda|dudos|fuente|verific|evidencia"]
+    "mustMatchAny": [
+      "mito|falso|no es (cierto|correct|exact)|no está comprobado|incorrect|duda|dudos|fuente|verific|evidencia"
+    ]
   }
 }

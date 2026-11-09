@@ -8,6 +8,8 @@
   ],
   "expect": {
     "oneQuestion": true,
-    "mustMatchAny": ["una sola|solo una|sólo una|única|una correcta|una respuesta|reformul|cambiar la pregunta|dividir|dos preguntas|separar"]
+    "mustMatchAny": [
+      "una sola|solo una|sólo una|única|una correcta|una respuesta|reformul|cambiar la pregunta|dividir|dos preguntas|separar"
+    ]
   }
 }

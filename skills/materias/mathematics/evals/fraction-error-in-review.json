@@ -8,6 +8,11 @@
   ],
   "expect": {
     "oneQuestion": true,
-    "mustMatchAny": ["5/6", "denominador(es)? com[uú]n", "common denominator", "m[ií]nimo com[uú]n m[uú]ltiplo"]
+    "mustMatchAny": [
+      "5/6",
+      "denominador(es)? com[uú]n",
+      "common denominator",
+      "m[ií]nimo com[uú]n m[uú]ltiplo"
+    ]
   }
 }

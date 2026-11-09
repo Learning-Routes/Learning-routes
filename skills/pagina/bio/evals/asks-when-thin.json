@@ -7,7 +7,15 @@
   ],
   "expect": {
     "oneQuestion": true,
-    "mustNotContain": ["certificad", "RYT", "200 horas", "experta", "reconocida", "miles de", "India"],
+    "mustNotContain": [
+      "certificad",
+      "RYT",
+      "200 horas",
+      "experta",
+      "reconocida",
+      "miles de",
+      "India"
+    ],
     "mustMatchAny": ["lucía|lucia|yoga"]
   }
 }

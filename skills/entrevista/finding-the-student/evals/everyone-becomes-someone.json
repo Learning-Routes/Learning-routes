@@ -7,8 +7,16 @@
   ],
   "expect": {
     "oneQuestion": true,
-    "mustNotContain": ["25 a 35", "jóvenes profesionales", "millennials", "buyer persona", "avatar"],
-    "mustMatchAny": ["quién|quien|persona|alguien|ejemplo|edad|nivel|piensa|imagina|primer|más|mas"],
+    "mustNotContain": [
+      "25 a 35",
+      "jóvenes profesionales",
+      "millennials",
+      "buyer persona",
+      "avatar"
+    ],
+    "mustMatchAny": [
+      "quién|quien|persona|alguien|ejemplo|edad|nivel|piensa|imagina|primer|más|mas"
+    ],
     "calls": ["ask_creator"],
     "noCalls": ["create_route"]
   }

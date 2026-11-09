@@ -8,7 +8,16 @@
   ],
   "expect": {
     "oneQuestion": true,
-    "mustMatchAny": ["tempo", "pulso", "pulse", "beat", "bpm", "metr[oó]nomo", "relativ", "depende"],
+    "mustMatchAny": [
+      "tempo",
+      "pulso",
+      "pulse",
+      "beat",
+      "bpm",
+      "metr[oó]nomo",
+      "relativ",
+      "depende"
+    ],
     "mustNotContain": ["https://", "http://", ".mp3"]
   }
 }

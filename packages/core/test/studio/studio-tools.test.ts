@@ -111,4 +111,13 @@ describe("what the page shows with a question", () => {
     );
     expect(askText("¿Seguro? ¿De verdad?", "¿Lo publicamos?")).toBe("¿Lo publicamos?");
   });
+
+  it("keeps what is not a question: an address with a ? and a quoted answer stay whole", () => {
+    expect(askText("Sube el archivo a https://x.com/a?b=1. Listo.", "¿Seguimos?")).toBe(
+      "Sube el archivo a https://x.com/a?b=1. Listo. ¿Seguimos?",
+    );
+    expect(askText("«¿Por qué? Porque sí», dice tu guía.", "¿Lo dejamos?")).toBe(
+      "«¿Por qué? Porque sí», dice tu guía. ¿Lo dejamos?",
+    );
+  });
 });

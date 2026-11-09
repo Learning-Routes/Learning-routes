@@ -33,7 +33,9 @@ describe("the skills' eval checks", () => {
     const asked = { content: "¿Qué enseñas?", toolCalls: [ask("¿Cómo te llamas?")] };
     expect(problemsOf(golden({ oneQuestion: true }), asked)).toEqual([]);
     const twice = { content: "¿Qué enseñas? ¿Para quién?", toolCalls: [] };
-    expect(problemsOf(golden({ oneQuestion: true }), twice)).toEqual(["asked more than one question"]);
+    expect(problemsOf(golden({ oneQuestion: true }), twice)).toEqual([
+      "asked more than one question",
+    ]);
   });
 
   it("catch invented content in the words or in a tool call's arguments", () => {

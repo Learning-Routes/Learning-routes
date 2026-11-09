@@ -3,6 +3,7 @@ import { ACTIONS } from "@learning-routes/core/actions/registry";
 import { AGENT_TEXT } from "@learning-routes/core/copy/agent";
 import type { RouteDraft } from "@learning-routes/core/repos/ports";
 import { builtOf, lessonPreviewOf, plannedOf } from "@learning-routes/core/studio/draft";
+import type { StudioStep } from "@learning-routes/core/studio/session";
 import { SKILLS } from "@learning-routes/core/studio/skill-library";
 import { loadSkill } from "@learning-routes/core/studio/skills";
 import { askText, type StudioCall } from "@learning-routes/core/studio/studio-tools";
@@ -133,7 +134,12 @@ export class Effects {
         this.agent.setLoadedSkills(id, []);
         return `The step is now ${call.step}.`;
       case "load_skill": {
-        const loaded = loadSkill(this.agent.loadedSkills(id), call.skill, SKILLS);
+        const loaded = loadSkill(
+          this.agent.loadedSkills(id),
+          call.skill,
+          SKILLS,
+          this.agent.conversation(id).step as StudioStep,
+        );
         if ("error" in loaded) {
           return loaded.error;
         }

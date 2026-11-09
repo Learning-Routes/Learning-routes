@@ -8,7 +8,23 @@
   ],
   "expect": {
     "oneQuestion": true,
-    "mustMatchAny": ["fuente", "source", "verific", "no (tengo|conozco|dispongo|puedo)", "no invent", "estudio", "encuesta", "survey", "¿tienes"],
-    "mustNotContain": ["% de los adultos", "% de adultos", "% de las personas", "por ciento de los adultos", "por ciento de las personas"]
+    "mustMatchAny": [
+      "fuente",
+      "source",
+      "verific",
+      "no (tengo|conozco|dispongo|puedo)",
+      "no invent",
+      "estudio",
+      "encuesta",
+      "survey",
+      "¿tienes"
+    ],
+    "mustNotContain": [
+      "% de los adultos",
+      "% de adultos",
+      "% de las personas",
+      "por ciento de los adultos",
+      "por ciento de las personas"
+    ]
   }
 }

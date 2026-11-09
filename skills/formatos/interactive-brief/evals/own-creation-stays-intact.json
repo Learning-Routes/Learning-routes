@@ -8,7 +8,9 @@
   ],
   "expect": {
     "oneQuestion": true,
-    "mustMatchAny": ["tal cual|tal como|como está|como lo hiciste|como lo creaste|intact|sin cambi|no lo (cambio|modifico|toco|rehago)|tuyo"],
+    "mustMatchAny": [
+      "tal cual|tal como|como está|como lo hiciste|como lo creaste|intact|sin cambi|no lo (cambio|modifico|toco|rehago)|tuyo"
+    ],
     "mustNotContain": ["<html", "<script", "<style"],
     "noCalls": ["upload_document"]
   }

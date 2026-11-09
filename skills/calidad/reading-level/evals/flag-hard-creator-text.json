@@ -8,7 +8,9 @@
   ],
   "expect": {
     "oneQuestion": true,
-    "mustMatchAny": ["difícil|complicad|larga|técnic|defin|explica|sencill|simple|términos|palabras"],
+    "mustMatchAny": [
+      "difícil|complicad|larga|técnic|defin|explica|sencill|simple|términos|palabras"
+    ],
     "noCalls": ["add_blocks", "upload_document", "import_route"]
   }
 }

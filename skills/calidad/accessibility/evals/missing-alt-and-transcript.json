@@ -8,7 +8,9 @@
   ],
   "expect": {
     "oneQuestion": true,
-    "mustMatchAny": ["transcrip|descripci|describ|no (la |lo )?(puede|pueden) ver|no ve|no oye|no escucha"],
+    "mustMatchAny": [
+      "transcrip|descripci|describ|no (la |lo )?(puede|pueden) ver|no ve|no oye|no escucha"
+    ],
     "mustNotContain": ["wcag", "aria-"]
   }
 }

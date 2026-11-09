@@ -10,9 +10,10 @@ import { type ContentTool, runTurn } from "@learning-routes/core/studio/turn";
 import { Agent, type Connection, type ConnectionContext } from "agents";
 import * as z from "zod";
 import { newId } from "../ids";
-import { type ConversationRow, dayOf, monthOf, type Seat, type StudioPlace } from "./conversation";
+import { type ConversationRow, monthOf, type Seat, type StudioPlace } from "./conversation";
 import { type AgentEnv, USER_HEADER } from "./env";
 import { modelCall, type SpendBook } from "./model";
+import { type Sql, spendBook } from "./spend-book";
 import { Effects } from "./studio-effects";
 
 // One creator space's assistant (Platform STEP 10 §1): a Durable Object built with the Agents SDK.
@@ -193,30 +194,7 @@ export class Studio extends Agent<AgentEnv> implements StudioPlace {
   }
 
   private book(seat: Seat): SpendBook {
-    const conversationId = seat.conversationId;
-    return {
-      spent: (now) => {
-        const day = dayOf(now);
-        const [row] = this.sql<{ month: number; userToday: number }>`select
-          coalesce(sum(case when month = ${monthOf(now)} and is_charged = 1 then microcents end), 0) as month,
-          coalesce(sum(case when day = ${day} and is_charged = 1 and conversation_id in
-            (select id from conversations where user_id = ${seat.userId}) then microcents end), 0) as userToday
-          from spend`;
-        const lastMinute = this.sql<{
-          at: number;
-        }>`select at from spend where at > ${now - 60_000}`.map((call) => call.at);
-        return { month: row?.month ?? 0, userToday: row?.userToday ?? 0, lastMinute };
-      },
-      record: (row) => {
-        const now = Date.now();
-        this
-          .sql`insert into spend (at, month, day, conversation_id, model, prompt_tokens, cached_tokens,
-          completion_tokens, microcents, is_charged) values (${now}, ${monthOf(now)},
-          ${dayOf(now)}, ${conversationId}, ${row.model}, ${row.promptTokens},
-          ${row.cachedTokens}, ${row.completionTokens}, ${row.microcents}, ${row.isCharged ? 1 : 0})`;
-        console.log(JSON.stringify({ message: "studio model call", ...row }));
-      },
-    };
+    return spendBook(this.sql.bind(this) as Sql, seat);
   }
 
   private async answer(connection: Connection, seat: Seat, input: Input) {

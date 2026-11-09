@@ -8,7 +8,9 @@
   ],
   "expect": {
     "oneQuestion": true,
-    "mustMatchAny": ["cuént|cuál|quién|qué pasó|cómo se llama|nombre|historia|ficti|imagin|inventad|real"],
+    "mustMatchAny": [
+      "cuént|cuál|quién|qué pasó|cómo se llama|nombre|historia|ficti|imagin|inventad|real"
+    ],
     "mustNotContain": ["%", "por ciento"]
   }
 }

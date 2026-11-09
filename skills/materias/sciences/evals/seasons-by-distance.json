@@ -8,6 +8,15 @@
   ],
   "expect": {
     "oneQuestion": true,
-    "mustMatchAny": ["inclinaci[oó]n", "\\beje\\b", "tilt", "axis", "[aá]ngulo", "angle", "hemisferio", "hemisphere"]
+    "mustMatchAny": [
+      "inclinaci[oó]n",
+      "\\beje\\b",
+      "tilt",
+      "axis",
+      "[aá]ngulo",
+      "angle",
+      "hemisferio",
+      "hemisphere"
+    ]
   }
 }

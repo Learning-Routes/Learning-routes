@@ -1,8 +1,14 @@
 {
   "step": "page",
   "conversation": [
-    { "role": "user", "content": "Soy Lucía, enseño acuarela a adultos que nunca han pintado. Lo hago sin prisas, para relajarse." },
-    { "role": "assistant", "content": "Tu ruta ya está lista para revisar. Ahora vamos con tu página." },
+    {
+      "role": "user",
+      "content": "Soy Lucía, enseño acuarela a adultos que nunca han pintado. Lo hago sin prisas, para relajarse."
+    },
+    {
+      "role": "assistant",
+      "content": "Tu ruta ya está lista para revisar. Ahora vamos con tu página."
+    },
     { "role": "user", "content": "¿Me sugieres una frase corta para la página?" }
   ],
   "expect": {

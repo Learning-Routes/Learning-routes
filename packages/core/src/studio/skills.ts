@@ -43,6 +43,7 @@ export type Skill = z.infer<typeof Frontmatter> & { body: string };
 
 const FENCE = /^---\n([\s\S]*?)\n---\n([\s\S]*)$/;
 const LINE = /^([a-z]+):\s*(.*)$/;
+const DIGITS = /^\d+$/;
 
 // The frontmatter is a few flat fields: no YAML parser for that.
 function fieldValue(raw: string): unknown {
@@ -53,7 +54,7 @@ function fieldValue(raw: string): unknown {
       .map((tag) => tag.trim())
       .filter(Boolean);
   }
-  return /^\d+$/.test(raw) ? Number(raw) : raw;
+  return DIGITS.test(raw) ? Number(raw) : raw;
 }
 
 export function parseSkill(text: string): Skill {
@@ -84,13 +85,15 @@ export function skillIndex(skills: readonly Skill[], step: StudioStep): string {
     .join("\n")}`;
 }
 
+/** Loads a skill the step's index shows; the oldest goes past MOST_LOADED. */
 export function loadSkill(
   loaded: readonly string[],
   name: string,
   skills: readonly Skill[],
+  step: StudioStep,
 ): { loaded: string[] } | { error: string } {
-  if (!skills.some((skill) => skill.name === name)) {
-    return { error: `There is no skill ${name}.` };
+  if (!skills.some((skill) => skill.name === name && AREA_STEPS[skill.area].includes(step))) {
+    return { error: `There is no skill ${name} for this step.` };
   }
   if (loaded.includes(name)) {
     return { loaded: [...loaded] };

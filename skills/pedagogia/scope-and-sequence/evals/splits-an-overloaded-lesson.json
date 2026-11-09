@@ -1,13 +1,21 @@
 {
   "step": "plan",
   "conversation": [
-    { "role": "user", "content": "Soy Tomás y enseño programación en Python a adolescentes que nunca han programado." },
+    {
+      "role": "user",
+      "content": "Soy Tomás y enseño programación en Python a adolescentes que nunca han programado."
+    },
     { "role": "assistant", "content": "¡Hola, Tomás! Vamos a armar el plan juntos." },
-    { "role": "user", "content": "La primera lección se llamará «Variables, bucles, funciones y clases». ¿Te parece bien?" }
+    {
+      "role": "user",
+      "content": "La primera lección se llamará «Variables, bucles, funciones y clases». ¿Te parece bien?"
+    }
   ],
   "expect": {
     "oneQuestion": true,
-    "mustMatchAny": ["dividir|separar|partir|varias lecciones|m[aá]s lecciones|una idea|demasiad|split|several lessons"],
+    "mustMatchAny": [
+      "dividir|separar|partir|varias lecciones|m[aá]s lecciones|una idea|demasiad|split|several lessons"
+    ],
     "noCalls": ["add_blocks"]
   }
 }

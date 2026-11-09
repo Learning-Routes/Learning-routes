@@ -67,15 +67,24 @@ describe("the skills library", () => {
   it("loads at most four, letting the oldest go, and refuses a name it does not have", () => {
     let loaded: string[] = [];
     for (const name of ["retrieval-practice", "worked-examples", "concept-block", "fractions"]) {
-      loaded = (loadSkill(loaded, name, LIBRARY) as { loaded: string[] }).loaded;
+      loaded = (loadSkill(loaded, name, LIBRARY, "build") as { loaded: string[] }).loaded;
     }
     expect(loaded).toHaveLength(MOST_LOADED);
-    const fifth = loadSkill(loaded, "factual-accuracy", LIBRARY);
+    const fifth = loadSkill(loaded, "factual-accuracy", LIBRARY, "build");
     expect(fifth).toEqual({
       loaded: ["worked-examples", "concept-block", "fractions", "factual-accuracy"],
     });
-    expect(loadSkill(loaded, "made-up", LIBRARY)).toEqual({ error: "There is no skill made-up." });
-    expect(loadSkill(loaded, "fractions", LIBRARY)).toEqual({ loaded });
+    expect(loadSkill(loaded, "made-up", LIBRARY, "build")).toEqual({
+      error: "There is no skill made-up for this step.",
+    });
+    expect(loadSkill(loaded, "fractions", LIBRARY, "build")).toEqual({ loaded });
+  });
+
+  it("loads only a skill the step's index shows", () => {
+    expect(loadSkill([], "tagline", LIBRARY, "build")).toEqual({
+      error: "There is no skill tagline for this step.",
+    });
+    expect(loadSkill([], "tagline", LIBRARY, "page")).toEqual({ loaded: ["tagline"] });
   });
 
   it("puts the loaded skills' full text after the instructions", () => {

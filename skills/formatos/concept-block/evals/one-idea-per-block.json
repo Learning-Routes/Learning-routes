@@ -8,6 +8,8 @@
   ],
   "expect": {
     "oneQuestion": true,
-    "mustMatchAny": ["separ|divid|partes|varios bloques|una idea|por pasos|un bloque para|cada parte|ejercicio aparte|pregunta aparte"]
+    "mustMatchAny": [
+      "separ|divid|partes|varios bloques|una idea|por pasos|un bloque para|cada parte|ejercicio aparte|pregunta aparte"
+    ]
   }
 }
