@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { ADMIN_TEXT } from "../src/copy/admin";
 import { APP_PAGES_TEXT } from "../src/copy/app-pages";
+import { ASSISTANT_TEXT } from "../src/copy/assistant";
 import { CATALOG_TEXT } from "../src/copy/catalog";
 import { CONNECT_TEXT } from "../src/copy/connect";
 import { CREATOR_TEXT } from "../src/copy/creator";
@@ -14,6 +15,8 @@ import { LEVEL_NAMES, TOPIC_NAMES } from "../src/copy/route-facts";
 import { SIGN_IN_TEXT } from "../src/copy/sign-in";
 import { UI_COPY } from "../src/copy/ui";
 import { LOCALES, type LocaleCode } from "../src/locales";
+
+const STEP_OF = /\{n\}.*\{total\}.*\{name\}/;
 
 // Spanish is the source (Platform STEP 3 §5.4): a locale missing a key that Spanish
 // has, or leaving one empty, fails here.
@@ -88,6 +91,7 @@ describe("the copy check", () => {
     ["creator", CREATOR_TEXT],
     ["app pages", APP_PAGES_TEXT],
     ["admin", ADMIN_TEXT],
+    ["assistant", ASSISTANT_TEXT],
     ["topics", TOPIC_NAMES],
     ["levels", LEVEL_NAMES],
   ] as const)("%s", (_name, copy) => {
@@ -104,6 +108,13 @@ describe("the copy check", () => {
 
   it("keeps each placeholder in every locale", () => {
     for (const locale of LOCALES) {
+      const assistant = ASSISTANT_TEXT[locale];
+      expect(assistant.stepOf).toMatch(STEP_OF);
+      expect(assistant.previewOf).toContain("{format}");
+      expect(assistant.confirmTitle).toContain("{title}");
+      expect(assistant.confirmWhere).toContain("{address}");
+      expect(assistant.confirmPrice).toContain("{price}");
+      expect(assistant.publishedAt).toContain("{address}");
       expect(SIGN_IN_TEXT[locale].resendIn).toContain("{seconds}");
       const catalog = CATALOG_TEXT[locale];
       for (const count of [

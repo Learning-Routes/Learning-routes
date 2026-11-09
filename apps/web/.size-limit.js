@@ -42,7 +42,11 @@ export default [
     // Static CSS, one file for every surface (Platform STEP 3 §2.2). No storefront
     // script may block the first paint: e2e/storefront.spec.ts checks that.
     name: "storefront CSS",
-    path: [`${CLIENT}/assets/*.css`, `!${CLIENT}/assets/lesson-*.css`],
+    path: [
+      `${CLIENT}/assets/*.css`,
+      `!${CLIENT}/assets/lesson-*.css`,
+      `!${CLIENT}/assets/asistente-*.css`,
+    ],
     limit: "20 KB",
     gzip: true,
   },
@@ -52,6 +56,13 @@ export default [
     name: "lesson CSS",
     path: [`${CLIENT}/assets/lesson-*.css`],
     limit: "2.5 KB",
+    gzip: true,
+  },
+  {
+    // The creator's assistant's own stylesheet (Platform STEP 10), loaded only by that page.
+    name: "assistant CSS",
+    path: [`${CLIENT}/assets/asistente-*.css`],
+    limit: "4 KB",
     gzip: true,
   },
   // Enhancement JavaScript, loaded after the first paint (ADR 0008). three.js only here.
@@ -70,6 +81,22 @@ export default [
       limit: "15 KB",
       gzip: true,
     })),
+  {
+    // The assistant's page without its map: the conversation works before the map loads.
+    name: "app entry + assistant",
+    path: pageScripts(["root", "routes/asistente"]),
+    limit: "142 KB",
+    gzip: true,
+  },
+  {
+    // The assistant's map, three.js included, fetched after the page works (Platform STEP 10).
+    name: "assistant map, three.js included",
+    path: readdirSync(`${CLIENT}/assets`)
+      .filter((file) => file.startsWith("studio-map-") && file.endsWith(".js"))
+      .flatMap((file) => withImports(`${CLIENT}/assets/${file}`)),
+    limit: "170 KB",
+    gzip: true,
+  },
   {
     name: "app entry + creator hub",
     path: pageScripts(["root", "routes/creador"]),

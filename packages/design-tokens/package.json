@@ -8,7 +8,8 @@
     ".": "./tokens.ts",
     "./tokens.css": "./tokens.css",
     "./depth.css": "./depth.css",
-    "./fonts/*": "./fonts/*"
+    "./fonts/*": "./fonts/*",
+    "./geist.css": "./geist.css"
   },
   "scripts": {
     "test": "vitest run",
