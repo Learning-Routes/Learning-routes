@@ -8,7 +8,9 @@
   "expect": {
     "oneQuestion": true,
     "mustNotContain": ["contador", "universitari", "jubilad"],
-    "mustMatchAny": ["sab|conoc|ya |antes|computador|ordenador|meta|objetivo|lograr|para qué|para que|quieren|usar|trabajo|tiempo"],
+    "mustMatchAny": [
+      "sab|conoc|ya |antes|computador|ordenador|meta|objetivo|lograr|para qué|para que|quieren|usar|trabajo|tiempo"
+    ],
     "noCalls": ["create_route"]
   }
 }

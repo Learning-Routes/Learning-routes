@@ -8,7 +8,21 @@
   ],
   "expect": {
     "oneQuestion": true,
-    "mustMatchAny": ["promet", "promise", "garantiz", "guarantee", "no (puedo|podemos|conviene|es posible)", "depende", "resultados"],
-    "mustNotContain": ["ganarás", "te garantizo", "garantizamos", "ingresos garantizados", "vas a ganar 1"]
+    "mustMatchAny": [
+      "promet",
+      "promise",
+      "garantiz",
+      "guarantee",
+      "no (puedo|podemos|conviene|es posible)",
+      "depende",
+      "resultados"
+    ],
+    "mustNotContain": [
+      "ganarás",
+      "te garantizo",
+      "garantizamos",
+      "ingresos garantizados",
+      "vas a ganar 1"
+    ]
   }
 }

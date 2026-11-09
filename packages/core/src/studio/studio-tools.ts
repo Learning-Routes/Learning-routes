@@ -145,16 +145,37 @@ export function readStudioCall(name: string, argumentsText: string): ReadCall {
   }
 }
 
-// A sentence, with its closing mark: Spanish questions open with ¿ and close with ?.
-const SENTENCES = /[^.!?…]+[.!?…]+|[^.!?…]+$/g;
+const ENDS = ".!?…";
+const SPACE = /\s/;
+// A question is a sentence that ends in ?, whatever it quotes on the way.
+const IS_QUESTION = /\?[»"”]?$/;
+
+/**
+ * Sentences end at a closing mark followed by a space, outside any quote: an address with a ?
+ * and a quoted question stay inside their sentence.
+ */
+function sentencesOf(text: string): string[] {
+  const sentences: string[] = [];
+  let depth = 0;
+  let start = 0;
+  for (let at = 0; at < text.length; at += 1) {
+    const char = text[at] as string;
+    depth += char === "«" || char === "“" ? 1 : char === "»" || char === "”" ? -1 : 0;
+    if (depth <= 0 && ENDS.includes(char) && SPACE.test(text[at + 1] ?? "")) {
+      sentences.push(text.slice(start, at + 1));
+      start = at + 1;
+    }
+  }
+  return [...sentences, text.slice(start)];
+}
 
 /**
  * What the page shows when the assistant asks: its words, then the one question. A question the
  * model also wrote in its words gives way to the one it asked, so the creator meets one at a time.
  */
 export function askText(said: string, question: string): string {
-  const kept = (said.match(SENTENCES) ?? [])
+  const kept = sentencesOf(said)
     .map((sentence) => sentence.trim())
-    .filter((sentence) => sentence && !sentence.includes("?"));
+    .filter((sentence) => sentence && !IS_QUESTION.test(sentence));
   return [...kept, question].join(" ");
 }

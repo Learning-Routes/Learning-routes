@@ -1,12 +1,23 @@
 {
   "step": "build",
   "conversation": [
-    { "role": "user", "content": "Soy Beatriz, enseño contabilidad básica a autónomos que empiezan. Mis alumnos nunca han hecho una factura." },
-    { "role": "assistant", "content": "¡Encantada, Beatriz! Me pongo con la lección «Calcular el total de una factura»." },
-    { "role": "user", "content": "Antes de escribirla, dime en pocas líneas en qué orden vas a poner las cosas." }
+    {
+      "role": "user",
+      "content": "Soy Beatriz, enseño contabilidad básica a autónomos que empiezan. Mis alumnos nunca han hecho una factura."
+    },
+    {
+      "role": "assistant",
+      "content": "¡Encantada, Beatriz! Me pongo con la lección «Calcular el total de una factura»."
+    },
+    {
+      "role": "user",
+      "content": "Antes de escribirla, dime en pocas líneas en qué orden vas a poner las cosas."
+    }
   ],
   "expect": {
-    "mustMatchAny": ["ejemplo resuelto|ejemplo paso a paso|paso a paso|ejemplo completo|resuelto|worked example|solved example"],
+    "mustMatchAny": [
+      "ejemplo resuelto|ejemplo paso a paso|paso a paso|ejemplo completo|resuelto|worked example|solved example"
+    ],
     "noCalls": ["add_blocks"]
   }
 }

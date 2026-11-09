@@ -1,7 +1,10 @@
 {
   "step": "meet",
   "conversation": [
-    { "role": "user", "content": "Me llamo Andrés. Enseño cocina para gente que vive sola. Yo no doy clases, comparto trucos de cocina de batalla, con humor." }
+    {
+      "role": "user",
+      "content": "Me llamo Andrés. Enseño cocina para gente que vive sola. Yo no doy clases, comparto trucos de cocina de batalla, con humor."
+    }
   ],
   "expect": {
     "oneQuestion": true,

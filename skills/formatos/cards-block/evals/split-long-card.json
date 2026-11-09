@@ -8,6 +8,8 @@
   ],
   "expect": {
     "oneQuestion": true,
-    "mustMatchAny": ["divid|separ|varias tarjetas|más tarjetas|una tarjeta (por|para)|cortas|más corta|una idea|un dato|acort"]
+    "mustMatchAny": [
+      "divid|separ|varias tarjetas|más tarjetas|una tarjeta (por|para)|cortas|más corta|una idea|un dato|acort"
+    ]
   }
 }

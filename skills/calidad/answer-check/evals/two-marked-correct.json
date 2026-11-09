@@ -8,7 +8,9 @@
   ],
   "expect": {
     "oneQuestion": true,
-    "mustMatchAny": ["dos (respuestas|opciones)|ambas|solo (una|mercurio)|sólo (una|mercurio)|una sola|únicamente|venus no|no es venus"],
+    "mustMatchAny": [
+      "dos (respuestas|opciones)|ambas|solo (una|mercurio)|sólo (una|mercurio)|una sola|únicamente|venus no|no es venus"
+    ],
     "noCalls": ["add_blocks", "import_route", "upload_document"]
   }
 }

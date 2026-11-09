@@ -1,11 +1,12 @@
 import { readdirSync, readFileSync } from "node:fs";
 import { basename, dirname, join } from "node:path";
-import { describe, expect, it } from "vitest";
-import { BUNDLE, renderBundle, skillFiles } from "../../../scripts/skills-bundle.mjs";
 import { SKILLS } from "@learning-routes/core/studio/skill-library";
 import { MOST_BODY_CHARS, parseSkill, SkillEval } from "@learning-routes/core/studio/skills";
+import { describe, expect, it } from "vitest";
+import { BUNDLE, renderBundle, skillFiles } from "../../../scripts/skills-bundle.mjs";
 
 const files: string[] = skillFiles();
+const SOURCES = /\*\*Sources\*\*|## Sources|Sources:/;
 
 describe("the skills library in skills/", () => {
   it("has the skills the assistant starts with", () => {
@@ -18,7 +19,7 @@ describe("the skills library in skills/", () => {
     expect(skill.name).toBe(basename(folder));
     expect(skill.area).toBe(basename(dirname(folder)));
     expect(skill.body.length).toBeLessThanOrEqual(MOST_BODY_CHARS);
-    expect(skill.body).toMatch(/\*\*Sources\*\*|## Sources|Sources:/);
+    expect(skill.body).toMatch(SOURCES);
     const evals = readdirSync(join(folder, "evals")).filter((each) => each.endsWith(".json"));
     expect(evals.length).toBeGreaterThanOrEqual(2);
     for (const each of evals) {

@@ -8,6 +8,8 @@
   ],
   "expect": {
     "oneQuestion": true,
-    "mustMatchAny": ["explicaci|concepto|antes del resumen|en la lección|otro bloque|no (lo )?vimos|no se vio|algo nuevo|dato nuevo|nuevo"]
+    "mustMatchAny": [
+      "explicaci|concepto|antes del resumen|en la lección|otro bloque|no (lo )?vimos|no se vio|algo nuevo|dato nuevo|nuevo"
+    ]
   }
 }

@@ -8,6 +8,8 @@
   ],
   "expect": {
     "oneQuestion": true,
-    "mustMatchAny": ["estereotip|ingeniera|secretario|roles|variar|cambiar|intercambi|diferentes personas|cualquier persona|mujer|hombre"]
+    "mustMatchAny": [
+      "estereotip|ingeniera|secretario|roles|variar|cambiar|intercambi|diferentes personas|cualquier persona|mujer|hombre"
+    ]
   }
 }

@@ -1,13 +1,21 @@
 {
   "step": "plan",
   "conversation": [
-    { "role": "user", "content": "Hola, soy Marta. Enseño fotografía con el móvil a personas mayores que nunca han hecho un curso." },
-    { "role": "assistant", "content": "¡Encantada, Marta! Un curso de fotografía con el móvil para personas mayores tiene mucho sentido." },
+    {
+      "role": "user",
+      "content": "Hola, soy Marta. Enseño fotografía con el móvil a personas mayores que nunca han hecho un curso."
+    },
+    {
+      "role": "assistant",
+      "content": "¡Encantada, Marta! Un curso de fotografía con el móvil para personas mayores tiene mucho sentido."
+    },
     { "role": "user", "content": "No tengo material, empezamos de cero. Propónme ya los módulos." }
   ],
   "expect": {
     "oneQuestion": true,
-    "mustMatchAny": ["al (terminar|final)|podr[aá]n|ser[aá]n capaces|lograr|meta|objetivo|outcome|goal"],
+    "mustMatchAny": [
+      "al (terminar|final)|podr[aá]n|ser[aá]n capaces|lograr|meta|objetivo|outcome|goal"
+    ],
     "mustNotContain": ["certificado", "certificación"],
     "noCalls": ["add_module", "add_lesson"]
   }

@@ -1,9 +1,15 @@
 {
   "step": "build",
   "conversation": [
-    { "role": "user", "content": "Soy Raquel, enseño matemáticas a adultos. Ya enseñé cómo despejar la x en ecuaciones de primer grado." },
+    {
+      "role": "user",
+      "content": "Soy Raquel, enseño matemáticas a adultos. Ya enseñé cómo despejar la x en ecuaciones de primer grado."
+    },
     { "role": "assistant", "content": "¡Muy bien, Raquel! ¿Qué toca ahora?" },
-    { "role": "user", "content": "Quiero una lección con los errores típicos de mis alumnos al despejar. Prepárala." }
+    {
+      "role": "user",
+      "content": "Quiero una lección con los errores típicos de mis alumnos al despejar. Prepárala."
+    }
   ],
   "expect": {
     "oneQuestion": true,

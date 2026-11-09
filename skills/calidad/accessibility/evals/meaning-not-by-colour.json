@@ -8,6 +8,8 @@
   ],
   "expect": {
     "oneQuestion": true,
-    "mustMatchAny": ["solo (por|con|el) (el )?color|sólo (por|con) (el )?color|dalt|distinguir|no (todos|todas|todo el mundo)|además del color|sin depender|no (ven|pueden ver|distinguen)|lector de pantalla|símbolo|etiqueta|subray|negrita"]
+    "mustMatchAny": [
+      "solo (por|con|el) (el )?color|sólo (por|con) (el )?color|dalt|distinguir|no (todos|todas|todo el mundo)|además del color|sin depender|no (ven|pueden ver|distinguen)|lector de pantalla|símbolo|etiqueta|subray|negrita"
+    ]
   }
 }
