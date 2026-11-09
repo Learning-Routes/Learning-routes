@@ -16,7 +16,6 @@ describe("a space's assistant budget", () => {
     expect(budgetOf(0, 0)).toBe("out");
     expect(budgetOf(0, Number.NaN)).toBe("out");
   });
-
 });
 
 describe("the assistant's limits, from config", () => {

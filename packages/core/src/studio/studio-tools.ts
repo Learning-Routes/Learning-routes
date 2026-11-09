@@ -145,10 +145,16 @@ export function readStudioCall(name: string, argumentsText: string): ReadCall {
   }
 }
 
-/** What the page shows when the assistant asks: its words, then the question, never twice. */
+// A sentence, with its closing mark: Spanish questions open with ¿ and close with ?.
+const SENTENCES = /[^.!?…]+[.!?…]+|[^.!?…]+$/g;
+
+/**
+ * What the page shows when the assistant asks: its words, then the one question. A question the
+ * model also wrote in its words gives way to the one it asked, so the creator meets one at a time.
+ */
 export function askText(said: string, question: string): string {
-  if (!said) {
-    return question;
-  }
-  return said.includes(question) ? said : `${said} ${question}`;
+  const kept = (said.match(SENTENCES) ?? [])
+    .map((sentence) => sentence.trim())
+    .filter((sentence) => sentence && !sentence.includes("?"));
+  return [...kept, question].join(" ");
 }

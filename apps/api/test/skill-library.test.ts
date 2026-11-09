@@ -1,9 +1,9 @@
 import { readdirSync, readFileSync } from "node:fs";
 import { basename, dirname, join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { BUNDLE, renderBundle, skillFiles } from "../../../../scripts/skills-bundle.mjs";
-import { SKILLS } from "../../src/studio/skill-library";
-import { MOST_BODY_CHARS, parseSkill, SkillEval } from "../../src/studio/skills";
+import { BUNDLE, renderBundle, skillFiles } from "../../../scripts/skills-bundle.mjs";
+import { SKILLS } from "@learning-routes/core/studio/skill-library";
+import { MOST_BODY_CHARS, parseSkill, SkillEval } from "@learning-routes/core/studio/skills";
 
 const files: string[] = skillFiles();
 

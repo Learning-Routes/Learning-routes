@@ -4,6 +4,8 @@ import { LOCALES, type LocaleCode } from "@learning-routes/core/locales";
 import { budgetOf } from "@learning-routes/core/studio/budget";
 import { STUDIO_PROMPT, studioContext } from "@learning-routes/core/studio/prompt";
 import type { StudioEvent, StudioOption, StudioStep } from "@learning-routes/core/studio/session";
+import { SKILLS } from "@learning-routes/core/studio/skill-library";
+import { skillIndex, skillTail } from "@learning-routes/core/studio/skills";
 import { type ContentTool, runTurn } from "@learning-routes/core/studio/turn";
 import { Agent, type Connection, type ConnectionContext } from "agents";
 import * as z from "zod";
@@ -53,6 +55,20 @@ export class Studio extends Agent<AgentEnv> implements StudioPlace {
       conversation_id text not null, model text not null, prompt_tokens integer not null,
       cached_tokens integer not null, completion_tokens integer not null, microcents integer not null,
       is_charged integer not null)`;
+    this.sql`create table if not exists skills_loaded (conversation_id text primary key,
+      names text not null)`;
+  }
+
+  loadedSkills(conversationId: string): string[] {
+    const [row] = this.sql<{ names: string }>`select names from skills_loaded
+      where conversation_id = ${conversationId}`;
+    return row ? (JSON.parse(row.names) as string[]) : [];
+  }
+
+  setLoadedSkills(conversationId: string, names: readonly string[]) {
+    this.sql`insert into skills_loaded (conversation_id, names)
+      values (${conversationId}, ${JSON.stringify(names)})
+      on conflict (conversation_id) do update set names = excluded.names`;
   }
 
   // Our protocol only: the SDK's own messages would be noise to the page.
@@ -241,10 +257,15 @@ export class Studio extends Agent<AgentEnv> implements StudioPlace {
     const messages = this.history(seat.conversationId);
     const before = messages.length;
     messages.push({ role: "user", content: text });
-    const system = STUDIO_PROMPT + studioContext({ spaceId: this.name, locale: seat.locale });
+    const stable = STUDIO_PROMPT + studioContext({ spaceId: this.name, locale: seat.locale });
+    // Read again for every call: a step or a skill may change within the turn.
+    const system = () =>
+      stable +
+      skillIndex(SKILLS, this.conversation(seat.conversationId).step as StudioStep) +
+      skillTail(this.loadedSkills(seat.conversationId), SKILLS);
     const deps = {
       step: row.step as StudioStep,
-      call: modelCall(this.env, this.book(seat), { id: seat.conversationId, system: () => system }),
+      call: modelCall(this.env, this.book(seat), { id: seat.conversationId, system }),
       runContentTool: effects.runContentTool,
       studio: effects.studio,
       afterWrite: effects.afterWrite,

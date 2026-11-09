@@ -104,4 +104,11 @@ describe("what the page shows with a question", () => {
     expect(askText("¡Hola!", "¿Cómo te llamas?")).toBe("¡Hola! ¿Cómo te llamas?");
     expect(askText("¡Hola! ¿Cómo te llamas?", "¿Cómo te llamas?")).toBe("¡Hola! ¿Cómo te llamas?");
   });
+
+  it("keeps one question on screen: a question already in the words gives way to the one asked", () => {
+    expect(askText("¡Hola, Andrés! ¿Qué enseñas? Me encanta la idea.", "¿Para quién es?")).toBe(
+      "¡Hola, Andrés! Me encanta la idea. ¿Para quién es?",
+    );
+    expect(askText("¿Seguro? ¿De verdad?", "¿Lo publicamos?")).toBe("¿Lo publicamos?");
+  });
 });

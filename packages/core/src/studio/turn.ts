@@ -103,7 +103,10 @@ async function runCalls(calls: ToolCall[], said: string, messages: ModelMessage[
   for (const call of calls) {
     const { name } = call.function;
     let text: string;
-    if (isStudioTool(name)) {
+    if (ends && ENDS_TURN.includes(name)) {
+      text =
+        "Only one question at a time: this one was not asked. Ask it after the creator answers.";
+    } else if (isStudioTool(name)) {
       const done = await runStudioCall(call, said, deps);
       text = done.text;
       ends ||= done.ends;

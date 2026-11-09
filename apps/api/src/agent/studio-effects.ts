@@ -1,9 +1,10 @@
 import { runAction } from "@learning-routes/core/actions/define";
 import { ACTIONS } from "@learning-routes/core/actions/registry";
 import { AGENT_TEXT } from "@learning-routes/core/copy/agent";
-import type { LocaleCode } from "@learning-routes/core/locales";
 import type { RouteDraft } from "@learning-routes/core/repos/ports";
 import { builtOf, lessonPreviewOf, plannedOf } from "@learning-routes/core/studio/draft";
+import { SKILLS } from "@learning-routes/core/studio/skill-library";
+import { loadSkill } from "@learning-routes/core/studio/skills";
 import { askText, type StudioCall } from "@learning-routes/core/studio/studio-tools";
 import type { ContentTool } from "@learning-routes/core/studio/turn";
 import { pgTenancy } from "../db/tenancy";
@@ -128,7 +129,19 @@ export class Effects {
       case "set_step":
         this.emit({ type: "stepped", step: call.step });
         this.agent.setConversation(id, { step: call.step });
+        // A new step starts with no skills loaded: its own index is what the model sees next.
+        this.agent.setLoadedSkills(id, []);
         return `The step is now ${call.step}.`;
+      case "load_skill": {
+        const loaded = loadSkill(this.agent.loadedSkills(id), call.skill, SKILLS);
+        if ("error" in loaded) {
+          return loaded.error;
+        }
+        this.agent.setLoadedSkills(id, loaded.loaded);
+        // Every load is logged: which skills earn their place.
+        console.log(JSON.stringify({ message: "studio skill loaded", skill: call.skill }));
+        return `Loaded ${call.skill}: it now follows your instructions.`;
+      }
       case "show_lesson":
         return this.showLesson(call.routeId, call.lessonId);
       case "ask_to_publish":
