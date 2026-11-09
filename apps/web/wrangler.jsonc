@@ -41,7 +41,9 @@
   // The API, from pages and for the app's /api: one host, so one session cookie.
   "services": [
     { "binding": "API", "service": "learning-routes-api" },
-    { "binding": "MCP", "service": "learning-routes-mcp" }
+    { "binding": "MCP", "service": "learning-routes-mcp" },
+    // The creator's assistant (Platform STEP 10).
+    { "binding": "AGENT", "service": "learning-routes-agent" }
   ],
   // The storefront's reads (Platform STEP 4 §1): caching on, as lr_public, which reads
   // the public views and nothing else. Everything with a session goes through the API.

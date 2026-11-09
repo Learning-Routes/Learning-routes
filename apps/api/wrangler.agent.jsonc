@@ -1,0 +1,51 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  // The creator's assistant (Platform STEP 10): one Durable Object per space, built with the Agents
+  // SDK, behind the web Worker. It shares the API's package, so its repositories and the MCP's tools.
+  "name": "learning-routes-agent",
+  "main": "src/agent/index.ts",
+  "compatibility_date": "2026-10-12",
+  // Reached only through the web Worker's service binding.
+  "workers_dev": false,
+  "preview_urls": false,
+  "compatibility_flags": ["nodejs_compat"],
+  "minify": true,
+  // No invocation logs: they carry each request's full URL (see wrangler.jsonc).
+  "observability": {
+    "enabled": true,
+    "logs": { "enabled": true, "head_sampling_rate": 1, "invocation_logs": false },
+    "traces": { "enabled": true, "head_sampling_rate": 0.1 }
+  },
+  "vars": {
+    "APP_ORIGIN": "https://app.learningroutes.com",
+    "ENVIRONMENT": "production",
+    "CREATOR_DOMAIN": "learningroutes.com",
+    "CONTENT_ORIGIN": "https://lrusercontent.com",
+    // Microcents (a millionth of a dollar). Each space's assistant, a month: $5.
+    "AGENT_SPACE_MONTHLY_MICROCENTS": "5000000",
+    // Every assistant together, a day: $20.
+    "AGENT_DAILY_MICROCENTS": "20000000"
+  },
+  // The same secrets as the MCP's. OPENROUTER_API_KEY is optional: without it the assistant says it
+  // is not switched on yet, and calls no model.
+  "secrets": { "required": ["BETTER_AUTH_SECRET", "CONTENT_SIGNING_SECRET"] },
+  "durable_objects": {
+    "bindings": [
+      { "name": "Studio", "class_name": "Studio" },
+      { "name": "LEDGER", "class_name": "SpendLedger" }
+    ]
+  },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["Studio", "SpendLedger"] }],
+  "queues": {
+    "producers": [{ "binding": "PURGE_QUEUE", "queue": "learning-routes-purge" }]
+  },
+  "r2_buckets": [{ "binding": "CREATIONS", "bucket_name": "learning-routes-creations" }],
+  "hyperdrive": [
+    {
+      "binding": "DB",
+      "id": "6f1a3d1237a542af8b9d4b5329c41ded",
+      // LOCAL ONLY: the lr_app role of docker-compose.yml, never the migrator.
+      "localConnectionString": "postgres://lr_app:local-only-app@localhost:54318/learning_routes"
+    }
+  ]
+}

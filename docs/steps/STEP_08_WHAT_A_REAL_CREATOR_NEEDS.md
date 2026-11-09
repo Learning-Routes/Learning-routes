@@ -108,7 +108,7 @@ Build it to VISION, desk register.
 3. **Setting the price:**
    - there is a `route.set_price` action in the UI;
    - the MCP may only read the price;
-   - a route sells only once payments exist (STEP 10), so until then the page says "Precio guardado; el cobro se activa pronto".
+   - a route sells only once payments exist (STEP 12; it was STEP 10 before the assistant moved ahead), so until then the page says "Precio guardado; el cobro se activa pronto".
 4. **The cards:** "Conecta tu asistente", with each client's steps and plan requirement, and "Conexiones".
 5. **Empty state:** "Trae una ruta que ya hiciste", with the three steps.
 

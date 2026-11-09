@@ -134,3 +134,101 @@ describe("the AI gate", () => {
     expect(estimateInputTokens("abcde")).toBe(2);
   });
 });
+
+describe("the AI gate, for an agent's turn (Platform STEP 10)", () => {
+  const tool = {
+    type: "function" as const,
+    function: {
+      name: "ask_creator",
+      description: "Ask one question.",
+      parameters: { type: "object", properties: {} },
+    },
+  };
+  const turn: CallSpec = {
+    ...spec,
+    stream: true,
+    tools: [tool],
+    messages: [
+      { role: "user", content: "Quiero mi app" },
+      {
+        role: "assistant",
+        content: "",
+        tool_calls: [
+          { id: "c1", type: "function", function: { name: "ask_creator", arguments: "{}" } },
+        ],
+      },
+      { role: "tool", tool_call_id: "c1", content: "{}" },
+    ],
+  };
+
+  it("sends the tools, the tool calls and their results, and asks for a stream", () => {
+    const decision = gate(turn, ctx);
+    expect(decision.verdict).toBe("allowed");
+    if (decision.verdict !== "allowed") {
+      return;
+    }
+    expect(decision.request.stream).toBe(true);
+    expect(decision.request.tools).toEqual([tool]);
+    expect(decision.request.messages.slice(1)).toEqual(turn.messages);
+  });
+
+  it("prices the tools and the tool calls as prompt: they are sent every time", () => {
+    const { tools: _tools, ...withoutTools } = turn;
+    const bare = gate({ ...withoutTools, messages: [turn.messages[0] as never] }, ctx);
+    const full = gate(turn, ctx);
+    if (bare.verdict !== "allowed" || full.verdict !== "allowed") {
+      throw new Error("both are allowed");
+    }
+    expect(full.estimateMicrocents).toBeGreaterThan(bare.estimateMicrocents);
+  });
+
+  it("leaves a plain call as it was: no tools and no stream", () => {
+    const decision = gate(spec, ctx);
+    if (decision.verdict !== "allowed") {
+      throw new Error("allowed");
+    }
+    expect("tools" in decision.request).toBe(false);
+    expect("stream" in decision.request).toBe(false);
+  });
+});
+
+describe("the AI gate's prompt cache (Platform STEP 10)", () => {
+  it("also marks the newest message, so a conversation's history is read from the cache next time", () => {
+    const decision = gate(
+      {
+        ...spec,
+        promptCache: true,
+        messages: [
+          { role: "user", content: "Hola" },
+          { role: "assistant", content: "¿Para quién es?" },
+          { role: "user", content: "Para colegio" },
+        ],
+      },
+      ctx,
+    );
+    if (decision.verdict !== "allowed") {
+      throw new Error("allowed");
+    }
+    expect(decision.request.messages.at(-1)).toEqual({
+      role: "user",
+      content: [{ type: "text", text: "Para colegio", cache_control: { type: "ephemeral" } }],
+    });
+    expect(decision.request.messages[1]).toEqual({ role: "user", content: "Hola" });
+  });
+
+  it("marks a tool's answer the same way, and nothing without the cache", () => {
+    const messages: CallSpec["messages"] = [
+      { role: "user", content: "Hola" },
+      { role: "tool", tool_call_id: "c1", content: "{}" },
+    ];
+    const cached = gate({ ...spec, promptCache: true, messages }, ctx);
+    const plain = gate({ ...spec, promptCache: false, messages }, ctx);
+    if (cached.verdict !== "allowed" || plain.verdict !== "allowed") {
+      throw new Error("allowed");
+    }
+    expect(cached.request.messages.at(-1)).toMatchObject({
+      content: [{ type: "text", text: "{}", cache_control: { type: "ephemeral" } }],
+    });
+    expect(plain.request.messages.at(-1)).toEqual(messages[1]);
+  });
+});

@@ -245,7 +245,7 @@ Every one of these fails the build:
 - **Clean code:** one responsibility per module, names that say what a thing is, no dead code, errors typed and handled where they can be, comments that say why. `docs/WORKING_AGREEMENT.md` lists each rule with the tool that holds it.
 - **Contributors** start with `CONTRIBUTING.md`: set up, run the checks, open a pull request.
 
-**The order from here:** Platform STEP 5, the creator's MCP; STEP 6, the landing and every page's moment; STEP 7, the first deploy; STEP 8, learning; STEP 9, payments; STEP 10, teaching (the studio, the in-app assistant and invitations).
+**The order from here:** Platform STEP 5, the creator's MCP; STEP 6, the landing and every page's moment; STEP 7, the first deploy; STEP 8, what a real creator needs; STEP 9, bringing what they made; STEP 10, the creator's own assistant in the app (pulled forward: it is the product for creators); STEP 11, learning; STEP 12, payments.
 
 ## 11. Open decisions (the owner's)
 

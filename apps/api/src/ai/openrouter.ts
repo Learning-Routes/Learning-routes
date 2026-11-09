@@ -59,3 +59,84 @@ function costOf(credits: number | null | undefined): CostEstimate {
     microcents: Math.round(Number((credits * MICROCENTS_PER_CREDIT).toFixed(6))),
   };
 }
+
+type Settled = ReturnType<typeof settle>;
+type ToolCall = { id: string; type: "function"; function: { name: string; arguments: string } };
+
+export type Streamed =
+  | { ok: true; content: string; toolCalls: ToolCall[]; usage: Settled | null }
+  /** usage is what the failed call still cost, when OpenRouter said; null when nothing reached a model. */
+  | { ok: false; status: number; usage: Settled | null };
+
+interface Chunk {
+  error?: unknown;
+  usage?: Parameters<typeof settle>[0]["usage"];
+  choices?: {
+    delta?: {
+      content?: string | null;
+      tool_calls?: {
+        index: number;
+        id?: string;
+        function?: { name?: string; arguments?: string };
+      }[];
+    };
+  }[];
+}
+
+/** The `data:` events of an SSE body, as they arrive; comment lines and [DONE] are left out. */
+async function* events(body: ReadableStream<Uint8Array>): AsyncGenerator<Chunk> {
+  const decoder = new TextDecoder();
+  let rest = "";
+  for await (const piece of body as unknown as AsyncIterable<Uint8Array>) {
+    rest += decoder.decode(piece, { stream: true });
+    const lines = rest.split("\n");
+    rest = lines.pop() ?? "";
+    for (const line of lines) {
+      const data = line.startsWith("data:") ? line.slice(5).trim() : "";
+      if (data && data !== "[DONE]") {
+        yield JSON.parse(data) as Chunk;
+      }
+    }
+  }
+}
+
+/**
+ * Sends a call the gate allowed with stream: true (Platform STEP 10). Each new piece of the answer's
+ * words goes to `onText` as the whole text so far; the tool calls are put together from their pieces.
+ * OpenRouter sends the usage, with its cost, in the last event.
+ */
+export async function streamFromOpenRouter(
+  allowed: Allowed,
+  apiKey: string,
+  onText: (textSoFar: string) => void,
+  fetcher: typeof fetch = fetch,
+): Promise<Streamed> {
+  const response = await sendToOpenRouter(allowed, apiKey, fetcher);
+  if (!(response.ok && response.body)) {
+    return { ok: false, status: response.status, usage: null };
+  }
+  let content = "";
+  let usage: Settled | null = null;
+  const calls: ToolCall[] = [];
+  for await (const chunk of events(response.body)) {
+    if (chunk.usage) {
+      usage = settle({ usage: chunk.usage });
+    }
+    if (chunk.error) {
+      return { ok: false, status: 502, usage };
+    }
+    const delta = chunk.choices?.[0]?.delta;
+    if (delta?.content) {
+      content += delta.content;
+      onText(content);
+    }
+    for (const piece of delta?.tool_calls ?? []) {
+      calls[piece.index] ??= { id: "", type: "function", function: { name: "", arguments: "" } };
+      const call = calls[piece.index] as ToolCall;
+      call.id ||= piece.id ?? "";
+      call.function.name += piece.function?.name ?? "";
+      call.function.arguments += piece.function?.arguments ?? "";
+    }
+  }
+  return { ok: true, content, toolCalls: calls.filter(Boolean), usage };
+}

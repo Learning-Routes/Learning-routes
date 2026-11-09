@@ -5,6 +5,9 @@
 // what the creator decided, the planned route and how much of it is built. It is pure, so the page,
 // the agent's tests and a scripted demo all share one meaning for every event.
 
+/** Where the page opens its WebSocket to the assistant, on the app's host. */
+export const STUDIO_PATH = "/creador/asistente/conexion";
+
 /** The guided steps, in order. The page shows `STUDIO_STEPS.length` ticks. */
 export const STUDIO_STEPS = [
   "meet",
@@ -63,6 +66,8 @@ export type StudioEvent =
   | { type: "built"; stations: number }
   | { type: "previewed"; preview: LessonPreview | null }
   | { type: "confirming"; address: string; price: string | null }
+  /** The creator said not yet: the question goes away and nothing is published. */
+  | { type: "declined" }
   | { type: "published"; address: string };
 
 /** What the page sends back. Publishing always needs the creator's explicit yes. */
@@ -168,6 +173,8 @@ export function studioReducer(state: StudioState, event: StudioEvent): StudioSta
       return { ...state, preview: event.preview };
     case "confirming":
       return { ...state, confirming: { address: event.address, price: event.price }, options: [] };
+    case "declined":
+      return { ...state, confirming: null };
     case "published":
       return { ...state, confirming: null, publishedAt: event.address };
   }
