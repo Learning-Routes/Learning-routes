@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 import { creatorHost, DEV } from "./screens";
-import { newAddress, signInContext } from "./session";
+import { makeTeacher, newAddress, signInContext } from "./session";
 
 // Mis rutas and admin need a session (Platform STEP 4 §6.2, §6.4).
 
@@ -22,6 +22,20 @@ test("with no enrollment, it says so and links to the catalog", async ({ page, c
     `${DEV}/es/explorar`,
   );
   await expect(page.getByRole("link", { name: "Enseñar" })).toHaveCount(0);
+});
+
+test("for someone who teaches, Enseñar opens their assistant (Platform STEP 10 §5)", async ({
+  page,
+  context,
+}) => {
+  const email = newAddress("ensena");
+  await signInContext(context, email);
+  makeTeacher(email);
+  await page.goto(`${DEV}/mis-rutas`);
+  await expect(page.getByRole("link", { name: "Enseñar", exact: true }).first()).toBeVisible();
+  for (const link of await page.getByRole("link", { name: "Enseñar", exact: true }).all()) {
+    await expect(link).toHaveAttribute("href", "/creador/asistente");
+  }
 });
 
 test("a route that does not exist shows a plain message and a way back", async ({ page }) => {

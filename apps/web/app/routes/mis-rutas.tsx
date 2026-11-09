@@ -206,7 +206,7 @@ export default function MisRutas({ loaderData }: Route.ComponentProps) {
                   </a>
                 </li>
                 <li>
-                  <a className="app-mode" href="/creador">
+                  <a className="app-mode" href="/creador/asistente">
                     {words.teach}
                   </a>
                 </li>

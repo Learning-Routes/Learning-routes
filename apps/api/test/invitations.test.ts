@@ -108,7 +108,7 @@ describe("an invitation", () => {
     const slug = slugOf();
     const answer = await accept(token, slug);
     expect(answer.status).toBe(200);
-    expect(await answer.json()).toEqual({ ok: true, location: "/creador" });
+    expect(await answer.json()).toEqual({ ok: true, location: "/creador/asistente" });
     expect(answer.headers.getSetCookie().join()).toContain("__Host-lr_session");
     const owners = await query(
       URLS.migrator,
