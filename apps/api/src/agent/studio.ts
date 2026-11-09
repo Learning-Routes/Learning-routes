@@ -1,13 +1,14 @@
 import type { ModelMessage } from "@learning-routes/core/ai/gate";
 import { AGENT_TEXT, type WorkingOn } from "@learning-routes/core/copy/agent";
 import { LOCALES, type LocaleCode } from "@learning-routes/core/locales";
-import { budgetOf, monthOf } from "@learning-routes/core/studio/budget";
+import { budgetOf } from "@learning-routes/core/studio/budget";
 import { STUDIO_PROMPT, studioContext } from "@learning-routes/core/studio/prompt";
 import type { StudioEvent, StudioOption, StudioStep } from "@learning-routes/core/studio/session";
 import { type ContentTool, runTurn } from "@learning-routes/core/studio/turn";
 import { Agent, type Connection, type ConnectionContext } from "agents";
 import * as z from "zod";
 import { newId } from "../ids";
+import { type ConversationRow, dayOf, monthOf, type Seat, type StudioPlace } from "./conversation";
 import { type AgentEnv, USER_HEADER } from "./env";
 import { modelCall, type SpendBook } from "./model";
 import { Effects } from "./studio-effects";
@@ -23,24 +24,6 @@ const Input = z.discriminatedUnion("type", [
 ]);
 type Input = z.infer<typeof Input>;
 
-interface Seat {
-  userId: string;
-  conversationId: string;
-  locale: LocaleCode;
-}
-
-export interface ConversationRow {
-  id: string;
-  user_id: string;
-  locale: string;
-  step: string;
-  options: string;
-  route_id: string | null;
-  shown_lessons: string | null;
-  pending_publish: string | null;
-  warned_month: string | null;
-}
-
 /** Turns that may wait behind the running one. */
 const MOST_WAITING = 2;
 /** Conversations a creator keeps in a space; past it, "new" goes on with the latest. */
@@ -51,7 +34,7 @@ const MOST_MESSAGES = 400;
 const localeOf = (given: string | null): LocaleCode =>
   (LOCALES as readonly string[]).includes(given ?? "") ? (given as LocaleCode) : "es";
 
-export class Studio extends Agent<AgentEnv> {
+export class Studio extends Agent<AgentEnv> implements StudioPlace {
   // Not state: only the order of this instance's turns while it is awake, and how many wait.
   private turns: Promise<void> = Promise.resolve();
   private waiting = 0;
@@ -197,7 +180,7 @@ export class Studio extends Agent<AgentEnv> {
     const conversationId = seat.conversationId;
     return {
       spent: (now) => {
-        const day = new Date(now).toISOString().slice(0, 10);
+        const day = dayOf(now);
         const [row] = this.sql<{ month: number; userToday: number }>`select
           coalesce(sum(case when month = ${monthOf(now)} and is_charged = 1 then microcents end), 0) as month,
           coalesce(sum(case when day = ${day} and is_charged = 1 and conversation_id in
@@ -213,7 +196,7 @@ export class Studio extends Agent<AgentEnv> {
         this
           .sql`insert into spend (at, month, day, conversation_id, model, prompt_tokens, cached_tokens,
           completion_tokens, microcents, is_charged) values (${now}, ${monthOf(now)},
-          ${new Date(now).toISOString().slice(0, 10)}, ${conversationId}, ${row.model}, ${row.promptTokens},
+          ${dayOf(now)}, ${conversationId}, ${row.model}, ${row.promptTokens},
           ${row.cachedTokens}, ${row.completionTokens}, ${row.microcents}, ${row.isCharged ? 1 : 0})`;
         console.log(JSON.stringify({ message: "studio model call", ...row }));
       },

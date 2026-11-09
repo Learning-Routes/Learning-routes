@@ -1,10 +1,10 @@
 import type { SpendLedger } from "./ledger";
-import type { Studio } from "./studio";
 
 // The assistant's Worker (Platform STEP 10, wrangler.agent.jsonc): the API's bindings it shares, and
 // its own. Numbers come as text from the config and are read with Number().
 export interface AgentEnv extends Env {
-  Studio: DurableObjectNamespace<Studio>;
+  /** The Studio class's namespace; index.ts names its type, which would import it here in a loop. */
+  Studio: DurableObjectNamespace;
   LEDGER: DurableObjectNamespace<SpendLedger>;
   CREATOR_DOMAIN: string;
   /** Unset means the assistant is not switched on: it says so, and calls no model. */

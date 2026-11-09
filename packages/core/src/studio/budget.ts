@@ -13,11 +13,6 @@ export function budgetOf(spentThisMonth: number, monthly: number): Budget {
   return monthly - spentThisMonth <= monthly * LOW_SHARE ? "low" : "ok";
 }
 
-/** The month a spend counts in, as "YYYY-MM" in UTC. */
-export function monthOf(at: number): string {
-  return new Date(at).toISOString().slice(0, 7);
-}
-
 /** Model calls a space's assistant may make in a minute: a flood of messages cannot outrun it. */
 export const CALLS_PER_MINUTE = 12;
 

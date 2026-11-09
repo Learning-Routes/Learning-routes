@@ -22,8 +22,11 @@ export default {
     },
     "apps/api": {
       // Read by Better Auth's CLI through pnpm db:auth-schema.
-      // The second Worker's entry is named in wrangler.mcp.jsonc, which knip does not read.
-      entry: ["src/auth/schema.config.ts", "src/mcp/index.ts"],
+      // The other Workers' entries are named in wrangler.mcp.jsonc and wrangler.agent.jsonc,
+      // which knip does not read.
+      entry: ["src/auth/schema.config.ts", "src/mcp/index.ts", "src/agent/index.ts"],
+      // cloudflare:workers is the runtime's own module, not a package.
+      ignoreDependencies: ["cloudflare"],
     },
   },
   // CSS @import names packages too (app.css imports the design tokens).

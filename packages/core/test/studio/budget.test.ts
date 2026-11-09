@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { budgetOf, CALLS_PER_MINUTE, limitsOf, monthOf } from "../../src/studio/budget";
+import { budgetOf, CALLS_PER_MINUTE, limitsOf } from "../../src/studio/budget";
 
 const MONTHLY = 5_000_000;
 
@@ -17,10 +17,6 @@ describe("a space's assistant budget", () => {
     expect(budgetOf(0, Number.NaN)).toBe("out");
   });
 
-  it("counts by calendar month in UTC", () => {
-    expect(monthOf(Date.parse("2026-11-30T23:59:59Z"))).toBe("2026-11");
-    expect(monthOf(Date.parse("2026-12-01T00:00:00Z"))).toBe("2026-12");
-  });
 });
 
 describe("the assistant's limits, from config", () => {
