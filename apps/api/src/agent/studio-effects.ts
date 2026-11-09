@@ -1,7 +1,6 @@
 import { runAction } from "@learning-routes/core/actions/define";
 import { ACTIONS } from "@learning-routes/core/actions/registry";
 import { AGENT_TEXT } from "@learning-routes/core/copy/agent";
-import type { LocaleCode } from "@learning-routes/core/locales";
 import type { RouteDraft } from "@learning-routes/core/repos/ports";
 import { builtOf, lessonPreviewOf, plannedOf } from "@learning-routes/core/studio/draft";
 import { askText, type StudioCall } from "@learning-routes/core/studio/studio-tools";
