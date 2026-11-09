@@ -5,8 +5,9 @@ import { consentedAt, noteUse } from "../db/repos/connections";
 import type { Database } from "../db/with-db";
 import { logEvent } from "../log";
 import type { createOAuth } from "./auth";
+import type { Caller } from "./call-tool";
 import { readAtMost } from "./read-at-most";
-import { type Caller, createServer } from "./server";
+import { createServer } from "./server";
 import { scopeOfTool } from "./tools";
 
 // One request to /mcp (Platform STEP 5 §3): what every call passes before any tool. The MCP
@@ -206,6 +207,7 @@ export async function serveMcp(
   }
   const scopes = new Set(String(claims.scope ?? "").split(" "));
   const caller: Caller = {
+    via: "mcp",
     userId: String(claims.sub),
     clientId: String(claims.azp),
     scopes,

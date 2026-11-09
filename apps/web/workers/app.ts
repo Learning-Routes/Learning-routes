@@ -1,6 +1,7 @@
+import { STUDIO_PATH } from "@learning-routes/core/studio/session";
 import { createRequestHandler, RouterContextProvider } from "react-router";
 import { pageContext } from "../app/context";
-import { apiClient, mcpClient } from "./api-client";
+import { agentClient, apiClient, mcpClient } from "./api-client";
 import { servedFromEdge } from "./edge-cache";
 import {
   apexOf,
@@ -29,6 +30,11 @@ function withoutForeignCookies(request: Request, appOrigin: string): Request {
 
 export default {
   async fetch(request, env, ctx) {
+    const url = new URL(request.url);
+    // The assistant's WebSocket: passed on as it is, since a 101 answer cannot be rebuilt with headers.
+    if (url.origin === env.APP_ORIGIN && url.pathname === STUDIO_PATH) {
+      return agentClient(env)(request);
+    }
     return withSecurityHeaders(await answer(request, env, ctx));
   },
 } satisfies ExportedHandler<Env>;

@@ -10,6 +10,7 @@ import { defineConfig } from "@playwright/test";
 const LOCAL = {
   API_DEV_ORIGIN: "http://localhost:8788",
   MCP_DEV_ORIGIN: "http://localhost:8789",
+  AGENT_DEV_ORIGIN: "http://localhost:8790",
   CLOUDFLARE_INCLUDE_PROCESS_ENV: "true",
   APP_ORIGIN: "http://localhost:4174",
   ENVIRONMENT: "development",
@@ -72,6 +73,12 @@ export default defineConfig({
     {
       command: `pnpm --filter @learning-routes/api exec wrangler dev --config wrangler.mcp.jsonc --port 8789 --inspector-port 0 --local-upstream localhost:4174 ${API_VARS}`,
       url: "http://localhost:8789/health",
+      reuseExistingServer: false,
+    },
+    // The creator's assistant (Platform STEP 10), with no model key: it says it is not on yet.
+    {
+      command: `pnpm --filter @learning-routes/api exec wrangler dev --config wrangler.agent.jsonc --port 8790 --inspector-port 0 --local-upstream localhost:4174 ${API_VARS}`,
+      url: "http://localhost:8790/health",
       reuseExistingServer: false,
     },
     {

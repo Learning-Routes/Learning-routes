@@ -5,21 +5,34 @@ import geist from "@learning-routes/design-tokens/fonts/Geist-latin.woff2?url";
 import { useCallback } from "react";
 import { redirect } from "react-router";
 import { runApiAction } from "../app-api.server";
+import { AgentTransport } from "../studio/agent-transport";
 import { DemoTransport } from "../studio/session-transport";
 import { StudioPage } from "../studio/studio-page";
 import "@learning-routes/design-tokens/geist.css";
 import "../studio/studio.css";
 import type { Route } from "./+types/asistente";
 
-// "Tu asistente" (Platform STEP 10): where a creator builds a route by talking. Until the agent
-// lands, the page plays the scripted demo through the same protocol the agent will speak.
+// "Tu asistente" (Platform STEP 10): where a creator builds a route by talking, with the space's
+// agent. ?demo plays the scripted demo instead, through the same protocol.
+
+const EDITORS: readonly string[] = ["owner", "coeditor"];
 
 export async function loader({ request, context }: Route.LoaderArgs) {
   const owned = await runApiAction<OwnSpace[]>(context, request, "space.list", {});
   if (owned.status === 401) {
     throw redirect("/sign-in");
   }
-  return { locale: negotiateLocale(request.headers.get("accept-language"), "es") };
+  const isDemo = new URL(request.url).searchParams.has("demo");
+  const space = (owned.body?.output ?? []).find((each) => EDITORS.includes(each.role));
+  // Someone who edits no space has no assistant: Enseñar tells them how to start.
+  if (!(space || isDemo)) {
+    throw redirect("/creador");
+  }
+  return {
+    locale: negotiateLocale(request.headers.get("accept-language"), "es"),
+    spaceId: space?.id ?? null,
+    isDemo,
+  };
 }
 
 export const headers: Route.HeadersFunction = () => ({ "Cache-Control": "no-store" });
@@ -37,12 +50,15 @@ const STILL = () =>
   typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 export default function Assistant({ loaderData }: Route.ComponentProps) {
+  const { spaceId, isDemo, locale } = loaderData;
   const connect = useCallback(
     () =>
-      new DemoTransport(
-        (ms) => new Promise((resolve) => setTimeout(resolve, STILL() ? Math.min(ms, 60) : ms)),
-      ),
-    [],
+      isDemo || !spaceId
+        ? new DemoTransport(
+            (ms) => new Promise((resolve) => setTimeout(resolve, STILL() ? Math.min(ms, 60) : ms)),
+          )
+        : new AgentTransport({ origin: window.location.origin, spaceId, locale }),
+    [isDemo, spaceId, locale],
   );
   return <StudioPage words={ASSISTANT_TEXT[loaderData.locale]} connect={connect} />;
 }

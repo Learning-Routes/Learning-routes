@@ -1,3 +1,4 @@
+import { STUDIO_PROMPT } from "../studio/prompt";
 import { estimateInputTokens } from "./gate";
 import { isAllowedModel } from "./models";
 
@@ -24,6 +25,16 @@ export const TEMPLATES: readonly PromptTemplate[] = [
     inputTokenBudget: 120,
     system:
       "You help a student who answered a practice question wrongly. Reply in the student's language, in at most three short sentences. Name the idea they missed, then give a hint toward the right answer without stating it.",
+  },
+  {
+    // The creator's assistant (Platform STEP 10): the cheap tier talks, the strong one plans and
+    // writes (studio/turn.ts). maxTokens is the cheap tier's; the strong tier's is in the agent.
+    name: "studio",
+    model: "anthropic/claude-haiku-5.5",
+    maxTokens: 1_200,
+    promptCache: true,
+    inputTokenBudget: 800,
+    system: STUDIO_PROMPT,
   },
 ];
 
