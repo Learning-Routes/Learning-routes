@@ -80,6 +80,13 @@ describe("studioReducer", () => {
     expect(done.confirming).toBeNull();
     expect(done.publishedAt).toBe("andres.learningroutes.com");
   });
+
+  it("puts the question away when the creator says not yet, and publishes nothing", () => {
+    const asking = run([{ type: "confirming", address: "andres.learningroutes.com", price: null }]);
+    const declined = run([{ type: "declined" }], asking);
+    expect(declined.confirming).toBeNull();
+    expect(declined.publishedAt).toBeNull();
+  });
 });
 
 describe("planStations", () => {

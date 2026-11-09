@@ -12,6 +12,23 @@ const CHARS_PER_TOKEN = 4;
 const MAX_SESSION_ID = 256;
 const PER_MILLION = 1_000_000;
 
+/** A function the model may call (OpenRouter tool calling). */
+export interface ModelTool {
+  type: "function";
+  function: { name: string; description: string; parameters: Record<string, unknown> };
+}
+
+export interface ToolCall {
+  id: string;
+  type: "function";
+  function: { name: string; arguments: string };
+}
+
+export type ModelMessage =
+  | { role: "user"; content: string }
+  | { role: "assistant"; content: string; tool_calls?: ToolCall[] }
+  | { role: "tool"; tool_call_id: string; content: string };
+
 export interface CallSpec {
   model: string;
   maxTokens: number;
@@ -23,14 +40,21 @@ export interface CallSpec {
    */
   sessionId: string;
   system: string;
-  messages: { role: "user" | "assistant"; content: string }[];
+  messages: ModelMessage[];
+  /** An agent's turn (Platform STEP 10): the tools it may call, priced as prompt. */
+  tools?: ModelTool[];
+  /** Stream the answer as it is written. */
+  stream?: true;
 }
 
 export type GateContext = Omit<SpendRequest, "estimate">;
 
-type SystemContent =
-  | string
-  | { type: "text"; text: string; cache_control: { type: "ephemeral" } }[];
+type CachedText = { type: "text"; text: string; cache_control: { type: "ephemeral" } }[];
+type SystemContent = string | CachedText;
+/** A user's or a tool's words marked for the cache: everything up to them is cached. */
+type MarkedMessage =
+  | { role: "user"; content: CachedText }
+  | { role: "tool"; tool_call_id: string; content: CachedText };
 
 // Student data never reaches a provider that keeps it: only zero-data-retention
 // endpoints, and none that stores or trains on requests (OpenRouter provider routing).
@@ -42,7 +66,9 @@ export interface ModelRequest {
   max_tokens: number;
   provider: typeof NO_RETENTION;
   session_id: string;
-  messages: ({ role: "system"; content: SystemContent } | CallSpec["messages"][number])[];
+  messages: ({ role: "system"; content: SystemContent } | ModelMessage | MarkedMessage)[];
+  tools?: ModelTool[];
+  stream?: true;
 }
 
 export type GateDecision =
@@ -61,11 +87,19 @@ export function estimateInputTokens(text: string): number {
   return Math.ceil(text.length / CHARS_PER_TOKEN);
 }
 
-// The prompt, in estimated tokens: the system prompt and the messages.
+// What a message sends besides its words: the calls it made, or the call it answers.
+function sentText(message: ModelMessage): string {
+  if (message.role === "assistant" && message.tool_calls) {
+    return message.content + JSON.stringify(message.tool_calls);
+  }
+  return message.role === "tool" ? message.tool_call_id + message.content : message.content;
+}
+
+// The prompt, in estimated tokens: the system prompt with the tools, and the messages.
 function promptTokens(spec: CallSpec): { system: number; messages: number } {
   return {
-    system: estimateInputTokens(spec.system),
-    messages: estimateInputTokens(spec.messages.map((m) => m.content).join("")),
+    system: estimateInputTokens(spec.system + (spec.tools ? JSON.stringify(spec.tools) : "")),
+    messages: estimateInputTokens(spec.messages.map(sentText).join("")),
   };
 }
 
@@ -86,16 +120,34 @@ function worstCase(spec: CallSpec, model: ModelId): CostEstimate {
   return { kind: "known", microcents: Math.ceil(perMillion / PER_MILLION) };
 }
 
+const cached = (text: string): CachedText => [
+  { type: "text", text, cache_control: { type: "ephemeral" } },
+];
+
+// With the cache, a conversation's newest user or tool message is marked too, so its next call
+// reads the whole history from the cache instead of paying for it again. A one-message call is not:
+// nothing would read it.
+function markedLast(messages: ModelMessage[]): (ModelMessage | MarkedMessage)[] {
+  const last = messages.at(-1);
+  if (messages.length > 1 && (last?.role === "user" || last?.role === "tool")) {
+    return [...messages.slice(0, -1), { ...last, content: cached(last.content) }];
+  }
+  return messages;
+}
+
 function requestOf(spec: CallSpec, model: ModelId): ModelRequest {
-  const system: SystemContent = spec.promptCache
-    ? [{ type: "text", text: spec.system, cache_control: { type: "ephemeral" } }]
-    : spec.system;
+  const system: SystemContent = spec.promptCache ? cached(spec.system) : spec.system;
   return {
     model,
     max_tokens: spec.maxTokens,
     provider: NO_RETENTION,
     session_id: spec.sessionId,
-    messages: [{ role: "system", content: system }, ...spec.messages],
+    messages: [
+      { role: "system", content: system },
+      ...(spec.promptCache ? markedLast(spec.messages) : spec.messages),
+    ],
+    ...(spec.tools ? { tools: spec.tools } : {}),
+    ...(spec.stream ? { stream: true as const } : {}),
   };
 }
 

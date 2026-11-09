@@ -45,3 +45,14 @@ export function mcpClient(
     API_DEV_ORIGIN: env.MCP_DEV_ORIGIN,
   });
 }
+
+/** The same, to the assistant's Worker (Platform STEP 10): the page's WebSocket goes straight through. */
+export function agentClient(
+  env: Pick<Env, "AGENT" | "ENVIRONMENT"> & { AGENT_DEV_ORIGIN?: string },
+): ApiFetch {
+  return apiClient({
+    API: env.AGENT as unknown as Env["API"],
+    ENVIRONMENT: env.ENVIRONMENT,
+    API_DEV_ORIGIN: env.AGENT_DEV_ORIGIN,
+  });
+}

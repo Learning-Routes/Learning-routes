@@ -99,7 +99,7 @@ The danger is real: we would be running a stranger's code. Every rule below exis
    - a quiet line: "Hecho por [creador]. Funciona dentro de esta página."
 
    Build it to VISION's desk register. It loads lazily, after the lesson text.
-2. **Progress, prepared for STEP 10.** A creation may send `{ type: "lr:done" }` to the parent page through `postMessage`. The page accepts it only from its own frame, ignores anything else, and in this STEP just shows "Lo terminaste". Saving it waits for STEP 10. Document the message for creators in the format guide.
+2. **Progress, prepared for STEP 11 (learning, renumbered from STEP 10).** A creation may send `{ type: "lr:done" }` to the parent page through `postMessage`. The page accepts it only from its own frame, ignores anything else, and in this STEP just shows "Lo terminaste". Saving it waits for STEP 11. Document the message for creators in the format guide.
 3. **No JavaScript, or a blocked frame:** a clear message that the activity needs a modern browser, with the rest of the lesson unaffected.
 4. **Accessibility.**
    - The frame has a title.

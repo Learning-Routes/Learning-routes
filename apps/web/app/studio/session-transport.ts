@@ -140,6 +140,7 @@ export class DemoTransport implements StudioTransport {
       );
       return;
     }
+    this.emit({ type: "declined" });
     this.emit({ type: "stepped", step: "page" });
     void this.say("Queda guardada como borrador.").then(() => this.offerPublish());
   }

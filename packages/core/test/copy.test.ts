@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { ADMIN_TEXT } from "../src/copy/admin";
+import { AGENT_TEXT } from "../src/copy/agent";
 import { APP_PAGES_TEXT } from "../src/copy/app-pages";
 import { ASSISTANT_TEXT } from "../src/copy/assistant";
 import { CATALOG_TEXT } from "../src/copy/catalog";
@@ -92,6 +93,7 @@ describe("the copy check", () => {
     ["app pages", APP_PAGES_TEXT],
     ["admin", ADMIN_TEXT],
     ["assistant", ASSISTANT_TEXT],
+    ["agent", AGENT_TEXT],
     ["topics", TOPIC_NAMES],
     ["levels", LEVEL_NAMES],
   ] as const)("%s", (_name, copy) => {

@@ -14,9 +14,11 @@ const WORKERS = [
   { name: "apps/web", cwd: "apps/web", budget: 250 },
   { name: "apps/api", cwd: "apps/api", budget: 300 },
   { name: "learning-routes-mcp", cwd: "apps/api", budget: 500, config: "wrangler.mcp.jsonc" },
+  // The creator's assistant (Platform STEP 10): the Agents SDK brings its own MCP client and capnweb.
+  { name: "learning-routes-agent", cwd: "apps/api", budget: 600, config: "wrangler.agent.jsonc" },
   { name: "apps/content", cwd: "apps/content", budget: 20 },
 ];
-const STARTUP_PROFILED = new Set(["apps/api"]);
+const STARTUP_PROFILED = new Set(["apps/api", "learning-routes-agent"]);
 const STARTUP = /Active: ([\d.]+) ms/;
 const GZIP = /Total Upload: [\d.]+ KiB \/ gzip: ([\d.]+) KiB/;
 
@@ -54,7 +56,15 @@ for (const { name: app, cwd, budget, config } of WORKERS) {
     if (STARTUP_PROFILED.has(app)) {
       const profile = execFileSync(
         "pnpm",
-        ["exec", "wrangler", "check", "startup", "--outfile", join(outdir, "startup.cpuprofile")],
+        [
+          "exec",
+          "wrangler",
+          "check",
+          "startup",
+          "--outfile",
+          join(outdir, "startup.cpuprofile"),
+          ...(config ? ["--config", config] : []),
+        ],
         { cwd, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] },
       );
       const active = STARTUP.exec(profile)?.[1] ?? "unknown";
