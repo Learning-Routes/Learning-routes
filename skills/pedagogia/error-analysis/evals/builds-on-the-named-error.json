@@ -1,0 +1,22 @@
+{
+  "step": "build",
+  "conversation": [
+    {
+      "role": "user",
+      "content": "Soy Raquel, enseño matemáticas a adultos. Ya enseñé cómo despejar la x en ecuaciones de primer grado."
+    },
+    {
+      "role": "assistant",
+      "content": "¡Muy bien, Raquel! ¿Qué errores suelen cometer tus alumnos al despejar?"
+    },
+    {
+      "role": "user",
+      "content": "Siempre olvidan cambiar el signo al pasar un número al otro lado. Antes de escribir la lección, cuéntame en pocas líneas cómo usarás ese error."
+    }
+  ],
+  "expect": {
+    "mustMatchAny": ["signo"],
+    "mustNotContain": ["% de tus alumnos", "% de los alumnos", "estudios demuestran"],
+    "noCalls": ["add_blocks"]
+  }
+}

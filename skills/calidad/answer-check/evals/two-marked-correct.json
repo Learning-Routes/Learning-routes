@@ -1,0 +1,16 @@
+{
+  "step": "review",
+  "conversation": [
+    {
+      "role": "user",
+      "content": "Revisa esta pregunta de la lección 1: \"¿Qué planeta está más cerca del Sol?\". Opciones: \"Mercurio\" (correcta), \"Venus\" (correcta) y \"Marte\"."
+    }
+  ],
+  "expect": {
+    "oneQuestion": true,
+    "mustMatchAny": [
+      "dos (respuestas|opciones)|ambas|solo (una|mercurio)|sólo (una|mercurio)|una sola|únicamente|venus no|no es venus"
+    ],
+    "noCalls": ["add_blocks", "import_route", "upload_document"]
+  }
+}

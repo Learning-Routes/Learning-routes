@@ -1,0 +1,16 @@
+{
+  "step": "review",
+  "conversation": [
+    {
+      "role": "user",
+      "content": "Revisa la lección 3 antes de publicar. Tiene una foto de un mapa sin ninguna descripción y un audio de una entrevista sin transcripción."
+    }
+  ],
+  "expect": {
+    "oneQuestion": true,
+    "mustMatchAny": [
+      "transcrip|descripci|describ|no (la |lo )?(puede|pueden) ver|no ve|no oye|no escucha"
+    ],
+    "mustNotContain": ["wcag", "aria-"]
+  }
+}

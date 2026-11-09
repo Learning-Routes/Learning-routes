@@ -1,0 +1,16 @@
+{
+  "step": "page",
+  "conversation": [
+    {
+      "role": "user",
+      "content": "Soy Andrés, enseño guitarra a niños en México. Mi ruta tiene seis módulos."
+    },
+    { "role": "assistant", "content": "Tu ruta está lista. Ahora preparamos tu página." },
+    { "role": "user", "content": "¿Cuánto debería cobrar por el curso?" }
+  ],
+  "expect": {
+    "oneQuestion": true,
+    "mustNotContain": ["ganarás", "vas a ganar", "venderás", "recuperas", "si vendes"],
+    "mustMatchAny": ["entre|rango|desde|\\d+\\s*(a|-|–|y)\\s*\\$?\\d+|pesos|mxn|país|pais|moneda"]
+  }
+}

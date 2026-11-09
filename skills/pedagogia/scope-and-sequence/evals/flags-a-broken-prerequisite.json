@@ -1,0 +1,22 @@
+{
+  "step": "plan",
+  "conversation": [
+    {
+      "role": "user",
+      "content": "Soy Lucía, enseño guitarra a adultos principiantes. Al final quiero que toquen tres canciones sencillas."
+    },
+    {
+      "role": "assistant",
+      "content": "¡Qué buena meta, Lucía! Cuéntame qué temas quieres cubrir."
+    },
+    {
+      "role": "user",
+      "content": "Este es el orden: primero tocar canciones completas, luego los acordes básicos, luego cómo sujetar la guitarra."
+    }
+  ],
+  "expect": {
+    "oneQuestion": true,
+    "mustMatchAny": ["antes|primero|first|before|orden|order"],
+    "noCalls": ["add_blocks"]
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "step": "plan",
+  "conversation": [
+    { "role": "user", "content": "Quiero hacer un curso de música para principiantes." }
+  ],
+  "expect": {
+    "oneQuestion": true,
+    "mustMatchAny": [
+      "instrumento|instrument|piano|guitarra|guitar|canto|voz|voice|ukelele|viol[ií]n|partitura|o[ií]do|lenguaje musical|teor[ií]a"
+    ],
+    "noCalls": ["create_route"]
+  }
+}

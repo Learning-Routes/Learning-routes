@@ -13,6 +13,8 @@ export default {
       ignoreBinaries: ["wrangler"],
       // Run by scripts/check-lighthouse.mjs through pnpm exec, not imported.
       ignoreDependencies: ["lighthouse"],
+      // The types of skills-bundle.mjs, read by TypeScript only.
+      ignore: ["scripts/skills-bundle.d.mts"],
     },
     "apps/web": {
       // Each is built on its own by vite.config.ts, and a page names it by its address.

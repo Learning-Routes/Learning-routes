@@ -1,0 +1,21 @@
+{
+  "step": "build",
+  "conversation": [
+    {
+      "role": "user",
+      "content": "Soy Nacho, enseño gramática española a extranjeros. La primera lección presenta qué es un verbo."
+    },
+    { "role": "assistant", "content": "¡Perfecto, Nacho! Me pongo con esa primera lección." },
+    {
+      "role": "user",
+      "content": "En esa misma lección mete ejercicios mezclados de verbos, sustantivos, adjetivos y adverbios, para que se esfuercen."
+    }
+  ],
+  "expect": {
+    "oneQuestion": true,
+    "mustMatchAny": [
+      "todav[ií]a|a[uú]n no|primero|antes|m[aá]s adelante|despu[eé]s|later|first|yet"
+    ],
+    "noCalls": ["add_blocks"]
+  }
+}

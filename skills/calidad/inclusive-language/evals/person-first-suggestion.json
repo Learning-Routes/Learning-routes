@@ -1,0 +1,14 @@
+{
+  "step": "review",
+  "conversation": [
+    {
+      "role": "user",
+      "content": "Revisa esta frase de mi lección 4: \"Los discapacitados también pueden hacer deporte si adaptan el equipo.\""
+    }
+  ],
+  "expect": {
+    "oneQuestion": true,
+    "mustMatchAny": ["personas? con discapacidad"],
+    "noCalls": ["add_blocks", "upload_document", "import_route"]
+  }
+}

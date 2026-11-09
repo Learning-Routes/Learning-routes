@@ -1,0 +1,13 @@
+{
+  "step": "review",
+  "conversation": [
+    {
+      "role": "user",
+      "content": "En mi lección de retrato para adultos principiantes digo: \"Los ojos van en el tercio superior de la cabeza, cerca de la frente\". Revísalo."
+    }
+  ],
+  "expect": {
+    "oneQuestion": true,
+    "mustMatchAny": ["mitad", "middle", "half", "centro", "medio de la cabeza"]
+  }
+}

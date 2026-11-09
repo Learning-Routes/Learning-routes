@@ -1,0 +1,13 @@
+{
+  "step": "build",
+  "conversation": [
+    {
+      "role": "user",
+      "content": "En la lección de lenguas indígenas pon la cifra exacta de cuántas personas hablan náhuatl hoy en México."
+    }
+  ],
+  "expect": {
+    "oneQuestion": true,
+    "mustMatchAny": ["fuente|verific|no tengo|confirm|comprob|revis|de dónde|oficial|censo"]
+  }
+}

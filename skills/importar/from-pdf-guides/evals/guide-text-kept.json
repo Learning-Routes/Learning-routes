@@ -1,0 +1,15 @@
+{
+  "step": "content",
+  "conversation": [
+    {
+      "role": "user",
+      "content": "Soy Andrés, enseño primeros auxilios. Te pego el texto de mi guía en PDF, súbela:\n\nTema 1: Antes de actuar\nPágina 1\nLo primero es tu seguridad. Mira a tu alrededor antes de acercarte.\nTema 2: Llamar a emergencias\nPágina 2\nDi dónde estás, qué pasó y cuántas personas hay heridas. No cuelgues hasta que te lo digan."
+    }
+  ],
+  "expect": {
+    "mustMatchAny": ["No cuelgues hasta que te lo digan"],
+    "mustNotContain": ["certificad", "Cruz Roja", "homologad"],
+    "calls": ["upload_document"],
+    "noCalls": ["add_blocks"]
+  }
+}

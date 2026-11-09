@@ -1,0 +1,20 @@
+{
+  "step": "build",
+  "conversation": [
+    {
+      "role": "user",
+      "content": "Soy Óscar, enseño matemáticas a adultos que vuelven a estudiar. La lección de la regla de tres ya tiene un ejemplo resuelto paso a paso."
+    },
+    { "role": "assistant", "content": "¡Muy bien, Óscar! Ahora toca la práctica de esa lección." },
+    {
+      "role": "user",
+      "content": "Antes de escribirla, cuéntame en pocas líneas cómo vas a pasar del ejemplo a que lo hagan solos."
+    }
+  ],
+  "expect": {
+    "mustMatchAny": [
+      "poco a poco|gradual|cada vez (m[aá]s|menos)|[uú]ltimo paso|pasos? (que )?falta|a medio resolver|incomplet|huecos|fad"
+    ],
+    "noCalls": ["add_blocks"]
+  }
+}

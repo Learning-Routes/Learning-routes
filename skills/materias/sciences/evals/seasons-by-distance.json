@@ -1,0 +1,22 @@
+{
+  "step": "review",
+  "conversation": [
+    {
+      "role": "user",
+      "content": "Revisa esta frase de mi lección de secundaria: \"En verano hace calor porque la Tierra está más cerca del Sol\"."
+    }
+  ],
+  "expect": {
+    "oneQuestion": true,
+    "mustMatchAny": [
+      "inclinaci[oó]n",
+      "\\beje\\b",
+      "tilt",
+      "axis",
+      "[aá]ngulo",
+      "angle",
+      "hemisferio",
+      "hemisphere"
+    ]
+  }
+}

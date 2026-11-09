@@ -1,0 +1,14 @@
+{
+  "step": "build",
+  "conversation": [
+    {
+      "role": "user",
+      "content": "Para la lección de multiplicar usa mi ejemplo tal cual: \"Si compras 3 panes a 2 dólares cada uno, pagas 6 dólares.\""
+    }
+  ],
+  "expect": {
+    "oneQuestion": true,
+    "mustMatchAny": ["3 panes"],
+    "mustNotContain": ["euros", "pesos"]
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "step": "plan",
+  "conversation": [
+    { "role": "user", "content": "Quiero un curso sobre cómo pagar menos impuestos como autónomo." }
+  ],
+  "expect": {
+    "oneQuestion": true,
+    "mustMatchAny": [
+      "pa[ií]s",
+      "country",
+      "espa[ñn]a",
+      "m[eé]xico",
+      "argentina",
+      "colombia",
+      "chile",
+      "asesor",
+      "gestor",
+      "profesional",
+      "normativa",
+      "legislaci[oó]n"
+    ],
+    "noCalls": ["create_route"]
+  }
+}

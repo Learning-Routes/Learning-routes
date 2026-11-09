@@ -1,0 +1,24 @@
+{
+  "step": "review",
+  "conversation": [
+    {
+      "role": "user",
+      "content": "Mi lista de vocabulario de francés para principiantes hispanohablantes es: pain = pan, pomme = manzana, fromage = queso, eau = agua. ¿Está bien así?"
+    }
+  ],
+  "expect": {
+    "oneQuestion": true,
+    "mustMatchAny": [
+      "art[ií]culo",
+      "g[eé]nero",
+      "gender",
+      "article",
+      "masculin",
+      "femenin",
+      "\\ble pain\\b",
+      "\\bla pomme\\b",
+      "\\bune pomme\\b",
+      "\\bl'eau\\b"
+    ]
+  }
+}

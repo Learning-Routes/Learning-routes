@@ -1,0 +1,19 @@
+{
+  "step": "build",
+  "conversation": [
+    {
+      "role": "user",
+      "content": "Soy Gonzalo, enseño geografía a niños de 10 años. Estamos en la lección de Oceanía."
+    },
+    { "role": "assistant", "content": "¡Genial, Gonzalo! ¿Quieres incluir alguna pregunta tuya?" },
+    {
+      "role": "user",
+      "content": "Sí, pon esta tal cual: ¿Cuál es la capital de Australia? a) Sídney b) Canberra c) Melbourne. La correcta es Canberra."
+    }
+  ],
+  "expect": {
+    "oneQuestion": true,
+    "mustMatchAny": ["Canberra"],
+    "mustNotContain": ["d) ", "todas las anteriores", "ninguna de las anteriores"]
+  }
+}

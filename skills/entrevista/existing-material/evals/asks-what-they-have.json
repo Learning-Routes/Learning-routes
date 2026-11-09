@@ -1,0 +1,17 @@
+{
+  "step": "content",
+  "conversation": [
+    {
+      "role": "user",
+      "content": "Soy Andrés, doy clases de fotografía con el móvil a adultos. Ya tengo varias cosas hechas de mis clases."
+    }
+  ],
+  "expect": {
+    "oneQuestion": true,
+    "mustNotContain": ["fotógrafo profesional", "años de experiencia", "certificad"],
+    "mustMatchAny": [
+      "pdf|diapositiva|presentaci|apunte|nota|video|vídeo|grabaci|documento|archivo|material|qué tienes|que tienes|tipo"
+    ],
+    "calls": ["ask_creator"]
+  }
+}

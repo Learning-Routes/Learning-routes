@@ -10,6 +10,7 @@ describe("the assistant's own tools", () => {
       "set_step",
       "show_lesson",
       "ask_to_publish",
+      "load_skill",
     ]);
     for (const tool of STUDIO_TOOLS) {
       expect(tool.function.parameters).toMatchObject({ type: "object" });
@@ -68,6 +69,14 @@ describe("the assistant's own tools", () => {
     ).toBe(false);
   });
 
+  it("load a skill by its name", () => {
+    expect(call("load_skill", { name: "retrieval-practice" })).toEqual({
+      ok: true,
+      call: { name: "load_skill", skill: "retrieval-practice" },
+    });
+    expect(call("load_skill", { name: "../secret" }).ok).toBe(false);
+  });
+
   it("know only the guided steps, and ids that look like ids", () => {
     expect(call("set_step", { step: "plan" })).toEqual({
       ok: true,
@@ -94,5 +103,21 @@ describe("what the page shows with a question", () => {
     expect(askText("", "¿Cómo te llamas?")).toBe("¿Cómo te llamas?");
     expect(askText("¡Hola!", "¿Cómo te llamas?")).toBe("¡Hola! ¿Cómo te llamas?");
     expect(askText("¡Hola! ¿Cómo te llamas?", "¿Cómo te llamas?")).toBe("¡Hola! ¿Cómo te llamas?");
+  });
+
+  it("keeps one question on screen: a question already in the words gives way to the one asked", () => {
+    expect(askText("¡Hola, Andrés! ¿Qué enseñas? Me encanta la idea.", "¿Para quién es?")).toBe(
+      "¡Hola, Andrés! Me encanta la idea. ¿Para quién es?",
+    );
+    expect(askText("¿Seguro? ¿De verdad?", "¿Lo publicamos?")).toBe("¿Lo publicamos?");
+  });
+
+  it("keeps what is not a question: an address with a ? and a quoted answer stay whole", () => {
+    expect(askText("Sube el archivo a https://x.com/a?b=1. Listo.", "¿Seguimos?")).toBe(
+      "Sube el archivo a https://x.com/a?b=1. Listo. ¿Seguimos?",
+    );
+    expect(askText("«¿Por qué? Porque sí», dice tu guía.", "¿Lo dejamos?")).toBe(
+      "«¿Por qué? Porque sí», dice tu guía. ¿Lo dejamos?",
+    );
   });
 });

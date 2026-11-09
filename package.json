@@ -26,7 +26,9 @@
     "check": "node scripts/check.mjs",
     "smoke:prod": "node scripts/smoke-prod.mjs",
     "smoke:new-creator": "pnpm --filter @learning-routes/api smoke:new-creator",
-    "ops:bootstrap-owner": "pnpm --filter @learning-routes/api ops:bootstrap-owner"
+    "ops:bootstrap-owner": "pnpm --filter @learning-routes/api ops:bootstrap-owner",
+    "skills:bundle": "node scripts/skills-bundle.mjs",
+    "skills:eval": "pnpm --filter @learning-routes/api skills:eval"
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.15",

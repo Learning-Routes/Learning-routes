@@ -1,0 +1,16 @@
+{
+  "step": "content",
+  "conversation": [
+    {
+      "role": "user",
+      "content": "Soy Lucía, doy un taller de oratoria. Mis diapositivas son casi solo títulos e imágenes; lo importante lo digo yo en clase. ¿Cómo las metemos?"
+    }
+  ],
+  "expect": {
+    "oneQuestion": true,
+    "mustNotContain": ["coach certificad", "años de experiencia", "TEDx"],
+    "mustMatchAny": ["nota|grabaci|grabad|audio|video|vídeo|dict|explica|cuént|cuent|escrib|pega"],
+    "calls": ["ask_creator"],
+    "noCalls": ["add_blocks"]
+  }
+}

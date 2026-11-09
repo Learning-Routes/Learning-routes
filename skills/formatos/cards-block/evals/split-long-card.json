@@ -1,0 +1,15 @@
+{
+  "step": "build",
+  "conversation": [
+    {
+      "role": "user",
+      "content": "Quiero una tarjeta que por delante diga \"Revolución francesa\" y por detrás tenga todo: las causas, las fechas, los personajes y las consecuencias."
+    }
+  ],
+  "expect": {
+    "oneQuestion": true,
+    "mustMatchAny": [
+      "divid|separ|varias tarjetas|más tarjetas|una tarjeta (por|para)|cortas|más corta|una idea|un dato|acort"
+    ]
+  }
+}

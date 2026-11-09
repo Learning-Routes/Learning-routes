@@ -1,0 +1,14 @@
+{
+  "step": "content",
+  "conversation": [
+    {
+      "role": "user",
+      "content": "Soy Lucía y enseño huerto urbano. Aquí está mi curso, súbelo tal cual:\n\nMódulo 1: Empezar en el balcón\nLección 1: Elige tu rincón. Busca un lugar con al menos seis horas de sol. Si no lo tienes, empieza con lechugas y hierbas.\nLección 2: Macetas y tierra. Cualquier recipiente sirve si tiene agujeros abajo. Usa tierra con compost, nunca tierra del jardín sola."
+    }
+  ],
+  "expect": {
+    "mustMatchAny": ["seis horas de sol"],
+    "calls": ["upload_document"],
+    "noCalls": ["add_blocks"]
+  }
+}

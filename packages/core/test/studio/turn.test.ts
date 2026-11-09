@@ -125,6 +125,35 @@ describe("a turn of the assistant", () => {
     ]);
   });
 
+  it("asks one question per turn: a second ask in the same answer is refused", async () => {
+    const asked: string[] = [];
+    const { deps } = fake([
+      {
+        ok: true,
+        content: "",
+        toolCalls: [
+          toolCall("c1", "ask_creator", {
+            question: "¿Cómo te llamas?",
+            is_fork: false,
+            options: [],
+          }),
+          toolCall("c2", "ask_creator", { question: "¿Qué enseñas?", is_fork: false, options: [] }),
+        ],
+      },
+    ]);
+    deps.studio = async (call) => {
+      asked.push(call.name === "ask_creator" ? call.question : call.name);
+      return "done";
+    };
+    const messages = history();
+    await runTurn(messages, deps);
+    expect(asked).toEqual(["¿Cómo te llamas?"]);
+    expect(messages.at(-1)).toMatchObject({
+      tool_call_id: "c2",
+      content: expect.stringContaining("one question"),
+    });
+  });
+
   it("answers a broken studio call with what to fix, and never draws it", async () => {
     const { deps } = fake([
       {

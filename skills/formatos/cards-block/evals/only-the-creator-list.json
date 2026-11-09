@@ -1,0 +1,14 @@
+{
+  "step": "build",
+  "conversation": [
+    {
+      "role": "user",
+      "content": "Haz tarjetas con este vocabulario de la lección 1: perro = dog, gato = cat, casa = house."
+    }
+  ],
+  "expect": {
+    "oneQuestion": true,
+    "mustMatchAny": ["dog|house"],
+    "mustNotContain": ["bird", "pájaro", "mouse", "ratón", "school"]
+  }
+}

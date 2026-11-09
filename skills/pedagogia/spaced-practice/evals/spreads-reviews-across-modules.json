@@ -1,0 +1,22 @@
+{
+  "step": "plan",
+  "conversation": [
+    {
+      "role": "user",
+      "content": "Soy Carmen y enseño inglés básico a adultos. Ya tenemos los cuatro módulos en el mapa."
+    },
+    { "role": "assistant", "content": "¡Muy bien, Carmen! El plan ya está en tu mapa." },
+    {
+      "role": "user",
+      "content": "Me preocupa que para el módulo 4 ya se les haya olvidado lo del módulo 1. ¿Qué hago?"
+    }
+  ],
+  "expect": {
+    "oneQuestion": true,
+    "mustMatchAny": [
+      "repas|vuelv[ae]n? a (aparecer|salir)|m[aá]s adelante|cada m[oó]dulo|review|spac"
+    ],
+    "mustNotContain": ["relee", "vuelve a leer"],
+    "noCalls": ["add_blocks"]
+  }
+}

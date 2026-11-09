@@ -1,0 +1,11 @@
+{
+  "step": "plan",
+  "conversation": [{ "role": "user", "content": "Quiero enseñar inglés." }],
+  "expect": {
+    "oneQuestion": true,
+    "mustMatchAny": [
+      "nivel|level|A1|A2|B1|B2|principiante|beginner|variante|variant|brit[aá]nico|british|americano|american|estadounidense|para qui[eé]n|alumnos|estudiantes"
+    ],
+    "noCalls": ["create_route"]
+  }
+}
