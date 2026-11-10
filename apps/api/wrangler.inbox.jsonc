@@ -1,0 +1,16 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  // The real-user proof's private inbox (Platform STEP 10 §6): Email Routing for
+  // proof.email.learningroutes.com delivers here, and the proof reads its links with `wrangler kv`.
+  "name": "learning-routes-proof-inbox",
+  "main": "src/proof-inbox/index.ts",
+  "compatibility_date": "2026-10-12",
+  "workers_dev": false,
+  "preview_urls": false,
+  "minify": true,
+  // No logs: a message holds a sign-in link.
+  "observability": { "enabled": false },
+  // Our own mail's domain (wrangler.jsonc's EMAIL_FROM); mail from anywhere else is refused.
+  "vars": { "SENDER_DOMAIN": "mail.learningroutes.com" },
+  "kv_namespaces": [{ "binding": "INBOX", "id": "dfd3348d62a5498f9b041e92922b310d" }]
+}

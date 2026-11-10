@@ -16,6 +16,13 @@ const WORKERS = [
   { name: "learning-routes-mcp", cwd: "apps/api", budget: 500, config: "wrangler.mcp.jsonc" },
   // The creator's assistant (Platform STEP 10): the Agents SDK brings its own MCP client and capnweb.
   { name: "learning-routes-agent", cwd: "apps/api", budget: 600, config: "wrangler.agent.jsonc" },
+  // The real-user proof's private inbox (STEP 10 §6).
+  {
+    name: "learning-routes-proof-inbox",
+    cwd: "apps/api",
+    budget: 5,
+    config: "wrangler.inbox.jsonc",
+  },
   { name: "apps/content", cwd: "apps/content", budget: 20 },
 ];
 const STARTUP_PROFILED = new Set(["apps/api", "learning-routes-agent"]);

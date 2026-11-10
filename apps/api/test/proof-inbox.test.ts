@@ -1,0 +1,80 @@
+import { describe, expect, it } from "vitest";
+import inbox from "../src/proof-inbox/index";
+
+const KEPT_KEY = /^andres@example\.org:\d+$/;
+
+function message(from: string, to: string, body: string) {
+  const rejected: string[] = [];
+  return {
+    rejected,
+    message: {
+      from,
+      to,
+      raw: new Response(body).body,
+      rawSize: body.length,
+      setReject: (reason: string) => rejected.push(reason),
+    } as unknown as ForwardableEmailMessage,
+  };
+}
+
+function store(senderDomain = "example.com") {
+  const kept: { key: string; value: string; ttl?: number }[] = [];
+  return {
+    kept,
+    env: {
+      SENDER_DOMAIN: senderDomain,
+      INBOX: {
+        put: async (key: string, value: string, options?: { expirationTtl?: number }) => {
+          kept.push({ key, value, ttl: options?.expirationTtl });
+        },
+      } as unknown as KVNamespace,
+    },
+  };
+}
+
+describe("the proof's private inbox", () => {
+  it("keeps our own mail for an hour, under its address", async () => {
+    const { env, kept } = store();
+    const { message: mail, rejected } = message(
+      "bounce@example.com",
+      "Andres@example.org",
+      "Subject: Tu invitación\r\n\r\n#token=abc",
+    );
+    await inbox.email(mail, env);
+    expect(rejected).toEqual([]);
+    expect(kept).toHaveLength(1);
+    expect(kept[0]?.key).toMatch(KEPT_KEY);
+    expect(kept[0]?.value).toContain("#token=abc");
+    expect(kept[0]?.ttl).toBe(3600);
+  });
+
+  it("refuses mail from anyone else, and keeps nothing", async () => {
+    const { env, kept } = store();
+    for (const from of ["someone@example.org"]) {
+      const { message: mail, rejected } = message(from, "andres@example.org", "hi");
+      await inbox.email(mail, env);
+      expect(rejected).toHaveLength(1);
+    }
+    expect(kept).toEqual([]);
+  });
+
+  it("refuses everything when no sender is configured", async () => {
+    const { env, kept } = store("");
+    const { message: mail, rejected } = message("a@example.com", "andres@example.org", "hi");
+    await inbox.email(mail, env);
+    expect(rejected).toHaveLength(1);
+    expect(kept).toEqual([]);
+  });
+
+  it("refuses a message too large to be ours", async () => {
+    const { env, kept } = store();
+    const { message: mail, rejected } = message(
+      "sign-in@example.com",
+      "andres@example.org",
+      "x".repeat(300_000),
+    );
+    await inbox.email(mail, env);
+    expect(rejected).toHaveLength(1);
+    expect(kept).toEqual([]);
+  });
+});
