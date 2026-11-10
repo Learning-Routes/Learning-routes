@@ -1,15 +1,16 @@
 import { describe, expect, it } from "vitest";
 import inbox from "../src/proof-inbox/index";
 
-const KEPT_KEY = /^andres@example\.org:\d+$/;
+const KEPT_KEY = /^andres@example\.org:\d+:[0-9a-f-]{36}$/;
 
-function message(from: string, to: string, body: string) {
+function message(from: string, to: string, body: string, headerFrom = `Learning Routes <${from}>`) {
   const rejected: string[] = [];
   return {
     rejected,
     message: {
       from,
       to,
+      headers: new Headers({ from: headerFrom }),
       raw: new Response(body).body,
       rawSize: body.length,
       setReject: (reason: string) => rejected.push(reason),
@@ -56,6 +57,30 @@ describe("the proof's private inbox", () => {
       expect(rejected).toHaveLength(1);
     }
     expect(kept).toEqual([]);
+  });
+
+  it("refuses our envelope when the From header is someone else's", async () => {
+    const { env, kept } = store();
+    for (const headerFrom of ["x@example.org", "Someone <x@sub.example.com>", ""]) {
+      const { message: mail, rejected } = message(
+        "bounce@example.com",
+        "andres@example.org",
+        "hi",
+        headerFrom,
+      );
+      await inbox.email(mail, env);
+      expect(rejected).toHaveLength(1);
+    }
+    expect(kept).toEqual([]);
+  });
+
+  it("keeps two messages that arrive in the same millisecond", async () => {
+    const { env, kept } = store();
+    for (const body of ["one", "two"]) {
+      const { message: mail } = message("sign-in@example.com", "andres@example.org", body);
+      await inbox.email(mail, env);
+    }
+    expect(new Set(kept.map((k) => k.key)).size).toBe(2);
   });
 
   it("refuses everything when no sender is configured", async () => {

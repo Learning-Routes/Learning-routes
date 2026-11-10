@@ -6,15 +6,21 @@ type Env = { INBOX: KVNamespace; SENDER_DOMAIN: string };
 
 const MOST_BYTES = 200_000;
 const KEEP_SECONDS = 3600;
+const HEADER_ADDRESS = /([^<\s]+@[^>\s]+)>?\s*$/;
 
-const isFrom = (from: string, sender: string) => {
-  const domain = from.toLowerCase().split("@").pop() ?? "";
-  return domain === sender || domain.endsWith(`.${sender}`);
+const domainOf = (address: string) => address.toLowerCase().split("@").pop() ?? "";
+
+// The envelope (our bounce subdomain) can be set by anyone; the From header is what DMARC holds
+// to our domain's p=reject, so it must be exactly ours, never a subdomain.
+const isOurs = (message: ForwardableEmailMessage, sender: string) => {
+  const envelope = domainOf(message.from);
+  const header = domainOf(HEADER_ADDRESS.exec(message.headers.get("from") ?? "")?.[1] ?? "");
+  return (envelope === sender || envelope.endsWith(`.${sender}`)) && header === sender;
 };
 
 export default {
   async email(message: ForwardableEmailMessage, env: Env) {
-    if (!(env.SENDER_DOMAIN && isFrom(message.from, env.SENDER_DOMAIN))) {
+    if (!(env.SENDER_DOMAIN && isOurs(message, env.SENDER_DOMAIN))) {
       message.setReject("not accepted here");
       return;
     }
@@ -23,8 +29,7 @@ export default {
       return;
     }
     const raw = await new Response(message.raw).text();
-    await env.INBOX.put(`${message.to.toLowerCase()}:${Date.now()}`, raw, {
-      expirationTtl: KEEP_SECONDS,
-    });
+    const key = `${message.to.toLowerCase()}:${Date.now()}:${crypto.randomUUID()}`;
+    await env.INBOX.put(key, raw, { expirationTtl: KEEP_SECONDS });
   },
 } satisfies ExportedHandler<Env>;
