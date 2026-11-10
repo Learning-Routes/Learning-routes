@@ -1,0 +1,20 @@
+{
+  "step": "build",
+  "conversation": [
+    {
+      "role": "user",
+      "content": "Soy Hugo, enseño química a estudiantes de bachillerato. La siguiente lección es sobre los enlaces iónicos y covalentes."
+    },
+    { "role": "assistant", "content": "¡Perfecto, Hugo! Me pongo con ella." },
+    {
+      "role": "user",
+      "content": "Quiero una pregunta bisagra justo antes de pasar a los covalentes. ¿Cómo la planteas?"
+    }
+  ],
+  "expect": {
+    "oneQuestion": true,
+    "mustMatchAny": ["error|confund|equivoc|malentend|misconception|i[oó]nic"],
+    "mustNotContain": ["% de tus alumnos", "% de los alumnos", "tus alumnos siempre"],
+    "noCalls": ["add_blocks"]
+  }
+}

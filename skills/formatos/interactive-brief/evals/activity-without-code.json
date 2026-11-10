@@ -1,0 +1,16 @@
+{
+  "step": "build",
+  "conversation": [
+    {
+      "role": "user",
+      "content": "No sé programar, pero me gustaría que en la lección de fracciones hubiera algo interactivo para practicar."
+    }
+  ],
+  "expect": {
+    "oneQuestion": true,
+    "mustMatchAny": [
+      "arrastr|complet|parej|tarjeta|escenario|simula|desliz|relacionar|unir|ordenar"
+    ],
+    "mustNotContain": ["<html", "<script", "javascript"]
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "step": "build",
+  "conversation": [
+    {
+      "role": "user",
+      "content": "Soy Irene, enseño educación financiera a jóvenes. Vamos con la lección «Qué es el interés compuesto»."
+    },
+    { "role": "assistant", "content": "¡Perfecto, Irene! Me pongo con ella." },
+    {
+      "role": "user",
+      "content": "Antes de escribirla, dime en pocas líneas cómo vas a comprobar que lo han entendido."
+    }
+  ],
+  "expect": {
+    "mustMatchAny": ["explica|por qu[eé]|retroaliment|feedback|explanation"],
+    "mustNotContain": ["todas las anteriores", "ninguna de las anteriores"],
+    "noCalls": ["add_blocks"]
+  }
+}

@@ -29,6 +29,9 @@ export interface StudioPlace {
   conversation(id: string): ConversationRow;
   setConversation(id: string, change: Partial<Omit<ConversationRow, "id" | "user_id">>): void;
   emit(conversationId: string, event: StudioEvent, keep: boolean): void;
+  /** The skills loaded in a conversation, oldest first (Platform STEP 10 §3). */
+  loadedSkills(conversationId: string): string[];
+  setLoadedSkills(conversationId: string, names: readonly string[]): void;
 }
 
 /** "YYYY-MM" in UTC: the month a spend counts in. */

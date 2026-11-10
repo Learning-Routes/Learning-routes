@@ -1,0 +1,19 @@
+{
+  "step": "build",
+  "conversation": [
+    {
+      "role": "user",
+      "content": "Soy Alicia, profesora de lengua en secundaria. Estamos en la lección de la tilde en las palabras agudas."
+    },
+    { "role": "assistant", "content": "¡Muy bien, Alicia! Sigo con esa lección." },
+    {
+      "role": "user",
+      "content": "Escríbeme aquí, sin añadirla todavía, la pregunta clave de la lección y qué revela cada respuesta incorrecta."
+    }
+  ],
+  "expect": {
+    "mustMatchAny": ["agud"],
+    "mustNotContain": ["verdadero o falso", "todas las anteriores", "ninguna de las anteriores"],
+    "noCalls": ["add_blocks"]
+  }
+}

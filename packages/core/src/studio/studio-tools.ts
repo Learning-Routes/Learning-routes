@@ -55,6 +55,17 @@ const SCHEMAS = {
       "Show the creator the button to publish the route. Only they can press it; never say it is published before they do.",
     input: z.strictObject({ route_id: Uuid }),
   },
+  load_skill: {
+    description:
+      "Load one of the skills listed in your instructions, by its name, when the creator's words call for it. " +
+      "Its full text then follows your instructions until the step changes.",
+    input: z.strictObject({
+      name: z
+        .string()
+        .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/)
+        .max(60),
+    }),
+  },
 } as const;
 
 type Name = keyof typeof SCHEMAS;
@@ -72,7 +83,8 @@ export type StudioCall =
   | { name: "ask_creator"; question: string; isFork: boolean; options: StudioOption[] }
   | { name: "set_step"; step: StudioStep }
   | { name: "show_lesson"; routeId: string; lessonId: string }
-  | { name: "ask_to_publish"; routeId: string };
+  | { name: "ask_to_publish"; routeId: string }
+  | { name: "load_skill"; skill: string };
 
 export type ReadCall = { ok: true; call: StudioCall } | { ok: false; error: string };
 
@@ -99,7 +111,12 @@ export function readStudioCall(name: string, argumentsText: string): ReadCall {
   if (!read.success) {
     return { ok: false, error: read.error.issues.map((issue) => issue.message).join("; ") };
   }
-  const args = read.data as unknown as { step: StudioStep; route_id: string; lesson_id: string };
+  const args = read.data as unknown as {
+    step: StudioStep;
+    route_id: string;
+    lesson_id: string;
+    name: string;
+  };
   switch (name) {
     case "ask_creator": {
       const ask = read.data as z.infer<typeof AskCreator>;
@@ -123,13 +140,42 @@ export function readStudioCall(name: string, argumentsText: string): ReadCall {
       return { ok: true, call: { name, routeId: args.route_id, lessonId: args.lesson_id } };
     case "ask_to_publish":
       return { ok: true, call: { name, routeId: args.route_id } };
+    case "load_skill":
+      return { ok: true, call: { name, skill: args.name } };
   }
 }
 
-/** What the page shows when the assistant asks: its words, then the question, never twice. */
-export function askText(said: string, question: string): string {
-  if (!said) {
-    return question;
+const ENDS = ".!?…";
+const SPACE = /\s/;
+// A question is a sentence that ends in ?, whatever it quotes on the way.
+const IS_QUESTION = /\?[»"”]?$/;
+
+/**
+ * Sentences end at a closing mark followed by a space, outside any quote: an address with a ?
+ * and a quoted question stay inside their sentence.
+ */
+function sentencesOf(text: string): string[] {
+  const sentences: string[] = [];
+  let depth = 0;
+  let start = 0;
+  for (let at = 0; at < text.length; at += 1) {
+    const char = text[at] as string;
+    depth += char === "«" || char === "“" ? 1 : char === "»" || char === "”" ? -1 : 0;
+    if (depth <= 0 && ENDS.includes(char) && SPACE.test(text[at + 1] ?? "")) {
+      sentences.push(text.slice(start, at + 1));
+      start = at + 1;
+    }
   }
-  return said.includes(question) ? said : `${said} ${question}`;
+  return [...sentences, text.slice(start)];
+}
+
+/**
+ * What the page shows when the assistant asks: its words, then the one question. A question the
+ * model also wrote in its words gives way to the one it asked, so the creator meets one at a time.
+ */
+export function askText(said: string, question: string): string {
+  const kept = sentencesOf(said)
+    .map((sentence) => sentence.trim())
+    .filter((sentence) => sentence && !IS_QUESTION.test(sentence));
+  return [...kept, question].join(" ");
 }

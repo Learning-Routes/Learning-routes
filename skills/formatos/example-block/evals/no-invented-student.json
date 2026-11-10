@@ -1,0 +1,16 @@
+{
+  "step": "build",
+  "conversation": [
+    {
+      "role": "user",
+      "content": "En la lección de constancia pon como ejemplo a un alumno mío que mejoró muchísimo practicando un poco cada día."
+    }
+  ],
+  "expect": {
+    "oneQuestion": true,
+    "mustMatchAny": [
+      "cuént|cuál|quién|qué pasó|cómo se llama|nombre|historia|ficti|imagin|inventad|real"
+    ],
+    "mustNotContain": ["%", "por ciento"]
+  }
+}

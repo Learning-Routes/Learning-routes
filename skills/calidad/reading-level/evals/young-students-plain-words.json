@@ -1,0 +1,14 @@
+{
+  "step": "build",
+  "conversation": [
+    {
+      "role": "user",
+      "content": "Mis alumnos tienen 8 años. Escribe la explicación de qué es un ecosistema para la lección 1."
+    }
+  ],
+  "expect": {
+    "oneQuestion": true,
+    "mustMatchAny": ["animales|plantas|seres vivos"],
+    "mustNotContain": ["biocenosis", "biotopo", "trófic", "abiótic", "biótic"]
+  }
+}

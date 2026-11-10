@@ -1,0 +1,23 @@
+{
+  "step": "review",
+  "conversation": [
+    {
+      "role": "user",
+      "content": "En mi lección de ritmo para guitarristas adultos escribí: \"La negra dura un segundo y la blanca dura dos segundos\". Revísalo."
+    }
+  ],
+  "expect": {
+    "oneQuestion": true,
+    "mustMatchAny": [
+      "tempo",
+      "pulso",
+      "pulse",
+      "beat",
+      "bpm",
+      "metr[oó]nomo",
+      "relativ",
+      "depende"
+    ],
+    "mustNotContain": ["https://", "http://", ".mp3"]
+  }
+}

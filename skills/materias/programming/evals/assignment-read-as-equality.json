@@ -1,0 +1,13 @@
+{
+  "step": "review",
+  "conversation": [
+    {
+      "role": "user",
+      "content": "En mi lección de Python para principiantes explico: \"El signo = significa que los dos lados son iguales, igual que en matemáticas. Por eso x = x + 1 da error.\" ¿Lo dejo así?"
+    }
+  ],
+  "expect": {
+    "oneQuestion": true,
+    "mustMatchAny": ["asign", "assign", "=="]
+  }
+}

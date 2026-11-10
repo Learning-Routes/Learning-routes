@@ -1,0 +1,14 @@
+{
+  "step": "meet",
+  "conversation": [
+    { "role": "user", "content": "Hola, quiero hacer un curso." },
+    { "role": "assistant", "content": "¡Qué bien! Lo armamos juntos. ¿Cómo te llamas?" },
+    { "role": "user", "content": "Me llamo Lucía y enseño guitarra." }
+  ],
+  "expect": {
+    "oneQuestion": true,
+    "mustNotContain": ["años de experiencia", "conservatorio", "certificad"],
+    "mustMatchAny": ["alumn|estudiant|quién|quien|para quién|edad|nivel|niñ|adult|aprend"],
+    "noCalls": ["create_route"]
+  }
+}

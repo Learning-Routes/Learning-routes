@@ -1,0 +1,11 @@
+{
+  "step": "plan",
+  "conversation": [{ "role": "user", "content": "Quiero hacer un curso de matemáticas." }],
+  "expect": {
+    "oneQuestion": true,
+    "mustMatchAny": [
+      "nivel|level|edad|a[ñn]os|age|primaria|secundaria|bachillerato|universi|adultos|tema|qu[eé] parte|[aá]lgebra|geometr[ií]a"
+    ],
+    "noCalls": ["create_route"]
+  }
+}

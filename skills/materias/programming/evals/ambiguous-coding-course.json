@@ -1,0 +1,11 @@
+{
+  "step": "plan",
+  "conversation": [{ "role": "user", "content": "Quiero enseñar a programar desde cero." }],
+  "expect": {
+    "oneQuestion": true,
+    "mustMatchAny": [
+      "lenguaje|language|python|javascript|scratch|java\\b|para qu[eé]|construir|crear|objetivo|edad|alumnos|estudiantes"
+    ],
+    "noCalls": ["create_route"]
+  }
+}

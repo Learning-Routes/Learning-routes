@@ -1,0 +1,15 @@
+{
+  "step": "build",
+  "conversation": [
+    {
+      "role": "user",
+      "content": "Para la lección de los volcanes pon en un solo bloque de explicación todo: qué es un volcán, tres ejemplos famosos, la historia de Pompeya y un ejercicio para mis alumnos."
+    }
+  ],
+  "expect": {
+    "oneQuestion": true,
+    "mustMatchAny": [
+      "separ|divid|partes|varios bloques|una idea|por pasos|un bloque para|cada parte|ejercicio aparte|pregunta aparte"
+    ]
+  }
+}

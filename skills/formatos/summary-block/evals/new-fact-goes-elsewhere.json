@@ -1,0 +1,15 @@
+{
+  "step": "build",
+  "conversation": [
+    {
+      "role": "user",
+      "content": "En el resumen de la lección del ciclo del agua agrega un dato que no vimos en la lección: que el agua cubre casi tres cuartas partes del planeta."
+    }
+  ],
+  "expect": {
+    "oneQuestion": true,
+    "mustMatchAny": [
+      "explicaci|concepto|antes del resumen|en la lección|otro bloque|no (lo )?vimos|no se vio|algo nuevo|dato nuevo|nuevo"
+    ]
+  }
+}
