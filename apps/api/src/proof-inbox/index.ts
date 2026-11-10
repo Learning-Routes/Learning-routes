@@ -1,15 +1,17 @@
-// A private inbox for the real-user proof (Platform STEP 10 §6). Email Routing sends mail for
-// proof.email.learningroutes.com here; only our own sender's mail is kept, for an hour, in KV that
-// only this Cloudflare account can read. It has no fetch handler, so nothing reads it from the web.
+// A private inbox for the real-user proof (Platform STEP 10 §6). Email Routing sends the two test
+// addresses at proof.email.learningroutes.com here; only our own sender's mail to them is kept, for
+// a day, in KV that only this Cloudflare account can read. It has no fetch handler and logs nothing.
 
 // Its own bindings (wrangler.inbox.jsonc), none of the API's, so not the generated Env.
 interface InboxEnv {
   INBOX: KVNamespace;
   SENDER_DOMAIN: string;
+  /** The addresses it serves, comma-separated; mail for any other is refused. */
+  ADDRESSES: string;
 }
 
 const MOST_BYTES = 200_000;
-const KEEP_SECONDS = 3600;
+const KEEP_SECONDS = 86_400;
 const HEADER_ADDRESS = /([^<\s]+@[^>\s]+)>?\s*$/;
 
 const domainOf = (address: string) => address.toLowerCase().split("@").pop() ?? "";
@@ -24,7 +26,11 @@ const isOurs = (message: ForwardableEmailMessage, sender: string) => {
 
 export default {
   async email(message: ForwardableEmailMessage, env: InboxEnv) {
-    if (!(env.SENDER_DOMAIN && isOurs(message, env.SENDER_DOMAIN))) {
+    const to = message.to.toLowerCase();
+    const served = env.ADDRESSES.toLowerCase()
+      .split(",")
+      .map((address) => address.trim());
+    if (!(served.includes(to) && env.SENDER_DOMAIN && isOurs(message, env.SENDER_DOMAIN))) {
       message.setReject("not accepted here");
       return;
     }
@@ -33,7 +39,7 @@ export default {
       return;
     }
     const raw = await new Response(message.raw).text();
-    const key = `${message.to.toLowerCase()}:${Date.now()}:${crypto.randomUUID()}`;
+    const key = `${to}:${Date.now()}:${crypto.randomUUID()}`;
     await env.INBOX.put(key, raw, { expirationTtl: KEEP_SECONDS });
   },
 } satisfies ExportedHandler<InboxEnv>;

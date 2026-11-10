@@ -18,12 +18,16 @@ function message(from: string, to: string, body: string, headerFrom = `Learning 
   };
 }
 
-function store(senderDomain = "example.com") {
+function store(
+  senderDomain = "example.com",
+  addresses = "andres@example.org,operator@example.org",
+) {
   const kept: { key: string; value: string; ttl?: number }[] = [];
   return {
     kept,
     env: {
       SENDER_DOMAIN: senderDomain,
+      ADDRESSES: addresses,
       INBOX: {
         put: async (key: string, value: string, options?: { expirationTtl?: number }) => {
           kept.push({ key, value, ttl: options?.expirationTtl });
@@ -34,7 +38,7 @@ function store(senderDomain = "example.com") {
 }
 
 describe("the proof's private inbox", () => {
-  it("keeps our own mail for an hour, under its address", async () => {
+  it("keeps our own mail for a day, under its address", async () => {
     const { env, kept } = store();
     const { message: mail, rejected } = message(
       "bounce@example.com",
@@ -46,7 +50,7 @@ describe("the proof's private inbox", () => {
     expect(kept).toHaveLength(1);
     expect(kept[0]?.key).toMatch(KEPT_KEY);
     expect(kept[0]?.value).toContain("#token=abc");
-    expect(kept[0]?.ttl).toBe(3600);
+    expect(kept[0]?.ttl).toBe(86_400);
   });
 
   it("refuses mail from anyone else, and keeps nothing", async () => {
@@ -81,6 +85,20 @@ describe("the proof's private inbox", () => {
       await inbox.email(mail, env);
     }
     expect(new Set(kept.map((k) => k.key)).size).toBe(2);
+  });
+
+  it("refuses mail for any address but the two it serves", async () => {
+    const { env, kept } = store();
+    for (const to of ["someone@example.org", "andres+x@example.org"]) {
+      const { message: mail, rejected } = message("sign-in@example.com", to, "hi");
+      await inbox.email(mail, env);
+      expect(rejected).toHaveLength(1);
+    }
+    const { env: none, kept: keptByNone } = store("example.com", "");
+    const { message: mail, rejected } = message("sign-in@example.com", "andres@example.org", "hi");
+    await inbox.email(mail, none);
+    expect(rejected).toHaveLength(1);
+    expect([...kept, ...keptByNone]).toEqual([]);
   });
 
   it("refuses everything when no sender is configured", async () => {
