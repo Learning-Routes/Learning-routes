@@ -14,8 +14,11 @@ const LONG_ID = /(?<![\w.-])\d{11,}(?![\w.-])/g;
 const GENERATED = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}|[0-9a-f]{32,}/gi;
 
 // Matches that look like personal data and are not: { file, match }, each with a
-// comment saying why. Empty today: UUIDs, hashes and example.com need no entry.
-const ALLOWLIST = [];
+// comment saying why. UUIDs, hashes and example.com need no entry.
+const ALLOWLIST = [
+  // A subdomain of example.com, reserved like it: the proof inbox refuses a sender's subdomain.
+  { file: "apps/api/test/proof-inbox.test.ts", match: "x@sub.example.com" },
+];
 
 const files = execFileSync("git", ["ls-files", "-co", "--exclude-standard"], { encoding: "utf8" })
   .split("\n")
