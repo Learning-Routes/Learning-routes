@@ -27,7 +27,7 @@ export function AppHeader({
         {words.myRoutes}
       </a>
       {teaches ? (
-        <a className="nav-link" aria-current={here("teach")} href="/creador">
+        <a className="nav-link" aria-current={here("teach")} href="/creador/asistente">
           {words.teach}
         </a>
       ) : null}

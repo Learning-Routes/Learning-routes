@@ -21,7 +21,8 @@ const LINK_PATH = "/invitacion";
 const FIVE_MINUTES_MS = 300_000;
 const PEEKS_PER_CLIENT = 20;
 const PEEK_WINDOW_MS = 600_000;
-const CREATOR_HOME = "/creador";
+// A new creator starts with their assistant, at its first step (Platform STEP 10 §5).
+const CREATOR_HOME = "/creador/asistente";
 
 interface InvitedTo {
   email: string;
