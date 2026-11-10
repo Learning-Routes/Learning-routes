@@ -2,7 +2,11 @@
 // proof.email.learningroutes.com here; only our own sender's mail is kept, for an hour, in KV that
 // only this Cloudflare account can read. It has no fetch handler, so nothing reads it from the web.
 
-type Env = { INBOX: KVNamespace; SENDER_DOMAIN: string };
+// Its own bindings (wrangler.inbox.jsonc), none of the API's, so not the generated Env.
+interface InboxEnv {
+  INBOX: KVNamespace;
+  SENDER_DOMAIN: string;
+}
 
 const MOST_BYTES = 200_000;
 const KEEP_SECONDS = 3600;
@@ -19,7 +23,7 @@ const isOurs = (message: ForwardableEmailMessage, sender: string) => {
 };
 
 export default {
-  async email(message: ForwardableEmailMessage, env: Env) {
+  async email(message: ForwardableEmailMessage, env: InboxEnv) {
     if (!(env.SENDER_DOMAIN && isOurs(message, env.SENDER_DOMAIN))) {
       message.setReject("not accepted here");
       return;
@@ -32,4 +36,4 @@ export default {
     const key = `${message.to.toLowerCase()}:${Date.now()}:${crypto.randomUUID()}`;
     await env.INBOX.put(key, raw, { expirationTtl: KEEP_SECONDS });
   },
-} satisfies ExportedHandler<Env>;
+} satisfies ExportedHandler<InboxEnv>;
