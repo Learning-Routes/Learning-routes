@@ -57,6 +57,10 @@ function bestSlot(model: LandingModel, stage: Stage, { w, h, shape }: TextBox): 
     const distance = Math.hypot(x - designedX, (y - designedY) * 1.3) * 0.6;
     return { x, y, hits, score: hits * 1000 + distance + reach };
   };
+  // The hero is already on screen where the page drew it: it stays, and the camera gives way.
+  if (panel === 0) {
+    return slotAt(designedX, designedY);
+  }
   const { firstX, lastX, top, lastY } = slotRange(stage, w, h);
   let best: Slot = { score: Number.POSITIVE_INFINITY, x: designedX, y: designedY, hits: 0 };
   for (let x = firstX; x <= lastX; x += 12) {
@@ -89,7 +93,7 @@ function hitsNear(model: LandingModel, stage: Stage, { w, h, shape }: TextBox): 
   const startY = spot[1] * height;
   const anchor = projectedAnchor(model, stage);
   let best = Number.POSITIVE_INFINITY;
-  for (const [dx, dy] of NUDGES) {
+  for (const [dx, dy] of panel === 0 ? NUDGES.slice(0, 1) : NUDGES) {
     const x0 = startX + dx - pad;
     const y0 = Math.max(20, startY + dy) - pad;
     const x1 = x0 + w + 2 * pad;
@@ -123,14 +127,15 @@ const DESKTOP_SHIFTS = [
   [-0.04, 0],
   [-0.04, -0.06],
 ] as const;
-// The last slide is v1's own: at 360 × 740 the hero's paragraph met the origin marker
-// at every slide the reference tried.
+// The last two slides: at 360 × 740 the hero, which never moves, met the origin marker at
+// every slide the reference tried.
 const PHONE_SHIFTS = [
   [0, 0],
   [0, -0.05],
   [0, -0.1],
   [0, -0.15],
   [0, -0.2],
+  [0, -0.25],
 ] as const;
 const DISTANCES = [1, 1.08, 1.17, 1.28, 1.4, 1.55];
 

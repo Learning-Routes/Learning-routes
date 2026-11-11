@@ -41,23 +41,28 @@ for (const size of SIZES) {
   }
 }
 
-test("the map arrives without moving the hero, and within the strict CSP", async ({ page }) => {
-  const refused: string[] = [];
-  page.on("console", (message) => {
-    if (message.text().includes("Content Security Policy")) {
-      refused.push(message.text());
-    }
+for (const size of SIZES) {
+  test(`at ${size.width}x${size.height} the map arrives without moving the hero, and within the strict CSP`, async ({
+    page,
+  }) => {
+    await page.setViewportSize(size);
+    const refused: string[] = [];
+    page.on("console", (message) => {
+      if (message.text().includes("Content Security Policy")) {
+        refused.push(message.text());
+      }
+    });
+    await page.goto("/es#mapa");
+    const before = await page.getByRole("heading", { level: 1 }).boundingBox();
+    await expect(page.locator(".lp-journey")).toHaveAttribute("data-stage", "on", {
+      timeout: 30_000,
+    });
+    const after = await page.getByRole("heading", { level: 1 }).boundingBox();
+    expect(Math.abs((after?.x ?? 0) - (before?.x ?? 0))).toBeLessThan(1);
+    expect(Math.abs((after?.y ?? 0) - (before?.y ?? 0))).toBeLessThan(1);
+    expect(refused).toEqual([]);
   });
-  await page.goto("/es#mapa");
-  const before = await page.getByRole("heading", { level: 1 }).boundingBox();
-  await expect(page.locator(".lp-journey")).toHaveAttribute("data-stage", "on", {
-    timeout: 30_000,
-  });
-  const after = await page.getByRole("heading", { level: 1 }).boundingBox();
-  expect(Math.abs((after?.x ?? 0) - (before?.x ?? 0))).toBeLessThan(40);
-  expect(Math.abs((after?.y ?? 0) - (before?.y ?? 0))).toBeLessThan(40);
-  expect(refused).toEqual([]);
-});
+}
 
 test("three.js loads only after the first paint", async ({ page }) => {
   const stage: string[] = [];
