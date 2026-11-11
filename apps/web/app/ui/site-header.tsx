@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { ThemeToggle } from "./theme-toggle";
 
 function BrandMark() {
   return (
@@ -11,16 +12,21 @@ function BrandMark() {
   );
 }
 
-/** The page's top bar. `children` are its links and actions, in reading order. */
+/**
+ * The page's top bar. `children` are its links and actions, in reading order. On the app's host,
+ * `theme` adds the light and dark switch, after them; a storefront follows the system.
+ */
 export function SiteHeader({
   brand,
   brandHref,
   navLabel,
+  theme,
   children,
 }: {
   brand: string;
   brandHref: string;
   navLabel: string;
+  theme?: { toDark: string; toLight: string };
   children: ReactNode;
 }) {
   return (
@@ -32,6 +38,7 @@ export function SiteHeader({
       <nav className="site-nav" aria-label={navLabel}>
         {children}
       </nav>
+      {theme ? <ThemeToggle toDark={theme.toDark} toLight={theme.toLight} /> : null}
     </header>
   );
 }

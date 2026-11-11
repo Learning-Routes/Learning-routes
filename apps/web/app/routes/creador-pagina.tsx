@@ -76,7 +76,7 @@ export default function CreadorPagina({ loaderData, actionData }: Route.Componen
     <div className="desk opening">
       <AppHeader locale={locale} place="teach" />
       <main className="app-page app-page-narrow">
-        <h1 className="app-title depth-1">
+        <h1 className="app-title">
           <Rising text={words.editTitle} />
         </h1>
         {actionData?.saved ? <Notice tone="success" title={words.saved} toast /> : null}

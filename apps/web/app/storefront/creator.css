@@ -25,7 +25,7 @@
   border-radius: 50%;
   background: var(--color-accent);
   color: var(--color-accent-text);
-  font-weight: 800;
+  font-weight: 600;
 }
 .creator-hero {
   display: grid;
@@ -40,12 +40,11 @@
 }
 .creator-headline {
   margin: 0 0 0.12em;
-  font-size: clamp(3.5rem, 10.5vw, 9.75rem);
-  font-weight: 880;
-  font-stretch: 112%;
-  letter-spacing: -0.05em;
-  line-height: 0.84;
   overflow-wrap: anywhere;
+  font-size: var(--text-display);
+  font-weight: var(--weight-display);
+  letter-spacing: var(--tracking-display);
+  line-height: var(--leading-display);
 }
 .creator-tagline {
   margin: 0;
@@ -71,11 +70,10 @@
 }
 .creator-section-title {
   margin: 0;
-  font-size: clamp(1.875rem, 4vw, 2.875rem);
-  font-weight: 800;
-  font-stretch: 108%;
-  letter-spacing: -0.035em;
-  line-height: 1;
+  font-size: clamp(1.5rem, 1.2rem + 1vw, 2.125rem);
+  font-weight: var(--weight-display);
+  letter-spacing: -0.03em;
+  line-height: 1.1;
 }
 .creator-routes {
   display: flex;
@@ -104,11 +102,10 @@
 .creator-route-title {
   overflow-wrap: anywhere;
   margin: 0;
-  font-size: clamp(1.5rem, 3vw, 2.25rem);
-  font-weight: 780;
-  font-stretch: 104%;
-  letter-spacing: -0.025em;
-  line-height: 1.05;
+  font-size: clamp(1.25rem, 1.1rem + 0.6vw, 1.625rem);
+  font-weight: var(--weight-display);
+  letter-spacing: -0.02em;
+  line-height: 1.2;
 }
 .creator-route-facts,
 .creator-route-free {
@@ -117,7 +114,7 @@
   color: var(--color-sub);
 }
 .creator-route-go {
-  font-weight: 700;
+  font-weight: 600;
   color: var(--line-lit);
 }
 .creator-footer {
@@ -229,13 +226,12 @@
 }
 .route-title {
   margin: 0 0 0.12em;
-  font-size: clamp(3rem, 8.4vw, 7.5rem);
-  font-weight: 860;
-  font-stretch: 114%;
-  letter-spacing: -0.045em;
-  line-height: 0.88;
   text-wrap: balance;
   overflow-wrap: anywhere;
+  font-size: var(--text-display);
+  font-weight: var(--weight-display);
+  letter-spacing: var(--tracking-display);
+  line-height: var(--leading-display);
 }
 .route-description {
   margin: 0;
@@ -295,14 +291,14 @@
   overflow-wrap: anywhere;
   margin: 0;
   font-size: clamp(1.5rem, 2.6vw, 2rem);
-  font-weight: 800;
+  font-weight: 600;
   letter-spacing: -0.025em;
   line-height: 1.1;
 }
 .journey-free {
   margin-left: var(--space-3);
   font-size: var(--text-small);
-  font-weight: 700;
+  font-weight: 600;
   letter-spacing: 0;
   vertical-align: middle;
 }
@@ -415,8 +411,7 @@
 .start-title {
   margin: 0;
   font-size: 1.875rem;
-  font-weight: 820;
-  font-stretch: 108%;
+  font-weight: 600;
   letter-spacing: -0.03em;
   line-height: 1.05;
 }

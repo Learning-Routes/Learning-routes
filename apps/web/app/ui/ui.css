@@ -40,7 +40,7 @@
   background: var(--color-accent-hover);
 }
 .button-primary:active:not(:disabled, [aria-busy="true"]) {
-  transform: translateY(2px);
+  transform: translateY(1px);
   box-shadow: var(--shadow-btn-pressed);
 }
 .button-secondary {
@@ -52,7 +52,7 @@
   background: var(--color-bg-2);
 }
 .button-secondary:active:not(:disabled, [aria-busy="true"]) {
-  transform: translateY(2px);
+  transform: translateY(1px);
   box-shadow: var(--shadow-btn-secondary-pressed);
 }
 .button-quiet {
@@ -291,7 +291,6 @@
   margin: 0;
   font-size: var(--text-title);
   font-weight: var(--weight-display);
-  font-stretch: var(--stretch-title);
   letter-spacing: var(--tracking-title);
   line-height: var(--leading-heading);
 }
@@ -324,7 +323,6 @@
   min-height: var(--size-touch);
   font-size: var(--text-body);
   font-weight: var(--weight-display);
-  font-stretch: var(--stretch-title);
   color: var(--color-txt);
   text-decoration: none;
   white-space: nowrap;
@@ -348,6 +346,7 @@
   display: flex;
   align-items: center;
   gap: var(--space-2);
+  margin-inline-start: auto;
 }
 .nav-link {
   display: inline-flex;

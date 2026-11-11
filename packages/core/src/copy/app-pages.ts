@@ -26,6 +26,11 @@ export interface AppPagesText {
   backToMyRoutes: string;
   teachTitle: string;
   teachIntro: string;
+  /** "Ser creador": what happens after the form, in three steps. */
+  teachHow: string;
+  teachStep1: string;
+  teachStep2: string;
+  teachStep3: string;
   nameLabel: string;
   emailLabel: string;
   teachesLabel: string;
@@ -69,6 +74,10 @@ export const APP_PAGES_TEXT: Record<LocaleCode, AppPagesText> = {
     exploreMore: "Explorar más rutas",
     backToMyRoutes: "Volver a Mis rutas",
     teachTitle: "Enseña lo que sabes, en una ruta.",
+    teachHow: "Cómo funciona",
+    teachStep1: "Nos cuentas qué enseñas y dónde te siguen.",
+    teachStep2: "Te escribimos en pocos días con tu invitación.",
+    teachStep3: "Armas tu primera ruta con tu asistente, paso a paso.",
     teachIntro:
       "Por ahora entramos por invitación. Cuéntanos qué enseñas y te escribimos en pocos días.",
     nameLabel: "Tu nombre",
@@ -112,6 +121,10 @@ export const APP_PAGES_TEXT: Record<LocaleCode, AppPagesText> = {
     exploreMore: "Explore more routes",
     backToMyRoutes: "Back to My routes",
     teachTitle: "Teach what you know, in a route.",
+    teachHow: "How it works",
+    teachStep1: "Tell us what you teach and where people follow you.",
+    teachStep2: "We write back within a few days with your invitation.",
+    teachStep3: "You build your first route with your assistant, one step at a time.",
     teachIntro:
       "For now, joining is by invitation. Tell us what you teach and we'll write to you within a few days.",
     nameLabel: "Your name",
@@ -154,6 +167,10 @@ export const APP_PAGES_TEXT: Record<LocaleCode, AppPagesText> = {
     exploreMore: "Explorar mais rotas",
     backToMyRoutes: "Voltar para Minhas rotas",
     teachTitle: "Ensine o que você sabe, em uma rota.",
+    teachHow: "Como funciona",
+    teachStep1: "Conte o que você ensina e onde as pessoas te seguem.",
+    teachStep2: "Respondemos em poucos dias com o seu convite.",
+    teachStep3: "Você monta sua primeira rota com seu assistente, passo a passo.",
     teachIntro:
       "Por enquanto, a entrada é por convite. Conte o que você ensina e escreveremos em poucos dias.",
     nameLabel: "Seu nome",
@@ -198,6 +215,10 @@ export const APP_PAGES_TEXT: Record<LocaleCode, AppPagesText> = {
     exploreMore: "Explorer d'autres parcours",
     backToMyRoutes: "Retour à Mes parcours",
     teachTitle: "Enseignez ce que vous savez, en un parcours.",
+    teachHow: "Comment ça marche",
+    teachStep1: "Dites-nous ce que vous enseignez et où l’on vous suit.",
+    teachStep2: "Nous vous répondons sous quelques jours avec votre invitation.",
+    teachStep3: "Vous construisez votre premier parcours avec votre assistant, pas à pas.",
     teachIntro:
       "Pour l'instant, on entre sur invitation. Dites-nous ce que vous enseignez et nous vous écrirons sous quelques jours.",
     nameLabel: "Votre nom",
@@ -241,6 +262,10 @@ export const APP_PAGES_TEXT: Record<LocaleCode, AppPagesText> = {
     exploreMore: "Esplora altri percorsi",
     backToMyRoutes: "Torna a I miei percorsi",
     teachTitle: "Insegna ciò che sai, in un percorso.",
+    teachHow: "Come funziona",
+    teachStep1: "Raccontaci cosa insegni e dove ti seguono.",
+    teachStep2: "Ti rispondiamo in pochi giorni con il tuo invito.",
+    teachStep3: "Costruisci il tuo primo percorso con il tuo assistente, passo dopo passo.",
     teachIntro:
       "Per ora si entra su invito. Raccontaci cosa insegni e ti scriveremo entro pochi giorni.",
     nameLabel: "Il tuo nome",

@@ -192,7 +192,7 @@ function HubSpace({ space, locale }: { space: Loaded["spaces"][0]; locale: Local
   return (
     <>
       <Card className="hub-space">
-        <h2 className="hub-space-name depth-2">{inLocale(space.name, locale)}</h2>
+        <h2 className="hub-space-name">{inLocale(space.name, locale)}</h2>
         <p className={tagline ? "app-copy" : "app-fine"}>{tagline || words.noTagline}</p>
         <p className="app-fine hub-space-label">{words.publicPage}</p>
         <CopyLine text={space.address} label={connect.copyAddress} done={connect.copied} />
@@ -201,7 +201,7 @@ function HubSpace({ space, locale }: { space: Loaded["spaces"][0]; locale: Local
         ) : null}
       </Card>
       <section aria-labelledby={`routes-${space.id}`}>
-        <h2 id={`routes-${space.id}`} className="my-all-title depth-2">
+        <h2 id={`routes-${space.id}`} className="my-all-title">
           {words.yourRoutes}
         </h2>
         {space.routes.length === 0 ? (
@@ -240,7 +240,7 @@ export default function Creador({ loaderData, actionData }: Route.ComponentProps
     <div className="desk opening">
       <AppHeader locale={locale} place="teach" />
       <main className="app-page hub-page moment">
-        <h1 className="app-title depth-1">
+        <h1 className="app-title">
           <Rising text={words.title} />
         </h1>
         {actionData?.notice ? (

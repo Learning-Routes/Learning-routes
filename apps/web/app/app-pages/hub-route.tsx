@@ -107,7 +107,11 @@ export function HubRoute({
           {route.published ? <TextLink href={route.address}>{words.viewPublic}</TextLink> : null}
         </div>
         <div className="hub-route-actions">
-          <ActionForm route={route} intent="publish" label={words.publish} />
+          <ActionForm
+            route={route}
+            intent="publish"
+            label={route.published ? words.republish : words.publish}
+          />
           {isOwner && route.published ? (
             <ActionForm route={route} intent="catalog" label={words.askCatalog} />
           ) : null}

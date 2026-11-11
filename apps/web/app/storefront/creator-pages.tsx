@@ -94,7 +94,7 @@ export function CreatorPage({
       <main className="creator stage moment opening">
         <section className="creator-hero">
           <div className="creator-who">
-            <h1 className="creator-headline depth-1">
+            <h1 className="creator-headline">
               <Rising text={name} />
             </h1>
             {tagline ? <p className="creator-tagline settle-1">{tagline}</p> : null}
@@ -111,7 +111,7 @@ export function CreatorPage({
           <CreatorWeave routes={routes} />
         </section>
         <section id="rutas" className="creator-routes">
-          <h2 className="creator-section-title depth-2">{words.routesOf}</h2>
+          <h2 className="creator-section-title">{words.routesOf}</h2>
           {routes.length === 0 ? (
             <EmptyState title={words.noRoutes} />
           ) : (

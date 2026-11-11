@@ -124,7 +124,7 @@ export function CatalogPage({ view }: { view: CatalogView }) {
       <PlatformHeader locale={locale} appOrigin={appOrigin} />
       {/* A filtered or later page moves what's there, so only the catalog's own address opens. */}
       <main className={`catalog stage moment${topic || search || view.page > 1 ? "" : " opening"}`}>
-        <h1 className="catalog-title depth-1">
+        <h1 className="catalog-title">
           <Rising text={words.title} />
         </h1>
         {/* Plain GET: the results are server-rendered, with or without JavaScript. */}

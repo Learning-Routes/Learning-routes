@@ -41,7 +41,7 @@ describe("tokens", () => {
   it("keeps the Ciruela names and values", () => {
     expect(light["--color-accent"]).toBe("#6A2EA0");
     expect(dark["--color-bg"]).toBe("#150E1C");
-    expect(light["--font-sans"]).toContain('"Archivo"');
+    expect(light["--font-sans"]).toContain('"Geist"');
   });
 
   it("names the route map in the glossary's words; v1's stylesheet keeps --journey-*", () => {

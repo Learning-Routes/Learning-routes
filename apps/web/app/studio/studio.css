@@ -13,7 +13,7 @@
   --studio-gold: #e9a23b;
   --studio-green: #46b883;
   --studio-paper: #f5f2ee;
-  --studio-font: "Geist", "Helvetica Neue", Arial, sans-serif;
+  --studio-font: var(--font-sans);
   position: fixed;
   inset: 0;
   overflow: hidden;

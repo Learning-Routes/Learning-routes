@@ -2,7 +2,6 @@ import { UI_COPY } from "@learning-routes/core/copy/ui";
 import { BRAND, type LocaleCode } from "@learning-routes/core/locales";
 import { type ReactNode, useEffect, useRef } from "react";
 import { SiteHeader } from "../ui/site-header";
-import { ThemeToggle } from "../ui/theme-toggle";
 
 /** Signing in is a short route: ask, check your email, enter. The gold ring is you. */
 function SignInRoute({ step }: { step: 1 | 2 | 3 }) {
@@ -55,8 +54,8 @@ export function SignInShell({
   const copy = UI_COPY[locale];
   return (
     <>
-      <SiteHeader brand={BRAND} brandHref={`/${locale}`} navLabel={copy.primaryNav}>
-        <ThemeToggle toDark={copy.toDark} toLight={copy.toLight} />
+      <SiteHeader brand={BRAND} brandHref={`/${locale}`} navLabel={copy.primaryNav} theme={copy}>
+        {null}
       </SiteHeader>
       <main className="sign-in-page">
         <div className="card sign-in-sheet">

@@ -9,7 +9,6 @@
   margin: 0;
   font-size: var(--text-heading);
   font-weight: var(--weight-display);
-  font-stretch: var(--stretch-display);
   letter-spacing: var(--tracking-display);
   line-height: var(--leading-heading);
 }
@@ -21,7 +20,6 @@
   margin: 0;
   font-size: var(--text-title);
   font-weight: var(--weight-display);
-  font-stretch: var(--stretch-title);
   letter-spacing: var(--tracking-title);
   line-height: var(--leading-heading);
 }
@@ -42,7 +40,6 @@
   margin: 0;
   font-size: var(--text-title);
   font-weight: var(--weight-display);
-  font-stretch: var(--stretch-title);
   letter-spacing: var(--tracking-title);
   line-height: var(--leading-heading);
 }

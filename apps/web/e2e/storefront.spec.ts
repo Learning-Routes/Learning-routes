@@ -73,6 +73,6 @@ test("the landing's font never holds up its first paint or moves it", async ({ p
   const fallback = await page.evaluate(
     () => getComputedStyle(document.querySelector("h1") as Element).fontFamily,
   );
-  expect(fallback).toContain("Archivo Fallback");
+  expect(fallback).toContain("Geist Fallback");
   await expect(headline).toBeVisible();
 });

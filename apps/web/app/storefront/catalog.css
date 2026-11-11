@@ -16,30 +16,11 @@
 .catalog-title {
   margin: 0 0 0.12em;
   max-width: 12ch;
-  font-size: clamp(3rem, 9vw, 8rem);
-  font-weight: 850;
-  font-stretch: 118%;
-  letter-spacing: -0.045em;
-  line-height: 0.9;
   text-wrap: balance;
-}
-/* A faint light follows the pointer across the hero (enhance/stage.ts). */
-.catalog {
-  position: relative;
-  isolation: isolate;
-}
-.catalog::before {
-  content: "";
-  position: absolute;
-  inset: 0 0 auto;
-  height: 42rem;
-  z-index: -1;
-  pointer-events: none;
-  background: radial-gradient(
-    32rem circle at var(--pointer-x, 30%) var(--pointer-y, 30%),
-    color-mix(in oklab, var(--line-lit) 14%, transparent),
-    transparent 65%
-  );
+  font-size: var(--text-display);
+  font-weight: var(--weight-display);
+  letter-spacing: var(--tracking-display);
+  line-height: var(--leading-display);
 }
 .catalog-search {
   display: flex;
@@ -153,12 +134,11 @@
 .route-card-title {
   overflow-wrap: anywhere;
   margin-block: var(--space-1) 0;
-  font-size: var(--text-title);
-  font-weight: 780;
-  font-stretch: 104%;
-  letter-spacing: -0.02em;
-  line-height: 1.1;
   text-wrap: balance;
+  font-size: var(--text-title);
+  font-weight: var(--weight-display);
+  letter-spacing: var(--tracking-title);
+  line-height: 1.25;
 }
 .route-card-creator,
 .route-card-facts {

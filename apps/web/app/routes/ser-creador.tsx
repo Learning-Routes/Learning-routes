@@ -232,38 +232,49 @@ export default function QuieroEnsenar({ loaderData }: Route.ComponentProps) {
         brand={BRAND}
         brandHref={`${platformOrigin}/${locale}`}
         navLabel={UI_COPY[locale].primaryNav}
+        theme={UI_COPY[locale]}
       >
         {null}
       </SiteHeader>
-      <main className="app-page app-page-narrow moment opening">
-        <h1 className="app-title depth-1">
-          <Rising text={words.teachTitle} />
-        </h1>
-        {sent ? (
-          <>
-            {/* What they asked to teach, as the first station of a new line. */}
-            <figure className="teach-station">
-              <svg viewBox="0 0 320 44" aria-hidden="true">
-                <path className="teach-station-ahead" d="M36 22H316" />
-                <path className="teach-station-line" d="M22 22H316" pathLength={1} />
-                <circle className="teach-station-stop" cx="22" cy="22" r="11" />
-              </svg>
-              <figcaption>{sent.teaches}</figcaption>
-            </figure>
-            <Notice tone="success" title={words.doneTitle}>
-              {filled(words.doneBody, { email: sent.email })}
-            </Notice>
-          </>
-        ) : (
-          <>
-            <p className="app-copy">{words.teachIntro}</p>
-            <noscript>
-              <Notice tone="info" title={words.needsScript} />
-            </noscript>
-            <ApplicationForm words={words} locale={locale} siteKey={siteKey} onSent={setSent} />
-            <p className="app-fine">{words.privacy}</p>
-          </>
-        )}
+      <main className="teach-page moment opening">
+        <div className="teach-lead">
+          <h1 className="app-title">
+            <Rising text={words.teachTitle} />
+          </h1>
+          <p className="app-copy">{words.teachIntro}</p>
+          <h2 className="teach-how">{words.teachHow}</h2>
+          <ol className="teach-steps">
+            <li>{words.teachStep1}</li>
+            <li>{words.teachStep2}</li>
+            <li>{words.teachStep3}</li>
+          </ol>
+        </div>
+        <div className="card teach-sheet">
+          {sent ? (
+            <>
+              {/* What they asked to teach, as the first station of a new line. */}
+              <figure className="teach-station">
+                <svg viewBox="0 0 320 44" aria-hidden="true">
+                  <path className="teach-station-ahead" d="M36 22H316" />
+                  <path className="teach-station-line" d="M22 22H316" pathLength={1} />
+                  <circle className="teach-station-stop" cx="22" cy="22" r="11" />
+                </svg>
+                <figcaption>{sent.teaches}</figcaption>
+              </figure>
+              <Notice tone="success" title={words.doneTitle}>
+                {filled(words.doneBody, { email: sent.email })}
+              </Notice>
+            </>
+          ) : (
+            <>
+              <noscript>
+                <Notice tone="info" title={words.needsScript} />
+              </noscript>
+              <ApplicationForm words={words} locale={locale} siteKey={siteKey} onSent={setSent} />
+              <p className="app-fine">{words.privacy}</p>
+            </>
+          )}
+        </div>
       </main>
     </>
   );

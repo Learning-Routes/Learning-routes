@@ -171,7 +171,7 @@ export default function AdminCreateSpace({ loaderData, actionData }: Route.Compo
     <div className="desk opening">
       <AppHeader locale={locale} place="admin" />
       <main className="app-page app-page-narrow">
-        <h1 className="app-title depth-1">
+        <h1 className="app-title">
           <Rising text={words.createSpace} />
         </h1>
         {actionData?.created && actionData.page ? (

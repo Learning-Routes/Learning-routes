@@ -64,7 +64,7 @@ export default function VistaPrevia({ loaderData }: Route.ComponentProps) {
       </p>
       <div className="preview-page">
         <nav className="preview-outline" aria-label={words.previewOutline}>
-          <h1 className="app-title depth-1">
+          <h1 className="app-title">
             <Rising text={inLocale(route.title, locale, source)} />
           </h1>
           {outline.map((module, index) => (
@@ -91,7 +91,7 @@ export default function VistaPrevia({ loaderData }: Route.ComponentProps) {
         </nav>
         {view ? (
           <article className="lesson">
-            <h2 className="lesson-title depth-1">{inLocale(view.title, locale, source)}</h2>
+            <h2 className="lesson-title">{inLocale(view.title, locale, source)}</h2>
             <LessonBlocks
               blocks={view.blocks}
               locale={locale}

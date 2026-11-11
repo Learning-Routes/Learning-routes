@@ -109,7 +109,7 @@ export default function Conectar({ loaderData, actionData }: Route.ComponentProp
       <div className="desk opening">
         <AppHeader locale={locale} />
         <main className="app-page app-page-narrow">
-          <h1 className="app-title depth-1">
+          <h1 className="app-title">
             <Rising text={filled(words.consentTitle, { client: clientName })} />
           </h1>
           <NoSpaceYet words={words} back={APP_PAGES_TEXT[locale].backToMyRoutes} />
@@ -121,7 +121,7 @@ export default function Conectar({ loaderData, actionData }: Route.ComponentProp
     <div className="desk opening">
       <AppHeader locale={locale} />
       <main className="app-page app-page-narrow">
-        <h1 className="app-title depth-1">
+        <h1 className="app-title">
           <Rising text={filled(words.consentTitle, { client: clientName })} />
         </h1>
         {goTo ? (

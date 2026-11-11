@@ -1,5 +1,6 @@
 import { APP_PAGES_TEXT } from "@learning-routes/core/copy/app-pages";
 import { MY_ROUTES_TEXT } from "@learning-routes/core/copy/my-routes";
+import { UI_COPY } from "@learning-routes/core/copy/ui";
 import { BRAND, type LocaleCode } from "@learning-routes/core/locales";
 import { useRouteLoaderData } from "react-router";
 import { NavLink, SiteHeader } from "../ui/site-header";
@@ -22,7 +23,12 @@ export function AppHeader({
   const words = { ...APP_PAGES_TEXT[locale], ...MY_ROUTES_TEXT[locale] };
   const here = (mine: Place) => (place === mine ? ("page" as const) : undefined);
   return (
-    <SiteHeader brand={BRAND} brandHref={`${home}/${locale}`} navLabel={words.myRoutes}>
+    <SiteHeader
+      brand={BRAND}
+      brandHref={`${home}/${locale}`}
+      navLabel={words.myRoutes}
+      theme={UI_COPY[locale]}
+    >
       <a className="nav-link" aria-current={here("learn")} href="/mis-rutas">
         {words.myRoutes}
       </a>

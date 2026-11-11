@@ -25,7 +25,7 @@ function Journey({ route, locale }: { route: PublicRoute; locale: LocaleCode }) 
   const words = CREATOR_TEXT[locale];
   return (
     <section className="journey" aria-labelledby="journey-title">
-      <h2 id="journey-title" className="creator-section-title depth-2">
+      <h2 id="journey-title" className="creator-section-title">
         {words.journey}
       </h2>
       <div className="journey-way">
@@ -100,7 +100,7 @@ export function RoutePage({
             <Avatar name={creator} />
             {filled(words.routeBy, { creator })}
           </a>
-          <h1 className="route-title depth-1">
+          <h1 className="route-title">
             <Rising text={inLocale(route.title, locale, route.sourceLocale)} />
           </h1>
           <p className="route-description settle-2">

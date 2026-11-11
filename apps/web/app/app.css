@@ -1,5 +1,4 @@
 @import "@learning-routes/design-tokens/tokens.css";
-@import "@learning-routes/design-tokens/depth.css";
 @import "./ui/ui.css";
 @import "./ui/registers.css";
 @import "./ui/route-figure.css";
@@ -47,7 +46,7 @@ body {
 .home h1 {
   margin: 0;
   font-size: clamp(2.5rem, 8vw, 4.5rem);
-  font-weight: 800;
+  font-weight: 600;
   letter-spacing: -0.02em;
 }
 
