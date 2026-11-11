@@ -65,7 +65,7 @@ export default function Seguir({ loaderData }: Route.ComponentProps) {
       <LessonBar lesson={lesson} locale={locale} done={done} />
       <article className="lesson">
         <p className="lesson-route settle-1">{inLocale(lesson.routeTitle, locale, source)}</p>
-        <h1 className="lesson-title depth-1">
+        <h1 className="lesson-title">
           <Rising text={inLocale(lesson.title, locale, source)} />
         </h1>
         {lesson.locked ? (

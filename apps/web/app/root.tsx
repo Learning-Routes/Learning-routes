@@ -13,7 +13,7 @@ import {
 import type { Route } from "./+types/root";
 import "./app.css";
 import { BRAND, isLocale } from "@learning-routes/core/locales";
-import archivo from "@learning-routes/design-tokens/fonts/Archivo-latin.woff2?url";
+import geist from "@learning-routes/design-tokens/fonts/Geist-latin.woff2?url";
 import { useEffect } from "react";
 import { pageContext } from "./context";
 import { isStorefront } from "./surface";
@@ -25,7 +25,7 @@ import { useProgressHints } from "./ui/progress-hints";
 import { Rising } from "./ui/rising";
 
 export const links: Route.LinksFunction = () => [
-  { rel: "preload", href: archivo, as: "font", type: "font/woff2", crossOrigin: "anonymous" },
+  { rel: "preload", href: geist, as: "font", type: "font/woff2", crossOrigin: "anonymous" },
 ];
 
 const ERROR_WORDS = {
@@ -110,7 +110,7 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
         {null}
       </SiteHeader>
       <main className="app-page app-page-narrow">
-        <h1 className="app-title depth-1">
+        <h1 className="app-title">
           <Rising text={words.title} />
         </h1>
         <p className="app-copy">{words.body}</p>

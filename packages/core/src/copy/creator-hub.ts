@@ -24,6 +24,8 @@ export interface CreatorHubText {
   previewEmpty: string;
   preview: string;
   publish: string;
+  /** On a route already out: puts its latest changes on the public page. */
+  republish: string;
   published_ok: string;
   publishFailed: string;
   priceTitle: string;
@@ -64,6 +66,7 @@ export const CREATOR_HUB_TEXT: Record<LocaleCode, CreatorHubText> = {
     previewEmpty: "Este borrador todavía no tiene temas.",
     preview: "Vista previa",
     publish: "Publicar",
+    republish: "Publicar cambios",
     published_ok: "Publicada.",
     publishFailed: "No se pudo publicar. Abre la vista previa y revisa que tenga temas.",
     priceTitle: "Precio",
@@ -107,6 +110,7 @@ export const CREATOR_HUB_TEXT: Record<LocaleCode, CreatorHubText> = {
     previewEmpty: "This draft has no topics yet.",
     preview: "Preview",
     publish: "Publish",
+    republish: "Publish changes",
     published_ok: "Published.",
     publishFailed: "It couldn't be published. Open the preview and check it has topics.",
     priceTitle: "Price",
@@ -150,6 +154,7 @@ export const CREATOR_HUB_TEXT: Record<LocaleCode, CreatorHubText> = {
     previewEmpty: "Este rascunho ainda não tem temas.",
     preview: "Prévia",
     publish: "Publicar",
+    republish: "Publicar alterações",
     published_ok: "Publicada.",
     publishFailed: "Não foi possível publicar. Abra a prévia e confira se há temas.",
     priceTitle: "Preço",
@@ -193,6 +198,7 @@ export const CREATOR_HUB_TEXT: Record<LocaleCode, CreatorHubText> = {
     previewEmpty: "Ce brouillon n'a pas encore de sujets.",
     preview: "Aperçu",
     publish: "Publier",
+    republish: "Publier les modifications",
     published_ok: "Publié.",
     publishFailed: "Impossible de publier. Ouvrez l'aperçu et vérifiez qu'il y a des sujets.",
     priceTitle: "Prix",
@@ -237,6 +243,7 @@ export const CREATOR_HUB_TEXT: Record<LocaleCode, CreatorHubText> = {
     previewEmpty: "Questa bozza non ha ancora argomenti.",
     preview: "Anteprima",
     publish: "Pubblica",
+    republish: "Pubblica le modifiche",
     published_ok: "Pubblicato.",
     publishFailed:
       "Non è stato possibile pubblicare. Apri l'anteprima e controlla che ci siano argomenti.",

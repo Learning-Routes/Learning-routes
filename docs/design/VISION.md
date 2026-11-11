@@ -35,8 +35,8 @@ The feeling is calm confidence: you are not lost, and the way is lit. That is th
 | --- | --- | --- |
 | Where | Public pages: landing, catalog, creator's page, route page | Inside the app: Mis rutas, the map, a lesson, the studio, admin |
 | Job | Make someone want to start | Help someone get work done |
-| Ground | Night: deep plum-black, the line glowing | Daylight: light, warm-neutral surfaces, the line in ink |
-| Type | Large, wide, confident display; few words | Readable, steady, generous line height; long text comfortable |
+| Ground | The visitor's theme: at night, deep plum-black with the line glowing; by day, the same page in ink | The visitor's theme, with a switch in the header on the app's host |
+| Type | Large, confident display; few words | Readable, steady, generous line height; long text comfortable |
 | Motion | Storytelling: scroll moves the camera, lines draw, places light up | Only when something advances: a topic done, a dot moving, a module unlocked |
 | Boldness | One big moment per page | Almost none; the moment is progress itself |
 
@@ -59,32 +59,12 @@ A student goes from the stage (the route page) to the desk (their first topic) i
    - **Small details that make the difference:** the active filter slides between choices, and a faint light follows the pointer across the stage's hero.
 
    Never animate just to look busy: no looping decoration, no fade-up on every section as you scroll, no bounce on every card. Everything stops for reduced motion and still reads complete. The reference prototype (`reference/vision/pages.html`) shows the intended amount.
-4. **Big type, few words.** Archivo is our only family. Its width axis is our voice:
-   - wide and heavy for display on the stage;
-   - normal width for reading;
-   - narrower for dense data on the desk.
+4. **Big type, few words, one family.** Geist is our only family, at three weights: 400 for reading, 500 for labels and buttons, 600 for titles. DM Mono is only for addresses and code. Hierarchy comes from size and space, never from heavier weight or a wider cut:
+   - display titles on the stage, tracked tight (`--text-display`, `--tracking-display`);
+   - page titles on the desk (`--text-heading`);
+   - nothing smaller than 12 px, and 12 px only for meta.
 
-   A headline is a design element, so set it with care: tight leading, tracked tight, no single highlighted word.
-
-   **Titles have depth.** Every h1 and section h2 is extruded:
-   - **The face catches the light:** a thin highlight on its top edge.
-   - **The extrusion steps away in the register's colours:**
-     - plum on the stage, from light plum to deep plum;
-     - the creator's colour on their page;
-     - a softer, shorter plum on the desk.
-   - **A soft glow lands under it.**
-   - **The pointer moves the light:** the extrusion leans away from it, but it always falls downward.
-
-   **Keep it professional.** The depth is a touch, not a toy:
-   - about 7 steps for h1 and 3 for h2, 30% fewer on the desk;
-   - extrusion colours close to the ground, never neon;
-   - a faint highlight;
-   - a low glow;
-   - the pointer moves the light only a little.
-
-   Build it with layered `text-shadow`, generated from tokens, never hand-written. Body text never gets depth. With reduced motion, the depth stays but does not follow the pointer.
-
-   **The display face is still open.** The prototype lets the owner compare Archivo, Bricolage Grotesque and Anybody for titles; body text stays Archivo. Use the face the owner picks, and until then use Archivo.
+   A headline is a design element, so set it with care: tight leading, balanced lines, no single highlighted word. **Titles are flat.** No extrusion, no glow, no text shadow: the owner rejected them as toy-like (November 2026), and the same goes for the 3D ledge under cards and buttons. Depth on the page comes from the route, not from the letters.
 5. **Depth with restraint.** The landing gets real 3D, because the route is a place you travel through. Elsewhere, depth comes from light, layering and the glow of markers, not from shadows on cards. No glassmorphism and no gradient washes.
 6. **The creator's colour, inside our frame.** A creator's brand colour replaces plum on their page's primary actions and their portrait. Gold and green never change: a student moving between creators must still know where they are.
 7. **Plain words.** Say what it is and what happens: "Empezar gratis", "Seguir", "Ya envié la invitación". Progress is written in words ("Vas en el tema 3 de 14"), not only as a bar. The glossary in FOUNDATIONS §4b is law.
@@ -133,6 +113,7 @@ A student goes from the stage (the route page) to the desk (their first topic) i
 
 ## Study these for feel, not to copy
 
+- **Stripe, Linear and Vercel's public pages:** confident type at three weights, no decoration doing the work.
 - **Massimo Vignelli's 1972 New York subway diagram:** clarity from a strict system of lines and stations.
 - **Trail and transit maps at night:** how glow and dark make one path readable.
 - **Apple's product pages:** scroll as storytelling, one idea per screen, the text never waiting on the visuals.

@@ -1,12 +1,18 @@
-/* The two registers (docs/design/VISION.md). The stage is the public pages: night, always, with the
-   line glowing. The desk is inside the app: daylight, with the line in ink, and it follows the
-   visitor's theme. Each page's root says which it is. */
-/* Anywhere else, the lit line is the accent. */
+/* The two registers (docs/design/VISION.md). The stage is the public pages, made to make someone
+   start; the desk is inside the app, made to get work done. Both follow the visitor's theme: their
+   choice on the app's host, the system's everywhere else. At night the stage is the trail at dusk,
+   with the line lit; by day it is the same page in ink. */
 :root {
   --line-lit: var(--color-accent);
 }
-html:root:has(.stage) {
-  color-scheme: dark;
+.stage,
+.desk {
+  --figure-track: var(--color-faint);
+  --figure-topic: var(--color-muted);
+  --figure-mark: var(--color-txt);
+  --figure-ground: var(--color-card);
+}
+html[data-theme="dark"]:has(.stage) {
   --color-bg: #130e1b;
   --color-bg-2: #1c1528;
   --color-card: #1c1528;
@@ -16,51 +22,35 @@ html:root:has(.stage) {
   --color-faint: #33294a;
   --color-border-subtle: #33294a;
   --color-link: #c9a6f2;
-  --color-accent: #6a2ea0;
-  --color-accent-text: #fff;
-  --figure-track: #33294a;
-  --figure-topic: #8c7f9c;
-  --figure-mark: #f3eef7;
-  --figure-ground: #1c1528;
   --line-lit: color-mix(in oklab, var(--color-accent) 60%, #fff);
-  --depth-face: rgb(255 255 255 / 0.22);
-  --depth-near: color-mix(in oklab, var(--line-lit) 62%, #130e1b);
-  --depth-far: color-mix(in oklab, var(--color-accent) 40%, #130e1b);
-  --depth-glow: color-mix(in oklab, var(--line-lit) 18%, transparent);
-  background: var(--color-bg);
 }
-.desk {
-  --figure-track: var(--color-faint);
-  --figure-topic: var(--color-muted);
-  --figure-mark: var(--color-txt);
-  --figure-ground: var(--color-card);
-  --line-lit: var(--color-accent);
-  --depth-face: rgb(255 255 255 / 0.3);
-  --depth-near: color-mix(in oklab, var(--color-accent) 42%, var(--color-bg));
-  --depth-far: color-mix(in oklab, var(--color-accent) 12%, var(--color-bg));
-  --depth-glow: color-mix(in oklab, var(--color-accent) 8%, transparent);
-}
-
-/* Plum alone is too dark to mark focus on night. */
-html:root:has(.stage) :focus-visible {
-  outline-color: var(--color-highlight);
-}
-html:root:has(.stage) .field-input:focus-visible {
-  box-shadow: inset 0 0 0 2px var(--color-highlight);
+@media (prefers-color-scheme: dark) {
+  html:not([data-theme]):has(.stage) {
+    --color-bg: #130e1b;
+    --color-bg-2: #1c1528;
+    --color-card: #1c1528;
+    --color-txt: #f3eef7;
+    --color-sub: #b9aec6;
+    --color-muted: #8c7f9c;
+    --color-faint: #33294a;
+    --color-border-subtle: #33294a;
+    --color-link: #c9a6f2;
+    --line-lit: color-mix(in oklab, var(--color-accent) 60%, #fff);
+  }
 }
 
 /* The header lines up with the stage's page. */
-html:root:has(.stage) .site-header {
+html:has(.stage) .site-header {
   padding-inline: max(var(--space-4), calc((100vw - 80rem) / 2 + var(--space-10)));
 }
 @media (max-width: 48rem) {
-  html:root:has(.stage) .site-header {
+  html:has(.stage) .site-header {
     padding-inline: var(--space-4);
   }
 }
 
 /* The headline's words rise out of their own line, once, when the page opens. Each word is clipped
-   only while it rises, so the extrusion is whole once it has landed. All of it is CSS: text paints
+   only while it rises, so the word is whole once it has landed. All of it is CSS: text paints
    first, and with reduced motion or no animations it is simply there. */
 .w {
   display: inline-block;

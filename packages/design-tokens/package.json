@@ -7,9 +7,7 @@
   "exports": {
     ".": "./tokens.ts",
     "./tokens.css": "./tokens.css",
-    "./depth.css": "./depth.css",
-    "./fonts/*": "./fonts/*",
-    "./geist.css": "./geist.css"
+    "./fonts/*": "./fonts/*"
   },
   "scripts": {
     "test": "vitest run",

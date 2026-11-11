@@ -16,15 +16,14 @@
   overflow-wrap: anywhere;
   margin: 0;
   font-size: var(--text-heading);
-  font-weight: 800;
-  font-stretch: 112%;
-  letter-spacing: -0.03em;
-  line-height: 1.02;
+  font-weight: var(--weight-display);
+  letter-spacing: -0.035em;
+  line-height: var(--leading-heading);
 }
 .app-section-title {
   margin: var(--space-8) 0 0;
   font-size: var(--text-title);
-  font-weight: 800;
+  font-weight: 600;
 }
 .app-copy {
   margin: 0;
@@ -80,10 +79,10 @@
   gap: var(--space-8);
 }
 .my-top .app-title {
-  font-size: clamp(2.75rem, 6.6vw, 5.25rem);
-  font-weight: 850;
-  letter-spacing: -0.045em;
-  line-height: 0.92;
+  font-size: var(--text-heading);
+  font-weight: var(--weight-display);
+  letter-spacing: -0.035em;
+  line-height: var(--leading-heading);
 }
 .my-top {
   display: flex;
@@ -111,20 +110,18 @@
 }
 .my-next-title {
   margin: var(--space-1) 0;
-  font-size: clamp(1.75rem, 3.4vw, 2.5rem);
-  font-weight: 820;
-  font-stretch: 108%;
-  letter-spacing: -0.03em;
-  line-height: 1.05;
   overflow-wrap: anywhere;
+  font-size: clamp(1.375rem, 1.2rem + 0.8vw, 1.875rem);
+  font-weight: var(--weight-display);
+  letter-spacing: -0.025em;
+  line-height: 1.15;
 }
 .my-all-title {
   margin: 0 0 var(--space-5);
-  font-size: clamp(1.875rem, 4vw, 2.875rem);
-  font-weight: 800;
-  font-stretch: 108%;
-  letter-spacing: -0.035em;
-  line-height: 1;
+  font-size: clamp(1.5rem, 1.2rem + 1vw, 2.125rem);
+  font-weight: var(--weight-display);
+  letter-spacing: -0.03em;
+  line-height: 1.1;
 }
 .my-routes {
   display: grid;
@@ -150,7 +147,7 @@
   overflow-wrap: anywhere;
   margin: 0;
   font-size: 1.375rem;
-  font-weight: 760;
+  font-weight: 600;
   letter-spacing: -0.02em;
   line-height: 1.15;
 }
@@ -160,7 +157,7 @@
   color: var(--color-sub);
 }
 .my-route-finished {
-  font-weight: 700;
+  font-weight: 600;
   color: var(--color-positive);
 }
 /* Its moment: the first visit after enrolling brings the gold dot in, once. */
@@ -191,7 +188,7 @@
   padding: var(--space-2) 0 var(--space-2) var(--space-8);
 }
 .connect-end {
-  font-weight: 760;
+  font-weight: 600;
 }
 .connect-end::before,
 .connect-scope::before {
@@ -258,7 +255,7 @@
 }
 .admin-name {
   margin: 0;
-  font-weight: 800;
+  font-weight: 600;
 }
 .admin-actions {
   display: flex;
@@ -271,6 +268,82 @@
 }
 
 /* Quiero enseñar's moment: the request, drawn as the first station of a new line. */
+/* Ser creador: the promise and its three steps beside the form, which sits on its own sheet. */
+.teach-page {
+  display: grid;
+  gap: var(--space-8);
+  max-width: 68rem;
+  margin-inline: auto;
+  padding: var(--space-10) var(--space-4) var(--space-20);
+}
+@media (min-width: 60rem) {
+  .teach-page {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 28rem);
+    gap: var(--space-16);
+    align-items: start;
+    padding-block-start: var(--space-16);
+  }
+  .teach-lead {
+    position: sticky;
+    top: calc(var(--size-header) + var(--space-10));
+  }
+}
+.teach-lead {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+.teach-lead .app-copy {
+  max-width: 40ch;
+  font-size: var(--text-lead);
+}
+.teach-how {
+  margin: var(--space-6) 0 0;
+  font-size: var(--text-small);
+  font-weight: var(--weight-label);
+  color: var(--color-muted);
+}
+.teach-steps {
+  display: grid;
+  gap: var(--space-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: teach;
+}
+.teach-steps li {
+  position: relative;
+  max-width: 38ch;
+  padding-inline-start: var(--space-10);
+  color: var(--color-sub);
+  counter-increment: teach;
+}
+.teach-steps li::before {
+  content: counter(teach);
+  position: absolute;
+  inset-inline-start: 0;
+  top: -0.05em;
+  display: grid;
+  place-items: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 1px var(--color-faint);
+  font: var(--weight-label) var(--text-small) / 1 var(--font-sans);
+  font-variant-numeric: tabular-nums;
+  color: var(--color-txt);
+}
+.teach-sheet {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-8);
+}
+@media (max-width: 40rem) {
+  .teach-sheet {
+    padding: var(--space-5);
+  }
+}
 .teach-station {
   display: none;
 }
@@ -401,15 +474,30 @@
   cursor: pointer;
   font-family: inherit;
 }
-@media (max-width: 40rem) {
-  .site-nav:has(.nav-form) {
-    display: flex;
+/* Inside the app every link matters, so on a narrow screen they take a row of their own under the
+   brand, as tabs that scroll sideways if they must, instead of wrapping around it. */
+@media (max-width: 860px) {
+  .site-header:has(.nav-form) {
     flex-wrap: wrap;
-    justify-content: flex-end;
+    row-gap: 0;
+    padding-block-start: var(--space-1);
+  }
+  .site-nav:has(.nav-form) {
+    order: 1;
+    width: calc(100% + 2 * var(--space-4));
+    margin-inline: calc(-1 * var(--space-4));
+    padding-inline: var(--space-2);
+    overflow-x: auto;
+    scrollbar-width: none;
+    border-block-start: 1px solid var(--color-border-subtle);
   }
   .site-nav:has(.nav-form) .nav-link {
     display: inline-flex;
-    padding-inline: var(--space-2);
+    flex: none;
+    padding-inline: var(--space-3);
+  }
+  .site-nav:has(.nav-form) .nav-form {
+    margin-inline-start: auto;
   }
 }
 

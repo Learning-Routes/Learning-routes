@@ -118,7 +118,7 @@ function CarryOn({
     <section className="my-next" aria-labelledby="my-next-title">
       <div className="settle-2">
         <p className="my-next-line">{words.carryOn}</p>
-        <h2 id="my-next-title" className="my-next-title depth-2">
+        <h2 id="my-next-title" className="my-next-title">
           {filled(words.topicTitle, {
             n: enrollment.place.number,
             title: inLocale(enrollment.place.title, locale, source),
@@ -194,7 +194,7 @@ export default function MisRutas({ loaderData }: Route.ComponentProps) {
       <AppHeader locale={locale} place="learn" teaches={teaches} />
       <main className="app-page my-page moment">
         <div className="my-top">
-          <h1 className="app-title depth-1">
+          <h1 className="app-title">
             <Rising text={name ? filled(words.hello, { name }) : words.myRoutes} />
           </h1>
           {teaches ? (
@@ -227,7 +227,7 @@ export default function MisRutas({ loaderData }: Route.ComponentProps) {
               <CarryOn enrollment={next} locale={locale} isNew={next.enrollmentId === arriving} />
             ) : null}
             <section aria-labelledby="my-all" className="settle-4">
-              <h2 id="my-all" className="my-all-title depth-2">
+              <h2 id="my-all" className="my-all-title">
                 {words.yourRoutes}
               </h2>
               <ul className="my-routes">

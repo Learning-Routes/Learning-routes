@@ -68,7 +68,7 @@
 .hero-label-strong {
   fill: var(--color-txt);
   font-size: 22px;
-  font-weight: 800;
+  font-weight: 600;
 }
 .hero-label {
   fill: var(--color-sub);

@@ -41,7 +41,7 @@ export default function Conecta({ loaderData }: Route.ComponentProps) {
     <div className="desk opening">
       <AppHeader locale={locale} place="teach" />
       <main className="app-page app-page-narrow">
-        <h1 className="app-title depth-1">
+        <h1 className="app-title">
           <Rising text={words.connectAssistant} />
         </h1>
         {teaches ? (

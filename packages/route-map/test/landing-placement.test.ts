@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
 import { at } from "../src/at-index";
-import { restingCamera, shotFor, stageCamera } from "../src/landing-cameras";
+import { isPhone, restingCamera, shotFor, spotFor, stageCamera } from "../src/landing-cameras";
 import { buildLandingModel } from "../src/landing-model";
 import { layoutPanel, type TextShape } from "../src/landing-placement";
 import shapes from "./fixtures/landing-text-shapes.json";
@@ -27,6 +27,18 @@ describe.each(Object.keys(LOCALES))("%s", (locale) => {
     const laid = layout(LOCALES[locale]?.[viewport] as Measured);
     expect(laid.map(({ slot }) => slot.hits)).toEqual([0, 0, 0, 0, 0, 0]);
   });
+
+  test.each([...VIEWPORTS, "360x740"])(
+    "at %s the hero stays where the page drew it, so the map never moves it",
+    (viewport) => {
+      const measured = LOCALES[locale]?.[viewport] as Measured;
+      const [width = 0, height = 0] = measured.stage;
+      const { spot } = spotFor(0, isPhone(width));
+      const hero = at(layout(measured), 0).slot;
+      expect(hero.x).toBeCloseTo(isPhone(width) ? 20 : spot[0] * width);
+      expect(hero.y).toBeCloseTo(spot[1] * height);
+    },
+  );
 
   test("at 360x740 the hero clears the map because the camera gives way", () => {
     const laid = layout(LOCALES[locale]?.["360x740"] as Measured);

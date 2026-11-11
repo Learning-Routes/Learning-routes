@@ -1,14 +1,12 @@
 import { ASSISTANT_TEXT } from "@learning-routes/core/copy/assistant";
 import { BRAND, negotiateLocale } from "@learning-routes/core/locales";
 import type { OwnSpace } from "@learning-routes/core/repos/ports";
-import geist from "@learning-routes/design-tokens/fonts/Geist-latin.woff2?url";
 import { useCallback } from "react";
 import { redirect } from "react-router";
 import { runApiAction } from "../app-api.server";
 import { AgentTransport } from "../studio/agent-transport";
 import { DemoTransport } from "../studio/session-transport";
 import { StudioPage } from "../studio/studio-page";
-import "@learning-routes/design-tokens/geist.css";
 import "../studio/studio.css";
 import type { Route } from "./+types/asistente";
 
@@ -36,10 +34,6 @@ export async function loader({ request, context }: Route.LoaderArgs) {
 }
 
 export const headers: Route.HeadersFunction = () => ({ "Cache-Control": "no-store" });
-
-export const links: Route.LinksFunction = () => [
-  { rel: "preload", href: geist, as: "font", type: "font/woff2", crossOrigin: "anonymous" },
-];
 
 export function meta({ loaderData }: Route.MetaArgs) {
   const words = ASSISTANT_TEXT[loaderData?.locale ?? "es"];

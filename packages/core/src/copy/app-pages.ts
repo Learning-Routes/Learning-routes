@@ -26,6 +26,11 @@ export interface AppPagesText {
   backToMyRoutes: string;
   teachTitle: string;
   teachIntro: string;
+  /** "Ser creador": what happens after the form, in three steps. */
+  teachHow: string;
+  teachStep1: string;
+  teachStep2: string;
+  teachStep3: string;
   nameLabel: string;
   emailLabel: string;
   teachesLabel: string;
@@ -69,12 +74,16 @@ export const APP_PAGES_TEXT: Record<LocaleCode, AppPagesText> = {
     exploreMore: "Explorar más rutas",
     backToMyRoutes: "Volver a Mis rutas",
     teachTitle: "Enseña lo que sabes, en una ruta.",
+    teachHow: "Cómo funciona",
+    teachStep1: "Nos cuentas qué enseñas y dónde te siguen.",
+    teachStep2: "Te escribimos en pocos días con tu invitación.",
+    teachStep3: "Armas tu primera ruta con tu asistente, paso a paso.",
     teachIntro:
       "Por ahora entramos por invitación. Cuéntanos qué enseñas y te escribimos en pocos días.",
     nameLabel: "Tu nombre",
     emailLabel: "Tu correo",
     teachesLabel: "¿Qué enseñas?",
-    teachesExample: "Por ejemplo: matemáticas para colegio",
+    teachesExample: "Álgebra para colegio",
     linkLabel: "Dónde te siguen",
     linkExample: "https://tu-canal.com",
     linkHint: "Opcional. Nos ayuda a conocerte.",
@@ -112,12 +121,16 @@ export const APP_PAGES_TEXT: Record<LocaleCode, AppPagesText> = {
     exploreMore: "Explore more routes",
     backToMyRoutes: "Back to My routes",
     teachTitle: "Teach what you know, in a route.",
+    teachHow: "How it works",
+    teachStep1: "Tell us what you teach and where people follow you.",
+    teachStep2: "We write back within a few days with your invitation.",
+    teachStep3: "You build your first route with your assistant, one step at a time.",
     teachIntro:
       "For now, joining is by invitation. Tell us what you teach and we'll write to you within a few days.",
     nameLabel: "Your name",
     emailLabel: "Your email",
     teachesLabel: "What do you teach?",
-    teachesExample: "For example: school math",
+    teachesExample: "Algebra for high school",
     linkLabel: "Where people follow you",
     linkExample: "https://your-channel.com",
     linkHint: "Optional. It helps us get to know you.",
@@ -154,12 +167,16 @@ export const APP_PAGES_TEXT: Record<LocaleCode, AppPagesText> = {
     exploreMore: "Explorar mais rotas",
     backToMyRoutes: "Voltar para Minhas rotas",
     teachTitle: "Ensine o que você sabe, em uma rota.",
+    teachHow: "Como funciona",
+    teachStep1: "Conte o que você ensina e onde as pessoas te seguem.",
+    teachStep2: "Respondemos em poucos dias com o seu convite.",
+    teachStep3: "Você monta sua primeira rota com seu assistente, passo a passo.",
     teachIntro:
       "Por enquanto, a entrada é por convite. Conte o que você ensina e escreveremos em poucos dias.",
     nameLabel: "Seu nome",
     emailLabel: "Seu e-mail",
     teachesLabel: "O que você ensina?",
-    teachesExample: "Por exemplo: matemática para a escola",
+    teachesExample: "Álgebra para o ensino médio",
     linkLabel: "Onde seguem você",
     linkExample: "https://seu-canal.com",
     linkHint: "Opcional. Ajuda a conhecer você.",
@@ -198,12 +215,16 @@ export const APP_PAGES_TEXT: Record<LocaleCode, AppPagesText> = {
     exploreMore: "Explorer d'autres parcours",
     backToMyRoutes: "Retour à Mes parcours",
     teachTitle: "Enseignez ce que vous savez, en un parcours.",
+    teachHow: "Comment ça marche",
+    teachStep1: "Dites-nous ce que vous enseignez et où l’on vous suit.",
+    teachStep2: "Nous vous répondons sous quelques jours avec votre invitation.",
+    teachStep3: "Vous construisez votre premier parcours avec votre assistant, pas à pas.",
     teachIntro:
       "Pour l'instant, on entre sur invitation. Dites-nous ce que vous enseignez et nous vous écrirons sous quelques jours.",
     nameLabel: "Votre nom",
     emailLabel: "Votre e-mail",
     teachesLabel: "Qu'enseignez-vous ?",
-    teachesExample: "Par exemple : les maths au collège",
+    teachesExample: "Algèbre pour le lycée",
     linkLabel: "Où l'on vous suit",
     linkExample: "https://votre-chaine.com",
     linkHint: "Facultatif. Cela nous aide à vous connaître.",
@@ -241,12 +262,16 @@ export const APP_PAGES_TEXT: Record<LocaleCode, AppPagesText> = {
     exploreMore: "Esplora altri percorsi",
     backToMyRoutes: "Torna a I miei percorsi",
     teachTitle: "Insegna ciò che sai, in un percorso.",
+    teachHow: "Come funziona",
+    teachStep1: "Raccontaci cosa insegni e dove ti seguono.",
+    teachStep2: "Ti rispondiamo in pochi giorni con il tuo invito.",
+    teachStep3: "Costruisci il tuo primo percorso con il tuo assistente, passo dopo passo.",
     teachIntro:
       "Per ora si entra su invito. Raccontaci cosa insegni e ti scriveremo entro pochi giorni.",
     nameLabel: "Il tuo nome",
     emailLabel: "La tua email",
     teachesLabel: "Cosa insegni?",
-    teachesExample: "Per esempio: matematica per la scuola",
+    teachesExample: "Algebra per le superiori",
     linkLabel: "Dove ti seguono",
     linkExample: "https://il-tuo-canale.com",
     linkHint: "Facoltativo. Ci aiuta a conoscerti.",

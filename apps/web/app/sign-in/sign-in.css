@@ -75,7 +75,6 @@
   margin: var(--space-2) 0 0;
   font-size: var(--text-heading);
   font-weight: var(--weight-display);
-  font-stretch: var(--stretch-display);
   letter-spacing: var(--tracking-display);
   line-height: var(--leading-display);
   overflow-wrap: anywhere;

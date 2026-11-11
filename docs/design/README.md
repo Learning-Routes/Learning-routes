@@ -16,7 +16,7 @@ The owner rejected v2's landing. Platform STEP 6 brought back v1's annotated map
 
 - The route line is the hero of every screen.
 - Each screen has one primary action.
-- Archivo is the only typeface, and there are no monospace labels.
+- Geist is the only typeface, at weights 400, 500 and 600, and there are no monospace labels.
 - No all-caps eyebrows, no middle-dot meta strings, no decorative pills, no arrows on buttons.
 - Colours keep fixed meanings: gold is "you are here", green is "done", plum is "the action".
 - Progress is said in words: "Vas en el tema 3 de 14".
@@ -38,7 +38,7 @@ The owner rejected v2's landing. Platform STEP 6 brought back v1's annotated map
 
 The route is the image. Modules are tilted cards with some thickness, topics are rings joined by a line that advances with the student, and a gold ring says "you are here". A diamond marks the module's exam, and a dotted branch holds remedial topics. If a screen could belong to any other learning product, it is missing this.
 
-Type does most of the remaining work. Archivo, wide and heavy, carries display text, so a headline can hold a page without decoration. DM Mono carries numbers and labels.
+Type does most of the remaining work. Geist at 600, large and tracked tight, carries display text, so a headline can hold a page without decoration. DM Mono carries numbers and labels.
 
 Colour stays narrow: plum (`--color-accent`, `#6A2EA0`) on a cool off-white (`--color-bg`, `#F5F2F6`), with gold only for the student's current position. The dark theme comes from the same tokens.
 

@@ -134,7 +134,7 @@ export default function Empezar({ loaderData }: Route.ComponentProps) {
     <div className="desk opening">
       <AppHeader locale={locale} />
       <main className="app-page app-page-narrow">
-        <h1 className="app-title depth-1">
+        <h1 className="app-title">
           <Rising text={joining} />
         </h1>
         <form method="post">

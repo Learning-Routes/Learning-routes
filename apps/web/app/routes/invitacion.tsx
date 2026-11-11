@@ -172,12 +172,13 @@ export default function Invitacion({ loaderData }: Route.ComponentProps) {
         brand={BRAND}
         brandHref={`${platformOrigin}/${shown}`}
         navLabel={UI_COPY[shown].primaryNav}
+        theme={UI_COPY[shown]}
       >
         {null}
       </SiteHeader>
       <main className="app-page app-page-narrow moment" data-invitation={peeked.state}>
         {peeked.state === "ok" ? (
-          <h1 className="app-title depth-1">
+          <h1 className="app-title">
             <Rising text={words.title} />
           </h1>
         ) : null}
