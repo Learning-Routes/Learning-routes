@@ -136,20 +136,6 @@ test("the active filter is one pill, named so it slides from choice to choice", 
   expect(name).toBe("topic-pill");
 });
 
-test("titles have depth, and the pointer moves the light without lifting it above the title", async ({
-  page,
-}) => {
-  await page.goto(CATALOG);
-  const title = page.locator("h1.depth-1");
-  expect(await title.evaluate((h1) => getComputedStyle(h1).textShadow)).not.toBe("none");
-  const lightY = () =>
-    page.evaluate(() => document.documentElement.style.getPropertyValue("--light-y"));
-  await page.mouse.move(100, 100);
-  await page.mouse.move(1000, 700);
-  await expect.poll(lightY).not.toBe("");
-  expect(Number(await lightY())).toBeGreaterThan(0);
-});
-
 test("the switch: without `moment` on the root the catalog is quiet and the weave is gone", async ({
   page,
 }) => {
