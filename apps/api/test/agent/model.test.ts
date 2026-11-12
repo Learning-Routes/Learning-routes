@@ -152,3 +152,50 @@ describe("who answers the assistant's model calls (STEP 11-prep §A1)", () => {
     expect(refusals).toBe(4);
   });
 });
+
+describe("the real-model provider and the small tier, local only (STEP 11-prep §A1b)", () => {
+  const dev = { ENVIRONMENT: "development" } as const;
+
+  it("answers with Anthropic, in development, with its key; with no key, no one answers", () => {
+    const provider = providerFetch({
+      ...dev,
+      MODEL_PROVIDER: "anthropic",
+      ANTHROPIC_API_KEY: "test-anthropic-key",
+    } as never);
+    expect(provider?.apiKey).toBe("anthropic");
+    expect(provider?.fetcher).not.toBe(fetch);
+    expect(providerFetch({ ...dev, MODEL_PROVIDER: "anthropic" } as never)).toBeNull();
+  });
+
+  it("refuses Anthropic and the small tier anywhere but development", () => {
+    let refusals = 0;
+    const refused = () => {
+      refusals += 1;
+    };
+    const production = { ENVIRONMENT: "production", ANTHROPIC_API_KEY: "test-anthropic-key" };
+    expect(
+      providerFetch({ ...production, MODEL_PROVIDER: "anthropic" } as never, refused),
+    ).toBeNull();
+    expect(
+      providerFetch(
+        { ...production, OPENROUTER_API_KEY: "test-key", MODEL_TIER_OVERRIDE: "small" } as never,
+        refused,
+      ),
+    ).toEqual({ apiKey: "test-key", fetcher: fetch });
+    expect(refusals).toBe(2);
+  });
+
+  it("sends every call to the small tier, with the asked tier's room to write", async () => {
+    const fetched = answerWith(
+      'data: {"choices":[{"delta":{"content":"Hola"}}],"usage":{"cost":0.00002,"prompt_tokens":10,"completion_tokens":2}}\n\ndata: [DONE]\n',
+    );
+    const { call, recorded } = setUp({
+      env: { ENVIRONMENT: "development", MODEL_TIER_OVERRIDE: "small" } as Partial<AgentEnv>,
+    });
+    await call("anthropic/claude-sonnet-5.5", [{ role: "user", content: "Hola" }], () => undefined);
+    const init = (fetched.mock.calls[0] as unknown[])[1] as RequestInit;
+    const sent = JSON.parse(String(init.body));
+    expect(sent).toMatchObject({ model: "anthropic/claude-haiku-5.5", max_tokens: 4000 });
+    expect(recorded[0]?.model).toBe("anthropic/claude-haiku-5.5");
+  });
+});

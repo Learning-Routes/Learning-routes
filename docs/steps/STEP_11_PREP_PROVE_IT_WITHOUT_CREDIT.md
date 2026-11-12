@@ -114,6 +114,49 @@ Why: STEP 10 §6 is blocked until OpenRouter has credit. Everything except the m
 3. **If there is no published route with a free module in production, stop and report.** Do not create one.
 4. **Report:** the run's screenshots at 1440 and 390, and the time each step took.
 
+### §A1b. A real model for local runs, with the owner's Anthropic key
+
+Added by the reviewer on 12 November 2026.
+
+**Why direct, not OpenRouter BYOK.** Our gate asks for `provider.zdr=true`. OpenRouter removes a BYOK endpoint that retains prompts unless the key declares zero data retention, and we will not make that declaration. BYOK also takes a fee from OpenRouter credits, which are negative. Checked on 12 November 2026 against openrouter.ai/docs/guides/overview/auth/byok:
+- **ZDR:** holds.
+- **Fee:** 5% of the normal OpenRouter price, taken from OpenRouter credits.
+- **Allowance:** the page now also lists a monthly free BYOK allowance on pay-as-you-go, so small local runs would probably not be charged the fee. It does not say what happens with zero or negative credits.
+
+1. **`MODEL_PROVIDER=anthropic`**, beside "scripted", through the same `providerFetch(env)` plug.
+   - It is a fetch adapter (`apps/api/src/ai/anthropic.ts`). It takes the gate's OpenRouter-format request, sends it to Anthropic's Messages API (`anthropic-version: 2026-10-21`), and streams back the OpenRouter SSE shape `streamFromOpenRouter` already parses. Nothing above the fetcher changes.
+   - What it maps:
+     - the system prompt and its `cache_control`;
+     - messages, tool calls and tool results;
+     - `max_tokens` and streaming;
+     - `anthropic/claude-sonnet-5.5` to `claude-sonnet-5-5`, and `anthropic/claude-haiku-5.5` to `claude-haiku-5-5`.
+   - Thinking is off: `between_tools` on Sonnet 5.5, `disabled` on Haiku 5.5. There are then no thinking blocks to replay in a history the agent keeps as text and tool calls.
+   - Anthropic's "credit balance is too low" (HTTP 400) is answered as a 402, so the assistant pauses as it does for OpenRouter.
+2. **Cost.** Anthropic returns tokens, not money. `usage.cost` is computed by `costOfUsage` from input, cache-write, cache-read and output tokens at the prices in `models.ts`, so the gate, `meter()`, the spend book and the ledger see real numbers.
+   - The skill's price table lists Sonnet 5.5 cache reads at $0.20 per million, while `models.ts`, copied from OpenRouter, has $0.10. To be settled when prices are next checked.
+3. **Development only.** `MODEL_PROVIDER` ("scripted" or "anthropic") and `MODEL_TIER_OVERRIDE=small` are refused anywhere else: one error line, "dev-only model setting refused outside development", then the Worker behaves as if they were unset. Never in CI: there is no key there, and a test fails if any workflow, or the browser tests' config, names the Anthropic provider, its key or the tier override.
+4. **The key.** `ANTHROPIC_API_KEY` is read from the macOS Keychain (service `learning-routes-anthropic`) by `pnpm --filter @learning-routes/api dev:agent:real`. It reaches wrangler only through that process's environment (`CLOUDFLARE_INCLUDE_PROCESS_ENV=true`, with a minimal environment), and every line of wrangler's output is redacted. It never goes on disk, never in `.dev.vars`, never in output.
+5. **Real runs, local only,** with a fictional creator (Andrés Profe) and fictional data. They follow the §6 scenarios against the local stack:
+   1. from zero, a short fractions route of 2 modules and 5 topics;
+   2. the change "agrega práctica de fracciones";
+   3. build, preview, the step 6 page, and publish with the button;
+   4. a student opens topic 1 and completes it.
+
+   Measured:
+   - time per step;
+   - the number of messages;
+   - the total cost from the ledger;
+   - turns with more than one question;
+   - invented content.
+
+   The transcript is saved outside the repo.
+6. **Spending, as the reviewer set it:**
+   - **Pass 1:** `MODEL_TIER_OVERRIDE=small`, every call on Haiku, which keeps the asked tier's `max_tokens`. It shakes out wiring bugs, and is rerun until clean.
+   - **Pass 2:** the real tiers, run once and measured.
+   - **Stops:** a run stops at $1.50 on the ledger, and the day stops at $3 across all runs. A failed real call is never retried automatically.
+   - **Report before pass 2:** pass 1's cost, its calls by tier, and its largest prompt; anything over about 20,000 tokens is explained first.
+   - **Never in loops,** in CI or in watch mode: each real run is started by hand. The per-space and per-day limits stay as they are.
+
 ---
 
 ## Part B: the STEP 10 follow-up

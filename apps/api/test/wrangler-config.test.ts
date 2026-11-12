@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { parseJsonc } from "./jsonc";
 
@@ -63,12 +63,31 @@ describe("the API Worker's configuration (Platform STEP 2 §1.3)", () => {
   });
 });
 
+const ANTHROPIC_PROVIDER = /MODEL_PROVIDER\W+anthropic/i;
+
 describe("the assistant Worker's configuration (STEP 11-prep §A1)", () => {
   it("never names MODEL_PROVIDER: production has only the real provider, or none", () => {
     // The file's top-level vars are production's; it has no other environment.
     const text = readFileSync(new URL("../wrangler.agent.jsonc", import.meta.url), "utf8");
     expect((parseJsonc(text) as { env?: unknown }).env).toBeUndefined();
     expect(text).not.toContain("MODEL_PROVIDER");
+    expect(text).not.toContain("MODEL_TIER_OVERRIDE");
+    expect(text).not.toContain("ANTHROPIC_API_KEY");
+  });
+
+  it("never runs a real model in CI: no workflow names Anthropic's provider or key", () => {
+    const folder = new URL("../../../.github/workflows/", import.meta.url);
+    for (const file of readdirSync(folder)) {
+      const text = readFileSync(new URL(file, folder), "utf8");
+      expect(text, file).not.toMatch(ANTHROPIC_PROVIDER);
+      expect(text, file).not.toContain("ANTHROPIC_API_KEY");
+      expect(text, file).not.toContain("MODEL_TIER_OVERRIDE");
+    }
+    const browser = readFileSync(
+      new URL("../../web/playwright.config.ts", import.meta.url),
+      "utf8",
+    );
+    expect(browser).not.toMatch(ANTHROPIC_PROVIDER);
   });
 
   it("caps each space's assistant at 12 model calls a minute", () => {
