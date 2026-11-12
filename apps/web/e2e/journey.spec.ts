@@ -239,12 +239,18 @@ test("a creator builds and publishes with the assistant, and a student completes
       writes: { action: string; via: string; spaceId: string }[];
       blocks: Record<string, unknown>[];
     };
-    // The price is the creator's own, in Enseñar, until §3b; every other write is the assistant's.
-    const writes = facts.writes.filter((write) => write.action !== "route.set_price");
+    // Accepting the invitation and the price (in Enseñar, until §3b) are the creator's own writes;
+    // every other is the assistant's. Each write is named, so a failure says which one.
+    const OWN = ["invitation.accept", "route.set_price"];
+    const own = facts.writes.filter((write) => OWN.includes(write.action));
+    expect(own.map((write) => [write.action, write.via])).toEqual(
+      OWN.map((action) => [action, "ui"]),
+    );
+    const writes = facts.writes.filter((write) => !OWN.includes(write.action));
     expect(writes.length).toBeGreaterThan(0);
-    for (const write of writes) {
-      expect(write).toMatchObject({ via: "agent", spaceId: facts.spaceId });
-    }
+    expect(
+      writes.filter((write) => write.via !== "agent" || write.spaceId !== facts.spaceId),
+    ).toEqual([]);
     // No invented content: what was published is the script's arguments, word for word.
     const written = CALLS.filter((call) => call.name === "add_blocks").flatMap(
       (call) => call.arguments.blocks as Record<string, unknown>[],
