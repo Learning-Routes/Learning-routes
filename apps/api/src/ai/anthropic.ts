@@ -1,4 +1,5 @@
 import { costOfUsage, isAllowedModel, type ModelId } from "@learning-routes/core/ai/models";
+import { type GateRequest, messagesBody } from "./anthropic-request";
 import { ENDPOINT } from "./openrouter";
 
 // The Anthropic provider (STEP 11-prep §A1b): local runs with a real model, never production. A
@@ -16,93 +17,6 @@ const MODEL_IDS: Partial<Record<ModelId, string>> = {
   "anthropic/claude-sonnet-5.5": "claude-sonnet-5-5",
   "anthropic/claude-haiku-5.5": "claude-haiku-5-5",
 };
-
-// Thinking off, each model's own way: no thinking blocks to replay in the history, the cheapest call.
-const NO_THINKING: Record<string, { type: string }> = {
-  "claude-sonnet-5-5": { type: "between_tools" },
-  "claude-haiku-5-5": { type: "disabled" },
-};
-
-type Text = string | { type: "text"; text: string; cache_control?: unknown }[];
-type GateMessage =
-  | { role: "system" | "user"; content: Text }
-  | {
-      role: "assistant";
-      content: string;
-      tool_calls?: { id: string; function: { name: string; arguments: string } }[];
-    }
-  | { role: "tool"; tool_call_id: string; content: Text };
-interface GateRequest {
-  model: string;
-  max_tokens: number;
-  messages: GateMessage[];
-  tools?: {
-    function: { name: string; description: string; parameters: Record<string, unknown> };
-  }[];
-}
-
-function argumentsOf(text: string): unknown {
-  try {
-    return JSON.parse(text);
-  } catch {
-    // A call the model cut short: sent back as it was, so the next answer can see it.
-    return { arguments: text };
-  }
-}
-
-function assistantOf(message: Extract<GateMessage, { role: "assistant" }>) {
-  return [
-    ...(message.content ? [{ type: "text", text: message.content }] : []),
-    ...(message.tool_calls ?? []).map((call) => ({
-      type: "tool_use",
-      id: call.id,
-      name: call.function.name,
-      input: argumentsOf(call.function.arguments),
-    })),
-  ];
-}
-
-/** One gate message as the Messages API takes it; the system prompt goes in its own field. */
-function turnOf(message: GateMessage): { role: string; content: unknown }[] {
-  if (message.role === "user") {
-    return [{ role: "user", content: message.content }];
-  }
-  if (message.role === "tool") {
-    const result = {
-      type: "tool_result",
-      tool_use_id: message.tool_call_id,
-      content: message.content,
-    };
-    return [{ role: "user", content: [result] }];
-  }
-  if (message.role === "assistant") {
-    const content = assistantOf(message);
-    return content.length > 0 ? [{ role: "assistant", content }] : [];
-  }
-  return [];
-}
-
-/** The Messages API body for a gate request: same words, same cache marks, same limits. */
-function messagesBody(request: GateRequest, model: string) {
-  const system = request.messages.find((message) => message.role === "system");
-  const messages = request.messages.flatMap(turnOf);
-  return {
-    model,
-    max_tokens: request.max_tokens,
-    stream: true,
-    thinking: NO_THINKING[model],
-    ...(system ? { system: system.content } : {}),
-    ...(request.tools
-      ? {
-          tools: request.tools.map(({ function: tool }) => {
-            const { $schema: _schema, ...input_schema } = tool.parameters;
-            return { name: tool.name, description: tool.description, input_schema };
-          }),
-        }
-      : {}),
-    messages,
-  };
-}
 
 interface Usage {
   input_tokens?: number;
@@ -156,6 +70,7 @@ class Translation {
   output = 0;
   stop = "";
   private readonly tools = new Map<number, number>();
+  private readonly withArguments = new Set<number>();
 
   constructor(private readonly send: (value: unknown) => void) {}
 
@@ -183,8 +98,17 @@ class Translation {
     const index = this.tools.get(Number(event.index));
     if (delta.type === "text_delta") {
       this.send({ choices: [{ delta: { content: delta.text } }] });
-    } else if (delta.type === "input_json_delta" && index !== undefined) {
+    } else if (delta.type === "input_json_delta" && index !== undefined && delta.partial_json) {
+      this.withArguments.add(index);
       this.toolCall({ index, function: { arguments: delta.partial_json } });
+    }
+  }
+
+  // A call with no arguments streams none: OpenRouter's reader gets an empty object, as JSON.
+  blockStopped(event: Event) {
+    const index = this.tools.get(Number(event.index));
+    if (index !== undefined && !this.withArguments.has(index)) {
+      this.toolCall({ index, function: { arguments: "{}" } });
     }
   }
 
@@ -199,6 +123,7 @@ class Translation {
       message_start: (e) => this.started(e),
       content_block_start: (e) => this.blockStarted(e),
       content_block_delta: (e) => this.delta(e),
+      content_block_stop: (e) => this.blockStopped(e),
       message_delta: (e) => this.messageDelta(e),
     };
     if (event.type === "error") {
@@ -213,6 +138,18 @@ class Translation {
   // used, as meter() decides.
   finish(model: ModelId) {
     const usage = usageOf(model, this.usage, this.output);
+    // Local runs only: how much of each prompt the cache wrote and read. No ids, no words.
+    console.log(
+      JSON.stringify({
+        message: "anthropic usage",
+        model,
+        input: this.usage.input_tokens ?? 0,
+        cacheWrite: this.usage.cache_creation_input_tokens ?? 0,
+        cacheRead: this.usage.cache_read_input_tokens ?? 0,
+        output: this.output,
+        stop: this.stop,
+      }),
+    );
     this.send(
       this.stop === "refusal" || this.stop === "error"
         ? { usage, error: { message: this.stop } }

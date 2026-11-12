@@ -1,4 +1,5 @@
 import { execFileSync, spawn } from "node:child_process";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 
 // The assistant's Worker on this Mac with a real model (STEP 11-prep §A1b): Anthropic's API, with
 // the owner's key read from the macOS Keychain at start. The key goes to wrangler only through
@@ -9,6 +10,26 @@ import { execFileSync, spawn } from "node:child_process";
 const SERVICE = "learning-routes-anthropic";
 // Any Anthropic key, should one reach the output some other way.
 const KEY_SHAPE = /sk-ant-[A-Za-z0-9_-]+/g;
+
+const CONFIG = "wrangler.agent.jsonc";
+const LOCAL_CONFIG = ".wrangler/agent-real.jsonc";
+
+/**
+ * The agent's config for this run, written under .wrangler (ignored by git): the same Worker, its
+ * main seen from there, with ANTHROPIC_API_KEY among the secrets it requires. With secrets declared,
+ * wrangler takes a value from the environment only for a name it requires, and a --var would win
+ * over it. Names only: the key is never in this file.
+ */
+export function realConfig(text: string): string {
+  const main = '"main": "src/agent/index.ts"';
+  const secrets = '"secrets": { "required": ["BETTER_AUTH_SECRET"] }';
+  if (!(text.includes(main) && text.includes(secrets))) {
+    throw new Error(`${CONFIG} changed: update dev-agent-real.ts`);
+  }
+  return text
+    .replace(main, '"main": "../src/agent/index.ts"')
+    .replace(secrets, '"secrets": { "required": ["BETTER_AUTH_SECRET", "ANTHROPIC_API_KEY"] }');
+}
 
 /** A line of output with the key, and anything shaped like one, taken out. */
 export function redacted(text: string, key: string): string {
@@ -28,6 +49,8 @@ function keyFromKeychain(): string {
 
 if (process.argv[1]?.endsWith("dev-agent-real.ts")) {
   const key = keyFromKeychain();
+  mkdirSync(".wrangler", { recursive: true });
+  writeFileSync(LOCAL_CONFIG, realConfig(readFileSync(CONFIG, "utf8")));
   // Only what wrangler needs: the Worker sees this environment as its own vars.
   const env = {
     PATH: process.env.PATH ?? "",
@@ -41,7 +64,7 @@ if (process.argv[1]?.endsWith("dev-agent-real.ts")) {
     "wrangler",
     "dev",
     "--config",
-    "wrangler.agent.jsonc",
+    LOCAL_CONFIG,
     "--inspector-port",
     "0",
     "--var",

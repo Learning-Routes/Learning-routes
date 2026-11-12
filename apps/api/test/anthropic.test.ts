@@ -165,6 +165,23 @@ describe("the Anthropic provider (STEP 11-prep §A1b)", () => {
     });
   });
 
+  it("gives a call with no arguments an empty object, as OpenRouter does", async () => {
+    const noArguments = [
+      STREAM[0],
+      {
+        type: "content_block_start",
+        index: 0,
+        content_block: { type: "tool_use", id: "toolu_3", name: "get_route_format", input: {} },
+      },
+      { type: "content_block_stop", index: 0 },
+      { type: "message_delta", delta: { stop_reason: "tool_use" }, usage: { output_tokens: 5 } },
+      { type: "message_stop" },
+    ];
+    const { fetcher } = upstream(() => new Response(sse(noArguments)));
+    const streamed = await ask(anthropicFetch("test-key", fetcher));
+    expect(streamed.ok && streamed.toolCalls[0]?.function.arguments).toBe("{}");
+  });
+
   it("ends a refused or broken answer as a failure that reached a model, with what it used", async () => {
     const refused = [
       STREAM[0],
