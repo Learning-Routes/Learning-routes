@@ -12,7 +12,7 @@ import * as z from "zod";
 import { newId } from "../ids";
 import { type ConversationRow, monthOf, type Seat, type StudioPlace } from "./conversation";
 import { type AgentEnv, USER_HEADER } from "./env";
-import { modelCall, providerFetch, type SpendBook } from "./model";
+import { logRefusal, modelCall, providerFetch, type SpendBook } from "./model";
 import { type Sql, spendBook } from "./spend-book";
 import { Effects } from "./studio-effects";
 
@@ -41,7 +41,7 @@ export class Studio extends Agent<AgentEnv> implements StudioPlace {
   // Not state: only the order of this instance's turns while it is awake, and how many wait.
   private turns: Promise<void> = Promise.resolve();
   private waiting = 0;
-  // A scripted provider switched on in production is refused; this instance says so once.
+  // A scripted provider switched on outside development is refused; this instance says so once.
   private hasLoggedRefusal = false;
 
   override async onStart() {
@@ -246,7 +246,7 @@ export class Studio extends Agent<AgentEnv> implements StudioPlace {
     const provider = providerFetch(this.env, () => {
       if (!this.hasLoggedRefusal) {
         this.hasLoggedRefusal = true;
-        console.error(JSON.stringify({ message: "scripted model provider refused in production" }));
+        logRefusal();
       }
     });
     const deps = {

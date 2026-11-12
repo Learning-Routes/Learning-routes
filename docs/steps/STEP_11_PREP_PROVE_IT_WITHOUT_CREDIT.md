@@ -64,6 +64,7 @@ Why: STEP 10 §6 is blocked until OpenRouter has credit. Everything except the m
    - The 402 is its own script, `stream-fails-402`. A failed call adds no assistant message, so a second failure in the same script would replay the first one.
    - `hostile-upload` covers the creator's message and the unrequested `ask_to_publish` here. Its document half needs attach, so it lands with §B2.
    - `budget-out` runs as a Worker-level test, against the real Durable Object and gate, with its own low monthly limit. Nothing writes into the spend book from outside.
+   - After the security review, the switch is allowed only when `ENVIRONMENT` is `development`, stricter than refusing `production`: a later staging environment or a typo cannot turn it on. Anywhere else it is refused with one error logged.
    - The per-minute cap on a space's model calls is read from `AGENT_CALLS_PER_MINUTE`, 12 in production. A scripted run makes its 17 calls in about a second, so its tests raise it.
    - The plan a creator "first saw" is recorded at the assistant's first question once the route has lessons, no longer at the first write. Before, every lesson counted as new, and an added topic could not stand out.
    - The scripts are bundled with the agent Worker and unused in production. They add about 4 KiB gzip; the Worker is then at about 596 of its 600 KiB, so §B2's extractor cannot fit inside it and §B2 proposes where it runs.

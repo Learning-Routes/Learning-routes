@@ -76,5 +76,6 @@ describe("the assistant Worker's configuration (STEP 11-prep §A1)", () => {
       readFileSync(new URL("../wrangler.agent.jsonc", import.meta.url), "utf8"),
     ) as { vars: Record<string, string> };
     expect(agent.vars.AGENT_CALLS_PER_MINUTE).toBe("12");
+    expect(agent.vars.ENVIRONMENT).toBe("production");
   });
 });

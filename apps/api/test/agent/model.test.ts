@@ -127,4 +127,16 @@ describe("who answers the assistant's model calls (STEP 11-prep §A1)", () => {
     ).toEqual({ apiKey: "test-key", fetcher: fetch });
     expect(refusals).toBe(2);
   });
+
+  it("is allowed only in development: any other environment refuses it", () => {
+    let refusals = 0;
+    for (const ENVIRONMENT of ["Production", "staging", "test", undefined]) {
+      expect(
+        providerFetch({ ENVIRONMENT, MODEL_PROVIDER: "scripted" } as never, () => {
+          refusals += 1;
+        }),
+      ).toBeNull();
+    }
+    expect(refusals).toBe(4);
+  });
 });

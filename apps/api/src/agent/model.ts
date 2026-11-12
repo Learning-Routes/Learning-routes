@@ -42,19 +42,23 @@ export interface SpendBook {
   }): void;
 }
 
+/** The one error a refused scripted provider leaves in the logs. */
+export const logRefusal = () =>
+  console.error(JSON.stringify({ message: "scripted model provider refused outside development" }));
+
 export type Provider = { apiKey: string; fetcher: typeof fetch };
 
 /**
- * Who answers the model calls: OpenRouter with its key, or, outside production, the scripted
+ * Who answers the model calls: OpenRouter with its key, or, in development only, the scripted
  * provider when MODEL_PROVIDER is "scripted" (STEP 11-prep §A1). null: no one, and the assistant is
- * not switched on. In production the switch is ignored, and `refused` is told so it can be logged.
+ * not switched on. Anywhere else the switch is ignored, and `refused` is told so it can be logged.
  */
 export function providerFetch(
   env: Pick<AgentEnv, "ENVIRONMENT" | "MODEL_PROVIDER" | "OPENROUTER_API_KEY">,
   refused: () => void = () => undefined,
 ): Provider | null {
   if (env.MODEL_PROVIDER === "scripted") {
-    if (String(env.ENVIRONMENT) !== "production") {
+    if (String(env.ENVIRONMENT) === "development") {
       return { apiKey: "scripted", fetcher: scriptedFetch(STUDIO_SCRIPT_FILES.map(readScript)) };
     }
     refused();
