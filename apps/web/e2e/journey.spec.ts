@@ -64,6 +64,9 @@ function studioEvents(page: Page) {
   return () => [...bySeq.entries()].sort(([a], [b]) => a - b).map(([, event]) => event);
 }
 
+// A turn runs several model calls and real writes: a CI runner can take longer than the default.
+const TURN = { timeout: 20_000 };
+
 const option = (page: Page, label: string) => page.locator(".studio-option", { hasText: label });
 
 test("a creator builds and publishes with the assistant, and a student completes a topic", async ({
@@ -110,12 +113,12 @@ test("a creator builds and publishes with the assistant, and a student completes
   await test.step("3. he asks for his app and picks «Desde cero»", async () => {
     await page.locator("#studio-input").fill(SCRIPT.opening);
     await page.locator(".studio-send").click();
-    await option(page, "Desde cero").click();
+    await option(page, "Desde cero").click(TURN);
   });
 
   const list = page.getByRole("region", { name: "Tu ruta, en orden" });
   await test.step("4. the plan appears, and his change adds a topic", async () => {
-    await expect(option(page, "Sí, constrúyela")).toBeVisible();
+    await expect(option(page, "Sí, constrúyela")).toBeVisible(TURN);
     await expect(page.locator(".studio-route-title")).toHaveText(TITLE);
     await expect(list).toContainText("Examen del módulo 2");
     // The conversation is still there after a reload.
@@ -123,12 +126,12 @@ test("a creator builds and publishes with the assistant, and a student completes
     await expect(list).toContainText("Examen del módulo 2");
     await page.locator("#studio-input").fill("agrega práctica de fracciones");
     await page.locator(".studio-send").click();
-    await expect(list).toContainText("Práctica de fracciones");
+    await expect(list).toContainText("Práctica de fracciones", TURN);
   });
 
   await test.step("5. the build runs, and the preview opens a topic as a student sees it", async () => {
     await option(page, "Sí, constrúyela").click();
-    await expect(option(page, "Se ve bien")).toBeVisible();
+    await expect(option(page, "Se ve bien")).toBeVisible(TURN);
     // Two modules and five topics: seven stations, every one built.
     await expect(list.locator("li.is-built")).toHaveCount(7);
     await expect(page.locator(".studio-note-title")).toHaveText("Partes de una fracción");
@@ -142,7 +145,7 @@ test("a creator builds and publishes with the assistant, and a student completes
 
   await test.step("6. his page: the price in Enseñar", async () => {
     await option(page, "Se ve bien").click();
-    await expect(option(page, "Listo, ya lo puse")).toBeVisible();
+    await expect(option(page, "Listo, ya lo puse")).toBeVisible(TURN);
     // §3b: until step 6's confirm card lands, the price is set in Enseñar; then it is a card in the chat.
     const teach = await context.newPage();
     await teach.goto(`${DEV}/creador`);
@@ -155,10 +158,10 @@ test("a creator builds and publishes with the assistant, and a student completes
 
   await test.step("7. the assistant asks to publish, and only his tap publishes", async () => {
     await option(page, "Listo, ya lo puse").click();
-    await expect(page.locator(".studio-confirm")).toContainText("12");
+    await expect(page.locator(".studio-confirm")).toContainText("12", TURN);
     expect(events().some((event) => event.type === "published")).toBe(false);
     await page.getByRole("button", { name: "Sí, publícala" }).click();
-    await expect(page.locator(".studio-toast")).toContainText(`Publicada en ${slug}.`);
+    await expect(page.locator(".studio-toast")).toContainText(`Publicada en ${slug}.`, TURN);
   });
 
   await test.step("8. the public page shows the route, its first module free", async () => {
