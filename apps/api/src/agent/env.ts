@@ -9,8 +9,15 @@ export interface AgentEnv extends Env {
   CREATOR_DOMAIN: string;
   /** Unset means the assistant is not switched on: it says so, and calls no model. */
   OPENROUTER_API_KEY?: string;
-  /** "scripted": the scripted provider answers instead of OpenRouter (STEP 11-prep), never in production. */
+  /**
+   * Development only (STEP 11-prep): "scripted" answers from the committed scripts, "anthropic" from
+   * Anthropic's API with ANTHROPIC_API_KEY. Refused anywhere else.
+   */
   MODEL_PROVIDER?: string;
+  /** For MODEL_PROVIDER "anthropic": the owner's key, from the Keychain through the process env. */
+  ANTHROPIC_API_KEY?: string;
+  /** Development only: "small" sends every call to the cheap tier. */
+  MODEL_TIER_OVERRIDE?: string;
   /** Each space's assistant, a month, in microcents. */
   AGENT_SPACE_MONTHLY_MICROCENTS: string;
   /** Each creator, a day, in one space, in microcents. */

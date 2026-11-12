@@ -6,6 +6,7 @@
   "type": "module",
   "scripts": {
     "dev": "wrangler dev",
+    "dev:agent:real": "tsx scripts/dev-agent-real.ts",
     "build": "wrangler deploy --dry-run --outdir dist",
     "test": "vitest run",
     "typecheck": "wrangler types --strict-vars=false && tsc --noEmit",
