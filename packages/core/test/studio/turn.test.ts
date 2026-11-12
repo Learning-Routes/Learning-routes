@@ -38,7 +38,13 @@ function fake(answers: ModelAnswer[]) {
     studio: async (call) => (call.name === "ask_to_publish" ? "shown" : "done"),
     afterWrite: async () => undefined,
     emit: (event, keep) => events.push({ event, keep }),
-    words: { failed: "FAILED", budgetOut: "OUT", tooLong: "LONG", working: () => "WORKING" },
+    words: {
+      failed: "FAILED",
+      budgetOut: "OUT",
+      paused: "PAUSED",
+      tooLong: "LONG",
+      working: () => "WORKING",
+    },
   };
   return { deps, events, models, content };
 }
@@ -193,6 +199,9 @@ describe("a turn of the assistant", () => {
     const out = fake([{ ok: false, why: "budgetOut" }]);
     await runTurn(history(), out.deps);
     expect(out.events).toEqual([{ event: { type: "said", text: "OUT" }, keep: true }]);
+    const paused = fake([{ ok: false, why: "paused" }]);
+    await runTurn([{ role: "user", content: "Hola" }], paused.deps);
+    expect(paused.events).toEqual([{ event: { type: "said", text: "PAUSED" }, keep: true }]);
     const failed = fake([{ ok: false, why: "failed" }]);
     await runTurn(history(), failed.deps);
     expect(failed.events).toEqual([{ event: { type: "said", text: "FAILED" }, keep: true }]);

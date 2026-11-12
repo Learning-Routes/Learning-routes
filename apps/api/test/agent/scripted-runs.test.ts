@@ -277,17 +277,31 @@ describe("scripted runs of the assistant, in the Workers runtime (STEP 11-prep �
     page.close();
   }, 30_000);
 
-  it("stream-fails-402: a call refused before any model saw it says so and books nothing", async () => {
+  it("stream-fails-402: out of credit, the assistant is paused, books nothing, and stays usable", async () => {
     const creator = await newCreator();
     const page = await open(server, creator);
     const ledgerBefore = await ledgerToday(server);
+    server.clearLogs();
     await page.turn(
       { type: "message", text: scriptOf("stream-fails-402").opening },
-      said(WORDS.failed),
+      said(WORDS.paused),
+    );
+    // Still there: the next message gets the same plain answer.
+    // A failed call adds no assistant message, so the script answers the same turn again.
+    await page.turn({ type: "message", text: "¿Ya hay crédito?" }, said(WORDS.paused));
+    expect(page.events.some((event) => event.type === "said" && event.text === WORDS.failed)).toBe(
+      false,
     );
     expect(await spendOf(server, creator.spaceId)).toEqual([]);
     expect(await ledgerToday(server)).toBe(ledgerBefore);
-    page.close();
+    // One line a call names the status, and nothing that points at a space, a person or a conversation.
+    const lines = server.getLogs().filter((log) => log.message.includes("provider credit out"));
+    expect(lines.length).toBeGreaterThanOrEqual(2);
+    for (const line of lines) {
+      expect(line.message).toContain('"status":402');
+      expect(line.message).not.toContain(creator.spaceId);
+      expect(line.message).not.toContain(creator.userId);
+    }
   }, 30_000);
 
   it("hostile-upload: the creator's injected words only ask; nothing is published without the tap", async () => {
