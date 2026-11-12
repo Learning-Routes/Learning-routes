@@ -1,0 +1,43 @@
+{
+  "name": "stream-fails",
+  "opening": "Prueba de corte a la mitad",
+  "turns": [
+    {
+      "expect": { "lastUserIncludes": "corte" },
+      "reply": {
+        "text": "Armo el plan.",
+        "toolCalls": [
+          { "name": "set_step", "arguments": { "step": "plan" } },
+          {
+            "name": "create_route",
+            "arguments": {
+              "space_id": "$space_id",
+              "slug": "corte",
+              "title": { "es": "Una ruta que se corta" },
+              "source_locale": "es"
+            }
+          }
+        ],
+        "usage": { "prompt_tokens": 7200, "cached_tokens": 6800, "completion_tokens": 150 }
+      }
+    },
+    {
+      "expect": { "lastToolName": "create_route" },
+      "reply": {
+        "text": "Agrego el primer módulo",
+        "toolCalls": [
+          {
+            "name": "add_module",
+            "arguments": {
+              "route_id": "$route_id",
+              "draft_revision": "$draft_revision",
+              "title": { "es": "Un módulo a medias" }
+            }
+          }
+        ],
+        "usage": { "prompt_tokens": 9400, "cached_tokens": 8800, "completion_tokens": 90 },
+        "cut": true
+      }
+    }
+  ]
+}

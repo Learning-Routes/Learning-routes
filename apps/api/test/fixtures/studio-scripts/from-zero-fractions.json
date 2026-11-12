@@ -1,0 +1,438 @@
+{
+  "name": "from-zero-fractions",
+  "opening": "Quiero mi app de fracciones",
+  "turns": [
+    {
+      "expect": { "lastUserIncludes": "fracciones" },
+      "reply": {
+        "text": "¡Qué buena idea! Armemos juntos tu ruta de fracciones.",
+        "toolCalls": [
+          { "name": "set_step", "arguments": { "step": "content" } },
+          { "name": "load_skill", "arguments": { "name": "finding-the-student" } },
+          {
+            "name": "ask_creator",
+            "arguments": {
+              "question": "¿Ya tienes material o empezamos desde cero?",
+              "is_fork": true,
+              "options": [
+                { "label": "Desde cero", "decision": "Ruta nueva" },
+                { "label": "Tengo mis apuntes", "decision": "Usar mis apuntes" }
+              ]
+            }
+          }
+        ],
+        "usage": { "prompt_tokens": 7200, "cached_tokens": 6800, "completion_tokens": 120 }
+      }
+    },
+    {
+      "expect": { "lastUserIncludes": "Desde cero" },
+      "reply": {
+        "text": "Perfecto. Armo un plan corto: dos módulos, cada uno con su examen.",
+        "toolCalls": [
+          { "name": "set_step", "arguments": { "step": "plan" } },
+          { "name": "load_skill", "arguments": { "name": "mathematics" } },
+          { "name": "load_skill", "arguments": { "name": "backwards-design" } },
+          {
+            "name": "create_route",
+            "arguments": {
+              "space_id": "$space_id",
+              "slug": "fracciones-desde-cero",
+              "title": { "es": "Fracciones desde cero" },
+              "description": { "es": "Qué es una fracción y cómo sumarlas, paso a paso." },
+              "source_locale": "es"
+            }
+          }
+        ],
+        "usage": { "prompt_tokens": 7400, "cached_tokens": 6800, "completion_tokens": 180 }
+      }
+    },
+    {
+      "expect": { "lastToolName": "create_route" },
+      "reply": {
+        "toolCalls": [
+          {
+            "name": "add_module",
+            "arguments": {
+              "route_id": "$route_id",
+              "draft_revision": "$draft_revision",
+              "title": { "es": "Qué es una fracción" }
+            }
+          }
+        ],
+        "usage": { "prompt_tokens": 9400, "cached_tokens": 8800, "completion_tokens": 90 }
+      }
+    },
+    {
+      "expect": { "lastToolName": "add_module" },
+      "reply": {
+        "toolCalls": [
+          {
+            "name": "add_lesson",
+            "arguments": {
+              "route_id": "$route_id",
+              "draft_revision": "$draft_revision",
+              "module_id": "$module_ids.0",
+              "title": { "es": "Partes de una fracción" }
+            }
+          }
+        ],
+        "usage": { "prompt_tokens": 9500, "cached_tokens": 9200, "completion_tokens": 90 }
+      }
+    },
+    {
+      "expect": { "lastToolName": "add_lesson" },
+      "reply": {
+        "toolCalls": [
+          {
+            "name": "add_lesson",
+            "arguments": {
+              "route_id": "$route_id",
+              "draft_revision": "$draft_revision",
+              "module_id": "$module_ids.0",
+              "title": { "es": "Examen del módulo 1" }
+            }
+          }
+        ],
+        "usage": { "prompt_tokens": 9600, "cached_tokens": 9300, "completion_tokens": 90 }
+      }
+    },
+    {
+      "expect": { "lastToolName": "add_lesson" },
+      "reply": {
+        "toolCalls": [
+          {
+            "name": "add_module",
+            "arguments": {
+              "route_id": "$route_id",
+              "draft_revision": "$draft_revision",
+              "title": { "es": "Sumar fracciones" }
+            }
+          }
+        ],
+        "usage": { "prompt_tokens": 9700, "cached_tokens": 9400, "completion_tokens": 80 }
+      }
+    },
+    {
+      "expect": { "lastToolName": "add_module" },
+      "reply": {
+        "toolCalls": [
+          {
+            "name": "add_lesson",
+            "arguments": {
+              "route_id": "$route_id",
+              "draft_revision": "$draft_revision",
+              "module_id": "$module_ids.1",
+              "title": { "es": "Sumar con el mismo denominador" }
+            }
+          }
+        ],
+        "usage": { "prompt_tokens": 9800, "cached_tokens": 9500, "completion_tokens": 90 }
+      }
+    },
+    {
+      "expect": { "lastToolName": "add_lesson" },
+      "reply": {
+        "text": "Este es el plan: dos módulos, cada uno termina con un examen.",
+        "toolCalls": [
+          {
+            "name": "add_lesson",
+            "arguments": {
+              "route_id": "$route_id",
+              "draft_revision": "$draft_revision",
+              "module_id": "$module_ids.1",
+              "title": { "es": "Examen del módulo 2" }
+            }
+          },
+          {
+            "name": "ask_creator",
+            "arguments": {
+              "question": "¿Te parece bien el plan?",
+              "is_fork": false,
+              "options": [{ "label": "Sí, constrúyela" }, { "label": "Quiero cambiar algo" }]
+            }
+          }
+        ],
+        "usage": { "prompt_tokens": 9900, "cached_tokens": 9600, "completion_tokens": 160 }
+      }
+    },
+    {
+      "expect": { "lastUserIncludes": "agrega práctica de fracciones" },
+      "reply": {
+        "text": "Listo: agregué una práctica después de la suma.",
+        "toolCalls": [
+          {
+            "name": "add_lesson",
+            "arguments": {
+              "route_id": "$route_id",
+              "draft_revision": "$draft_revision",
+              "module_id": "$module_ids.1",
+              "title": { "es": "Práctica de fracciones" },
+              "after": "$lesson_ids.2"
+            }
+          },
+          {
+            "name": "ask_creator",
+            "arguments": {
+              "question": "¿Construyo la ruta?",
+              "is_fork": false,
+              "options": [{ "label": "Sí, constrúyela" }, { "label": "Quiero cambiar algo" }]
+            }
+          }
+        ],
+        "usage": { "prompt_tokens": 10200, "cached_tokens": 9700, "completion_tokens": 150 }
+      }
+    },
+    {
+      "expect": { "lastUserIncludes": "Sí, constrúyela" },
+      "reply": {
+        "text": "¡Manos a la obra! Escribo tema por tema.",
+        "toolCalls": [
+          { "name": "set_step", "arguments": { "step": "build" } },
+          { "name": "load_skill", "arguments": { "name": "mathematics" } },
+          { "name": "load_skill", "arguments": { "name": "concept-block" } },
+          { "name": "load_skill", "arguments": { "name": "example-block" } },
+          { "name": "load_skill", "arguments": { "name": "check-block" } },
+          { "name": "load_skill", "arguments": { "name": "answer-check" } },
+          {
+            "name": "add_blocks",
+            "arguments": {
+              "route_id": "$route_id",
+              "draft_revision": "$draft_revision",
+              "lesson_id": "$lesson_ids.0",
+              "blocks": [
+                {
+                  "type": "concept",
+                  "body": {
+                    "es": "Una fracción nombra partes iguales de un entero. El número de abajo, el denominador, dice en cuántas partes iguales se divide. El de arriba, el numerador, dice cuántas tomas."
+                  }
+                },
+                {
+                  "type": "example",
+                  "body": {
+                    "es": "Una pizza cortada en 8 partes iguales: si comes 3, comiste 3/8 de la pizza."
+                  }
+                },
+                {
+                  "type": "check",
+                  "question": { "es": "En 3/8, ¿qué dice el 8?" },
+                  "options": [
+                    { "label": { "es": "Cuántas partes tomas" }, "correct": false },
+                    {
+                      "label": { "es": "En cuántas partes iguales se divide el entero" },
+                      "correct": true
+                    },
+                    { "label": { "es": "Cuántas pizzas hay" }, "correct": false }
+                  ],
+                  "explanation": { "es": "El denominador cuenta las partes iguales del entero." }
+                }
+              ]
+            }
+          }
+        ],
+        "usage": { "prompt_tokens": 10400, "cached_tokens": 9800, "completion_tokens": 820 }
+      }
+    },
+    {
+      "expect": { "lastToolName": "add_blocks" },
+      "reply": {
+        "toolCalls": [
+          {
+            "name": "add_blocks",
+            "arguments": {
+              "route_id": "$route_id",
+              "draft_revision": "$draft_revision",
+              "lesson_id": "$lesson_ids.1",
+              "blocks": [
+                {
+                  "type": "check",
+                  "question": {
+                    "es": "Una barra tiene 4 partes iguales. ¿Qué fracción es 1 parte?"
+                  },
+                  "options": [
+                    { "label": { "es": "1/4" }, "correct": true },
+                    { "label": { "es": "4/1" }, "correct": false },
+                    { "label": { "es": "1/3" }, "correct": false }
+                  ]
+                },
+                {
+                  "type": "check",
+                  "question": { "es": "¿Cuál es el numerador de 5/6?" },
+                  "options": [
+                    { "label": { "es": "5" }, "correct": true },
+                    { "label": { "es": "6" }, "correct": false },
+                    { "label": { "es": "11" }, "correct": false }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "usage": { "prompt_tokens": 11200, "cached_tokens": 10400, "completion_tokens": 560 }
+      }
+    },
+    {
+      "expect": { "lastToolName": "add_blocks" },
+      "reply": {
+        "toolCalls": [
+          {
+            "name": "add_blocks",
+            "arguments": {
+              "route_id": "$route_id",
+              "draft_revision": "$draft_revision",
+              "lesson_id": "$lesson_ids.2",
+              "blocks": [
+                {
+                  "type": "concept",
+                  "body": {
+                    "es": "Si dos fracciones tienen el mismo denominador, sumas los numeradores y dejas el denominador igual."
+                  }
+                },
+                {
+                  "type": "example",
+                  "body": { "es": "1/5 + 2/5 = 3/5: un quinto más dos quintos son tres quintos." }
+                },
+                {
+                  "type": "check",
+                  "question": { "es": "¿Cuánto es 2/7 + 3/7?" },
+                  "options": [
+                    { "label": { "es": "5/14" }, "correct": false },
+                    { "label": { "es": "5/7" }, "correct": true },
+                    { "label": { "es": "6/7" }, "correct": false }
+                  ],
+                  "explanation": {
+                    "es": "Se suman los numeradores: 2 + 3 = 5. El denominador sigue siendo 7."
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "usage": { "prompt_tokens": 11900, "cached_tokens": 11200, "completion_tokens": 760 }
+      }
+    },
+    {
+      "expect": { "lastToolName": "add_blocks" },
+      "reply": {
+        "toolCalls": [
+          {
+            "name": "add_blocks",
+            "arguments": {
+              "route_id": "$route_id",
+              "draft_revision": "$draft_revision",
+              "lesson_id": "$lesson_ids.4",
+              "blocks": [
+                {
+                  "type": "check",
+                  "question": { "es": "¿Cuánto es 1/4 + 2/4?" },
+                  "options": [
+                    { "label": { "es": "3/4" }, "correct": true },
+                    { "label": { "es": "3/8" }, "correct": false },
+                    { "label": { "es": "2/4" }, "correct": false }
+                  ]
+                },
+                {
+                  "type": "check",
+                  "question": { "es": "¿Cuánto es 3/9 + 4/9?" },
+                  "options": [
+                    { "label": { "es": "7/18" }, "correct": false },
+                    { "label": { "es": "7/9" }, "correct": true },
+                    { "label": { "es": "1/9" }, "correct": false }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "usage": { "prompt_tokens": 12600, "cached_tokens": 11900, "completion_tokens": 540 }
+      }
+    },
+    {
+      "expect": { "lastToolName": "add_blocks" },
+      "reply": {
+        "toolCalls": [
+          {
+            "name": "add_blocks",
+            "arguments": {
+              "route_id": "$route_id",
+              "draft_revision": "$draft_revision",
+              "lesson_id": "$lesson_ids.3",
+              "blocks": [
+                {
+                  "type": "check",
+                  "question": { "es": "¿Cuánto es 2/6 + 1/6?" },
+                  "options": [
+                    { "label": { "es": "3/12" }, "correct": false },
+                    { "label": { "es": "3/6" }, "correct": true },
+                    { "label": { "es": "2/6" }, "correct": false }
+                  ]
+                },
+                {
+                  "type": "check",
+                  "question": { "es": "Al sumar 1/3 + 1/3, ¿qué pasa con el denominador?" },
+                  "options": [
+                    { "label": { "es": "Se suma y queda 6" }, "correct": false },
+                    { "label": { "es": "Se queda igual: 3" }, "correct": true },
+                    { "label": { "es": "Se multiplica y queda 9" }, "correct": false }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "usage": { "prompt_tokens": 13300, "cached_tokens": 12600, "completion_tokens": 560 }
+      }
+    },
+    {
+      "expect": { "lastToolName": "add_blocks" },
+      "reply": {
+        "text": "Tu ruta está lista. Mira la primera lección como la verá tu estudiante.",
+        "toolCalls": [
+          { "name": "set_step", "arguments": { "step": "review" } },
+          {
+            "name": "show_lesson",
+            "arguments": { "route_id": "$route_id", "lesson_id": "$lesson_ids.0" }
+          },
+          {
+            "name": "ask_creator",
+            "arguments": {
+              "question": "¿Cómo la ves?",
+              "is_fork": false,
+              "options": [{ "label": "Se ve bien" }, { "label": "Cambiar algo" }]
+            }
+          }
+        ],
+        "usage": { "prompt_tokens": 14000, "cached_tokens": 13300, "completion_tokens": 140 }
+      }
+    },
+    {
+      "expect": { "lastUserIncludes": "Se ve bien" },
+      "reply": {
+        "text": "Ahora tu página. Pon el precio en Enseñar, por ejemplo $12, con el módulo 1 gratis para que te conozcan.",
+        "toolCalls": [
+          { "name": "set_step", "arguments": { "step": "page" } },
+          { "name": "load_skill", "arguments": { "name": "pricing-ranges" } },
+          {
+            "name": "ask_creator",
+            "arguments": {
+              "question": "¿Me avisas cuando lo pongas?",
+              "is_fork": false,
+              "options": [{ "label": "Listo, ya lo puse" }, { "label": "Más tarde" }]
+            }
+          }
+        ],
+        "usage": { "prompt_tokens": 8100, "cached_tokens": 7600, "completion_tokens": 130 }
+      }
+    },
+    {
+      "expect": { "lastUserIncludes": "Listo, ya lo puse" },
+      "reply": {
+        "text": "Todo listo para publicar.",
+        "toolCalls": [
+          { "name": "set_step", "arguments": { "step": "publish" } },
+          { "name": "ask_to_publish", "arguments": { "route_id": "$route_id" } }
+        ],
+        "usage": { "prompt_tokens": 8300, "cached_tokens": 8100, "completion_tokens": 70 }
+      }
+    }
+  ]
+}

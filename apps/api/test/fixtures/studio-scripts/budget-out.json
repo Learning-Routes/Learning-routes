@@ -1,0 +1,81 @@
+{
+  "name": "budget-out",
+  "opening": "Quiero una ruta corta de geometría",
+  "turns": [
+    {
+      "expect": { "lastUserIncludes": "geometría" },
+      "reply": {
+        "text": "Armo el plan.",
+        "toolCalls": [
+          { "name": "set_step", "arguments": { "step": "plan" } },
+          {
+            "name": "create_route",
+            "arguments": {
+              "space_id": "$space_id",
+              "slug": "geometria-corta",
+              "title": { "es": "Geometría corta" },
+              "source_locale": "es"
+            }
+          }
+        ],
+        "usage": { "prompt_tokens": 7200, "cached_tokens": 6800, "completion_tokens": 150 }
+      }
+    },
+    {
+      "expect": { "lastToolName": "create_route" },
+      "reply": {
+        "toolCalls": [
+          {
+            "name": "add_module",
+            "arguments": {
+              "route_id": "$route_id",
+              "draft_revision": "$draft_revision",
+              "title": { "es": "Ángulos" }
+            }
+          }
+        ],
+        "usage": { "prompt_tokens": 9400, "cached_tokens": 8800, "completion_tokens": 90 }
+      }
+    },
+    {
+      "expect": { "lastToolName": "add_module" },
+      "reply": {
+        "toolCalls": [
+          {
+            "name": "add_lesson",
+            "arguments": {
+              "route_id": "$route_id",
+              "draft_revision": "$draft_revision",
+              "module_id": "$module_ids.0",
+              "title": { "es": "Qué es un ángulo" }
+            }
+          },
+          { "name": "set_step", "arguments": { "step": "build" } }
+        ],
+        "usage": { "prompt_tokens": 9500, "cached_tokens": 8800, "completion_tokens": 90 }
+      }
+    },
+    {
+      "expect": { "lastToolName": "set_step" },
+      "reply": {
+        "toolCalls": [
+          {
+            "name": "add_blocks",
+            "arguments": {
+              "route_id": "$route_id",
+              "draft_revision": "$draft_revision",
+              "lesson_id": "$lesson_ids.0",
+              "blocks": [
+                {
+                  "type": "concept",
+                  "body": { "es": "Un ángulo es la abertura entre dos rectas que se cruzan." }
+                }
+              ]
+            }
+          }
+        ],
+        "usage": { "prompt_tokens": 9800, "cached_tokens": 9500, "completion_tokens": 300 }
+      }
+    }
+  ]
+}
