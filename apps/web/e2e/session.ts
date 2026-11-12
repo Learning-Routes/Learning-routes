@@ -10,15 +10,15 @@ const APP = "http://localhost:4174";
 const WAIT_MS = 10_000;
 const POLL_MS = 100;
 const LOG_LINE = /\{"message":"sign-in link[^\n]*\}/g;
+const INVITATION_LINE = /\{"message":"invitation[^\n]*\}/g;
 
 export const newAddress = (who: string) => `${who}-${crypto.randomUUID()}@example.com`;
 
-/** The newest link the dev sender wrote for this address. */
-export async function linkFor(email: string): Promise<string> {
+/** The newest link of this kind the dev sender wrote for this address. */
+async function newestLink(lines: RegExp, email: string): Promise<string> {
   const deadline = Date.now() + WAIT_MS;
   while (Date.now() < deadline) {
-    const lines = readFileSync(API_LOG, "utf8").match(LOG_LINE) ?? [];
-    const found = lines
+    const found = (readFileSync(API_LOG, "utf8").match(lines) ?? [])
       .map((line) => JSON.parse(line) as { email: string; url: string })
       .findLast((entry) => entry.email === email);
     if (found) {
@@ -28,6 +28,12 @@ export async function linkFor(email: string): Promise<string> {
   }
   throw new Error("the dev sender wrote no link for this address");
 }
+
+/** The newest sign-in link the dev sender wrote for this address. */
+export const linkFor = (email: string) => newestLink(LOG_LINE, email);
+
+/** The newest invitation the dev sender wrote for this address. */
+export const invitationFor = (email: string) => newestLink(INVITATION_LINE, email);
 
 /** Signs a browser context in through the API alone, for a screen that needs a session. */
 export async function signInContext(context: BrowserContext, email: string) {

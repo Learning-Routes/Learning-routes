@@ -203,6 +203,19 @@ describe("scripted runs of the assistant, in the Workers runtime (STEP 11-prep Â
     expect(rows.map((row) => row.microcents)).toEqual(costOf(rows));
     const total = rows.reduce((sum, row) => sum + row.microcents, 0);
     expect((await ledgerToday(server)) - ledgerBefore).toBe(total);
+    // One ledger line per add: the day, what was added and the new total, and nothing else.
+    const added = server
+      .getLogs()
+      .filter((log) => log.message.includes('"ledger added"'))
+      .map(
+        (log) => JSON.parse(log.message.slice(log.message.indexOf("{"))) as Record<string, unknown>,
+      );
+    const mine = added.slice(-rows.length);
+    for (const line of mine) {
+      expect(Object.keys(line).sort()).toEqual(["day", "message", "microcents", "total"]);
+    }
+    expect(mine.map((line) => line.microcents)).toEqual(rows.map((row) => row.microcents));
+    expect(mine.at(-1)?.total).toBe(await ledgerToday(server));
 
     // Skills: at most four loaded at once.
     const storage = await server
