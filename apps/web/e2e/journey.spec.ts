@@ -139,7 +139,8 @@ test("a creator builds and publishes with the assistant, and a student completes
     await expect(list.locator("li.is-built")).toHaveCount(7);
     await expect(page.locator(".studio-note-title")).toHaveText("Partes de una fracción");
     const preview = await context.newPage();
-    await preview.goto(`${DEV}${await page.locator(".studio-note-link").getAttribute("href")}`);
+    // The preview address is absolute: the draft's own page on the platform.
+    await preview.goto((await page.locator(".studio-note-link").getAttribute("href")) ?? "");
     await expect(
       preview.getByText("Una fracción nombra partes iguales de un entero."),
     ).toBeVisible();
