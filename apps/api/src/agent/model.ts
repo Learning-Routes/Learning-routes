@@ -164,6 +164,11 @@ export function modelCall(
       provider.fetcher,
     );
     await meter(env, book, model, streamed, decision.estimateMicrocents);
+    if (!streamed.ok && streamed.isCreditOut) {
+      // No ids: which space hit it says nothing about the fix, which is the platform's credit.
+      console.error(JSON.stringify({ message: "provider credit out", status: streamed.status }));
+      return { ok: false, why: "paused" };
+    }
     if (!streamed.ok) {
       console.error(JSON.stringify({ message: "studio call failed", status: streamed.status }));
       return { ok: false, why: "failed" };

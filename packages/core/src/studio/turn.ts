@@ -41,8 +41,11 @@ const TIERS: Record<StudioStep, ModelId> = {
 
 export type ModelAnswer =
   | { ok: true; content: string; toolCalls: ToolCall[] }
-  /** budgetOut: the space's month is spent; failed: the call did not happen or broke. */
-  | { ok: false; why: "budgetOut" | "failed" };
+  /**
+   * budgetOut: the space's month is spent; paused: the provider's credit or key is out, which is
+   * the platform's to fix; failed: the call did not happen or broke.
+   */
+  | { ok: false; why: "budgetOut" | "paused" | "failed" };
 
 export interface TurnDeps {
   step: StudioStep;
@@ -64,6 +67,7 @@ export interface TurnDeps {
   words: {
     failed: string;
     budgetOut: string;
+    paused: string;
     tooLong: string;
     working: (tool: ContentTool) => string;
   };

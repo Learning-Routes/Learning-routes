@@ -82,8 +82,20 @@ describe("the assistant's model calls", () => {
     expect(added).toEqual([recorded[0]?.microcents]);
   });
 
+  it("pause, with one plain log line, when the provider is out of credit; fail on anything else", async () => {
+    const errors = vi.spyOn(console, "error").mockImplementation(() => undefined);
+    answerWith('{"error":{"code":402,"message":"Insufficient credits"}}', 402);
+    expect(await ask(setUp().call)).toEqual({ ok: false, why: "paused" });
+    expect(errors.mock.calls.map((call) => JSON.parse(String(call[0])))).toEqual([
+      { message: "provider credit out", status: 402 },
+    ]);
+    answerWith("overloaded", 503);
+    expect(await ask(setUp().call)).toEqual({ ok: false, why: "failed" });
+    errors.mockRestore();
+  });
+
   it("meter nothing when OpenRouter refused the call before any model saw it", async () => {
-    answerWith("no credit", 402);
+    answerWith("bad gateway", 502);
     const { call, recorded, added } = setUp();
     expect(await ask(call)).toEqual({ ok: false, why: "failed" });
     expect(recorded).toEqual([]);

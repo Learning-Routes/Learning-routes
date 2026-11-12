@@ -256,10 +256,10 @@ export class Studio extends Agent<AgentEnv> implements StudioPlace {
       studio: effects.studio,
       afterWrite: effects.afterWrite,
       emit: (event: StudioEvent, keep: boolean) => this.emit(seat.conversationId, event, keep),
+      // failed, paused and tooLong as written; budgetOut is "not on" when no one answers.
       words: {
-        failed: words.failed,
+        ...words,
         budgetOut: provider ? words.budgetOut : words.notOn,
-        tooLong: words.tooLong,
         working: (tool: ContentTool) =>
           Object.hasOwn(words.working, tool)
             ? words.working[tool as WorkingOn]

@@ -212,12 +212,14 @@ describe("the scripted model provider (STEP 11-prep §A1)", () => {
       status: 502,
       usage: null,
       reached: true,
+      isCreditOut: false,
     });
     expect((await stream(cut, [{ role: "user", content: "sin crédito" }])).streamed).toEqual({
       ok: false,
       status: 402,
       usage: null,
       reached: false,
+      isCreditOut: true,
     });
   });
 

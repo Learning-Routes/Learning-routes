@@ -133,7 +133,40 @@ describe("streaming from OpenRouter", () => {
       () => undefined,
       (async () => new Response("no", { status: 402 })) as unknown as typeof fetch,
     );
-    expect(refused).toEqual({ ok: false, status: 402, usage: null, reached: false });
+    expect(refused).toEqual({
+      ok: false,
+      status: 402,
+      usage: null,
+      reached: false,
+      isCreditOut: true,
+    });
+  });
+
+  it("tells a provider out of credit, or with a bad or spent key, from any other refusal", async () => {
+    const answer = (status: number, body: unknown = { error: { code: status, message: "no" } }) =>
+      streamFromOpenRouter(
+        allowed(),
+        "k",
+        () => undefined,
+        (async () => new Response(JSON.stringify(body), { status })) as unknown as typeof fetch,
+      );
+    const keyLimit = {
+      error: {
+        code: 403,
+        message: "Key limit exceeded",
+        metadata: { limit_source: "openrouter_key_limit" },
+      },
+    };
+    const flagged = {
+      error: { code: 403, message: "flagged", metadata: { reasons: ["violence"] } },
+    };
+    expect(await answer(402)).toMatchObject({ isCreditOut: true });
+    expect(await answer(401)).toMatchObject({ isCreditOut: true });
+    expect(await answer(403, keyLimit)).toMatchObject({ isCreditOut: true });
+    expect(await answer(403, flagged)).toMatchObject({ isCreditOut: false });
+    expect(await answer(403, "not json")).toMatchObject({ isCreditOut: false });
+    expect(await answer(500)).toMatchObject({ isCreditOut: false });
+    expect(await answer(429)).toMatchObject({ isCreditOut: false });
   });
 
   it("counts a broken stream as a call that reached a model, so it is still metered", async () => {
@@ -143,7 +176,13 @@ describe("streaming from OpenRouter", () => {
       () => undefined,
       sse([data({ choices: [{ delta: { content: "Ho" } }] }), "data: {not json\n"]),
     );
-    expect(broken).toEqual({ ok: false, status: 502, usage: null, reached: true });
+    expect(broken).toEqual({
+      ok: false,
+      status: 502,
+      usage: null,
+      reached: true,
+      isCreditOut: false,
+    });
   });
 
   it("gives up on a stream that takes too long", async () => {
