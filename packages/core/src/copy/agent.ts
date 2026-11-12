@@ -37,6 +37,8 @@ export interface AgentText {
   notOn: string;
   /** A model call failed on our side. */
   failed: string;
+  /** The model provider's credit or key is out: the assistant waits, the conversation stays. */
+  paused: string;
   /** A turn ran out of steps before it finished. */
   tooLong: string;
   declined: string;
@@ -77,6 +79,8 @@ export const AGENT_TEXT: Record<LocaleCode, AgentText> = {
       "El asistente todavía no está encendido. Mientras tanto, puedes armar tu ruta desde Enseñar o con tu propio asistente.",
     failed:
       "No pude responder esta vez, por un problema nuestro. Lo que hicimos está guardado: vuelve a escribirme.",
+    paused:
+      "Tu asistente está en pausa por un momento. Tu conversación queda guardada; vuelve a intentarlo en un rato.",
     tooLong: "Me detuve aquí para no hacer demasiado de una vez. Lo hecho está guardado. ¿Sigo?",
     declined: "De acuerdo, queda como borrador. Cuando quieras, la publicamos.",
     published: "Publicada. Ya está en {address}.",
@@ -112,6 +116,8 @@ export const AGENT_TEXT: Record<LocaleCode, AgentText> = {
       "The assistant is not switched on yet. Meanwhile, you can build your route in Teach or with your own assistant.",
     failed:
       "I couldn't answer this time, because of a problem on our side. What we did is saved: write to me again.",
+    paused:
+      "Your assistant is paused for a moment. Your conversation is saved; try again in a little while.",
     tooLong:
       "I stopped here so as not to do too much at once. What's done is saved. Shall I go on?",
     declined: "Fine, it stays a draft. We can publish it whenever you want.",
@@ -148,6 +154,8 @@ export const AGENT_TEXT: Record<LocaleCode, AgentText> = {
       "O assistente ainda não está ligado. Enquanto isso, você pode montar a sua rota em Ensinar ou com o seu próprio assistente.",
     failed:
       "Não consegui responder desta vez, por um problema nosso. O que fizemos está salvo: escreva de novo.",
+    paused:
+      "O seu assistente está em pausa por um momento. A sua conversa fica salva; tente de novo daqui a pouco.",
     tooLong: "Parei aqui para não fazer demais de uma vez. O que foi feito está salvo. Continuo?",
     declined: "Certo, fica como rascunho. Quando quiser, publicamos.",
     published: "Publicada. Já está em {address}.",
@@ -183,6 +191,8 @@ export const AGENT_TEXT: Record<LocaleCode, AgentText> = {
       "L'assistant n'est pas encore activé. En attendant, vous pouvez créer votre parcours dans Enseigner ou avec votre propre assistant.",
     failed:
       "Je n'ai pas pu répondre cette fois, à cause d'un problème de notre côté. Ce que nous avons fait est enregistré : écrivez-moi à nouveau.",
+    paused:
+      "Votre assistant est en pause pour un moment. Votre conversation est enregistrée ; réessayez dans un moment.",
     tooLong:
       "Je m'arrête ici pour ne pas trop en faire d'un coup. Ce qui est fait est enregistré. Je continue ?",
     declined: "D'accord, il reste un brouillon. Nous le publierons quand vous voudrez.",
@@ -219,6 +229,8 @@ export const AGENT_TEXT: Record<LocaleCode, AgentText> = {
       "L'assistente non è ancora acceso. Nel frattempo puoi costruire il tuo percorso in Insegnare o con il tuo assistente.",
     failed:
       "Questa volta non sono riuscito a rispondere, per un problema nostro. Ciò che abbiamo fatto è salvato: scrivimi di nuovo.",
+    paused:
+      "Il tuo assistente è in pausa per un momento. La tua conversazione resta salvata; riprova tra poco.",
     tooLong: "Mi fermo qui per non fare troppo in una volta. Ciò che è fatto è salvato. Continuo?",
     declined: "D'accordo, resta una bozza. La pubblichiamo quando vuoi.",
     published: "Pubblicato. È su {address}.",

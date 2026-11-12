@@ -69,9 +69,34 @@ export type Streamed =
   | { ok: true; content: string; toolCalls: ToolCall[]; usage: Settled | null }
   /**
    * usage is what the failed call cost, when OpenRouter said. reached: whether it got to a model,
-   * so it may have cost something even without a usage.
+   * so it may have cost something even without a usage. isCreditOut: OpenRouter refused it for
+   * credit, or for a bad or spent key, so it is no fault of ours and will pass once that is fixed.
    */
-  | { ok: false; status: number; usage: Settled | null; reached: boolean };
+  | { ok: false; status: number; usage: Settled | null; reached: boolean; isCreditOut: boolean };
+
+/** A key's own spending limit, or a budget above it: OpenRouter refuses these with 403. */
+const LIMITS = [
+  "openrouter_key_limit",
+  "openrouter_guardrail_budget",
+  "openrouter_workspace_budget",
+];
+
+// 402 is out of credit and 401 a bad or disabled key. A 403 is a spent limit only when its body
+// names one; otherwise it is a guardrail or moderation block, which no credit fixes.
+async function isCreditOut(response: Response): Promise<boolean> {
+  if (response.status === 402 || response.status === 401) {
+    return true;
+  }
+  if (response.status !== 403) {
+    return false;
+  }
+  try {
+    const body = (await response.json()) as { error?: { metadata?: { limit_source?: unknown } } };
+    return LIMITS.includes(String(body.error?.metadata?.limit_source));
+  } catch {
+    return false;
+  }
+}
 
 /** The longest a streamed answer may take, start to end. */
 const STREAM_MS = 90_000;
@@ -123,10 +148,16 @@ export async function streamFromOpenRouter(
   try {
     response = await sendToOpenRouter(allowed, apiKey, fetcher, AbortSignal.timeout(STREAM_MS));
   } catch {
-    return { ok: false, status: 504, usage: null, reached: false };
+    return { ok: false, status: 504, usage: null, reached: false, isCreditOut: false };
   }
   if (!(response.ok && response.body)) {
-    return { ok: false, status: response.status, usage: null, reached: false };
+    return {
+      ok: false,
+      status: response.status,
+      usage: null,
+      reached: false,
+      isCreditOut: await isCreditOut(response),
+    };
   }
   const answer = { content: "", usage: null as Settled | null, calls: [] as ToolCall[] };
   try {
@@ -135,13 +166,13 @@ export async function streamFromOpenRouter(
         answer.usage = settle({ usage: chunk.usage });
       }
       if (chunk.error) {
-        return { ok: false, status: 502, usage: answer.usage, reached: true };
+        return { ok: false, status: 502, usage: answer.usage, reached: true, isCreditOut: false };
       }
       take(answer, chunk, onText);
     }
   } catch {
     // A broken event or a timeout mid-stream: the call reached a model all the same.
-    return { ok: false, status: 502, usage: answer.usage, reached: true };
+    return { ok: false, status: 502, usage: answer.usage, reached: true, isCreditOut: false };
   }
   return {
     ok: true,
