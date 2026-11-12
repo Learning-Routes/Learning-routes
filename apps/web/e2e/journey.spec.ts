@@ -108,6 +108,8 @@ test("a creator builds and publishes with the assistant, and a student completes
     await page.getByRole("button", { name: "Crear mi espacio" }).click();
     await expect(page).toHaveURL(`${DEV}/creador/asistente`);
     await expect(page.getByText("Paso 1 de 7: Conocerte")).toBeVisible();
+    // Typed before hydration, the words are dropped and the send button sends the example instead.
+    await expect(page.locator("html")).toHaveAttribute("data-hydrated", "true");
   });
 
   await test.step("3. he asks for his app and picks «Desde cero»", async () => {
@@ -124,6 +126,7 @@ test("a creator builds and publishes with the assistant, and a student completes
     // The conversation is still there after a reload.
     await page.reload();
     await expect(list).toContainText("Examen del módulo 2");
+    await expect(page.locator("html")).toHaveAttribute("data-hydrated", "true");
     await page.locator("#studio-input").fill("agrega práctica de fracciones");
     await page.locator(".studio-send").click();
     await expect(list).toContainText("Práctica de fracciones", TURN);
@@ -270,6 +273,18 @@ test("a creator builds and publishes with the assistant, and a student completes
       CALLS.filter((call) => call.name === "load_skill").map((call) => call.arguments.name),
     );
   });
+});
+
+// A failed journey keeps the agent's own lines: what each call cost, and why one failed.
+// biome-ignore lint/correctness/noEmptyPattern: Playwright reads fixtures from this pattern, and needs none here.
+test.afterEach(async ({}, testInfo) => {
+  if (testInfo.status !== testInfo.expectedStatus) {
+    const lines = readFileSync(AGENT_LOG, "utf8").match(/\{"message":"[^\n]*\}/g) ?? [];
+    await testInfo.attach("agent-log", {
+      body: lines.slice(-200).join("\n"),
+      contentType: "text/plain",
+    });
+  }
 });
 
 // STEP 11: learning progress is saved. Then this asserts the student's topic 1 is kept.
