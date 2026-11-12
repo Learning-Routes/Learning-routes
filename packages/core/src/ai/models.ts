@@ -54,3 +54,28 @@ export type ModelId = keyof typeof MODELS;
 export function isAllowedModel(id: string): id is ModelId {
   return Object.hasOwn(MODELS, id);
 }
+
+/**
+ * What a call's usage costs at the table's prices, in microcents, rounded up: fresh input at the
+ * input price, cache reads at theirs, output at the output price. The scripted provider (STEP 11-prep)
+ * reports this as its cost, so its runs book realistic numbers.
+ */
+export function costOfUsage(
+  model: ModelId,
+  usage: { promptTokens: number; cachedTokens: number; completionTokens: number },
+): number {
+  const { promptTokens, cachedTokens, completionTokens } = usage;
+  const counts = [promptTokens, cachedTokens, completionTokens];
+  if (
+    !counts.every((count) => Number.isSafeInteger(count) && count >= 0) ||
+    cachedTokens > promptTokens
+  ) {
+    throw new RangeError("a usage with negative, fractional or more cached than sent tokens");
+  }
+  const prices = MODELS[model];
+  const perMillion =
+    (promptTokens - cachedTokens) * prices.input +
+    cachedTokens * prices.cacheRead +
+    completionTokens * prices.output;
+  return Math.ceil(perMillion / 1_000_000);
+}
