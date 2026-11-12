@@ -1,0 +1,5 @@
+{
+  "name": "stream-fails-402",
+  "opening": "Prueba sin crédito",
+  "turns": [{ "expect": { "lastUserIncludes": "crédito" }, "reply": { "status": 402 } }]
+}

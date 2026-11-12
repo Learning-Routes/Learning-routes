@@ -62,3 +62,20 @@ describe("the API Worker's configuration (Platform STEP 2 §1.3)", () => {
     expect(config.observability.logs.invocation_logs).toBe(false);
   });
 });
+
+describe("the assistant Worker's configuration (STEP 11-prep §A1)", () => {
+  it("never names MODEL_PROVIDER: production has only the real provider, or none", () => {
+    // The file's top-level vars are production's; it has no other environment.
+    const text = readFileSync(new URL("../wrangler.agent.jsonc", import.meta.url), "utf8");
+    expect((parseJsonc(text) as { env?: unknown }).env).toBeUndefined();
+    expect(text).not.toContain("MODEL_PROVIDER");
+  });
+
+  it("caps each space's assistant at 12 model calls a minute", () => {
+    const agent = parseJsonc(
+      readFileSync(new URL("../wrangler.agent.jsonc", import.meta.url), "utf8"),
+    ) as { vars: Record<string, string> };
+    expect(agent.vars.AGENT_CALLS_PER_MINUTE).toBe("12");
+    expect(agent.vars.ENVIRONMENT).toBe("production");
+  });
+});

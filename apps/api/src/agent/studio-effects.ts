@@ -104,15 +104,15 @@ export class Effects {
       return;
     }
     const row = this.agent.conversation(this.seat.conversationId);
-    // The plan the creator first saw: lessons added after it are marked new on their map.
+    // The plan the creator was first asked about: lessons added after it are marked new on their map.
     const shown =
       row.route_id === routeId && row.shown_lessons
         ? new Set(JSON.parse(row.shown_lessons) as string[])
         : null;
-    if (row.route_id !== routeId || !row.shown_lessons) {
+    if (row.route_id !== routeId) {
       this.agent.setConversation(this.seat.conversationId, {
         route_id: routeId,
-        shown_lessons: JSON.stringify(draft.lessons.map((lesson) => lesson.id)),
+        shown_lessons: null,
       });
     }
     this.emit({ type: "planned", ...plannedOf(draft, this.seat.locale, shown) });
@@ -123,6 +123,7 @@ export class Effects {
     const id = this.seat.conversationId;
     switch (call.name) {
       case "ask_creator":
+        await this.planShown();
         this.emit({ type: "said", text: askText(said, call.question) });
         this.emit({ type: "asked", options: call.options, isFork: call.isFork });
         this.agent.setConversation(id, { options: JSON.stringify(call.options) });
@@ -154,6 +155,24 @@ export class Effects {
         return this.askToPublish(call.routeId);
     }
   };
+
+  /**
+   * The first question after the route has lessons is when the creator sees its plan: those lessons
+   * are the plan as shown, and any added later is new. A route with no lessons yet has no plan to show.
+   */
+  private async planShown() {
+    const row = this.agent.conversation(this.seat.conversationId);
+    if (!row.route_id || row.shown_lessons) {
+      return;
+    }
+    const routeId = row.route_id;
+    const draft = await this.db((db, caller) => this.draft(db, caller, routeId));
+    if (draft && draft.lessons.length > 0) {
+      this.agent.setConversation(this.seat.conversationId, {
+        shown_lessons: JSON.stringify(draft.lessons.map((lesson) => lesson.id)),
+      });
+    }
+  }
 
   private async showLesson(routeId: string, lessonId: string) {
     const { env } = this;

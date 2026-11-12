@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { budgetOf, CALLS_PER_MINUTE, limitsOf } from "../../src/studio/budget";
+import { budgetOf, limitsOf } from "../../src/studio/budget";
 
 const MONTHLY = 5_000_000;
 
@@ -23,14 +23,15 @@ describe("the assistant's limits, from config", () => {
     spaceMonthly: "5000000",
     userDaily: "2000000",
     daily: "20000000",
+    perMinute: "12",
   };
 
-  it("reads the three numbers", () => {
+  it("reads the four numbers", () => {
     expect(limitsOf(given)).toEqual({
       spaceMonthly: 5_000_000,
       userDaily: 2_000_000,
       daily: 20_000_000,
-      perMinute: CALLS_PER_MINUTE,
+      perMinute: 12,
     });
   });
 
@@ -39,5 +40,7 @@ describe("the assistant's limits, from config", () => {
     expect(limitsOf({ ...given, userDaily: "2e6" })).toBeNull();
     expect(limitsOf({ ...given, spaceMonthly: "0" })).toBeNull();
     expect(limitsOf({ ...given, spaceMonthly: "-5" })).toBeNull();
+    expect(limitsOf({ ...given, perMinute: undefined })).toBeNull();
+    expect(limitsOf({ ...given, perMinute: "0" })).toBeNull();
   });
 });

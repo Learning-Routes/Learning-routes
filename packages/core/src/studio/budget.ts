@@ -13,9 +13,6 @@ export function budgetOf(spentThisMonth: number, monthly: number): Budget {
   return monthly - spentThisMonth <= monthly * LOW_SHARE ? "low" : "ok";
 }
 
-/** Model calls a space's assistant may make in a minute: a flood of messages cannot outrun it. */
-export const CALLS_PER_MINUTE = 12;
-
 export interface AgentLimits {
   /** Each space's assistant, a month. */
   spaceMonthly: number;
@@ -23,23 +20,30 @@ export interface AgentLimits {
   userDaily: number;
   /** Every assistant together, a day. */
   daily: number;
+  /** Model calls a space's assistant may make in a minute: a flood of messages cannot outrun it. */
   perMinute: number;
 }
 
 const WHOLE = /^[1-9]\d*$/;
 
-/** The limits from the agent's config, in microcents; null when any is missing or malformed. */
+/** The limits from the agent's config, in microcents and calls; null when any is missing or malformed. */
 export function limitsOf(given: {
   spaceMonthly: string | undefined;
   userDaily: string | undefined;
   daily: string | undefined;
+  perMinute: string | undefined;
 }): AgentLimits | null {
-  const values = [given.spaceMonthly, given.userDaily, given.daily];
+  const values = [given.spaceMonthly, given.userDaily, given.daily, given.perMinute];
   if (!values.every((value) => value !== undefined && WHOLE.test(value))) {
     return null;
   }
-  const [spaceMonthly, userDaily, daily] = values.map(Number) as [number, number, number];
-  return [spaceMonthly, userDaily, daily].every(Number.isSafeInteger)
-    ? { spaceMonthly, userDaily, daily, perMinute: CALLS_PER_MINUTE }
+  const [spaceMonthly, userDaily, daily, perMinute] = values.map(Number) as [
+    number,
+    number,
+    number,
+    number,
+  ];
+  return [spaceMonthly, userDaily, daily, perMinute].every(Number.isSafeInteger)
+    ? { spaceMonthly, userDaily, daily, perMinute }
     : null;
 }

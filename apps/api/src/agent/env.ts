@@ -9,12 +9,16 @@ export interface AgentEnv extends Env {
   CREATOR_DOMAIN: string;
   /** Unset means the assistant is not switched on: it says so, and calls no model. */
   OPENROUTER_API_KEY?: string;
+  /** "scripted": the scripted provider answers instead of OpenRouter (STEP 11-prep), never in production. */
+  MODEL_PROVIDER?: string;
   /** Each space's assistant, a month, in microcents. */
   AGENT_SPACE_MONTHLY_MICROCENTS: string;
   /** Each creator, a day, in one space, in microcents. */
   AGENT_USER_DAILY_MICROCENTS: string;
   /** Every assistant together, a day, in microcents. */
   AGENT_DAILY_MICROCENTS: string;
+  /** Model calls each space's assistant may make in a minute. */
+  AGENT_CALLS_PER_MINUTE: string;
 }
 
 /** The header the Worker sets for the object: who is connecting, after it checked the session. */

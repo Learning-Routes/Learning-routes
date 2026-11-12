@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { AgentEnv } from "../../src/agent/env";
-import { modelCall, type SpendBook } from "../../src/agent/model";
+import { modelCall, providerFetch, type SpendBook } from "../../src/agent/model";
 
 const HAIKU = "anthropic/claude-haiku-5.5";
 
@@ -17,10 +17,11 @@ function setUp(given: { env?: Partial<AgentEnv>; lastMinute?: number[]; month?: 
     AGENT_SPACE_MONTHLY_MICROCENTS: "5000000",
     AGENT_USER_DAILY_MICROCENTS: "2000000",
     AGENT_DAILY_MICROCENTS: "20000000",
+    AGENT_CALLS_PER_MINUTE: "12",
     LEDGER: { idFromName: () => "global", get: () => ledger },
     ...given.env,
   } as unknown as AgentEnv;
-  const call = modelCall(env, book, { id: "c1", system: () => "Be brief." });
+  const call = modelCall(env, providerFetch(env), book, { id: "c1", system: () => "Be brief." });
   return { call, recorded, added };
 }
 
@@ -87,5 +88,55 @@ describe("the assistant's model calls", () => {
     expect(await ask(call)).toEqual({ ok: false, why: "failed" });
     expect(recorded).toEqual([]);
     expect(added).toEqual([]);
+  });
+});
+
+describe("who answers the assistant's model calls (STEP 11-prep §A1)", () => {
+  const base = { ENVIRONMENT: "development", OPENROUTER_API_KEY: undefined } as const;
+
+  it("is OpenRouter with its key, and no one without it", () => {
+    expect(providerFetch({ ...base, OPENROUTER_API_KEY: "test-key" } as never)).toEqual({
+      apiKey: "test-key",
+      fetcher: fetch,
+    });
+    expect(providerFetch(base as never)).toBeNull();
+  });
+
+  it("is the scripted provider, with no key, when MODEL_PROVIDER says so outside production", () => {
+    const provider = providerFetch({ ...base, MODEL_PROVIDER: "scripted" } as never);
+    expect(provider?.apiKey).toBe("scripted");
+    expect(provider?.fetcher).not.toBe(fetch);
+  });
+
+  it("refuses the scripted provider in production: says so, then as if the var were unset", () => {
+    let refusals = 0;
+    const refused = () => {
+      refusals += 1;
+    };
+    const production = { ENVIRONMENT: "production", MODEL_PROVIDER: "scripted" } as never;
+    expect(providerFetch(production, refused)).toBeNull();
+    expect(
+      providerFetch(
+        {
+          ENVIRONMENT: "production",
+          MODEL_PROVIDER: "scripted",
+          OPENROUTER_API_KEY: "test-key",
+        } as never,
+        refused,
+      ),
+    ).toEqual({ apiKey: "test-key", fetcher: fetch });
+    expect(refusals).toBe(2);
+  });
+
+  it("is allowed only in development: any other environment refuses it", () => {
+    let refusals = 0;
+    for (const ENVIRONMENT of ["Production", "staging", "test", undefined]) {
+      expect(
+        providerFetch({ ENVIRONMENT, MODEL_PROVIDER: "scripted" } as never, () => {
+          refusals += 1;
+        }),
+      ).toBeNull();
+    }
+    expect(refusals).toBe(4);
   });
 });

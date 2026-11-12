@@ -26,7 +26,9 @@
     // Each creator, a day, in one space: $2.
     "AGENT_USER_DAILY_MICROCENTS": "2000000",
     // Every assistant together, a day: $20.
-    "AGENT_DAILY_MICROCENTS": "20000000"
+    "AGENT_DAILY_MICROCENTS": "20000000",
+    // Model calls each space's assistant may make in a minute.
+    "AGENT_CALLS_PER_MINUTE": "12"
   },
   // BETTER_AUTH_SECRET, the API's, to read its sessions. No CONTENT_SIGNING_SECRET: the assistant
   // uploads no creations, so it asks for no thumbnails. OPENROUTER_API_KEY is optional: without it

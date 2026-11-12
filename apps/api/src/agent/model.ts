@@ -5,6 +5,8 @@ import { trimHistory } from "@learning-routes/core/studio/prompt";
 import { STUDIO_TOOLS } from "@learning-routes/core/studio/studio-tools";
 import type { TurnDeps } from "@learning-routes/core/studio/turn";
 import { type Streamed, streamFromOpenRouter } from "../ai/openrouter";
+import { readScript, scriptedFetch } from "../ai/scripted";
+import { STUDIO_SCRIPT_FILES } from "../ai/studio-scripts";
 import { CONTENT_MODEL_TOOLS } from "./content-tools";
 import type { AgentEnv } from "./env";
 
@@ -38,6 +40,30 @@ export interface SpendBook {
     /** false for a call that failed on our side: it is metered, never charged to the creator. */
     isCharged: boolean;
   }): void;
+}
+
+/** The one error a refused scripted provider leaves in the logs. */
+export const logRefusal = () =>
+  console.error(JSON.stringify({ message: "scripted model provider refused outside development" }));
+
+export type Provider = { apiKey: string; fetcher: typeof fetch };
+
+/**
+ * Who answers the model calls: OpenRouter with its key, or, in development only, the scripted
+ * provider when MODEL_PROVIDER is "scripted" (STEP 11-prep §A1). null: no one, and the assistant is
+ * not switched on. Anywhere else the switch is ignored, and `refused` is told so it can be logged.
+ */
+export function providerFetch(
+  env: Pick<AgentEnv, "ENVIRONMENT" | "MODEL_PROVIDER" | "OPENROUTER_API_KEY">,
+  refused: () => void = () => undefined,
+): Provider | null {
+  if (env.MODEL_PROVIDER === "scripted") {
+    if (String(env.ENVIRONMENT) === "development") {
+      return { apiKey: "scripted", fetcher: scriptedFetch(STUDIO_SCRIPT_FILES.map(readScript)) };
+    }
+    refused();
+  }
+  return env.OPENROUTER_API_KEY ? { apiKey: env.OPENROUTER_API_KEY, fetcher: fetch } : null;
 }
 
 function throttled(onText: (text: string) => void) {
@@ -81,6 +107,7 @@ async function meter(
 
 export function modelCall(
   env: AgentEnv,
+  provider: Provider | null,
   book: SpendBook,
   conversation: { id: string; system: () => string },
 ): TurnDeps["call"] {
@@ -88,18 +115,16 @@ export function modelCall(
     spaceMonthly: env.AGENT_SPACE_MONTHLY_MICROCENTS,
     userDaily: env.AGENT_USER_DAILY_MICROCENTS,
     daily: env.AGENT_DAILY_MICROCENTS,
+    perMinute: env.AGENT_CALLS_PER_MINUTE,
   });
-  if (env.OPENROUTER_API_KEY && !limits) {
+  if (provider && !limits) {
     console.error(JSON.stringify({ message: "studio limits are not configured" }));
   }
   return async (model, messages, onText) => {
     const now = Date.now();
     const spent = book.spent(now);
     // No key, no limits or no month left: the assistant says so, and calls no model.
-    if (
-      !(env.OPENROUTER_API_KEY && limits) ||
-      budgetOf(spent.month, limits.spaceMonthly) === "out"
-    ) {
+    if (!(provider && limits) || budgetOf(spent.month, limits.spaceMonthly) === "out") {
       return { ok: false, why: "budgetOut" };
     }
     const decision = gate(
@@ -134,8 +159,9 @@ export function modelCall(
     }
     const streamed = await streamFromOpenRouter(
       decision,
-      env.OPENROUTER_API_KEY,
+      provider.apiKey,
       throttled(onText),
+      provider.fetcher,
     );
     await meter(env, book, model, streamed, decision.estimateMicrocents);
     if (!streamed.ok) {

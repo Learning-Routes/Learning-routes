@@ -4,7 +4,7 @@ import type { CostEstimate } from "@learning-routes/core/credits/cost";
 // The one adapter between the AI gate in core and OpenRouter (STEP 46 §2.7). It
 // sends only a call the gate allowed; nothing else in the platform calls a model.
 
-const ENDPOINT = "https://openrouter.ai/api/v1/chat/completions";
+export const ENDPOINT = "https://openrouter.ai/api/v1/chat/completions";
 // usage.cost is in credits, one US dollar each; a dollar is 1,000,000 microcents.
 const MICROCENTS_PER_CREDIT = 1_000_000;
 
