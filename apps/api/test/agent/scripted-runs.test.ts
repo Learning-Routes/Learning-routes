@@ -342,6 +342,52 @@ describe("scripted runs of the assistant, in the Workers runtime (STEP 11-prep �
     expect(JSON.stringify(page.events)).not.toContain(INJECTED);
     page.close();
   }, 30_000);
+
+  it("replace-draft: import_route replaces the space's own draft, by its route id", async () => {
+    const creator = await newCreator();
+    const page = await open(server, creator);
+    await page.turn(
+      { type: "message", text: scriptOf("replace-draft").opening },
+      said("Listo, el borrador quedó reemplazado."),
+    );
+    const route = await routeOf(creator.spaceId);
+    const modules = await query(
+      URLS.migrator,
+      "select title->>'es' as title from modules where route_id = $1",
+      [route?.id],
+    );
+    expect(modules).toEqual([{ title: "Qué es un porcentaje" }]);
+    page.close();
+  }, 30_000);
+
+  it("replace-elsewhere: import_route on another space's route is not found, and changes nothing", async () => {
+    const other = await newCreator();
+    const [planted] = await query(
+      URLS.migrator,
+      `insert into routes (id, space_id, slug, title, source_locale, access, pricing)
+       values ('01a1d200-0000-7000-8000-00000000e15e', $1, 'ajena', '{"es": "Ajena"}', 'es', 'open', 'free')
+       on conflict (id) do update set draft_revision = 0 returning id`,
+      [other.spaceId],
+    );
+    const creator = await newCreator();
+    const page = await open(server, creator);
+    await page.turn(
+      { type: "message", text: scriptOf("replace-elsewhere").opening },
+      said("No encontré ese borrador en tu espacio."),
+    );
+    const storage = await server
+      .getWorker()
+      .getDurableObjectStorage("Studio", { name: creator.spaceId });
+    const messages = (await storage.exec("select body from messages")) as { body: string }[];
+    const answers = messages.map(
+      (row) => JSON.parse(row.body) as { role: string; content: unknown },
+    );
+    expect(JSON.stringify(answers.filter((each) => each.role === "tool"))).toContain("not_found");
+    expect(
+      await query(URLS.migrator, "select id from modules where route_id = $1", [planted?.id]),
+    ).toEqual([]);
+    page.close();
+  }, 30_000);
 });
 
 describe("budget-out, with a space's month set low (STEP 11-prep §A1)", () => {
