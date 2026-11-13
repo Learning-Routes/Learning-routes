@@ -97,6 +97,8 @@ describe("the Anthropic provider (STEP 11-prep §A1b)", () => {
     const headers = new Headers(sent[0]?.init.headers);
     expect(headers.get("x-api-key")).toBe("test-key");
     expect(headers.get("anthropic-version")).toBe("2026-10-21");
+    // A redirect never carries the key to another host.
+    expect(sent[0]?.init.redirect).toBe("error");
     expect(JSON.parse(String(sent[0]?.init.body))).toEqual({
       model: "claude-haiku-5-5",
       max_tokens: 1200,

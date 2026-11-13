@@ -165,6 +165,14 @@ describe("the real-model provider and the small tier, local only (STEP 11-prep Â
     expect(provider?.apiKey).toBe("anthropic");
     expect(provider?.fetcher).not.toBe(fetch);
     expect(providerFetch({ ...dev, MODEL_PROVIDER: "anthropic" } as never)).toBeNull();
+    // Asked for Anthropic, never billed on OpenRouter instead: with no Anthropic key, no one answers.
+    expect(
+      providerFetch({
+        ...dev,
+        MODEL_PROVIDER: "anthropic",
+        OPENROUTER_API_KEY: "test-openrouter-key",
+      } as never),
+    ).toBeNull();
   });
 
   it("refuses Anthropic and the small tier anywhere but development", () => {
