@@ -469,7 +469,7 @@ describe("an assistant that is not on (STEP 11-prep §A1)", () => {
     expect(await spendOf(refused, creator.spaceId)).toEqual([]);
     const errors = refused
       .getLogs()
-      .filter((log) => log.message.includes("scripted model provider refused outside development"));
+      .filter((log) => log.message.includes("dev-only model setting refused outside development"));
     expect(errors).toHaveLength(1);
     page.close();
   }, 30_000);

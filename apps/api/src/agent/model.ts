@@ -3,7 +3,8 @@ import type { ModelId } from "@learning-routes/core/ai/models";
 import { budgetOf, limitsOf } from "@learning-routes/core/studio/budget";
 import { trimHistory } from "@learning-routes/core/studio/prompt";
 import { STUDIO_TOOLS } from "@learning-routes/core/studio/studio-tools";
-import type { TurnDeps } from "@learning-routes/core/studio/turn";
+import type { ModelAnswer, TurnDeps } from "@learning-routes/core/studio/turn";
+import { anthropicFetch } from "../ai/anthropic";
 import { type Streamed, streamFromOpenRouter } from "../ai/openrouter";
 import { readScript, scriptedFetch } from "../ai/scripted";
 import { STUDIO_SCRIPT_FILES } from "../ai/studio-scripts";
@@ -42,28 +43,74 @@ export interface SpendBook {
   }): void;
 }
 
-/** The one error a refused scripted provider leaves in the logs. */
+/** The one error a dev-only model setting refused outside development leaves in the logs. */
 export const logRefusal = () =>
-  console.error(JSON.stringify({ message: "scripted model provider refused outside development" }));
+  console.error(JSON.stringify({ message: "dev-only model setting refused outside development" }));
 
-export type Provider = { apiKey: string; fetcher: typeof fetch };
+/** tier: every call goes to this model instead (MODEL_TIER_OVERRIDE, development only). */
+export type Provider = { apiKey: string; fetcher: typeof fetch; tier?: ModelId };
+
+type ProviderEnv = Pick<
+  AgentEnv,
+  | "ENVIRONMENT"
+  | "MODEL_PROVIDER"
+  | "MODEL_TIER_OVERRIDE"
+  | "OPENROUTER_API_KEY"
+  | "ANTHROPIC_API_KEY"
+>;
+
+const isDevelopment = (env: ProviderEnv) => String(env.ENVIRONMENT) === "development";
+
+// The scripted provider (§A1) or Anthropic with the owner's key (§A1b), in development only.
+// undefined: none asked for, or refused; null: asked for without its key, so no one answers.
+function devProvider(env: ProviderEnv, refused: () => void): Provider | null | undefined {
+  if (env.MODEL_PROVIDER !== "scripted" && env.MODEL_PROVIDER !== "anthropic") {
+    return undefined;
+  }
+  if (!isDevelopment(env)) {
+    refused();
+    return undefined;
+  }
+  if (env.MODEL_PROVIDER === "scripted") {
+    return { apiKey: "scripted", fetcher: scriptedFetch(STUDIO_SCRIPT_FILES.map(readScript)) };
+  }
+  return env.ANTHROPIC_API_KEY
+    ? { apiKey: "anthropic", fetcher: anthropicFetch(env.ANTHROPIC_API_KEY) }
+    : null;
+}
+
+// "small": every call to the cheap tier, to shake out wiring before a run on the real tiers.
+function tierOf(env: ProviderEnv, refused: () => void): ModelId | undefined {
+  if (env.MODEL_TIER_OVERRIDE !== "small") {
+    return undefined;
+  }
+  if (!isDevelopment(env)) {
+    refused();
+    return undefined;
+  }
+  return "anthropic/claude-haiku-5.5";
+}
 
 /**
  * Who answers the model calls: OpenRouter with its key, or, in development only, the scripted
- * provider when MODEL_PROVIDER is "scripted" (STEP 11-prep §A1). null: no one, and the assistant is
- * not switched on. Anywhere else the switch is ignored, and `refused` is told so it can be logged.
+ * provider or Anthropic (MODEL_PROVIDER), on the small tier when MODEL_TIER_OVERRIDE says so. null: no
+ * one, and the assistant is not switched on. Anywhere else a dev-only setting is ignored, and
+ * `refused` is told so it can be logged.
  */
 export function providerFetch(
-  env: Pick<AgentEnv, "ENVIRONMENT" | "MODEL_PROVIDER" | "OPENROUTER_API_KEY">,
+  env: ProviderEnv,
   refused: () => void = () => undefined,
 ): Provider | null {
-  if (env.MODEL_PROVIDER === "scripted") {
-    if (String(env.ENVIRONMENT) === "development") {
-      return { apiKey: "scripted", fetcher: scriptedFetch(STUDIO_SCRIPT_FILES.map(readScript)) };
-    }
-    refused();
-  }
-  return env.OPENROUTER_API_KEY ? { apiKey: env.OPENROUTER_API_KEY, fetcher: fetch } : null;
+  const tier = tierOf(env, refused);
+  const dev = devProvider(env, refused);
+  // A provider asked for never falls back to OpenRouter's key: the bill would go elsewhere.
+  const provider =
+    dev !== undefined
+      ? dev
+      : env.OPENROUTER_API_KEY
+        ? { apiKey: env.OPENROUTER_API_KEY, fetcher: fetch }
+        : null;
+  return provider && tier ? { ...provider, tier } : provider;
 }
 
 function throttled(onText: (text: string) => void) {
@@ -120,17 +167,19 @@ export function modelCall(
   if (provider && !limits) {
     console.error(JSON.stringify({ message: "studio limits are not configured" }));
   }
-  return async (model, messages, onText) => {
+  return async (asked, messages, onText) => {
     const now = Date.now();
     const spent = book.spent(now);
     // No key, no limits or no month left: the assistant says so, and calls no model.
     if (!(provider && limits) || budgetOf(spent.month, limits.spaceMonthly) === "out") {
       return { ok: false, why: "budgetOut" };
     }
+    // The small tier keeps the asked tier's room to write: a lesson cut short proves nothing.
+    const model = provider.tier ?? asked;
     const decision = gate(
       {
         model,
-        maxTokens: MAX_TOKENS[model] ?? 1_200,
+        maxTokens: MAX_TOKENS[asked] ?? 1_200,
         promptCache: true,
         // Never a user id: the conversation's own id keeps its calls on one provider's cache.
         sessionId: `studio-${conversation.id}`,
@@ -164,15 +213,20 @@ export function modelCall(
       provider.fetcher,
     );
     await meter(env, book, model, streamed, decision.estimateMicrocents);
-    if (!streamed.ok && streamed.isCreditOut) {
-      // No ids: which space hit it says nothing about the fix, which is the platform's credit.
-      console.error(JSON.stringify({ message: "provider credit out", status: streamed.status }));
-      return { ok: false, why: "paused" };
-    }
-    if (!streamed.ok) {
-      console.error(JSON.stringify({ message: "studio call failed", status: streamed.status }));
-      return { ok: false, why: "failed" };
-    }
-    return { ok: true, content: streamed.content, toolCalls: streamed.toolCalls };
+    return answerOf(streamed);
   };
+}
+
+/** What the turn hears of a call: its answer, a pause for the provider's credit, or a failure. */
+function answerOf(streamed: Streamed): ModelAnswer {
+  if (streamed.ok) {
+    return { ok: true, content: streamed.content, toolCalls: streamed.toolCalls };
+  }
+  if (streamed.isCreditOut) {
+    // No ids: which space hit it says nothing about the fix, which is the platform's credit.
+    console.error(JSON.stringify({ message: "provider credit out", status: streamed.status }));
+    return { ok: false, why: "paused" };
+  }
+  console.error(JSON.stringify({ message: "studio call failed", status: streamed.status }));
+  return { ok: false, why: "failed" };
 }
