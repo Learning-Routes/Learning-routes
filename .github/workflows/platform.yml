@@ -54,6 +54,9 @@ jobs:
       # tests with coverage, builds, budgets and the browser tests in the
       # runner's installed Chrome. Each runs even when one before it failed.
       - run: pnpm check
+        env:
+          # On main the journey is recorded at 1440 and 390 for the reviewer (STEP 11-prep §A2).
+          JOURNEY_VIDEO: ${{ github.ref == 'refs/heads/main' && '1' || '' }}
       # Baselines are recorded here, not on a laptop: a run with a missing or changed
       # screenshot writes it, and this keeps it to download and commit.
       - name: Keep the visual results
@@ -65,6 +68,13 @@ jobs:
             apps/web/e2e/visual-baselines
             apps/web/test-results
           if-no-files-found: ignore
+      - name: Keep the journey's videos
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        if: ${{ !cancelled() && github.ref == 'refs/heads/main' }}
+        with:
+          name: journey-videos
+          path: apps/web/test-results/journey-*/**/*.webm
+          if-no-files-found: warn
       # Not gating yet (STEP 46 §2.8): prints each hot function against its
       # baseline; a regression over 30% goes in the pull request description.
       - name: Benchmarks against the baseline

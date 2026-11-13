@@ -95,6 +95,11 @@ Why: STEP 10 §6 is blocked until OpenRouter has credit. Everything except the m
    - **Where the agent runs:** the agent on port 8790 runs scripted for the whole `flows` project. The "not on yet" check becomes a Worker-level test, which also covers `MODEL_PROVIDER=scripted` under `ENVIRONMENT=production`: not on, with one error logged. The browser suite keeps one line showing the assistant is reached through the web; the journey covers it.
    - **Reading the cost:** the spend book's "studio model call" lines, plus one ledger line per add, which carries only the day, the microcents added and the new total (no space, user or conversation id).
    - **Serially:** the ledger is one platform-wide total per day, shared by every scripted run against the same agent. The journey reads how much it rose, which holds only if nothing else spends at the same time, so it runs serially.
+   - **As built:**
+     - The journey has its own Playwright projects, `journey` at 1440×900 and, on main, `journey-390` after it. Viewport and video size are set per project, and the phone run must never overlap the first because of the shared ledger.
+     - Writes: the price set in Enseñar is the creator's own `route.set_price` through the app until §B3b. Every other write is `via: "agent"`.
+     - "Module 1 free" is what the public pages already say for a route: "El primer módulo es gratis" on the creator page and "El módulo 1 completo es gratis." on the route page. The price is stored for when payments arrive.
+     - The confirm button reads "Sí, publícala".
 4. **Recordings:**
    - Playwright video and trace on failure.
    - On main only, a video of the journey at 1440×900 and at 390×844, uploaded as workflow artifacts for the reviewer.

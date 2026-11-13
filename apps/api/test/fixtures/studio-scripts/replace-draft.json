@@ -1,0 +1,69 @@
+{
+  "name": "replace-draft",
+  "opening": "Rehaz mi borrador de porcentajes entero",
+  "turns": [
+    {
+      "expect": { "lastUserIncludes": "porcentajes" },
+      "reply": {
+        "text": "Empiezo un borrador.",
+        "toolCalls": [
+          { "name": "set_step", "arguments": { "step": "build" } },
+          {
+            "name": "create_route",
+            "arguments": {
+              "space_id": "$space_id",
+              "slug": "porcentajes",
+              "title": { "es": "Porcentajes" },
+              "source_locale": "es"
+            }
+          }
+        ],
+        "usage": { "prompt_tokens": 7200, "cached_tokens": 6800, "completion_tokens": 120 }
+      }
+    },
+    {
+      "expect": { "lastToolName": "create_route" },
+      "reply": {
+        "text": "Ahora lo reemplazo entero.",
+        "toolCalls": [
+          {
+            "name": "import_route",
+            "arguments": {
+              "route_id": "$route_id",
+              "draft_revision": "$draft_revision",
+              "document": {
+                "slug": "porcentajes",
+                "title": { "es": "Porcentajes" },
+                "source_locale": "es",
+                "modules": [
+                  {
+                    "title": { "es": "Qué es un porcentaje" },
+                    "lessons": [
+                      {
+                        "title": { "es": "Partes de cien" },
+                        "blocks": [
+                          {
+                            "type": "concept",
+                            "body": { "es": "Un porcentaje es una parte de cien." }
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          }
+        ],
+        "usage": { "prompt_tokens": 7600, "cached_tokens": 7200, "completion_tokens": 300 }
+      }
+    },
+    {
+      "expect": { "lastToolName": "import_route" },
+      "reply": {
+        "text": "Listo, el borrador quedó reemplazado.",
+        "usage": { "prompt_tokens": 8200, "cached_tokens": 7600, "completion_tokens": 20 }
+      }
+    }
+  ]
+}

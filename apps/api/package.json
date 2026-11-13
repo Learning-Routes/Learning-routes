@@ -22,6 +22,7 @@
     "db:measure-rls": "node scripts/measure-rls.ts",
     "db:seed": "tsx scripts/seed.ts",
     "db:seed-storefront": "tsx scripts/seed-storefront.ts",
+    "db:journey-facts": "tsx scripts/journey-facts.ts",
     "ops:bootstrap-owner": "tsx scripts/bootstrap-owner.ts",
     "skills:eval": "tsx scripts/skills-eval.ts"
   },

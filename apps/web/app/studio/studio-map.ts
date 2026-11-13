@@ -130,6 +130,14 @@ export class StudioMap {
     }
     this.roads.drop(this.planRoad);
     this.roads.drop(this.builtRoad);
+    // A route with no module yet has no plan to draw: a road needs two points.
+    if (stations.length === 0) {
+      this.planRoad = null;
+      this.builtRoad = null;
+      this.planMarkers = [];
+      this.planPoints = [];
+      return;
+    }
     const from = at(this.walked, this.walked.length - 1);
     const isRedraw = this.planPoints.length > 0;
     this.planPoints = [from];

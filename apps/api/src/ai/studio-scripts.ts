@@ -5,6 +5,12 @@ import fractions from "../../test/fixtures/studio-scripts/from-zero-fractions.js
 import hostileUpload from "../../test/fixtures/studio-scripts/hostile-upload.json" with {
   type: "json",
 };
+import replaceDraft from "../../test/fixtures/studio-scripts/replace-draft.json" with {
+  type: "json",
+};
+import replaceElsewhere from "../../test/fixtures/studio-scripts/replace-elsewhere.json" with {
+  type: "json",
+};
 import streamFails from "../../test/fixtures/studio-scripts/stream-fails.json" with {
   type: "json",
 };
@@ -20,4 +26,6 @@ export const STUDIO_SCRIPT_FILES: unknown[] = [
   streamFails,
   streamFails402,
   hostileUpload,
+  replaceDraft,
+  replaceElsewhere,
 ];

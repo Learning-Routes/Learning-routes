@@ -203,6 +203,19 @@ describe("scripted runs of the assistant, in the Workers runtime (STEP 11-prep Â
     expect(rows.map((row) => row.microcents)).toEqual(costOf(rows));
     const total = rows.reduce((sum, row) => sum + row.microcents, 0);
     expect((await ledgerToday(server)) - ledgerBefore).toBe(total);
+    // One ledger line per add: the day, what was added and the new total, and nothing else.
+    const added = server
+      .getLogs()
+      .filter((log) => log.message.includes('"ledger added"'))
+      .map(
+        (log) => JSON.parse(log.message.slice(log.message.indexOf("{"))) as Record<string, unknown>,
+      );
+    const mine = added.slice(-rows.length);
+    for (const line of mine) {
+      expect(Object.keys(line).sort()).toEqual(["day", "message", "microcents", "total"]);
+    }
+    expect(mine.map((line) => line.microcents)).toEqual(rows.map((row) => row.microcents));
+    expect(mine.at(-1)?.total).toBe(await ledgerToday(server));
 
     // Skills: at most four loaded at once.
     const storage = await server
@@ -327,6 +340,65 @@ describe("scripted runs of the assistant, in the Workers runtime (STEP 11-prep Â
     const holding = messages.filter((row) => row.body.includes(INJECTED));
     expect(holding.map((row) => (JSON.parse(row.body) as { role: string }).role)).toEqual(["user"]);
     expect(JSON.stringify(page.events)).not.toContain(INJECTED);
+    page.close();
+  }, 30_000);
+
+  it("replace-draft: import_route replaces the space's own draft, by its route id", async () => {
+    const creator = await newCreator();
+    const page = await open(server, creator);
+    await page.turn(
+      { type: "message", text: scriptOf("replace-draft").opening },
+      said("Listo, el borrador quedÃ³ reemplazado."),
+    );
+    const route = await routeOf(creator.spaceId);
+    const modules = await query(
+      URLS.migrator,
+      "select title->>'es' as title from modules where route_id = $1",
+      [route?.id],
+    );
+    expect(modules).toEqual([{ title: "QuÃ© es un porcentaje" }]);
+    page.close();
+  }, 30_000);
+
+  it("replace-elsewhere: import_route on the creator's other space's route is refused, and changes nothing", async () => {
+    // The creator edits both spaces: only the assistant's own space keeps it out of the other one.
+    // The script names a fixed route id: planted once, in whichever space holds it.
+    const creator = await newCreator();
+    const other = await newCreator();
+    const [planted] = await query(
+      URLS.migrator,
+      `insert into routes (id, space_id, slug, title, source_locale, access, pricing)
+       values ('01a1d200-0000-7000-8000-00000000e15e', $1, 'ajena', '{"es": "Ajena"}', 'es', 'open', 'free')
+       on conflict (id) do update set draft_revision = 0 returning id, space_id`,
+      [other.spaceId],
+    );
+    await query(
+      URLS.migrator,
+      "insert into memberships (space_id, user_id, role) values ($1, $2, 'coeditor')",
+      [planted?.space_id, creator.userId],
+    );
+    const modulesOf = () =>
+      query(URLS.migrator, "select id, title from modules where route_id = $1 order by id", [
+        planted?.id,
+      ]);
+    const before = await modulesOf();
+    const page = await open(server, creator);
+    await page.turn(
+      { type: "message", text: scriptOf("replace-elsewhere").opening },
+      said("No encontrÃ© ese borrador en tu espacio."),
+    );
+    const storage = await server
+      .getWorker()
+      .getDurableObjectStorage("Studio", { name: creator.spaceId });
+    const messages = (await storage.exec("select body from messages")) as { body: string }[];
+    const answers = messages.map(
+      (row) => JSON.parse(row.body) as { role: string; content: unknown },
+    );
+    // The assistant's own refusal, not the action's: the creator may edit that route elsewhere.
+    expect(JSON.stringify(answers.filter((each) => each.role === "tool"))).toContain(
+      "there is no such thing in your spaces",
+    );
+    expect(await modulesOf()).toEqual(before);
     page.close();
   }, 30_000);
 });

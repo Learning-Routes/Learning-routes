@@ -15,6 +15,9 @@ export class SpendLedger extends DurableObject {
       return;
     }
     const day = dayOf(Date.now());
-    await this.ctx.storage.put(day, ((await this.ctx.storage.get<number>(day)) ?? 0) + microcents);
+    const total = ((await this.ctx.storage.get<number>(day)) ?? 0) + microcents;
+    await this.ctx.storage.put(day, total);
+    // The platform's day only: no space, person or conversation (STEP 11-prep §A2 reads it).
+    console.log(JSON.stringify({ message: "ledger added", day, microcents, total }));
   }
 }

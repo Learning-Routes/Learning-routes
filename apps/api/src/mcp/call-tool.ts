@@ -174,12 +174,17 @@ async function pinnedToSpace(db: Database, caller: Caller, tool: Tool, input: un
   if (spaceId === undefined || tool.action === null) {
     return input;
   }
-  const given = input as { space_id?: string };
+  const given = input as { space_id?: string; route_id?: string };
   if (given.space_id !== undefined && given.space_id !== spaceId) {
     return null;
   }
+  // A call that names a route keeps to it (import_route replacing a draft); the scope check below
+  // still holds it to this space.
   const shape = (tool.input as { shape?: object }).shape;
-  const pinned = shape && "space_id" in shape ? { ...given, space_id: spaceId } : given;
+  const pinned =
+    shape && "space_id" in shape && given.route_id === undefined
+      ? { ...given, space_id: spaceId }
+      : given;
   const target = ACTIONS[tool.action].target(tool.toAction(pinned) as never);
   const scope = await transactionAs(db, caller.userId, (tx) =>
     pgTenancy(tx).scopeOf(target, caller.userId),
