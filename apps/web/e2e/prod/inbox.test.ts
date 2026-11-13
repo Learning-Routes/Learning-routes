@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { tokenIn } from "../e2e/prod/inbox";
+import { tokenIn } from "./inbox";
 
 // The production student check (STEP 11-prep §A3) reads its sign-in link from the proof inbox, a
 // raw email as Email Routing delivered it. The token here is invented.
@@ -9,7 +9,7 @@ const LINK = `https://app.learningroutes.com/sign-in/confirm#token=${TOKEN}`;
 
 const mail = (encoding: string, body: string) =>
   [
-    "From: Learning Routes <hola@mail.learningroutes.com>",
+    "From: Learning Routes <hola@example.com>",
     "Subject: Tu enlace para entrar",
     'Content-Type: multipart/alternative; boundary="b1"',
     "",

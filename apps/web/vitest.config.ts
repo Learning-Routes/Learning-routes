@@ -4,7 +4,8 @@ import { defineConfig } from "vitest/config";
 // need the React Router or Cloudflare plugins. e2e/ is Playwright's.
 export default defineConfig({
   test: {
-    include: ["test/**/*.test.{ts,tsx}"],
+    // The production check's inbox reader is tested here too; Playwright never runs this file.
+    include: ["test/**/*.test.{ts,tsx}", "e2e/prod/*.test.ts"],
     // The persistent module cache keeps an import.meta.glob's file list from an
     // earlier run, so the guard in ids.test.ts would not see a new file.
     fsModuleCache: false,

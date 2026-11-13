@@ -14,6 +14,7 @@ const ROUTE = "https://gilber.learningroutes.com/fracciones-sin-miedo";
 const FIRST_TOPIC = "Partes de un entero";
 // Mail clocks and ours differ by a little: a link asked for now arrives after this.
 const SKEW_MS = 60_000;
+const MY_ROUTES = /\/mis-rutas/;
 
 test("a student enrolls in a free module, answers topic 1's check, and is offered the next", async ({
   page,
@@ -47,7 +48,7 @@ test("a student enrolls in a free module, answers topic 1's check, and is offere
     });
     expect(confirmed.status()).toBe(302);
     await page.goto(`${APP}/es/mis-rutas`);
-    await expect(page).toHaveURL(/\/mis-rutas/);
+    await expect(page).toHaveURL(MY_ROUTES);
   });
 
   await timed("2. opens the catalog", async () => {
