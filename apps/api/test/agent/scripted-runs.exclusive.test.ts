@@ -360,16 +360,28 @@ describe("scripted runs of the assistant, in the Workers runtime (STEP 11-prep Â
     page.close();
   }, 30_000);
 
-  it("replace-elsewhere: import_route on another space's route is not found, and changes nothing", async () => {
+  it("replace-elsewhere: import_route on the creator's other space's route is refused, and changes nothing", async () => {
+    // The creator edits both spaces: only the assistant's own space keeps it out of the other one.
+    // The script names a fixed route id: planted once, in whichever space holds it.
+    const creator = await newCreator();
     const other = await newCreator();
     const [planted] = await query(
       URLS.migrator,
       `insert into routes (id, space_id, slug, title, source_locale, access, pricing)
        values ('01a1d200-0000-7000-8000-00000000e15e', $1, 'ajena', '{"es": "Ajena"}', 'es', 'open', 'free')
-       on conflict (id) do update set draft_revision = 0 returning id`,
+       on conflict (id) do update set draft_revision = 0 returning id, space_id`,
       [other.spaceId],
     );
-    const creator = await newCreator();
+    await query(
+      URLS.migrator,
+      "insert into memberships (space_id, user_id, role) values ($1, $2, 'coeditor')",
+      [planted?.space_id, creator.userId],
+    );
+    const modulesOf = () =>
+      query(URLS.migrator, "select id, title from modules where route_id = $1 order by id", [
+        planted?.id,
+      ]);
+    const before = await modulesOf();
     const page = await open(server, creator);
     await page.turn(
       { type: "message", text: scriptOf("replace-elsewhere").opening },
@@ -382,10 +394,11 @@ describe("scripted runs of the assistant, in the Workers runtime (STEP 11-prep Â
     const answers = messages.map(
       (row) => JSON.parse(row.body) as { role: string; content: unknown },
     );
-    expect(JSON.stringify(answers.filter((each) => each.role === "tool"))).toContain("not_found");
-    expect(
-      await query(URLS.migrator, "select id from modules where route_id = $1", [planted?.id]),
-    ).toEqual([]);
+    // The assistant's own refusal, not the action's: the creator may edit that route elsewhere.
+    expect(JSON.stringify(answers.filter((each) => each.role === "tool"))).toContain(
+      "there is no such thing in your spaces",
+    );
+    expect(await modulesOf()).toEqual(before);
     page.close();
   }, 30_000);
 });
