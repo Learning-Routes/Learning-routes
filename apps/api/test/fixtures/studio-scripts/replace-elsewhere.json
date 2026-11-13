@@ -1,0 +1,36 @@
+{
+  "name": "replace-elsewhere",
+  "opening": "Rehaz el borrador de otra persona",
+  "turns": [
+    {
+      "expect": { "lastUserIncludes": "otra persona" },
+      "reply": {
+        "text": "Lo reemplazo.",
+        "toolCalls": [
+          { "name": "set_step", "arguments": { "step": "build" } },
+          {
+            "name": "import_route",
+            "arguments": {
+              "route_id": "01a1d200-0000-7000-8000-00000000e15e",
+              "draft_revision": 0,
+              "document": {
+                "slug": "ajena",
+                "title": { "es": "Ajena" },
+                "source_locale": "es",
+                "modules": [{ "title": { "es": "Escrito por otro" }, "lessons": [] }]
+              }
+            }
+          }
+        ],
+        "usage": { "prompt_tokens": 7200, "cached_tokens": 6800, "completion_tokens": 200 }
+      }
+    },
+    {
+      "expect": { "lastToolName": "import_route" },
+      "reply": {
+        "text": "No encontré ese borrador en tu espacio.",
+        "usage": { "prompt_tokens": 7600, "cached_tokens": 7200, "completion_tokens": 20 }
+      }
+    }
+  ]
+}
