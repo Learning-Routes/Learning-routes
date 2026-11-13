@@ -222,6 +222,8 @@ export function anthropicFetch(apiKey: string, upstream: typeof fetch = fetch): 
         "content-type": "application/json",
       },
       body: JSON.stringify(messagesBody(request, served.id)),
+      // The key goes to Anthropic only: a redirect fails instead of carrying it elsewhere.
+      redirect: "error",
       ...(init.signal ? { signal: init.signal } : {}),
     });
     return response.ok && response.body

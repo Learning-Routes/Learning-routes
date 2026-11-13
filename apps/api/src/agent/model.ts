@@ -62,13 +62,14 @@ type ProviderEnv = Pick<
 const isDevelopment = (env: ProviderEnv) => String(env.ENVIRONMENT) === "development";
 
 // The scripted provider (§A1) or Anthropic with the owner's key (§A1b), in development only.
-function devProvider(env: ProviderEnv, refused: () => void): Provider | null {
+// undefined: none asked for, or refused; null: asked for without its key, so no one answers.
+function devProvider(env: ProviderEnv, refused: () => void): Provider | null | undefined {
   if (env.MODEL_PROVIDER !== "scripted" && env.MODEL_PROVIDER !== "anthropic") {
-    return null;
+    return undefined;
   }
   if (!isDevelopment(env)) {
     refused();
-    return null;
+    return undefined;
   }
   if (env.MODEL_PROVIDER === "scripted") {
     return { apiKey: "scripted", fetcher: scriptedFetch(STUDIO_SCRIPT_FILES.map(readScript)) };
@@ -101,9 +102,14 @@ export function providerFetch(
   refused: () => void = () => undefined,
 ): Provider | null {
   const tier = tierOf(env, refused);
+  const dev = devProvider(env, refused);
+  // A provider asked for never falls back to OpenRouter's key: the bill would go elsewhere.
   const provider =
-    devProvider(env, refused) ??
-    (env.OPENROUTER_API_KEY ? { apiKey: env.OPENROUTER_API_KEY, fetcher: fetch } : null);
+    dev !== undefined
+      ? dev
+      : env.OPENROUTER_API_KEY
+        ? { apiKey: env.OPENROUTER_API_KEY, fetcher: fetch }
+        : null;
   return provider && tier ? { ...provider, tier } : provider;
 }
 

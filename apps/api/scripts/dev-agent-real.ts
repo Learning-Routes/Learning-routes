@@ -36,6 +36,26 @@ export function redacted(text: string, key: string): string {
   return (key ? text.split(key).join("[redacted]") : text).replace(KEY_SHAPE, "[redacted]");
 }
 
+/** Output redacted a whole line at a time: a key split across two pieces is still one line. */
+export function redactedLines(key: string, write: (text: string) => void) {
+  let rest = "";
+  return {
+    write(piece: string) {
+      const lines = (rest + piece).split("\n");
+      rest = lines.pop() ?? "";
+      for (const line of lines) {
+        write(`${redacted(line, key)}\n`);
+      }
+    },
+    end() {
+      if (rest) {
+        write(redacted(rest, key));
+      }
+      rest = "";
+    },
+  };
+}
+
 function keyFromKeychain(): string {
   try {
     return execFileSync("security", ["find-generic-password", "-s", SERVICE, "-w"], {
@@ -78,7 +98,13 @@ if (process.argv[1]?.endsWith("dev-agent-real.ts")) {
     env: env as unknown as NodeJS.ProcessEnv,
     stdio: ["inherit", "pipe", "pipe"],
   });
-  wrangler.stdout.on("data", (piece: Buffer) => process.stdout.write(redacted(String(piece), key)));
-  wrangler.stderr.on("data", (piece: Buffer) => process.stderr.write(redacted(String(piece), key)));
-  wrangler.on("exit", (code: number | null) => process.exit(code ?? 1));
+  const out = redactedLines(key, (text) => process.stdout.write(text));
+  const errors = redactedLines(key, (text) => process.stderr.write(text));
+  wrangler.stdout.on("data", (piece: Buffer) => out.write(String(piece)));
+  wrangler.stderr.on("data", (piece: Buffer) => errors.write(String(piece)));
+  wrangler.on("exit", (code: number | null) => {
+    out.end();
+    errors.end();
+    process.exit(code ?? 1);
+  });
 }
