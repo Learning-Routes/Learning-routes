@@ -34,6 +34,12 @@ describe("the proof inbox's sign-in link", () => {
     expect(tokenIn(mail("base64", encoded))).toBe(TOKEN);
   });
 
+  it("is only our own sign-in link's, never a token from another link in the mail", () => {
+    const body = `Mira https://example.com/a#token=not-ours-0123 y entra: ${LINK}`;
+    expect(tokenIn(mail("7bit", body))).toBe(TOKEN);
+    expect(tokenIn(mail("7bit", "https://example.com/sign-in/confirm#token=not-ours"))).toBeNull();
+  });
+
   it("is null when the mail holds no link", () => {
     expect(tokenIn(mail("7bit", "Hola"))).toBeNull();
   });
