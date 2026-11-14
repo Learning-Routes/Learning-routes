@@ -90,6 +90,15 @@ const ask = (fetcher: typeof fetch, body: unknown = request()) =>
   streamFromOpenRouter({ request: body } as never, "anthropic", () => undefined, fetcher);
 
 describe("the Anthropic provider (STEP 11-prep §A1b)", () => {
+  it("refuses a redirect instead of following it: one request, to Anthropic, and a failure", async () => {
+    const { sent, fetcher } = upstream(
+      () => new Response(null, { status: 302, headers: { location: "https://elsewhere.example/" } }),
+    );
+    const answer = await ask(anthropicFetch("test-key", fetcher));
+    expect(sent.map((each) => each.url)).toEqual([MESSAGES]);
+    expect(answer).toMatchObject({ ok: false, status: 502 });
+  });
+
   it("sends the gate's request as a Messages API request, with the key and the API version", async () => {
     const { sent, fetcher } = upstream(() => new Response(sse(STREAM)));
     await ask(anthropicFetch("test-key", fetcher));
@@ -97,8 +106,8 @@ describe("the Anthropic provider (STEP 11-prep §A1b)", () => {
     const headers = new Headers(sent[0]?.init.headers);
     expect(headers.get("x-api-key")).toBe("test-key");
     expect(headers.get("anthropic-version")).toBe("2026-10-21");
-    // A redirect never carries the key to another host.
-    expect(sent[0]?.init.redirect).toBe("error");
+    // A redirect never carries the key to another host. Workers throws on "error" for every fetch.
+    expect(sent[0]?.init.redirect).toBe("manual");
     expect(JSON.parse(String(sent[0]?.init.body))).toEqual({
       model: "claude-haiku-5-5",
       max_tokens: 1200,
