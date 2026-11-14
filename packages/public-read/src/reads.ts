@@ -193,11 +193,15 @@ export type PublicRead = ReturnType<typeof publicRead>;
  * in a module variable; only closing it goes to ctx.waitUntil.
  */
 export async function withPublicRead<T>(
-  env: { DB_PUBLIC: { connectionString: string } },
+  env: {
+    DB_PUBLIC: { host: string; port: number; user: string; password: string; database: string };
+  },
   ctx: { waitUntil(promise: Promise<unknown>): void },
   fn: (reads: PublicRead) => Promise<T>,
 ): Promise<T> {
-  const client = new pg.Client({ connectionString: env.DB_PUBLIC.connectionString });
+  // Hyperdrive's fields, never its connectionString: the web Worker's build has no parser for one.
+  const { host, port, user, password, database } = env.DB_PUBLIC;
+  const client = new pg.Client({ host, port, user, password, database });
   try {
     await client.connect();
     return await fn(publicRead(client));
