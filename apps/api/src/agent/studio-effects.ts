@@ -2,6 +2,7 @@ import { runAction } from "@learning-routes/core/actions/define";
 import { ACTIONS } from "@learning-routes/core/actions/registry";
 import { AGENT_TEXT } from "@learning-routes/core/copy/agent";
 import type { RouteDraft } from "@learning-routes/core/repos/ports";
+import { writtenByAgent } from "@learning-routes/core/studio/check-order";
 import { builtOf, lessonPreviewOf, plannedOf } from "@learning-routes/core/studio/draft";
 import type { StudioStep } from "@learning-routes/core/studio/session";
 import { SKILLS } from "@learning-routes/core/studio/skill-library";
@@ -90,7 +91,7 @@ export class Effects {
       return { text: "The arguments are not valid JSON." };
     }
     const answer = (await this.db((db, caller) =>
-      callTool(this.env, db, caller, contentTool(name), input),
+      callTool(this.env, db, caller, contentTool(name), writtenByAgent(name, input)),
     )) as Answer;
     const routeId =
       (answer.structuredContent as { route_id?: string } | undefined)?.route_id ??
