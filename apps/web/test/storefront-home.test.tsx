@@ -85,6 +85,22 @@ describe("the storefront home", () => {
     expect(html).toContain("Con Ana");
   });
 
+  it("shows the example routes' shapes, marked as examples, only while no route is published", () => {
+    const empty = render();
+    expect(empty).toContain("Cada ruta tiene su forma.");
+    expect(empty.match(/>Ejemplo</g)).toHaveLength(4);
+    const published = render({ ...loaderData, routes: [ROUTE] });
+    expect(published).not.toContain("Cada ruta tiene su forma.");
+    expect(published).not.toContain(">Ejemplo<");
+  });
+
+  it("shows the five ways a topic teaches, with or without routes", () => {
+    for (const html of [render(), render({ ...loaderData, routes: [ROUTE] })]) {
+      expect(html).toContain("No es un cuestionario. Es una clase.");
+      expect(html.match(/class="fm-tile /g)).toHaveLength(5);
+    }
+  });
+
   it("titles the page", () => {
     expect(meta({ loaderData } as unknown as Route.MetaArgs)).toContainEqual({ title: BRAND });
   });
