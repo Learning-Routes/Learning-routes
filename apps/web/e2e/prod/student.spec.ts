@@ -1,5 +1,5 @@
 import { expect, type Page, test } from "@playwright/test";
-import { signInToken } from "./inbox";
+import { mailsTo, signInToken } from "./inbox";
 
 // The production student check (STEP 11-prep §A3): a fixed fictional student signs in with a link
 // from the proof inbox, opens the catalog, enrolls in a published route with a free module (again
@@ -12,9 +12,19 @@ const STUDENT = "alumna@proof.email.learningroutes.com";
 // The owner's choice: the catalog lists no route yet, so the route comes from its creator's page.
 const ROUTE = "https://gilber.learningroutes.com/fracciones-sin-miedo";
 const FIRST_TOPIC = "Partes de un entero";
-// Mail clocks and ours differ by a little: a link asked for now arrives after this.
-const SKEW_MS = 60_000;
 const MY_ROUTES = /\/mis-rutas/;
+
+/**
+ * A sign-in request whose failure says only what failed: Playwright's own error lists the request's
+ * headers, the session cookie among them, and the report is public.
+ */
+async function quietly<T>(what: string, work: () => Promise<T>): Promise<T> {
+  try {
+    return await work();
+  } catch {
+    throw new Error(`${what} failed`);
+  }
+}
 
 test("a student enrolls in a free module, answers topic 1's check, and is offered the next", async ({
   page,
@@ -32,20 +42,24 @@ test("a student enrolls in a free module, answers topic 1's check, and is offere
   };
 
   await timed("1. signs in with a link from the proof inbox", async () => {
-    const asked = Date.now() - SKEW_MS;
+    const before = mailsTo(STUDENT);
     const headers = { origin: APP, "accept-language": "es" };
-    const sent = await context.request.post(`${APP}/api/auth/sign-in/magic-link`, {
-      headers,
-      data: { email: STUDENT },
-    });
+    const sent = await quietly("asking for a sign-in link", () =>
+      context.request.post(`${APP}/api/auth/sign-in/magic-link`, {
+        headers,
+        data: { email: STUDENT },
+      }),
+    );
     expect(sent.ok()).toBe(true);
-    const token = await signInToken(STUDENT, asked);
+    const token = await signInToken(STUDENT, before);
     // The context's request shares its cookies, so this session is the browser's too.
-    const confirmed = await context.request.post(`${APP}/api/auth/magic-link/confirm`, {
-      headers,
-      form: { token },
-      maxRedirects: 0,
-    });
+    const confirmed = await quietly("confirming the sign-in link", () =>
+      context.request.post(`${APP}/api/auth/magic-link/confirm`, {
+        headers,
+        form: { token },
+        maxRedirects: 0,
+      }),
+    );
     expect(confirmed.status()).toBe(302);
     await page.goto(`${APP}/es/mis-rutas`);
     await expect(page).toHaveURL(MY_ROUTES);

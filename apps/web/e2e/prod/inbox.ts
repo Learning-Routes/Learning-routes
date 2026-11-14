@@ -5,7 +5,8 @@ import { execFileSync } from "node:child_process";
 // Read with wrangler: the owner's login on this Mac, a KV-read token in CI. The token it finds is a
 // sign-in link's: never printed.
 
-const TOKEN = /[#&]token=([A-Za-z0-9_-]+)/;
+// Only our own sign-in link counts: a token in any other link of the mail is never taken.
+const TOKEN = /https:\/\/app\.learningroutes\.com\/sign-in\/confirm#token=([A-Za-z0-9_-]+)/;
 const BASE64_BLOCK = /\r?\n\r?\n((?:[A-Za-z0-9+/=]{4,}\r?\n?)+)/g;
 const POLLS = 30;
 const POLL_MS = 2000;
@@ -58,14 +59,21 @@ const kv = (args: string[]) =>
 
 const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-/** The token of the newest sign-in mail to `address` that arrived after `since` (ms). */
-export async function signInToken(address: string, since: number): Promise<string> {
+const keysOf = (address: string) =>
+  (JSON.parse(kv(["key", "list", "--prefix", `${address}:`])) as { name: string }[]).map(
+    (key) => key.name,
+  );
+
+/** The mails to `address` in the inbox now: read before asking for a link, to wait for a new one. */
+export const mailsTo = (address: string) => new Set(keysOf(address));
+
+/** The token of the newest sign-in mail to `address` that was not among `before`. */
+export async function signInToken(address: string, before: Set<string>): Promise<string> {
   for (let poll = 0; poll < POLLS; poll++) {
-    const keys = (JSON.parse(kv(["key", "list", "--prefix", `${address}:`])) as { name: string }[])
-      .map((key) => key.name)
-      .filter((name) => Number(name.split(":")[1]) >= since)
+    const fresh = keysOf(address)
+      .filter((name) => !before.has(name))
       .sort((a, b) => Number(b.split(":")[1]) - Number(a.split(":")[1]));
-    const newest = keys[0];
+    const newest = fresh[0];
     if (newest) {
       const token = tokenIn(kv(["key", "get", newest, "--text"]));
       if (token) {
