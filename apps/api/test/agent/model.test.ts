@@ -56,8 +56,30 @@ describe("the assistant's model calls", () => {
     const fetched = answerWith("");
     const now = Date.now();
     const busy = setUp({ lastMinute: Array.from({ length: 12 }, (_, at) => now - at * 1000) });
-    expect(await ask(busy.call)).toEqual({ ok: false, why: "failed" });
+    expect(await ask(busy.call)).toEqual({ ok: false, why: "tooFast" });
     expect(fetched).not.toHaveBeenCalled();
+  });
+
+  it("let a turn the creator started finish its tool rounds, however full the minute", async () => {
+    const fetched = answerWith("");
+    const now = Date.now();
+    const busy = setUp({ lastMinute: Array.from({ length: 12 }, (_, at) => now - at * 1000) });
+    await busy.call(
+      HAIKU,
+      [
+        { role: "user", content: "Hola" },
+        {
+          role: "assistant",
+          content: "",
+          tool_calls: [
+            { id: "t1", type: "function", function: { name: "list_routes", arguments: "{}" } },
+          ],
+        },
+        { role: "tool", tool_call_id: "t1", content: "[]" },
+      ],
+      () => undefined,
+    );
+    expect(fetched).toHaveBeenCalledOnce();
   });
 
   it("meter a call at what it cost, charged to the space", async () => {

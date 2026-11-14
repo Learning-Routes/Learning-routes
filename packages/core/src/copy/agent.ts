@@ -41,6 +41,8 @@ export interface AgentText {
   paused: string;
   /** A turn ran out of steps before it finished. */
   tooLong: string;
+  /** The creator started turns faster than the space's minute allows; nothing was lost. */
+  tooFast: string;
   declined: string;
   /** {address} is where the route is now. */
   published: string;
@@ -82,6 +84,7 @@ export const AGENT_TEXT: Record<LocaleCode, AgentText> = {
     paused:
       "Tu asistente está en pausa por un momento. Tu conversación queda guardada; vuelve a intentarlo en un rato.",
     tooLong: "Me detuve aquí para no hacer demasiado de una vez. Lo hecho está guardado. ¿Sigo?",
+    tooFast: "Vas muy rápido; dame unos segundos.",
     declined: "De acuerdo, queda como borrador. Cuando quieras, la publicamos.",
     published: "Publicada. Ya está en {address}.",
     publishFailed: "No pude publicarla, y nada cambió. Vuelve a intentarlo en un momento.",
@@ -120,6 +123,7 @@ export const AGENT_TEXT: Record<LocaleCode, AgentText> = {
       "Your assistant is paused for a moment. Your conversation is saved; try again in a little while.",
     tooLong:
       "I stopped here so as not to do too much at once. What's done is saved. Shall I go on?",
+    tooFast: "You're going very fast; give me a few seconds.",
     declined: "Fine, it stays a draft. We can publish it whenever you want.",
     published: "Published. It's at {address}.",
     publishFailed: "I couldn't publish it, and nothing changed. Try again in a moment.",
@@ -157,6 +161,7 @@ export const AGENT_TEXT: Record<LocaleCode, AgentText> = {
     paused:
       "O seu assistente está em pausa por um momento. A sua conversa fica salva; tente de novo daqui a pouco.",
     tooLong: "Parei aqui para não fazer demais de uma vez. O que foi feito está salvo. Continuo?",
+    tooFast: "Você está indo muito rápido; me dê uns segundos.",
     declined: "Certo, fica como rascunho. Quando quiser, publicamos.",
     published: "Publicada. Já está em {address}.",
     publishFailed: "Não consegui publicá-la, e nada mudou. Tente de novo em um momento.",
@@ -195,6 +200,7 @@ export const AGENT_TEXT: Record<LocaleCode, AgentText> = {
       "Votre assistant est en pause pour un moment. Votre conversation est enregistrée ; réessayez dans un moment.",
     tooLong:
       "Je m'arrête ici pour ne pas trop en faire d'un coup. Ce qui est fait est enregistré. Je continue ?",
+    tooFast: "Vous allez très vite ; laissez-moi quelques secondes.",
     declined: "D'accord, il reste un brouillon. Nous le publierons quand vous voudrez.",
     published: "Publié. Il est sur {address}.",
     publishFailed: "Je n'ai pas pu le publier, et rien n'a changé. Réessayez dans un instant.",
@@ -232,6 +238,7 @@ export const AGENT_TEXT: Record<LocaleCode, AgentText> = {
     paused:
       "Il tuo assistente è in pausa per un momento. La tua conversazione resta salvata; riprova tra poco.",
     tooLong: "Mi fermo qui per non fare troppo in una volta. Ciò che è fatto è salvato. Continuo?",
+    tooFast: "Vai molto veloce; dammi qualche secondo.",
     declined: "D'accordo, resta una bozza. La pubblichiamo quando vuoi.",
     published: "Pubblicato. È su {address}.",
     publishFailed:
