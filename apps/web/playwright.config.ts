@@ -29,6 +29,8 @@ const CHANGES_DATA = [
   "lesson.spec.ts",
 ];
 const JOURNEY = "journey.spec.ts";
+// The production student check (STEP 11-prep §A3) has its own config: never against local servers.
+const PROD = "prod/**";
 // On main the journey is recorded at both sizes for the reviewer (STEP 11-prep §A2).
 const JOURNEY_VIDEO = Boolean(process.env.JOURNEY_VIDEO);
 const API_LOG = ".wrangler/e2e-api.log";
@@ -52,7 +54,11 @@ export default defineConfig({
   snapshotPathTemplate: "{testDir}/visual-baselines/{arg}{ext}",
   use: { baseURL: "http://localhost:4173" },
   projects: [
-    { name: "chrome", testIgnore: [VISUAL, JOURNEY, ...CHANGES_DATA], use: { channel: "chrome" } },
+    {
+      name: "chrome",
+      testIgnore: [VISUAL, JOURNEY, PROD, ...CHANGES_DATA],
+      use: { channel: "chrome" },
+    },
     ...(process.env.CI
       ? [{ name: "visual", testMatch: VISUAL, use: { browserName: "chromium" as const } }]
       : []),

@@ -1,5 +1,6 @@
 import { createRequire } from "node:module";
 import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { cloudflare } from "@cloudflare/vite-plugin";
 import { reactRouter } from "@react-router/dev/vite";
 import { defineConfig, type Plugin } from "vite";
@@ -11,6 +12,9 @@ const edgeRenderer = join(
   dirname(createRequire(import.meta.url).resolve("react-dom/package.json")),
   "cjs/react-dom-server.edge.production.js",
 );
+// pg reads ~/.pgpass only for a connection with no password; a Worker has neither (no-pgpass.cjs).
+const PGPASS = /^pgpass$/;
+const noPgpass = fileURLToPath(new URL("workers/no-pgpass.cjs", import.meta.url));
 
 /** The storefront's enhancement scripts (ADR 0008), at fixed addresses cached pages can name. */
 function enhancementScripts(): Plugin {
@@ -45,6 +49,12 @@ export default defineConfig(({ command }) => ({
   resolve: {
     tsconfigPaths: true,
     // Only in the build: this file is React's production one, and `vite dev` runs development React.
-    alias: command === "build" ? [{ find: REACT_SERVER, replacement: edgeRenderer }] : [],
+    alias:
+      command === "build"
+        ? [
+            { find: REACT_SERVER, replacement: edgeRenderer },
+            { find: PGPASS, replacement: noPgpass },
+          ]
+        : [],
   },
 }));

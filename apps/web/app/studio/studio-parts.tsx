@@ -7,7 +7,7 @@ import {
   type StudioInput,
   type StudioState,
 } from "@learning-routes/core/studio/session";
-import type { RefObject } from "react";
+import { type RefObject, useEffect, useRef } from "react";
 import { filled } from "../storefront/words";
 
 // The pieces of the assistant's page (Platform STEP 10): its legend and steps, the route as a
@@ -82,6 +82,18 @@ function stationClass(index: number, state: StudioState, isModule: boolean) {
     : kind;
 }
 
+/**
+ * The meter's green line. The page's policy allows no style attribute in the HTML, so its width
+ * is set through the style object after render, which the policy allows.
+ */
+function Fill({ share }: { share: number }) {
+  const line = useRef<HTMLSpanElement>(null);
+  useEffect(() => {
+    line.current?.style.setProperty("width", `${share * 100}%`);
+  }, [share]);
+  return <span ref={line} />;
+}
+
 /** The route, in order, beside the map: what is written, what is being written, what is new. */
 export function RouteList({
   state,
@@ -116,7 +128,7 @@ export function RouteList({
         ))}
       </ol>
       <p className="studio-list-meter">
-        <span style={{ width: `${(state.built / Math.max(1, stations.length)) * 100}%` }} />
+        <Fill share={state.built / Math.max(1, stations.length)} />
         {filled(words.builtOf, { n: state.built, total: stations.length })}
       </p>
     </section>
