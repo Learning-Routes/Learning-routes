@@ -116,6 +116,7 @@ export class DemoTransport implements StudioTransport {
 
   private onMessage(text: string) {
     if (this.hasBegun) {
+      this.emit({ type: "wrote", text });
       void this.say("Anotado. Lo aplico en tu ruta.");
       return;
     }
@@ -288,6 +289,6 @@ export class DemoTransport implements StudioTransport {
 
   private async confirm() {
     this.emit({ type: "stepped", step: "publish" });
-    this.emit({ type: "confirming", address: ADDRESS, price: "[TU PRECIO]" });
+    this.emit({ type: "confirming", address: ADDRESS, price: "$12" });
   }
 }

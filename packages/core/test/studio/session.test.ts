@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   INITIAL_STUDIO_STATE,
+  LOG_KEPT,
   planStations,
   type StudioEvent,
   type StudioState,
@@ -99,5 +100,57 @@ describe("planStations", () => {
       "lesson:Sumar:false",
       "lesson:Práctica:true",
     ]);
+  });
+});
+
+describe("the conversation's log", () => {
+  it("keeps who said what, in order: the creator's words, a choice's label and the assistant's", () => {
+    const state = run([
+      { type: "began", text: "Quiero mi app de matemáticas" },
+      { type: "said", text: "¿Ya tienes contenido tuyo?" },
+      {
+        type: "asked",
+        isFork: true,
+        options: [
+          { id: "mine", label: "Tengo contenido" },
+          { id: "zero", label: "Desde cero" },
+        ],
+      },
+      { type: "chose", optionId: "zero" },
+      { type: "said", text: "¿Para quién es?" },
+      { type: "wrote", text: "Para colegio, segundo año" },
+    ]);
+    expect(state.log).toEqual([
+      { who: "creator", text: "Quiero mi app de matemáticas" },
+      { who: "assistant", text: "¿Ya tienes contenido tuyo?" },
+      { who: "creator", text: "Desde cero" },
+      { who: "assistant", text: "¿Para quién es?" },
+      { who: "creator", text: "Para colegio, segundo año" },
+    ]);
+  });
+
+  it("grows the assistant's words in place while they stream, and starts a new turn when they don't continue", () => {
+    const state = run([
+      { type: "began", text: "Hola" },
+      { type: "said", text: "Listo el" },
+      { type: "said", text: "Listo el módulo 1." },
+      { type: "said", text: "Ahora el módulo 2." },
+    ]);
+    expect(state.log).toEqual([
+      { who: "creator", text: "Hola" },
+      { who: "assistant", text: "Listo el módulo 1." },
+      { who: "assistant", text: "Ahora el módulo 2." },
+    ]);
+    expect(state.said).toBe("Ahora el módulo 2.");
+  });
+
+  it("keeps only the newest turns, so a long conversation stays light", () => {
+    const events: StudioEvent[] = Array.from({ length: 60 }, (_, n) => ({
+      type: "wrote" as const,
+      text: `mensaje ${n}`,
+    }));
+    const state = run(events);
+    expect(state.log).toHaveLength(LOG_KEPT);
+    expect(state.log.at(-1)).toEqual({ who: "creator", text: "mensaje 59" });
   });
 });
