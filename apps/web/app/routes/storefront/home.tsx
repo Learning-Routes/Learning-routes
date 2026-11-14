@@ -6,6 +6,7 @@ import { data } from "react-router";
 import { alternates } from "../../alternates";
 import { pageContext } from "../../context";
 import { CloseSheet } from "../../landing/close-sheet";
+import { LessonFormats, RouteShapes } from "../../landing/formats";
 import "../../landing/landing.css";
 import { LandingStageSection } from "../../landing/stage";
 import "../../storefront/catalog.css";
@@ -112,11 +113,16 @@ export default function StorefrontHome({ loaderData }: Route.ComponentProps) {
       <PlatformHeader locale={lang} appOrigin={appOrigin} />
       <main className="lp-main">
         <LandingStageSection locale={lang} />
-        <RoutesToStart
-          lang={lang}
-          routes={routes}
-          creatorOrigin={(slug) => `${protocol}//${slug}.${creatorDomain}`}
-        />
+        {routes.length > 0 ? (
+          <RoutesToStart
+            lang={lang}
+            routes={routes}
+            creatorOrigin={(slug) => `${protocol}//${slug}.${creatorDomain}`}
+          />
+        ) : (
+          <RouteShapes locale={lang} />
+        )}
+        <LessonFormats locale={lang} />
         <CloseSheet locale={lang} teachHref={`${appOrigin}/ser-creador`} />
       </main>
       <footer className="lp-footer">
