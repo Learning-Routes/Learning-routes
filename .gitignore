@@ -18,6 +18,8 @@ worker-configuration.d.ts
 # Playwright
 test-results/
 playwright-report/
+prod-report/
+prod-results/
 
 # Local files some checkouts still have from before the platform moved to the root.
 /app/
