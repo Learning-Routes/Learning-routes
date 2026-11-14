@@ -4,12 +4,12 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { filled } from "../storefront/words";
 import type { StudioTransport } from "./session-transport";
 import { Ask } from "./studio-ask";
-import { Choices, Confirm, PreviewNote, RouteList, Said, StudioTop } from "./studio-parts";
+import { Choices, Confirm, PreviewNote, RouteList, StudioTop, Thread } from "./studio-parts";
 import { syncMap, useConversation, useStudioMap } from "./use-studio";
 
 // The creator's assistant (Platform STEP 10): a night map where every answer is a fork in the
-// trail and the route is drawn as it is planned and built. Subtitles, choices and the route's list
-// are page text; the map only adds the picture.
+// trail and the route is drawn as it is planned and built. The conversation, its choices and the
+// route's list are page text; the map only adds the picture.
 
 function usePublishedToast(publishedAt: string | null, words: AssistantText) {
   const [toast, setToast] = useState<string | null>(null);
@@ -33,13 +33,26 @@ export function StudioPage({
 }) {
   const { state, send } = useConversation(connect);
   const [hot, setHot] = useState(-1);
-  const [isClient, setIsClient] = useState(false);
   const canvas = useRef<HTMLCanvasElement>(null);
   const overlay = useRef<HTMLDivElement>(null);
   const stage = useRef<HTMLElement>(null);
   const note = useRef<HTMLDivElement>(null);
   const leader = useRef<HTMLDivElement>(null);
-  const parts = useMemo(() => ({ canvas, overlay, stage }), []);
+  const rail = useRef<HTMLElement>(null);
+  const parts = useMemo(() => ({ canvas, overlay, stage, rail }), []);
+  const root = useRef<HTMLDivElement>(null);
+  // The shade under the conversation grows with it, so the map stays clear above it.
+  useEffect(() => {
+    const talk = stage.current;
+    if (!(talk && root.current && "ResizeObserver" in window)) {
+      return;
+    }
+    const observer = new ResizeObserver(() =>
+      root.current?.style.setProperty("--studio-talk", `${talk.offsetHeight}px`),
+    );
+    observer.observe(talk);
+    return () => observer.disconnect();
+  }, []);
   const latest = useRef(state);
   latest.current = state;
   const choose = (branch: number) => {
@@ -51,7 +64,6 @@ export function StudioPage({
   };
   const { map, hasMap, hasFailed } = useStudioMap(parts, words.startHere, choose, setHot);
   const drawn = useRef<StudioState>(INITIAL_STUDIO_STATE);
-  useEffect(() => setIsClient(true), []);
   useEffect(() => {
     if (map.current) {
       syncMap(map.current, hasMap ? drawn.current : INITIAL_STUDIO_STATE, state, words, {
@@ -65,13 +77,16 @@ export function StudioPage({
   const toast = usePublishedToast(state.publishedAt, words);
 
   return (
-    <div className={`studio${hasMap ? " has-map" : ""}`}>
+    <div
+      ref={root}
+      className={`studio${hasMap ? " has-map" : ""}${state.route ? " has-route" : ""}`}
+    >
       <canvas ref={canvas} className="studio-canvas" />
       <div className="studio-shade" aria-hidden="true" />
       <div ref={overlay} className="studio-overlay" aria-hidden="true" />
       <div ref={leader} className={`studio-leader${state.preview && hasMap ? " is-on" : ""}`} />
       <StudioTop state={state} words={words} />
-      <RouteList state={state} words={words} isHidden={hasMap} />
+      <RouteList state={state} words={words} listRef={rail} />
       <PreviewNote preview={state.preview} words={words} isPinned={hasMap} noteRef={note} />
       <main ref={stage} className={`studio-stage${state.hasBegun ? "" : " is-first"}`}>
         {hasFailed ? <p className="studio-status">{words.noMap}</p> : null}
@@ -79,7 +94,11 @@ export function StudioPage({
           {state.working ? <span className="studio-status-dot" aria-hidden="true" /> : null}
           {state.working}
         </p>
-        <Said text={state.hasBegun ? state.said : words.opening} isClient={isClient} />
+        {state.hasBegun ? (
+          <Thread state={state} words={words} />
+        ) : (
+          <h2 className="studio-say">{words.opening}</h2>
+        )}
         <Confirm state={state} words={words} send={send} />
         <Choices state={state} hot={hot} setHot={setHot} choose={choose} />
         <Ask hasBegun={state.hasBegun} words={words} send={send} />

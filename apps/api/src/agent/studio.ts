@@ -229,9 +229,7 @@ export class Studio extends Agent<AgentEnv> implements StudioPlace {
       const [any] = this.sql<{
         seq: number;
       }>`select seq from events where conversation_id = ${seat.conversationId} limit 1`;
-      if (!any) {
-        this.emit(seat.conversationId, { type: "began", text }, true);
-      }
+      this.emit(seat.conversationId, any ? { type: "wrote", text } : { type: "began", text }, true);
     }
     this.warnWhenLow(seat);
     const messages = this.history(seat.conversationId);

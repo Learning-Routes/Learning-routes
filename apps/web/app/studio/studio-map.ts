@@ -46,6 +46,7 @@ export class StudioMap {
   private readonly view = new MapCamera();
   private note: { element: HTMLElement; leader: HTMLElement; station: number } | null = null;
   private frame = 0;
+  private inset = 0;
   private last = performance.now();
   private readonly startMarker: Marker;
 
@@ -232,8 +233,9 @@ export class StudioMap {
   private readonly resize = () => {
     const width = window.innerWidth;
     const height = window.innerHeight;
+    this.inset = this.options.inset();
     this.renderer.setSize(width, height, false);
-    this.view.resize(width, height);
+    this.view.resize(width, height, this.inset);
     this.roads.resize(width, height);
   };
 
@@ -267,6 +269,10 @@ export class StudioMap {
       }
     });
     this.here.position.lerp(this.hereTarget, ease(2.6));
+    // The route's list appears beside the map once there is a plan: the view makes room for it.
+    if (this.options.inset() !== this.inset) {
+      this.resize();
+    }
     this.view.update(seconds, still);
     this.place();
     this.renderer.render(this.scene, this.view.camera);
@@ -276,14 +282,15 @@ export class StudioMap {
   /** Moves the page-text markers, chips and the pinned preview to where the scene puts them. */
   private place() {
     const floor = this.options.floor();
-    placeMarkers(this.marks.list, this.view.camera, floor);
+    placeMarkers(this.marks.list, this.view.camera, floor, this.inset, this.options.ceiling());
+    const placed: { left: number; right: number; top: number }[] = [];
     for (const branch of this.branches) {
-      placeChip(branch.chip, branch.anchor, this.view.camera);
+      placeChip(branch.chip, branch.anchor, this.view.camera, this.inset, placed);
     }
     if (this.note) {
       const last = this.planPoints.length - 1;
       const anchor = lift(at(this.planPoints, Math.min(last, this.note.station + 1)));
-      placeNote(this.note, anchor, this.view.camera, floor);
+      placeNote(this.note, anchor, this.view.camera, floor, this.inset);
     }
   }
 }

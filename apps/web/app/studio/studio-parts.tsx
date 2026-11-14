@@ -7,11 +7,11 @@ import {
   type StudioInput,
   type StudioState,
 } from "@learning-routes/core/studio/session";
-import { type RefObject, useMemo } from "react";
+import type { RefObject } from "react";
 import { filled } from "../storefront/words";
 
 // The pieces of the assistant's page (Platform STEP 10): its legend and steps, the route as a
-// list, a lesson's preview, and the subtitles with their choices and the box to answer in.
+// list beside the map, a lesson's preview, and the conversation with its choices.
 
 function tickClass(index: number, now: number, isDone: boolean) {
   if (isDone || index + 1 < now) {
@@ -71,33 +71,54 @@ export function StudioTop({ state, words }: { state: StudioState; words: Assista
   );
 }
 
+function stationClass(index: number, state: StudioState, isModule: boolean) {
+  const kind = isModule ? "is-module" : "is-lesson";
+  if (index < state.built) {
+    return `${kind} is-built`;
+  }
+  // The station being written is the first one not built, while the assistant is at work.
+  return index === state.built && state.step === "build" && state.working
+    ? `${kind} is-writing`
+    : kind;
+}
+
+/** The route, in order, beside the map: what is written, what is being written, what is new. */
 export function RouteList({
   state,
   words,
-  isHidden,
+  listRef,
 }: {
   state: StudioState;
   words: AssistantText;
-  isHidden: boolean;
+  listRef: RefObject<HTMLElement | null>;
 }) {
   if (!state.route) {
     return null;
   }
+  const stations = planStations(state.route.modules);
   return (
-    <section className={isHidden ? "studio-sr" : "studio-list"} aria-label={words.routeList}>
+    <section ref={listRef} className="studio-list" aria-label={words.routeList}>
       <h2>{words.routeList}</h2>
       <ol>
-        {planStations(state.route.modules).map((station, index) => (
+        {stations.map((station, index) => (
           <li
-            key={`${station.kind}-${station.title}`}
-            className={index < state.built ? "is-built" : ""}
+            key={`${station.kind}-${station.moduleIndex}-${station.title}`}
+            className={stationClass(index, state, station.kind === "module")}
           >
-            {station.kind === "module"
-              ? `${filled(words.moduleN, { n: station.moduleIndex + 1 })}: ${station.title}`
-              : station.title}
+            {station.kind === "module" ? (
+              <span className="studio-list-module">
+                {filled(words.moduleN, { n: station.moduleIndex + 1 })}
+              </span>
+            ) : null}
+            {station.title}
+            {station.isNew ? <span className="studio-list-new">{words.newLesson}</span> : null}
           </li>
         ))}
       </ol>
+      <p className="studio-list-meter">
+        <span style={{ width: `${(state.built / Math.max(1, stations.length)) * 100}%` }} />
+        {filled(words.builtOf, { n: state.built, total: stations.length })}
+      </p>
     </section>
   );
 }
@@ -142,24 +163,41 @@ export function PreviewNote({
   );
 }
 
-export function Said({ text, isClient }: { text: string; isClient: boolean }) {
-  // Before hydration the sentence is plain text; after, each word rises in turn.
-  const words = useMemo(() => text.split(" ").map((word, order) => ({ word, order })), [text]);
-  if (!isClient) {
-    return <p className="studio-say">{text}</p>;
-  }
+/** The newest turns the page shows; older ones fade out at the top. */
+const SHOWN = 4;
+
+const MARK = (
+  <svg width="15" height="15" viewBox="0 0 26 26" aria-hidden="true">
+    <path
+      d="M6 19C10 18 9 9 13 10S17 7 20 6"
+      fill="none"
+      stroke="#fff"
+      strokeWidth="2.6"
+      strokeLinecap="round"
+    />
+    <circle cx="20" cy="6" r="2.6" fill="#E9A23B" />
+  </svg>
+);
+
+/** The conversation: the creator's words on the right, the assistant's beside its mark. */
+export function Thread({ state, words }: { state: StudioState; words: AssistantText }) {
+  const first = Math.max(0, state.log.length - SHOWN);
   return (
-    <p className="studio-say" aria-live="polite" key={text}>
-      {words.map(({ word, order }) => (
-        <span
-          key={`${order}-${word}`}
-          className="studio-word"
-          style={{ animationDelay: `${order * 38}ms` }}
+    <ol className="studio-thread" aria-live="polite">
+      {state.log.slice(first).map((entry, index) => (
+        <li
+          // A turn keeps its key while its streamed words grow, so it rises once.
+          key={first + index}
+          className={`studio-turn is-${entry.who}${first + index < state.log.length - 2 ? " is-old" : ""}`}
         >
-          {`${word} `}
-        </span>
+          {entry.who === "assistant" ? <span className="studio-turn-mark">{MARK}</span> : null}
+          <span className="studio-sr">
+            {entry.who === "assistant" ? words.assistant : words.you}:{" "}
+          </span>
+          <p>{entry.text}</p>
+        </li>
       ))}
-    </p>
+    </ol>
   );
 }
 
