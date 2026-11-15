@@ -77,8 +77,8 @@
   align-items: flex-end;
   justify-content: center;
   padding-bottom: 10px;
-  font: 600 11px var(--font-mono);
-  color: #8a877f;
+  font: 600 12px var(--font-mono);
+  color: #4a4842;
 }
 
 .s-white.is-on {
