@@ -13,6 +13,17 @@ import {
   simulation,
 } from "./sections/interactive";
 import { conceptOrVisual, motion, video, visual } from "./sections/media";
+import {
+  codeCheck,
+  estimate,
+  hotspot,
+  openAnswer,
+  order,
+  sim,
+  speak,
+  trueFalse,
+  workedExample,
+} from "./sections/player";
 import { fencedConcept, fencedProse, fencedSummary, headingSummary } from "./sections/prose";
 import type { Section } from "./sections/types";
 
@@ -103,7 +114,24 @@ function splitAroundFences(body: string, titles: Titles): (string | Section)[] {
   return segments;
 }
 
+// The player's fences (Platform STEP 12): the line after the fence is the prompt.
+const PLAYER_FENCES: Record<string, (titleLine: string, body: string) => Section> = {
+  order,
+  true_false: trueFalse,
+  estimate,
+  hotspot,
+  worked_example: workedExample,
+  speak,
+  code_check: codeCheck,
+  open_answer: openAnswer,
+  sim,
+};
+
 function parseFence(type: string, titleLine: string, body: string, titles: Titles): Section {
+  const player = PLAYER_FENCES[type];
+  if (player) {
+    return player(titleLine, body);
+  }
   switch (type) {
     case "check":
       return fencedCheck(titleLine, body);
