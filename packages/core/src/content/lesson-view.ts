@@ -21,6 +21,8 @@ export interface LessonPlace {
   spaceId: string;
   kind: "p" | "d";
   creator: LocalizedText;
+  /** The space's brand colour: a route with no accent of its own takes it. */
+  brandColor: string | null;
 }
 
 const MARKDOWN_FIELDS = ["body", "intro", "situation", "trailing_content"] as const;
@@ -46,6 +48,8 @@ export interface LessonView {
   locked: boolean;
   /** Whose space it is: an interactive block says who made it. */
   creator: LocalizedText;
+  /** The route's accent colour, or the space's brand colour; null for the platform's own. */
+  accent: string | null;
   routeTitle: LocalizedText;
   sourceLocale: string;
   title: LocalizedText;
@@ -89,6 +93,7 @@ export function lessonView(
   return {
     locked,
     creator: place.creator,
+    accent: snapshot.route.accentColor ?? place.brandColor,
     routeTitle: snapshot.route.title,
     sourceLocale: snapshot.route.sourceLocale,
     title: lesson.title,

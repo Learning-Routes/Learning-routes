@@ -85,6 +85,7 @@ export const lessonRead = defineAction({
       spaceId,
       kind: "p",
       creator: space.name,
+      brandColor: space.brandColor,
     });
     if (view === null) {
       throw refused("not_found");

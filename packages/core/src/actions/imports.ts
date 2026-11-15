@@ -199,6 +199,7 @@ export const routePreview = defineAction({
       spaceId,
       kind: "d",
       creator: space.name,
+      brandColor: space.brandColor,
     });
     return {
       view,

@@ -1,4 +1,5 @@
 import * as z from "zod";
+import { checkBrandColor } from "../brand-color";
 import { creationsIn } from "../content/creations";
 import { contentHash, SNAPSHOT_FORMAT, snapshotOf, upcastSnapshot } from "../content/snapshot";
 import { ROUTE_LEVELS, ROUTE_TOPICS } from "../copy/route-facts";
@@ -81,7 +82,8 @@ export const routeList = defineAction({
 export const routeUpdate = defineAction({
   name: "route.update",
   kind: "mutation",
-  description: "Change a draft's title, description, topic or level. Never its price or address.",
+  description:
+    "Change a draft's title, description, topic, level or accent colour. Never its price or address.",
   input: z
     .strictObject({
       routeId: z.uuid(),
@@ -90,11 +92,15 @@ export const routeUpdate = defineAction({
       description: LocalizedText.nullish(),
       topic: z.enum(ROUTE_TOPICS).optional(),
       level: z.enum(ROUTE_LEVELS).optional(),
+      // The same check as the space's brand colour (Platform STEP 12); null takes the space's.
+      accentColor: z.string().nullable().optional(),
     })
     .refine((input) => Object.keys(input).length > 2, "nothing to change"),
   target: (input) => ({ kind: "route", id: input.routeId }),
   async run(ctx, input, given) {
-    const { routeId, expectedRevision, ...details } = input;
+    const { routeId, expectedRevision, accentColor, ...rest } = input;
+    const details =
+      accentColor === undefined ? rest : { ...rest, accentColor: accentOf(accentColor) };
     const { revision } = unwrap(
       await ctx.repos.routeDrafts.updateDetails(
         inSpace(given).spaceId,
@@ -106,6 +112,17 @@ export const routeUpdate = defineAction({
     return { routeId, revision };
   },
 });
+
+function accentOf(color: string | null): string | null {
+  if (color === null) {
+    return null;
+  }
+  const checked = checkBrandColor(color);
+  if (!checked.ok) {
+    throw new ActionError("invalid", checked.message);
+  }
+  return checked.color;
+}
 
 /** The price is the owner's, in the app: an assistant may only read it. */
 export const routeSetPrice = defineAction({

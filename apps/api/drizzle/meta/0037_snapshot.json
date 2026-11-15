@@ -111,12 +111,8 @@
           "name": "account_user_id_user_id_fk",
           "tableFrom": "account",
           "tableTo": "user",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -164,9 +160,7 @@
         "rate_limit_key_unique": {
           "name": "rate_limit_key_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "key"
-          ]
+          "columns": ["key"]
         }
       },
       "policies": {},
@@ -250,12 +244,8 @@
           "name": "session_user_id_user_id_fk",
           "tableFrom": "session",
           "tableTo": "user",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -265,9 +255,7 @@
         "session_token_unique": {
           "name": "session_token_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "token"
-          ]
+          "columns": ["token"]
         }
       },
       "policies": {},
@@ -332,9 +320,7 @@
         "user_email_unique": {
           "name": "user_email_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "email"
-          ]
+          "columns": ["email"]
         }
       },
       "policies": {},
@@ -536,14 +522,8 @@
           "name": "catalog_listings_route_id_fkey",
           "tableFrom": "catalog_listings",
           "tableTo": "routes",
-          "columnsFrom": [
-            "route_id",
-            "space_id"
-          ],
-          "columnsTo": [
-            "id",
-            "space_id"
-          ],
+          "columnsFrom": ["route_id", "space_id"],
+          "columnsTo": ["id", "space_id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         }
@@ -744,12 +724,8 @@
           "name": "creator_invitations_application_id_creator_applications_id_fk",
           "tableFrom": "creator_invitations",
           "tableTo": "creator_applications",
-          "columnsFrom": [
-            "application_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["application_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -759,9 +735,7 @@
         "creator_invitations_tokenHash_unique": {
           "name": "creator_invitations_tokenHash_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "token_hash"
-          ]
+          "columns": ["token_hash"]
         }
       },
       "policies": {},
@@ -880,14 +854,8 @@
           "name": "blocks_lesson_id_fkey",
           "tableFrom": "blocks",
           "tableTo": "lessons",
-          "columnsFrom": [
-            "lesson_id",
-            "space_id"
-          ],
-          "columnsTo": [
-            "id",
-            "space_id"
-          ],
+          "columnsFrom": ["lesson_id", "space_id"],
+          "columnsTo": ["id", "space_id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         }
@@ -958,14 +926,8 @@
           "name": "lesson_prerequisites_route_id_fkey",
           "tableFrom": "lesson_prerequisites",
           "tableTo": "routes",
-          "columnsFrom": [
-            "route_id",
-            "space_id"
-          ],
-          "columnsTo": [
-            "id",
-            "space_id"
-          ],
+          "columnsFrom": ["route_id", "space_id"],
+          "columnsTo": ["id", "space_id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         },
@@ -973,16 +935,8 @@
           "name": "lesson_prerequisites_lesson_id_fkey",
           "tableFrom": "lesson_prerequisites",
           "tableTo": "lessons",
-          "columnsFrom": [
-            "lesson_id",
-            "route_id",
-            "space_id"
-          ],
-          "columnsTo": [
-            "id",
-            "route_id",
-            "space_id"
-          ],
+          "columnsFrom": ["lesson_id", "route_id", "space_id"],
+          "columnsTo": ["id", "route_id", "space_id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         },
@@ -990,16 +944,8 @@
           "name": "lesson_prerequisites_requires_lesson_id_fkey",
           "tableFrom": "lesson_prerequisites",
           "tableTo": "lessons",
-          "columnsFrom": [
-            "requires_lesson_id",
-            "route_id",
-            "space_id"
-          ],
-          "columnsTo": [
-            "id",
-            "route_id",
-            "space_id"
-          ],
+          "columnsFrom": ["requires_lesson_id", "route_id", "space_id"],
+          "columnsTo": ["id", "route_id", "space_id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         }
@@ -1007,10 +953,7 @@
       "compositePrimaryKeys": {
         "lesson_prerequisites_lesson_id_requires_lesson_id_pk": {
           "name": "lesson_prerequisites_lesson_id_requires_lesson_id_pk",
-          "columns": [
-            "lesson_id",
-            "requires_lesson_id"
-          ]
+          "columns": ["lesson_id", "requires_lesson_id"]
         }
       },
       "uniqueConstraints": {},
@@ -1141,16 +1084,8 @@
           "name": "lessons_module_id_fkey",
           "tableFrom": "lessons",
           "tableTo": "modules",
-          "columnsFrom": [
-            "module_id",
-            "route_id",
-            "space_id"
-          ],
-          "columnsTo": [
-            "id",
-            "route_id",
-            "space_id"
-          ],
+          "columnsFrom": ["module_id", "route_id", "space_id"],
+          "columnsTo": ["id", "route_id", "space_id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         }
@@ -1160,19 +1095,12 @@
         "lessons_id_space_id_key": {
           "name": "lessons_id_space_id_key",
           "nullsNotDistinct": false,
-          "columns": [
-            "id",
-            "space_id"
-          ]
+          "columns": ["id", "space_id"]
         },
         "lessons_id_route_id_space_id_key": {
           "name": "lessons_id_route_id_space_id_key",
           "nullsNotDistinct": false,
-          "columns": [
-            "id",
-            "route_id",
-            "space_id"
-          ]
+          "columns": ["id", "route_id", "space_id"]
         }
       },
       "policies": {},
@@ -1269,14 +1197,8 @@
           "name": "modules_route_id_fkey",
           "tableFrom": "modules",
           "tableTo": "routes",
-          "columnsFrom": [
-            "route_id",
-            "space_id"
-          ],
-          "columnsTo": [
-            "id",
-            "space_id"
-          ],
+          "columnsFrom": ["route_id", "space_id"],
+          "columnsTo": ["id", "space_id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         }
@@ -1286,11 +1208,7 @@
         "modules_id_route_id_space_id_key": {
           "name": "modules_id_route_id_space_id_key",
           "nullsNotDistinct": false,
-          "columns": [
-            "id",
-            "route_id",
-            "space_id"
-          ]
+          "columns": ["id", "route_id", "space_id"]
         }
       },
       "policies": {},
@@ -1439,12 +1357,8 @@
           "name": "routes_space_id_spaces_id_fk",
           "tableFrom": "routes",
           "tableTo": "spaces",
-          "columnsFrom": [
-            "space_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["space_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -1454,18 +1368,12 @@
         "routes_space_id_slug_key": {
           "name": "routes_space_id_slug_key",
           "nullsNotDistinct": false,
-          "columns": [
-            "space_id",
-            "slug"
-          ]
+          "columns": ["space_id", "slug"]
         },
         "routes_id_space_id_key": {
           "name": "routes_id_space_id_key",
           "nullsNotDistinct": false,
-          "columns": [
-            "id",
-            "space_id"
-          ]
+          "columns": ["id", "space_id"]
         }
       },
       "policies": {},
@@ -1560,12 +1468,8 @@
           "name": "stored_files_space_id_spaces_id_fk",
           "tableFrom": "stored_files",
           "tableTo": "spaces",
-          "columnsFrom": [
-            "space_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["space_id"],
+          "columnsTo": ["id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         }
@@ -1575,10 +1479,7 @@
         "stored_files_space_id_key_key": {
           "name": "stored_files_space_id_key_key",
           "nullsNotDistinct": false,
-          "columns": [
-            "space_id",
-            "key"
-          ]
+          "columns": ["space_id", "key"]
         }
       },
       "policies": {},
@@ -1697,12 +1598,8 @@
           "name": "cards_user_id_user_id_fk",
           "tableFrom": "cards",
           "tableTo": "user",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -1710,12 +1607,8 @@
           "name": "cards_space_id_spaces_id_fk",
           "tableFrom": "cards",
           "tableTo": "spaces",
-          "columnsFrom": [
-            "space_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["space_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -1725,19 +1618,12 @@
         "cards_user_id_item_id_key": {
           "name": "cards_user_id_item_id_key",
           "nullsNotDistinct": false,
-          "columns": [
-            "user_id",
-            "item_id"
-          ]
+          "columns": ["user_id", "item_id"]
         },
         "cards_id_user_id_space_id_key": {
           "name": "cards_id_user_id_space_id_key",
           "nullsNotDistinct": false,
-          "columns": [
-            "id",
-            "user_id",
-            "space_id"
-          ]
+          "columns": ["id", "user_id", "space_id"]
         }
       },
       "policies": {},
@@ -1827,12 +1713,8 @@
           "name": "enrollments_user_id_user_id_fk",
           "tableFrom": "enrollments",
           "tableTo": "user",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -1840,14 +1722,8 @@
           "name": "enrollments_route_id_fkey",
           "tableFrom": "enrollments",
           "tableTo": "routes",
-          "columnsFrom": [
-            "route_id",
-            "space_id"
-          ],
-          "columnsTo": [
-            "id",
-            "space_id"
-          ],
+          "columnsFrom": ["route_id", "space_id"],
+          "columnsTo": ["id", "space_id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         },
@@ -1855,16 +1731,8 @@
           "name": "enrollments_pinned_version_fkey",
           "tableFrom": "enrollments",
           "tableTo": "route_versions",
-          "columnsFrom": [
-            "route_id",
-            "space_id",
-            "pinned_version"
-          ],
-          "columnsTo": [
-            "route_id",
-            "space_id",
-            "version"
-          ],
+          "columnsFrom": ["route_id", "space_id", "pinned_version"],
+          "columnsTo": ["route_id", "space_id", "version"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         }
@@ -1874,19 +1742,12 @@
         "enrollments_user_id_route_id_key": {
           "name": "enrollments_user_id_route_id_key",
           "nullsNotDistinct": false,
-          "columns": [
-            "user_id",
-            "route_id"
-          ]
+          "columns": ["user_id", "route_id"]
         },
         "enrollments_id_space_id_user_id_key": {
           "name": "enrollments_id_space_id_user_id_key",
           "nullsNotDistinct": false,
-          "columns": [
-            "id",
-            "space_id",
-            "user_id"
-          ]
+          "columns": ["id", "space_id", "user_id"]
         }
       },
       "policies": {},
@@ -1959,16 +1820,8 @@
           "name": "progress_enrollment_id_fkey",
           "tableFrom": "progress",
           "tableTo": "enrollments",
-          "columnsFrom": [
-            "enrollment_id",
-            "space_id",
-            "user_id"
-          ],
-          "columnsTo": [
-            "id",
-            "space_id",
-            "user_id"
-          ],
+          "columnsFrom": ["enrollment_id", "space_id", "user_id"],
+          "columnsTo": ["id", "space_id", "user_id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         }
@@ -1976,10 +1829,7 @@
       "compositePrimaryKeys": {
         "progress_enrollment_id_lesson_id_pk": {
           "name": "progress_enrollment_id_lesson_id_pk",
-          "columns": [
-            "enrollment_id",
-            "lesson_id"
-          ]
+          "columns": ["enrollment_id", "lesson_id"]
         }
       },
       "uniqueConstraints": {},
@@ -2090,12 +1940,8 @@
           "name": "reviews_user_id_user_id_fk",
           "tableFrom": "reviews",
           "tableTo": "user",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -2103,12 +1949,8 @@
           "name": "reviews_space_id_spaces_id_fk",
           "tableFrom": "reviews",
           "tableTo": "spaces",
-          "columnsFrom": [
-            "space_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["space_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -2116,16 +1958,8 @@
           "name": "reviews_card_id_fkey",
           "tableFrom": "reviews",
           "tableTo": "cards",
-          "columnsFrom": [
-            "card_id",
-            "user_id",
-            "space_id"
-          ],
-          "columnsTo": [
-            "id",
-            "user_id",
-            "space_id"
-          ],
+          "columnsFrom": ["card_id", "user_id", "space_id"],
+          "columnsTo": ["id", "user_id", "space_id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -2135,10 +1969,7 @@
         "reviews_user_id_review_id_key": {
           "name": "reviews_user_id_review_id_key",
           "nullsNotDistinct": false,
-          "columns": [
-            "user_id",
-            "review_id"
-          ]
+          "columns": ["user_id", "review_id"]
         }
       },
       "policies": {},
@@ -2255,12 +2086,8 @@
           "name": "action_log_space_id_spaces_id_fk",
           "tableFrom": "action_log",
           "tableTo": "spaces",
-          "columnsFrom": [
-            "space_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["space_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -2306,12 +2133,8 @@
           "name": "connection_uses_user_id_user_id_fk",
           "tableFrom": "connection_uses",
           "tableTo": "user",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -2319,12 +2142,8 @@
           "name": "connection_uses_client_id_oauth_client_client_id_fk",
           "tableFrom": "connection_uses",
           "tableTo": "oauth_client",
-          "columnsFrom": [
-            "client_id"
-          ],
-          "columnsTo": [
-            "client_id"
-          ],
+          "columnsFrom": ["client_id"],
+          "columnsTo": ["client_id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -2332,10 +2151,7 @@
       "compositePrimaryKeys": {
         "connection_uses_user_id_client_id_pk": {
           "name": "connection_uses_user_id_client_id_pk",
-          "columns": [
-            "user_id",
-            "client_id"
-          ]
+          "columns": ["user_id", "client_id"]
         }
       },
       "uniqueConstraints": {},
@@ -2577,12 +2393,8 @@
           "name": "oauth_access_token_client_id_oauth_client_client_id_fk",
           "tableFrom": "oauth_access_token",
           "tableTo": "oauth_client",
-          "columnsFrom": [
-            "client_id"
-          ],
-          "columnsTo": [
-            "client_id"
-          ],
+          "columnsFrom": ["client_id"],
+          "columnsTo": ["client_id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -2590,12 +2402,8 @@
           "name": "oauth_access_token_session_id_session_id_fk",
           "tableFrom": "oauth_access_token",
           "tableTo": "session",
-          "columnsFrom": [
-            "session_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["session_id"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         },
@@ -2603,12 +2411,8 @@
           "name": "oauth_access_token_user_id_user_id_fk",
           "tableFrom": "oauth_access_token",
           "tableTo": "user",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -2616,12 +2420,8 @@
           "name": "oauth_access_token_refresh_id_oauth_refresh_token_id_fk",
           "tableFrom": "oauth_access_token",
           "tableTo": "oauth_refresh_token",
-          "columnsFrom": [
-            "refresh_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["refresh_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -2631,9 +2431,7 @@
         "oauth_access_token_token_unique": {
           "name": "oauth_access_token_token_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "token"
-          ]
+          "columns": ["token"]
         }
       },
       "policies": {},
@@ -2887,12 +2685,8 @@
           "name": "oauth_client_user_id_user_id_fk",
           "tableFrom": "oauth_client",
           "tableTo": "user",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -2902,9 +2696,7 @@
         "oauth_client_client_id_unique": {
           "name": "oauth_client_client_id_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "client_id"
-          ]
+          "columns": ["client_id"]
         }
       },
       "policies": {},
@@ -3031,12 +2823,8 @@
           "name": "oauth_client_resource_client_id_oauth_client_client_id_fk",
           "tableFrom": "oauth_client_resource",
           "tableTo": "oauth_client",
-          "columnsFrom": [
-            "client_id"
-          ],
-          "columnsTo": [
-            "client_id"
-          ],
+          "columnsFrom": ["client_id"],
+          "columnsTo": ["client_id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -3044,12 +2832,8 @@
           "name": "oauth_client_resource_resource_id_oauth_resource_identifier_fk",
           "tableFrom": "oauth_client_resource",
           "tableTo": "oauth_resource",
-          "columnsFrom": [
-            "resource_id"
-          ],
-          "columnsTo": [
-            "identifier"
-          ],
+          "columnsFrom": ["resource_id"],
+          "columnsTo": ["identifier"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -3157,12 +2941,8 @@
           "name": "oauth_consent_client_id_oauth_client_client_id_fk",
           "tableFrom": "oauth_consent",
           "tableTo": "oauth_client",
-          "columnsFrom": [
-            "client_id"
-          ],
-          "columnsTo": [
-            "client_id"
-          ],
+          "columnsFrom": ["client_id"],
+          "columnsTo": ["client_id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -3170,12 +2950,8 @@
           "name": "oauth_consent_user_id_user_id_fk",
           "tableFrom": "oauth_consent",
           "tableTo": "user",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -3367,12 +3143,8 @@
           "name": "oauth_refresh_token_client_id_oauth_client_client_id_fk",
           "tableFrom": "oauth_refresh_token",
           "tableTo": "oauth_client",
-          "columnsFrom": [
-            "client_id"
-          ],
-          "columnsTo": [
-            "client_id"
-          ],
+          "columnsFrom": ["client_id"],
+          "columnsTo": ["client_id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -3380,12 +3152,8 @@
           "name": "oauth_refresh_token_session_id_session_id_fk",
           "tableFrom": "oauth_refresh_token",
           "tableTo": "session",
-          "columnsFrom": [
-            "session_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["session_id"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         },
@@ -3393,12 +3161,8 @@
           "name": "oauth_refresh_token_user_id_user_id_fk",
           "tableFrom": "oauth_refresh_token",
           "tableTo": "user",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -3408,9 +3172,7 @@
         "oauth_refresh_token_token_unique": {
           "name": "oauth_refresh_token_token_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "token"
-          ]
+          "columns": ["token"]
         }
       },
       "policies": {},
@@ -3523,9 +3285,7 @@
         "oauth_resource_identifier_unique": {
           "name": "oauth_resource_identifier_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "identifier"
-          ]
+          "columns": ["identifier"]
         }
       },
       "policies": {},
@@ -3590,12 +3350,8 @@
           "name": "memberships_space_id_spaces_id_fk",
           "tableFrom": "memberships",
           "tableTo": "spaces",
-          "columnsFrom": [
-            "space_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["space_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -3603,12 +3359,8 @@
           "name": "memberships_user_id_user_id_fk",
           "tableFrom": "memberships",
           "tableTo": "user",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -3616,10 +3368,7 @@
       "compositePrimaryKeys": {
         "memberships_space_id_user_id_pk": {
           "name": "memberships_space_id_user_id_pk",
-          "columns": [
-            "space_id",
-            "user_id"
-          ]
+          "columns": ["space_id", "user_id"]
         }
       },
       "uniqueConstraints": {},
@@ -3656,12 +3405,8 @@
           "name": "platform_roles_user_id_user_id_fk",
           "tableFrom": "platform_roles",
           "tableTo": "user",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -3753,9 +3498,7 @@
         "spaces_slug_unique": {
           "name": "spaces_slug_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "slug"
-          ]
+          "columns": ["slug"]
         }
       },
       "policies": {},
@@ -3837,12 +3580,8 @@
           "name": "user_profiles_user_id_user_id_fk",
           "tableFrom": "user_profiles",
           "tableTo": "user",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -3925,14 +3664,8 @@
           "name": "route_versions_route_id_fkey",
           "tableFrom": "route_versions",
           "tableTo": "routes",
-          "columnsFrom": [
-            "route_id",
-            "space_id"
-          ],
-          "columnsTo": [
-            "id",
-            "space_id"
-          ],
+          "columnsFrom": ["route_id", "space_id"],
+          "columnsTo": ["id", "space_id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         }
@@ -3942,19 +3675,12 @@
         "route_versions_route_id_version_key": {
           "name": "route_versions_route_id_version_key",
           "nullsNotDistinct": false,
-          "columns": [
-            "route_id",
-            "version"
-          ]
+          "columns": ["route_id", "version"]
         },
         "route_versions_route_id_space_id_version_key": {
           "name": "route_versions_route_id_space_id_version_key",
           "nullsNotDistinct": false,
-          "columns": [
-            "route_id",
-            "space_id",
-            "version"
-          ]
+          "columns": ["route_id", "space_id", "version"]
         }
       },
       "policies": {},

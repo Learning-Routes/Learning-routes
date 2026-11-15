@@ -28,7 +28,12 @@ const snapshot = (pricing: "free" | "paid"): Snapshot =>
     blocks,
   }) as unknown as Snapshot;
 
-const PLACE = { spaceId: id(5), kind: "p" as const, creator: { es: "Ana" } };
+const PLACE = {
+  spaceId: id(5),
+  kind: "p" as const,
+  creator: { es: "Ana" },
+  brandColor: null,
+};
 
 describe("lessonView", () => {
   it("says where the topic is, in its module and in the route", () => {

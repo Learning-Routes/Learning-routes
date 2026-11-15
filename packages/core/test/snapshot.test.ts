@@ -26,8 +26,8 @@ const FORMAT_1 = {
 };
 
 describe("upcastSnapshot (Platform STEP 2 §2.10)", () => {
-  it("writes format 2 today", () => {
-    expect(SNAPSHOT_FORMAT).toBe(2);
+  it("writes format 3 today", () => {
+    expect(SNAPSHOT_FORMAT).toBe(3);
   });
 
   it("format 1: reads a snapshot as today's, keeping every id, with no price and the plainest facts", () => {
@@ -39,6 +39,7 @@ describe("upcastSnapshot (Platform STEP 2 §2.10)", () => {
         level: "inicial",
         priceMinor: null,
         currency: null,
+        accentColor: null,
       },
     });
   });
@@ -51,11 +52,34 @@ describe("upcastSnapshot (Platform STEP 2 §2.10)", () => {
       priceMinor: 2900,
       currency: "EUR",
     };
-    expect(upcastSnapshot(2, { ...FORMAT_1, route }).route).toEqual(route);
+    expect(upcastSnapshot(2, { ...FORMAT_1, route }).route).toEqual({
+      ...route,
+      accentColor: null,
+    });
     expect(() => upcastSnapshot(2, FORMAT_1)).toThrow();
     expect(() =>
       upcastSnapshot(2, { ...FORMAT_1, route: { ...route, topic: "cooking" } }),
     ).toThrow();
+  });
+
+  it("format 3: carries the route's accent colour, or none (Platform STEP 12)", () => {
+    const route = {
+      ...FORMAT_1.route,
+      topic: "musica",
+      level: "avanzado",
+      priceMinor: null,
+      currency: null,
+      accentColor: "#6a2ea0",
+    };
+    expect(upcastSnapshot(3, { ...FORMAT_1, route }).route).toEqual(route);
+    expect(
+      upcastSnapshot(3, { ...FORMAT_1, route: { ...route, accentColor: null } }).route.accentColor,
+    ).toBeNull();
+    expect(() =>
+      upcastSnapshot(3, { ...FORMAT_1, route: { ...route, accentColor: "purple" } }),
+    ).toThrow();
+    const { accentColor: _, ...format2 } = route;
+    expect(() => upcastSnapshot(3, { ...FORMAT_1, route: format2 })).toThrow();
   });
 
   it("format 1: refuses a snapshot that does not match it", () => {
@@ -68,6 +92,6 @@ describe("upcastSnapshot (Platform STEP 2 §2.10)", () => {
 
   it("refuses a format it does not know, rather than guessing", () => {
     expect(() => upcastSnapshot(0, FORMAT_1)).toThrow(RangeError);
-    expect(() => upcastSnapshot(3, FORMAT_1)).toThrow(RangeError);
+    expect(() => upcastSnapshot(4, FORMAT_1)).toThrow(RangeError);
   });
 });

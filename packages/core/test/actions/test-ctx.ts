@@ -36,6 +36,7 @@ const ROUTE_FIELDS = {
   level: "inicial" as const,
   priceMinor: null,
   currency: null,
+  accentColor: null,
 };
 
 const MODULE_ID = "0192d3a0-0000-7000-8000-0000000000a1";

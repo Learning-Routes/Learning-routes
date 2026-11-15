@@ -152,6 +152,15 @@ describe("two tenants, raw SQL under row-level security", () => {
         w.routes.b,
       ]);
       expect(updated.rowCount).toBe(0);
+      // A route's accent colour (Platform STEP 12): B's cannot be painted, A's own can.
+      const painted = await db.query("update routes set accent_color = '#6a2ea0' where id = $1", [
+        w.routes.b,
+      ]);
+      expect(painted.rowCount).toBe(0);
+      const own = await db.query("update routes set accent_color = '#6a2ea0' where id = $1", [
+        w.routes.a,
+      ]);
+      expect(own.rowCount).toBe(1);
     });
   });
 

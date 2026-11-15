@@ -20,6 +20,7 @@ const version = (lessons: string[]): Snapshot => ({
     level: "inicial" as const,
     priceMinor: null,
     currency: null,
+    accentColor: null,
   },
   modules: [{ id: M, position: "V", title: { en: "M" } }],
   lessons: lessons.map((id, i) => ({ id, moduleId: M, position: `${i + 1}`, title: { en: id } })),

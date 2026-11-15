@@ -53,6 +53,8 @@ export const routes = pgTable(
     // The route's one-time price; null means not for sale yet. Module 1 is always free.
     priceMinor: bigint({ mode: "number" }),
     currency: text(),
+    // The creator's accent for this route (Platform STEP 12); null takes the space's brand colour.
+    accentColor: text(),
     // Bumped on every draft change; an edit names the revision it read (§4.3).
     draftRevision: bigint({ mode: "number" }).notNull().default(0),
     latestPublishedVersion: integer(),
@@ -76,6 +78,7 @@ export const routes = pgTable(
     check("routes_access", sql`${t.access} in (${oneOf(Route.shape.access.options)})`),
     check("routes_pricing", sql`${t.pricing} in (${oneOf(Route.shape.pricing.options)})`),
     check("routes_topic", sql`${t.topic} in (${oneOf(ROUTE_TOPICS)})`),
+    check("routes_accent_color", sql`${t.accentColor} ~ '^#[0-9a-f]{6}$'`),
     check("routes_level", sql`${t.level} in (${oneOf(ROUTE_LEVELS)})`),
     check(
       "routes_price",
