@@ -16,6 +16,7 @@ describe("snapshotOf: a draft's content, as a version stores it", () => {
         level: "inicial" as const,
         priceMinor: null,
         currency: null,
+        accentColor: null,
       },
       modules: [],
       lessons: [],

@@ -67,12 +67,18 @@ export const WRITE_TOOLS: Tool[] = [
       description: Text.nullish(),
       topic: z.enum(ROUTE_TOPICS).optional(),
       level: z.enum(ROUTE_LEVELS).optional(),
+      accent_color: z
+        .string()
+        .nullable()
+        .optional()
+        .describe("The route's colour, like #6a2ea0, readable with white text. null: the space's."),
     }),
     output: Revised,
-    toAction: ({ route_id, draft_revision, ...details }) => ({
+    toAction: ({ route_id, draft_revision, accent_color, ...details }) => ({
       routeId: route_id,
       expectedRevision: draft_revision,
       ...details,
+      ...(accent_color === undefined ? {} : { accentColor: accent_color }),
     }),
     toOutput: (output: Revision) => ({ draft_revision: output.revision }),
   }),

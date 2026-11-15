@@ -84,6 +84,7 @@ const UPDATABLE_COLUMNS: Record<string, string[]> = {
   modules: ["archived_at", "position", "title", "updated_at"],
   progress: ["blocks", "completed_at", "status", "updated_at"],
   routes: [
+    "accent_color",
     "access",
     "archived_at",
     "currency",
@@ -146,6 +147,7 @@ const GRANTS_FILES = [
   "0027_oauth_grants",
   "0031_invitation_grants",
   "0036_stored_files_grants",
+  "0041_route_accent_grants",
 ].map((tag) => new URL(`../../drizzle/${tag}.sql`, import.meta.url));
 const PRIVILEGES = `select coalesce(string_agg(entry, ',' order by entry), '')
                       as all

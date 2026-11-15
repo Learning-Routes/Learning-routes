@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Respuesta abierta con tutor</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500;600&display=swap">
+<style>
+body{margin:0}
+a{color:var(--lr-a)}a:hover{color:var(--lr-i)}
+.lr *{box-sizing:border-box}
+.lr button,.lr a.btn{cursor:pointer;-webkit-tap-highlight-color:transparent;transition-property:transform,box-shadow,background-color,opacity;transition-duration:.18s;transition-timing-function:cubic-bezier(.23,1,.32,1)}
+.lr button:active,.lr a.btn:active{transform:scale(.97)}
+.lr button:focus-visible,.lr a:focus-visible,.lr textarea:focus-visible,.lr input:focus-visible{outline:2px solid var(--lr-a);outline-offset:2px}
+.lr button:disabled{cursor:default}
+.lr h1{text-wrap:balance}.lr p{text-wrap:pretty}
+@keyframes lr-in{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.lr-in{animation:lr-in .45s cubic-bezier(.23,1,.32,1) both}
+.d1{animation-delay:.04s}.d2{animation-delay:.09s}.d3{animation-delay:.14s}.d4{animation-delay:.19s}.d5{animation-delay:.24s}.d6{animation-delay:.29s}
+@keyframes lr-sheet{from{transform:translateY(100%)}to{transform:none}}
+.lr-sheet{animation:lr-sheet .42s cubic-bezier(.32,.72,0,1) both}
+@keyframes lr-shake{0%,100%{transform:none}20%{transform:translateX(-7px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(2px)}}
+.lr-shake{animation:lr-shake .42s ease both}
+@keyframes lr-pop{0%{transform:scale(.4);opacity:0}60%{transform:scale(1.14);opacity:1}100%{transform:scale(1);opacity:1}}
+.lr-pop{animation:lr-pop .5s cubic-bezier(.34,1.56,.64,1) both}
+@keyframes lr-ring{from{transform:scale(.7);opacity:.55}to{transform:scale(2.6);opacity:0}}
+.lr-ring{animation:lr-ring .8s cubic-bezier(.23,1,.32,1) .1s both}
+@keyframes lr-xp{0%{opacity:0;transform:translateY(8px)}18%{opacity:1;transform:none}75%{opacity:1}100%{opacity:0;transform:translateY(-22px)}}
+.lr-xp{animation:lr-xp 1.6s ease-out .25s both}
+@keyframes lr-fill{from{transform:scaleX(0)}}
+.lr-bar{transform-origin:left center;animation:lr-fill .7s cubic-bezier(.23,1,.32,1) both}
+@keyframes lr-pulse{0%{transform:scale(1);opacity:.55}100%{transform:scale(2.3);opacity:0}}
+.lr-pulse{animation:lr-pulse 1.8s cubic-bezier(.23,1,.32,1) infinite}
+@keyframes lr-flow{to{stroke-dashoffset:-32}}
+.lr-flow{animation:lr-flow .7s linear infinite}
+@keyframes lr-wave{0%,100%{transform:scaleY(.3)}50%{transform:scaleY(1)}}
+.lr-wave{animation:lr-wave .8s ease-in-out infinite;transform-origin:center}
+@keyframes lr-fly-r{to{transform:translateX(440px) rotate(16deg);opacity:0}}
+@keyframes lr-fly-l{to{transform:translateX(-440px) rotate(-16deg);opacity:0}}
+.lr-fly-r{animation:lr-fly-r .34s cubic-bezier(.55,0,1,.45) both}
+.lr-fly-l{animation:lr-fly-l .34s cubic-bezier(.55,0,1,.45) both}
+@keyframes lr-blink{0%,80%,100%{opacity:.25}40%{opacity:1}}
+.lr-blink{animation:lr-blink 1.1s ease-in-out infinite}
+@keyframes lr-ringfill{from{stroke-dashoffset:439.8}}
+.lr-ringfill{animation:lr-ringfill 1.4s cubic-bezier(.23,1,.32,1) .2s both}
+@keyframes lr-fall{0%{transform:translateY(-30px) rotate(0);opacity:0}8%{opacity:1}100%{transform:translateY(560px) rotate(560deg);opacity:0}}
+.lr-fall{animation:lr-fall 2.6s cubic-bezier(.3,.6,.5,1) both}
+@keyframes lr-grow{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+.lr-grow{transform-origin:left center;animation:lr-grow linear both}
+@keyframes lr-glow{0%,100%{opacity:.55}50%{opacity:1}}
+.lr-glow{animation:lr-glow 2.2s ease-in-out infinite}
+.lr-range{-webkit-appearance:none;appearance:none;width:100%;height:44px;background:transparent;margin:0}
+.lr-range::-webkit-slider-runnable-track{height:14px;border-radius:14px;background:linear-gradient(90deg,#d8453b,#e9a23b 21%,#d9c53a 40%,#4fb46a 50%,#3b8fd8 72%,#6a3fb5)}
+.lr-range::-moz-range-track{height:14px;border-radius:14px;background:linear-gradient(90deg,#d8453b,#e9a23b 21%,#d9c53a 40%,#4fb46a 50%,#3b8fd8 72%,#6a3fb5)}
+.lr-range::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:32px;height:32px;margin-top:-9px;border-radius:50%;background:#fff;border:0;box-shadow:0 0 0 3px var(--lr-i),0 8px 18px -6px rgba(0,0,0,.5)}
+.lr-range::-moz-range-thumb{width:32px;height:32px;border-radius:50%;background:#fff;border:0;box-shadow:0 0 0 3px var(--lr-i),0 8px 18px -6px rgba(0,0,0,.5)}
+@media (prefers-reduced-motion:reduce){.lr-in,.lr-sheet,.lr-shake,.lr-pop,.lr-ring,.lr-xp,.lr-bar,.lr-pulse,.lr-flow,.lr-wave,.lr-fly-r,.lr-fly-l,.lr-blink,.lr-ringfill,.lr-fall,.lr-grow,.lr-glow{animation:none}.lr button,.lr a.btn{transition:none}}
+</style>
+<style>.lr.m-light,.lr.m-auto{--lr-g:#f7f7f5;--lr-i:#18181b;--lr-s:#5f5f68;--lr-c:#ffffff;--lr-e:#e6e5e1;--lr-ch:#efeeeb;--lr-stg:#fbfbfa;--lr-n1:#f1f0ec;--lr-n2:#dedcd6;--lr-n3:#b9b6ae;--lr-n4:#7c7a74;--lr-oa:#ffffff;--lr-ok:#1b7d52;--lr-oks:#e5f4eb;--lr-oki:#135a3a;--lr-okb:#ffffff;--lr-er:#c2453b;--lr-ers:#fdecea;--lr-eri:#9e2f26;--lr-erb:#ffffff;--lr-ws:#fff4e0;--lr-wi:#6e4c0e;--lr-a:oklch(from var(--brand) 0.53 0.17 h);--lr-sf:color-mix(in oklch,var(--lr-a) 11%,var(--lr-c));color-scheme:light}.lr.m-dark{--lr-g:#0e0e10;--lr-i:#f4f4f2;--lr-s:#a3a3ab;--lr-c:#17171a;--lr-e:#2a2a2f;--lr-ch:#1f1f23;--lr-stg:#131316;--lr-n1:#222226;--lr-n2:#2f2f35;--lr-n3:#4a4a52;--lr-n4:#8a8a94;--lr-oa:#121214;--lr-ok:#3fd18a;--lr-oks:#12291d;--lr-oki:#a6efc9;--lr-okb:#05200f;--lr-er:#ff6b5e;--lr-ers:#2e1513;--lr-eri:#ffb6ad;--lr-erb:#2a0c08;--lr-ws:#2b2112;--lr-wi:#f2c97a;--lr-a:oklch(from var(--brand) 0.78 0.14 h);--lr-sf:color-mix(in oklch,var(--lr-a) 16%,var(--lr-c));color-scheme:dark}@media (prefers-color-scheme:dark){.lr.m-auto{--lr-g:#0e0e10;--lr-i:#f4f4f2;--lr-s:#a3a3ab;--lr-c:#17171a;--lr-e:#2a2a2f;--lr-ch:#1f1f23;--lr-stg:#131316;--lr-n1:#222226;--lr-n2:#2f2f35;--lr-n3:#4a4a52;--lr-n4:#8a8a94;--lr-oa:#121214;--lr-ok:#3fd18a;--lr-oks:#12291d;--lr-oki:#a6efc9;--lr-okb:#05200f;--lr-er:#ff6b5e;--lr-ers:#2e1513;--lr-eri:#ffb6ad;--lr-erb:#2a0c08;--lr-ws:#2b2112;--lr-wi:#f2c97a;--lr-a:oklch(from var(--brand) 0.78 0.14 h);--lr-sf:color-mix(in oklch,var(--lr-a) 16%,var(--lr-c));color-scheme:dark}}</style>
+</helmet>
+<div class="lr t-finanzas {{mode}}" style="--brand:{{brand}};position:relative;width:390px;height:844px;overflow:hidden;background:var(--lr-g);color:var(--lr-i);font-family:Geist,'Helvetica Neue',Arial,sans-serif;-webkit-font-smoothing:antialiased;display:flex;flex-direction:column">
+
+<div style="display:flex;align-items:center;gap:12px;padding:16px 20px 4px">
+  <button type="button" aria-label="Cerrar la lección" style="width:40px;height:40px;flex:none;border:0;border-radius:50%;background:var(--lr-ch);display:grid;place-items:center"><svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke-width="2.4" stroke-linecap="round" style="stroke:var(--lr-i)"/></svg></button>
+  <div style="flex:1;height:8px;border-radius:8px;background:var(--lr-e);overflow:hidden"><div class="lr-bar" style="width:90%;height:100%;border-radius:8px;background:var(--lr-a)"></div></div>
+  <span style="font:500 12px 'Geist Mono',monospace;color:var(--lr-s);font-variant-numeric:tabular-nums">9 / 10</span>
+  <button type="button" aria-label="Pregúntale al tutor" style="width:40px;height:40px;flex:none;border:0;border-radius:50%;background:var(--lr-sf);display:grid;place-items:center"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 18.5V7a3 3 0 0 1 3-3h8a3 3 0 0 1 3 3v6a3 3 0 0 1-3 3H9z" fill="none" stroke-width="2" stroke-linejoin="round" style="stroke:var(--lr-a)"/><path d="M9 9.5h6M9 12.5h3.5" stroke-width="2" stroke-linecap="round" style="stroke:var(--lr-a)"/></svg></button>
+</div>
+<div class="lr-in" style="display:flex;align-items:center;gap:10px;padding:12px 20px 0">
+  <span style="width:28px;height:28px;flex:none;border-radius:9px;background:var(--lr-a);color:var(--lr-oa);display:grid;place-items:center"><svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 18l5-5 4 3 7-8" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+  <span style="font-size:13px;font-weight:600;color:var(--lr-i)">Finanzas personales</span>
+  <span style="font-size:13px;color:var(--lr-s)">· Explica</span>
+</div>
+<div class="lr-in d1" style="padding:18px 20px 0"><h1 style="font-size:24px;line-height:1.18;letter-spacing:-0.03em;font-weight:600;margin:0">¿Por qué conviene un fondo de emergencia antes de invertir?</h1></div>
+<div class="lr-in d2" style="margin:14px 20px 0;border-radius:18px;background:var(--lr-c);box-shadow:inset 0 0 0 1px var(--lr-e)">
+  <label for="ans" style="position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)">Tu respuesta</label>
+  <textarea id="ans" value="{{ans}}" onChange="{{setAns}}" readonly="{{locked}}" placeholder="Explícalo con tus palabras…" style="display:block;width:100%;height:104px;padding:14px 16px 4px;border:0;resize:none;background:transparent;color:var(--lr-i);font:400 15px/1.55 Geist,sans-serif;outline:none"></textarea>
+  <div style="padding:0 16px 10px;font-size:12px;color:var(--lr-s);text-align:right;font-variant-numeric:tabular-nums">{{words}}</div>
+</div>
+<sc-if value="{{thinking}}" hint-placeholder-val="{{false}}">
+  <div class="lr-in" style="margin:16px 20px 0;display:flex;align-items:center;gap:10px"><span style="width:32px;height:32px;border-radius:50%;background:var(--lr-a);color:var(--lr-oa);display:grid;place-items:center;font-size:13px;font-weight:600">T</span><span style="display:flex;gap:5px;padding:12px 14px;border-radius:14px;background:var(--lr-ch)"><i class="lr-blink" style="width:7px;height:7px;border-radius:50%;background:var(--lr-s)"></i><i class="lr-blink" style="width:7px;height:7px;border-radius:50%;background:var(--lr-s);animation-delay:.15s"></i><i class="lr-blink" style="width:7px;height:7px;border-radius:50%;background:var(--lr-s);animation-delay:.3s"></i></span></div>
+</sc-if>
+<sc-if value="{{reviewed}}" hint-placeholder-val="{{true}}">
+  <div style="margin:14px 20px 0;display:flex;gap:10px;align-items:flex-start">
+    <span class="lr-pop" style="flex:none;width:32px;height:32px;border-radius:50%;background:var(--lr-a);color:var(--lr-oa);display:grid;place-items:center;font-size:13px;font-weight:600">T</span>
+    <div style="flex:1;display:flex;flex-direction:column;gap:10px">
+      <p class="lr-in" style="margin:0;font-size:15px;line-height:1.5;color:var(--lr-i)">{{verdict}}</p>
+      <div style="border-radius:16px;background:var(--lr-c);box-shadow:inset 0 0 0 1px var(--lr-e);overflow:hidden">
+        <sc-for list="{{rubric}}" as="r" hint-placeholder-count="3">
+          <div class="{{r.cls}}" style="{{r.style}}"><span style="{{r.icon}}">{{r.mark}}</span><span style="flex:1;font-size:14px;line-height:1.35">{{r.text}}</span></div>
+        </sc-for>
+      </div>
+    </div>
+  </div>
+</sc-if>
+<div style="margin-top:auto;padding:14px 20px 28px;display:flex;gap:10px">
+  <sc-if value="{{reviewed}}" hint-placeholder-val="{{true}}"><button type="button" onClick="{{improve}}" style="flex:1;height:56px;border:0;border-radius:16px;background:var(--lr-ch);color:var(--lr-i);font:600 16px Geist,sans-serif">Mejorar</button></sc-if>
+  <button type="button" onClick="{{main.go}}" disabled="{{main.off}}" style="{{main.style}}">{{main.label}}</button>
+</div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"estado": {"editor": "enum", "options": ["escribir", "revisado", "completa"], "default": "revisado"}, "tema": {"editor": "enum", "options": ["sistema", "claro", "oscuro"], "default": "claro"}, "color": {"editor": "color", "options": ["#7c3aed", "#2563eb", "#0891b2", "#0d9488", "#ca8a04", "#ea580c", "#db2777"], "default": "#0d9488"}, "$preview": {"width": 390, "height": 844}}'>
+class Component extends DCLogic {
+
+  constructor(p) { super(p); this.state = this.seed(p.estado || 'revisado'); }
+  seed(e) {
+    const a = 'Porque si pasa algo, como perder el trabajo, no tienes que vender tus inversiones cuando bajaron.';
+    if (e === 'escribir') return { ans: '', phase: 'write' };
+    if (e === 'completa') return { ans: a + ' Lo ideal es guardar de 3 a 6 meses de gastos.', phase: 'done' };
+    return { ans: a, phase: 'done' };
+  }
+  componentDidUpdate(prev) { if (prev.estado !== this.props.estado) this.setState(this.seed(this.props.estado || 'revisado')); }
+  componentWillUnmount() { clearTimeout(this.t); }
+  rv() {
+    const s = this.state, a = s.ans.toLowerCase();
+    const R = [
+      { text: 'Nombra un imprevisto real', ok: /(trabajo|emergencia|imprevisto|enferm|accidente|despid)/.test(a) },
+      { text: 'Explica el riesgo de vender con pérdida', ok: /(vender|pérdida|perdida|bajar|bajaron|caída)/.test(a) },
+      { text: 'Di cuánto cubre: de 3 a 6 meses de gastos', ok: /(\d|tres|seis)\s*(a\s*\d+\s*)?mes/.test(a) }
+    ];
+    const n = R.filter((r) => r.ok).length;
+    const rubric = R.map((r, i) => ({ text: r.text, mark: r.ok ? '✓' : '', cls: 'lr-in d' + (i + 2),
+      style: 'display:flex;align-items:center;gap:10px;padding:12px 14px;' + (i < 2 ? 'border-bottom:1px solid var(--lr-e);' : '') + (r.ok ? '' : 'background:var(--lr-ws);color:var(--lr-wi)'),
+      icon: 'width:22px;height:22px;flex:none;border-radius:50%;display:grid;place-items:center;font-size:12px;font-weight:700;' + (r.ok ? 'background:var(--lr-ok);color:var(--lr-okb)' : 'box-shadow:inset 0 0 0 2px var(--lr-wi)') }));
+    const verdict = n === 3 ? 'Respuesta completa. Así se lo explicarías a un amigo.' : n === 2 ? 'Muy bien la idea central: no vender en mal momento. Te falta una pieza.' : 'Vas por buen camino. Fíjate en lo que falta:';
+    const words = s.ans.trim() ? s.ans.trim().split(/\s+/).length + ' palabras' : 'Mariana · 0 palabras';
+    const send = () => { this.setState({ phase: 'think' }); clearTimeout(this.t); this.t = setTimeout(() => this.setState({ phase: 'done' }), 1300); };
+    const can = s.ans.trim().length > 10;
+    let main;
+    if (s.phase === 'done') main = { label: 'Continuar', off: false, go: () => this.setState(this.seed('escribir')), style: 'flex:1.6;height:56px;border:0;border-radius:16px;background:var(--lr-a);color:var(--lr-oa);font:600 16px Geist,sans-serif' };
+    else main = { label: s.phase === 'think' ? 'Revisando…' : 'Enviar al tutor', off: !can || s.phase === 'think', go: can ? send : null,
+      style: 'flex:1;height:56px;border:0;border-radius:16px;font:600 16px Geist,sans-serif;' + (can ? 'background:var(--lr-a);color:var(--lr-oa)' : 'background:var(--lr-e);color:var(--lr-s)') };
+    return { ans: s.ans, locked: s.phase !== 'write', setAns: (e) => this.setState({ ans: e.target.value }), words,
+      thinking: s.phase === 'think', reviewed: s.phase === 'done', verdict, rubric, main,
+      improve: () => this.setState({ phase: 'write' }) };
+  }
+
+
+  renderVals() {
+    const v = this.rv(), st = this.state || {}, tema = this.props.tema ?? 'claro';
+    const base = tema === 'claro' ? 'm-light' : tema === 'oscuro' ? 'm-dark' : 'm-auto';
+    const m = st.tm && st.tmFor === tema ? st.tm : base;
+    v.mode = m;
+    v.brand = this.props.color ?? '#0d9488';
+    v.themeAria = m === 'm-dark' ? 'Cambiar a tema claro' : 'Cambiar a tema oscuro';
+    v.toggleTheme = () => {
+      let cur = m;
+      if (cur === 'm-auto') cur = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'm-dark' : 'm-light';
+      this.setState({ tm: cur === 'm-dark' ? 'm-light' : 'm-dark', tmFor: tema });
+    };
+    return v;
+  }
+
+
+  fbv(ok, title, body, pl, pa, sl, sa) {
+    return { show: true, ok: ok, bad: !ok, title: title, body: body, pl: pl, pa: pa, sl: sl || '', sa: sa || null, hasSec: !!sl,
+      sheet: 'position:absolute;left:0;right:0;bottom:0;z-index:5;padding:22px 20px 28px;border-radius:28px 28px 0 0;display:flex;flex-direction:column;gap:12px;background:' + (ok ? 'var(--lr-oks)' : 'var(--lr-c)') + ';box-shadow:0 -1px 0 var(--lr-e),0 -30px 60px -30px rgba(0,0,0,.4)',
+      tStyle: 'font-size:19px;font-weight:600;letter-spacing:-0.01em;color:' + (ok ? 'var(--lr-oki)' : 'var(--lr-eri)'),
+      bStyle: 'margin:0;font-size:15px;line-height:1.5;color:' + (ok ? 'var(--lr-oki)' : 'var(--lr-s)'),
+      dot: 'position:absolute;inset:0;border-radius:50%;display:grid;place-items:center;background:' + (ok ? 'var(--lr-ok)' : 'var(--lr-er)'),
+      pStyle: 'flex:2;height:54px;border:0;border-radius:16px;font:600 16px Geist,sans-serif;background:' + (ok ? 'var(--lr-ok)' : 'var(--lr-a)') + ';color:' + (ok ? 'var(--lr-okb)' : 'var(--lr-oa)'),
+      sStyle: 'flex:1;height:54px;border:0;border-radius:16px;font:600 16px Geist,sans-serif;background:var(--lr-ch);color:var(--lr-i)' };
+  }
+  nofb() { return { show: false, ok: false, bad: false, title: '', body: '', pl: '', pa: null, sl: '', sa: null, hasSec: false, sheet: '', tStyle: '', bStyle: '', dot: '', pStyle: '', sStyle: '' }; }
+  ctav(label, on, go) {
+    return { show: true, label: label, off: !on, go: on ? go : null,
+      style: 'width:100%;height:56px;border:0;border-radius:16px;font:600 16px Geist,sans-serif;' + (on ? 'background:var(--lr-a);color:var(--lr-oa);box-shadow:0 12px 24px -14px var(--lr-a)' : 'background:var(--lr-e);color:var(--lr-s)') };
+  }
+  hidecta() { return { show: false, label: '', off: true, go: null, style: '' }; }
+
+}
+</script>
+</body>
+</html>

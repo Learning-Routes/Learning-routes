@@ -5,13 +5,16 @@ import { Route } from "../domain";
 import { Locale, LocalizedText } from "../localized-text";
 import { POSITION_KEY } from "./position";
 
+/** How a colour is stored, the database check's own: # and six lower-case hex digits. */
+const HEX_COLOR = /^#[0-9a-f]{6}$/;
+
 // A published version's content (Platform STEP 2 §2.10): the route, its modules,
 // lessons, prerequisites and blocks, frozen. Ids are the draft's, copied verbatim,
 // so progress keyed by a lesson or block id survives a new version. A stored
 // snapshot keeps the format it was written in; upcastSnapshot reads every format
 // as today's.
 
-export const SNAPSHOT_FORMAT = 2;
+export const SNAPSHOT_FORMAT = 3;
 
 const Position = z.string().regex(POSITION_KEY);
 
@@ -54,7 +57,12 @@ const SnapshotV2 = SnapshotV1.extend({
   }),
 });
 
-export type Snapshot = z.infer<typeof SnapshotV2>;
+// Format 3 adds the route's own accent colour (Platform STEP 12); null takes the space's.
+const SnapshotV3 = SnapshotV2.extend({
+  route: SnapshotV2.shape.route.extend({ accentColor: z.string().regex(HEX_COLOR).nullable() }),
+});
+
+export type Snapshot = z.infer<typeof SnapshotV3>;
 
 /** Reads a stored snapshot of the given format as today's format. */
 export function upcastSnapshot(format: number, json: unknown): Snapshot {
@@ -63,11 +71,22 @@ export function upcastSnapshot(format: number, json: unknown): Snapshot {
       const old = SnapshotV1.parse(json);
       return {
         ...old,
-        route: { ...old.route, topic: "otros", level: "inicial", priceMinor: null, currency: null },
+        route: {
+          ...old.route,
+          topic: "otros",
+          level: "inicial",
+          priceMinor: null,
+          currency: null,
+          accentColor: null,
+        },
       };
     }
-    case 2:
-      return SnapshotV2.parse(json);
+    case 2: {
+      const old = SnapshotV2.parse(json);
+      return { ...old, route: { ...old.route, accentColor: null } };
+    }
+    case 3:
+      return SnapshotV3.parse(json);
     default:
       throw new RangeError(`unknown snapshot format: ${format}`);
   }

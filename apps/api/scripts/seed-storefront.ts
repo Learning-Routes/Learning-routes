@@ -167,6 +167,7 @@ function snapshotOf(routeId: string, route: Fixture["routes"][number]): Snapshot
       level: route.level,
       priceMinor: route.priceMinor,
       currency: route.priceMinor === null ? null : "EUR",
+      accentColor: null,
     },
     modules,
     lessons,

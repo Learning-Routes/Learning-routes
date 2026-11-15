@@ -123,7 +123,12 @@ describe("two tenants, through every action", () => {
           block: { type: "concept", title: { en: "T" }, body: { en: "B" } },
         },
         "route.import": { routeId: routeB, expectedRevision: 0, document: {} },
-        "route.update": { routeId: routeB, expectedRevision: 0, title: { es: "Ajena" } },
+        "route.update": {
+          routeId: routeB,
+          expectedRevision: 0,
+          title: { es: "Ajena" },
+          accentColor: "#6a2ea0",
+        },
         "blocks.add": {
           routeId: routeB,
           expectedRevision: 0,

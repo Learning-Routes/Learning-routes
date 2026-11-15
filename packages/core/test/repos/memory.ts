@@ -349,7 +349,7 @@ export function memoryRepos(state: State, actorId = ""): Repos {
         }
         state.drafts.set(route.id, {
           spaceId,
-          route: structuredClone(route),
+          route: { ...structuredClone(route), accentColor: null },
           revision: 0,
           latestPublishedVersion: null,
           modules: [],

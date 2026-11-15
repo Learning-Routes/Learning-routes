@@ -49,6 +49,39 @@ const SAMPLES: Record<string, Record<string, unknown>> = {
   audio_explainer: { body: es("Explicación"), audio_url: "https://example.com/a.mp3" },
   video: { body: es("Mira"), video_url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ" },
   interactive: { title: es("Piano"), creation: "a".repeat(64), description: es("Toca las notas") },
+  // The player's blocks (Platform STEP 12), read here until the player plays them.
+  order: { prompt: es("Ordena los pasos"), items: [es("Primero"), es("Después")] },
+  true_false: {
+    statements: [
+      { text: es("El agua hierve a cien grados"), answer: true },
+      { text: es("El hierro flota"), answer: false, why: es("Es más denso") },
+    ],
+  },
+  estimate: {
+    prompt: es("¿Qué pH tiene?"),
+    min: 0,
+    max: 14,
+    step: 1,
+    answer_min: 2,
+    answer_max: 3,
+  },
+  hotspot: {
+    prompt: es("¿Cuál pieza se gasta?"),
+    diagram: "brake",
+    spots: [{ x: 0.5, y: 0.5, label: es("Pastilla"), correct: true }],
+  },
+  worked_example: {
+    problem: es("Resuelve 2x = 6"),
+    steps: [{ label: es("Divide"), work: "x = 3", why: es("Despeja") }],
+  },
+  speak: { phrase: "Could we push the deadline?", lang: "en" },
+  code_check: {
+    language: "javascript",
+    starter: "function average(xs) {}",
+    tests: [{ call: "average([2])", expected: "2" }],
+  },
+  open_answer: { prompt: es("¿Por qué ahorrar primero?"), rubric: [es("Nombra un imprevisto")] },
+  sim: { prompt: es("Colorea tres octavos"), setup: { kind: "fraction_pie", parts: 8, target: 3 } },
 };
 
 // The tree core makes on the server, for the fields it makes one for.
@@ -88,6 +121,18 @@ describe("the lesson page", () => {
     if (words) {
       expect(html).toContain(words);
     }
+  });
+
+  it("reads a practice block without giving its answer away", () => {
+    const order = render("order", SAMPLES.order as Record<string, unknown>);
+    expect(order).toContain("Ordena los pasos");
+    expect(order).not.toContain("Primero");
+    const trueFalse = render("true_false", SAMPLES.true_false as Record<string, unknown>);
+    expect(trueFalse).toContain("El hierro flota");
+    expect(trueFalse).not.toContain("Es más denso");
+    expect(render("code_check", SAMPLES.code_check as Record<string, unknown>)).toContain(
+      "<pre><code>function average(xs) {}</code></pre>",
+    );
   });
 
   it("waits for the page to run before framing a creation, and says who made it", () => {

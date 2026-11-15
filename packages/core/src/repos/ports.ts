@@ -72,7 +72,8 @@ export interface Memberships {
   roleOf(spaceId: string, userId: string): Promise<SpaceRole | null>;
 }
 
-type RouteFields = Snapshot["route"];
+/** A new route's fields: it starts with no accent colour of its own. */
+type RouteFields = Omit<Snapshot["route"], "accentColor">;
 export type DraftModule = Snapshot["modules"][number];
 export type DraftLesson = Snapshot["lessons"][number];
 export type DraftBlock = Snapshot["blocks"][number];

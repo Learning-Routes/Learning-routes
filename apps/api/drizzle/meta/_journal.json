@@ -260,6 +260,41 @@
       "when": 1793996960328,
       "tag": "0036_stored_files_grants",
       "breakpoints": true
+    },
+    {
+      "idx": 37,
+      "version": "7",
+      "when": 1794730748909,
+      "tag": "0037_player_block_kinds",
+      "breakpoints": true
+    },
+    {
+      "idx": 38,
+      "version": "7",
+      "when": 1794730755934,
+      "tag": "0038_validate_player_block_kinds",
+      "breakpoints": true
+    },
+    {
+      "idx": 39,
+      "version": "7",
+      "when": 1794731226573,
+      "tag": "0039_route_accent_color",
+      "breakpoints": true
+    },
+    {
+      "idx": 40,
+      "version": "7",
+      "when": 1794731240236,
+      "tag": "0040_route_accent_color_rules",
+      "breakpoints": true
+    },
+    {
+      "idx": 41,
+      "version": "7",
+      "when": 1794732382515,
+      "tag": "0041_route_accent_grants",
+      "breakpoints": true
     }
   ]
 }

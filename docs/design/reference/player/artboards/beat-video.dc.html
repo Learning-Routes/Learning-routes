@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Video con capítulos</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500;600&display=swap">
+<style>
+body{margin:0}
+a{color:var(--lr-a)}a:hover{color:var(--lr-i)}
+.lr *{box-sizing:border-box}
+.lr button,.lr a.btn{cursor:pointer;-webkit-tap-highlight-color:transparent;transition-property:transform,box-shadow,background-color,opacity;transition-duration:.18s;transition-timing-function:cubic-bezier(.23,1,.32,1)}
+.lr button:active,.lr a.btn:active{transform:scale(.97)}
+.lr button:focus-visible,.lr a:focus-visible,.lr textarea:focus-visible,.lr input:focus-visible{outline:2px solid var(--lr-a);outline-offset:2px}
+.lr button:disabled{cursor:default}
+.lr h1{text-wrap:balance}.lr p{text-wrap:pretty}
+@keyframes lr-in{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.lr-in{animation:lr-in .45s cubic-bezier(.23,1,.32,1) both}
+.d1{animation-delay:.04s}.d2{animation-delay:.09s}.d3{animation-delay:.14s}.d4{animation-delay:.19s}.d5{animation-delay:.24s}.d6{animation-delay:.29s}
+@keyframes lr-sheet{from{transform:translateY(100%)}to{transform:none}}
+.lr-sheet{animation:lr-sheet .42s cubic-bezier(.32,.72,0,1) both}
+@keyframes lr-shake{0%,100%{transform:none}20%{transform:translateX(-7px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(2px)}}
+.lr-shake{animation:lr-shake .42s ease both}
+@keyframes lr-pop{0%{transform:scale(.4);opacity:0}60%{transform:scale(1.14);opacity:1}100%{transform:scale(1);opacity:1}}
+.lr-pop{animation:lr-pop .5s cubic-bezier(.34,1.56,.64,1) both}
+@keyframes lr-ring{from{transform:scale(.7);opacity:.55}to{transform:scale(2.6);opacity:0}}
+.lr-ring{animation:lr-ring .8s cubic-bezier(.23,1,.32,1) .1s both}
+@keyframes lr-xp{0%{opacity:0;transform:translateY(8px)}18%{opacity:1;transform:none}75%{opacity:1}100%{opacity:0;transform:translateY(-22px)}}
+.lr-xp{animation:lr-xp 1.6s ease-out .25s both}
+@keyframes lr-fill{from{transform:scaleX(0)}}
+.lr-bar{transform-origin:left center;animation:lr-fill .7s cubic-bezier(.23,1,.32,1) both}
+@keyframes lr-pulse{0%{transform:scale(1);opacity:.55}100%{transform:scale(2.3);opacity:0}}
+.lr-pulse{animation:lr-pulse 1.8s cubic-bezier(.23,1,.32,1) infinite}
+@keyframes lr-flow{to{stroke-dashoffset:-32}}
+.lr-flow{animation:lr-flow .7s linear infinite}
+@keyframes lr-wave{0%,100%{transform:scaleY(.3)}50%{transform:scaleY(1)}}
+.lr-wave{animation:lr-wave .8s ease-in-out infinite;transform-origin:center}
+@keyframes lr-fly-r{to{transform:translateX(440px) rotate(16deg);opacity:0}}
+@keyframes lr-fly-l{to{transform:translateX(-440px) rotate(-16deg);opacity:0}}
+.lr-fly-r{animation:lr-fly-r .34s cubic-bezier(.55,0,1,.45) both}
+.lr-fly-l{animation:lr-fly-l .34s cubic-bezier(.55,0,1,.45) both}
+@keyframes lr-blink{0%,80%,100%{opacity:.25}40%{opacity:1}}
+.lr-blink{animation:lr-blink 1.1s ease-in-out infinite}
+@keyframes lr-ringfill{from{stroke-dashoffset:439.8}}
+.lr-ringfill{animation:lr-ringfill 1.4s cubic-bezier(.23,1,.32,1) .2s both}
+@keyframes lr-fall{0%{transform:translateY(-30px) rotate(0);opacity:0}8%{opacity:1}100%{transform:translateY(560px) rotate(560deg);opacity:0}}
+.lr-fall{animation:lr-fall 2.6s cubic-bezier(.3,.6,.5,1) both}
+@keyframes lr-grow{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+.lr-grow{transform-origin:left center;animation:lr-grow linear both}
+@keyframes lr-glow{0%,100%{opacity:.55}50%{opacity:1}}
+.lr-glow{animation:lr-glow 2.2s ease-in-out infinite}
+.lr-range{-webkit-appearance:none;appearance:none;width:100%;height:44px;background:transparent;margin:0}
+.lr-range::-webkit-slider-runnable-track{height:14px;border-radius:14px;background:linear-gradient(90deg,#d8453b,#e9a23b 21%,#d9c53a 40%,#4fb46a 50%,#3b8fd8 72%,#6a3fb5)}
+.lr-range::-moz-range-track{height:14px;border-radius:14px;background:linear-gradient(90deg,#d8453b,#e9a23b 21%,#d9c53a 40%,#4fb46a 50%,#3b8fd8 72%,#6a3fb5)}
+.lr-range::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:32px;height:32px;margin-top:-9px;border-radius:50%;background:#fff;border:0;box-shadow:0 0 0 3px var(--lr-i),0 8px 18px -6px rgba(0,0,0,.5)}
+.lr-range::-moz-range-thumb{width:32px;height:32px;border-radius:50%;background:#fff;border:0;box-shadow:0 0 0 3px var(--lr-i),0 8px 18px -6px rgba(0,0,0,.5)}
+@media (prefers-reduced-motion:reduce){.lr-in,.lr-sheet,.lr-shake,.lr-pop,.lr-ring,.lr-xp,.lr-bar,.lr-pulse,.lr-flow,.lr-wave,.lr-fly-r,.lr-fly-l,.lr-blink,.lr-ringfill,.lr-fall,.lr-grow,.lr-glow{animation:none}.lr button,.lr a.btn{transition:none}}
+</style>
+<style>.lr.m-light,.lr.m-auto{--lr-g:#f7f7f5;--lr-i:#18181b;--lr-s:#5f5f68;--lr-c:#ffffff;--lr-e:#e6e5e1;--lr-ch:#efeeeb;--lr-stg:#fbfbfa;--lr-n1:#f1f0ec;--lr-n2:#dedcd6;--lr-n3:#b9b6ae;--lr-n4:#7c7a74;--lr-oa:#ffffff;--lr-ok:#1b7d52;--lr-oks:#e5f4eb;--lr-oki:#135a3a;--lr-okb:#ffffff;--lr-er:#c2453b;--lr-ers:#fdecea;--lr-eri:#9e2f26;--lr-erb:#ffffff;--lr-ws:#fff4e0;--lr-wi:#6e4c0e;--lr-a:oklch(from var(--brand) 0.53 0.17 h);--lr-sf:color-mix(in oklch,var(--lr-a) 11%,var(--lr-c));color-scheme:light}.lr.m-dark{--lr-g:#0e0e10;--lr-i:#f4f4f2;--lr-s:#a3a3ab;--lr-c:#17171a;--lr-e:#2a2a2f;--lr-ch:#1f1f23;--lr-stg:#131316;--lr-n1:#222226;--lr-n2:#2f2f35;--lr-n3:#4a4a52;--lr-n4:#8a8a94;--lr-oa:#121214;--lr-ok:#3fd18a;--lr-oks:#12291d;--lr-oki:#a6efc9;--lr-okb:#05200f;--lr-er:#ff6b5e;--lr-ers:#2e1513;--lr-eri:#ffb6ad;--lr-erb:#2a0c08;--lr-ws:#2b2112;--lr-wi:#f2c97a;--lr-a:oklch(from var(--brand) 0.78 0.14 h);--lr-sf:color-mix(in oklch,var(--lr-a) 16%,var(--lr-c));color-scheme:dark}@media (prefers-color-scheme:dark){.lr.m-auto{--lr-g:#0e0e10;--lr-i:#f4f4f2;--lr-s:#a3a3ab;--lr-c:#17171a;--lr-e:#2a2a2f;--lr-ch:#1f1f23;--lr-stg:#131316;--lr-n1:#222226;--lr-n2:#2f2f35;--lr-n3:#4a4a52;--lr-n4:#8a8a94;--lr-oa:#121214;--lr-ok:#3fd18a;--lr-oks:#12291d;--lr-oki:#a6efc9;--lr-okb:#05200f;--lr-er:#ff6b5e;--lr-ers:#2e1513;--lr-eri:#ffb6ad;--lr-erb:#2a0c08;--lr-ws:#2b2112;--lr-wi:#f2c97a;--lr-a:oklch(from var(--brand) 0.78 0.14 h);--lr-sf:color-mix(in oklch,var(--lr-a) 16%,var(--lr-c));color-scheme:dark}}</style>
+</helmet>
+<div class="lr t-beat {{mode}}" style="--brand:{{brand}};position:relative;width:390px;height:844px;overflow:hidden;background:var(--lr-g);color:var(--lr-i);font-family:Geist,'Helvetica Neue',Arial,sans-serif;-webkit-font-smoothing:antialiased;display:flex;flex-direction:column">
+
+<div style="position:relative;height:250px;background:#0b0b0d;flex:none">
+  <svg width="390" height="250" viewBox="0 0 390 250" role="img" aria-label="Video: pantalla de un programa de música mostrando las pistas del beat">
+    <rect x="18" y="30" width="354" height="170" rx="10" fill="#17171a" stroke="#2a2a2f"/>
+    <g font-family="Geist Mono, monospace" font-size="9" fill="#a1a1aa"><text x="28" y="62">Batería</text><text x="28" y="98">Bajo</text><text x="28" y="134">Melodía</text><text x="28" y="170">Voz</text></g>
+    <g><rect x="78" y="50" width="70" height="18" rx="4" style="fill:var(--lr-a)"/><rect x="154" y="50" width="70" height="18" rx="4" style="fill:var(--lr-a)"/><rect x="230" y="50" width="130" height="18" rx="4" style="fill:var(--lr-a)"/>
+       <rect x="110" y="86" width="114" height="18" rx="4" style="fill:color-mix(in oklch,var(--lr-a) 65%,#fff)"/><rect x="230" y="86" width="130" height="18" rx="4" style="fill:color-mix(in oklch,var(--lr-a) 65%,#fff)"/>
+       <rect x="154" y="122" width="206" height="18" rx="4" style="fill:color-mix(in oklch,var(--lr-a) 40%,#fff)"/><rect x="230" y="158" width="96" height="18" rx="4" fill="#a1a1aa"/></g>
+    <rect x="{{headX}}" y="40" width="2" height="150" fill="#fff"/>
+  </svg>
+  <button type="button" onClick="{{play}}" aria-label="{{playAria}}" style="position:absolute;left:50%;top:104px;margin-left:-30px;width:60px;height:60px;border:0;border-radius:50%;background:rgba(255,255,255,.92);display:grid;place-items:center;box-shadow:0 12px 30px -10px rgba(0,0,0,.6)">
+    <sc-if value="{{playing}}" hint-placeholder-val="{{false}}"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 4h4.5v16H6zM13.5 4H18v16h-4.5z" fill="#120e1c"/></svg></sc-if>
+    <sc-if value="{{paused}}" hint-placeholder-val="{{true}}"><svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4.5v15l12-7.5z" fill="#120e1c" transform="translate(1 0)"/></svg></sc-if>
+  </button>
+  <div style="position:absolute;left:16px;right:16px;bottom:12px;display:flex;flex-direction:column;gap:6px">
+    <div style="position:relative;height:4px;border-radius:4px;background:rgba(255,255,255,.2)"><div style="{{bar}}"></div><sc-for list="{{marks}}" as="m" hint-placeholder-count="3"><i style="{{m.style}}"></i></sc-for></div>
+    <div style="display:flex;justify-content:space-between;font:500 11px 'Geist Mono',monospace;color:#d4d4d8;font-variant-numeric:tabular-nums"><span>{{now}}</span><span>2:42</span></div>
+  </div>
+  <a href="beat-leccion.dc.html" aria-label="Volver" style="position:absolute;left:14px;top:14px;width:40px;height:40px;border-radius:50%;background:rgba(0,0,0,.45);display:grid;place-items:center"><svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+</div>
+
+<div class="lr-in" style="display:flex;align-items:center;gap:10px;padding:12px 20px 0">
+  <span style="width:28px;height:28px;flex:none;border-radius:9px;background:var(--lr-a);color:var(--lr-oa);display:grid;place-items:center"><svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 16v-4M9 18V6M13 15V9M17 19V5" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></svg></span>
+  <span style="font-size:13px;font-weight:600;color:var(--lr-i)">Tu primer beat</span>
+  <span style="font-size:13px;color:var(--lr-s)">· Video del creador</span>
+</div>
+<div class="lr-in d1" style="padding:10px 20px 0;display:flex;flex-direction:column;gap:8px"><h1 style="margin:0;font-size:28px;line-height:1.12;letter-spacing:-0.03em;font-weight:600">Exporta tu beat</h1><p style="margin:0;font-size:15px;line-height:1.5;color:var(--lr-s)">Mariana te muestra cómo dejarlo listo para escucharlo en tu teléfono o subirlo a una plataforma.</p></div>
+<div class="lr-in d2" style="padding:14px 20px 0;display:flex;flex-direction:column;gap:8px">
+  <span style="font:500 11px 'Geist Mono',monospace;letter-spacing:.08em;text-transform:uppercase;color:var(--lr-s)">Capítulos</span>
+  <sc-for list="{{chapters}}" as="c" hint-placeholder-count="3">
+    <button type="button" onClick="{{c.go}}" aria-current="{{c.cur}}" style="{{c.style}}"><span style="font:500 12px 'Geist Mono',monospace;color:{{c.tc}}">{{c.t}}</span><span style="flex:1;text-align:left">{{c.name}}</span><sc-if value="{{c.seen}}" hint-placeholder-val="{{false}}"><svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" style="stroke:var(--lr-ok)"/></svg></sc-if></button>
+  </sc-for>
+</div>
+<div style="margin-top:auto;padding:16px 20px 28px"><button type="button" style="width:100%;height:56px;border:0;border-radius:16px;background:var(--lr-a);color:var(--lr-oa);font:600 16px Geist,sans-serif">Subir mi beat al tutor</button></div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"tema": {"editor": "enum", "options": ["sistema", "claro", "oscuro"], "default": "claro"}, "color": {"editor": "color", "options": ["#7c3aed", "#2563eb", "#0891b2", "#0d9488", "#ca8a04", "#ea580c", "#db2777"], "default": "#db2777"}, "$preview": {"width": 390, "height": 844}}'>
+class Component extends DCLogic {
+
+  constructor(p) { super(p); this.state = { t: 58, playing: false }; }
+  componentWillUnmount() { clearInterval(this.iv); }
+  toggle() {
+    if (this.state.playing) { clearInterval(this.iv); this.setState({ playing: false }); return; }
+    this.setState({ playing: true });
+    this.iv = setInterval(() => { const t = this.state.t + 1; if (t >= 162) { clearInterval(this.iv); this.setState({ t: 162, playing: false }); } else this.setState({ t }); }, 250);
+  }
+  rv() {
+    const CH = [{ t: 0, name: 'Revisa que nada suene saturado' }, { t: 50, name: 'Archivo, Exportar, MP3' }, { t: 95, name: 'Escúchalo fuera del programa' }];
+    const s = this.state, D = 162, fmt = (x) => Math.floor(x / 60) + ':' + String(Math.floor(x % 60)).padStart(2, '0');
+    let cur = 0; CH.forEach((c, i) => { if (s.t >= c.t) cur = i; });
+    const chapters = CH.map((c, i) => ({ t: fmt(c.t), name: c.name, cur: i === cur ? 'true' : 'false', seen: i < cur, tc: i === cur ? 'var(--lr-a)' : 'var(--lr-s)',
+      go: () => this.setState({ t: c.t }),
+      style: 'width:100%;min-height:52px;padding:0 14px;border:0;border-radius:14px;display:flex;align-items:center;gap:14px;font:500 15px Geist,sans-serif;color:var(--lr-i);background:' + (i === cur ? 'var(--lr-sf)' : 'var(--lr-c)') + ';box-shadow:inset 0 0 0 ' + (i === cur ? '1.5px var(--lr-a)' : '1px var(--lr-e)') }));
+    const pct = s.t / D * 100;
+    return { chapters, now: fmt(s.t), playing: s.playing, paused: !s.playing, playAria: s.playing ? 'Pausar video' : 'Reproducir video',
+      play: () => this.toggle(), headX: Math.round(78 + (282 * pct) / 100),
+      bar: 'position:absolute;left:0;top:0;bottom:0;border-radius:4px;background:var(--lr-a);width:' + pct.toFixed(2) + '%',
+      marks: CH.slice(1).map((c) => ({ style: 'position:absolute;top:-2px;width:2px;height:8px;background:#fff;opacity:.7;left:' + (c.t / D * 100).toFixed(2) + '%' })) };
+  }
+
+
+  renderVals() {
+    const v = this.rv(), st = this.state || {}, tema = this.props.tema ?? 'claro';
+    const base = tema === 'claro' ? 'm-light' : tema === 'oscuro' ? 'm-dark' : 'm-auto';
+    const m = st.tm && st.tmFor === tema ? st.tm : base;
+    v.mode = m;
+    v.brand = this.props.color ?? '#db2777';
+    v.themeAria = m === 'm-dark' ? 'Cambiar a tema claro' : 'Cambiar a tema oscuro';
+    v.toggleTheme = () => {
+      let cur = m;
+      if (cur === 'm-auto') cur = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'm-dark' : 'm-light';
+      this.setState({ tm: cur === 'm-dark' ? 'm-light' : 'm-dark', tmFor: tema });
+    };
+    return v;
+  }
+
+
+  fbv(ok, title, body, pl, pa, sl, sa) {
+    return { show: true, ok: ok, bad: !ok, title: title, body: body, pl: pl, pa: pa, sl: sl || '', sa: sa || null, hasSec: !!sl,
+      sheet: 'position:absolute;left:0;right:0;bottom:0;z-index:5;padding:22px 20px 28px;border-radius:28px 28px 0 0;display:flex;flex-direction:column;gap:12px;background:' + (ok ? 'var(--lr-oks)' : 'var(--lr-c)') + ';box-shadow:0 -1px 0 var(--lr-e),0 -30px 60px -30px rgba(0,0,0,.4)',
+      tStyle: 'font-size:19px;font-weight:600;letter-spacing:-0.01em;color:' + (ok ? 'var(--lr-oki)' : 'var(--lr-eri)'),
+      bStyle: 'margin:0;font-size:15px;line-height:1.5;color:' + (ok ? 'var(--lr-oki)' : 'var(--lr-s)'),
+      dot: 'position:absolute;inset:0;border-radius:50%;display:grid;place-items:center;background:' + (ok ? 'var(--lr-ok)' : 'var(--lr-er)'),
+      pStyle: 'flex:2;height:54px;border:0;border-radius:16px;font:600 16px Geist,sans-serif;background:' + (ok ? 'var(--lr-ok)' : 'var(--lr-a)') + ';color:' + (ok ? 'var(--lr-okb)' : 'var(--lr-oa)'),
+      sStyle: 'flex:1;height:54px;border:0;border-radius:16px;font:600 16px Geist,sans-serif;background:var(--lr-ch);color:var(--lr-i)' };
+  }
+  nofb() { return { show: false, ok: false, bad: false, title: '', body: '', pl: '', pa: null, sl: '', sa: null, hasSec: false, sheet: '', tStyle: '', bStyle: '', dot: '', pStyle: '', sStyle: '' }; }
+  ctav(label, on, go) {
+    return { show: true, label: label, off: !on, go: on ? go : null,
+      style: 'width:100%;height:56px;border:0;border-radius:16px;font:600 16px Geist,sans-serif;' + (on ? 'background:var(--lr-a);color:var(--lr-oa);box-shadow:0 12px 24px -14px var(--lr-a)' : 'background:var(--lr-e);color:var(--lr-s)') };
+  }
+  hidecta() { return { show: false, label: '', off: true, go: null, style: '' }; }
+
+}
+</script>
+</body>
+</html>
