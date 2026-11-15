@@ -27,6 +27,8 @@ export interface PlayBeat {
   data: Record<string, unknown>;
   gradable: boolean;
   gating: boolean;
+  /** An interactive block's creation on the content host, as a path the API makes whole. */
+  frame?: string;
   /** What the learner already did here: null when they have not answered. */
   state: { correct: boolean | null; attempts: number; done: boolean } | null;
 }
@@ -116,10 +118,8 @@ export const lessonPlay = defineAction({
       return {
         id: block.id,
         kind: block.kind,
-        data: {
-          ...forLearner(block.id, block.kind, block.data),
-          ...(block.frame ? { frame: block.frame } : {}),
-        },
+        data: forLearner(block.id, block.kind, block.data),
+        ...(block.frame ? { frame: block.frame } : {}),
         ...role,
         state: state
           ? { correct: state.correct, attempts: state.attempts, done: state.completedAt !== null }

@@ -25,7 +25,7 @@ export async function signatureOf(secret: string, path: string, expires: number)
 
 type Frames = { blocks: { frame?: string }[] } | null | undefined;
 
-/** The views of lesson.read and route.preview, with each frame a whole address. */
+/** The views of lesson.read, lesson.play and route.preview, with each frame a whole address. */
 type Signer = Pick<Env, "CONTENT_ORIGIN" | "CONTENT_SIGNING_SECRET">;
 const HALF_HOUR_S = 1800;
 const HASH = /^[0-9a-f]{64}$/;
@@ -78,7 +78,9 @@ export async function withFrames(
   const view = (
     name === "lesson.read"
       ? output
-      : name === "route.preview"
+      : name === "lesson.play"
+        ? { blocks: (output as { beats: { frame?: string }[] }).beats }
+        : name === "route.preview"
         ? (output as { view: Frames }).view
         : null
   ) as Frames;
