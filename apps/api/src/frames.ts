@@ -65,6 +65,17 @@ async function withThumbnails(env: Signer, draft: Draft, nowS: number) {
   }
 }
 
+/** Where an answer keeps its blocks' frames, by action; null when it keeps none. */
+function framesOf(name: string, output: unknown): Frames | null {
+  if (name === "lesson.read") {
+    return output as Frames;
+  }
+  if (name === "lesson.play") {
+    return { blocks: (output as { beats: { frame?: string }[] }).beats } as Frames;
+  }
+  return name === "route.preview" ? (output as { view: Frames }).view : null;
+}
+
 export async function withFrames(
   env: Signer,
   name: string,
@@ -75,15 +86,7 @@ export async function withFrames(
     await withThumbnails(env, output as Draft, nowS);
     return output;
   }
-  const view = (
-    name === "lesson.read"
-      ? output
-      : name === "lesson.play"
-        ? { blocks: (output as { beats: { frame?: string }[] }).beats }
-        : name === "route.preview"
-        ? (output as { view: Frames }).view
-        : null
-  ) as Frames;
+  const view = framesOf(name, output);
   for (const block of view?.blocks ?? []) {
     if (block.frame !== undefined && !FRAME.test(block.frame)) {
       block.frame = undefined;

@@ -392,6 +392,9 @@
 }
 
 .p-tf-row {
+  width: 100%;
+  border: 0;
+  text-align: left;
   display: flex;
   gap: 12px;
   align-items: flex-start;
@@ -399,6 +402,10 @@
   border-radius: 16px;
   background: var(--p-c);
   box-shadow: inset 0 0 0 1px var(--p-e);
+}
+
+.p-tf-row:disabled {
+  cursor: default;
 }
 
 .p-tf-mark {
@@ -1005,9 +1012,9 @@
   line-height: 1.5;
 }
 
-.p-xp-float {
-  top: 4px;
-  right: 0;
+.player .p-xp-float {
+  position: static;
+  margin-left: auto;
 }
 
 .p-dot.is-done {
@@ -1087,6 +1094,11 @@
   margin: 8px 0;
 }
 
+.p-stats.is-practice {
+  grid-template-columns: minmax(0, 200px);
+  justify-content: center;
+}
+
 .p-stats div {
   padding: 14px 10px;
   border-radius: 18px;
@@ -1111,4 +1123,32 @@
 .p-summary .p-row {
   width: 100%;
   max-width: 460px;
+  flex-wrap: nowrap;
+}
+
+.p-summary .p-row > * {
+  flex: 1;
+  padding: 0 12px;
+  text-align: center;
+}
+
+.p-topbar-route {
+  display: none;
+}
+
+@media (min-width: 1024px) {
+  .p-topbar-route {
+    display: block;
+    flex: 0 1 260px;
+    margin: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    font-size: 14px;
+    font-weight: 600;
+  }
+}
+
+.p-tutor-head .p-sub {
+  font-weight: 400;
 }

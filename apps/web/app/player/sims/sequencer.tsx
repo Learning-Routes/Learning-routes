@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Icon, list, usePlayer } from "../shared";
 import { audio, drum } from "./audio";
-import type { SimProps } from "./index";
+import type { SimProps } from "./sim-props";
 
 // A drum machine of sixteen steps: the creator's pattern to start from, played in a loop. Practice
 // only: nothing here is graded.
@@ -101,7 +101,7 @@ export default function Sequencer({ sim }: SimProps) {
             value={bpm}
             onChange={(e) => setBpm(Number(e.target.value))}
           />
-          <b>{bpm}</b> BPM
+          <b className="s-bpm-n">{bpm}</b> BPM
         </label>
       </div>
     </div>

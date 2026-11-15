@@ -3,18 +3,10 @@ import type { ReactNode } from "react";
 import { BlockView } from "../app-pages/lesson-blocks";
 import { Diagram } from "./diagrams";
 import { CodeCheck, OpenAnswer, Speak, WorkedExample } from "./practice";
-import {
-  Cards,
-  Check,
-  Estimate,
-  FillBlank,
-  Hotspot,
-  Match,
-  Order,
-  Scenario,
-  TrueFalse,
-} from "./questions";
-import { BeatMarkdown, type BeatProps, usePlayer } from "./shared";
+import { Cards, Check, Scenario } from "./questions-choose";
+import { Estimate, Hotspot, TrueFalse } from "./questions-judge";
+import { FillBlank, Match, Order } from "./questions-place";
+import { BeatMarkdown, type BeatProps, obj, usePlayer } from "./shared";
 import { SimBeat } from "./sims";
 
 // One beat of a topic: the line above, its title, what it says, and what it asks.
@@ -49,17 +41,22 @@ const TITLE_FIELD: Record<string, string> = {
   worked_example: "problem",
 };
 
-/** Whether the player draws the beat itself, or the reading page's view does. */
-export const isAsking = (kind: string) => kind in ASKS;
+/** A simulator is named by what it simulates; every other beat by its kind. */
+function kindName(beat: BeatProps["beat"], kinds: Record<string, string>) {
+  const sim = beat.kind === "sim" ? String(obj(beat.data.sim).kind) : "";
+  return kinds[sim] ?? kinds[beat.kind] ?? beat.kind;
+}
 
-export function BeatHead({
+function BeatHead({
   props,
   index,
   total,
+  titled = true,
 }: {
   props: BeatProps;
   index: number;
   total: number;
+  titled?: boolean;
 }) {
   const { t, words } = usePlayer();
   const { beat } = props;
@@ -69,11 +66,13 @@ export function BeatHead({
   return (
     <header className="p-beat-head">
       <p className="p-eyebrow p-in">
-        <span className="p-mark" aria-hidden="true" />
-        {words.kinds[beat.kind] ?? beat.kind}
+        <span className="p-mark" aria-hidden="true">
+          {index + 1}
+        </span>
+        {kindName(beat, words.kinds)}
         <span className="p-eyebrow-count">{fill(words.beatOf, { n: index + 1, total })}</span>
       </p>
-      <h1 className="p-title p-in d1">{title}</h1>
+      {titled ? <h1 className="p-title p-in d1">{title}</h1> : null}
     </header>
   );
 }
@@ -84,7 +83,8 @@ export function Beat({ props, index, total }: { props: BeatProps; index: number;
   const Asks = ASKS[beat.kind];
   if (!Asks) {
     return (
-      <div className="p-reading p-in">
+      <div className="p-reading">
+        <BeatHead props={props} index={index} total={total} titled={false} />
         <BlockView block={beat} locale={locale} source={source} question={() => null} creator="" />
       </div>
     );

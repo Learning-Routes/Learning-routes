@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { list, obj, usePlayer } from "../shared";
-import type { SimProps } from "./index";
+import type { SimProps } from "./sim-props";
 
 // Balancing a chemical equation: a stepper per term, and a table of atoms on each side.
 

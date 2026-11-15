@@ -1,8 +1,6 @@
 import * as z from "zod";
 import { FLEX_ALIGN, FLEX_JUSTIFY, SHUTTERS } from "./sim-numbers";
 
-export { APERTURES, FLEX_ALIGN, FLEX_JUSTIFY, ISOS, SHUTTERS } from "./sim-numbers";
-
 // The simulators a `sim` block can run (Platform STEP 12). Each kind carries only the numbers and
 // words its stage needs; its grader recomputes the goal from what the learner set, never from a
 // flag the browser sends. Text a learner reads comes through `text` (localized); words in the
@@ -42,7 +40,6 @@ export const GRADABLE_SIMS: readonly SimKind[] = [
   "color_wheel",
   "roleplay",
 ];
-
 
 const SQUARE = /^[a-h][1-8]$/;
 const UCI = /^[a-h][1-8][a-h][1-8]$/;

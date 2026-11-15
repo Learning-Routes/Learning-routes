@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { list, obj, usePlayer } from "../shared";
-import type { SimProps } from "./index";
+import type { SimProps } from "./sim-props";
 
 // A conversation in the language being taught: the partner speaks, the learner picks a reply, and
 // the partner answers it. The server scores the picks; the notes come back with the verdict.

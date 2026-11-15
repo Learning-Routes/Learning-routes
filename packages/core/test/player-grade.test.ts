@@ -1,8 +1,8 @@
 import fc from "fast-check";
 import { describe, expect, it } from "vitest";
 import { Block } from "../src/blocks/schema";
+import { futureValue } from "../src/blocks/sim-numbers";
 import { answerable, grade } from "../src/learning/grader";
-import { futureValue } from "../src/learning/player-grade";
 
 const t = (es: string) => ({ es });
 const id = "0190f0a0-0000-7000-8000-000000000001";
@@ -243,5 +243,62 @@ describe("grade (STEP 12 types)", () => {
         },
       ),
     );
+  });
+});
+
+describe("a simulator whose block is broken", () => {
+  it("is ungradable, never a crash, and a broken answer is wrong", () => {
+    const broken: Record<string, unknown>[] = [
+      { kind: "piano_chord", target: [] },
+      { kind: "camera_exposure" },
+      { kind: "compound_interest", rate: 0.05 },
+      { kind: "fraction_pie", parts: 4 },
+      { kind: "ohm" },
+      { kind: "equation_balance", terms: [{ formula: "H", side: "left", atoms: {} }] },
+      { kind: "chess_mate_in_one", solution: "a1" },
+      { kind: "color_wheel" },
+      { kind: "roleplay", turns: [] },
+    ];
+    for (const sim of broken) {
+      expect(grade({ type: "sim", sim }, { state: {} }), String(sim.kind)).toMatchObject({
+        gradable: false,
+      });
+    }
+    const roleplay = {
+      kind: "roleplay",
+      turns: [{ line: "Hi", choices: [{ text: "a", score: 2, note: { es: "n" }, reply: "" }] }],
+    };
+    expect(grade({ type: "sim", sim: roleplay }, { state: { picks: ["x"] } })).toMatchObject({
+      correct: false,
+    });
+    expect(grade({ type: "sim", sim: roleplay }, { state: { picks: [3] } })).toMatchObject({
+      correct: false,
+    });
+  });
+
+  it("reads defaults where a block leaves them out", () => {
+    const ohm = { kind: "ohm", target_amps: 2, v: [0, 24], r: [1, 100] };
+    expect(grade({ type: "sim", sim: ohm }, { state: { v: 20, r: 10 } })).toMatchObject({
+      correct: true,
+    });
+    const water = {
+      kind: "equation_balance",
+      terms: [
+        { formula: "H₂", side: "left", atoms: { H: 2 } },
+        { formula: "O₂", side: "left", atoms: { O: 2 } },
+        { formula: "H₂O", side: "right", atoms: { H: 2, O: "x" } },
+      ],
+    };
+    expect(
+      grade({ type: "sim", sim: water }, { state: { coefficients: [2, 1, 2] } }),
+    ).toMatchObject({ correct: false });
+    expect(
+      grade(
+        { type: "sim", sim: { kind: "color_wheel", base: 0, relation: "nope" } },
+        {
+          state: { pick: 6 },
+        },
+      ),
+    ).toMatchObject({ correct: false });
   });
 });

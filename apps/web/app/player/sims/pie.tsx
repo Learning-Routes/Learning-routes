@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import type { SimProps } from "./index";
+import type { SimProps } from "./sim-props";
 
 // A pie cut in equal parts: tap the parts to shade them.
 

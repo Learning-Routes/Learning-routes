@@ -1,16 +1,9 @@
 import { type ComponentType, lazy, Suspense, useCallback } from "react";
 import { type BeatProps, obj, usePlayer } from "../shared";
+import type { SimProps } from "./sim-props";
 import "./sims.css";
 
 // The simulators (Platform STEP 12): each kind is its own chunk, loaded when a topic reaches it.
-
-export interface SimProps {
-  sim: Record<string, unknown>;
-  /** The learner's state to grade, or null while it is not ready. */
-  setState: (state: Record<string, unknown> | null) => void;
-  /** The server's verdict, once checked. */
-  result: BeatProps["result"];
-}
 
 const SIMS: Record<string, ComponentType<SimProps>> = {
   piano_chord: lazy(() => import("./piano")),

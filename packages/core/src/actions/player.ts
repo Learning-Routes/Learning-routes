@@ -1,25 +1,19 @@
 import * as z from "zod";
 import { type LessonBlock, lessonView } from "../content/lesson-view";
-import { forLearner, fromLearner, gates, itemKey } from "../content/player-view";
+import { forLearner, fromLearner, gates } from "../content/player-view";
 import type { Snapshot } from "../content/snapshot";
-import { type Attempt, fsrsRating, newAttempt, recordSubmission } from "../learning/attempt";
-import { review } from "../learning/fsrs";
+import { fsrsRating, newAttempt, recordSubmission } from "../learning/attempt";
 import { answerable, grade } from "../learning/grader";
+import { detailOf, explanationOf, revealsSolution, solutionOf } from "../learning/player-feedback";
 import type { LocalizedText } from "../localized-text";
 import type { ProgressRecord, Repos } from "../repos/ports";
-import { asArray, asObject } from "../v1-import/loose-json";
 import { defineAction, inSpace } from "./define";
 import { ownEnrollment } from "./enrollments";
+import { fromState, recordFor, schedule, sumXp, toState, xpOf } from "./player-progress";
 import { refused, unwrap } from "./results";
 
 // The lesson player (Platform STEP 12): a topic as beats without their answers, one answer at a
 // time graded on the server, and the topic finished once its gates are passed.
-
-/** XP for a block: a pass at the first try is worth more than a pass after retries. */
-export const XP_FIRST_TRY = 10;
-export const XP_RETRY = 5;
-
-type BlockState = ProgressRecord["blocks"][number];
 
 export interface PlayBeat {
   id: string;
@@ -51,9 +45,6 @@ export interface PlayView {
   done: boolean;
   next: { number: number; title: LocalizedText } | null;
 }
-
-const xpOf = (block: BlockState) =>
-  block.correct === true ? (block.attempts <= 1 ? XP_FIRST_TRY : XP_RETRY) : 0;
 
 async function place(
   ctx: Parameters<typeof lessonPlay.run>[0],
@@ -232,13 +223,6 @@ export const lessonAnswer = defineAction({
   },
 });
 
-/** The solution shows once passed, or after the second wrong try. */
-const revealsSolution = (correct: boolean | null, attempts: number) =>
-  correct !== false || attempts >= 2;
-
-const sumXp = (records: ProgressRecord[]) =>
-  records.reduce((sum, r) => sum + r.blocks.reduce((s, b) => s + xpOf(b), 0), 0);
-
 /** A block of the version, outside a locked module; not_found otherwise. */
 function answerableBlock(snapshot: Snapshot, blockId: string) {
   const block = snapshot.blocks.find((b) => b.id === blockId);
@@ -249,40 +233,6 @@ function answerableBlock(snapshot: Snapshot, blockId: string) {
     throw refused("not_found");
   }
   return block;
-}
-
-function recordFor(
-  records: ProgressRecord[],
-  enrollmentId: string,
-  lessonId: string,
-): ProgressRecord {
-  return (
-    records.find((r) => r.lessonId === lessonId) ?? {
-      enrollmentId,
-      lessonId,
-      status: "in_progress",
-      completedAt: null,
-      blocks: [],
-    }
-  );
-}
-
-async function schedule(
-  repos: Repos,
-  spaceId: string,
-  userId: string,
-  itemId: string,
-  rating: number | null,
-  now: number,
-) {
-  if (rating === null) {
-    return;
-  }
-  const locked = await repos.learning.lockCard(spaceId, userId, itemId);
-  if (locked.ok) {
-    const next = review(locked.value.card, rating, now);
-    await repos.learning.saveCard(spaceId, userId, locked.value.id, next.card, next.nextReviewAt);
-  }
 }
 
 export const lessonFinish = defineAction({
@@ -339,154 +289,6 @@ function lessonAt(snapshot: Snapshot, number: number) {
     snapshot.lessons.filter((l) => l.moduleId === m.id),
   );
   return ordered[number - 1]?.id;
-}
-
-const pad = (n: number, width = 2) => String(n).padStart(width, "0");
-
-/** Epoch milliseconds as an ISO 8601 UTC timestamp, without reading a clock (core stays pure). */
-export function isoOf(ms: number): string {
-  const days = Math.floor(ms / 86_400_000);
-  const rest = ms - days * 86_400_000;
-  // Howard Hinnant's civil_from_days.
-  const z = days + 719_468;
-  const era = Math.floor(z / 146_097);
-  const doe = z - era * 146_097;
-  const yoe = Math.floor(
-    (doe - Math.floor(doe / 1460) + Math.floor(doe / 36_524) - Math.floor(doe / 146_096)) / 365,
-  );
-  const doy = doe - (365 * yoe + Math.floor(yoe / 4) - Math.floor(yoe / 100));
-  const mp = Math.floor((5 * doy + 2) / 153);
-  const day = doy - Math.floor((153 * mp + 2) / 5) + 1;
-  const month = mp < 10 ? mp + 3 : mp - 9;
-  const year = yoe + era * 400 + (month <= 2 ? 1 : 0);
-  const h = Math.floor(rest / 3_600_000);
-  const m = Math.floor((rest % 3_600_000) / 60_000);
-  const sec = Math.floor((rest % 60_000) / 1000);
-  return `${pad(year, 4)}-${pad(month)}-${pad(day)}T${pad(h)}:${pad(m)}:${pad(sec)}.${pad(rest % 1000, 3)}Z`;
-}
-
-const iso = (ms: number | null) => (ms === null ? null : isoOf(ms));
-const ms = (text: string | null) => (text === null ? null : Date.parse(text));
-
-function fromState(kind: string, state: BlockState): Attempt {
-  return {
-    blockType: kind,
-    attempts: state.attempts,
-    correct: state.correct,
-    score: state.score,
-    completedAt: ms(state.completedAt),
-    releasedAt: ms(state.releasedAt),
-    payload: null,
-  };
-}
-
-function toState(blockId: string, attempt: Attempt): BlockState {
-  return {
-    blockId,
-    attempts: attempt.attempts,
-    correct: attempt.correct,
-    score: attempt.score,
-    releasedAt: iso(attempt.releasedAt),
-    completedAt: iso(attempt.completedAt),
-  };
-}
-
-function explanationOf(
-  kind: string,
-  data: Record<string, unknown>,
-  submission: unknown,
-  correct: boolean | null,
-) {
-  if (kind === "check" && correct === false) {
-    const chosen = asObject(submission).option_index;
-    const why = typeof chosen === "number" ? asObject(asArray(data.options)[chosen]).why : null;
-    if (why) {
-      return why as LocalizedText;
-    }
-  }
-  return (data.explanation as LocalizedText | undefined) ?? null;
-}
-
-function detailOf(
-  id: string,
-  kind: string,
-  data: Record<string, unknown>,
-  submission: unknown,
-  detail: unknown,
-) {
-  const payload = asObject(submission);
-  switch (kind) {
-    case "true_false": {
-      const statements = asArray(data.statements).map(asObject);
-      return statements.map((s, i) => ({
-        right: asArray(payload.answers)[i] === (s.answer === true),
-        answer: s.answer === true,
-        why: s.why ?? null,
-      }));
-    }
-    case "order":
-      return { wrong: asArray(detail).map((place) => place) };
-    case "drag_drop": {
-      const matches = asObject(payload.matches);
-      const count = asArray(data.pairs).length;
-      return {
-        wrong: Array.from({ length: count }, (_, i) => i)
-          .filter((i) => matches[String(i)] !== String(i))
-          .map((i) => itemKey(id, i)),
-      };
-    }
-    case "sim": {
-      const sim = asObject(data.sim);
-      if (sim.kind === "roleplay") {
-        const picks = asArray(asObject(payload.state).picks);
-        return {
-          ...asObject(detail),
-          notes: asArray(sim.turns).map((turn, i) => {
-            const choice = asObject(asArray(asObject(turn).choices)[picks[i] as number]);
-            return { score: choice.score ?? 0, note: choice.note ?? null };
-          }),
-        };
-      }
-      return detail ?? null;
-    }
-    default:
-      return detail ?? null;
-  }
-}
-
-function solutionOf(id: string, kind: string, data: Record<string, unknown>) {
-  switch (kind) {
-    case "check":
-      return { option_index: asArray(data.options).findIndex((o) => asObject(o).correct === true) };
-    case "order":
-      return { order: asArray(data.items).map((_, i) => itemKey(id, i)) };
-    case "drag_drop":
-      return {
-        matches: Object.fromEntries(
-          asArray(data.pairs).map((_, i) => [itemKey(id, i), itemKey(id, i + 1000)]),
-        ),
-      };
-    case "fill_blank":
-      return { blanks: data.blanks };
-    case "true_false":
-      return { answers: asArray(data.statements).map((s) => asObject(s).answer === true) };
-    case "estimate":
-      return { min: data.answer_min, max: data.answer_max };
-    case "hotspot":
-      return { spot: asArray(data.spots).findIndex((s) => asObject(s).correct === true) };
-    case "sim": {
-      const sim = asObject(data.sim);
-      if (sim.kind === "chess_mate_in_one") {
-        return { move: sim.solution };
-      }
-      if (sim.kind === "piano_chord" || sim.kind === "guitar_chord" || sim.kind === "css_flex") {
-        return { target: sim.target };
-      }
-      return null;
-    }
-    default:
-      return null;
-  }
 }
 
 /** For a test or a contract: what a repo-less caller would read. */

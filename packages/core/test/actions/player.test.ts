@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { runAction } from "../../src/actions/define";
-import { isoOf } from "../../src/actions/player";
+import { isoOf } from "../../src/actions/player-progress";
 import { ACTIONS } from "../../src/actions/registry";
 import { itemKey } from "../../src/content/player-view";
 import { ENROLLMENT, ENROLLMENTS, ROUTE, testCtx, testWorld } from "./test-ctx";

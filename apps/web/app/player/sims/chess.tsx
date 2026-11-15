@@ -1,23 +1,11 @@
 import { useEffect, useState } from "react";
 import { list, obj, usePlayer } from "../shared";
-import type { SimProps } from "./index";
+import type { SimProps } from "./sim-props";
 
 // Mate in one: the creator says which pieces may move. Tap one of them, then the square it goes to.
 
-const GLYPH: Record<string, string> = {
-  K: "♔",
-  Q: "♕",
-  R: "♖",
-  B: "♗",
-  N: "♘",
-  P: "♙",
-  k: "♚",
-  q: "♛",
-  r: "♜",
-  b: "♝",
-  n: "♞",
-  p: "♟",
-};
+// One solid set for both sides, so a white piece reads as clearly as a black one.
+const GLYPH: Record<string, string> = { k: "♚", q: "♛", r: "♜", b: "♝", n: "♞", p: "♟" };
 const FILES = "abcdefgh";
 const DIGIT = /\d/;
 
@@ -117,7 +105,7 @@ export default function Chess({ sim, setState, result }: SimProps) {
             >
               {piece ? (
                 <span className={piece === piece.toUpperCase() ? "s-white-piece" : "s-black-piece"}>
-                  {GLYPH[piece]}
+                  {GLYPH[piece.toLowerCase()]}
                 </span>
               ) : null}
             </button>

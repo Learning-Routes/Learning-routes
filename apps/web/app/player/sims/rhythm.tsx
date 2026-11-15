@@ -2,7 +2,7 @@ import { fill } from "@learning-routes/core/copy/player";
 import { useEffect, useRef, useState } from "react";
 import { usePlayer } from "../shared";
 import { click } from "./audio";
-import type { SimProps } from "./index";
+import type { SimProps } from "./sim-props";
 
 // Chest compressions in rhythm: tap (or press Space) at each push. The pace is measured over the
 // last taps; a metronome can help. Practice only: nothing here is graded.
@@ -94,7 +94,7 @@ export default function Rhythm({ sim }: SimProps) {
         aria-pressed={metronome}
         onClick={() => setMetronome(!metronome)}
       >
-        {words.rhythmHelp}: {metronome ? words.on : words.off}
+        {words.rhythmHelp}: {metronome ? words.off : words.on}
       </button>
     </div>
   );

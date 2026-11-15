@@ -6,7 +6,7 @@ import {
 } from "@learning-routes/core/blocks/sim-numbers";
 import { useEffect, useState } from "react";
 import { usePlayer } from "../shared";
-import type { SimProps } from "./index";
+import type { SimProps } from "./sim-props";
 
 // A camera: aperture, shutter and ISO, and a scene that gets brighter, blurrier or grainier as they
 // change. The meter shows the same offset the grader computes.
@@ -98,6 +98,11 @@ export default function Camera({ sim, setState, result }: SimProps) {
   }, [a, s, i, setState]);
 
   const meter = Math.max(-2, Math.min(2, offset));
+  const flag: Record<string, string> = {
+    bright: words.tooBright,
+    dark: words.tooDark,
+    blur: words.blurry,
+  };
   return (
     <div className="s-camera">
       <div className="s-viewfinder">
@@ -116,7 +121,7 @@ export default function Camera({ sim, setState, result }: SimProps) {
           />
         </div>
         {result && result.correct === false && typeof result.detail === "string" ? (
-          <span className="s-flag">{result.detail}</span>
+          <span className="s-flag">{flag[result.detail] ?? result.detail}</span>
         ) : null}
       </div>
       <div className="s-dials">

@@ -9,11 +9,13 @@ import { Icon, usePlayer } from "./shared";
 // sheet that answers a check, and the end of a topic.
 
 export function TopBar({
+  route,
   exit,
   at,
   total,
   xp,
 }: {
+  route: string;
   exit: string;
   at: number;
   total: number;
@@ -26,6 +28,7 @@ export function TopBar({
       <a className="p-icon-btn" href={exit} aria-label={words.close}>
         <Icon name="close" size={18} />
       </a>
+      <p className="p-topbar-route">{route}</p>
       <div
         className="p-progress"
         role="progressbar"
@@ -199,15 +202,19 @@ export function Summary({
       </span>
       <h1 className="p-title">{missing ? t(view.title) : words.topicDone}</h1>
       <p className="p-sub">{missing ? words.missingGates : words.topicDoneBody}</p>
-      <dl className="p-stats">
-        <div>
-          <dt>XP</dt>
-          <dd>+{xp}</dd>
-        </div>
-        <div>
-          <dt>{words.right}</dt>
-          <dd>{fill(words.scoreOf, { n: firstTry, total: graded })}</dd>
-        </div>
+      <dl className={`p-stats ${graded ? "" : "is-practice"}`}>
+        {graded ? (
+          <>
+            <div>
+              <dt>XP</dt>
+              <dd>+{xp}</dd>
+            </div>
+            <div>
+              <dt>{words.firstTry}</dt>
+              <dd>{fill(words.scoreOf, { n: firstTry, total: graded })}</dd>
+            </div>
+          </>
+        ) : null}
         <div>
           <dt>{words.xpTotal}</dt>
           <dd>{routeXp}</dd>

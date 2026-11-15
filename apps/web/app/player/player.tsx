@@ -21,8 +21,9 @@ interface PlayerProps {
 
 /** Where to start: the first beat that still gates the topic, else the beginning. */
 const firstOpen = (view: PlayView) => {
+  const started = view.beats.some((b) => b.state !== null);
   const at = view.beats.findIndex((b) => b.gating && !b.state?.done);
-  return view.done || at < 0 ? 0 : at;
+  return view.done || !started || at < 0 ? 0 : at;
 };
 
 function useBeats(view: PlayView, enrollmentId: string) {
@@ -141,6 +142,7 @@ export function Player({ view, enrollmentId, locale, runner }: PlayerProps) {
     <PlayerContext.Provider value={ctx}>
       <div className="player" style={brand}>
         <TopBar
+          route={ctx.t(view.routeTitle)}
           exit={exit}
           at={done ? total : play.index}
           total={total}
@@ -177,16 +179,16 @@ export function Player({ view, enrollmentId, locale, runner }: PlayerProps) {
             {done || !play.beat || play.result ? null : (
               <Footer primary={primary} failed={play.failed} />
             )}
+            {play.result && !done ? (
+              <Sheet
+                result={play.result}
+                onContinue={next}
+                onRetry={play.result.correct === false ? () => play.setResult(null) : null}
+              />
+            ) : null}
           </main>
           <Tutor />
         </div>
-        {play.result && !done ? (
-          <Sheet
-            result={play.result}
-            onContinue={next}
-            onRetry={play.result.correct === false ? () => play.setResult(null) : null}
-          />
-        ) : null}
       </div>
     </PlayerContext.Provider>
   );

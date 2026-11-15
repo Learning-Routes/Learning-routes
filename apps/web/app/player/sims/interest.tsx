@@ -2,7 +2,7 @@ import { futureValue } from "@learning-routes/core/blocks/sim-numbers";
 import { fill } from "@learning-routes/core/copy/player";
 import { useEffect, useState } from "react";
 import { usePlayer } from "../shared";
-import type { SimProps } from "./index";
+import type { SimProps } from "./sim-props";
 
 // Saving every month: a slider for how much, the years as bars of what you put and what it earned,
 // and the goal as a line.

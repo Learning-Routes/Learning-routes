@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { list, usePlayer } from "../shared";
-import type { SimProps } from "./index";
+import type { SimProps } from "./sim-props";
 
 // Ohm's law: a battery, a resistor and a bulb. Voltage and resistance on sliders; the current flows
 // faster and the bulb glows brighter as it rises. Resistance moves on a log scale.

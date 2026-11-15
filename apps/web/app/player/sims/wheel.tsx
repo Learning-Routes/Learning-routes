@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { usePlayer } from "../shared";
-import type { SimProps } from "./index";
+import type { SimProps } from "./sim-props";
 
 // A colour wheel of twelve hues: the base is marked; tap the colour the relation asks for.
 

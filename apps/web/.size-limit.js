@@ -16,6 +16,23 @@ const manifest = JSON.parse(
     .replace(/;\s*$/, ""),
 );
 
+// The player's simulators, by the file each is built into (app/player/sims).
+const SIMULATORS = [
+  "piano",
+  "guitar",
+  "camera",
+  "interest",
+  "flex",
+  "pie",
+  "ohm",
+  "equation",
+  "chess",
+  "wheel",
+  "roleplay",
+  "rhythm",
+  "sequencer",
+];
+
 // A script and everything it imports, as the browser would fetch it.
 const IMPORTED = /(?:from\s*|import\s*\(?\s*)["'`](\.[^"'`]+)["'`]/g;
 function withImports(file, seen = new Set()) {
@@ -46,6 +63,7 @@ export default [
       `${CLIENT}/assets/*.css`,
       `!${CLIENT}/assets/lesson-*.css`,
       `!${CLIENT}/assets/asistente-*.css`,
+      `!${CLIENT}/assets/tema-*.css`,
     ],
     limit: "20 KB",
     gzip: true,
@@ -63,6 +81,14 @@ export default [
     name: "assistant CSS",
     path: [`${CLIENT}/assets/asistente-*.css`],
     limit: "4 KB",
+    gzip: true,
+  },
+  {
+    // The lesson player's stylesheet (Platform STEP 12), its simulators included, loaded only by
+    // the player.
+    name: "player CSS",
+    path: [`${CLIENT}/assets/tema-*.css`],
+    limit: "10 KB",
     gzip: true,
   },
   // Enhancement JavaScript, loaded after the first paint (ADR 0008). three.js only here.
@@ -105,4 +131,20 @@ export default [
     limit: "142 KB",
     gzip: true,
   },
+  {
+    // The lesson player without its simulators (Platform STEP 12).
+    name: "app entry + player",
+    path: pageScripts(["root", "routes/tema"]),
+    limit: "150 KB",
+    gzip: true,
+  },
+  // Each simulator is its own chunk, fetched when a topic reaches it (Platform STEP 12).
+  ...SIMULATORS.map((name) => ({
+    name: `simulator: ${name}`,
+    path: readdirSync(`${CLIENT}/assets`)
+      .filter((file) => file.startsWith(`${name}-`) && file.endsWith(".js"))
+      .map((file) => `${CLIENT}/assets/${file}`),
+    limit: "15 KB",
+    gzip: true,
+  })),
 ];

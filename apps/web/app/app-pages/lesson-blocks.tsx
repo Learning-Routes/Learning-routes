@@ -56,6 +56,7 @@ function Practice({ block, text, locale }: ViewContext) {
         {words.kinds[block.kind] ?? words.practiceOnly} · {words.practiceOnly}
       </p>
       {asks ? <p>{asks}</p> : null}
+      {block.data.translation ? <p>{text(block.data.translation)}</p> : null}
       <p className="lesson-practice-note">{words.practiceHere}</p>
     </aside>
   );

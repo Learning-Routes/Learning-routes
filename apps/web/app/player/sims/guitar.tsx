@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Icon, obj, usePlayer } from "../shared";
 import { pluck } from "./audio";
-import type { SimProps } from "./index";
+import type { SimProps } from "./sim-props";
 
 // A fretboard: string 1 is the high e, string 6 the low E. Tap a fret to press it; tap it again to
 // let the string ring open. Strum to hear the chord.

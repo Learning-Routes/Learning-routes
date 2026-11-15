@@ -1,7 +1,7 @@
 import { FLEX_ALIGN, FLEX_JUSTIFY } from "@learning-routes/core/blocks/sim-numbers";
 import { useEffect, useState } from "react";
 import { obj } from "../shared";
-import type { SimProps } from "./index";
+import type { SimProps } from "./sim-props";
 
 // Flexbox: pick justify-content and align-items, see the boxes move, read the CSS you wrote.
 

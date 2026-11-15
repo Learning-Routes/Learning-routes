@@ -49,6 +49,35 @@ const SAMPLES: Record<string, Record<string, unknown>> = {
   audio_explainer: { body: es("Explicación"), audio_url: "https://example.com/a.mp3" },
   video: { body: es("Mira"), video_url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ" },
   interactive: { title: es("Piano"), creation: "a".repeat(64), description: es("Toca las notas") },
+  // Made for the player (Platform STEP 12): the reading page shows what each asks.
+  order: { prompt: es("Ordena los pasos"), items: [es("Uno"), es("Dos")] },
+  true_false: { prompt: es("Cierto o falso"), statements: [{ text: es("El sol"), answer: true }] },
+  estimate: {
+    prompt: es("Estima la altura"),
+    min: 0,
+    max: 10,
+    step: 1,
+    answer_min: 2,
+    answer_max: 4,
+  },
+  hotspot: {
+    prompt: es("Toca la pinza"),
+    diagram: "disc_brake",
+    spots: [
+      { x: 0.1, y: 0.1, label: es("Pinza"), correct: true },
+      { x: 0.5, y: 0.5, label: es("Disco"), correct: false },
+    ],
+  },
+  worked_example: { problem: es("Resuelve esto"), steps: [{ label: es("Suma"), work: "1+1" }] },
+  speak: { phrase: "Hello there", lang: "en", translation: es("Hola ahí") },
+  code_check: {
+    prompt: es("Escribe suma"),
+    language: "javascript",
+    starter: "",
+    tests: [{ call: "suma(1, 1)", expected: "2" }],
+  },
+  open_answer: { prompt: es("Explica el freno"), rubric: [es("Fricción")] },
+  sim: { prompt: es("Toca Do mayor"), sim: { kind: "piano_chord", target: [0, 4, 7] } },
 };
 
 // The tree core makes on the server, for the fields it makes one for.

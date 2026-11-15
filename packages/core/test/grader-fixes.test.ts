@@ -82,3 +82,17 @@ describe("grader fixes (ADR 0003)", () => {
     expect(imported).toMatchObject({ type: "fill_blank", match: "text" });
   });
 });
+
+describe("a stored fill_blank", () => {
+  it("takes the blank in any of its languages", () => {
+    const block = {
+      type: "fill_blank",
+      blanks: [{ es: "pistón", en: "piston" }, { es: "pastillas" }],
+    };
+    expect(grade(block, { answers: ["Piston", "pastillas"] })).toMatchObject({ correct: true });
+    expect(grade(block, { answers: ["pistón", "pedal"] })).toMatchObject({
+      correct: false,
+      score: 50,
+    });
+  });
+});

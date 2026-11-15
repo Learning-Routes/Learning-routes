@@ -1,19 +1,19 @@
 import { useEffect, useState } from "react";
 import { Icon, list, obj, usePlayer } from "../shared";
 import { note } from "./audio";
-import type { SimProps } from "./index";
+import type { SimProps } from "./sim-props";
 
 // A keyboard: tap the keys of the chord, hear them, and the server says which notes are off.
 
 const NAMES = ["C", "C♯", "D", "D♯", "E", "F", "F♯", "G", "G♯", "A", "A♯", "B"];
-const BLACK = new Set([1, 3, 6, 8, 10]);
+const BLACK: readonly number[] = [1, 3, 6, 8, 10];
 const pc = (midi: number) => ((midi % 12) + 12) % 12;
 
 function keysOf(low: number, high: number) {
   const whites: number[] = [];
   const blacks: { midi: number; after: number }[] = [];
   for (let midi = low; midi <= high; midi++) {
-    if (BLACK.has(pc(midi))) {
+    if (BLACK.includes(pc(midi))) {
       blacks.push({ midi, after: whites.length });
     } else {
       whites.push(midi);
@@ -64,27 +64,29 @@ export default function Piano({ sim, setState, result }: SimProps) {
       <div className="s-chord-read" aria-live="polite">
         {notes.length ? notes.map((m) => NAMES[pc(m)]).join(" · ") : "—"}
       </div>
-      <div className="s-keys" style={{ gridTemplateColumns: `repeat(${whites.length}, 1fr)` }}>
-        {whites.map((midi) => (
-          <button
-            key={midi}
-            className={`s-white ${notes.includes(midi) ? "is-on" : ""} ${tone(midi)}`}
-            {...keyProps(midi)}
-          >
-            <span>{NAMES[pc(midi)]}</span>
-          </button>
-        ))}
-        {blacks.map(({ midi, after }) => (
-          <button
-            key={midi}
-            className={`s-black ${notes.includes(midi) ? "is-on" : ""} ${tone(midi)}`}
-            style={{
-              left: `calc(${(after / whites.length) * 100}% - ${100 / whites.length / 3}%)`,
-              width: `${(100 / whites.length) * 0.66}%`,
-            }}
-            {...keyProps(midi)}
-          />
-        ))}
+      <div className="s-keys">
+        <div className="s-keys-in" style={{ gridTemplateColumns: `repeat(${whites.length}, 1fr)` }}>
+          {whites.map((midi) => (
+            <button
+              key={midi}
+              className={`s-white ${notes.includes(midi) ? "is-on" : ""} ${tone(midi)}`}
+              {...keyProps(midi)}
+            >
+              <span>{NAMES[pc(midi)]}</span>
+            </button>
+          ))}
+          {blacks.map(({ midi, after }) => (
+            <button
+              key={midi}
+              className={`s-black ${notes.includes(midi) ? "is-on" : ""} ${tone(midi)}`}
+              style={{
+                left: `${((after - 0.3) / whites.length) * 100}%`,
+                width: `${(0.6 / whites.length) * 100}%`,
+              }}
+              {...keyProps(midi)}
+            />
+          ))}
+        </div>
       </div>
       <div className="p-row">
         <button

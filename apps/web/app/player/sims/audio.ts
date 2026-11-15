@@ -1,20 +1,21 @@
 // Sound for the simulators, made in the browser with Web Audio: no files, no library.
 
-let shared: AudioContext | null = null;
+// The page's one audio context, made on the first sound. Browser code only: a Worker never loads it.
+const page: { audio: AudioContext | null } = { audio: null };
 
 /** The one audio context, made on the first sound (browsers start it only after a tap). */
 export function audio(): AudioContext | null {
   if (typeof window === "undefined" || !("AudioContext" in window)) {
     return null;
   }
-  shared ??= new AudioContext();
-  if (shared.state === "suspended") {
-    shared.resume().catch(() => undefined);
+  page.audio ??= new AudioContext();
+  if (page.audio.state === "suspended") {
+    page.audio.resume().catch(() => undefined);
   }
-  return shared;
+  return page.audio;
 }
 
-export const midiToHz = (midi: number) => 440 * 2 ** ((midi - 69) / 12);
+const midiToHz = (midi: number) => 440 * 2 ** ((midi - 69) / 12);
 
 /** A soft piano-like note: two partials with a quick attack and a long fall. */
 export function note(midi: number, delay = 0, length = 1.2) {
