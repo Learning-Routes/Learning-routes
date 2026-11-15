@@ -1,5 +1,5 @@
 import * as z from "zod";
-import { lessonView } from "../content/lesson-view";
+import { type LessonBlock, lessonView } from "../content/lesson-view";
 import { forLearner, fromLearner, gates, itemKey } from "../content/player-view";
 import type { Snapshot } from "../content/snapshot";
 import { type Attempt, fsrsRating, newAttempt, recordSubmission } from "../learning/attempt";
@@ -25,6 +25,8 @@ export interface PlayBeat {
   id: string;
   kind: string;
   data: Record<string, unknown>;
+  /** The Markdown fields as trees by locale, parsed on the server like the reading page's. */
+  md: LessonBlock["md"];
   gradable: boolean;
   gating: boolean;
   /** An interactive block's creation on the content host, as a path the API makes whole. */
@@ -119,6 +121,7 @@ export const lessonPlay = defineAction({
         id: block.id,
         kind: block.kind,
         data: forLearner(block.id, block.kind, block.data),
+        md: block.md,
         ...(block.frame ? { frame: block.frame } : {}),
         ...role,
         state: state

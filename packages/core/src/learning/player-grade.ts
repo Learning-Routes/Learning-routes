@@ -1,4 +1,7 @@
+import { exposureOffset, futureValue } from "../blocks/sim-numbers";
 import { APERTURES, FLEX_ALIGN, FLEX_JUSTIFY, GRADABLE_SIMS, ISOS, SHUTTERS } from "../blocks/sims";
+
+export { futureValue } from "../blocks/sim-numbers";
 import { asArray, asObject, asText, round2, truthy } from "../v1-import/loose-json";
 
 // Grades the player's question types (Platform STEP 12). Every grader reads the block the
@@ -169,7 +172,7 @@ const SIM_GRADERS: Record<
     if (n === undefined || t === undefined || iso === undefined) {
       return graded(false, 0);
     }
-    const offset = ev - (Math.log2(n * n * t) - Math.log2(iso / 100));
+    const offset = exposureOffset(ev, n, t, iso);
     const exposed = Math.abs(offset) <= 0.5;
     const frozen = !isInt(sim.min_shutter) || t >= sim.min_shutter;
     const detail = !exposed ? (offset > 0 ? "bright" : "dark") : frozen ? undefined : "blur";
@@ -319,12 +322,6 @@ const SIM_GRADERS: Record<
   },
 };
 
-/** The value of saving `monthly` at the end of each month for `years`, at a yearly `rate`. */
-export function futureValue(monthly: number, rate: number, years: number): number {
-  const r = rate / 12;
-  const n = years * 12;
-  return r === 0 ? monthly * n : (monthly * ((1 + r) ** n - 1)) / r;
-}
 
 function gcdAll(values: number[]): number {
   const gcd = (a: number, b: number): number => (b === 0 ? a : gcd(b, a % b));

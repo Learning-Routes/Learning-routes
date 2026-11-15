@@ -1,4 +1,7 @@
 import * as z from "zod";
+import { FLEX_ALIGN, FLEX_JUSTIFY, SHUTTERS } from "./sim-numbers";
+
+export { APERTURES, FLEX_ALIGN, FLEX_JUSTIFY, ISOS, SHUTTERS } from "./sim-numbers";
 
 // The simulators a `sim` block can run (Platform STEP 12). Each kind carries only the numbers and
 // words its stage needs; its grader recomputes the goal from what the learner set, never from a
@@ -40,11 +43,6 @@ export const GRADABLE_SIMS: readonly SimKind[] = [
   "roleplay",
 ];
 
-export const APERTURES = [1.8, 2.8, 4, 5.6, 8, 11, 16] as const;
-export const SHUTTERS = [30, 60, 125, 250, 500, 1000] as const;
-export const ISOS = [100, 200, 400, 800, 1600, 3200] as const;
-export const FLEX_JUSTIFY = ["flex-start", "center", "flex-end", "space-between"] as const;
-export const FLEX_ALIGN = ["flex-start", "center", "flex-end"] as const;
 
 const SQUARE = /^[a-h][1-8]$/;
 const UCI = /^[a-h][1-8][a-h][1-8]$/;
