@@ -149,6 +149,18 @@ describe("lesson.answer", () => {
       output: { correct: true, xp: { gained: 0, topic: 5 } },
     });
 
+    // A wrong answer on a block already passed is practice: it takes no XP away.
+    const wrongAfter = await runAction(
+      ACTIONS,
+      "lesson.answer",
+      { enrollmentId: ENROLLMENT, blockId: CHECK, submission: { option_index: 0 } },
+      ctx(w),
+    );
+    expect(wrongAfter).toMatchObject({
+      ok: true,
+      output: { correct: false, xp: { gained: 0, topic: 5 } },
+    });
+
     const play = await runAction(
       ACTIONS,
       "lesson.play",

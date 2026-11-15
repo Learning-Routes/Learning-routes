@@ -192,7 +192,8 @@ export const lessonAnswer = defineAction({
         before ? fromState(block.kind, before) : newAttempt(block.kind),
         { payload: submission, grading, complete: true, now },
       );
-      const state = toState(block.id, after);
+      // A block already passed keeps its result: answering it again is practice, not a new score.
+      const state = before?.correct === true ? before : toState(block.id, after);
       const saved: ProgressRecord = {
         ...record,
         status: record.status === "completed" ? "completed" : "in_progress",
