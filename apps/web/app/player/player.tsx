@@ -93,15 +93,22 @@ function useBeats(view: PlayView, enrollmentId: string) {
 
 function useFinish(view: PlayView, enrollmentId: string) {
   const [missing, setMissing] = useState<string[] | null>(null);
+  const [failed, setFailed] = useState(false);
+  // Only a saved finish shows the summary; a failed one stays on the last beat to try again.
   const finish = async () => {
+    setFailed(false);
     try {
       const answered = await callAction("lesson.finish", { enrollmentId, topic: view.topicNumber });
-      setMissing(answered.ok ? answered.output.missing : []);
+      if (answered.ok) {
+        setMissing(answered.output.missing);
+      } else {
+        setFailed(true);
+      }
     } catch {
-      setMissing([]);
+      setFailed(true);
     }
   };
-  return { missing, setMissing, finish };
+  return { missing, setMissing, failed, finish };
 }
 
 /** The beats, the end of the topic, and how one leads to the other. */
@@ -122,7 +129,8 @@ function useFlow(view: PlayView, enrollmentId: string) {
     end.setMissing(null);
     play.go(Math.max(0, at));
   };
-  return { play, end, next, review, done: end.missing !== null, primary };
+  const failed = play.failed || end.failed;
+  return { play, end, next, review, done: end.missing !== null, primary, failed };
 }
 
 export function Player({ view, enrollmentId, locale, runner }: PlayerProps) {
@@ -130,7 +138,7 @@ export function Player({ view, enrollmentId, locale, runner }: PlayerProps) {
     () => makeCtx(locale, view.sourceLocale, PLAYER_TEXT[locale], runner),
     [locale, view.sourceLocale, runner],
   );
-  const { play, end, next, review, done, primary } = useFlow(view, enrollmentId);
+  const { play, end, next, review, done, primary, failed } = useFlow(view, enrollmentId);
   const total = view.beats.length;
   const exit = `/mis-rutas/${enrollmentId}?tema=${view.topicNumber}`;
   const hrefOf = (n: number) => `/mis-rutas/${enrollmentId}/tema/${n}`;
@@ -177,7 +185,7 @@ export function Player({ view, enrollmentId, locale, runner }: PlayerProps) {
               ) : null}
             </div>
             {done || !play.beat || play.result ? null : (
-              <Footer primary={primary} failed={play.failed} />
+              <Footer primary={primary} failed={failed} />
             )}
             {play.result && !done ? (
               <Sheet
