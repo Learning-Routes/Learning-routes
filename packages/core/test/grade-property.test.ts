@@ -47,5 +47,6 @@ describe("every grader on any JSON", () => {
       }),
       { numRuns: 3000 },
     );
-  });
+    // About 3 s alone; the full check runs every suite at once.
+  }, 30_000);
 });
