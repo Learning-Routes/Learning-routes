@@ -46,6 +46,12 @@ function Listening({ context, url }: { context: ViewContext; url: unknown }) {
   );
 }
 
+/** A simulator is named by what it simulates; any other beat by its kind. */
+function kindOf(block: ViewContext["block"], kinds: Record<string, string>): string {
+  const sim = (block.data.sim as { kind?: string } | undefined)?.kind ?? "";
+  return kinds[sim] ?? kinds[block.kind] ?? block.kind;
+}
+
 /** A beat made for the player (Platform STEP 12): here only what it asks, and where to do it. */
 function Practice({ block, text, locale }: ViewContext) {
   const words = PLAYER_TEXT[locale];
@@ -53,7 +59,7 @@ function Practice({ block, text, locale }: ViewContext) {
   return (
     <aside className="lesson-aside lesson-practice settle-2">
       <p className="lesson-aside-label">
-        {words.kinds[block.kind] ?? words.practiceOnly} · {words.practiceOnly}
+        {kindOf(block, words.kinds)} · {words.practiceOnly}
       </p>
       {asks ? <p>{asks}</p> : null}
       {block.data.translation ? <p>{text(block.data.translation)}</p> : null}
