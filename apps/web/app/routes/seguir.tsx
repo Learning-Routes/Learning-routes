@@ -1,7 +1,7 @@
 import type { LessonView } from "@learning-routes/core/content/lesson-view";
 import { APP_PAGES_TEXT } from "@learning-routes/core/copy/app-pages";
 import { LESSON_TEXT } from "@learning-routes/core/copy/lesson";
-import { PLAYER_TEXT } from "@learning-routes/core/copy/player";
+import { PRACTICE_TEXT } from "@learning-routes/core/copy/practice";
 import { BRAND, negotiateLocale } from "@learning-routes/core/locales";
 import { useState } from "react";
 import { data, redirect } from "react-router";
@@ -80,7 +80,7 @@ export default function Seguir({ loaderData }: Route.ComponentProps) {
             {lesson.blocks.length > 0 ? (
               <p className="lesson-play settle-2">
                 <ButtonLink href={`/mis-rutas/${enrollmentId}/tema/${lesson.topicNumber}`}>
-                  {PLAYER_TEXT[locale].practiceTopic}
+                  {PRACTICE_TEXT[locale].practiceTopic}
                 </ButtonLink>
               </p>
             ) : null}

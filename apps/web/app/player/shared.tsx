@@ -13,6 +13,8 @@ export interface PlayerCtx {
   locale: LocaleCode;
   source: string;
   words: PlayerText;
+  /** What each kind of beat, and each simulator, is called. */
+  kinds: Record<string, string>;
   /** A localized text in the learner's language. */
   t: (text: unknown) => string;
   /** The content host's code runner, or null where there is none. */
@@ -33,12 +35,14 @@ export function makeCtx(
   locale: LocaleCode,
   source: string,
   words: PlayerText,
+  kinds: Record<string, string>,
   runner: string | null,
 ): PlayerCtx {
   return {
     locale,
     source,
     words,
+    kinds,
     runner,
     t: (text) => inLocale(text as LocalizedText | null | undefined, locale, source),
   };

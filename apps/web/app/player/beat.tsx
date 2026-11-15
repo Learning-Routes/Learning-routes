@@ -58,18 +58,17 @@ function BeatHead({
   total: number;
   titled?: boolean;
 }) {
-  const { t, words } = usePlayer();
+  const { t, words, kinds } = usePlayer();
   const { beat } = props;
   const field = TITLE_FIELD[beat.kind];
-  const title =
-    (field ? t(beat.data[field]) : "") || t(beat.data.title) || words.kinds[beat.kind] || "";
+  const title = (field ? t(beat.data[field]) : "") || t(beat.data.title) || kinds[beat.kind] || "";
   return (
     <header className="p-beat-head">
       <p className="p-eyebrow p-in">
         <span className="p-mark" aria-hidden="true">
           {index + 1}
         </span>
-        {kindName(beat, words.kinds)}
+        {kindName(beat, kinds)}
         <span className="p-eyebrow-count">{fill(words.beatOf, { n: index + 1, total })}</span>
       </p>
       {titled ? <h1 className="p-title p-in d1">{title}</h1> : null}

@@ -1,11 +1,11 @@
 import type { PlayView } from "@learning-routes/core/actions/player";
-import { PLAYER_TEXT } from "@learning-routes/core/copy/player";
+import { PRACTICE_TEXT } from "@learning-routes/core/copy/practice";
 import { BRAND, negotiateLocale } from "@learning-routes/core/locales";
 import { useEffect, useState } from "react";
 import { data, redirect } from "react-router";
 import { runApiAction } from "../app-api.server";
 import { pageContext } from "../context";
-import { Player } from "../player/player";
+import { Player } from "../player/player.client";
 import { inLocale } from "../storefront/words";
 import { lessonPage } from "../surface";
 import type { Route } from "./+types/tema";
@@ -66,7 +66,7 @@ export default function Tema({ loaderData }: Route.ComponentProps) {
   if (!mounted) {
     return (
       <div className="player-wait" aria-busy="true">
-        <p>{PLAYER_TEXT[locale].loading}</p>
+        <p>{PRACTICE_TEXT[locale].opening}</p>
       </div>
     );
   }

@@ -72,11 +72,6 @@ export interface PlayerText {
   readAll: string;
   theme: string;
   missingGates: string;
-  practiceOnly: string;
-  /** Under a practice beat on the reading page. */
-  practiceHere: string;
-  /** The reading page's way into the player. */
-  practiceTopic: string;
   strum: string;
   clear: string;
   play: string;
@@ -118,6 +113,4 @@ export interface PlayerText {
   tooBright: string;
   tooDark: string;
   blurry: string;
-  /** What each kind of beat is called in the line above its title. */
-  kinds: Record<string, string>;
 }

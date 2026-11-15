@@ -1,5 +1,6 @@
 import type { AnswerResult, PlayView } from "@learning-routes/core/actions/player";
 import { PLAYER_TEXT } from "@learning-routes/core/copy/player";
+import { PRACTICE_TEXT } from "@learning-routes/core/copy/practice";
 import type { LocaleCode } from "@learning-routes/core/locales";
 import { type CSSProperties, useCallback, useEffect, useMemo, useState } from "react";
 import { callAction } from "../api";
@@ -135,7 +136,8 @@ function useFlow(view: PlayView, enrollmentId: string) {
 
 export function Player({ view, enrollmentId, locale, runner }: PlayerProps) {
   const ctx = useMemo(
-    () => makeCtx(locale, view.sourceLocale, PLAYER_TEXT[locale], runner),
+    () =>
+      makeCtx(locale, view.sourceLocale, PLAYER_TEXT[locale], PRACTICE_TEXT[locale].kinds, runner),
     [locale, view.sourceLocale, runner],
   );
   const { play, end, next, review, done, primary, failed } = useFlow(view, enrollmentId);
