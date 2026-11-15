@@ -1,5 +1,6 @@
 import { routeDocumentJsonSchema } from "@learning-routes/core/content/route-document";
 import type { McpServer } from "@modelcontextprotocol/server";
+import { PLAYER_BLOCK_EXAMPLES, SIM_SETUPS } from "./block-examples";
 
 // What a model reads before writing a route (Platform STEP 5 §4), in Spanish and English. The
 // example is invented. The JSON Schema comes from core's rules, so it cannot drift from them.
@@ -85,6 +86,46 @@ ${EXAMPLE}
 \`\`\`
 
 The full format is the JSON Schema at learning-routes://schemas/route-document.
+
+# Bloques para practicar
+
+La lección se juega pantalla a pantalla. Un bloque para practicar se contesta y se corrige.
+
+- order: pasos en su orden correcto, de 2 a 8; el estudiante los ordena.
+- true_false: de 2 a 10 afirmaciones, cada una con answer true o false y un why opcional.
+- estimate: una escala (min, max, step) y el rango que cuenta como acierto (answer_min, answer_max).
+- hotspot: de 2 a 8 puntos (x, y de 0 a 1) sobre image_url o un diagram ya hecho ("brake"); al menos uno correct.
+- worked_example: un problema resuelto paso a paso: label, work y why.
+- speak: una frase para decir en voz alta, en el idioma que se aprende, con lang (en-US) y traducción.
+- code_check: código JavaScript para arreglar, con de 1 a 6 pruebas (call, expected).
+- open_answer: una pregunta para responder con sus palabras y de 1 a 5 criterios; la corrige el tutor.
+- sim: un simulador. setup lleva el kind y lo que ese kind necesita (abajo).
+- check también acepta why en cada opción: lo que se muestra al elegir esa opción incorrecta.
+
+# Practice blocks
+
+The lesson plays one screen at a time. A practice block is answered and graded.
+
+- order: steps in their right order, 2 to 8; the student orders them.
+- true_false: 2 to 10 statements, each with answer true or false and an optional why.
+- estimate: a scale (min, max, step) and the range that counts as right (answer_min, answer_max).
+- hotspot: 2 to 8 spots (x, y from 0 to 1) on image_url or a built-in diagram ("brake"); at least one correct.
+- worked_example: a problem solved step by step: label, work and why.
+- speak: a phrase to say aloud, in the language being learnt, with lang (en-US) and a translation.
+- code_check: JavaScript code to fix, with 1 to 6 tests (call, expected).
+- open_answer: a question to answer in their own words, with 1 to 5 criteria; the tutor grades it.
+- sim: a simulator. setup holds the kind and what that kind needs (below).
+- check also takes why on each option: what is shown when that wrong option is picked.
+
+One of each:
+
+\`\`\`json
+${JSON.stringify(PLAYER_BLOCK_EXAMPLES, null, 2)}
+\`\`\`
+
+Sim kinds, with a setup each:
+
+${SIM_SETUPS}
 `;
 
 /** The same guide, for a client that reads tools and not resources. */
