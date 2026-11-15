@@ -99,7 +99,7 @@ export const lessonPlay = defineAction({
     if (view === null) {
       throw refused("not_found");
     }
-    const lessonId = snapshot.blocks.find((b) => b.id === view.blocks[0]?.id)?.lessonId;
+    const lessonId = lessonAt(snapshot, view.topicNumber);
     const record = records.find((r) => r.lessonId === lessonId);
     const states = new Map((record?.blocks ?? []).map((b) => [b.blockId, b]));
     const beats: PlayBeat[] = view.blocks.map((block) => {
@@ -249,9 +249,7 @@ export const lessonFinish = defineAction({
     if (view === null || view.locked) {
       throw refused("not_found");
     }
-    const lesson =
-      snapshot.blocks.find((b) => b.id === view.blocks[0]?.id)?.lessonId ??
-      lessonAt(snapshot, input.topic);
+    const lesson = lessonAt(snapshot, view.topicNumber);
     if (!lesson) {
       throw refused("not_found");
     }
