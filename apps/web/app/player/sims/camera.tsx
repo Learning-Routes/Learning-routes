@@ -90,7 +90,7 @@ export default function Camera({ sim, setState, result }: SimProps) {
   const iso = ISOS[i] ?? 100;
   const minShutter = Number(sim.min_shutter ?? 0);
   // Positive: more light than the scene needs.
-  const offset = -exposureOffset(Number(sim.scene_ev ?? 12), n, t, iso);
+  const offset = exposureOffset(Number(sim.scene_ev ?? 12), n, t, iso);
   const blur = minShutter && t < minShutter ? Math.min(8, (minShutter / t) * 2) : 0;
 
   useEffect(() => {
