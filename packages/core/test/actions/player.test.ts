@@ -107,6 +107,21 @@ describe("lesson.play", () => {
   });
 });
 
+describe("lesson.read", () => {
+  it("sends the player's kinds without their answers", async () => {
+    const answer = await runAction(
+      ACTIONS,
+      "lesson.read",
+      { enrollmentId: ENROLLMENT, topic: 1 },
+      ctx(world()),
+    );
+    expect(answer.ok).toBe(true);
+    const text = JSON.stringify(answer);
+    expect(text).not.toContain('"target"');
+    expect(text).not.toContain('"items":[{"es":"uno"}');
+  });
+});
+
 describe("lesson.answer", () => {
   it("grades on the server, explains a wrong option, keeps the attempt and awards XP once", async () => {
     const w = world();
