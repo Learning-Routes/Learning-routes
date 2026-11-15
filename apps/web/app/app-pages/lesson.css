@@ -486,3 +486,15 @@
   margin: 0;
   color: var(--color-sub);
 }
+
+/* A beat made for the player (Platform STEP 12), on the reading page. */
+.lesson-practice-note {
+  margin: 0;
+  font-size: 14px;
+  opacity: 0.75;
+}
+
+/* The way from reading a topic into its player (Platform STEP 12). */
+.lesson-play {
+  margin: 0 0 8px;
+}

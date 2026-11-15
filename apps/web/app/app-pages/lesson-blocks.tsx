@@ -1,5 +1,6 @@
 import type { BlockTypeName } from "@learning-routes/core/blocks/types";
 import { LESSON_TEXT } from "@learning-routes/core/copy/lesson";
+import { PLAYER_TEXT } from "@learning-routes/core/copy/player";
 import type { LocalizedText } from "@learning-routes/core/localized-text";
 import type { ReactNode } from "react";
 import { inLocale } from "../storefront/words";
@@ -42,6 +43,21 @@ function Listening({ context, url }: { context: ViewContext; url: unknown }) {
         </details>
       ) : null}
     </section>
+  );
+}
+
+/** A beat made for the player (Platform STEP 12): here only what it asks, and where to do it. */
+function Practice({ block, text, locale }: ViewContext) {
+  const words = PLAYER_TEXT[locale];
+  const asks = text(block.data.prompt ?? block.data.problem) || String(block.data.phrase ?? "");
+  return (
+    <aside className="lesson-aside lesson-practice settle-2">
+      <p className="lesson-aside-label">
+        {words.kinds[block.kind] ?? words.practiceOnly} · {words.practiceOnly}
+      </p>
+      {asks ? <p>{asks}</p> : null}
+      <p className="lesson-practice-note">{words.practiceHere}</p>
+    </aside>
   );
 }
 
@@ -161,6 +177,15 @@ export const BLOCK_VIEWS = {
   audio_explainer: (context) => <Listening context={context} url={context.block.data.audio_url} />,
   video: (context) => <Video context={context} />,
   interactive: (context) => <Creation context={context} />,
+  order: Practice,
+  true_false: Practice,
+  estimate: Practice,
+  hotspot: Practice,
+  worked_example: Practice,
+  speak: Practice,
+  code_check: Practice,
+  open_answer: Practice,
+  sim: Practice,
 } satisfies Record<BlockTypeName, (context: ViewContext) => ReactNode>;
 
 /** One block, with whatever the author wrote after it. */

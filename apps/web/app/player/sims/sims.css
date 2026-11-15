@@ -1,0 +1,1109 @@
+/* The simulators (Platform STEP 12): the same neutral base and accent as every beat. Text inside a
+   simulator that turns right or wrong changes colour only, never gets a box. */
+
+.s-loading {
+  min-height: 220px;
+  display: grid;
+  place-items: center;
+  color: var(--p-s);
+  font-size: 14px;
+}
+
+.s-dial {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.s-dial-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.s-dial-head b {
+  font: 600 16px var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.s-dial .p-sub {
+  margin: 0;
+  font-size: 12.5px;
+}
+
+.player .s-text.is-right,
+.player .s-amps.is-right,
+.player .s-figures .is-right {
+  background: none;
+  box-shadow: none;
+  color: var(--p-ok);
+}
+
+.s-chord-read {
+  margin: 0;
+  min-height: 28px;
+  font: 600 18px var(--font-mono);
+  letter-spacing: 0.02em;
+  text-align: center;
+}
+
+/* ---------- Piano ---------- */
+
+.s-piano {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.s-keys {
+  position: relative;
+  display: grid;
+  height: 190px;
+  padding: 10px 10px 12px;
+  border-radius: 22px;
+  background: #1b1b1f;
+  gap: 3px;
+}
+
+.s-white {
+  border: 0;
+  border-radius: 0 0 10px 10px;
+  background: #fbfbf8;
+  box-shadow: inset 0 -6px 0 #e3e1da;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: 10px;
+  font: 600 11px var(--font-mono);
+  color: #8a877f;
+}
+
+.s-white.is-on {
+  background: var(--p-a);
+  box-shadow: inset 0 -4px 0 color-mix(in oklch, var(--p-a) 70%, #000);
+  color: var(--p-oa);
+}
+
+.s-black {
+  position: absolute;
+  top: 10px;
+  height: 58%;
+  z-index: 1;
+  border: 0;
+  border-radius: 0 0 8px 8px;
+  background: #222226;
+  box-shadow:
+    inset 0 -5px 0 #000,
+    inset 0 1px 0 #3a3a40;
+}
+
+.s-black.is-on {
+  background: var(--p-a);
+  box-shadow: inset 0 -4px 0 color-mix(in oklch, var(--p-a) 60%, #000);
+}
+
+.player .s-white.is-right,
+.player .s-black.is-right {
+  background: var(--p-ok);
+  color: var(--p-okb);
+  box-shadow: none;
+}
+
+.player .s-white.is-wrong,
+.player .s-black.is-wrong {
+  background: var(--p-er);
+  color: var(--p-erb);
+  box-shadow: none;
+}
+
+.s-white.is-hint,
+.s-black.is-hint {
+  outline: 3px dashed var(--p-ok);
+  outline-offset: -6px;
+}
+
+/* ---------- Guitar ---------- */
+
+.s-guitar {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.s-board {
+  position: relative;
+  padding: 14px 12px 8px;
+  border-radius: 22px;
+  background: linear-gradient(180deg, #3b2a1e, #2c1f16);
+  overflow: hidden;
+}
+
+.s-nut {
+  position: absolute;
+  top: 14px;
+  bottom: 30px;
+  left: 44px;
+  width: 6px;
+  border-radius: 3px;
+  background: #e9e3d4;
+}
+
+.s-string-row {
+  position: relative;
+  display: grid;
+  grid-template-columns: 32px repeat(5, 1fr);
+  align-items: center;
+  height: 40px;
+}
+
+.s-string-name {
+  font: 600 12px var(--font-mono);
+  color: #d8cdb8;
+  text-align: center;
+}
+
+.s-string {
+  position: absolute;
+  left: 40px;
+  right: 0;
+  top: 50%;
+  background: linear-gradient(90deg, #c9c3b4, #f2ede1);
+  pointer-events: none;
+}
+
+.s-fret {
+  position: relative;
+  height: 40px;
+  border: 0;
+  border-right: 2px solid rgba(233, 227, 212, 0.35);
+  background: transparent;
+  display: grid;
+  place-items: center;
+}
+
+.player .s-fret.is-right,
+.player .s-fret.is-wrong {
+  background: transparent;
+  box-shadow: none;
+}
+
+.s-finger {
+  position: relative;
+  z-index: 1;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font: 700 12px var(--font-mono);
+  background: var(--p-a);
+  color: var(--p-oa);
+  box-shadow: 0 4px 10px -4px #000;
+}
+
+.s-fret.is-right .s-finger {
+  background: var(--p-ok);
+  color: var(--p-okb);
+}
+
+.s-fret.is-wrong .s-finger {
+  background: var(--p-er);
+  color: var(--p-erb);
+}
+
+.s-fret.is-hint .s-finger {
+  background: transparent;
+  box-shadow: inset 0 0 0 2px var(--p-ok);
+}
+
+.s-fret-numbers {
+  display: grid;
+  grid-template-columns: 32px repeat(5, 1fr);
+  height: 22px;
+  font: 500 11px var(--font-mono);
+  color: #b5a993;
+  text-align: center;
+}
+
+/* ---------- Camera ---------- */
+
+.s-camera {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.s-viewfinder {
+  position: relative;
+  border-radius: 22px;
+  overflow: hidden;
+  background: #000;
+}
+
+.s-scene {
+  position: relative;
+  aspect-ratio: 3 / 2;
+  overflow: hidden;
+  transition: filter 0.25s var(--p-ease);
+}
+
+.s-scene-back {
+  position: absolute;
+  inset: -10px;
+  background: linear-gradient(180deg, #8ec5ff 0%, #cfe7ff 55%, #9fd28a 56%, #6bae5c 100%);
+}
+
+.s-sun {
+  position: absolute;
+  top: 18%;
+  right: 18%;
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  background: #ffe28a;
+  box-shadow: 0 0 40px 12px rgba(255, 226, 138, 0.6);
+}
+
+.s-hill {
+  position: absolute;
+  left: -10%;
+  right: 30%;
+  bottom: 0;
+  height: 52%;
+  border-radius: 50% 50% 0 0;
+  background: #4f9446;
+}
+
+.s-runner {
+  position: absolute;
+  left: 42%;
+  bottom: 14%;
+  width: 34px;
+  height: 78px;
+  border-radius: 17px 17px 8px 8px;
+  background: var(--p-a);
+  box-shadow: 0 -30px 0 -6px #f0c9a6;
+}
+
+.s-grain {
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.35) 1px, transparent 1px);
+  background-size: 3px 3px;
+  mix-blend-mode: overlay;
+  pointer-events: none;
+}
+
+.s-meter {
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: 10px;
+  height: 28px;
+  padding: 0 10px;
+  border-radius: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(0, 0, 0, 0.55);
+  color: #fff;
+  font: 500 11px var(--font-mono);
+}
+
+.s-meter i {
+  position: absolute;
+  top: -6px;
+  width: 4px;
+  height: 12px;
+  margin-left: -2px;
+  border-radius: 2px;
+  background: #ffcf5c;
+  transition: left 0.25s var(--p-ease);
+}
+
+.player .s-meter i.is-right {
+  background: #3fd18a;
+  box-shadow: none;
+}
+
+.s-flag {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  padding: 4px 10px;
+  border-radius: 8px;
+  background: var(--p-er);
+  color: var(--p-erb);
+  font: 600 12px var(--font-mono);
+  text-transform: uppercase;
+}
+
+.s-dials {
+  display: grid;
+  gap: 10px;
+}
+
+@media (min-width: 720px) {
+  .s-dials {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+/* ---------- Saving and interest ---------- */
+
+.s-interest {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.s-figures {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.s-figures div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px;
+  border-radius: 16px;
+  background: var(--p-c);
+  box-shadow: inset 0 0 0 1px var(--p-e);
+}
+
+.s-figures b {
+  font-size: 19px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+
+.s-accent {
+  color: var(--p-a);
+}
+
+.s-chart {
+  position: relative;
+  height: 170px;
+  padding: 0 4px;
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+  border-bottom: 1px solid var(--p-e);
+}
+
+.s-bar {
+  position: relative;
+  flex: 1;
+  border-radius: 5px 5px 0 0;
+  background: var(--p-a);
+  display: flex;
+  align-items: flex-end;
+  overflow: hidden;
+  transition: height 0.3s var(--p-ease);
+}
+
+.s-bar i {
+  width: 100%;
+  background: var(--p-n3);
+}
+
+.s-goal {
+  position: absolute;
+  left: 0;
+  right: 0;
+  border-top: 2px dashed var(--p-i);
+  z-index: 1;
+}
+
+.s-goal em {
+  position: absolute;
+  right: 0;
+  top: -22px;
+  font: 600 11px var(--font-mono);
+  font-style: normal;
+  color: var(--p-i);
+}
+
+/* ---------- Flexbox ---------- */
+
+.s-flex {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.s-flex-stage {
+  position: relative;
+}
+
+.s-flex-box {
+  height: 170px;
+  padding: 12px;
+  border-radius: 20px;
+  display: flex;
+  gap: 8px;
+  background: var(--p-stg);
+  box-shadow: inset 0 0 0 1px var(--p-e);
+}
+
+.s-flex-box i {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: var(--p-a);
+}
+
+.s-flex-box i:nth-child(2) {
+  height: 64px;
+  opacity: 0.8;
+}
+
+.s-flex-box i:nth-child(3) {
+  height: 34px;
+  opacity: 0.6;
+}
+
+.s-flex-ghost {
+  position: absolute;
+  inset: 0;
+  background: transparent;
+  box-shadow: none;
+  pointer-events: none;
+}
+
+.s-flex-ghost i {
+  background: transparent;
+  outline: 2px dashed var(--p-ok);
+  outline-offset: -2px;
+}
+
+.s-css {
+  margin: 0;
+  padding: 14px 16px;
+  border-radius: 16px;
+  background: #16161a;
+  color: #ecebe8;
+  font: 400 13.5px / 1.6 var(--font-mono);
+  overflow-x: auto;
+}
+
+.s-css b {
+  color: oklch(from var(--brand-in) 0.8 0.13 h);
+  font-weight: 600;
+}
+
+.s-segment {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.s-segment > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.s-segment button {
+  min-height: 40px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 12px;
+  background: var(--p-c);
+  box-shadow: inset 0 0 0 1px var(--p-e);
+  font: 500 13px var(--font-mono);
+}
+
+.s-segment button[aria-pressed="true"] {
+  background: var(--p-a);
+  color: var(--p-oa);
+  box-shadow: none;
+}
+
+/* ---------- Fraction pie and colour wheel ---------- */
+
+.s-pie,
+.s-wheel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+
+.s-pie-svg,
+.s-wheel-svg {
+  width: min(280px, 80vw);
+  height: auto;
+}
+
+.s-pie-svg path {
+  fill: var(--p-c);
+  stroke: var(--p-e);
+  stroke-width: 2;
+  cursor: pointer;
+  transition: fill 0.2s var(--p-ease);
+}
+
+.s-pie-svg path.is-on {
+  fill: var(--p-a);
+  stroke: var(--p-c);
+}
+
+.s-pie-svg.is-right path.is-on {
+  fill: var(--p-ok);
+}
+
+.s-pie-svg.is-wrong path.is-on {
+  fill: var(--p-er);
+}
+
+.player .s-pie-svg.is-right,
+.player .s-pie-svg.is-wrong {
+  background: none;
+  box-shadow: none;
+}
+
+.s-fraction {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font: 600 28px var(--font-mono);
+  line-height: 1.1;
+}
+
+.s-fraction span {
+  width: 44px;
+  height: 3px;
+  margin: 4px 0;
+  border-radius: 2px;
+  background: var(--p-i);
+}
+
+.s-hue {
+  stroke: var(--p-g);
+  stroke-width: 3;
+  cursor: pointer;
+  transition: transform 0.2s var(--p-ease);
+}
+
+.s-hue.is-base {
+  cursor: default;
+  stroke: var(--p-i);
+  stroke-width: 4;
+}
+
+.player .s-hue.is-on,
+.player .s-hue.is-right,
+.player .s-hue.is-wrong {
+  background: none;
+  box-shadow: none;
+  stroke-width: 5;
+  transform: scale(1.05);
+}
+
+.player .s-hue.is-on {
+  stroke: var(--p-i);
+}
+
+.player .s-hue.is-right {
+  stroke: var(--p-ok);
+}
+
+.player .s-hue.is-wrong {
+  stroke: var(--p-er);
+}
+
+.s-wheel-core {
+  stroke: var(--p-g);
+  stroke-width: 6;
+}
+
+.s-swatches {
+  display: flex;
+  gap: 10px;
+}
+
+.s-swatches span {
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.08);
+}
+
+.s-swatches .is-empty {
+  background: transparent;
+  box-shadow: inset 0 0 0 2px var(--p-n2);
+}
+
+/* ---------- Ohm ---------- */
+
+.s-ohm {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.s-circuit {
+  width: 100%;
+  height: auto;
+  padding: 10px;
+  border-radius: 22px;
+  background: var(--p-stg);
+  box-shadow: inset 0 0 0 1px var(--p-e);
+}
+
+.s-wire {
+  fill: none;
+  stroke: var(--p-a);
+  stroke-width: 4;
+  stroke-dasharray: 10 6;
+}
+
+.s-wire.p-flow {
+  animation: p-flow linear infinite;
+}
+
+.s-battery {
+  fill: var(--p-i);
+}
+
+.s-svg-label {
+  fill: var(--p-g);
+  font: 600 12px var(--font-mono);
+}
+
+.s-resistor {
+  fill: none;
+  stroke: var(--p-i);
+  stroke-width: 3;
+  stroke-linejoin: round;
+}
+
+.s-bulb {
+  fill: #ffd257;
+  stroke: var(--p-i);
+  stroke-width: 2;
+  transition: opacity 0.3s var(--p-ease);
+}
+
+.s-amps {
+  margin: 0;
+  text-align: center;
+  font: 500 18px var(--font-mono);
+}
+
+.s-amps b {
+  font-size: 30px;
+}
+
+.s-amps small {
+  color: var(--p-s);
+}
+
+/* ---------- Balancing equations ---------- */
+
+.s-equation {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.s-terms {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+}
+
+.s-term-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.s-term {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px 8px 8px;
+  border-radius: 16px;
+  background: var(--p-c);
+  box-shadow: inset 0 0 0 1px var(--p-e);
+}
+
+.s-stepper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border-radius: 12px;
+  background: var(--p-sf);
+}
+
+.s-stepper button {
+  width: 36px;
+  height: 28px;
+  border: 0;
+  background: transparent;
+  color: var(--p-a);
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.s-stepper b {
+  font: 700 20px var(--font-mono);
+  color: var(--p-a);
+}
+
+.s-formula {
+  font: 600 20px var(--font-mono);
+}
+
+.s-op {
+  font-size: 22px;
+  color: var(--p-s);
+}
+
+.s-atoms {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0 6px;
+  font-variant-numeric: tabular-nums;
+}
+
+.s-atoms th,
+.s-atoms td {
+  padding: 8px 12px;
+  text-align: center;
+  font-size: 15px;
+}
+
+.s-atoms thead th {
+  font: 500 11px var(--font-mono);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--p-s);
+}
+
+.s-atoms tbody tr {
+  background: var(--p-ch);
+}
+
+.player .s-atoms tr.is-right,
+.player .s-atoms tr.is-wrong {
+  box-shadow: none;
+}
+
+.s-atoms tbody th {
+  border-radius: 12px 0 0 12px;
+  font-family: var(--font-mono);
+}
+
+.s-atoms tbody td:last-child {
+  border-radius: 0 12px 12px 0;
+}
+
+/* ---------- Chess ---------- */
+
+.s-chess {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.s-board-8 {
+  width: min(100%, 440px);
+  aspect-ratio: 1;
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: var(--p-shadow);
+}
+
+.s-sq {
+  position: relative;
+  border: 0;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  background: #efe7d8;
+  font-size: clamp(22px, 6vw, 38px);
+  line-height: 1;
+}
+
+.s-sq.is-dark {
+  background: color-mix(in oklch, var(--p-a) 30%, #8a7b66);
+}
+
+.s-sq.is-movable::after {
+  content: "";
+  position: absolute;
+  inset: 3px;
+  border-radius: 6px;
+  box-shadow: inset 0 0 0 2px var(--p-a);
+}
+
+.s-sq.is-from {
+  background: color-mix(in oklch, var(--p-a) 45%, #efe7d8);
+}
+
+.s-sq.is-to {
+  background: color-mix(in oklch, var(--p-a) 60%, #efe7d8);
+}
+
+.player .s-sq.is-right {
+  background: var(--p-ok);
+  box-shadow: none;
+}
+
+.player .s-sq.is-wrong {
+  background: var(--p-er);
+  box-shadow: none;
+}
+
+.s-sq.is-hint::before {
+  content: "";
+  position: absolute;
+  width: 30%;
+  height: 30%;
+  border-radius: 50%;
+  background: var(--p-ok);
+  opacity: 0.7;
+}
+
+.s-white-piece {
+  color: #fff;
+  text-shadow:
+    0 0 1px #000,
+    0 1px 2px rgba(0, 0, 0, 0.6);
+}
+
+.s-black-piece {
+  color: #111;
+}
+
+/* ---------- Roleplay ---------- */
+
+.s-chat {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.s-turn {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.s-msg {
+  max-width: 82%;
+  margin: 0;
+  padding: 10px 14px;
+  border: 0;
+  font-size: 15.5px;
+  line-height: 1.4;
+  text-align: left;
+}
+
+.s-them {
+  align-self: flex-start;
+  border-radius: 6px 18px 18px 18px;
+  background: var(--p-c);
+  box-shadow: inset 0 0 0 1px var(--p-e);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.s-them small {
+  font: 500 11px var(--font-mono);
+  color: var(--p-s);
+}
+
+.s-me {
+  align-self: flex-end;
+  border-radius: 18px 6px 18px 18px;
+  background: var(--p-a);
+  color: var(--p-oa);
+}
+
+.s-note {
+  align-self: flex-end;
+  max-width: 82%;
+  margin: 0;
+  padding: 6px 12px;
+  border-radius: 10px;
+  font-size: 13px;
+  background: var(--p-ch);
+}
+
+.s-replies {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+/* ---------- Rhythm ---------- */
+
+.s-rhythm {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+
+.s-gauge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.s-gauge b {
+  font: 600 56px var(--font-mono);
+  line-height: 1;
+}
+
+.s-gauge span {
+  font-size: 13px;
+  color: var(--p-s);
+}
+
+.s-gauge small {
+  font: 500 12px var(--font-mono);
+  color: var(--p-s);
+}
+
+.s-gauge.is-good b {
+  color: var(--p-ok);
+}
+
+.s-gauge.is-slow b,
+.s-gauge.is-fast b {
+  color: var(--p-er);
+}
+
+.s-chest {
+  width: 180px;
+  height: 180px;
+  border: 0;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: radial-gradient(circle at 50% 40%, var(--p-sf), var(--p-c));
+  box-shadow:
+    inset 0 0 0 2px var(--p-a),
+    0 18px 40px -24px var(--p-a);
+  touch-action: manipulation;
+}
+
+.player .s-chest.is-down {
+  transform: scale(0.92);
+}
+
+.s-hands {
+  width: 64px;
+  height: 64px;
+  border-radius: 20px;
+  background: var(--p-a);
+  box-shadow: 0 0 0 10px var(--p-sf);
+}
+
+.s-progress-line {
+  position: relative;
+  width: 100%;
+  max-width: 360px;
+  display: flex;
+  justify-content: space-between;
+  padding-bottom: 10px;
+  font: 500 12px var(--font-mono);
+  color: var(--p-s);
+}
+
+.s-progress-line i {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--p-ok);
+  transform-origin: left center;
+  transition: transform 0.2s var(--p-ease);
+}
+
+/* ---------- Step sequencer ---------- */
+
+.s-seq {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.s-seq-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px;
+  border-radius: 20px;
+  background: #16161a;
+  overflow-x: auto;
+}
+
+.s-seq-row {
+  display: grid;
+  grid-template-columns: 56px repeat(16, minmax(18px, 1fr));
+  gap: 4px;
+  align-items: center;
+}
+
+.s-seq-name {
+  font: 500 11px var(--font-mono);
+  color: #a3a3ab;
+}
+
+.s-pad {
+  aspect-ratio: 1;
+  min-height: 18px;
+  border: 0;
+  border-radius: 6px;
+  background: #2a2a2f;
+}
+
+.s-pad.is-beat {
+  background: #34343a;
+}
+
+.s-pad.is-on {
+  background: var(--p-a);
+}
+
+.s-pad.is-now {
+  box-shadow: 0 0 0 2px #fff;
+}
+
+.s-bpm {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 200px;
+  font: 500 12px var(--font-mono);
+  color: var(--p-s);
+}
+
+.s-bpm > b {
+  color: var(--p-i);
+  font-size: 15px;
+}
