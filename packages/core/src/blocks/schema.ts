@@ -1,5 +1,6 @@
 import * as z from "zod";
 import { LocalizedText } from "../localized-text";
+import { simSchema } from "./sims";
 
 // Field names are the ones v1 content carries (test/golden/lesson_parser.json).
 // Every schema is strict: a field nobody declared fails. The same builder makes
@@ -25,7 +26,8 @@ function textBlocks<T extends TextSchema, C extends z.ZodRawShape>(text: T, comm
       type: z.literal("check"),
       ...common,
       question: text,
-      options: z.array(z.strictObject({ label: text, correct: z.boolean() })),
+      // why: what the learner reads after choosing this option when it is wrong (STEP 12).
+      options: z.array(z.strictObject({ label: text, correct: z.boolean(), why: optionalText })),
       explanation: optionalText,
       xp: z.int().nonnegative().optional(),
     }),
@@ -54,6 +56,8 @@ function exerciseBlocks<T extends TextSchema, C extends z.ZodRawShape, P extends
       intro: optionalText,
       body: optionalText,
       pairs: z.array(pairOf(text)),
+      left_label: optionalText,
+      right_label: optionalText,
     }),
     z.strictObject({
       type: z.literal("fill_blank"),
@@ -61,6 +65,8 @@ function exerciseBlocks<T extends TextSchema, C extends z.ZodRawShape, P extends
       sentence: optionalText,
       body: optionalText,
       blanks: z.array(text),
+      // A word bank: the answers and some distractors, as chips to tap (STEP 12).
+      choices: z.array(text).max(12).optional(),
       // "text" (the default) forgives case, accents and punctuation; "exact" only
       // the surrounding whitespace, for code, formulas and symbols (ADR 0003).
       match: z.enum(["text", "exact"]).optional(),
@@ -94,6 +100,118 @@ function exerciseBlocks<T extends TextSchema, C extends z.ZodRawShape, P extends
       ...common,
       body: optionalText,
       cards: z.array(z.strictObject({ front: text, back: text })),
+    }),
+  ] as const;
+}
+
+// One question per screen in the player (Platform STEP 12).
+function questionBlocks<T extends TextSchema, C extends z.ZodRawShape>(text: T, common: C) {
+  const optionalText = text.nullish();
+  return [
+    z.strictObject({
+      type: z.literal("order"),
+      ...common,
+      prompt: text,
+      // Written in the right order; the player shuffles them.
+      items: z.array(text).min(2).max(8),
+      explanation: optionalText,
+    }),
+    z.strictObject({
+      type: z.literal("true_false"),
+      ...common,
+      prompt: optionalText,
+      statements: z
+        .array(z.strictObject({ text, answer: z.boolean(), why: optionalText }))
+        .min(1)
+        .max(10),
+    }),
+    z.strictObject({
+      type: z.literal("estimate"),
+      ...common,
+      prompt: text,
+      min: z.number(),
+      max: z.number(),
+      step: z.number().positive(),
+      unit: z.string().max(12).nullish(),
+      answer_min: z.number(),
+      answer_max: z.number(),
+      anchors: z
+        .array(z.strictObject({ value: z.number(), label: text }))
+        .max(5)
+        .optional(),
+      explanation: optionalText,
+    }),
+    z.strictObject({
+      type: z.literal("hotspot"),
+      ...common,
+      prompt: text,
+      image_url: z.string().nullish(),
+      // A drawing the player ships, by name, when there is no image.
+      diagram: z.enum(["disc_brake"]).nullish(),
+      alt_text: optionalText,
+      spots: z
+        .array(
+          z.strictObject({
+            x: z.number().min(0).max(1),
+            y: z.number().min(0).max(1),
+            label: text,
+            correct: z.boolean(),
+          }),
+        )
+        .min(2)
+        .max(8),
+      explanation: optionalText,
+    }),
+  ] as const;
+}
+
+// What the player shows and lets a learner try, without a gate (Platform STEP 12).
+function practiceBlocks<T extends TextSchema, C extends z.ZodRawShape>(text: T, common: C) {
+  const optionalText = text.nullish();
+  return [
+    z.strictObject({
+      type: z.literal("worked_example"),
+      ...common,
+      problem: text,
+      steps: z
+        .array(z.strictObject({ label: text, work: z.string().max(200), why: optionalText }))
+        .min(1)
+        .max(8),
+    }),
+    z.strictObject({
+      type: z.literal("speak"),
+      ...common,
+      phrase: z.string().min(1).max(300),
+      lang: z.string().min(2).max(12),
+      translation: optionalText,
+      tip: optionalText,
+    }),
+    z.strictObject({
+      type: z.literal("code_check"),
+      ...common,
+      prompt: text,
+      language: z.enum(["javascript"]),
+      starter: z.string().max(4000),
+      // Each call is an expression; expected is what it must print, compared as JSON.
+      tests: z
+        .array(z.strictObject({ call: z.string().min(1).max(300), expected: z.string().max(300) }))
+        .min(1)
+        .max(6),
+      hint: optionalText,
+    }),
+    z.strictObject({
+      type: z.literal("open_answer"),
+      ...common,
+      prompt: text,
+      rubric: z.array(text).min(1).max(5),
+      model_answer: optionalText,
+    }),
+    z.strictObject({
+      type: z.literal("sim"),
+      ...common,
+      prompt: text,
+      explanation: optionalText,
+      sim: simSchema(text),
     }),
   ] as const;
 }
@@ -148,6 +266,10 @@ function mediaBlocks<T extends TextSchema, C extends z.ZodRawShape>(text: T, com
       published_at: z.string().nullish(),
       source: z.string().nullish(),
       voice: z.string().nullish(),
+      chapters: z
+        .array(z.strictObject({ at: z.number().nonnegative(), title: text }))
+        .max(20)
+        .optional(),
     }),
     // creation: the SHA-256 of the stored file, which names it on the content host.
     z.strictObject({
@@ -176,6 +298,8 @@ export function blockSchemas<T extends TextSchema, P extends z.ZodType, I extend
   return z.discriminatedUnion("type", [
     ...textBlocks(text, common),
     ...exerciseBlocks(text, common, pairOf),
+    ...questionBlocks(text, common),
+    ...practiceBlocks(text, common),
     ...mediaBlocks(text, common),
   ]);
 }

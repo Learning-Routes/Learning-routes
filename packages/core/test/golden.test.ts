@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { AUTHORED_BLOCK_TYPES, BLOCK_TYPES, SYSTEM_BLOCK_TYPES } from "../src/blocks/types";
+import {
+  AUTHORED_BLOCK_TYPES,
+  BLOCK_TYPES,
+  PLATFORM_BLOCK_TYPES,
+  SYSTEM_BLOCK_TYPES,
+} from "../src/blocks/types";
 import { importV1Block } from "../src/v1-import/import";
 import { fromV1Type } from "../src/v1-import/vocabulary";
 import blockGrader from "./golden/block_grader.json" with { type: "json" };
@@ -27,8 +32,9 @@ async function failures(sections: unknown[]) {
   return failed;
 }
 
-// The platform's own: interactive creations came after v1 (Platform STEP 9).
-const v1Only = (types: readonly string[]) => types.filter((type) => type !== "interactive").sort();
+// The platform's own: interactive creations (STEP 9) and the player's types (STEP 12).
+const v1Only = (types: readonly string[]) =>
+  types.filter((type) => !(PLATFORM_BLOCK_TYPES as readonly string[]).includes(type)).sort();
 
 describe("golden fixtures", () => {
   it("every section the v1 parser produced imports as a Block", async () => {
@@ -55,7 +61,7 @@ describe("golden fixtures", () => {
     // The fixture keeps v1's type names; the registry uses the glossary's.
     const inGlossary = (types: string[] = []) => types.map(fromV1Type).sort();
     expect(inGlossary(registry?.types)).toEqual(v1Only(BLOCK_TYPES));
-    expect(inGlossary(registry?.authored_types)).toEqual([...AUTHORED_BLOCK_TYPES].sort());
+    expect(inGlossary(registry?.authored_types)).toEqual(v1Only(AUTHORED_BLOCK_TYPES));
     expect(inGlossary(registry?.system_types)).toEqual(v1Only(SYSTEM_BLOCK_TYPES));
   });
 });

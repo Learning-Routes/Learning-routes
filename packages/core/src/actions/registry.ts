@@ -15,6 +15,7 @@ import { blockAdd, blockAddMany, blockRemove, lessonAdd, moduleAdd } from "./dra
 import { enrollmentCreate, enrollmentList, enrollmentUpgrade, lessonRead } from "./enrollments";
 import { routeImport, routePreview, routeUpload } from "./imports";
 import type { ActionName } from "./names";
+import { lessonAnswer, lessonFinish, lessonPlay } from "./player";
 import { reviewSubmit } from "./review";
 import {
   routeCreate,
@@ -64,6 +65,9 @@ export const ACTIONS = {
   "invitation.accept": invitationAccept,
   "enrollment.list": enrollmentList,
   "lesson.read": lessonRead,
+  "lesson.play": lessonPlay,
+  "lesson.answer": lessonAnswer,
+  "lesson.finish": lessonFinish,
   "connection.list": connectionList,
   "connection.grant": connectionGrant,
   "connection.revoke": connectionRevoke,
