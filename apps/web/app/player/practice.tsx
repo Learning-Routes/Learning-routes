@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { type BeatProps, Icon, list, usePlayer } from "./shared";
 
 // The practice beats (Platform STEP 12): they teach by doing and never gate a topic. What the
-// learner does here stays in the browser, except an open answer, which is kept as written.
+// learner does here stays in the browser, except an open answer, sent to mark the beat done.
 
 /** A solved problem, one step at a time, then "now you". */
 export function WorkedExample({ beat }: BeatProps) {
@@ -94,6 +94,11 @@ function Recorder() {
     typeof MediaRecorder !== "undefined";
 
   useEffect(() => () => void (url && URL.revokeObjectURL(url)), [url]);
+  // Leaving the beat mid-recording must still turn the microphone off.
+  useEffect(
+    () => () => void (recorder.current?.state === "recording" && recorder.current.stop()),
+    [],
+  );
 
   const start = async () => {
     try {
@@ -154,6 +159,8 @@ export function CodeCheck({ beat }: BeatProps) {
   const [results, setResults] = useState<TestResult[] | null>(null);
   const [running, setRunning] = useState(false);
   const [showHint, setShowHint] = useState(false);
+  // A message sent before the runner has loaded is lost, so Run waits for it.
+  const [ready, setReady] = useState(false);
   const frame = useRef<HTMLIFrameElement>(null);
 
   useEffect(() => {
@@ -194,13 +201,6 @@ export function CodeCheck({ beat }: BeatProps) {
           autoCorrect="off"
           aria-label="JavaScript"
           onChange={(event) => setCode(event.target.value)}
-          onKeyDown={(event) => {
-            if (event.key === "Tab") {
-              event.preventDefault();
-              const { selectionStart: at, selectionEnd: end } = event.currentTarget;
-              setCode(`${code.slice(0, at)}  ${code.slice(end)}`);
-            }
-          }}
         />
       </div>
       <ul className="p-tests">
@@ -220,7 +220,7 @@ export function CodeCheck({ beat }: BeatProps) {
         <button
           type="button"
           className="p-primary p-small"
-          disabled={running || !runner}
+          disabled={running || !ready}
           onClick={run}
         >
           <Icon name="play" /> {words.runTests}
@@ -239,6 +239,7 @@ export function CodeCheck({ beat }: BeatProps) {
           title="runner"
           sandbox="allow-scripts"
           className="p-runner"
+          onLoad={() => setReady(true)}
         />
       ) : null}
     </div>
