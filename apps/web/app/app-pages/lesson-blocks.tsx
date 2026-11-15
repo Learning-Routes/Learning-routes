@@ -45,6 +45,35 @@ function Listening({ context, url }: { context: ViewContext; url: unknown }) {
   );
 }
 
+/**
+ * The player's blocks (Platform STEP 12), read here until the player plays them (its PR 3): what
+ * the block asks, a true_false's statements without their answers, and code_check's code.
+ */
+function ToPractise({ block, text }: ViewContext) {
+  const { prompt, problem, phrase, statements, starter } = block.data;
+  const asked = typeof phrase === "string" ? phrase : text(prompt ?? problem);
+  const said = ((statements as { text: LocalizedText }[] | undefined) ?? []).map((each) =>
+    text(each.text),
+  );
+  return (
+    <section className={`lesson-aside lesson-${block.kind} settle-2`}>
+      {asked ? <p>{asked}</p> : null}
+      {typeof starter === "string" ? (
+        <pre>
+          <code>{starter}</code>
+        </pre>
+      ) : null}
+      {said.length > 0 ? (
+        <ul>
+          {said.map((statement, index) => (
+            <li key={index}>{statement}</li>
+          ))}
+        </ul>
+      ) : null}
+    </section>
+  );
+}
+
 const Body = ({ md }: ViewContext) => (
   <div className="lesson-prose lesson-body settle-2">
     <Markdown nodes={md("body")} />
@@ -161,6 +190,15 @@ export const BLOCK_VIEWS = {
   audio_explainer: (context) => <Listening context={context} url={context.block.data.audio_url} />,
   video: (context) => <Video context={context} />,
   interactive: (context) => <Creation context={context} />,
+  order: ToPractise,
+  true_false: ToPractise,
+  estimate: ToPractise,
+  hotspot: ToPractise,
+  worked_example: ToPractise,
+  speak: ToPractise,
+  code_check: ToPractise,
+  open_answer: ToPractise,
+  sim: ToPractise,
 } satisfies Record<BlockTypeName, (context: ViewContext) => ReactNode>;
 
 /** One block, with whatever the author wrote after it. */
