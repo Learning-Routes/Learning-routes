@@ -1,30 +1,38 @@
+import { simKindOf } from "../blocks/sims";
 import { blockRole, isKnownBlockType } from "../blocks/types";
 import { asArray, asObject, asText, isBlank, round2, strip, truthy } from "../v1-import/loose-json";
+import {
+  gradeEstimate,
+  gradeHotspot,
+  gradeOpenAnswer,
+  gradeOrder,
+  gradeTrueFalse,
+} from "./grade-practice";
+import { type GradeResult, graded, ungradable } from "./grade-result";
+import { gradeSim } from "./grade-sims";
 
 const INDEX_TEXT = /^(0|[1-9][0-9]*)$/;
 
 // Grades a submission against the block the server holds, never against what the
 // client claims (lesson 12).
 
-export interface GradeResult {
-  correct: boolean | null;
-  score: number | null;
-  gradable: boolean;
-  reason: string | null;
-}
+export type { GradeResult } from "./grade-result";
 
-const ungradable = (reason: string): GradeResult => ({
-  correct: null,
-  score: null,
-  gradable: false,
-  reason,
-});
-const graded = (correct: boolean, score: number): GradeResult => ({
-  correct,
-  score,
-  gradable: true,
-  reason: null,
-});
+// Platform STEP 12: the player's types, each graded from the block and the submission alone.
+const GRADERS: Record<
+  string,
+  (block: Record<string, unknown>, submission: unknown) => GradeResult
+> = {
+  check: (block, submission) => gradeCheck(block, asObject(submission)),
+  drag_drop: (block, submission) => gradeDragDrop(block, asObject(submission)),
+  fill_blank: (block, submission) => gradeFillBlank(block, asObject(submission)),
+  order: gradeOrder,
+  true_false: gradeTrueFalse,
+  estimate: gradeEstimate,
+  hotspot: gradeHotspot,
+  open_answer: (_, submission) => gradeOpenAnswer(submission),
+  sim: gradeSim,
+};
 
 /**
  * Replaces v1 `LearningRoutesEngine::BlockGrader#call`. A block it cannot grade
@@ -32,22 +40,15 @@ const graded = (correct: boolean, score: number): GradeResult => ({
  */
 export function grade(block: unknown, submission: unknown): GradeResult {
   const section = asObject(block);
-  const payload = asObject(submission);
   const type = asText(section.type);
   if (!isKnownBlockType(type)) {
     return ungradable(`unknown block type ${JSON.stringify(type)}`);
   }
-  if (!blockRole(type).gradable) {
+  const grader = GRADERS[type];
+  if (type !== "sim" && (!blockRole(type).gradable || !grader)) {
     return ungradable(`${type} is engagement-only`);
   }
-
-  if (type === "check") {
-    return gradeCheck(section, payload);
-  }
-  if (type === "drag_drop") {
-    return gradeDragDrop(section, payload);
-  }
-  return gradeFillBlank(section, payload);
+  return grader ? grader(section, submission) : ungradable(`${type} has no grader`);
 }
 
 function gradeCheck(section: Record<string, unknown>, payload: Record<string, unknown>) {
@@ -146,8 +147,11 @@ export function normalize(value: string): string {
 export function answerable(block: unknown): boolean {
   const section = asObject(block);
   const type = asText(section.type);
-  if (!blockRole(type).gating) {
+  if (!blockRole(type, simKindOf(section)).gating) {
     return true;
+  }
+  if (Object.hasOwn(GATES, type)) {
+    return GATES[type]?.(section) ?? false;
   }
 
   switch (type) {
@@ -173,3 +177,21 @@ export function answerable(block: unknown): boolean {
       return true;
   }
 }
+
+/**
+ * The player's gating types (Platform STEP 12): answerable when the block can be graded, so
+ * nothing the server cannot grade ever traps a student. A wrong answer still grades.
+ */
+const ANY_ANSWER: Record<string, unknown> = {
+  order: { order: [] },
+  true_false: { answers: [] },
+  estimate: { value: Number.NaN },
+  hotspot: { spot: -1 },
+  sim: { state: null },
+};
+const GATES: Record<string, (section: Record<string, unknown>) => boolean> = Object.fromEntries(
+  Object.entries(ANY_ANSWER).map(([type, answer]) => [
+    type,
+    (section) => grade(section, answer).reason === "malformed submission",
+  ]),
+);

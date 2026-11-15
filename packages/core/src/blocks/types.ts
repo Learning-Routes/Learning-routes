@@ -157,7 +157,62 @@ const BLOCKS = {
     gating: false,
     defaultTitle: { en: "Activity", es: "Actividad" },
   },
+  // The player's vocabulary (Platform STEP 12).
+  order: practice("order", { en: "Put in order", es: "Ordena" }),
+  true_false: practice("true_false", { en: "True or false", es: "Cierto o falso" }),
+  estimate: practice("estimate", { en: "Estimate", es: "Estima" }),
+  hotspot: practice("hotspot", { en: "Find it", es: "Toca la pieza" }),
+  worked_example: content("worked_example", { en: "Worked example", es: "Ejemplo resuelto" }),
+  speak: content("speak", { en: "Say it", es: "Habla" }),
+  // It runs in the browser, in the creation sandbox: the server cannot grade it.
+  code_check: content("code_check", { en: "Code", es: "Código" }),
+  // The tutor grades it (Platform STEP 12 PR 2); it never blocks a lesson.
+  open_answer: {
+    ...content("open_answer", { en: "In your words", es: "Explica" }),
+    gradable: true,
+  },
+  // Gradable and gating by kind: see blockRole.
+  sim: practice("sim", { en: "Simulator", es: "Simulador" }),
 } as const satisfies Record<string, BlockSpec>;
+
+function practice<F extends string>(fence: F, defaultTitle: { en: string; es: string }) {
+  return {
+    fence,
+    headings: [],
+    authored: true,
+    gradable: true,
+    gating: true,
+    defaultTitle,
+  } as const;
+}
+
+function content<F extends string>(fence: F, defaultTitle: { en: string; es: string }) {
+  return {
+    fence,
+    headings: [],
+    authored: true,
+    gradable: false,
+    gating: false,
+    defaultTitle,
+  } as const;
+}
+
+/** The types v1 never had: interactive creations (Platform STEP 9) and the player's (Platform STEP 12). */
+export const SINCE_V1: readonly BlockTypeName[] = [
+  "interactive",
+  "order",
+  "true_false",
+  "estimate",
+  "hotspot",
+  "worked_example",
+  "speak",
+  "code_check",
+  "open_answer",
+  "sim",
+];
+
+/** The sim kinds whose client measures the student's timing: engagement only, never a gate. */
+export const ENGAGEMENT_SIM_KINDS: readonly string[] = ["cpr_rhythm", "step_sequencer"];
 
 export type BlockTypeName = keyof typeof BLOCKS;
 
@@ -196,10 +251,13 @@ export function defaultTitle(type: string, locale: "en" | "es"): string | null {
 /**
  * v1 `BlockGrader.gradable?` and `.gating?`. A type that is not gradable is
  * engagement only, including any type nobody declared, so a new type can never
- * trap a student behind a gate it cannot grade.
+ * trap a student behind a gate it cannot grade. A sim's role is its kind's.
  */
-export function blockRole(type: string) {
+export function blockRole(type: string, kind?: unknown) {
   const spec: BlockSpec | null = isKnownBlockType(type) ? BLOCKS[type] : null;
+  if (type === "sim" && typeof kind === "string" && ENGAGEMENT_SIM_KINDS.includes(kind)) {
+    return { gradable: false, gating: false, engagementOnly: true };
+  }
   const gradable = spec?.gradable ?? false;
   return { gradable, gating: spec?.gating ?? false, engagementOnly: !gradable };
 }

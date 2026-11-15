@@ -1,5 +1,7 @@
 import * as z from "zod";
 import { LocalizedText } from "../localized-text";
+import { questionBlocks, questionProblem, workBlocks } from "./practice";
+import { simBlock, simProblem } from "./sims";
 
 // Field names are the ones v1 content carries (test/golden/lesson_parser.json).
 // Every schema is strict: a field nobody declared fails. The same builder makes
@@ -25,7 +27,8 @@ function textBlocks<T extends TextSchema, C extends z.ZodRawShape>(text: T, comm
       type: z.literal("check"),
       ...common,
       question: text,
-      options: z.array(z.strictObject({ label: text, correct: z.boolean() })),
+      // why: shown when a student picks this option and it is wrong (Platform STEP 12).
+      options: z.array(z.strictObject({ label: text, correct: z.boolean(), why: optionalText })),
       explanation: optionalText,
       xp: z.int().nonnegative().optional(),
     }),
@@ -54,6 +57,9 @@ function exerciseBlocks<T extends TextSchema, C extends z.ZodRawShape, P extends
       intro: optionalText,
       body: optionalText,
       pairs: z.array(pairOf(text)),
+      // The columns' headings in the player (Platform STEP 12).
+      left_label: optionalText,
+      right_label: optionalText,
     }),
     z.strictObject({
       type: z.literal("fill_blank"),
@@ -64,6 +70,8 @@ function exerciseBlocks<T extends TextSchema, C extends z.ZodRawShape, P extends
       // "text" (the default) forgives case, accents and punctuation; "exact" only
       // the surrounding whitespace, for code, formulas and symbols (ADR 0003).
       match: z.enum(["text", "exact"]).optional(),
+      // A word bank, the blanks' words and some distractors (Platform STEP 12).
+      choices: z.array(text).nullish(),
     }),
     z.strictObject({
       type: z.literal("code_playground"),
@@ -148,6 +156,7 @@ function mediaBlocks<T extends TextSchema, C extends z.ZodRawShape>(text: T, com
       published_at: z.string().nullish(),
       source: z.string().nullish(),
       voice: z.string().nullish(),
+      chapters: z.array(z.strictObject({ at: z.number().nonnegative(), title: text })).nullish(),
     }),
     // creation: the SHA-256 of the stored file, which names it on the content host.
     z.strictObject({
@@ -173,11 +182,22 @@ export function blockSchemas<T extends TextSchema, P extends z.ZodType, I extend
 ) {
   // Fields every block may carry: its heading, and what the author wrote after it.
   const common = { ...idShape, title: text.nullish(), trailing_content: text.nullish() };
-  return z.discriminatedUnion("type", [
-    ...textBlocks(text, common),
-    ...exerciseBlocks(text, common, pairOf),
-    ...mediaBlocks(text, common),
-  ]);
+  return z
+    .discriminatedUnion("type", [
+      ...textBlocks(text, common),
+      ...exerciseBlocks(text, common, pairOf),
+      ...mediaBlocks(text, common),
+      ...questionBlocks(text, common),
+      ...workBlocks(text, common),
+      simBlock(text, common),
+    ])
+    .superRefine((block: unknown, ctx) => {
+      // The numbers a grader needs must make sense together: checked once, for the whole union.
+      const problem = questionProblem(block) ?? simProblem(block);
+      if (problem) {
+        ctx.addIssue({ code: "custom", message: problem });
+      }
+    });
 }
 
 export const BlockId = z.uuid({ version: "v7" });

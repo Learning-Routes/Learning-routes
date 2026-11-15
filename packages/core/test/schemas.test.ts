@@ -29,10 +29,11 @@ describe("LocalizedText", () => {
 });
 
 describe("Block", () => {
-  it("has 13 authored and 4 system types", () => {
-    expect(AUTHORED_BLOCK_TYPES).toHaveLength(13);
+  it("has 22 authored and 4 system types", () => {
+    // Platform STEP 12 adds nine authored types, from order to sim.
+    expect(AUTHORED_BLOCK_TYPES).toHaveLength(22);
     expect(SYSTEM_BLOCK_TYPES).toEqual(["audio", "audio_explainer", "video", "interactive"]);
-    expect(BLOCK_TYPES).toHaveLength(17);
+    expect(BLOCK_TYPES).toHaveLength(26);
   });
 
   it("parses a check with localized text", () => {
