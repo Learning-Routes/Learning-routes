@@ -129,10 +129,10 @@ describe("creation.upload", () => {
       code: "conflict",
     });
     expect(await upload(world, { lessonId: LESSON }, STAFF.assistant)).toMatchObject({
-      code: "forbidden",
+      code: "creator_required",
     });
     expect(await upload(world, { lessonId: LESSON }, "stranger")).toMatchObject({
-      code: "not_found",
+      code: "creator_required",
     });
     expect(world.files.size).toBe(0);
   });
@@ -198,7 +198,7 @@ describe("asset.upload", () => {
     const world = testWorld();
     const html = new TextEncoder().encode("<html><script>alert(1)</script>");
     expect(await send(world, html)).toMatchObject({ ok: false, code: "invalid" });
-    expect(await send(world, PNG, STAFF.assistant)).toMatchObject({ code: "forbidden" });
+    expect(await send(world, PNG, STAFF.assistant)).toMatchObject({ code: "creator_required" });
     expect(world.files.size).toBe(0);
   });
 
@@ -219,7 +219,7 @@ describe("block.remove", () => {
         { routeId: ROUTE, expectedRevision, blockId },
         testCtx("ui", world, userId),
       );
-    expect(await remove(1, STAFF.assistant)).toMatchObject({ ok: false, code: "forbidden" });
+    expect(await remove(1, STAFF.assistant)).toMatchObject({ ok: false, code: "creator_required" });
     expect(await remove(0, STAFF.owner)).toMatchObject({ ok: false, code: "conflict" });
     expect(await remove(1, STAFF.owner)).toMatchObject({ ok: true, output: { revision: 2 } });
     expect(world.drafts.get(ROUTE)?.blocks).toEqual([]);

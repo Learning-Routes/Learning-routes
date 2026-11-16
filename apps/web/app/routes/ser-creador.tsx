@@ -4,6 +4,7 @@ import { BRAND, negotiateLocale } from "@learning-routes/core/locales";
 import { type FormEvent, useEffect, useRef, useState } from "react";
 import { useRouteLoaderData } from "react-router";
 import { sendApplication } from "../api";
+import { askCreatorAccess } from "../app-api.server";
 import "../app-pages/app-pages.css";
 import { pageContext } from "../context";
 import { filled } from "../storefront/words";
@@ -27,8 +28,9 @@ const A_WEB_ADDRESS = /^https?:\/\/\S+$/i;
 
 export const handle = challengePage;
 
-export function loader({ request, context }: Route.LoaderArgs) {
+export async function loader({ request, context }: Route.LoaderArgs) {
   return {
+    creatorAccess: await askCreatorAccess(context, request),
     locale: negotiateLocale(request.headers.get("accept-language"), "es"),
     siteKey: context.get(pageContext).turnstileSiteKey,
     platformOrigin: context.get(pageContext).platformOrigin,

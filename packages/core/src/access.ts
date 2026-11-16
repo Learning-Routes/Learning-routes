@@ -83,6 +83,20 @@ export const PERMISSIONS = {
   "lesson.finish": EVERYONE,
 } as const satisfies Record<ActionName, Row>;
 
+/** A creator is an owner or a coeditor: the roles that build (Platform STEP 14). */
+export const isCreatorRole = (role: string | null | undefined): boolean =>
+  role === "owner" || role === "coeditor";
+
+/**
+ * The actions only a creator may call: no learner, assistant or operator has a way in. To
+ * anyone who is not a creator in the space, they answer creator_required (Platform STEP 14).
+ */
+export const CREATOR_ACTIONS: ReadonlySet<string> = new Set(
+  Object.entries(PERMISSIONS as Record<string, Row>)
+    .filter(([, row]) => Object.keys(row).every((role) => isCreatorRole(role)))
+    .map(([name]) => name),
+);
+
 /** Whether a role in a space may call an action this way. */
 export function can(role: SpaceRole | "operator", action: string, via: ActorKind): boolean {
   if (!Object.hasOwn(PERMISSIONS, action)) {

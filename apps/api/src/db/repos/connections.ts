@@ -13,7 +13,8 @@ import type { Db } from "./shared";
 // A person's connected assistants (Platform STEP 5 §2). The OAuth tables have no row-level
 // security, like the rest of Better Auth's, so every query here names the user.
 
-const TEACHES = ["owner", "coeditor", "assistant"] as const;
+// Connecting builds, so it takes a creator: an owner or a coeditor (Platform STEP 14).
+const BUILDS = ["owner", "coeditor"] as const;
 
 const A_MINUTE_MS = 60_000;
 
@@ -44,7 +45,7 @@ export function connectionsRepo(db: Db): Connections {
       const rows = await db
         .select({ role: memberships.role })
         .from(memberships)
-        .where(and(eq(memberships.userId, userId), inArray(memberships.role, [...TEACHES])))
+        .where(and(eq(memberships.userId, userId), inArray(memberships.role, [...BUILDS])))
         .limit(1);
       return rows.length > 0;
     },

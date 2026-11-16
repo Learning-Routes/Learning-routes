@@ -86,3 +86,22 @@ export function cookieHeaders(cookies: string[]): Headers {
   }
   return headers;
 }
+
+/** Whether the signed-in person builds anywhere (Platform STEP 14): what the gate screens read. */
+export type CreatorAccess = "creator" | "none";
+
+/** From a space.list answer the page already has, so it costs no second call. */
+export const creatorAccessOf = (spaces: readonly { role: string }[] | null | undefined) =>
+  // Core's isCreatorRole, which browser-side code may not import.
+  (spaces?.some((space) => space.role === "owner" || space.role === "coeditor")
+    ? "creator"
+    : "none") satisfies CreatorAccess;
+
+/** For a page that has no space.list of its own; signed out, it does not ask. */
+export async function askCreatorAccess(context: Context, request: Request): Promise<CreatorAccess> {
+  if (!request.headers.get("cookie")) {
+    return "none";
+  }
+  const owned = await runApiAction<{ role: string }[]>(context, request, "space.list", {});
+  return creatorAccessOf(owned.body?.output);
+}

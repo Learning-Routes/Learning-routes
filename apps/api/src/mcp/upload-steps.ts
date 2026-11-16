@@ -1,8 +1,9 @@
+import { isCreatorRole } from "@learning-routes/core/access";
 import { pgTenancy } from "../db/tenancy";
 import { type Database, transactionAs } from "../db/with-db";
 import { storeAfterCommit } from "../files";
 import { fetchAsset } from "./fetch-asset";
-import { failed, type Tool } from "./tool";
+import { CREATOR_REQUIRED_TEXT, failed, type Tool } from "./tool";
 
 // The steps around an upload's action (Platform STEP 9 §2): what is fetched before it, and what is
 // written to R2 after its commit. Neither ever runs inside the transaction.
@@ -19,10 +20,20 @@ export async function withAsset(db: Database, userId: string, input: unknown) {
   if (!address) {
     return { input };
   }
-  const scope = await transactionAs(db, userId, (tx) =>
-    pgTenancy(tx).scopeOf({ kind: "space", id: String(spaceId) }, userId),
-  );
-  if (!(scope?.role === "owner" || scope?.role === "coeditor")) {
+  // Before fetching anything for them: the same gate as the action's (Platform STEP 14).
+  const entry = await transactionAs(db, userId, async (tx) => {
+    const tenancy = pgTenancy(tx);
+    const scope = await tenancy.scopeOf({ kind: "space", id: String(spaceId) }, userId);
+    return isCreatorRole(scope?.role)
+      ? "editor"
+      : (await tenancy.isCreator(userId))
+        ? "elsewhere"
+        : "none";
+  });
+  if (entry === "none") {
+    return { refusal: failed(CREATOR_REQUIRED_TEXT) };
+  }
+  if (entry === "elsewhere") {
     return { refusal: failed("not_found: there is no such thing in your spaces.") };
   }
   const taken = await fetchAsset(address);

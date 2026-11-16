@@ -20,33 +20,38 @@ function connected(world: World, userId: string) {
 }
 
 describe("connection.grant", () => {
-  it("lets someone who teaches say yes, and logs it in no space", async () => {
+  it("lets a creator say yes, and logs it in no space", async () => {
     const world = testWorld();
     const result = await runAction(
       ACTIONS,
       "connection.grant",
       GRANT,
-      testCtx("ui", world, STAFF.assistant),
+      testCtx("ui", world, STAFF.coeditor),
     );
     expect(result.ok).toBe(true);
     expect(world.log.at(-1)).toMatchObject({
       spaceId: null,
       action: "connection.grant",
       outcome: "ok",
-      actorUserId: STAFF.assistant,
+      actorUserId: STAFF.coeditor,
     });
   });
 
-  it("refuses someone who only studies, and logs the refusal", async () => {
-    const world = testWorld();
-    const result = await runAction(
-      ACTIONS,
-      "connection.grant",
-      GRANT,
-      testCtx("ui", world, "student-1"),
-    );
-    expect(result).toMatchObject({ ok: false, code: "forbidden" });
-    expect(world.log.at(-1)).toMatchObject({ action: "connection.grant", outcome: "forbidden" });
+  it("refuses someone who is not a creator, and logs the refusal (Platform STEP 14)", async () => {
+    for (const userId of ["student-1", STAFF.assistant]) {
+      const world = testWorld();
+      const result = await runAction(
+        ACTIONS,
+        "connection.grant",
+        GRANT,
+        testCtx("ui", world, userId),
+      );
+      expect(result).toMatchObject({ ok: false, code: "creator_required" });
+      expect(world.log.at(-1)).toMatchObject({
+        action: "connection.grant",
+        outcome: "creator_required",
+      });
+    }
   });
 
   it("is never reached through the MCP", async () => {

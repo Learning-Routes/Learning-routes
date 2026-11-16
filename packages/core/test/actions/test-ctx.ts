@@ -100,6 +100,10 @@ export function memoryTenancy(map: {
 }): Tenancy {
   return {
     isOperator: async () => false,
+    isCreator: async (userId) =>
+      Object.entries(map.roles).some(
+        ([key, role]) => key.endsWith(`:${userId}`) && (role === "owner" || role === "coeditor"),
+      ),
     scopeOf: async ({ kind, id }, userId) => {
       const spaceId = map.rows[`${kind}:${id}`];
       return spaceId === undefined
@@ -113,6 +117,11 @@ export function memoryTenancy(map: {
 function worldTenancy(world: World): Tenancy {
   return {
     isOperator: async (userId) => world.operators.has(userId),
+    isCreator: async (userId) =>
+      [...world.members.values()].some(
+        (member) =>
+          member.userId === userId && (member.role === "owner" || member.role === "coeditor"),
+      ),
     scopeOf: async ({ kind, id }, userId) => {
       const spaceId =
         kind === "space"

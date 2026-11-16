@@ -8,7 +8,7 @@ import { pgRepos } from "../db/repos/index";
 import { pgTenancy } from "../db/tenancy";
 import { type Database, type Transaction, transactionAs } from "../db/with-db";
 import { newId } from "../ids";
-import { failed, type Tool } from "./tool";
+import { CREATOR_REQUIRED_TEXT, failed, type Tool } from "./tool";
 import { filesStored, withAsset } from "./upload-steps";
 
 // One tool call, for the MCP (via "mcp") and for our own assistant (via "agent", Platform STEP 10):
@@ -47,6 +47,7 @@ export function ctxFor(tx: Transaction, caller: Caller) {
 const SAY: Record<string, string> = {
   not_found: "not_found: there is no such thing in your spaces.",
   forbidden: "Your role in this space does not allow this.",
+  creator_required: CREATOR_REQUIRED_TEXT,
   position_taken: "Something else was just added in that place. Call get_route and try again.",
 };
 

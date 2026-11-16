@@ -99,7 +99,7 @@ describe("route.update", () => {
       { routeId: ROUTE, expectedRevision: draftOf(world).revision, title: { es: "Otra" } },
       testCtx("mcp", world, STAFF.assistant),
     );
-    expect(result).toMatchObject({ ok: false, code: "forbidden" });
+    expect(result).toMatchObject({ ok: false, code: "creator_required" });
   });
 });
 
@@ -291,6 +291,6 @@ describe("route.import", () => {
       { spaceId: SPACE, document: IMPORT_DOCUMENT },
       testCtx("mcp", world, STAFF.assistant),
     );
-    expect(assistant).toMatchObject({ ok: false, code: "forbidden" });
+    expect(assistant).toMatchObject({ ok: false, code: "creator_required" });
   });
 });
