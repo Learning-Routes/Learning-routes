@@ -253,20 +253,6 @@
   box-shadow: inset 0 0 0 1.5px var(--p-e);
 }
 
-/* The slots wait for a step; the rail fills as steps land. */
-.player .p-slot {
-  border-radius: 16px;
-}
-
-.player .p-slot-n {
-  border-radius: 50%;
-}
-
-.player .p-pool {
-  background: transparent;
-  padding: 4px 0 0;
-}
-
 /* ---------- The main button: solid, with an edge that presses ---------- */
 
 .player .p-primary {
@@ -335,10 +321,6 @@
   color: inherit;
 }
 
-.player .p-xp-float {
-  font: 600 15px var(--font-sans);
-}
-
 /* ---------- The end of a topic ---------- */
 
 .player .p-summary .p-title {
@@ -364,13 +346,6 @@
   font: 600 26px var(--font-sans);
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.02em;
-}
-
-/* ---------- Entrances: a short stagger, once per beat ---------- */
-
-.player .p-in {
-  animation-duration: 0.42s;
-  animation-timing-function: var(--p-ease);
 }
 
 @media (prefers-reduced-motion: reduce) {

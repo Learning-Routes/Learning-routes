@@ -48,7 +48,8 @@ test("a new person goes from the landing to enrolled", async ({ page }) => {
   await expect(page.getByRole("heading", { name: TITLE })).toBeVisible();
   await expect(page.locator(".my-route").getByText("Con Andrés Mora")).toBeVisible();
   await page.getByRole("link", { name: "Seguir", exact: true }).click();
-  await expect(page.locator(".lesson-title")).toBeVisible();
+  await expect(page).toHaveURL(/\/mis-rutas\/[^/]+\/tema\/1$/);
+  await expect(page.locator(".p-title")).toBeVisible();
 });
 
 test("with a session already open, the same path skips sign-in", async ({ page, context }) => {

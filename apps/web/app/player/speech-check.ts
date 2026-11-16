@@ -3,7 +3,7 @@
 // punctuation do not, a contraction counts as its long form, and a near miss on one word is a miss on
 // that word only. A phrase passes when at least PASS of its words were heard.
 
-export const PASS = 0.8;
+const PASS = 0.8;
 
 const QUOTES = /[’‘`]/g;
 const NOT_WORD = /[^\p{L}\p{N}'\s-]/gu;

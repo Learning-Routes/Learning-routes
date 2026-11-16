@@ -1,4 +1,5 @@
 import { expect, type Page, test } from "@playwright/test";
+import { openReading } from "../reading";
 import { mailsTo, signInToken } from "./inbox";
 
 // The production student check (STEP 11-prep §A3): a fixed fictional student signs in with a link
@@ -78,7 +79,7 @@ test("a student enrolls in a free module, answers topic 1's check, and is offere
   });
 
   await timed("4. opens topic 1", async () => {
-    await page.getByRole("link", { name: "Seguir", exact: true }).first().click();
+    await openReading(page);
     await expect(page.locator(".lesson-title")).toHaveText(FIRST_TOPIC);
     await page.locator("html[data-hydrated=true]").waitFor({ state: "attached" });
   });

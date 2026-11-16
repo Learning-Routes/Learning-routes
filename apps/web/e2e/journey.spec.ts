@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import { costOfUsage, type ModelId } from "@learning-routes/core/ai/models";
 import type { StudioEvent } from "@learning-routes/core/studio/session";
 import { expect, type Page, test } from "@playwright/test";
+import { openReading } from "./reading";
 import { creatorHost, DEV } from "./screens";
 import { invitationFor, makeOperator, newAddress, signInContext, stubTurnstile } from "./session";
 
@@ -186,7 +187,7 @@ test("a creator builds and publishes with the assistant, and a student completes
     const lesson = await student.newPage();
     await lesson.goto(`${creatorHost(slug)}/fracciones-desde-cero`);
     await lesson.getByRole("link", { name: "Empezar gratis" }).click();
-    await lesson.getByRole("link", { name: "Seguir", exact: true }).first().click();
+    await openReading(lesson);
     await expect(lesson.getByText(WHERE_FIRST)).toBeVisible();
     const here = () => lesson.locator(".lesson-here").getAttribute("cx");
     const start = await here();
