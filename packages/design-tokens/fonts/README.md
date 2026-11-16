@@ -9,3 +9,10 @@ pyftsubset DMMono-Medium.ttf --unicodes="$U" --flavor=woff2 --layout-features='k
 fonttools varLib.instancer "Geist[wght].woff2" wght=400:600 -o geist-limited.ttf
 pyftsubset geist-limited.ttf --unicodes="$U" --flavor=woff2 --layout-features='kern,liga,tnum,lnum,ccmp,locl,mark,mkmk' --output-file=Geist-latin.woff2
 ```
+
+`Newsreader-latin.woff2` is the reading face of the lesson player: the teacher's voice in titles, questions and explanations. It is cut the same way, to weights 400 to 600 and optical sizes 16 to 48, from `@fontsource-variable/newsreader` 5.3.0 (`newsreader-latin-opsz-normal.woff2`), under the OFL in `OFL-Newsreader.txt`:
+
+```sh
+fonttools varLib.instancer newsreader-latin-opsz-normal.woff2 wght=400:600 opsz=16:48 -o newsreader-limited.ttf
+pyftsubset newsreader-limited.ttf --unicodes="$U" --flavor=woff2 --layout-features='kern,liga,lnum,ccmp,locl,mark,mkmk' --output-file=Newsreader-latin.woff2
+```
