@@ -20,7 +20,7 @@ export async function askApi<T>(
   path: string,
   body?: unknown,
 ): Promise<ApiAnswer<T>> {
-  const { appOrigin, runtime } = context.get(pageContext);
+  const { appOrigin, runtime, timing } = context.get(pageContext);
   const headers = new Headers({ origin: appOrigin });
   const cookie = request.headers.get("cookie");
   if (cookie) {
@@ -35,14 +35,19 @@ export async function askApi<T>(
   if (body !== undefined) {
     headers.set("content-type", "application/json");
   }
-  const response = await runtime.api(
-    new Request(`${appOrigin}${path}`, {
-      method: body === undefined ? "GET" : "POST",
-      headers,
-      redirect: "manual",
-      ...(body === undefined ? {} : { body: JSON.stringify(body) }),
-    }),
+  // Named by the action, or by the path's last part: "api-lesson.play", "api-get-session".
+  const phase = `api-${path.startsWith("/api/a/") ? path.slice("/api/a/".length) : path.split("/").at(-1)}`;
+  const response = await timing.measure(phase, () =>
+    runtime.api(
+      new Request(`${appOrigin}${path}`, {
+        method: body === undefined ? "GET" : "POST",
+        headers,
+        redirect: "manual",
+        ...(body === undefined ? {} : { body: JSON.stringify(body) }),
+      }),
+    ),
   );
+  timing.addFrom(phase, response.headers.get("server-timing"));
   const parsed = (await response.json().catch(() => null)) as T | null;
   return { status: response.status, body: parsed, cookies: response.headers.getSetCookie() };
 }

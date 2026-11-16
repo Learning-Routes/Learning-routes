@@ -21,6 +21,7 @@ const CHECKS = [
     ["--filter", "@learning-routes/api", "db:check"],
   ],
   ["the link check's own tests", "node", ["--test", "scripts/link-check.test.mjs"]],
+  ["the measure script's own tests", "node", ["--test", "scripts/measure-app.test.mjs"]],
   ["tests, with coverage floors", "pnpm", ["turbo", "run", "test", "--continue"]],
   ["builds", "pnpm", ["turbo", "run", "build"]],
   [

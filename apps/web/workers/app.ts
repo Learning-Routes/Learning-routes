@@ -1,3 +1,4 @@
+import { ServerTiming } from "@learning-routes/core/server-timing";
 import { STUDIO_PATH } from "@learning-routes/core/studio/session";
 import { createRequestHandler, RouterContextProvider } from "react-router";
 import { pageContext } from "../app/context";
@@ -66,6 +67,7 @@ function answer(request: Request, env: Env, ctx: ExecutionContext): Promise<Resp
         return Promise.resolve(new Response(null, { status: 404 }));
       }
       const nonce = btoa(String.fromCharCode(...crypto.getRandomValues(new Uint8Array(16))));
+      const timing = new ServerTiming();
       const context = new RouterContextProvider();
       context.set(pageContext, {
         nonce,
@@ -75,9 +77,28 @@ function answer(request: Request, env: Env, ctx: ExecutionContext): Promise<Resp
         creatorDomain: env.CREATOR_DOMAIN,
         contentOrigin: env.CONTENT_ORIGIN,
         turnstileSiteKey: env.TURNSTILE_SITE_KEY,
+        timing,
         runtime: { env, ctx, api: apiClient(env), mcp: mcpClient(env) },
       });
-      return requestHandler(rendered, context);
+      return timed(timing, () => requestHandler(rendered, context));
     },
   );
+}
+
+/**
+ * The page's phases (Platform STEP 15): each API call, then "page", the loaders and the render
+ * until the response starts. Never on a page the edge keeps, whose timings would be stale.
+ */
+async function timed(timing: ServerTiming, render: () => Promise<Response>): Promise<Response> {
+  const response = await timing.measure("page", render);
+  if (response.headers.get("cache-control")?.includes("s-maxage")) {
+    return response;
+  }
+  const headers = new Headers(response.headers);
+  headers.set("Server-Timing", timing.header);
+  return new Response(response.body, {
+    status: response.status,
+    statusText: response.statusText,
+    headers,
+  });
 }
