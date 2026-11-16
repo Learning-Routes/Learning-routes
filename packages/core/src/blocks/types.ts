@@ -15,6 +15,8 @@ interface BlockSpec {
   gating: boolean;
   /** v1's default title, used when the author gave none (en and es only in v1). */
   defaultTitle: { en: string; es: string };
+  /** True for the types the platform added after v1, which v1's fixtures do not list. */
+  platform?: boolean;
 }
 
 const BLOCKS = {
@@ -107,6 +109,89 @@ const BLOCKS = {
     gating: true,
     defaultTitle: { en: "Flashcards", es: "Tarjetas" },
   },
+  // The player's questions and practice (Platform STEP 12). They arrive as JSON (import_route,
+  // the assistant), so they have no Markdown fence yet.
+  order: {
+    fence: null,
+    headings: [],
+    authored: true,
+    gradable: true,
+    gating: true,
+    defaultTitle: { en: "Put in order", es: "Ordena" },
+    platform: true,
+  },
+  true_false: {
+    fence: null,
+    headings: [],
+    authored: true,
+    gradable: true,
+    gating: true,
+    defaultTitle: { en: "True or false", es: "Cierto o falso" },
+    platform: true,
+  },
+  estimate: {
+    fence: null,
+    headings: [],
+    authored: true,
+    gradable: true,
+    gating: true,
+    defaultTitle: { en: "Estimate", es: "Estima" },
+    platform: true,
+  },
+  hotspot: {
+    fence: null,
+    headings: [],
+    authored: true,
+    gradable: true,
+    gating: true,
+    defaultTitle: { en: "Tap the part", es: "Toca la pieza" },
+    platform: true,
+  },
+  worked_example: {
+    fence: null,
+    headings: [],
+    authored: true,
+    gradable: false,
+    gating: false,
+    defaultTitle: { en: "Worked example", es: "Ejemplo resuelto" },
+    platform: true,
+  },
+  speak: {
+    fence: null,
+    headings: [],
+    authored: true,
+    gradable: false,
+    gating: false,
+    defaultTitle: { en: "Listen and repeat", es: "Escucha y repite" },
+    platform: true,
+  },
+  code_check: {
+    fence: null,
+    headings: [],
+    authored: true,
+    gradable: false,
+    gating: false,
+    defaultTitle: { en: "Code", es: "Código" },
+    platform: true,
+  },
+  open_answer: {
+    fence: null,
+    headings: [],
+    authored: true,
+    gradable: false,
+    gating: false,
+    defaultTitle: { en: "Explain it", es: "Explica" },
+    platform: true,
+  },
+  sim: {
+    fence: null,
+    headings: [],
+    authored: true,
+    gradable: true,
+    gating: false,
+    defaultTitle: { en: "Simulator", es: "Simulador" },
+    platform: true,
+  },
   visual: {
     fence: null,
     headings: ["Visual"],
@@ -156,6 +241,7 @@ const BLOCKS = {
     gradable: false,
     gating: false,
     defaultTitle: { en: "Activity", es: "Actividad" },
+    platform: true,
   },
 } as const satisfies Record<string, BlockSpec>;
 
@@ -169,6 +255,11 @@ export const AUTHORED_BLOCK_TYPES = entries
   .map(([type]) => type);
 export const SYSTEM_BLOCK_TYPES = entries
   .filter(([, spec]) => !spec.authored)
+  .map(([type]) => type);
+
+/** The types the platform added after v1. */
+export const PLATFORM_BLOCK_TYPES = entries
+  .filter(([, spec]) => spec.platform === true)
   .map(([type]) => type);
 
 /** v1 `LessonBlocks.known?`: exact, case-sensitive. */

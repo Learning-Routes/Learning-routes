@@ -189,3 +189,23 @@ describe("an asset", () => {
     expect((await fetchAsset(`/a/${SPACE}/${HASH}.jpg`, "image/jpeg")).status).toBe(404);
   });
 });
+
+describe("the code runner", () => {
+  it("is one fixed page, framed only by the app, in its own box, with no network", async () => {
+    const answer = await get("/run/js", []);
+    expect(answer.status).toBe(200);
+    const policy = answer.headers.get("content-security-policy") ?? "";
+    for (const rule of [
+      "sandbox allow-scripts",
+      "connect-src 'none'",
+      "worker-src blob:",
+      "frame-ancestors https://app.example.test",
+    ]) {
+      expect(policy).toContain(rule);
+    }
+    const page = await answer.text();
+    expect(page).toContain("new Worker");
+    expect(page).toContain("event.source !== parent");
+    expect(answer.headers.get("set-cookie")).toBeNull();
+  });
+});

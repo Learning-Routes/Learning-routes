@@ -25,7 +25,7 @@ export async function signatureOf(secret: string, path: string, expires: number)
 
 type Frames = { blocks: { frame?: string }[] } | null | undefined;
 
-/** The views of lesson.read and route.preview, with each frame a whole address. */
+/** The views of lesson.read, lesson.play and route.preview, with each frame a whole address. */
 type Signer = Pick<Env, "CONTENT_ORIGIN" | "CONTENT_SIGNING_SECRET">;
 const HALF_HOUR_S = 1800;
 const HASH = /^[0-9a-f]{64}$/;
@@ -65,6 +65,17 @@ async function withThumbnails(env: Signer, draft: Draft, nowS: number) {
   }
 }
 
+/** Where an answer keeps its blocks' frames, by action; null when it keeps none. */
+function framesOf(name: string, output: unknown): Frames | null {
+  if (name === "lesson.read") {
+    return output as Frames;
+  }
+  if (name === "lesson.play") {
+    return { blocks: (output as { beats: { frame?: string }[] }).beats } as Frames;
+  }
+  return name === "route.preview" ? (output as { view: Frames }).view : null;
+}
+
 export async function withFrames(
   env: Signer,
   name: string,
@@ -75,13 +86,7 @@ export async function withFrames(
     await withThumbnails(env, output as Draft, nowS);
     return output;
   }
-  const view = (
-    name === "lesson.read"
-      ? output
-      : name === "route.preview"
-        ? (output as { view: Frames }).view
-        : null
-  ) as Frames;
+  const view = framesOf(name, output);
   for (const block of view?.blocks ?? []) {
     if (block.frame !== undefined && !FRAME.test(block.frame)) {
       block.frame = undefined;

@@ -30,7 +30,8 @@ function policy(
       : hasCreationImages
         ? `img-src 'self' data: ${contentOrigin}`
         : "img-src 'self' data:",
-    ...(hasMedia ? ["media-src https:"] : []),
+    // blob: plays back what the player's speaking beat recorded on the learner's own device.
+    ...(hasMedia ? ["media-src https: blob:"] : []),
     "connect-src 'self'",
     hasChallenge
       ? "frame-src https://challenges.cloudflare.com"

@@ -70,10 +70,21 @@ function isObject(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
-/** The block's variant, by its type, or null for a type there is not. */
-function variantOf(union: typeof DocBlock, value: Record<string, unknown>): z.ZodType | null {
-  return (union.options.find((option) => option.shape.type.value === value.type) ??
-    null) as z.ZodType | null;
+/**
+ * The variant a value names, by the union's own discriminator: a block's `type`, or a simulator's
+ * `kind` inside a sim block (Platform STEP 12). Null for a name there is not.
+ */
+function variantOf(
+  union: z.ZodDiscriminatedUnion,
+  value: Record<string, unknown>,
+): z.ZodType | null {
+  const key = union.def.discriminator;
+  const options = union.options as unknown as z.ZodObject[];
+  return (
+    options.find(
+      (option) => (option.shape[key] as z.ZodLiteral | undefined)?.value === value[key],
+    ) ?? null
+  );
 }
 
 /** A copy with only the fields the schema knows, at every level. The schema then judges it. */
@@ -84,7 +95,7 @@ function stripUnknown(schema: z.ZodType, value: unknown): unknown {
       : stripUnknown(schema.unwrap() as z.ZodType, value);
   }
   if (schema instanceof z.ZodDiscriminatedUnion && isObject(value)) {
-    const variant = variantOf(schema as unknown as typeof DocBlock, value);
+    const variant = variantOf(schema, value);
     return variant ? stripUnknown(variant, value) : value;
   }
   if (schema instanceof z.ZodArray && Array.isArray(value)) {

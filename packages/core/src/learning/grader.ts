@@ -1,5 +1,7 @@
 import { blockRole, isKnownBlockType } from "../blocks/types";
 import { asArray, asObject, asText, isBlank, round2, strip, truthy } from "../v1-import/loose-json";
+import { gradeEstimate, gradeHotspot, gradeOrder, gradeTrueFalse } from "./player-grade";
+import { gradeSim } from "./sim-grade";
 
 const INDEX_TEXT = /^(0|[1-9][0-9]*)$/;
 
@@ -11,6 +13,8 @@ export interface GradeResult {
   score: number | null;
   gradable: boolean;
   reason: string | null;
+  /** Which part was wrong, for the player's feedback (STEP 12 types only). */
+  detail?: unknown;
 }
 
 const ungradable = (reason: string): GradeResult => ({
@@ -47,8 +51,21 @@ export function grade(block: unknown, submission: unknown): GradeResult {
   if (type === "drag_drop") {
     return gradeDragDrop(section, payload);
   }
-  return gradeFillBlank(section, payload);
+  if (type === "fill_blank") {
+    return gradeFillBlank(section, payload);
+  }
+  return PLAYER_GRADERS[type]?.(section, payload) ?? ungradable(`no grader for ${type}`);
 }
+
+const PLAYER_GRADERS: Partial<
+  Record<string, (block: Record<string, unknown>, payload: Record<string, unknown>) => GradeResult>
+> = {
+  order: gradeOrder,
+  true_false: gradeTrueFalse,
+  estimate: gradeEstimate,
+  hotspot: gradeHotspot,
+  sim: gradeSim,
+};
 
 function gradeCheck(section: Record<string, unknown>, payload: Record<string, unknown>) {
   const options = asArray(section.options);
@@ -98,8 +115,8 @@ function gradeDragDrop(section: Record<string, unknown>, payload: Record<string,
 // Every graded blank must match, answer i against blank i. A blank whose expected
 // value is empty is not graded and does not count (ADR 0003).
 function gradeFillBlank(section: Record<string, unknown>, payload: Record<string, unknown>) {
-  const blanks = asArray(section.blanks).map(asText);
-  const positions = blanks.flatMap((blank, i) => (isBlank(blank) ? [] : [i]));
+  const blanks = asArray(section.blanks).map(spellings);
+  const positions = blanks.flatMap((blank, i) => (blank.length === 0 ? [] : [i]));
   if (positions.length === 0) {
     return ungradable("fill_blank has no blanks");
   }
@@ -113,8 +130,19 @@ function gradeFillBlank(section: Record<string, unknown>, payload: Record<string
     return graded(false, 0);
   }
 
-  const hits = positions.filter((i) => same(answers[i] ?? "", blanks[i] as string)).length;
+  const hits = positions.filter((i) =>
+    (blanks[i] as string[]).some((expected) => same(answers[i] ?? "", expected)),
+  ).length;
   return graded(hits === positions.length, round2((hits / positions.length) * 100));
+}
+
+/**
+ * A blank's accepted answers: v1's one string, or a stored blank's text in each of its languages
+ * (Platform STEP 12), since a learner answers in theirs. Blank spellings never count.
+ */
+function spellings(blank: unknown): string[] {
+  const texts = blank !== null && typeof blank === "object" ? Object.values(blank) : [blank];
+  return texts.map(asText).filter((text) => !isBlank(text));
 }
 
 const sameText = (answer: string, expected: string) => normalize(answer) === normalize(expected);
@@ -169,6 +197,14 @@ export function answerable(block: unknown): boolean {
       return asArray(section.cards).some(truthy);
     case "scenario":
       return asArray(section.options).some(truthy);
+    case "order":
+      return asArray(section.items).length >= 2;
+    case "true_false":
+      return asArray(section.statements).some(truthy);
+    case "estimate":
+      return typeof section.answer_min === "number" && typeof section.answer_max === "number";
+    case "hotspot":
+      return asArray(section.spots).some((spot) => asObject(spot).correct === true);
     default:
       return true;
   }

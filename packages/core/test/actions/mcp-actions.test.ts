@@ -214,6 +214,41 @@ describe("route.import", () => {
     expect(draftOf(world).route.title).toEqual({ es: "Importada" });
   });
 
+  it("takes the player's kinds, a simulator's own fields included (Platform STEP 12)", async () => {
+    const world = testWorld();
+    const blocks = [
+      { type: "order", prompt: { es: "Ordena" }, items: [{ es: "a" }, { es: "b" }] },
+      { type: "true_false", statements: [{ text: { es: "s" }, answer: true }] },
+      {
+        type: "sim",
+        prompt: { es: "Expón bien" },
+        // An unknown field is dropped at the simulator's level too, not only at the block's.
+        sim: { kind: "camera_exposure", scene_ev: 13, min_shutter: 250, extra: true },
+      },
+    ];
+    const result = await runAction(
+      ACTIONS,
+      "route.import",
+      {
+        spaceId: SPACE,
+        document: {
+          ...IMPORT_DOCUMENT,
+          slug: "con-simulador",
+          modules: [{ title: { es: "M" }, lessons: [{ title: { es: "L" }, blocks }] }],
+        },
+      },
+      testCtx("mcp", world, STAFF.coeditor),
+    );
+    expect(result).toMatchObject({ ok: true, output: { counts: { blocks: 3 } } });
+    const made = [...world.drafts.values()].find((row) => row.route.slug === "con-simulador");
+    expect(made?.blocks.map((block) => block.kind)).toEqual(["order", "true_false", "sim"]);
+    expect(made?.blocks[2]?.data.sim).toEqual({
+      kind: "camera_exposure",
+      scene_ev: 13,
+      min_shutter: 250,
+    });
+  });
+
   it("writes nothing from a bad document, and says what is wrong", async () => {
     const world = testWorld();
     const before = world.drafts.size;

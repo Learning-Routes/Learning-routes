@@ -1,5 +1,6 @@
 import * as z from "zod";
 import { LocalizedText } from "../localized-text";
+import { practiceBlocks, questionBlocks } from "./schema-player";
 
 // Field names are the ones v1 content carries (test/golden/lesson_parser.json).
 // Every schema is strict: a field nobody declared fails. The same builder makes
@@ -25,7 +26,8 @@ function textBlocks<T extends TextSchema, C extends z.ZodRawShape>(text: T, comm
       type: z.literal("check"),
       ...common,
       question: text,
-      options: z.array(z.strictObject({ label: text, correct: z.boolean() })),
+      // why: what the learner reads after choosing this option when it is wrong (STEP 12).
+      options: z.array(z.strictObject({ label: text, correct: z.boolean(), why: optionalText })),
       explanation: optionalText,
       xp: z.int().nonnegative().optional(),
     }),
@@ -54,6 +56,8 @@ function exerciseBlocks<T extends TextSchema, C extends z.ZodRawShape, P extends
       intro: optionalText,
       body: optionalText,
       pairs: z.array(pairOf(text)),
+      left_label: optionalText,
+      right_label: optionalText,
     }),
     z.strictObject({
       type: z.literal("fill_blank"),
@@ -61,6 +65,8 @@ function exerciseBlocks<T extends TextSchema, C extends z.ZodRawShape, P extends
       sentence: optionalText,
       body: optionalText,
       blanks: z.array(text),
+      // A word bank: the answers and some distractors, as chips to tap (STEP 12).
+      choices: z.array(text).max(12).optional(),
       // "text" (the default) forgives case, accents and punctuation; "exact" only
       // the surrounding whitespace, for code, formulas and symbols (ADR 0003).
       match: z.enum(["text", "exact"]).optional(),
@@ -148,6 +154,10 @@ function mediaBlocks<T extends TextSchema, C extends z.ZodRawShape>(text: T, com
       published_at: z.string().nullish(),
       source: z.string().nullish(),
       voice: z.string().nullish(),
+      chapters: z
+        .array(z.strictObject({ at: z.number().nonnegative(), title: text }))
+        .max(20)
+        .optional(),
     }),
     // creation: the SHA-256 of the stored file, which names it on the content host.
     z.strictObject({
@@ -176,6 +186,8 @@ export function blockSchemas<T extends TextSchema, P extends z.ZodType, I extend
   return z.discriminatedUnion("type", [
     ...textBlocks(text, common),
     ...exerciseBlocks(text, common, pairOf),
+    ...questionBlocks(text, common),
+    ...practiceBlocks(text, common),
     ...mediaBlocks(text, common),
   ]);
 }

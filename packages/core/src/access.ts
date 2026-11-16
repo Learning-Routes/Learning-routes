@@ -77,6 +77,10 @@ export const PERMISSIONS = {
   // Only ever the actor's own.
   "enrollment.list": EVERYONE,
   "lesson.read": EVERYONE,
+  // The player (Platform STEP 12): a learner, on their own enrollment only.
+  "lesson.play": EVERYONE,
+  "lesson.answer": EVERYONE,
+  "lesson.finish": EVERYONE,
 } as const satisfies Record<ActionName, Row>;
 
 /** Whether a role in a space may call an action this way. */

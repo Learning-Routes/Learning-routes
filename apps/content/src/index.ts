@@ -1,3 +1,4 @@
+import { runner } from "./runner";
 import { isSigned } from "./signing";
 import { picture, thumbnail } from "./thumbnail";
 
@@ -121,6 +122,9 @@ export default {
       return plain(405, { Allow: "GET, HEAD" });
     }
     const url = new URL(request.url);
+    if (url.pathname === "/run/js") {
+      return runner(request, policyFor(env.FRAME_ANCESTORS));
+    }
     const isAsset = ASSET.exec(url.pathname);
     if (isAsset) {
       const [, spaceId, hash, extension] = isAsset;

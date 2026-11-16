@@ -12,6 +12,8 @@ import { EXAMPLE_ROUTES } from "../src/copy/landing-routes";
 import { STAGE_TEXT } from "../src/copy/landing-stage";
 import { LESSON_TEXT } from "../src/copy/lesson";
 import { MY_ROUTES_TEXT } from "../src/copy/my-routes";
+import { PLAYER_TEXT } from "../src/copy/player";
+import { PRACTICE_TEXT } from "../src/copy/practice";
 import { LEVEL_NAMES, TOPIC_NAMES } from "../src/copy/route-facts";
 import { SIGN_IN_TEXT } from "../src/copy/sign-in";
 import { UI_COPY } from "../src/copy/ui";
@@ -83,6 +85,8 @@ describe("the copy check", () => {
 
   describe.each([
     ["ui", UI_COPY],
+    ["player", PLAYER_TEXT],
+    ["practice", PRACTICE_TEXT],
     ["sign-in", SIGN_IN_TEXT],
     ["landing", LANDING_TEXT],
     ["landing stage", STAGE_TEXT],

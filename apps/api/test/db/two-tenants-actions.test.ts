@@ -147,6 +147,13 @@ describe("two tenants, through every action", () => {
         "enrollment.create": { routeId: closedB },
         "enrollment.upgrade": { enrollmentId: enrollmentB },
         "lesson.read": { enrollmentId: enrollmentB },
+        "lesson.play": { enrollmentId: enrollmentB, topic: 1 },
+        "lesson.answer": {
+          enrollmentId: enrollmentB,
+          blockId: crypto.randomUUID(),
+          submission: {},
+        },
+        "lesson.finish": { enrollmentId: enrollmentB, topic: 1 },
         "review.submit": {
           enrollmentId: enrollmentB,
           reviewId: REVIEW_ID,

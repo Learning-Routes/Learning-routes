@@ -1,5 +1,7 @@
 import * as z from "zod";
+import { PLATFORM_BLOCK_TYPES } from "../blocks/types";
 import { lessonView, placeInRoute } from "../content/lesson-view";
+import { forLearner } from "../content/player-view";
 import type { Repos } from "../repos/ports";
 import { defineAction, inSpace } from "./define";
 import { refused, unwrap } from "./results";
@@ -89,6 +91,12 @@ export const lessonRead = defineAction({
     if (view === null) {
       throw refused("not_found");
     }
-    return view;
+    // The player's kinds are answered in the player, so the reading page gets them without answers.
+    const blocks = view.blocks.map((block) =>
+      (PLATFORM_BLOCK_TYPES as readonly string[]).includes(block.kind)
+        ? { ...block, data: forLearner(block.id, block.kind, block.data) }
+        : block,
+    );
+    return { ...view, blocks };
   },
 });
