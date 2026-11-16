@@ -395,3 +395,126 @@
   line-height: 1.2;
   letter-spacing: -0.01em;
 }
+
+/* ---------- Speak: the browser listens, and each word lights up when it was heard ---------- */
+
+.player .p-phrase {
+  font-family: var(--p-voice);
+  font-weight: 500;
+  font-size: 30px;
+  line-height: 1.2;
+}
+
+.player .p-phrase span {
+  transition: color 0.25s ease;
+}
+
+.player .p-phrase .is-heard {
+  color: var(--p-ok);
+}
+
+.player .p-phrase .is-missed {
+  color: var(--p-n3);
+  text-decoration: underline wavy color-mix(in oklch, var(--p-er) 55%, transparent);
+  text-underline-offset: 6px;
+  text-decoration-thickness: 1.5px;
+}
+
+.player .p-speak .p-stage.is-said {
+  box-shadow:
+    inset 0 0 0 2px var(--p-ok),
+    0 var(--p-edge) 0 var(--p-ok);
+}
+
+.p-mic-row {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 0;
+}
+
+.player .p-mic {
+  width: 100%;
+  height: 64px;
+  border: 0;
+  border-radius: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  font-size: 17px;
+  font-weight: 600;
+  background: var(--p-c);
+  color: var(--p-a);
+  box-shadow:
+    inset 0 0 0 2px var(--p-a),
+    0 4px 0 var(--p-a);
+}
+
+.player .p-mic-row .p-mic svg {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+
+.player .p-mic.is-on {
+  background: var(--p-a);
+  color: var(--p-oa);
+  animation: p-listen 1.4s ease-in-out infinite;
+}
+
+@keyframes p-listen {
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 0 color-mix(in oklch, var(--p-a) 40%, transparent),
+      0 4px 0 color-mix(in oklch, var(--p-a) 68%, #000);
+  }
+  50% {
+    box-shadow:
+      0 0 0 10px color-mix(in oklch, var(--p-a) 0%, transparent),
+      0 4px 0 color-mix(in oklch, var(--p-a) 68%, #000);
+  }
+}
+
+.p-said {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  font-size: 16px;
+  font-weight: 600;
+  text-align: center;
+}
+
+.p-said.is-good {
+  flex-direction: row;
+  color: var(--p-ok);
+}
+
+.player .p-said.is-good svg {
+  stroke: currentColor;
+}
+
+.p-said.is-close {
+  color: var(--p-i);
+}
+
+.player .p-said span {
+  font-weight: 400;
+  font-size: 14px;
+  color: var(--p-s);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .player .p-mic.is-on {
+    animation: none;
+  }
+
+  .player .p-phrase span {
+    transition: none;
+  }
+}

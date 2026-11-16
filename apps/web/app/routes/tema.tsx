@@ -48,7 +48,8 @@ export async function loader({ params, request, context }: Route.LoaderArgs) {
 
 export const headers: Route.HeadersFunction = () => ({
   "Cache-Control": "no-store",
-  // A speaking beat records the learner on their own device; nothing is uploaded.
+  // A speaking beat listens through the browser's own speech recognition, which may send the audio
+  // to the browser maker's service to turn it into text. The page itself uploads nothing.
   "Permissions-Policy": "camera=(), geolocation=(), microphone=(self), payment=(), usb=()",
 });
 
