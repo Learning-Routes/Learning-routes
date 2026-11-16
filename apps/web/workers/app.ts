@@ -67,7 +67,7 @@ function answer(request: Request, env: Env, ctx: ExecutionContext): Promise<Resp
         return Promise.resolve(new Response(null, { status: 404 }));
       }
       const nonce = btoa(String.fromCharCode(...crypto.getRandomValues(new Uint8Array(16))));
-      const timing = new ServerTiming();
+      const timing = new ServerTiming(() => performance.now());
       const context = new RouterContextProvider();
       context.set(pageContext, {
         nonce,

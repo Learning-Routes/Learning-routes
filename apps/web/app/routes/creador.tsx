@@ -68,7 +68,12 @@ async function routesOf(
 export const handle = creatorHub;
 
 export async function loader({ request, context }: Route.LoaderArgs) {
-  const owned = await runApiAction<OwnSpace[]>(context, request, "space.list", {});
+  // Nothing here waits on what it does not need (Platform STEP 15): whether they are the
+  // operator is asked alongside their spaces, and each space's page alongside its routes.
+  const [owned, admin] = await Promise.all([
+    runApiAction<OwnSpace[]>(context, request, "space.list", {}),
+    runApiAction(context, request, "admin.overview", {}),
+  ]);
   if (owned.status === 401) {
     throw redirect("/sign-in");
   }
@@ -77,23 +82,22 @@ export async function loader({ request, context }: Route.LoaderArgs) {
   const spaces = await Promise.all(
     (owned.body?.output ?? []).map(async (space) => {
       const address = `${protocol}//${space.slug}.${creatorDomain}`;
-      const page = await runApiAction<{ tagline?: Record<string, string> | null }>(
-        context,
-        request,
-        "space.get",
-        { spaceId: space.id },
-      );
+      const [page, routes] = await Promise.all([
+        runApiAction<{ tagline?: Record<string, string> | null }>(context, request, "space.get", {
+          spaceId: space.id,
+        }),
+        routesOf(context, request, space.id, address),
+      ]);
       return {
         id: space.id,
         name: space.name,
         role: space.role,
         address,
         tagline: page.body?.output?.tagline ?? null,
-        routes: await routesOf(context, request, space.id, address),
+        routes,
       };
     }),
   );
-  const admin = await runApiAction(context, request, "admin.overview", {});
   return {
     spaces,
     creatorAccess: creatorAccessOf(owned.body?.output),

@@ -33,9 +33,9 @@ const STATUS = {
   invalid: 422,
 } as const;
 
-function ctxFor(tx: Transaction, userId: string) {
+function ctxFor(tx: Transaction, userId: string, name: string) {
   return {
-    actor: { via: "ui" as const, userId },
+    actor: { via: "ui" as const, userId, name },
     repos: pgRepos(tx),
     tenancy: pgTenancy(tx),
     clock: { now: () => Date.now() },
@@ -60,7 +60,7 @@ function inTheirWords(result: ActionResult, acceptLanguage: string | undefined):
 
 export function actionRoutes(app: Hono<{ Bindings: Env }>, emailSender: (env: Env) => EmailSender) {
   app.post("/api/a/:name", async (c) => {
-    const timing = new ServerTiming();
+    const timing = new ServerTiming(() => performance.now());
     const started = performance.now();
     const input: unknown = await c.req.json().catch(() => null);
     return withClient(c.env, c.executionCtx, async (db) => {
@@ -85,7 +85,9 @@ export function actionRoutes(app: Hono<{ Bindings: Env }>, emailSender: (env: En
       const name = c.req.param("name");
       // The action's transaction: every query it makes, as one batch on this connection.
       const result = await timing.measure("db", () =>
-        transactionAs(db, userId, (tx) => runAction(ACTIONS, name, input, ctxFor(tx, userId))),
+        transactionAs(db, userId, (tx) =>
+          runAction(ACTIONS, name, input, ctxFor(tx, userId, session.user.name)),
+        ),
       );
       await timing.measure("after", async () => {
         await afterCommit(c.env, name, input, result);

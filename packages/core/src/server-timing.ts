@@ -9,13 +9,16 @@ const NOT_A_TOKEN = /[^A-Za-z0-9!#$%&'*+.^_`|~-]/g;
 export class ServerTiming {
   readonly #entries: string[] = [];
 
+  /** The app's clock, in milliseconds: core reads none of its own. */
+  constructor(private readonly now: () => number) {}
+
   /** Runs the work and records how long it took, even when it throws. */
   async measure<T>(name: string, work: () => Promise<T>): Promise<T> {
-    const started = Date.now();
+    const started = this.now();
     try {
       return await work();
     } finally {
-      this.add(name, Date.now() - started);
+      this.add(name, this.now() - started);
     }
   }
 

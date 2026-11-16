@@ -1,10 +1,11 @@
 import type { Snapshot } from "../content/snapshot";
-import type { Enrollment, Progress, SpaceRole } from "../domain";
+import type { Progress, SpaceRole } from "../domain";
 import type { Card } from "../learning/fsrs";
 import type { Locale, LocalizedText } from "../localized-text";
 import type { Member } from "../memberships";
 import type { Applications, Catalog, Invitations } from "./catalog-ports";
 import type { Connections, OwnSpace } from "./connection-ports";
+import type { EnrollmentReading, EnrollmentRecord } from "./enrollment-reading";
 import type { StoredFiles } from "./file-ports";
 import type { ActionLog } from "./log-ports";
 import type { OwnEnrollment } from "./own-enrollment";
@@ -186,17 +187,10 @@ export interface RouteVersions {
   append(spaceId: string, version: RouteVersion): Promise<RepoResult<void>>;
 }
 
-export interface EnrollmentRecord {
-  id: string;
-  spaceId: string;
-  routeId: string;
-  userId: string;
-  pinnedVersion: number;
-  status: Enrollment["status"];
-}
-
 export interface Enrollments {
   get(spaceId: string, enrollmentId: string): Promise<RepoResult<EnrollmentRecord>>;
+  /** With its pinned version's snapshot and its space, in one query (Platform STEP 15). */
+  reading(spaceId: string, enrollmentId: string): Promise<RepoResult<EnrollmentReading>>;
   /**
    * Enrolls the acting user (never anyone else) in a published, open route, as a student
    * unless they hold a role in its space: not_found for a route they cannot see, invalid
@@ -213,6 +207,7 @@ export interface Enrollments {
   listOwn(userId: string): Promise<{ enrollments: OwnEnrollment[]; teaches: boolean }>;
 }
 
+export type { EnrollmentReading, EnrollmentRecord } from "./enrollment-reading";
 export type { OwnEnrollment } from "./own-enrollment";
 
 export interface ProgressRecord {

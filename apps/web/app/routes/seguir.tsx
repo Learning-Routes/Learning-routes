@@ -13,6 +13,7 @@ import { isAnswerable, LessonBlocks, TopicDone } from "../app-pages/lesson-parts
 import { filled, inLocale } from "../storefront/words";
 import { lessonPage } from "../surface";
 import { ButtonLink } from "../ui/button";
+import { usePreloadRoute } from "../ui/preload-route";
 import { Rising } from "../ui/rising";
 import type { Route } from "./+types/seguir";
 
@@ -53,6 +54,7 @@ export function meta({ loaderData }: Route.MetaArgs) {
 }
 
 export default function Seguir({ loaderData }: Route.ComponentProps) {
+  usePreloadRoute("routes/tema");
   const { lesson, locale, enrollmentId } = loaderData;
   const words = LESSON_TEXT[locale];
   const [done, setDone] = useState(false);

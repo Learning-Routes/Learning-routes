@@ -65,11 +65,39 @@ export default function Tema({ loaderData }: Route.ComponentProps) {
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
   if (!mounted) {
-    return (
-      <div className="player-wait" aria-busy="true">
-        <p>{PRACTICE_TEXT[locale].opening}</p>
-      </div>
-    );
+    return <PlayerShell view={view} locale={locale} />;
   }
   return <Player view={view} enrollmentId={enrollmentId} locale={locale} runner={runner} />;
+}
+
+/**
+ * What the server sends before the player wakes (Platform STEP 15): its bar and the topic's
+ * title, in the player's own classes, so the page is the lesson at once and not a wait. No
+ * inline style: the CSP allows none in HTML, and the player sets its colours once it runs.
+ */
+function PlayerShell({
+  view,
+  locale,
+}: {
+  view: PlayView;
+  locale: Route.ComponentProps["loaderData"]["locale"];
+}) {
+  const say = (text: PlayView["title"]) => inLocale(text, locale, view.sourceLocale);
+  return (
+    <div className="player" aria-busy="true">
+      <div className="p-topbar">
+        <p className="p-topbar-route">{say(view.routeTitle)}</p>
+        <div className="p-progress" />
+        <span className="p-xp">{view.xp.topic} XP</span>
+      </div>
+      <div className="p-body">
+        <main className="p-main">
+          <div className="p-content">
+            <h1 className="p-title">{say(view.title)}</h1>
+            <p className="p-sub">{PRACTICE_TEXT[locale].opening}</p>
+          </div>
+        </main>
+      </div>
+    </div>
+  );
 }
