@@ -58,6 +58,9 @@ async function countSince(
   what: "post" | "reply" | "report",
   since: number,
 ) {
+  // Held until the action's transaction ends: one person's writes queue here, so a count and the
+  // write it allows cannot interleave with another of their writes.
+  await db.execute(sql`select pg_advisory_xact_lock(hashtext(${`community:${userId}`}))`);
   const query =
     what === "report"
       ? sql`select count(*)::integer as n from community_reports where user_id = ${userId} and created_at >= ${date(since)}`
