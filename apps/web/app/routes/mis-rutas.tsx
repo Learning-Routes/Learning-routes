@@ -8,12 +8,14 @@ import { redirect } from "react-router";
 import { runApiAction } from "../app-api.server";
 import { AppHeader } from "../app-pages/app-header";
 import "../app-pages/app-pages.css";
+import "../app-pages/my-routes.css";
 import { pageContext } from "../context";
 import { filled, inLocale } from "../storefront/words";
 import { ButtonLink } from "../ui/button";
 import { EmptyState } from "../ui/parts";
 import { usePreloadRoute } from "../ui/preload-route";
 import { Rising } from "../ui/rising";
+import { ProgressRing, RouteCover } from "../ui/route-cover";
 import { RouteFigure } from "../ui/route-figure";
 import type { Route } from "./+types/mis-rutas";
 
@@ -104,6 +106,15 @@ function topicTotal(enrollment: OwnEnrollment) {
   return enrollment.lessonsPerModule.reduce((sum, count) => sum + count, 0);
 }
 
+/** The share of the route already done, from 0 to 1. */
+function shareDone(enrollment: OwnEnrollment) {
+  const total = topicTotal(enrollment);
+  if (enrollment.place.finished || total === 0) {
+    return enrollment.place.finished ? 1 : 0;
+  }
+  return (enrollment.place.number - 1) / total;
+}
+
 function CarryOn({
   enrollment,
   locale,
@@ -117,25 +128,35 @@ function CarryOn({
   const source = enrollment.sourceLocale;
   return (
     <section className="my-next" aria-labelledby="my-next-title">
-      <div className="settle-2">
-        <p className="my-next-line">{words.carryOn}</p>
-        <h2 id="my-next-title" className="my-next-title">
-          {filled(words.topicTitle, {
-            n: enrollment.place.number,
-            title: inLocale(enrollment.place.title, locale, source),
-          })}
-        </h2>
-        <p className="my-next-line">
-          {`${filled(words.routeWith, {
-            route: inLocale(enrollment.title, locale, source),
-            creator: inLocale(enrollment.creator, locale),
-          })} ${filled(words.onTopic, { n: enrollment.place.number, total: topicTotal(enrollment) })}`}
-        </p>
+      <RouteCover seed={enrollment.routeId} className="my-next-cover" />
+      <div className="my-next-body">
+        <div className="settle-2">
+          <p className="my-next-line">{words.carryOn}</p>
+          <h2 id="my-next-title" className="my-next-title">
+            {filled(words.topicTitle, {
+              n: enrollment.place.number,
+              title: inLocale(enrollment.place.title, locale, source),
+            })}
+          </h2>
+          <p className="my-next-line">
+            {`${filled(words.routeWith, {
+              route: inLocale(enrollment.title, locale, source),
+              creator: inLocale(enrollment.creator, locale),
+            })} ${filled(words.onTopic, { n: enrollment.place.number, total: topicTotal(enrollment) })}`}
+          </p>
+        </div>
+        <div className="my-next-go settle-3">
+          <ProgressRing
+            share={shareDone(enrollment)}
+            label={filled(words.onTopic, {
+              n: enrollment.place.number,
+              total: topicTotal(enrollment),
+            })}
+          />
+          <ButtonLink href={practiceHref(enrollment)}>{APP_PAGES_TEXT[locale].continue}</ButtonLink>
+        </div>
+        <EnrollmentLine enrollment={enrollment} box={NEXT_BOX} isNew={isNew} />
       </div>
-      <ButtonLink className="settle-3" href={practiceHref(enrollment)}>
-        {APP_PAGES_TEXT[locale].continue}
-      </ButtonLink>
-      <EnrollmentLine enrollment={enrollment} box={NEXT_BOX} isNew={isNew} />
     </section>
   );
 }
@@ -157,7 +178,8 @@ function MyRoute({
   });
   return (
     <li className="my-route">
-      <div>
+      <RouteCover seed={enrollment.routeId} className="my-route-cover" />
+      <div className="my-route-words">
         <h3 className="my-route-title">{title}</h3>
         <p className="my-route-line-words">
           {`${creator}. `}

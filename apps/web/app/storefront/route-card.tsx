@@ -1,6 +1,7 @@
 import { CATALOG_TEXT } from "@learning-routes/core/copy/catalog";
 import type { LocaleCode } from "@learning-routes/core/locales";
 import type { PublicRoute } from "@learning-routes/public-read/reads";
+import { RouteCover } from "../ui/route-cover";
 import { RouteFigure } from "../ui/route-figure";
 import { filled, inLocale, routeFacts } from "./words";
 
@@ -21,6 +22,7 @@ export function RouteCard({
   const creator = inLocale(route.spaceName, locale);
   return (
     <a className="route-card" href={href}>
+      <RouteCover seed={route.routeId} className="route-card-cover" />
       <RouteFigure
         lessons={route.modules.map((module) => module.lessons.length)}
         seed={route.routeId}

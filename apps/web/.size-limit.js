@@ -64,8 +64,17 @@ export default [
       `!${CLIENT}/assets/lesson-*.css`,
       `!${CLIENT}/assets/asistente-*.css`,
       `!${CLIENT}/assets/tema-*.css`,
+      `!${CLIENT}/assets/mis-rutas-*.css`,
     ],
     limit: "20 KB",
+    gzip: true,
+  },
+  {
+    // Mis rutas has its own sheet, loaded on that page only (Platform STEP 21): the covers, the
+    // shelf and their motion. It has its own budget instead of weighing on every surface.
+    name: "Mis rutas CSS",
+    path: `${CLIENT}/assets/mis-rutas-*.css`,
+    limit: "2 KB",
     gzip: true,
   },
   {
