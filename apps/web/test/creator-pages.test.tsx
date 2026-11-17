@@ -18,6 +18,7 @@ const SPACE: PublicSpace = {
   tagline: { es: "Habla portugués en tu próximo viaje." },
   bio: { es: "Enseño portugués a viajeros." },
   brandColor: "#127c76",
+  followers: 0,
 };
 const ROUTE: PublicRoute = {
   routeId: "0192d3a0-0000-7000-8000-000000000001",

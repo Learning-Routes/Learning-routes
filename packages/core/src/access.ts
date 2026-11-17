@@ -28,6 +28,7 @@ const EVERYONE = {
 } as const;
 const STAFF = { owner: ANY_WAY, coeditor: ANY_WAY, assistant: ANY_WAY } as const;
 const EDITORS = { owner: ANY_WAY, coeditor: ANY_WAY } as const;
+const COMMUNITY = { owner: ["ui"], coeditor: ["ui"], student: ["ui"] } as const;
 
 export const PERMISSIONS = {
   // A person's own connections, in the app. "student" is how an action for oneself is asked.
@@ -81,6 +82,29 @@ export const PERMISSIONS = {
   "lesson.play": EVERYONE,
   "lesson.answer": EVERYONE,
   "lesson.finish": EVERYONE,
+  // A route's community (Platform STEP 17), in the app only: whoever is enrolled in the route
+  // (a student of its space who cannot see the route gets not_found) and its creators.
+  // Assistants read progress, not the community.
+  "community.list": COMMUNITY,
+  "community.post": COMMUNITY,
+  "community.reply": COMMUNITY,
+  "community.useful": COMMUNITY,
+  "community.delete": COMMUNITY,
+  "community.report": COMMUNITY,
+  // Looking after it is the route's creators' alone.
+  "community.pin": { owner: ["ui"], coeditor: ["ui"] },
+  "community.answer": { owner: ["ui"], coeditor: ["ui"] },
+  "community.hide": { owner: ["ui"], coeditor: ["ui"] },
+  "community.reports": { operator: ["ui"] },
+  "community.moderate": { operator: ["ui"] },
+  // One's own: whom one follows and blocks, one's feed, notifications and name.
+  "community.follow": { student: ["ui"] },
+  "community.block": { student: ["ui"] },
+  "community.feed": { student: ["ui"] },
+  "notification.list": { student: ["ui"] },
+  "notification.read": { student: ["ui"] },
+  "profile.get": { student: ["ui"] },
+  "profile.update": { student: ["ui"] },
 } as const satisfies Record<ActionName, Row>;
 
 /** A creator is an owner or a coeditor: the roles that build (Platform STEP 14). */

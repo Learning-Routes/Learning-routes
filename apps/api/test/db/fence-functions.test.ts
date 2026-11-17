@@ -52,24 +52,30 @@ describe("the security definer functions", () => {
         where p.pronamespace = 'app'::regnamespace and p.prosecdef
         order by p.proname`,
     );
+    // Trigger functions run for the table, never called by lr_app.
+    const triggers = ["community_hide_reported", "community_notify", "keep_an_owner"];
     const callable = [
       "accept_invitation",
       "bump_draft",
+      "community_reply_allowed",
+      "community_route_ids",
       "create_space",
       "enroll",
+      "followed_space_ids",
       "invitation_state",
       "invite_applicant",
+      "is_community_banned",
+      "is_live_space",
       "is_operator",
       "mark_published",
       "member_space_ids",
+      "published_route_titles",
       "set_enrollment_status",
       "upgrade_enrollment",
     ];
-    expect(rows.map((row: { proname: string }) => row.proname)).toEqual([
-      ...callable.slice(0, 7),
-      "keep_an_owner",
-      ...callable.slice(7),
-    ]);
+    expect(rows.map((row: { proname: string }) => row.proname)).toEqual(
+      [...callable, ...triggers].sort(),
+    );
     for (const row of rows) {
       expect(row).toEqual({
         proname: row.proname,

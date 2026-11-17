@@ -4,6 +4,7 @@ import type { Card } from "../learning/fsrs";
 import type { Locale, LocalizedText } from "../localized-text";
 import type { Member } from "../memberships";
 import type { Applications, Catalog, Invitations } from "./catalog-ports";
+import type { Community } from "./community-ports";
 import type { Connections, OwnSpace } from "./connection-ports";
 import type { EnrollmentReading, EnrollmentRecord } from "./enrollment-reading";
 import type { StoredFiles } from "./file-ports";
@@ -286,6 +287,7 @@ export interface Repos {
   reviews: Reviews;
   actionLog: ActionLog;
   storedFiles: StoredFiles;
+  community: Community;
   /** One unit of work: everything fn writes is kept together, or nothing is. */
   transaction<T>(fn: (repos: Repos) => Promise<T>): Promise<T>;
 }

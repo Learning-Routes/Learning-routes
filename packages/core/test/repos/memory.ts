@@ -23,6 +23,7 @@ import type {
   StoredCard,
   StoredFile,
 } from "../../src/repos/ports";
+import { communityState, memoryCommunity } from "./memory-community";
 
 // The repositories' in-memory twin (Platform STEP 2 §4): plain maps, with the same
 // answers as Postgres for the contract suite. A transaction works on a copy and
@@ -58,12 +59,15 @@ export function memoryState() {
     /** Addresses that have signed in, and whose they are. */
     accounts: new Map<string, string>(),
     files: new Map<string, { spaceId: string } & StoredFile>(),
+    community: communityState(),
     /** Bumped by every commit, so an overlapping one is caught instead of losing writes. */
     commits: 0,
   };
 }
 type State = ReturnType<typeof memoryState>;
 
+const OWN_ACCOUNT =
+  /^(connection\.(grant|revoke)|community\.(follow|block)|notification\.read|profile\.update)$/;
 const ok = <T>(value: T): RepoResult<T> => ({ ok: true, value });
 const fail = (error: RepoError) => ({ ok: false, error }) as const;
 const newId = () => newBlockId(Date.now(), crypto.getRandomValues(new Uint8Array(10)));
@@ -181,6 +185,7 @@ export function memoryRepos(state: State, actorId = ""): Repos {
     state.members.get(`${spaceId}:${userId}`)?.role ?? null;
 
   return {
+    community: memoryCommunity(state.community, newId),
     // Only the database can hold these: test/db and test/invitations.test.ts cover them.
     invitations: {
       invite: async () => ({ ok: false, error: "not_found" }),
@@ -644,7 +649,8 @@ export function memoryRepos(state: State, actorId = ""): Repos {
     },
     actionLog: {
       append: async (spaceId, entry) => {
-        const ownConnection = spaceId === null && entry.action.startsWith("connection.");
+        // One's own account, in no space: connections and the community's (Platform STEP 17).
+        const ownConnection = spaceId === null && OWN_ACCOUNT.test(entry.action);
         const allowed =
           ownConnection ||
           state.operators.has(actorId) ||

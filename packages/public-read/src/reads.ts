@@ -39,8 +39,13 @@ export const PUBLIC_READS = {
                    where featured_position is not null order by featured_position limit 3`,
   newestToStart: `select ${ROUTE_COLUMNS} from public_catalog
                    order by approved_at desc, route_id limit 3`,
-  spaceBySlug: `select id, slug, name, default_locale, locales, tagline, bio, brand_color
-                  from public_spaces where slug = $1`,
+  // How many follow it, never who (Platform STEP 17).
+  spaceBySlug: `select space.id, space.slug, space.name, space.default_locale, space.locales,
+                       space.tagline, space.bio, space.brand_color,
+                       coalesce(follow.followers, 0) as followers
+                  from public_spaces as space
+                  left join public_space_followers as follow on follow.space_id = space.id
+                 where space.slug = $1`,
   isRetired: "select 1 from public_retired_spaces where slug = $1",
   routeBySlug: `select ${ROUTE_COLUMNS} from public_routes where space_slug = $1 and slug = $2`,
   routesOfSpace: `select ${ROUTE_COLUMNS} from public_routes
@@ -56,6 +61,8 @@ export interface PublicSpace {
   tagline: LocalizedText | null;
   bio: LocalizedText | null;
   brandColor: string | null;
+  /** How many people follow the space (Platform STEP 17). Who they are is never public. */
+  followers: number;
 }
 
 export interface PublicRoute {
@@ -115,6 +122,7 @@ function spaceFrom(row: Record<string, unknown>): PublicSpace {
     tagline: row.tagline,
     bio: row.bio,
     brandColor: row.brand_color,
+    followers: Number(row.followers ?? 0),
   } as PublicSpace;
 }
 

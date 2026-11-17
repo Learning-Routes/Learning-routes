@@ -18,6 +18,8 @@ export const userProfiles = pgTable(
     // FSRS daily limits and streaks count the learner's own day.
     timeZone: text().notNull().default("UTC"),
     uiLocale: text(),
+    // Shares "finished module 2" in a route's community (Platform STEP 17). Off until turned on.
+    isSharingMilestones: boolean().notNull().default(false),
     createdAt: createdAt(),
     updatedAt: updatedAt(),
   },

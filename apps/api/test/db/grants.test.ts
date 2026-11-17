@@ -52,6 +52,15 @@ const EXPECTED: Record<string, string[]> = {
   reviews: ["INSERT", "SELECT"],
   // A space's files on the content host: kept, never changed (Platform STEP 9 §2).
   stored_files: ["INSERT", "SELECT"],
+  // A route's community (Platform STEP 17). Posts are deleted by emptying them, never removed;
+  // notifications are written by a trigger, never by lr_app.
+  community_posts: ["INSERT", "SELECT"],
+  community_reactions: ["DELETE", "INSERT", "SELECT"],
+  community_reports: ["INSERT", "SELECT"],
+  community_follows: ["DELETE", "INSERT", "SELECT"],
+  community_blocks: ["DELETE", "INSERT", "SELECT"],
+  community_bans: ["DELETE", "INSERT", "SELECT"],
+  notifications: ["SELECT"],
   // The record of who did what: append-only.
   action_log: ["INSERT", "SELECT"],
 };
@@ -59,6 +68,18 @@ const EXPECTED: Record<string, string[]> = {
 // The columns lr_app may update where it has no table-wide UPDATE. Never an id, a
 // space, a parent, a route's revision or published version, or whose row it is.
 const UPDATABLE_COLUMNS: Record<string, string[]> = {
+  // Creators pin, answer and hide; an author deletes, which empties the text and the name.
+  community_posts: [
+    "author_name",
+    "body",
+    "deleted_at",
+    "hidden_at",
+    "hidden_by",
+    "is_answer",
+    "is_pinned",
+  ],
+  community_reports: ["resolved_at", "resolved_by"],
+  notifications: ["read_at"],
   blocks: ["archived_at", "data", "kind", "position", "updated_at"],
   catalog_listings: [
     "decided_at",
@@ -146,6 +167,7 @@ const GRANTS_FILES = [
   "0027_oauth_grants",
   "0031_invitation_grants",
   "0036_stored_files_grants",
+  "0041_community_grants",
 ].map((tag) => new URL(`../../drizzle/${tag}.sql`, import.meta.url));
 const PRIVILEGES = `select coalesce(string_agg(entry, ',' order by entry), '')
                       as all

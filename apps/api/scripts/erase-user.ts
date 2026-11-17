@@ -52,6 +52,13 @@ export async function eraseUser(db: pg.Client, userId: string, authSecret: strin
   await db.query("select set_config('app.erasing_user_id', $1, true)", [userId]);
   // progress restricts its enrollment's delete, so it goes first.
   await db.query("delete from progress where user_id = $1", [userId]);
+  // What they wrote in a community goes (Platform STEP 17); the replies others wrote to it stay,
+  // under "[eliminado]", and the author's column empties as the user row goes.
+  await db.query(
+    `update community_posts set body = null, author_name = '', deleted_at = coalesce(deleted_at, now())
+      where author_id = $1`,
+    [userId],
+  );
   // Pending magic links name the address, not the user: Better Auth stores
   // {"email": ...} as the value. Rows of other kinds, or not JSON, are left alone.
   await db.query(

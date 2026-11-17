@@ -2,6 +2,7 @@ import type { Repos } from "@learning-routes/core/repos/ports";
 import { actionLog } from "../schema/log";
 import { applicationsRepo } from "./applications";
 import { catalogRepo } from "./catalog";
+import { communityRepo } from "./community";
 import { connectionsRepo } from "./connections";
 import { routeDrafts } from "./drafts";
 import { enrollmentsRepo } from "./enrollments";
@@ -38,6 +39,7 @@ export function pgRepos(db: Db): Repos {
         }),
     },
     storedFiles: storedFilesRepo(db),
+    community: communityRepo(db),
     transaction: (fn) => underSavepoint(db, () => fn(pgRepos(db))),
   };
 }

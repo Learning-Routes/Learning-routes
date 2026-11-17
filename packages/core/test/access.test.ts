@@ -11,6 +11,7 @@ const ANY = ["ui", "mcp", "agent"];
 const EVERYONE = { owner: ANY, coeditor: ANY, assistant: ANY, student: ANY };
 const STAFF = { owner: ANY, coeditor: ANY, assistant: ANY };
 const EDITORS = { owner: ANY, coeditor: ANY };
+const COMMUNITY = { owner: ["ui"], coeditor: ["ui"], student: ["ui"] };
 const EXPECTED: Record<string, Record<string, string[]>> = {
   "space.get": EVERYONE,
   "space.update": { owner: ["ui"] },
@@ -52,6 +53,25 @@ const EXPECTED: Record<string, Record<string, string[]>> = {
   "connection.list": { student: ["ui"] },
   "connection.grant": { student: ["ui"] },
   "connection.revoke": { student: ["ui"] },
+  // A route's community (Platform STEP 17): the app only, no assistant, no agent, no MCP.
+  "community.list": COMMUNITY,
+  "community.post": COMMUNITY,
+  "community.reply": COMMUNITY,
+  "community.useful": COMMUNITY,
+  "community.delete": COMMUNITY,
+  "community.report": COMMUNITY,
+  "community.pin": { owner: ["ui"], coeditor: ["ui"] },
+  "community.answer": { owner: ["ui"], coeditor: ["ui"] },
+  "community.hide": { owner: ["ui"], coeditor: ["ui"] },
+  "community.reports": {},
+  "community.moderate": {},
+  "community.follow": { student: ["ui"] },
+  "community.block": { student: ["ui"] },
+  "community.feed": { student: ["ui"] },
+  "notification.list": { student: ["ui"] },
+  "notification.read": { student: ["ui"] },
+  "profile.get": { student: ["ui"] },
+  "profile.update": { student: ["ui"] },
 };
 
 describe("can(role, action, via)", () => {
@@ -85,6 +105,8 @@ describe("can(role, action, via)", () => {
       "application.invite ui",
       "catalog.decide ui",
       "catalog.feature ui",
+      "community.moderate ui",
+      "community.reports ui",
       "space.create ui",
     ]);
   });
