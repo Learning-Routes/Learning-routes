@@ -48,9 +48,13 @@ test("a route's page is cached, tagged, and the same for every visitor", async (
   expect(headers["cache-tag"]).toContain("route:");
   expect(headers["set-cookie"]).toBeUndefined();
   const first = await plain?.text();
-  await context.addCookies([{ name: "lr_theme", value: "dark", url: MARIANA }]);
+  await context.addCookies([{ name: "other", value: "1", url: MARIANA }]);
   const again = await page.goto(ROUTE);
   expect(await again?.text()).toBe(first);
+  // The reader's theme is put on <html> after the cache (Platform STEP 16), and nothing else.
+  await context.addCookies([{ name: "lr_theme", value: "dark", url: MARIANA }]);
+  const dark = await page.goto(ROUTE);
+  expect((await dark?.text())?.replace(' data-theme="dark"', "")).toBe(first);
 });
 
 test("an unknown slug is 404, and an archived space is 410", async ({ page }) => {
