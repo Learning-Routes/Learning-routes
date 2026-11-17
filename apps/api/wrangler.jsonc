@@ -59,7 +59,7 @@
   // learner's tutor counts against the same ceiling (Platform STEP 20).
   "durable_objects": {
     "bindings": [
-      { "name": "LEDGER", "class_name": "SpendLedger", "script_name": "learning-routes-agent" }
+      { "name": "TUTOR_LEDGER", "class_name": "SpendLedger", "script_name": "learning-routes-agent" }
     ]
   },
   // Purging the storefront's edge cache by tag, after the commit (Platform STEP 4 §1.4).

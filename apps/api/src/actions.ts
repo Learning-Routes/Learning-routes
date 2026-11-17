@@ -115,8 +115,6 @@ function answered(
   });
 }
 
-const ONLY_ELSEWHERE = new Set(["tutor.ask"]);
-
 /** A page of a list from the address: ?beforeAt=<ms>&beforeId=<uuid>&limit=<n>. */
 function pageOf(c: Context<{ Bindings: Env }>) {
   const [at, id, limit] = [c.req.query("beforeAt"), c.req.query("beforeId"), c.req.query("limit")];
@@ -131,7 +129,7 @@ export function actionRoutes(app: Hono<{ Bindings: Env }>, emailSender: (env: En
     const name = c.req.param("name");
     // The tutor's question is asked only through /api/tutor/ask (tutor.ts): its answer here would be
     // the model's instructions, and a question spent with no answer.
-    if (ONLY_ELSEWHERE.has(name)) {
+    if (name === "tutor.ask") {
       return c.json({ ok: false, code: "unknown_action" }, 404);
     }
     return answered(c, emailSender, name, await c.req.json().catch(() => null));

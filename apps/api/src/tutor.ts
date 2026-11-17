@@ -6,6 +6,7 @@ import { V1_LIMITS } from "@learning-routes/core/credits/spend";
 import { negotiateLocale } from "@learning-routes/core/locales";
 import { TUTOR_LIMITS, TUTOR_MODEL } from "@learning-routes/core/tutor/tutor";
 import type { Context, Hono } from "hono";
+import type { SpendLedger } from "./agent/ledger";
 import { streamFromOpenRouter } from "./ai/openrouter";
 import { createAuth } from "./auth/auth";
 import type { EmailSender } from "./auth/email";
@@ -27,13 +28,8 @@ import { newId } from "./ids";
 const TUTOR_PATH = "/api/tutor/ask";
 const DAY = 86_400_000;
 
-/** What the tutor needs of the environment; LEDGER is the platform's day of spend (agent Worker). */
-type TutorEnv = Env & {
-  OPENROUTER_API_KEY?: string;
-  LEDGER?: { get(id: unknown): { today(): Promise<number>; add(n: number): Promise<void> } } & {
-    idFromName(name: string): unknown;
-  };
-};
+/** What the tutor needs of the environment beyond the API's own. */
+type TutorEnv = Env & { OPENROUTER_API_KEY?: string };
 
 interface Asked {
   enrollment_id?: unknown;
@@ -60,7 +56,11 @@ const ctxFor = (userId: string, name: string) => (tx: Parameters<typeof pgRepos>
 });
 
 /** The platform's spend today, from the agent Worker's ledger. */
-const ledgerOf = (env: TutorEnv) => env.LEDGER?.get(env.LEDGER.idFromName("global")) ?? null;
+function ledgerOf(env: TutorEnv) {
+  // wrangler types cannot see another Worker's class: this binding is the agent's SpendLedger.
+  const ledgers = env.TUTOR_LEDGER as unknown as DurableObjectNamespace<SpendLedger> | undefined;
+  return ledgers?.get(ledgers.idFromName("global")) ?? null;
+}
 
 type Repos = ReturnType<typeof pgRepos>;
 type Messages = Parameters<typeof gate>[0]["messages"];

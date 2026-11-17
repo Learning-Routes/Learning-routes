@@ -438,7 +438,7 @@ describe("every table holds what core's domain schemas allow", () => {
                                'oauth_client_assertion', 'connection_uses',
                                'stored_files', 'community_posts', 'community_reactions',
                                'community_reports', 'community_follows', 'community_blocks',
-                               'community_bans', 'notifications')`,
+                               'community_bans', 'notifications', 'tutor_questions')`,
       );
       expect(rows.map((row: { relname: string }) => row.relname).sort()).toEqual(
         [...TABLES].sort(),
