@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { data, redirect } from "react-router";
 import { runApiAction } from "../app-api.server";
 import { pageContext } from "../context";
+import { firstOpen } from "../player/first-open";
 import { Player } from "../player/player.client";
 import { inLocale } from "../storefront/words";
 import { lessonPage } from "../surface";
@@ -65,11 +66,51 @@ export default function Tema({ loaderData }: Route.ComponentProps) {
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
   if (!mounted) {
-    return (
-      <div className="player-wait" aria-busy="true">
-        <p>{PRACTICE_TEXT[locale].opening}</p>
-      </div>
-    );
+    return <PlayerShell view={view} locale={locale} />;
   }
   return <Player view={view} enrollmentId={enrollmentId} locale={locale} runner={runner} />;
+}
+
+/**
+ * What the server sends before the player wakes (Platform STEP 15): its bar and the topic's
+ * title, in the player's own classes, so the page is the lesson at once and not a wait. No
+ * inline style: the CSP allows none in HTML, and the player sets its colours once it runs.
+ */
+function PlayerShell({
+  view,
+  locale,
+}: {
+  view: PlayView;
+  locale: Route.ComponentProps["loaderData"]["locale"];
+}) {
+  const say = (text: PlayView["title"]) => inLocale(text, locale, view.sourceLocale);
+  // The same bar the player draws on its first frame, so nothing moves when it takes over. It
+  // is drawn only: the player's own bar, with its label, replaces it a moment later.
+  const at = firstOpen(view);
+  return (
+    <div className="player" aria-busy="true">
+      <div className="p-topbar">
+        <p className="p-topbar-route">{say(view.routeTitle)}</p>
+        <div className="p-segs" aria-hidden="true">
+          {view.beats.map((beat, i) => (
+            <i key={beat.id} className={i < at ? "is-done" : i === at ? "is-now" : ""} />
+          ))}
+        </div>
+        <span className="p-xp">
+          <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M12 2.5l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.4l-5.9 3.1 1.2-6.5L2.5 9.4l6.6-.9z" />
+          </svg>
+          {view.xp.topic} XP
+        </span>
+      </div>
+      <div className="p-body">
+        <main className="p-main">
+          <div className="p-content">
+            <h1 className="p-title">{say(view.title)}</h1>
+            <p className="p-sub">{PRACTICE_TEXT[locale].opening}</p>
+          </div>
+        </main>
+      </div>
+    </div>
+  );
 }

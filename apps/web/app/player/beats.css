@@ -1,14 +1,6 @@
 /* The player's frame on a phone and each kind of question and practice (Platform STEP 12). Built on
    player.css's tokens: one neutral base, one accent. */
 
-.player-wait {
-  min-height: 100dvh;
-  display: grid;
-  place-items: center;
-  color: var(--color-text-muted, #5f5f68);
-  font-size: 14px;
-}
-
 /* ---------- Top bar: compact on a phone, full from 1024 px ---------- */
 
 .player .p-topbar {

@@ -1,3 +1,4 @@
+import type { ServerTiming } from "@learning-routes/core/server-timing";
 import { createContext } from "react-router";
 
 /**
@@ -17,6 +18,8 @@ export const pageContext = createContext<{
   contentOrigin: string;
   /** Public: Turnstile's widget shows it to everyone. */
   turnstileSiteKey: string;
+  /** This request's phases, sent back as Server-Timing (Platform STEP 15). */
+  timing: ServerTiming;
   /** For loaders: what the storefront's reads need from this request. */
   runtime: {
     env: Pick<Env, "DB_PUBLIC">;

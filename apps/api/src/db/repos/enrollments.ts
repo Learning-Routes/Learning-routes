@@ -1,5 +1,5 @@
 import { placeInRoute } from "@learning-routes/core/content/lesson-view";
-import type { Snapshot } from "@learning-routes/core/content/snapshot";
+import { type Snapshot, upcastSnapshot } from "@learning-routes/core/content/snapshot";
 import type { LocalizedText } from "@learning-routes/core/localized-text";
 import type { Enrollments, RepoResult } from "@learning-routes/core/repos/ports";
 import { and, desc, eq, ne, sql } from "drizzle-orm";
@@ -95,6 +95,41 @@ export const enrollmentsRepo = (db: Db): Enrollments => ({
       .from(enrollments)
       .where(and(eq(enrollments.id, enrollmentId), eq(enrollments.spaceId, spaceId)));
     return row === undefined ? fail("not_found") : ok(row);
+  },
+  async reading(spaceId, enrollmentId) {
+    const [row] = await db
+      .select({
+        id: enrollments.id,
+        spaceId: enrollments.spaceId,
+        routeId: enrollments.routeId,
+        userId: enrollments.userId,
+        pinnedVersion: enrollments.pinnedVersion,
+        status: enrollments.status,
+        snapshot: routeVersions.snapshot,
+        snapshotFormat: routeVersions.snapshotFormat,
+        spaceName: spaces.name,
+        brandColor: spaces.brandColor,
+      })
+      .from(enrollments)
+      .innerJoin(
+        routeVersions,
+        and(
+          eq(routeVersions.routeId, enrollments.routeId),
+          eq(routeVersions.version, enrollments.pinnedVersion),
+          eq(routeVersions.spaceId, enrollments.spaceId),
+        ),
+      )
+      .innerJoin(spaces, eq(spaces.id, enrollments.spaceId))
+      .where(and(eq(enrollments.id, enrollmentId), eq(enrollments.spaceId, spaceId)));
+    if (row === undefined) {
+      return fail("not_found");
+    }
+    const { snapshot, snapshotFormat, spaceName, brandColor, ...enrollment } = row;
+    return ok({
+      enrollment,
+      snapshot: upcastSnapshot(snapshotFormat, snapshot),
+      space: { name: spaceName, brandColor },
+    });
   },
   enroll: (routeId) => enroll(db, routeId),
   // app.upgrade_enrollment acts only on the transaction user's own active enrollment.

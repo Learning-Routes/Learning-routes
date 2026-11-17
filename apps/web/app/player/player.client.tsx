@@ -5,6 +5,7 @@ import type { LocaleCode } from "@learning-routes/core/locales";
 import { type CSSProperties, useCallback, useEffect, useMemo, useState } from "react";
 import { callAction } from "../api";
 import { Beat } from "./beat";
+import { firstOpen } from "./first-open";
 import { Outline, Sheet, Summary, TopBar, Tutor } from "./parts";
 import { Icon, makeCtx, PlayerContext, type Submission, usePlayer } from "./shared";
 import "./player.css";
@@ -38,13 +39,6 @@ interface PlayerProps {
   locale: LocaleCode;
   runner: string | null;
 }
-
-/** Where to start: the first beat that still gates the topic, else the beginning. */
-const firstOpen = (view: PlayView) => {
-  const started = view.beats.some((b) => b.state !== null);
-  const at = view.beats.findIndex((b) => b.gating && !b.state?.done);
-  return view.done || !started || at < 0 ? 0 : at;
-};
 
 function useBeats(view: PlayView, enrollmentId: string) {
   const [index, setIndex] = useState(() => firstOpen(view));

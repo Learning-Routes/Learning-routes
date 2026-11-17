@@ -8,7 +8,7 @@ import { detailOf, explanationOf, revealsSolution, solutionOf } from "../learnin
 import type { LocalizedText } from "../localized-text";
 import type { ProgressRecord, Repos } from "../repos/ports";
 import { defineAction, inSpace } from "./define";
-import { ownEnrollment } from "./enrollments";
+import { ownReading } from "./enrollments";
 import { fromState, recordFor, schedule, sumXp, toState, xpOf } from "./player-progress";
 import { refused, unwrap } from "./results";
 
@@ -51,12 +51,10 @@ async function place(
   spaceId: string,
   enrollmentId: string,
 ) {
-  const enrollment = await ownEnrollment(ctx.repos, spaceId, enrollmentId, ctx.actor.userId);
-  const { snapshot } = unwrap(
-    await ctx.repos.routeVersions.get(spaceId, enrollment.routeId, enrollment.pinnedVersion),
-  );
-  const records = await ctx.repos.learning.progress(spaceId, enrollment.id);
-  return { enrollment, snapshot: snapshot as Snapshot, records };
+  // Two queries: the enrollment with its version and space, then its progress (Platform STEP 15).
+  const reading = await ownReading(ctx.repos, spaceId, enrollmentId, ctx.actor.userId);
+  const records = await ctx.repos.learning.progress(spaceId, reading.enrollment.id);
+  return { ...reading, records };
 }
 
 function outlineOf(
@@ -93,8 +91,7 @@ export const lessonPlay = defineAction({
   target: (input) => ({ kind: "enrollment", id: input.enrollmentId }),
   run: async (ctx, input, given): Promise<PlayView> => {
     const { spaceId } = inSpace(given);
-    const { snapshot, records } = await place(ctx, spaceId, input.enrollmentId);
-    const space = unwrap(await ctx.repos.spaces.get(spaceId));
+    const { snapshot, records, space } = await place(ctx, spaceId, input.enrollmentId);
     const view = lessonView(snapshot, input.topic, { spaceId, kind: "p", creator: space.name });
     if (view === null) {
       throw refused("not_found");

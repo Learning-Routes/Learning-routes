@@ -5,13 +5,14 @@ import { BRAND, type LocaleCode, negotiateLocale } from "@learning-routes/core/l
 import type { OwnEnrollment } from "@learning-routes/core/repos/ports";
 import { useEffect, useState } from "react";
 import { redirect } from "react-router";
-import { askApi, runApiAction } from "../app-api.server";
+import { runApiAction } from "../app-api.server";
 import { AppHeader } from "../app-pages/app-header";
 import "../app-pages/app-pages.css";
 import { pageContext } from "../context";
 import { filled, inLocale } from "../storefront/words";
 import { ButtonLink } from "../ui/button";
 import { EmptyState } from "../ui/parts";
+import { usePreloadRoute } from "../ui/preload-route";
 import { Rising } from "../ui/rising";
 import { RouteFigure } from "../ui/route-figure";
 import type { Route } from "./+types/mis-rutas";
@@ -25,24 +26,18 @@ function practiceHref(enrollment: OwnEnrollment) {
 // "Mis rutas", minimal, from v2's MisRutas (Platform STEP 4 §6.2).
 
 export async function loader({ request, context }: Route.LoaderArgs) {
-  const answer = await runApiAction<{ enrollments: OwnEnrollment[]; teaches: boolean }>(
-    context,
-    request,
-    "enrollment.list",
-    {},
-  );
+  const answer = await runApiAction<{
+    enrollments: OwnEnrollment[];
+    teaches: boolean;
+    name: string;
+  }>(context, request, "enrollment.list", {});
   if (answer.status === 401 || !answer.body?.output) {
     throw redirect("/sign-in");
   }
-  // Their own name, when they have one. Accounts made by a sign-in link start without.
-  const session = await askApi<{ user?: { name?: string } }>(
-    context,
-    request,
-    "/api/auth/get-session",
-  );
+  // Their own name comes with the list: one read of the session, not two. Accounts made by a
+  // sign-in link start without one.
   return {
     ...answer.body.output,
-    name: session.body?.user?.name?.trim() ?? "",
     newEnrollment: new URL(request.url).searchParams.get("nueva"),
     locale: negotiateLocale(request.headers.get("accept-language"), "es"),
     platformOrigin: context.get(pageContext).platformOrigin,
@@ -189,6 +184,7 @@ function MyRoute({
 }
 
 export default function MisRutas({ loaderData }: Route.ComponentProps) {
+  usePreloadRoute("routes/tema");
   const { enrollments, teaches, locale, platformOrigin, newEnrollment, name } = loaderData;
   const arriving = useArrivingEnrollment(newEnrollment);
   const words = { ...APP_PAGES_TEXT[locale], ...MY_ROUTES_TEXT[locale] };

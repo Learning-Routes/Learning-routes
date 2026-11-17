@@ -8,4 +8,6 @@ export interface Actor {
   userId: string;
   /** The OAuth client behind a call through the MCP, for the log. */
   oauthClientId?: string;
+  /** Their name, from the session the app already read; "" or absent until they give one. */
+  name?: string;
 }

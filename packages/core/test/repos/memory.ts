@@ -544,6 +544,18 @@ export function memoryRepos(state: State, actorId = ""): Repos {
         const enrollment = state.enrollments.get(enrollmentId);
         return enrollment?.spaceId === spaceId ? ok(enrollment) : fail("not_found");
       },
+      reading: async (spaceId, enrollmentId) => {
+        const enrollment = state.enrollments.get(enrollmentId);
+        const version = state.versions.get(`${enrollment?.routeId}:${enrollment?.pinnedVersion}`);
+        const space = state.spaces.get(spaceId);
+        return enrollment?.spaceId === spaceId && version && space
+          ? ok({
+              enrollment,
+              snapshot: structuredClone(version.snapshot),
+              space: { name: space.name, brandColor: space.brandColor ?? null },
+            })
+          : fail("not_found");
+      },
       enroll: async (routeId) => enroll(state, actorId, routeId),
       upgrade: async (spaceId, enrollmentId) => {
         const enrollment = state.enrollments.get(enrollmentId);

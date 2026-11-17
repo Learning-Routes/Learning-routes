@@ -8,6 +8,24 @@ import { refused, unwrap } from "./results";
 
 // Enrolling, and moving an enrollment to a newer version (Platform STEP 2 §6).
 
+/**
+ * The actor's own active enrollment with its snapshot and its space, in one read (Platform STEP
+ * 15), or not_found, as ownEnrollment.
+ */
+export async function ownReading(
+  repos: Repos,
+  spaceId: string,
+  enrollmentId: string,
+  userId: string,
+) {
+  const found = await repos.enrollments.reading(spaceId, enrollmentId);
+  const enrollment = found.ok ? found.value.enrollment : null;
+  if (!found.ok || enrollment?.userId !== userId || enrollment.status !== "active") {
+    throw refused("not_found");
+  }
+  return found.value;
+}
+
 /** The actor's own active enrollment, or not_found: another's, or a revoked one, does not exist for them. */
 export async function ownEnrollment(
   repos: Repos,
@@ -40,10 +58,14 @@ export const enrollmentCreate = defineAction({
 export const enrollmentList = defineAction({
   name: "enrollment.list",
   kind: "query",
-  description: "List your own active enrollments, and whether you teach anywhere.",
+  description: "List your own active enrollments, whether you teach anywhere, and your name.",
   input: z.strictObject({}),
   target: () => ({ kind: "account", id: "self", self: true }),
-  run: (ctx) => ctx.repos.enrollments.listOwn(ctx.actor.userId),
+  // The name comes with the list, so Mis rutas reads the session once, not twice (Platform STEP 15).
+  run: async (ctx) => ({
+    ...(await ctx.repos.enrollments.listOwn(ctx.actor.userId)),
+    name: ctx.actor.name?.trim() ?? "",
+  }),
 });
 
 export const enrollmentUpgrade = defineAction({
@@ -69,20 +91,17 @@ export const lessonRead = defineAction({
   target: (input) => ({ kind: "enrollment", id: input.enrollmentId }),
   run: async (ctx, input, given) => {
     const { spaceId } = inSpace(given);
-    const enrollment = await ownEnrollment(
+    // Two queries: the enrollment with its version and space, then its progress (Platform STEP 15).
+    const { enrollment, snapshot, space } = await ownReading(
       ctx.repos,
       spaceId,
       input.enrollmentId,
       ctx.actor.userId,
     );
-    const { snapshot } = unwrap(
-      await ctx.repos.routeVersions.get(spaceId, enrollment.routeId, enrollment.pinnedVersion),
-    );
     const progress = await ctx.repos.learning.progress(spaceId, enrollment.id);
     const completed = progress
       .filter((record) => record.status === "completed")
       .map((record) => record.lessonId);
-    const space = unwrap(await ctx.repos.spaces.get(spaceId));
     const view = lessonView(snapshot, input.topic ?? placeInRoute(snapshot, completed).number, {
       spaceId,
       kind: "p",
