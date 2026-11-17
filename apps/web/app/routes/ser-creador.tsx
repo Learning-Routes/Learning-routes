@@ -6,6 +6,7 @@ import { useRouteLoaderData } from "react-router";
 import { sendApplication } from "../api";
 import { askCreatorAccess } from "../app-api.server";
 import "../app-pages/app-pages.css";
+import { TeachCost } from "../app-pages/teach-cost";
 import { pageContext } from "../context";
 import { filled } from "../storefront/words";
 import { challengePage } from "../surface";
@@ -225,7 +226,7 @@ function ApplicationForm({
 }
 
 export default function QuieroEnsenar({ loaderData }: Route.ComponentProps) {
-  const { locale, siteKey, platformOrigin } = loaderData;
+  const { locale, siteKey, platformOrigin, creatorAccess } = loaderData;
   const words = APP_PAGES_TEXT[locale];
   const [sent, setSent] = useState<{ email: string; teaches: string } | null>(null);
   return (
@@ -250,6 +251,7 @@ export default function QuieroEnsenar({ loaderData }: Route.ComponentProps) {
             <li>{words.teachStep2}</li>
             <li>{words.teachStep3}</li>
           </ol>
+          {creatorAccess === "none" ? <TeachCost locale={locale} /> : null}
         </div>
         <div className="card teach-sheet">
           {sent ? (

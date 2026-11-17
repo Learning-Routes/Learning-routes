@@ -1,0 +1,224 @@
+/* Mis rutas, v2 (Platform STEP 21): every route has a face, the one you are on leads the page, and
+   the page arrives in a short sequence. Loaded after app-pages.css, on the same tokens. */
+
+.route-cover {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.ring {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  width: 3.5rem;
+  height: 3.5rem;
+  flex: none;
+}
+.ring svg {
+  position: absolute;
+  inset: 0;
+}
+.ring circle {
+  fill: none;
+  stroke-width: 4;
+  stroke-linecap: round;
+}
+.ring-track {
+  stroke: var(--color-edge);
+}
+.ring-done {
+  stroke: var(--color-accent);
+}
+.ring b {
+  font-size: 0.8125rem;
+  font-weight: var(--weight-display);
+  font-variant-numeric: tabular-nums;
+}
+
+/* The route you are on: its cover fills the card, the words sit on it. */
+.my-page .my-next {
+  position: relative;
+  display: block;
+  padding: 0;
+  overflow: hidden;
+  min-height: 21rem;
+  background: var(--color-night);
+  box-shadow: 0 30px 60px -36px var(--color-shade);
+  isolation: isolate;
+}
+.my-next-cover {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+}
+.my-page .my-next::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(
+    100deg,
+    rgba(12, 8, 20, 0.86) 0%,
+    rgba(12, 8, 20, 0.5) 52%,
+    rgba(12, 8, 20, 0.08) 100%
+  );
+}
+.my-next-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  align-content: end;
+  gap: var(--space-6);
+  min-height: 21rem;
+  padding: var(--space-8);
+  color: #fff;
+}
+.my-page .my-next .my-next-line {
+  color: rgba(255, 255, 255, 0.82);
+}
+.my-page .my-next .my-next-title {
+  margin-block: var(--space-2);
+  font-size: clamp(1.75rem, 1.2rem + 2.2vw, 3rem);
+  letter-spacing: -0.035em;
+  line-height: 1.04;
+  text-wrap: balance;
+}
+.my-next-go {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+.my-next .ring-track {
+  stroke: rgba(255, 255, 255, 0.28);
+}
+.my-next .ring-done {
+  stroke: #fff;
+}
+.my-next .button {
+  min-width: 9.5rem;
+  background: #fff;
+  color: #1d1226;
+  box-shadow: 0 4px 0 rgba(255, 255, 255, 0.4);
+}
+.my-next .button:active {
+  transform: translateY(3px);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+.my-page .my-next .rf {
+  grid-column: 1 / -1;
+  opacity: 0.9;
+}
+
+/* The rest: a shelf of routes, each with its cover. */
+.my-page .my-routes {
+  grid-template-columns: repeat(auto-fill, minmax(17.5rem, 1fr));
+  gap: var(--space-5);
+}
+.my-page .my-route {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--space-3);
+  padding: 0 0 var(--space-5);
+  overflow: hidden;
+  box-shadow:
+    inset 0 0 0 1.5px var(--color-border-subtle),
+    0 3px 0 var(--color-border-subtle);
+  transition:
+    transform 0.25s cubic-bezier(0.23, 1, 0.32, 1),
+    box-shadow 0.25s cubic-bezier(0.23, 1, 0.32, 1);
+}
+.my-route-cover {
+  height: 9.5rem;
+  flex: none;
+}
+.my-route-words,
+.my-page .my-route > .button,
+.my-page .my-route > .rf {
+  margin-inline: var(--space-5);
+}
+.my-page .my-route > .button {
+  align-self: flex-start;
+  order: 3;
+}
+.my-page .my-route > .rf {
+  order: 2;
+  width: calc(100% - 2 * var(--space-5));
+}
+.my-page .my-route-title {
+  font-size: 1.25rem;
+  text-wrap: balance;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .my-page .my-route:hover {
+    transform: translateY(-4px);
+    box-shadow:
+      inset 0 0 0 1.5px var(--color-faint),
+      0 22px 36px -22px var(--color-shade);
+  }
+  .my-page .my-route:hover .route-cover-path {
+    stroke-dashoffset: -40;
+  }
+}
+
+@media (max-width: 720px) {
+  .my-next-body {
+    grid-template-columns: minmax(0, 1fr);
+    padding: var(--space-5);
+  }
+  .my-page .my-next::after {
+    background: linear-gradient(180deg, rgba(12, 8, 20, 0.35) 0%, rgba(12, 8, 20, 0.86) 62%);
+  }
+}
+
+/* Alive, once and gently: the sun rises as the page arrives, the path keeps walking. */
+@media (prefers-reduced-motion: no-preference) {
+  .route-cover-path {
+    transition: stroke-dashoffset 1.2s cubic-bezier(0.23, 1, 0.32, 1);
+  }
+  .my-next-cover .route-cover-path {
+    animation: cover-walk 14s linear infinite;
+  }
+  .my-next-cover .route-cover-sun {
+    animation: cover-rise 1.4s cubic-bezier(0.23, 1, 0.32, 1) both;
+  }
+  .my-page .my-route {
+    animation: shelf-in 0.6s cubic-bezier(0.23, 1, 0.32, 1) both;
+  }
+  .my-page .my-route:nth-child(2) {
+    animation-delay: 0.07s;
+  }
+  .my-page .my-route:nth-child(3) {
+    animation-delay: 0.14s;
+  }
+  .my-page .my-route:nth-child(n + 4) {
+    animation-delay: 0.21s;
+  }
+  .ring-done {
+    animation: ring-fill 1.1s cubic-bezier(0.23, 1, 0.32, 1) 0.2s both;
+  }
+}
+@keyframes cover-walk {
+  to {
+    stroke-dashoffset: -200;
+  }
+}
+@keyframes cover-rise {
+  from {
+    transform: translateY(46px);
+    opacity: 0;
+  }
+}
+@keyframes shelf-in {
+  from {
+    transform: translateY(18px);
+    opacity: 0;
+  }
+}
+@keyframes ring-fill {
+  from {
+    stroke-dasharray: 0 100;
+  }
+}

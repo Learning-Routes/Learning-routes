@@ -128,8 +128,14 @@
   outline: none;
   box-shadow: inset 0 0 0 2px var(--color-highlight);
 }
-.route-card > :not(.rf) {
+.route-card > :not(.rf, .route-card-cover) {
   margin-inline: var(--space-6);
+}
+.route-card-cover {
+  display: block;
+  width: 100%;
+  height: 9.5rem;
+  flex: none;
 }
 .route-card-title {
   overflow-wrap: anywhere;
