@@ -13,8 +13,8 @@ function BrandMark() {
 }
 
 /**
- * The page's top bar. `children` are its links and actions, in reading order. On the app's host,
- * `theme` adds the light and dark switch, after them; a storefront follows the system.
+ * The page's top bar. `children` are its links and actions, in reading order. `theme` adds the
+ * light and dark switch after them, on any host (Platform STEP 16).
  */
 export function SiteHeader({
   brand,

@@ -5,6 +5,7 @@ import { describe, expect, it } from "vitest";
 import { HeroRoute } from "../app/landing/hero-route";
 import type { Route } from "../app/routes/storefront/+types/home";
 import StorefrontHome, { meta } from "../app/routes/storefront/home";
+import { inRouter } from "./in-router";
 
 const H1 = /<h1[ >]/g;
 const SCRIPT = /<script[^>]*>/g;
@@ -28,7 +29,9 @@ const loaderData = {
   creatorDomain: "learningroutes.com",
 } as const;
 const render = (data: object = loaderData) =>
-  renderToString(<StorefrontHome {...({ loaderData: data } as unknown as Route.ComponentProps)} />);
+  renderToString(
+    inRouter(<StorefrontHome {...({ loaderData: data } as unknown as Route.ComponentProps)} />),
+  );
 
 describe("the storefront home", () => {
   it("shows the name and the line", () => {

@@ -13,6 +13,7 @@ import {
   isMcpPath,
 } from "./hosts";
 import { withSecurityHeaders } from "./security-headers";
+import { themePost, withTheme } from "./theme";
 
 const requestHandler = createRequestHandler(
   () => import("virtual:react-router/server-build"),
@@ -36,7 +37,10 @@ export default {
     if (url.origin === env.APP_ORIGIN && url.pathname === STUDIO_PATH) {
       return agentClient(env)(request);
     }
-    return withSecurityHeaders(await answer(request, env, ctx));
+    const hosts = { appOrigin: env.APP_ORIGIN, creatorDomain: env.CREATOR_DOMAIN };
+    const page = (await themePost(request, hosts)) ?? (await answer(request, env, ctx));
+    // After the edge cache: the cached page stays the same for everyone (Platform STEP 16).
+    return withSecurityHeaders(withTheme(page, request.headers.get("cookie")));
   },
 } satisfies ExportedHandler<Env>;
 

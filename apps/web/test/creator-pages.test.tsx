@@ -7,6 +7,7 @@ import { CreatorPage, CreatorWeave } from "../app/storefront/creator-pages";
 import { pageLocale, withLang } from "../app/storefront/page-locale";
 import { RoutePage } from "../app/storefront/route-page-view";
 import { sitemapXml } from "../app/storefront/sitemap-xml";
+import { inRouter } from "./in-router";
 
 const WOVEN = /weave-over/g;
 const SPACE: PublicSpace = {
@@ -47,7 +48,7 @@ const LINKS = { appOrigin: "https://app.test", platformOrigin: "https://platform
 
 describe("a creator's page", () => {
   const html = renderToString(
-    <CreatorPage space={SPACE} routes={[ROUTE]} locale="es" {...LINKS} />,
+    inRouter(<CreatorPage space={SPACE} routes={[ROUTE]} locale="es" {...LINKS} />),
   );
 
   it("says who they are, with an initial until photos arrive", () => {
@@ -65,14 +66,16 @@ describe("a creator's page", () => {
   });
 
   it("is not a dead end with no routes yet", () => {
-    const empty = renderToString(<CreatorPage space={SPACE} routes={[]} locale="es" {...LINKS} />);
+    const empty = renderToString(
+      inRouter(<CreatorPage space={SPACE} routes={[]} locale="es" {...LINKS} />),
+    );
     expect(empty).toContain("Pronto habrá rutas aquí.");
   });
 });
 
 describe("a route's page", () => {
   const render = (route = ROUTE) =>
-    renderToString(<RoutePage space={SPACE} route={route} locale="es" {...LINKS} />);
+    renderToString(inRouter(<RoutePage space={SPACE} route={route} locale="es" {...LINKS} />));
 
   it("says its facts in words", () => {
     expect(render()).toContain("2 módulos y 3 temas. Para empezar desde cero. En español.");

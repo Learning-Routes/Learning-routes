@@ -8,7 +8,12 @@ import { NavLink, SiteHeader } from "../ui/site-header";
 export function PlatformHeader({ locale, appOrigin }: { locale: LocaleCode; appOrigin: string }) {
   const words = CATALOG_TEXT[locale];
   return (
-    <SiteHeader brand={BRAND} brandHref={`/${locale}`} navLabel={UI_COPY[locale].primaryNav}>
+    <SiteHeader
+      brand={BRAND}
+      brandHref={`/${locale}`}
+      navLabel={UI_COPY[locale].primaryNav}
+      theme={UI_COPY[locale]}
+    >
       <NavLink href={`${appOrigin}/ser-creador`}>{words.teach}</NavLink>
       <NavLink href={`${appOrigin}/sign-in`}>{words.signIn}</NavLink>
       {/* A phone keeps only the button, as v1 did: without it, the header has no way anywhere. */}

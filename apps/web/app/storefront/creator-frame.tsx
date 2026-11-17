@@ -1,6 +1,8 @@
 import { CREATOR_TEXT } from "@learning-routes/core/copy/creator";
+import { UI_COPY } from "@learning-routes/core/copy/ui";
 import type { LocaleCode } from "@learning-routes/core/locales";
 import type { PublicRoute, PublicSpace } from "@learning-routes/public-read/reads";
+import { ThemeToggle } from "../ui/theme-toggle";
 import { inLocale } from "./words";
 
 // What a creator's page and a route's page share (Platform STEP 4 §5).
@@ -55,6 +57,7 @@ export function CreatorHeader({
           {CREATOR_TEXT[locale].signIn}
         </a>
       </nav>
+      <ThemeToggle toDark={UI_COPY[locale].toDark} toLight={UI_COPY[locale].toLight} />
     </header>
   );
 }

@@ -5,7 +5,14 @@ import type { StudioEvent } from "@learning-routes/core/studio/session";
 import { expect, type Page, test } from "@playwright/test";
 import { openReading } from "./reading";
 import { creatorHost, DEV } from "./screens";
-import { invitationFor, makeOperator, newAddress, signInContext, stubTurnstile } from "./session";
+import {
+  clearLimits,
+  invitationFor,
+  makeOperator,
+  newAddress,
+  signInContext,
+  stubTurnstile,
+} from "./session";
 
 // The whole journey (STEP 11-prep §A2): a creator invited by the admin builds a route with the
 // assistant and publishes it, and a student opens it and completes a topic. The agent answers with
@@ -83,6 +90,8 @@ test("a creator builds and publishes with the assistant, and a student completes
 
   await test.step("1. the admin invites Andrés Profe", async () => {
     await stubTurnstile(page);
+    // Five applications an hour from one address, which every spec shares: start with room.
+    clearLimits();
     await page.goto(`${DEV}/ser-creador`);
     await expect(page.locator("html")).toHaveAttribute("data-hydrated", "true");
     await page.getByLabel("Tu nombre").fill("Andrés Profe");
