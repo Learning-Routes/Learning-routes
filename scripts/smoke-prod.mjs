@@ -6,7 +6,9 @@
 import { crawl } from "./link-check.mjs";
 
 const APEX = process.env.SMOKE_APEX ?? "https://learningroutes.com";
-const APP = process.env.SMOKE_APP ?? "https://app.learningroutes.com";
+// One address (Platform STEP 19): the app is on the apex, and its old host only moves people there.
+const APP = process.env.SMOKE_APP ?? "https://learningroutes.com";
+const OLD_APP = process.env.SMOKE_OLD_APP ?? "https://app.learningroutes.com";
 const WWW = process.env.SMOKE_WWW ?? "https://www.learningroutes.com";
 /** A creator's host, once one exists. */
 const CREATOR = process.env.SMOKE_CREATOR;
@@ -48,6 +50,15 @@ check(
   www.status === 301 && www.headers.get("location") === `${APEX}/es`,
   String(www.status),
 );
+
+for (const path of ["/mis-rutas?a=1", "/mcp", "/api/auth/get-session"]) {
+  const moved = await get(`${OLD_APP}${path}`);
+  check(
+    `the old app host moves ${path} to the same path on the apex`,
+    moved.status === 308 && moved.headers.get("location") === `${APP}${path}`,
+    `${moved.status} ${moved.headers.get("location")}`,
+  );
+}
 
 const signIn = await get(`${APP}/sign-in`);
 check("the app answers", signIn.status === 200, String(signIn.status));

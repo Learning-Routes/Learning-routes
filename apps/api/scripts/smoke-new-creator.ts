@@ -10,7 +10,7 @@ import { execFileSync } from "node:child_process";
 import { Client, StreamableHTTPClientTransport } from "@modelcontextprotocol/client";
 import pg from "pg";
 
-const APP = process.env.SMOKE_APP ?? "https://app.learningroutes.com";
+const APP = process.env.SMOKE_APP ?? "https://learningroutes.com";
 const MAIL = "https://api.mail.tm";
 // The client's identity is a public document. A Worker can't fetch its own zone, so this repository's
 // copy on jsDelivr, which serves it as JSON.

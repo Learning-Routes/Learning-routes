@@ -11,7 +11,7 @@ import {
 // A creator's pages live on their own host (Platform STEP 4 §5): one Worker, so the host
 // picks the route. Everything else keeps its path.
 
-const HOSTS = { appOrigin: "https://app.learningroutes.com", creatorDomain: "learningroutes.com" };
+const HOSTS = { appOrigin: "https://learningroutes.com", creatorDomain: "learningroutes.com" };
 
 describe("which host belongs to a creator", () => {
   it("takes the one label under the creators' domain", () => {
@@ -68,7 +68,7 @@ describe("the request a page is rendered from", () => {
   });
 
   it("leaves every other host's paths as they are", () => {
-    expect(rewritten("https://app.learningroutes.com/sign-in").pathname).toBe("/sign-in");
+    expect(rewritten("https://learningroutes.com/sign-in").pathname).toBe("/sign-in");
   });
 
   it("gives nobody the internal paths directly", () => {
@@ -103,8 +103,8 @@ describe("pages with a session", () => {
       "/admin",
       "/api/a/x",
     ]) {
-      expect(elsewhere(`https://learningroutes.com${path}`), path).toBe(true);
-      expect(elsewhere(`https://app.learningroutes.com${path}`), path).toBe(false);
+      expect(elsewhere(`https://mariana.learningroutes.com${path}`), path).toBe(true);
+      expect(elsewhere(`https://learningroutes.com${path}`), path).toBe(false);
     }
   });
 

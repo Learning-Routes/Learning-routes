@@ -19,9 +19,11 @@
   // APP_ORIGIN: the only host that keeps a theme cookie. ENVIRONMENT is "development"
   // only in a local run, where /studio/_design exists.
   "vars": {
-    "APP_ORIGIN": "https://app.learningroutes.com",
+    "APP_ORIGIN": "https://learningroutes.com",
+    // Where the app was until Platform STEP 19: it answers 308 to APP_ORIGIN (workers/old-host.ts).
+    "OLD_APP_ORIGIN": "https://app.learningroutes.com",
     "ENVIRONMENT": "production",
-    // Where the landing and the catalog live.
+    // Where the landing and the catalog live: the app's own host since Platform STEP 19.
     "PLATFORM_ORIGIN": "https://learningroutes.com",
     // Each creator's page is [slug].CREATOR_DOMAIN (Platform STEP 4 §0).
     "CREATOR_DOMAIN": "learningroutes.com",

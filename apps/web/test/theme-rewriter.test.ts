@@ -35,3 +35,24 @@ describe("the reader's theme on the page", () => {
     expect(await page("lr_theme=dark", "/json")).toBe('{"html":"<html>"}');
   });
 });
+
+// Platform STEP 19: the header's "Entrar" says "Mis rutas" to someone signed in, after the cache.
+describe("the header's account link", () => {
+  const SIGNED_IN = '<a class="nav-link" href="/mis-rutas">Mis rutas</a>';
+
+  it("says Mis rutas to someone with a session, and nothing else changes", async () => {
+    const plain = await page();
+    const signedIn = await page("a=b; __Host-lr_session=abc.def");
+    expect(signedIn).toBe(
+      plain.replace(
+        '<a class="nav-link" href="https://learningroutes.com/sign-in" data-account="Mis rutas">Entrar</a>',
+        SIGNED_IN,
+      ),
+    );
+  });
+
+  it("stays Entrar without one, and never touches an answer that is not a page", async () => {
+    expect(await page("lr_session=abc")).toContain(">Entrar</a>");
+    expect(await page("__Host-lr_session=abc", "/json")).toBe('{"html":"<html>"}');
+  });
+});

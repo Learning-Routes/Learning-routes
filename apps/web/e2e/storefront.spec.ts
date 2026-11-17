@@ -3,6 +3,8 @@ import { expect, test } from "@playwright/test";
 const SCRIPT = /<script\b[^>]*>/g;
 const ENHANCEMENT = /^<script type="module" src="\/enhance\/[a-z-]+\.js"[^>]*>$/;
 const COOKIE = /cookie/i;
+const SIGN_IN_LINK =
+  /<a class="nav-link" href="[^"]*\/sign-in" data-account="Mis rutas">Entrar<\/a>/;
 
 for (const path of ["/es", "/es/explorar"]) {
   test(`${path} blocks nothing: at most module scripts of our own, no React, no preload`, async ({
@@ -53,6 +55,16 @@ test("a storefront page is cached at the edge and is the same for every visitor"
   // The reader's theme is put on <html> after the cache (Platform STEP 16), and nothing else.
   const dark = await request.get("/es", { headers: { cookie: "lr_theme=dark; other=1" } });
   expect((await dark.text()).replace(' data-theme="dark"', "")).toBe(await plain.text());
+  // A session changes only the header's "Entrar" into "Mis rutas", after the cache (Platform STEP 19).
+  const signedIn = await request.get("/es", { headers: { cookie: "__Host-lr_session=a.b" } });
+  expect(signedIn.headers()["cache-control"]).toBe(plain.headers()["cache-control"]);
+  const account = (html: string) =>
+    html
+      .replace(SIGN_IN_LINK, "@")
+      .replace('<a class="nav-link" href="/mis-rutas">Mis rutas</a>', "@");
+  const signedInHtml = await signedIn.text();
+  expect(signedInHtml).toContain('<a class="nav-link" href="/mis-rutas">Mis rutas</a>');
+  expect(account(signedInHtml)).toBe(account(await plain.text()));
 });
 
 test("an app page is never kept at the edge", async ({ request }) => {

@@ -8,7 +8,7 @@ import { mailsTo, signInToken } from "./inbox";
 // topic. No model calls and no creator writes. It runs against production, by hand or from its
 // workflow: never with the default projects.
 
-const APP = "https://app.learningroutes.com";
+const APP = "https://learningroutes.com";
 const STUDENT = "alumna@proof.email.learningroutes.com";
 // The owner's choice: the catalog lists no route yet, so the route comes from its creator's page.
 const ROUTE = "https://gilber.learningroutes.com/fracciones-sin-miedo";

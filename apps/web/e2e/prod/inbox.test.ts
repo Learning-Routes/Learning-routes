@@ -5,7 +5,7 @@ import { tokenIn } from "./inbox";
 // raw email as Email Routing delivered it. The token here is invented.
 
 const TOKEN = "Zx9_test-only-token_0123456789abcdefABCDEF";
-const LINK = `https://app.learningroutes.com/sign-in/confirm#token=${TOKEN}`;
+const LINK = `https://learningroutes.com/sign-in/confirm#token=${TOKEN}`;
 
 const mail = (encoding: string, body: string) =>
   [

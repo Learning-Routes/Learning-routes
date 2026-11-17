@@ -5,6 +5,7 @@ import { applyRoutes } from "./apply";
 import { AUTH_PATH, createAuth } from "./auth/auth";
 import { confirmRoutes } from "./auth/confirm";
 import type { EmailSender } from "./auth/email";
+import { handoffRoutes } from "./auth/handoff";
 import { withClient } from "./db/with-db";
 import { invitationRoutes } from "./invitations";
 import { requestLog } from "./log";
@@ -41,6 +42,7 @@ export function createApp(deps: AppDeps) {
     return next();
   });
   confirmRoutes(app, deps.emailSender);
+  handoffRoutes(app, deps.emailSender);
   actionRoutes(app, deps.emailSender);
   startRoutes(app);
   invitationRoutes(app, deps.emailSender);

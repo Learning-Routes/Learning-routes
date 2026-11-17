@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { nextOnOurHosts, themeCookie, themeFromCookie } from "../app/theme";
 import { isOurHost, themePost } from "../workers/theme";
 
-const HOSTS = { appOrigin: "https://app.learningroutes.com", creatorDomain: "learningroutes.com" };
+const HOSTS = { appOrigin: "https://learningroutes.com", creatorDomain: "learningroutes.com" };
 const ours = (host: string) => isOurHost(host, HOSTS);
 
 describe("the theme cookie", () => {
@@ -29,7 +29,6 @@ describe("the theme cookie", () => {
 
 describe("our hosts", () => {
   it("are the app, the platform and each creator's", () => {
-    expect(ours("app.learningroutes.com")).toBe(true);
     expect(ours("learningroutes.com")).toBe(true);
     expect(ours("mariana-ortega.learningroutes.com")).toBe(true);
   });
@@ -54,8 +53,8 @@ describe("where the toggle goes back to", () => {
     expect(nextOnOurHosts("https://learningroutes.com/es", from, ours)).toBe(
       "https://learningroutes.com/es",
     );
-    expect(nextOnOurHosts("https://app.learningroutes.com/mis-rutas", from, ours)).toBe(
-      "https://app.learningroutes.com/mis-rutas",
+    expect(nextOnOurHosts("https://learningroutes.com/mis-rutas", from, ours)).toBe(
+      "https://learningroutes.com/mis-rutas",
     );
   });
 

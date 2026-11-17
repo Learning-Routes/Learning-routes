@@ -25,7 +25,7 @@ const loaderData = {
   lang: "es",
   origin: "https://learningroutes.com",
   routes: [],
-  appOrigin: "https://app.learningroutes.com",
+  appOrigin: "https://learningroutes.com",
   creatorDomain: "learningroutes.com",
 } as const;
 const render = (data: object = loaderData) =>
@@ -73,7 +73,7 @@ describe("the storefront home", () => {
   it('links to the catalog, and to "Quiero enseñar" on the app host', () => {
     const html = render();
     expect(html).toContain('href="/es/explorar"');
-    expect(html).toContain('href="https://app.learningroutes.com/ser-creador"');
+    expect(html).toContain('href="https://learningroutes.com/ser-creador"');
     expect(html).toContain("¿Enseñas algo que sabes bien?");
   });
 

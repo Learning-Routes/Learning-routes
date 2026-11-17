@@ -29,12 +29,12 @@
     "@better-auth/memory-adapter": "./src/auth/unused/memory-adapter.ts"
   },
   "vars": {
-    "APP_ORIGIN": "https://app.learningroutes.com",
+    "APP_ORIGIN": "https://learningroutes.com",
     "ENVIRONMENT": "production",
     "EMAIL_FROM": "sign-in@mail.learningroutes.com",
     "CLOUDFLARE_ZONE_ID": "f31f9bc6fac8035305c2fab2e5ebc35f",
     // The hosts a Turnstile token may come from (Platform STEP 4 §6.3).
-    "TURNSTILE_HOSTNAMES": "app.learningroutes.com",
+    "TURNSTILE_HOSTNAMES": "learningroutes.com",
     // Where an asset's address points: the content host (Platform STEP 9 §1).
     "CONTENT_ORIGIN": "https://lrusercontent.com"
   },
