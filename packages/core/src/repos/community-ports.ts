@@ -107,7 +107,8 @@ export interface Community {
     id: string,
     viewerId: string,
   ): Promise<CommunityItem | null>;
-  /** What the author wrote since a time: posts, replies or reports. */
+  /** What the author wrote since a time: posts, replies or reports. Holds the author's write lock
+   * until the action ends, so two writes at once cannot both take the last place. */
   countSince(userId: string, what: "post" | "reply" | "report", since: number): Promise<number>;
   /** not_found when the reply's post is gone or its author blocked the replier. */
   add(spaceId: string, item: NewCommunityItem, at: number): Promise<RepoResult<CommunityItem>>;

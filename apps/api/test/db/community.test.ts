@@ -1,11 +1,11 @@
 import { runAction } from "@learning-routes/core/actions/define";
 import { ACTIONS } from "@learning-routes/core/actions/registry";
 import { drizzle } from "drizzle-orm/node-postgres";
-import type pg from "pg";
+import pg from "pg";
 import { describe, expect, it } from "vitest";
 import { pgRepos } from "../../src/db/repos/index";
 import { pgTenancy } from "../../src/db/tenancy";
-import { actAs, attempt, newUser, rolledBack, URLS } from "./connect";
+import { actAs, attempt, backendPid, blockedOrDone, newUser, rolledBack, URLS } from "./connect";
 import { newEnrollment, newRoute, newSpace } from "./fixtures";
 
 // A route's community on Postgres (Platform STEP 17), one test per rule, through the actions as
@@ -338,4 +338,54 @@ describe("a route's community, on Postgres", () => {
         await as(w, w.ana, "community.post", { routeId: w.route, kind: "note", body: "otra" }),
       ).toMatchObject({ code: "forbidden" });
     }));
+});
+
+describe("two posts by one person at the same instant", () => {
+  it("cannot both take the last place of the hour: the second waits, then hears rate_limited", async () => {
+    const setup = new pg.Client({ connectionString: URLS.migrator });
+    const one = new pg.Client({ connectionString: URLS.migrator });
+    const two = new pg.Client({ connectionString: URLS.migrator });
+    await Promise.all([setup.connect(), one.connect(), two.connect()]);
+    try {
+      const w = await world(setup);
+      for (let n = 0; n < 9; n += 1) {
+        await setup.query(
+          `insert into community_posts (space_id, route_id, author_id, kind, body)
+           values ($1, $2, $3, 'note', 'nota')`,
+          [w.space, w.route, w.ana],
+        );
+      }
+      const twoPid = await backendPid(two);
+      const post = async (db: pg.Client) => {
+        await db.query("begin");
+        await actAs(db, w.ana);
+        const orm = drizzle(db, { casing: "snake_case" });
+        return runAction(
+          ACTIONS,
+          "community.post",
+          { routeId: w.route, kind: "note", body: "la última" },
+          {
+            actor: { via: "ui", userId: w.ana, name: "Persona Inventada" },
+            repos: pgRepos(orm),
+            tenancy: pgTenancy(orm),
+            clock: { now: () => Date.now() },
+            ids: { newId: () => crypto.randomUUID() },
+          },
+        );
+      };
+      expect(await post(one)).toMatchObject({ ok: true });
+      const second = post(two);
+      await blockedOrDone(twoPid, second);
+      await one.query("commit");
+      expect(await second).toMatchObject({ code: "rate_limited" });
+      await two.query("rollback");
+      const { rows } = await setup.query(
+        "select count(*)::integer as n from community_posts where author_id = $1",
+        [w.ana],
+      );
+      expect(rows).toEqual([{ n: 10 }]);
+    } finally {
+      await Promise.all([setup.end(), one.end(), two.end()]);
+    }
+  });
 });
