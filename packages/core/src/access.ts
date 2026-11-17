@@ -82,6 +82,9 @@ export const PERMISSIONS = {
   "lesson.play": EVERYONE,
   "lesson.answer": EVERYONE,
   "lesson.finish": EVERYONE,
+  // The learner's tutor (Platform STEP 20): in the app only, on one's own enrollment. Assistants
+  // ask no model on a learner's behalf.
+  "tutor.ask": { owner: ["ui"], coeditor: ["ui"], student: ["ui"] },
   // A route's community (Platform STEP 17), in the app only: whoever is enrolled in the route
   // (a student of its space who cannot see the route gets not_found) and its creators.
   // Assistants read progress, not the community.

@@ -12,6 +12,7 @@ import type { ActionLog } from "./log-ports";
 import type { OwnEnrollment } from "./own-enrollment";
 import type { RepoResult } from "./repo-result";
 import type { RouteDetails } from "./route-details";
+import type { TutorQuestions } from "./tutor-ports";
 
 export type {
   ApplicationRecord,
@@ -288,6 +289,7 @@ export interface Repos {
   actionLog: ActionLog;
   storedFiles: StoredFiles;
   community: Community;
+  tutor: TutorQuestions;
   /** One unit of work: everything fn writes is kept together, or nothing is. */
   transaction<T>(fn: (repos: Repos) => Promise<T>): Promise<T>;
 }

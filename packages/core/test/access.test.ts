@@ -38,6 +38,7 @@ const EXPECTED: Record<string, Record<string, string[]>> = {
   "enrollment.list": EVERYONE,
   "lesson.read": EVERYONE,
   "lesson.play": EVERYONE,
+  "tutor.ask": { owner: ["ui"], coeditor: ["ui"], assistant: [], student: ["ui"] },
   "lesson.answer": EVERYONE,
   "lesson.finish": EVERYONE,
   "space.list": { student: ["ui", "mcp"] },

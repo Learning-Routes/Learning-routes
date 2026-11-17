@@ -11,6 +11,7 @@ import { learningRepo, reviewsRepo } from "./learning";
 import { membershipsRepo, spacesRepo } from "./members";
 import { attempt, type Db, ok, underSavepoint } from "./shared";
 import { storedFilesRepo } from "./stored-files";
+import { tutorRepo } from "./tutor";
 import { routeVersionsRepo } from "./versions";
 
 // The repositories on Postgres (Platform STEP 2 §4), as lr_app under the acting
@@ -40,6 +41,7 @@ export function pgRepos(db: Db): Repos {
     },
     storedFiles: storedFilesRepo(db),
     community: communityRepo(db),
+    tutor: tutorRepo(db),
     transaction: (fn) => underSavepoint(db, () => fn(pgRepos(db))),
   };
 }

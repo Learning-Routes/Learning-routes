@@ -52,6 +52,15 @@
       // The content host's: it signs a draft creation's short-lived address (Platform STEP 9 §3).
       "CONTENT_SIGNING_SECRET"
     ]
+    // OPENROUTER_API_KEY is optional: without it the tutor answers 503 tutor_unavailable and calls
+    // no model (Platform STEP 20).
+  },
+  // The platform's day of model spend, kept by the assistant's Worker (Platform STEP 10): the
+  // learner's tutor counts against the same ceiling (Platform STEP 20).
+  "durable_objects": {
+    "bindings": [
+      { "name": "LEDGER", "class_name": "SpendLedger", "script_name": "learning-routes-agent" }
+    ]
   },
   // Purging the storefront's edge cache by tag, after the commit (Platform STEP 4 §1.4).
   // One consumer at a time, and at most one batch each 30 s, stays inside the Free

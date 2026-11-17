@@ -50,6 +50,7 @@ import {
   routeUpdate,
 } from "./routes";
 import { membershipAdd, spaceCreate, spaceGet, spaceList, spaceUpdate } from "./spaces";
+import { tutorAsk } from "./tutor";
 import { assetUpload, creationUpload } from "./uploads";
 
 // Every action the platform has. `satisfies` holds it to ACTION_NAMES: a name
@@ -90,6 +91,7 @@ export const ACTIONS = {
   "enrollment.list": enrollmentList,
   "lesson.read": lessonRead,
   "lesson.play": lessonPlay,
+  "tutor.ask": tutorAsk,
   "lesson.answer": lessonAnswer,
   "lesson.finish": lessonFinish,
   "connection.list": connectionList,

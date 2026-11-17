@@ -2,6 +2,7 @@ import { Enrollment, Progress, ReviewCard } from "@learning-routes/core/domain";
 import type { Card, CardState } from "@learning-routes/core/learning/fsrs";
 import { sql } from "drizzle-orm";
 import {
+  bigint,
   check,
   doublePrecision,
   foreignKey,
@@ -143,5 +144,37 @@ export const reviews = pgTable(
     index("reviews_user_id_card_id_reviewed_at_idx").on(t.userId, t.cardId, t.reviewedAt),
     check("reviews_rating", sql`${t.rating} between 1 and 4`),
     check("reviews_elapsed_ms", sql`${t.elapsedMs} >= 0`),
+  ],
+);
+
+// The learner's tutor (Platform STEP 20 §A): one row per question, for the day's limit and what the
+// answer used. Never what was asked or answered.
+export const tutorQuestions = pgTable(
+  "tutor_questions",
+  {
+    id: id(),
+    spaceId: uuid().notNull(),
+    userId: uuid().notNull(),
+    enrollmentId: uuid().notNull(),
+    askedAt: time().notNull(),
+    model: text(),
+    promptTokens: integer(),
+    completionTokens: integer(),
+    /** null until answered, and when OpenRouter reported no cost. */
+    costMicrocents: bigint({ mode: "number" }),
+    answeredAt: time(),
+  },
+  (t) => [
+    // The row's person is the enrollment's: no one asks on another's enrollment.
+    foreignKey({
+      name: "tutor_questions_enrollment_id_fkey",
+      columns: [t.enrollmentId, t.spaceId, t.userId],
+      foreignColumns: [enrollments.id, enrollments.spaceId, enrollments.userId],
+    }).onDelete("restrict"),
+    index("tutor_questions_user_id_asked_at_idx").on(t.userId, t.askedAt),
+    check(
+      "tutor_questions_usage",
+      sql`coalesce(${t.promptTokens} >= 0 and ${t.completionTokens} >= 0 and ${t.costMicrocents} >= 0, true)`,
+    ),
   ],
 );

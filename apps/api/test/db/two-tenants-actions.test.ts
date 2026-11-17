@@ -154,6 +154,8 @@ describe("two tenants, through every action", () => {
           submission: {},
         },
         "lesson.finish": { enrollmentId: enrollmentB, topic: 1 },
+        // The learner's tutor (Platform STEP 20): B's enrollment does not exist for A.
+        "tutor.ask": { enrollmentId: enrollmentB, topic: 1, question: "¿Y esto?" },
         // A route's community (Platform STEP 17): B's route does not exist for A.
         "community.list": { routeId: routeB },
         "community.post": { routeId: routeB, kind: "note", body: "ajeno" },

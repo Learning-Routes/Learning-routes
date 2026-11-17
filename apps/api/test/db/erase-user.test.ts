@@ -26,6 +26,7 @@ const PER_USER_TABLES = [
   ["platform_roles", "user_id"],
   ["enrollments", "user_id"],
   ["progress", "user_id"],
+  ["tutor_questions", "user_id"],
   ["cards", "user_id"],
   ["reviews", "user_id"],
   ["session", "user_id"],
@@ -53,6 +54,10 @@ async function learner(db: pg.Client, spaceId: string, routeId: string) {
   await db.query(
     "insert into progress (enrollment_id, lesson_id, space_id, user_id, status) values ($1, uuidv7(), $2, $3, 'completed')",
     [enrollment, spaceId, userId],
+  );
+  await db.query(
+    "insert into tutor_questions (space_id, user_id, enrollment_id, asked_at) values ($1, $2, $3, now())",
+    [spaceId, userId, enrollment],
   );
   const { rows } = await db.query(
     "insert into cards (user_id, space_id, item_id) values ($1, $2, uuidv7()) returning id",

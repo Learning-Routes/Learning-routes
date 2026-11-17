@@ -24,6 +24,7 @@ import type {
   StoredFile,
 } from "../../src/repos/ports";
 import { communityState, memoryCommunity } from "./memory-community";
+import { memoryTutor, tutorState } from "./memory-tutor";
 
 // The repositories' in-memory twin (Platform STEP 2 §4): plain maps, with the same
 // answers as Postgres for the contract suite. A transaction works on a copy and
@@ -60,6 +61,7 @@ export function memoryState() {
     accounts: new Map<string, string>(),
     files: new Map<string, { spaceId: string } & StoredFile>(),
     community: communityState(),
+    tutor: tutorState(),
     /** Bumped by every commit, so an overlapping one is caught instead of losing writes. */
     commits: 0,
   };
@@ -186,6 +188,7 @@ export function memoryRepos(state: State, actorId = ""): Repos {
 
   return {
     community: memoryCommunity(state.community, newId),
+    tutor: memoryTutor(state.tutor, newId),
     // Only the database can hold these: test/db and test/invitations.test.ts cover them.
     invitations: {
       invite: async () => ({ ok: false, error: "not_found" }),

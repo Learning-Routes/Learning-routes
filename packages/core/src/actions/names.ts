@@ -36,6 +36,7 @@ export const ACTION_NAMES = [
   "enrollment.list",
   "lesson.read",
   "lesson.play",
+  "tutor.ask",
   "lesson.answer",
   "lesson.finish",
   "connection.list",

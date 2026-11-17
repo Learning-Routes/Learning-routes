@@ -115,6 +115,8 @@ function answered(
   });
 }
 
+const ONLY_ELSEWHERE = new Set(["tutor.ask"]);
+
 /** A page of a list from the address: ?beforeAt=<ms>&beforeId=<uuid>&limit=<n>. */
 function pageOf(c: Context<{ Bindings: Env }>) {
   const [at, id, limit] = [c.req.query("beforeAt"), c.req.query("beforeId"), c.req.query("limit")];
@@ -125,9 +127,15 @@ function pageOf(c: Context<{ Bindings: Env }>) {
 }
 
 export function actionRoutes(app: Hono<{ Bindings: Env }>, emailSender: (env: Env) => EmailSender) {
-  app.post("/api/a/:name", async (c) =>
-    answered(c, emailSender, c.req.param("name"), await c.req.json().catch(() => null)),
-  );
+  app.post("/api/a/:name", async (c) => {
+    const name = c.req.param("name");
+    // The tutor's question is asked only through /api/tutor/ask (tutor.ts): its answer here would be
+    // the model's instructions, and a question spent with no answer.
+    if (ONLY_ELSEWHERE.has(name)) {
+      return c.json({ ok: false, code: "unknown_action" }, 404);
+    }
+    return answered(c, emailSender, name, await c.req.json().catch(() => null));
+  });
   // The community's own addresses (Platform STEP 17), the same actions by another name.
   app.get("/api/feed", (c) => answered(c, emailSender, "community.feed", pageOf(c)));
   app.get("/api/notifications", (c) => answered(c, emailSender, "notification.list", pageOf(c)));

@@ -11,6 +11,7 @@ import { invitationRoutes } from "./invitations";
 import { requestLog } from "./log";
 import { appOriginOnly } from "./security/app-origin";
 import { startRoutes } from "./start";
+import { tutorRoutes } from "./tutor";
 
 // The API Worker's routes. Built by a factory so the tests can give it their own
 // email sender; index.ts builds the one Workers run.
@@ -45,6 +46,7 @@ export function createApp(deps: AppDeps) {
   handoffRoutes(app, deps.emailSender);
   actionRoutes(app, deps.emailSender);
   startRoutes(app);
+  tutorRoutes(app, deps.emailSender);
   invitationRoutes(app, deps.emailSender);
   applyRoutes(app, deps.emailSender, deps.siteverifyFetch ?? ((...args) => fetch(...args)));
   app.on(["GET", "POST"], `${AUTH_PATH}/*`, (c) =>
