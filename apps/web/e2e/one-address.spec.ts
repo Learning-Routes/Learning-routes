@@ -27,7 +27,10 @@ test("one sign-in carries a person from the landing to Mis rutas, to teaching, a
   await page.goto(`${DEV}/es`);
   await page.getByRole("link", { name: "Quiero enseñar" }).first().click();
   await expect(page).toHaveURL(`${DEV}/ser-creador`);
-  await page.locator('a[href="/mis-rutas"]').first().click();
+  // Back to the landing, and from its header to Mis rutas again.
+  await page.goBack();
+  await expect(page).toHaveURL(`${DEV}/es`);
+  await account.click();
   await expect(page).toHaveURL(`${DEV}/mis-rutas`);
 
   expect(visited.filter((url) => new URL(url).pathname.startsWith("/sign-in"))).toEqual([]);

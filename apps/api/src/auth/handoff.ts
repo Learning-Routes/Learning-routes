@@ -1,5 +1,5 @@
-import { sql } from "drizzle-orm";
 import type { Context, Hono } from "hono";
+import { keepHandoff, takeHandoff } from "../db/handoffs";
 import { withClient } from "../db/with-db";
 import { createAuth } from "./auth";
 import type { EmailSender } from "./email";
@@ -13,17 +13,17 @@ import { SESSION_COOKIE } from "./shared";
 // a minute, is used once, and works only from the same address and browser. The person's
 // next request, the GET below, puts the same session cookie on the new host.
 
-export const HANDOFF_PATH = "/api/handoff";
+const HANDOFF_PATH = "/api/handoff";
 const LIFETIME_MS = 60_000;
 const PREFIX = "handoff:";
 const SESSION_IN_COOKIES = new RegExp(`(?:^|;\\s*)${SESSION_COOKIE}=([^;]+)`);
 
 /** The session cookie's value in a Cookie header, or null. */
-export const sessionCookieIn = (header: string | null | undefined) =>
+const sessionCookieIn = (header: string | null | undefined) =>
   header?.match(SESSION_IN_COOKIES)?.[1] ?? null;
 
 /** Only a path on this host: never another origin, nor a protocol-relative "//". */
-export const sameHostPath = (next: string | null | undefined) =>
+const sameHostPath = (next: string | null | undefined) =>
   next?.startsWith("/") && !next.startsWith("//") && !next.startsWith("/\\") ? next : "/";
 
 /** Who asked: the code works only for the same address and browser. */
@@ -66,8 +66,11 @@ export function handoffRoutes(
         expiresAt: new Date(session.session.expiresAt).getTime(),
         browser: await browserOf(c),
       };
-      await db.execute(
-        sql`insert into verification (identifier, value, expires_at) values (${`${PREFIX}${await identifierOf(given)}`}, ${JSON.stringify(held)}, ${new Date(Date.now() + LIFETIME_MS)})`,
+      await keepHandoff(
+        db,
+        `${PREFIX}${await identifierOf(given)}`,
+        JSON.stringify(held),
+        new Date(Date.now() + LIFETIME_MS),
       );
       return true;
     });
@@ -84,17 +87,8 @@ export function handoffRoutes(
     }
     const identifier = `${PREFIX}${await identifierOf(given)}`;
     // Used up whether or not it fits this browser: a code that leaked is worth one try.
-    const [row] = await withClient(
-      c.env,
-      c.executionCtx,
-      async (db) =>
-        (
-          await db.execute(
-            sql`delete from verification where identifier = ${identifier} and expires_at > now() returning value`,
-          )
-        ).rows as { value: string }[],
-    );
-    const held = row ? (JSON.parse(row.value) as Held) : null;
+    const taken = await withClient(c.env, c.executionCtx, (db) => takeHandoff(db, identifier));
+    const held = taken ? (JSON.parse(taken) as Held) : null;
     const maxAge = held ? Math.floor((held.expiresAt - Date.now()) / 1000) : 0;
     if (held && held.browser === (await browserOf(c)) && maxAge > 0) {
       c.header(
