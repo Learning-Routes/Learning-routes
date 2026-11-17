@@ -7,6 +7,7 @@ import { answerable, grade } from "../learning/grader";
 import { detailOf, explanationOf, revealsSolution, solutionOf } from "../learning/player-feedback";
 import type { LocalizedText } from "../localized-text";
 import type { ProgressRecord, Repos } from "../repos/ports";
+import { milestoneAfter } from "./community-milestone";
 import { defineAction, inSpace } from "./define";
 import { ownReading } from "./enrollments";
 import { fromState, recordFor, schedule, sumXp, toState, xpOf } from "./player-progress";
@@ -270,6 +271,8 @@ export const lessonFinish = defineAction({
             completedAt: ctx.clock.now(),
           }),
         );
+        const place = { spaceId, routeId: enrollment.routeId, snapshot };
+        await milestoneAfter(ctx, repos, place, lesson, records);
       }
       return { done: true, missing: [] as string[] };
     });

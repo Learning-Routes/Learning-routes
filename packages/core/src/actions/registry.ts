@@ -9,6 +9,30 @@ import {
   catalogWithdraw,
   invitationAccept,
 } from "./catalog";
+import {
+  communityDelete,
+  communityList,
+  communityPost,
+  communityReply,
+  communityReport,
+  communityUseful,
+} from "./community";
+import {
+  communityAnswer,
+  communityHide,
+  communityModerate,
+  communityPin,
+  communityReports,
+} from "./community-moderation";
+import {
+  communityBlock,
+  communityFeed,
+  communityFollow,
+  notificationList,
+  notificationRead,
+  profileGet,
+  profileUpdate,
+} from "./community-self";
 import { connectionGrant, connectionList, connectionRevoke } from "./connections";
 import type { ActionDef, ActionResult } from "./define";
 import { blockAdd, blockAddMany, blockRemove, lessonAdd, moduleAdd } from "./drafting";
@@ -71,6 +95,24 @@ export const ACTIONS = {
   "connection.list": connectionList,
   "connection.grant": connectionGrant,
   "connection.revoke": connectionRevoke,
+  "community.list": communityList,
+  "community.post": communityPost,
+  "community.reply": communityReply,
+  "community.useful": communityUseful,
+  "community.delete": communityDelete,
+  "community.report": communityReport,
+  "community.pin": communityPin,
+  "community.answer": communityAnswer,
+  "community.hide": communityHide,
+  "community.reports": communityReports,
+  "community.moderate": communityModerate,
+  "community.follow": communityFollow,
+  "community.block": communityBlock,
+  "community.feed": communityFeed,
+  "notification.list": notificationList,
+  "notification.read": notificationRead,
+  "profile.get": profileGet,
+  "profile.update": profileUpdate,
 } as const satisfies Record<ActionName, ActionDef>;
 
 type Actions = typeof ACTIONS;

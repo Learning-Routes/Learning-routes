@@ -3,7 +3,17 @@ import { defineConfig } from "drizzle-kit";
 // drizzle-kit generates the migrations under drizzle/ from the schema, split by
 // context (Platform STEP 2 §1.4). It connects directly as the migrator, never
 // through Hyperdrive; locally the default is docker-compose.yml's.
-const CONTEXTS = ["auth", "catalog", "content", "learning", "log", "oauth", "tenancy", "versions"];
+const CONTEXTS = [
+  "auth",
+  "catalog",
+  "community",
+  "content",
+  "learning",
+  "log",
+  "oauth",
+  "tenancy",
+  "versions",
+];
 
 export default defineConfig({
   dialect: "postgresql",

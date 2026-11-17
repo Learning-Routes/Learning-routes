@@ -8,7 +8,9 @@ export type RefusalCode =
   | "creator_required"
   | "invalid"
   | "conflict"
-  | "position_taken";
+  | "position_taken"
+  /** Too much written in the community for one hour (Platform STEP 17): 429. */
+  | "rate_limited";
 
 /** A refusal an action raises on purpose; runAction reports it as a result. */
 export class ActionError extends Error {

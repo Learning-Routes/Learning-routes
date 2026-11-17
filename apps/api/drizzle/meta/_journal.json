@@ -274,6 +274,27 @@
       "when": 1794731447160,
       "tag": "0038_validate_player_block_kinds",
       "breakpoints": true
+    },
+    {
+      "idx": 39,
+      "version": "7",
+      "when": 1794887803494,
+      "tag": "0039_community",
+      "breakpoints": true
+    },
+    {
+      "idx": 40,
+      "version": "7",
+      "when": 1794887810408,
+      "tag": "0040_community_rules",
+      "breakpoints": true
+    },
+    {
+      "idx": 41,
+      "version": "7",
+      "when": 1794887810993,
+      "tag": "0041_community_grants",
+      "breakpoints": true
     }
   ]
 }

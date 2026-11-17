@@ -172,6 +172,39 @@ describe("user.erase (Platform STEP 2 §2.16)", () => {
     });
   });
 
+  it("empties what they wrote in a community, and keeps the replies others wrote to it", async () => {
+    await rolledBack(URLS.migrator, async (db) => {
+      const space = await newSpace(db, "erase-community");
+      const route = await newRoute(db, space);
+      await newVersion(db, space, route, 1);
+      const erased = await learner(db, space, route);
+      const kept = await learner(db, space, route);
+      const { rows } = await db.query(
+        `insert into community_posts (space_id, route_id, author_id, author_name, kind, body)
+         values ($1, $2, $3, 'Persona Inventada', 'question', 'Mi pregunta') returning id`,
+        [space, route, erased],
+      );
+      const post = rows[0]?.id;
+      await db.query(
+        `insert into community_posts (space_id, route_id, parent_id, author_id, author_name, body)
+         values ($1, $2, $3, $4, 'Otra Persona', 'Mi respuesta')`,
+        [space, route, post, kept],
+      );
+
+      await eraseUser(db, erased, TEST_SECRET);
+
+      const { rows: left } = await db.query(
+        `select author_id, author_name, body, deleted_at is not null as deleted
+           from community_posts where route_id = $1 order by created_at, parent_id nulls first`,
+        [route],
+      );
+      expect(left).toEqual([
+        { author_id: null, author_name: "", body: null, deleted: true },
+        { author_id: kept, author_name: "Otra Persona", body: "Mi respuesta", deleted: false },
+      ]);
+    });
+  });
+
   it("is the only way: deleting the user row directly is refused, by the reviews' rule", async () => {
     await rolledBack(URLS.migrator, async (db) => {
       const space = await newSpace(db, "erase");

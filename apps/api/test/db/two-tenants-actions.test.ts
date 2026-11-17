@@ -154,6 +154,19 @@ describe("two tenants, through every action", () => {
           submission: {},
         },
         "lesson.finish": { enrollmentId: enrollmentB, topic: 1 },
+        // A route's community (Platform STEP 17): B's route does not exist for A.
+        "community.list": { routeId: routeB },
+        "community.post": { routeId: routeB, kind: "note", body: "ajeno" },
+        "community.reply": { routeId: routeB, postId: crypto.randomUUID(), body: "ajeno" },
+        "community.useful": { routeId: routeB, postId: crypto.randomUUID(), on: true },
+        "community.delete": { routeId: routeB, postId: crypto.randomUUID() },
+        "community.report": { routeId: routeB, postId: crypto.randomUUID(), reason: "spam" },
+        "community.pin": { routeId: routeB, postId: crypto.randomUUID(), pinned: true },
+        "community.answer": { routeId: routeB, replyId: crypto.randomUUID(), answer: true },
+        "community.hide": { routeId: routeB, postId: crypto.randomUUID(), hidden: true },
+        // The operator's.
+        "community.reports": {},
+        "community.moderate": { postId: crypto.randomUUID(), decision: "hide" },
         "review.submit": {
           enrollmentId: enrollmentB,
           reviewId: REVIEW_ID,
@@ -170,6 +183,14 @@ describe("two tenants, through every action", () => {
         "connection.list",
         "connection.grant",
         "connection.revoke",
+        // Following a space is open to anyone signed in: its count is public, never who.
+        "community.follow",
+        "community.block",
+        "community.feed",
+        "notification.list",
+        "notification.read",
+        "profile.get",
+        "profile.update",
       ];
       const named = ACTION_NAMES.filter((name) => !OWN.includes(name));
       expect(Object.keys(inputs).sort()).toEqual([...named].sort());

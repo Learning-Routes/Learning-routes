@@ -29,7 +29,8 @@ import { newUser, rolledBack, URLS } from "./connect";
 // the mapper does not fill fails the types (Row makes every column required); a
 // domain key no column takes fails at run time (mapped() checks every key was
 // read); a value the database refuses fails the insert. The catalog's tables have no
-// domain schema: their rows are tested in catalog-fence.test.ts.
+// domain schema: their rows are tested in catalog-fence.test.ts; nor do the community's
+// (Platform STEP 17), whose rows community.test.ts holds.
 
 /** Every column of the table, none optional. */
 type Row<T extends Table> = Required<InferInsertModel<T>>;
@@ -59,6 +60,8 @@ const toRow = {
     displayName: p.displayName,
     timeZone: p.timeZone,
     uiLocale: p.uiLocale,
+    // The community's setting (Platform STEP 17), off until the learner turns it on.
+    isSharingMilestones: false,
     createdAt: new Date(NOW),
     updatedAt: new Date(NOW),
   }),
@@ -433,7 +436,9 @@ describe("every table holds what core's domain schemas allow", () => {
                                'oauth_client', 'oauth_resource', 'oauth_client_resource',
                                'oauth_refresh_token', 'oauth_access_token', 'oauth_consent',
                                'oauth_client_assertion', 'connection_uses',
-                               'stored_files')`,
+                               'stored_files', 'community_posts', 'community_reactions',
+                               'community_reports', 'community_follows', 'community_blocks',
+                               'community_bans', 'notifications')`,
       );
       expect(rows.map((row: { relname: string }) => row.relname).sort()).toEqual(
         [...TABLES].sort(),
