@@ -1,8 +1,8 @@
 import { getAgentByName } from "agents";
-import { pgTenancy } from "../db/tenancy";
-import { transactionAs, withClient } from "../db/with-db";
+import { withClient } from "../db/with-db";
 import { readSessions } from "./auth";
 import { doorFor } from "./door";
+import { creatorRequired, entryOf } from "./entry";
 import { type AgentEnv, USER_HEADER } from "./env";
 
 // The assistant's Worker (Platform STEP 10 §1). The web Worker hands it the page's WebSocket at
@@ -16,8 +16,6 @@ export { Studio } from "./studio";
 
 import type { Studio } from "./studio";
 
-const EDITORS: readonly string[] = ["owner", "coeditor"];
-
 const refuse = (status: number) => new Response(null, { status });
 
 export default {
@@ -27,23 +25,22 @@ export default {
       return door;
     }
     const { spaceId } = door;
-    const userId = await withClient(env, ctx, async (db) => {
+    const seen = await withClient(env, ctx, async (db) => {
       const session = await readSessions(env, db).api.getSession({ headers: request.headers });
-      if (!session) {
-        return null;
-      }
-      const id = session.user.id;
-      const scope = await transactionAs(db, id, (tx) =>
-        pgTenancy(tx).scopeOf({ kind: "space", id: spaceId }, id),
-      );
-      return EDITORS.includes(scope?.role ?? "") ? id : "";
+      return session
+        ? { userId: session.user.id, entry: await entryOf(db, session.user.id, spaceId) }
+        : null;
     });
-    if (userId === null) {
+    if (seen === null) {
       return refuse(401);
     }
-    if (!userId) {
+    if (seen.entry === "creator_required") {
+      return creatorRequired(request);
+    }
+    if (seen.entry === "not_found") {
       return refuse(404);
     }
+    const { userId } = seen;
     const headers = new Headers(request.headers);
     headers.delete("cookie");
     headers.set(USER_HEADER, userId);

@@ -70,11 +70,16 @@ describe("membership.add", () => {
 
   it("refuses everyone but an owner", async () => {
     const world = testWorld();
-    for (const userId of [STAFF.coeditor, STAFF.assistant, "student-1"]) {
-      const input = { spaceId: SPACE, userId: NEW_USER, role: "student" };
+    const input = { spaceId: SPACE, userId: NEW_USER, role: "student" };
+    expect(await call(world, STAFF.coeditor, "membership.add", input)).toMatchObject({
+      ok: false,
+      code: "forbidden",
+    });
+    // Someone who is not a creator hears why (Platform STEP 14).
+    for (const userId of [STAFF.assistant, "student-1"]) {
       expect(await call(world, userId, "membership.add", input)).toMatchObject({
         ok: false,
-        code: "forbidden",
+        code: "creator_required",
       });
     }
   });
@@ -125,7 +130,7 @@ describe("route.create, route.get and route.list", () => {
     });
     expect(await call(world, "student-1", "route.create", route("mine"))).toMatchObject({
       ok: false,
-      code: "forbidden",
+      code: "creator_required",
     });
     expect(await call(world, "student-1", "route.get", { routeId: ROUTE })).toMatchObject({
       ok: false,

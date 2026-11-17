@@ -36,6 +36,7 @@ const ctx = (via: ActorKind): Ctx => {
     },
     tenancy: {
       isOperator: async () => false,
+      isCreator: async () => true,
       scopeOf: async () => ({ spaceId: "space-1", role: "owner" }),
     },
     clock: { now: () => 1_000 },

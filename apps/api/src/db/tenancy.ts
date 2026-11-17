@@ -1,6 +1,6 @@
 import type { Tenancy } from "@learning-routes/core/actions/define";
 import { SpaceRole } from "@learning-routes/core/domain";
-import { and, eq } from "drizzle-orm";
+import { and, eq, inArray } from "drizzle-orm";
 import type { NodePgQueryResultHKT } from "drizzle-orm/node-postgres";
 import type { PgDatabase } from "drizzle-orm/pg-core";
 import * as z from "zod";
@@ -27,6 +27,17 @@ export function pgTenancy(db: Reader): Tenancy {
         .from(platformRoles)
         .where(eq(platformRoles.userId, userId));
       return row?.isOperator === true;
+    },
+    async isCreator(userId) {
+      // Row-level security shows a user their own memberships.
+      const [row] = await db
+        .select({ role: memberships.role })
+        .from(memberships)
+        .where(
+          and(eq(memberships.userId, userId), inArray(memberships.role, ["owner", "coeditor"])),
+        )
+        .limit(1);
+      return row !== undefined;
     },
     async scopeOf({ kind, id }, userId) {
       // An id that is not a uuid names no row, and must not reach a uuid column.

@@ -43,3 +43,7 @@ export const failed = (text: string) => ({
   isError: true,
   content: [{ type: "text" as const, text }],
 });
+
+/** What a non-creator hears from any tool that builds (Platform STEP 14); the model says it in their words. */
+export const CREATOR_REQUIRED_TEXT =
+  "creator_required: only a creator in a space can build. Teaching takes a loaded balance first; payments are not open yet.";

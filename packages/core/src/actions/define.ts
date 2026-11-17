@@ -4,6 +4,9 @@ import type { SpaceRole } from "../domain";
 import type { Repos } from "../repos/ports";
 import type { Actor, ActorKind } from "./actor";
 import { redact } from "./redact";
+import { ActionError, refusedInside, refusedOutside } from "./refusals";
+
+export { ActionError };
 
 // The action registry: every change to the platform is one action. The internal
 // endpoint, public REST, MCP and the typed client all come from it, and every
@@ -37,6 +40,8 @@ export interface Tenancy {
   ): Promise<{ spaceId: string; role: SpaceRole | null } | null>;
   /** Whether the user is the platform's operator, read from Postgres. */
   isOperator(userId: string): Promise<boolean>;
+  /** Whether the user is an owner or a coeditor in any space (Platform STEP 14). */
+  isCreator(userId: string): Promise<boolean>;
 }
 
 /** The space an action runs in, and the actor's role there, found by runAction. */
@@ -75,17 +80,6 @@ export interface ActionDef<I extends z.ZodType = z.ZodType, O = unknown> {
 }
 
 export type Registry = Record<string, ActionDef>;
-
-/** A refusal an action raises on purpose; runAction reports it as a result. */
-export class ActionError extends Error {
-  override name = "ActionError";
-  constructor(
-    readonly code: "not_found" | "forbidden" | "invalid" | "conflict" | "position_taken",
-    message: string,
-  ) {
-    super(message);
-  }
-}
 
 export type ActionResult<O = unknown> =
   | { ok: true; output: O }
@@ -143,10 +137,12 @@ export async function runAction(
     found.role === null ||
     (claimed !== undefined && String(claimed).toLowerCase() !== found.spaceId.toLowerCase())
   ) {
-    return NOT_FOUND;
+    return (await refusedOutside(name, () => ctx.tenancy.isCreator(ctx.actor.userId))) ?? NOT_FOUND;
   }
   const { spaceId, role } = found;
-  const result = await runInScope(action, name, parsed.data, ctx, { spaceId, role }, isAllowed);
+  const result =
+    refusedInside(name, role) ??
+    (await runInScope(action, name, parsed.data, ctx, { spaceId, role }, isAllowed));
   // Mutations and every refusal are logged, in the action's transaction; a query that succeeds is not.
   if (action.kind === "mutation" || !result.ok) {
     await log(ctx, spaceId, name, parsed.data, result);

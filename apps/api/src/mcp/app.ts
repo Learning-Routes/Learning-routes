@@ -1,6 +1,8 @@
 import type { ClientMetadataResourceFetch } from "@better-auth/oauth-provider";
 import { runAction } from "@learning-routes/core/actions/define";
 import { ACTIONS } from "@learning-routes/core/actions/registry";
+import { CREATOR_REQUIRED } from "@learning-routes/core/copy/creator-required";
+import { negotiateLocale } from "@learning-routes/core/locales";
 import { type Context, Hono } from "hono";
 import { AUTH_PATH } from "../auth/shared";
 import { pgRepos } from "../db/repos/index";
@@ -96,7 +98,15 @@ export function createMcpApp(deps: McpAppDeps = {}) {
         new URLSearchParams(String(body.oauth_query ?? "")),
       );
       if (!logged.ok) {
-        return c.json({ error: "access_denied" }, 403);
+        // OAuth's own word first; then why, in the person's language (Platform STEP 14).
+        const why =
+          logged.code === "creator_required"
+            ? {
+                code: logged.code,
+                message: CREATOR_REQUIRED[negotiateLocale(c.req.header("accept-language"))],
+              }
+            : {};
+        return c.json({ error: "access_denied", ...why }, 403);
       }
       return oauth.handler(c.req.raw);
     });

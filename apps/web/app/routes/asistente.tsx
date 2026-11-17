@@ -3,7 +3,7 @@ import { BRAND, negotiateLocale } from "@learning-routes/core/locales";
 import type { OwnSpace } from "@learning-routes/core/repos/ports";
 import { useCallback } from "react";
 import { redirect } from "react-router";
-import { runApiAction } from "../app-api.server";
+import { creatorAccessOf, runApiAction } from "../app-api.server";
 import { AgentTransport } from "../studio/agent-transport";
 import { DemoTransport } from "../studio/session-transport";
 import { StudioPage } from "../studio/studio-page";
@@ -29,6 +29,7 @@ export async function loader({ request, context }: Route.LoaderArgs) {
   return {
     locale: negotiateLocale(request.headers.get("accept-language"), "es"),
     spaceId: space?.id ?? null,
+    creatorAccess: creatorAccessOf(owned.body?.output),
     isDemo,
   };
 }

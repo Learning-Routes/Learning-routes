@@ -359,16 +359,19 @@ describe("tenancy", () => {
     expect(ids).not.toContain(b.spaceId);
   });
 
-  it("does not let an assistant publish, even with routes:publish", async () => {
+  it("does not let an assistant connect, so it cannot publish (Platform STEP 14)", async () => {
     const owner = await teacher();
-    const route = await newRoute(owner.token, owner.spaceId);
-    const assistant = await teacher("assistant", owner.slug);
-    const answer = await oauth.tool(assistant.token, "publish_route", {
-      route_id: route.route_id,
-      draft_revision: route.draft_revision,
-    });
-    expect(answer.isError).toBe(true);
-    expect(answer.content?.[0]?.text).toContain("does not allow");
+    const assistant = await oauth.signIn();
+    await query(
+      URLS.migrator,
+      `insert into memberships (space_id, user_id, role)
+       select s.id, u.id, 'assistant' from spaces s, "user" u where s.slug = $1 and u.email = $2`,
+      [owner.slug, assistant.email],
+    );
+    const asked = await oauth.authorize(assistant.cookie);
+    const consent = await oauth.consent(assistant.cookie, asked.headers.get("location") ?? "");
+    expect(consent.status).toBe(403);
+    expect(await consent.json()).toMatchObject({ code: "creator_required" });
   });
 });
 

@@ -1,6 +1,8 @@
 import { type ActionResult, runAction } from "@learning-routes/core/actions/define";
 import { purgeTagsAfter } from "@learning-routes/core/actions/purge-tags";
 import { ACTIONS } from "@learning-routes/core/actions/registry";
+import { CREATOR_REQUIRED } from "@learning-routes/core/copy/creator-required";
+import { negotiateLocale } from "@learning-routes/core/locales";
 import type { Hono } from "hono";
 import { createAuth, SESSION_COOKIE } from "./auth/auth";
 import type { EmailSender } from "./auth/email";
@@ -24,6 +26,7 @@ const STATUS = {
   invalid_input: 400,
   not_found: 404,
   forbidden: 403,
+  creator_required: 403,
   conflict: 409,
   position_taken: 409,
   invalid: 422,
@@ -45,6 +48,13 @@ async function afterCommit(env: Env, name: string, input: unknown, result: Actio
     await storeQuietly(env, name, input, result.output);
     await queuePurge(env, purgeTagsAfter(name, result.output));
   }
+}
+
+/** The one refusal a person reads as it is, in their language (Platform STEP 14). */
+function inTheirWords(result: ActionResult, acceptLanguage: string | undefined): ActionResult {
+  return !result.ok && result.code === "creator_required"
+    ? { ...result, message: CREATOR_REQUIRED[negotiateLocale(acceptLanguage)] }
+    : result;
 }
 
 export function actionRoutes(app: Hono<{ Bindings: Env }>, emailSender: (env: Env) => EmailSender) {
@@ -77,7 +87,10 @@ export function actionRoutes(app: Hono<{ Bindings: Env }>, emailSender: (env: En
       renewed.getSetCookie().forEach((cookie) => {
         c.header("set-cookie", cookie, { append: true });
       });
-      return c.json(result, result.ok ? 200 : STATUS[result.code]);
+      return c.json(
+        inTheirWords(result, c.req.header("accept-language")),
+        result.ok ? 200 : STATUS[result.code],
+      );
     });
   });
 }

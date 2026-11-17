@@ -20,12 +20,13 @@ export const connectionList = defineAction({
 export const connectionGrant = defineAction({
   name: "connection.grant",
   kind: "mutation",
-  description: "Say yes to an assistant connecting to your account, if you teach in a space.",
+  description:
+    "Say yes to an assistant connecting to your account, if you are a creator in a space.",
   input: z.strictObject({ clientId: ClientId, scopes: z.array(z.string().max(64)).max(16) }),
   target: () => SELF,
   run: async (ctx) => {
     if (!(await ctx.repos.connections.canConnect(ctx.actor.userId))) {
-      throw new ActionError("forbidden", "connecting takes a space to teach in");
+      throw new ActionError("creator_required", "connecting takes being a creator in a space");
     }
     return { connected: true };
   },

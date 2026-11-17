@@ -5,7 +5,7 @@ import { BRAND, type LocaleCode, negotiateLocale } from "@learning-routes/core/l
 import type { LocalizedText } from "@learning-routes/core/localized-text";
 import type { OwnSpace, RouteDraft, RouteSummary } from "@learning-routes/core/repos/ports";
 import { data, type RouterContextProvider, redirect } from "react-router";
-import { isFromTheApp, runApiAction } from "../app-api.server";
+import { creatorAccessOf, isFromTheApp, runApiAction } from "../app-api.server";
 import { AppHeader } from "../app-pages/app-header";
 import "../app-pages/app-pages.css";
 import { CopyLine } from "../app-pages/copy-line";
@@ -96,6 +96,7 @@ export async function loader({ request, context }: Route.LoaderArgs) {
   const admin = await runApiAction(context, request, "admin.overview", {});
   return {
     spaces,
+    creatorAccess: creatorAccessOf(owned.body?.output),
     isOperator: admin.body?.ok === true,
     locale: negotiateLocale(request.headers.get("accept-language"), "es"),
   };

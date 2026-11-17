@@ -190,7 +190,8 @@ export function memoryRepos(state: State, actorId = ""): Repos {
     connections: {
       canConnect: async (userId) =>
         [...state.members.values()].some(
-          (member) => member.userId === userId && member.role !== "student",
+          (member) =>
+            member.userId === userId && (member.role === "owner" || member.role === "coeditor"),
         ),
       list: async (userId) =>
         [...state.connections.values()].filter((row) => row.userId === userId),

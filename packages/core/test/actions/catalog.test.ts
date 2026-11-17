@@ -48,12 +48,16 @@ describe("catalog.request", () => {
 
   it("is refused to anyone else, and through an agent", async () => {
     const world = worldWithOperator();
-    for (const userId of [STAFF.coeditor, STAFF.assistant]) {
-      expect(await call(world, userId, "catalog.request", { routeId: ROUTE })).toMatchObject({
+    expect(await call(world, STAFF.coeditor, "catalog.request", { routeId: ROUTE })).toMatchObject({
+      ok: false,
+      code: "forbidden",
+    });
+    expect(await call(world, STAFF.assistant, "catalog.request", { routeId: ROUTE })).toMatchObject(
+      {
         ok: false,
-        code: "forbidden",
-      });
-    }
+        code: "creator_required",
+      },
+    );
     expect(
       await call(world, STAFF.owner, "catalog.request", { routeId: ROUTE }, "agent"),
     ).toMatchObject({ ok: false, code: "forbidden" });
