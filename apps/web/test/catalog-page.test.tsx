@@ -2,6 +2,7 @@ import type { PublicRoute } from "@learning-routes/public-read/reads";
 import { renderToString } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { CatalogPage, type CatalogView, catalogHref } from "../app/storefront/catalog-page";
+import { inRouter } from "./in-router";
 
 // The catalog, from v2's Catalogo (Platform STEP 4 §3): plain links and a plain form.
 
@@ -39,7 +40,8 @@ const view = (over: Partial<CatalogView> = {}): CatalogView => ({
   hasNext: false,
   ...over,
 });
-const render = (over?: Partial<CatalogView>) => renderToString(<CatalogPage view={view(over)} />);
+const render = (over?: Partial<CatalogView>) =>
+  renderToString(inRouter(<CatalogPage view={view(over)} />));
 
 describe("the catalog page", () => {
   it("says who teaches a route and what it holds, in words", () => {

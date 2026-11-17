@@ -17,8 +17,9 @@ export default {
       ignore: ["scripts/skills-bundle.d.mts"],
     },
     "apps/web": {
-      // Each is built on its own by vite.config.ts, and a page names it by its address.
-      entry: ["app/enhance/landing.ts"],
+      // Each is built on its own by vite.config.ts, and a page names it by its address. The
+      // theme test's Worker is named in test/fixtures/theme-worker.jsonc, which knip does not read.
+      entry: ["app/enhance/landing.ts", "test/fixtures/theme-worker.ts"],
       // Read from disk by scripts/render-og.tsx.
       ignore: ["app/landing/hero-route.css"],
     },

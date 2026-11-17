@@ -9,7 +9,6 @@ export default [
   route("creador/conexiones", "routes/conexiones.tsx"),
   route("creador/rutas/:routeId/vista-previa", "routes/vista-previa.tsx"),
   route("studio/_design", "routes/design.tsx"),
-  route("theme", "routes/theme.ts"),
   route("empezar", "routes/empezar.tsx"),
   route("mis-rutas", "routes/mis-rutas.tsx"),
   route("mis-rutas/:enrollmentId", "routes/seguir.tsx"),

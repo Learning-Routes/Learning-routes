@@ -25,7 +25,8 @@
   --p-erb: #ffffff;
   --p-ws: #fff4e0;
   --p-wi: #6e4c0e;
-  --p-a: oklch(from var(--brand-in) 0.53 0.17 h);
+  /* 0.51, not 0.53: white on it keeps 4.5:1 for every hue, teal included (Platform STEP 16). */
+  --p-a: oklch(from var(--brand-in) 0.51 0.17 h);
   --p-oa: #ffffff;
   --p-sf: color-mix(in oklch, var(--p-a) 11%, var(--p-c));
   --p-shadow: 0 1px 0 rgba(0, 0, 0, 0.02), 0 20px 44px -34px rgba(0, 0, 0, 0.35);

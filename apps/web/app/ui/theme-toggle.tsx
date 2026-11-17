@@ -16,16 +16,20 @@ function switchInPlace(event: FormEvent<HTMLFormElement>) {
   saveTheme(theme).catch(() => undefined);
 }
 
+/** A creator's host renders from /_creador/[slug] (workers/hosts.ts): the reader's address has none. */
+const CREATOR_PREFIX = /^\/_creador\/[^/]+/;
+
 /**
  * Both buttons are always in the page and the stylesheet shows the one that fits the
- * current theme, so this works with no script, by a plain post, and with no choice made. App only: a
- * storefront follows the system (Platform STEP 3 §2.4).
+ * current theme, so this works with no script, by a plain post, and with no choice made. On every
+ * host (Platform STEP 16): the Worker answers the post and puts the choice on the page.
  */
 export function ThemeToggle({ toDark, toLight }: { toDark: string; toLight: string }) {
   const { pathname, search } = useLocation();
+  const next = `${pathname.replace(CREATOR_PREFIX, "") || "/"}${search}`;
   return (
     <form className="theme-toggle" method="post" action="/theme" onSubmit={switchInPlace}>
-      <input type="hidden" name="next" value={`${pathname}${search}`} />
+      <input type="hidden" name="next" value={next} />
       <button
         className="theme-button theme-to-dark"
         type="submit"

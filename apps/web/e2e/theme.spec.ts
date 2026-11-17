@@ -11,7 +11,7 @@ test("the components page does not exist in production, and does in development"
   expect((await request.get(`${DEV}/studio/_design`)).status()).toBe(200);
 });
 
-test("the toggle works with no script, stays on its host, and comes back to the page", async ({
+test("the toggle works with no script, is one cookie for every host, and comes back to the page", async ({
   browser,
 }) => {
   const context = await browser.newContext({ javaScriptEnabled: false, colorScheme: "light" });
@@ -47,18 +47,24 @@ test("the web Worker's logs carry no URLs: a query could hold anything", async (
   expect(config).toContain('"invocation_logs": false');
 });
 
-test("a storefront's HTML never varies by the cookie", async ({ request }) => {
-  const plain = await request.get("/es");
-  const withCookie = await request.get("/es", { headers: { cookie: "lr_theme=dark" } });
-  expect(await withCookie.text()).not.toContain("data-theme");
+test("a storefront page stays one page for everyone: the theme is added on the way out", async ({
+  request,
+}) => {
+  const dark = await request.get(`${DEV}/es`, { headers: { cookie: "lr_theme=dark" } });
+  expect(await dark.text()).toContain('data-theme="dark"');
+  // The same cached page, asked without a choice, carries none.
+  const plain = await request.get(`${DEV}/es`, { headers: { cookie: "" } });
   expect(await plain.text()).not.toContain("data-theme");
 });
 
-test("a host that is not the app's gets no theme cookie", async ({ request }) => {
-  const response = await request.post("/theme", {
-    form: { theme: "dark", next: "/es" },
+test("the platform's host answers the switch, for every host, and only sends back to ours", async ({
+  request,
+}) => {
+  const response = await request.post(`${DEV}/theme`, {
+    form: { theme: "dark", next: "https://elsewhere.example/" },
     maxRedirects: 0,
   });
-  expect(response.status()).toBe(404);
-  expect(response.headers()["set-cookie"]).toBeUndefined();
+  expect(response.status()).toBe(303);
+  expect(response.headers().location).toBe(`${DEV}/`);
+  expect(response.headers()["set-cookie"]).toContain("lr_theme=dark");
 });

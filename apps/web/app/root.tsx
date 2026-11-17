@@ -12,6 +12,7 @@ import {
 
 import type { Route } from "./+types/root";
 import "./app.css";
+import { UI_COPY } from "@learning-routes/core/copy/ui";
 import { BRAND, isLocale } from "@learning-routes/core/locales";
 import geist from "@learning-routes/design-tokens/fonts/Geist-latin.woff2?url";
 import { useEffect } from "react";
@@ -106,7 +107,12 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
   return (
     <div className="desk opening">
       <title>{`${words.title} · ${BRAND}`}</title>
-      <SiteHeader brand={BRAND} brandHref={root?.platformOrigin ?? "/"} navLabel={BRAND}>
+      <SiteHeader
+        brand={BRAND}
+        brandHref={root?.platformOrigin ?? "/"}
+        navLabel={BRAND}
+        theme={UI_COPY.es}
+      >
         {null}
       </SiteHeader>
       <main className="app-page app-page-narrow">

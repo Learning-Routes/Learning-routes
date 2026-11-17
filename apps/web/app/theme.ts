@@ -1,9 +1,9 @@
-// The chosen theme, in a cookie on the app's host only (Platform STEP 3 §2.4). With
-// none, the page has no data-theme and the stylesheet follows prefers-color-scheme.
+// The chosen theme (Platform STEP 3 §2.4, STEP 16): one cookie for every host we serve, the app,
+// the platform's pages and each creator's. With none, the page has no data-theme and the
+// stylesheet follows prefers-color-scheme.
 
 const COOKIE = "lr_theme";
 const ONE_YEAR = 31_536_000;
-const THIS_SITE = "https://this-site.invalid";
 
 type Theme = "light" | "dark";
 
@@ -19,19 +19,32 @@ export function themeFromCookie(header: string | null): Theme | undefined {
   return undefined;
 }
 
-/** Host-only: no Domain, so it never reaches a storefront's subdomain. */
-export const themeCookie = (theme: Theme) =>
-  `${COOKIE}=${theme}; Path=/; Max-Age=${ONE_YEAR}; SameSite=Lax; Secure`;
+/**
+ * On the parent domain, so the app and every creator's host read the same choice. Only the
+ * Worker reads it: HttpOnly. `domain` is CREATOR_DOMAIN without its port. A one-label name, like a
+ * local run's "localhost", is a public suffix to a browser, which refuses it as a Domain: there
+ * the cookie stays on the host that set it.
+ */
+export const themeCookie = (theme: Theme, domain: string) =>
+  `${COOKIE}=${theme};${domain.includes(".") ? ` Domain=${domain};` : ""} Path=/; Max-Age=${ONE_YEAR}; SameSite=Lax; Secure; HttpOnly`;
 
-/** Where to go back to: a path on this site, or the studio. Parsed as a browser will. */
-export function safeNext(next: unknown): string {
-  if (typeof next !== "string" || !next.startsWith("/")) {
-    return "/creador";
+/** Before STEP 16 the cookie was the app host's alone: it goes, or it would shadow the new one. */
+export const oldThemeCookieGone = () =>
+  `${COOKIE}=; Path=/; Max-Age=0; SameSite=Lax; Secure; HttpOnly`;
+
+/**
+ * Where the toggle goes back to: a page on one of our hosts, parsed as a browser will, with the
+ * scheme the request came on. Anything else goes to the home of the host it was posted to.
+ */
+export function nextOnOurHosts(next: unknown, from: URL, isOurs: (host: string) => boolean) {
+  const home = `${from.origin}/`;
+  if (typeof next !== "string" || next === "") {
+    return home;
   }
   try {
-    const url = new URL(next, THIS_SITE);
-    return url.origin === THIS_SITE ? `${url.pathname}${url.search}` : "/creador";
+    const url = new URL(next, from);
+    return url.protocol === from.protocol && isOurs(url.host) ? url.toString() : home;
   } catch {
-    return "/creador";
+    return home;
   }
 }

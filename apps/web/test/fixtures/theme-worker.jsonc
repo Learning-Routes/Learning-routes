@@ -1,0 +1,6 @@
+// The test Worker for theme-rewriter.test.ts: only withTheme, with the web Worker's runtime.
+{
+  "name": "theme-rewriter-test",
+  "main": "theme-worker.ts",
+  "compatibility_date": "2026-10-12"
+}

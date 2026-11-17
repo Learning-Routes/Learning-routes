@@ -395,9 +395,10 @@
 .journey-lit-stop {
   color: var(--color-txt);
 }
+/* Text in the signal's text colour: the highlight itself is 2.1:1 on a light page (Platform STEP 16). */
 .journey-middle,
 .journey-middle .journey-name {
-  color: var(--color-highlight);
+  color: var(--color-signal-text);
 }
 
 .start-card {

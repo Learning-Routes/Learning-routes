@@ -1,11 +1,15 @@
 import { expect, test } from "@playwright/test";
 import { DEV } from "./screens";
-import { newAddress, stubTurnstile } from "./session";
+import { clearLimits, newAddress, stubTurnstile } from "./session";
 
 // "Quiero enseñar" (Platform STEP 4 §6.3), against the real local API and database, with
 // Siteverify answering Cloudflare's published test key.
 
 test.use({ locale: "es-ES" });
+
+// The API takes five applications an hour from one address, and every test here shares
+// wrangler dev's one: other specs apply too, so each test starts with room (Platform STEP 16).
+test.beforeEach(() => clearLimits());
 
 const PAGE = `${DEV}/ser-creador`;
 const CHALLENGE = /challenges\.cloudflare\.com/;
