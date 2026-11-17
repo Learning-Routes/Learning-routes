@@ -2,6 +2,8 @@ import { expect, type Page, test } from "@playwright/test";
 import { DEV } from "./screens";
 import { clearLimits, linkFor, newAddress, signInContext } from "./session";
 
+const FIRST_TOPIC_URL = /\/mis-rutas\/[^/]+\/tema\/1$/;
+
 // The whole path, in the browser, against the real local API and database (Platform STEP 4
 // §7.3): landing, catalog, search, route page, "Empezar gratis", sign-in with the link from
 // the dev sender, enrolled, the route in Mis rutas.
@@ -48,7 +50,7 @@ test("a new person goes from the landing to enrolled", async ({ page }) => {
   await expect(page.getByRole("heading", { name: TITLE })).toBeVisible();
   await expect(page.locator(".my-route").getByText("Con Andrés Mora")).toBeVisible();
   await page.getByRole("link", { name: "Seguir", exact: true }).click();
-  await expect(page).toHaveURL(/\/mis-rutas\/[^/]+\/tema\/1$/);
+  await expect(page).toHaveURL(FIRST_TOPIC_URL);
   await expect(page.locator(".p-title")).toBeVisible();
 });
 
