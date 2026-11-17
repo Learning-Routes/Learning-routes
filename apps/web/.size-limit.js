@@ -66,6 +66,7 @@ export default [
       `!${CLIENT}/assets/tema-*.css`,
       `!${CLIENT}/assets/mis-rutas-*.css`,
       `!${CLIENT}/assets/comunidad-*.css`,
+      `!${CLIENT}/assets/app-shell-*.css`,
     ],
     limit: "20 KB",
     gzip: true,
@@ -76,6 +77,13 @@ export default [
     name: "community CSS",
     path: `${CLIENT}/assets/comunidad-*.css`,
     limit: "2.5 KB",
+    gzip: true,
+  },
+  {
+    // The app's frame and the pages that gather (Platform STEP 23): loaded inside the app only.
+    name: "app frame CSS",
+    path: `${CLIENT}/assets/app-shell-*.css`,
+    limit: "3 KB",
     gzip: true,
   },
   {

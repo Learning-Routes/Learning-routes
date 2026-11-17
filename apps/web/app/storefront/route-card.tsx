@@ -22,7 +22,11 @@ export function RouteCard({
   const creator = inLocale(route.spaceName, locale);
   return (
     <a className="route-card" href={href}>
-      <RouteCover seed={route.routeId} className="route-card-cover" />
+      <RouteCover
+        seed={route.routeId}
+        title={inLocale(route.title, locale, route.sourceLocale)}
+        className="route-card-cover"
+      />
       <RouteFigure
         lessons={route.modules.map((module) => module.lessons.length)}
         seed={route.routeId}

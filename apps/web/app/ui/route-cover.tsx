@@ -1,5 +1,6 @@
 // A route's cover when it has no picture yet: drawn from the route's id, so each route keeps its
 // own look everywhere it appears. Hills at dusk in the route's own hue, and its path across them.
+// With the route's title it also says its subject: the title's first telling word, on a card.
 // Everything is an SVG attribute; nothing here needs a style, so the strict CSP is untouched.
 
 const HUES = [268, 204, 162, 338, 232, 186, 300, 12];
@@ -32,7 +33,26 @@ function ridge(roll: () => number, base: number, swing: number) {
   return `${d} V300 H0 Z`;
 }
 
-export function RouteCover({ seed, className = "" }: { seed: string; className?: string }) {
+const WORD = /[\p{L}\p{N}]{4,}/u;
+
+/** The first word of a title that says something: "Guitarra" of "Guitarra desde cero". */
+function subjectOf(title: string | undefined) {
+  const word = title?.match(WORD)?.[0] ?? "";
+  return word.length > 12 ? "" : word;
+}
+
+export function RouteCover({
+  seed,
+  title,
+  className = "",
+}: {
+  seed: string;
+  /** The route's title, in the reader's language. */
+  title?: string;
+  className?: string;
+}) {
+  const subject = subjectOf(title);
+  const cardWidth = 44 + subject.length * 17;
   const n = seedOf(seed);
   const roll = rolls(n);
   const hue = HUES[n % HUES.length] ?? 268;
@@ -77,6 +97,24 @@ export function RouteCover({ seed, className = "" }: { seed: string; className?:
         strokeDasharray="1 9"
         opacity="0.9"
       />
+      {subject ? (
+        <g className="route-cover-word" transform={`translate(${372 - cardWidth} 84) rotate(-4)`}>
+          <path
+            d={`M0 18a18 18 0 0 1 18-18h${cardWidth - 36}a18 18 0 0 1 18 18v32a18 18 0 0 1-18 18H46l-20 18V68h-8A18 18 0 0 1 0 50z`}
+            fill="#fff"
+          />
+          <text
+            x={cardWidth / 2}
+            y="45"
+            textAnchor="middle"
+            fontSize="30"
+            fontWeight="600"
+            fill={`hsl(${hue} 62% 26%)`}
+          >
+            {subject}
+          </text>
+        </g>
+      ) : null}
     </svg>
   );
 }

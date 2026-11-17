@@ -161,34 +161,6 @@
   align-items: center;
   gap: var(--space-3);
 }
-.cm-face {
-  display: grid;
-  place-items: center;
-  flex: none;
-  width: 2.25rem;
-  height: 2.25rem;
-  border-radius: 50%;
-  color: #fff;
-  font-weight: 600;
-}
-.cm-face-a {
-  background: #7c4ddb;
-}
-.cm-face-b {
-  background: #0f7a60;
-}
-.cm-face-c {
-  background: #c2541f;
-}
-.cm-face-d {
-  background: #2f6fd6;
-}
-.cm-face-e {
-  background: #b83a6a;
-}
-.cm-face-f {
-  background: #5d5d68;
-}
 .cm-by {
   display: flex;
   flex-wrap: wrap;
@@ -211,23 +183,6 @@
 .cm-flag {
   margin: 0;
   font-size: var(--text-small);
-}
-.cm-kind {
-  justify-self: start;
-  padding: 2px var(--space-3);
-  border-radius: 999px;
-  font-size: 0.8125rem;
-  font-weight: 600;
-  background: var(--color-bg-2);
-  color: var(--color-sub);
-}
-.cm-kind-question {
-  background: var(--color-accent-soft);
-  color: var(--color-accent);
-}
-.cm-kind-win {
-  background: color-mix(in oklab, var(--color-positive) 14%, var(--color-card));
-  color: var(--color-positive);
 }
 .cm-text {
   margin: 0;

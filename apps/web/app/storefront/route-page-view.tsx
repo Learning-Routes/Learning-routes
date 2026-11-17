@@ -96,7 +96,11 @@ export function RoutePage({
     <>
       <CreatorHeader space={space} locale={locale} appOrigin={appOrigin} />
       <div className="route-page stage moment opening">
-        <RouteCover seed={route.routeId} className="route-hero settle-1" />
+        <RouteCover
+          seed={route.routeId}
+          title={inLocale(route.title, locale, route.sourceLocale)}
+          className="route-hero settle-1"
+        />
         <section className="route-intro">
           <a className="route-by settle-1" href="/">
             <Avatar name={creator} />

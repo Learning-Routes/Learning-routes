@@ -10,7 +10,7 @@ export type Post = CommunityItem & { replies: CommunityItem[] };
 const HUES = ["a", "b", "c", "d", "e", "f"];
 const toneOf = (name: string) => HUES[(name.codePointAt(0) ?? 0) % HUES.length];
 
-function Face({ name }: { name: string }) {
+export function Face({ name }: { name: string }) {
   return (
     <span className={`cm-face cm-face-${toneOf(name)}`} aria-hidden="true">
       {(name.trim()[0] ?? "?").toUpperCase()}
@@ -25,7 +25,7 @@ const UNITS: [number, Intl.RelativeTimeFormatUnit][] = [
 ];
 
 /** "hace 3 horas", in the reader's language, from the server's clock so both renders agree. */
-function ago(then: number, now: number, locale: string, justNow: string) {
+export function ago(then: number, now: number, locale: string, justNow: string) {
   const gap = Math.max(0, now - then);
   const unit = UNITS.find(([size]) => gap >= size);
   if (!unit) {
@@ -117,7 +117,7 @@ export function PostCard({ post, ...shared }: { post: Post } & Shared) {
     post.kind === "question" || post.kind === "win" || post.kind === "note" ? post.kind : "note";
   const label = { question: words.kindQuestion, win: words.kindWin, note: words.kindNote }[kind];
   return (
-    <li className="cm-post">
+    <li className="cm-post" id={`p-${post.id}`}>
       {post.isPinned ? <p className="cm-flag">{words.pinned}</p> : null}
       <header className="cm-head">
         <Face name={post.authorName} />
