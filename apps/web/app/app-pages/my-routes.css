@@ -142,6 +142,11 @@
   align-self: flex-start;
   order: 3;
 }
+.my-page .my-route > .my-route-community {
+  position: absolute;
+  inset-block-end: var(--space-5);
+  inset-inline-end: var(--space-5);
+}
 .my-page .my-route > .rf {
   order: 2;
   width: calc(100% - 2 * var(--space-5));

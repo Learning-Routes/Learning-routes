@@ -4,6 +4,7 @@ import type { LocaleCode } from "@learning-routes/core/locales";
 import type { PublicRoute, PublicSpace } from "@learning-routes/public-read/reads";
 import { ButtonLink } from "../ui/button";
 import { Rising } from "../ui/rising";
+import { RouteCover } from "../ui/route-cover";
 import { RouteFigure } from "../ui/route-figure";
 import {
   Avatar,
@@ -95,6 +96,7 @@ export function RoutePage({
     <>
       <CreatorHeader space={space} locale={locale} appOrigin={appOrigin} />
       <div className="route-page stage moment opening">
+        <RouteCover seed={route.routeId} className="route-hero settle-1" />
         <section className="route-intro">
           <a className="route-by settle-1" href="/">
             <Avatar name={creator} />

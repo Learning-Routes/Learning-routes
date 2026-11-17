@@ -13,6 +13,7 @@ export default [
   route("mis-rutas", "routes/mis-rutas.tsx"),
   route("mis-rutas/:enrollmentId", "routes/seguir.tsx"),
   route("mis-rutas/:enrollmentId/tema/:n", "routes/tema.tsx"),
+  route("mis-rutas/:enrollmentId/comunidad", "routes/comunidad.tsx"),
   route("ser-creador", "routes/ser-creador.tsx"),
   route("invitacion", "routes/invitacion.tsx"),
   route("salir", "routes/salir.ts"),

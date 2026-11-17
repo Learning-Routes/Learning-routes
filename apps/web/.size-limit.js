@@ -65,13 +65,21 @@ export default [
       `!${CLIENT}/assets/asistente-*.css`,
       `!${CLIENT}/assets/tema-*.css`,
       `!${CLIENT}/assets/mis-rutas-*.css`,
+      `!${CLIENT}/assets/comunidad-*.css`,
     ],
     limit: "20 KB",
     gzip: true,
   },
   {
-    // Mis rutas has its own sheet, loaded on that page only (Platform STEP 21): the covers, the
-    // shelf and their motion. It has its own budget instead of weighing on every surface.
+    // A page's own sheet, loaded on that page only, has its own budget instead of weighing on
+    // every surface (Platform STEPs 21 and 22). First the route's community.
+    name: "community CSS",
+    path: `${CLIENT}/assets/comunidad-*.css`,
+    limit: "2.5 KB",
+    gzip: true,
+  },
+  {
+    // The same for Mis rutas.
     name: "Mis rutas CSS",
     path: `${CLIENT}/assets/mis-rutas-*.css`,
     limit: "2 KB",

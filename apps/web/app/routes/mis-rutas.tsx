@@ -1,5 +1,6 @@
 import { APP_PAGES_TEXT } from "@learning-routes/core/copy/app-pages";
 import { CATALOG_TEXT } from "@learning-routes/core/copy/catalog";
+import { COMMUNITY_TEXT } from "@learning-routes/core/copy/community";
 import { MY_ROUTES_TEXT } from "@learning-routes/core/copy/my-routes";
 import { BRAND, type LocaleCode, negotiateLocale } from "@learning-routes/core/locales";
 import type { OwnEnrollment } from "@learning-routes/core/repos/ports";
@@ -201,6 +202,12 @@ function MyRoute({
         </ButtonLink>
       ) : null}
       <EnrollmentLine enrollment={enrollment} box={ITEM_BOX} isNew={isNew} />
+      <a
+        className="text-link my-route-community"
+        href={`/mis-rutas/${enrollment.enrollmentId}/comunidad`}
+      >
+        {COMMUNITY_TEXT[locale].community}
+      </a>
     </li>
   );
 }
