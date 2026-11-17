@@ -1,5 +1,5 @@
 import { runAction } from "@learning-routes/core/actions/define";
-import { ACTIONS } from "@learning-routes/core/actions/registry";
+import { TOOL_ACTIONS } from "@learning-routes/core/actions/tool-actions";
 import { AGENT_TEXT } from "@learning-routes/core/copy/agent";
 import type { RouteDraft } from "@learning-routes/core/repos/ports";
 import { builtOf, lessonPreviewOf, plannedOf } from "@learning-routes/core/studio/draft";
@@ -72,7 +72,7 @@ export class Effects {
 
   private draft(db: Database, caller: Caller, routeId: string): Promise<RouteDraft | null> {
     return transactionAs(db, caller.userId, async (tx) => {
-      const read = await runAction(ACTIONS, "route.get", { routeId }, ctxFor(tx, caller));
+      const read = await runAction(TOOL_ACTIONS, "route.get", { routeId }, ctxFor(tx, caller));
       return read.ok && (read.output as RouteDraft).spaceId === caller.spaceId
         ? (read.output as RouteDraft)
         : null;
@@ -197,7 +197,7 @@ export class Effects {
     const found = await this.db(async (db, caller) => {
       const draft = await this.draft(db, caller, routeId);
       const space = await transactionAs(db, caller.userId, (tx) =>
-        runAction(ACTIONS, "space.get", { spaceId: caller.spaceId }, ctxFor(tx, caller)),
+        runAction(TOOL_ACTIONS, "space.get", { spaceId: caller.spaceId }, ctxFor(tx, caller)),
       );
       return draft && space.ok ? { draft, slug: (space.output as { slug: string }).slug } : null;
     });

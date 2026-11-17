@@ -1,4 +1,4 @@
-import type { ActionName } from "@learning-routes/core/actions/names";
+import type { ToolActionName } from "@learning-routes/core/actions/tool-actions";
 import { LocalizedText } from "@learning-routes/core/localized-text";
 import * as z from "zod";
 
@@ -16,7 +16,7 @@ export interface Tool {
   name: string;
   scope: "routes:read" | "routes:write" | "routes:publish";
   /** null for a tool that reads nothing of anyone's: `answers` holds what it says. */
-  action: ActionName | null;
+  action: ToolActionName | null;
   answers?: () => Record<string, unknown>;
   description: string;
   annotations: Record<string, boolean>;
