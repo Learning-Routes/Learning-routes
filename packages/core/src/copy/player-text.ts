@@ -47,6 +47,20 @@ export interface PlayerText {
   record: string;
   recordAgain: string;
   speakHint: string;
+  /** The microphone button, before the learner speaks. */
+  tapToSpeak: string;
+  /** While the browser listens. */
+  listening: string;
+  saidRight: string;
+  /** Some words were missed; they show in grey. */
+  saidAlmost: string;
+  /** What the browser wrote down: {heard}. */
+  heardAs: string;
+  heardNothing: string;
+  /** This browser cannot listen; the learner can still go on. */
+  noRecognition: string;
+  /** Said once, near the button: the browser turns the voice into text to check it. */
+  recognitionNote: string;
   runTests: string;
   /** {n} of {total} tests passed. */
   testsOf: string;

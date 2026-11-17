@@ -2,12 +2,13 @@ import { fill } from "@learning-routes/core/copy/player";
 import type { ReactNode } from "react";
 import { BlockView } from "../app-pages/lesson-blocks";
 import { Diagram } from "./diagrams";
-import { CodeCheck, OpenAnswer, Speak, WorkedExample } from "./practice";
+import { CodeCheck, OpenAnswer, WorkedExample } from "./practice";
 import { Cards, Check, Scenario } from "./questions-choose";
 import { Estimate, Hotspot, TrueFalse } from "./questions-judge";
 import { FillBlank, Match, Order } from "./questions-place";
 import { BeatMarkdown, type BeatProps, obj, usePlayer } from "./shared";
 import { SimBeat } from "./sims";
+import { Speak } from "./speak";
 
 // One beat of a topic: the line above, its title, what it says, and what it asks.
 

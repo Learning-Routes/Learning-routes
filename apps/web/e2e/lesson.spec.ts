@@ -1,4 +1,5 @@
 import { expect, type Page, test } from "@playwright/test";
+import { openReading } from "./reading";
 import { creatorHost, DEV } from "./screens";
 import { newAddress, signInContext } from "./session";
 
@@ -13,7 +14,7 @@ async function onTheFirstTopic(page: Page) {
   await signInContext(page.context(), newAddress("lee"));
   await page.goto(`${creatorHost("mariana-ortega")}/portugues-para-viajar`);
   await page.getByRole("link", { name: "Empezar gratis" }).click();
-  await page.getByRole("link", { name: "Seguir", exact: true }).first().click();
+  await openReading(page);
   await page.locator(".lesson-title").waitFor();
 }
 

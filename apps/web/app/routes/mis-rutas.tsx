@@ -16,6 +16,12 @@ import { Rising } from "../ui/rising";
 import { RouteFigure } from "../ui/route-figure";
 import type { Route } from "./+types/mis-rutas";
 
+/** "Seguir" opens the topic itself, in the player; a finished route opens its page to review. */
+function practiceHref(enrollment: OwnEnrollment) {
+  const base = `/mis-rutas/${enrollment.enrollmentId}`;
+  return enrollment.place.finished ? base : `${base}/tema/${enrollment.place.number}`;
+}
+
 // "Mis rutas", minimal, from v2's MisRutas (Platform STEP 4 §6.2).
 
 export async function loader({ request, context }: Route.LoaderArgs) {
@@ -131,7 +137,7 @@ function CarryOn({
           })} ${filled(words.onTopic, { n: enrollment.place.number, total: topicTotal(enrollment) })}`}
         </p>
       </div>
-      <ButtonLink className="settle-3" href={`/mis-rutas/${enrollment.enrollmentId}`}>
+      <ButtonLink className="settle-3" href={practiceHref(enrollment)}>
         {APP_PAGES_TEXT[locale].continue}
       </ButtonLink>
       <EnrollmentLine enrollment={enrollment} box={NEXT_BOX} isNew={isNew} />
@@ -169,7 +175,7 @@ function MyRoute({
       </div>
       {finished || topic ? (
         <ButtonLink
-          href={`/mis-rutas/${enrollment.enrollmentId}`}
+          href={practiceHref(enrollment)}
           emphasis={finished ? "secondary" : "primary"}
           size="small"
           aria-label={`${finished ? words.review : words.continue}: ${title}`}

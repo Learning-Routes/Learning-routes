@@ -1,5 +1,6 @@
 import type { Page } from "@playwright/test";
 import {
+import { openReading } from "./reading";
   authorizeUrl,
   makeOperator,
   makeTeacher,
@@ -100,7 +101,7 @@ export const SCREENS: Record<string, (page: Page) => Promise<unknown>> = {
   "my-routes": enrolled,
   lesson: async (page) => {
     await enrolled(page);
-    await page.getByRole("link", { name: "Seguir", exact: true }).first().click();
+    await openReading(page);
     await page.locator(".lesson-title").waitFor();
   },
   "connect-no-space": async (page) => {

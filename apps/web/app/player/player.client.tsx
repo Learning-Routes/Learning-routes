@@ -9,6 +9,25 @@ import { Outline, Sheet, Summary, TopBar, Tutor } from "./parts";
 import { Icon, makeCtx, PlayerContext, type Submission, usePlayer } from "./shared";
 import "./player.css";
 import "./beats.css";
+import "./player-v2.css";
+import newsreader from "@learning-routes/design-tokens/fonts/Newsreader-latin.woff2?url";
+
+/** The reading face, loaded once, only where lessons are read; the CSS names it with a fallback. */
+function useReadingFace() {
+  useEffect(() => {
+    if (typeof FontFace === "undefined" || document.fonts.check('16px "Newsreader"')) {
+      return;
+    }
+    const face = new FontFace("Newsreader", `url(${newsreader}) format("woff2")`, {
+      weight: "400 600",
+      display: "swap",
+    });
+    face
+      .load()
+      .then((loaded) => document.fonts.add(loaded))
+      .catch(() => undefined);
+  }, []);
+}
 
 // The lesson player (Platform STEP 12): one beat at a time, graded on the server, with the creator's
 // colour as the one accent. Rendered in the browser only, so its inline styles go through the CSSOM.
@@ -135,6 +154,7 @@ function useFlow(view: PlayView, enrollmentId: string) {
 }
 
 export function Player({ view, enrollmentId, locale, runner }: PlayerProps) {
+  useReadingFace();
   const ctx = useMemo(
     () =>
       makeCtx(locale, view.sourceLocale, PLAYER_TEXT[locale], PRACTICE_TEXT[locale].kinds, runner),
@@ -270,7 +290,6 @@ function Footer({ primary, failed }: { primary: ReturnType<typeof usePrimary>; f
         onClick={() => primary.run()}
       >
         {label}
-        {primary.label === "continue" ? <Icon name="arrow" /> : null}
       </button>
     </footer>
   );

@@ -1,0 +1,495 @@
+/* The player's v2 finish (Platform STEP 13): the teacher speaks in a reading face, every answer is a
+   thing you press, the bar shows each beat, and the sheet says why. Loaded after player.css and
+   beats.css, on the same tokens; it changes how things look, never what they do. */
+
+/* Georgia, sized to Newsreader's metrics, so the swap barely moves the text. */
+@font-face {
+  font-family: "Newsreader Fallback";
+  src: local("Georgia"), local("Times New Roman");
+  size-adjust: 96%;
+  ascent-override: 96%;
+  descent-override: 30%;
+  line-gap-override: 0%;
+}
+
+.player {
+  --p-voice: "Newsreader", "Newsreader Fallback", Georgia, serif;
+  --p-edge: 3px;
+}
+
+/* ---------- The teacher's voice ---------- */
+
+.player .p-title {
+  font-family: var(--p-voice);
+  font-weight: 500;
+  font-size: 30px;
+  line-height: 1.14;
+  letter-spacing: -0.015em;
+}
+
+.player .p-prose,
+.player .p-reading,
+.player .p-sheet-body,
+.player .p-consequence {
+  font-family: var(--p-voice);
+  font-size: 19px;
+  line-height: 1.5;
+  color: var(--p-i);
+}
+
+.player .p-prose strong,
+.player .p-prose b {
+  font-weight: 600;
+}
+
+.player .p-sheet-text,
+.player .p-sheet-body {
+  font-family: var(--p-voice);
+  font-size: 17px;
+  line-height: 1.45;
+}
+
+@media (min-width: 1024px) {
+  .player .p-title {
+    font-size: 42px;
+    line-height: 1.08;
+    letter-spacing: -0.02em;
+  }
+}
+
+/* ---------- Labels: sentence case in the UI face, no monospace, no capitals ---------- */
+
+.player .p-label,
+.player .p-count,
+.player .p-eyebrow-count,
+.player .p-match-count {
+  font: 500 13px / 1.3 var(--font-sans);
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--p-s);
+  font-variant-numeric: tabular-nums;
+}
+
+.player .p-slot-n,
+.player .p-cell-n,
+.player .p-key {
+  font-family: var(--font-sans);
+}
+
+/* ---------- The bar: one segment per beat ---------- */
+
+.p-segs {
+  flex: 1;
+  display: flex;
+  gap: 4px;
+  min-width: 0;
+}
+
+.p-segs > i {
+  flex: 1;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--p-e);
+  overflow: hidden;
+  position: relative;
+}
+
+.p-segs > i::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: var(--p-a);
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 0.45s var(--p-ease);
+}
+
+.p-segs > i.is-done::after {
+  transform: scaleX(1);
+}
+
+.p-segs > i.is-now::after {
+  transform: scaleX(0.5);
+}
+
+@media (min-width: 1024px) {
+  .player .p-topbar .p-segs {
+    flex: 0 1 460px;
+    margin-right: auto;
+  }
+}
+
+.player .p-xp {
+  gap: 5px;
+  font: 600 14px var(--font-sans);
+  font-variant-numeric: tabular-nums;
+  background: transparent;
+  color: var(--p-i);
+  padding: 0 4px;
+}
+
+.player .p-xp svg {
+  fill: #f5a524;
+  stroke: none;
+}
+
+.player .p-xp.is-bump svg {
+  animation: p-bump 0.5s var(--p-spring);
+}
+
+@keyframes p-bump {
+  0% {
+    transform: scale(1);
+  }
+  40% {
+    transform: scale(1.35);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* ---------- Things you press: a pressed edge under every answer ---------- */
+
+.player .p-option,
+.player .p-chip,
+.player .p-cell,
+.player .p-slot.is-filled,
+.player .p-tf-row {
+  box-shadow:
+    inset 0 0 0 1.5px var(--p-e),
+    0 var(--p-edge) 0 var(--p-e);
+}
+
+.player .p-option {
+  border-radius: 16px;
+  min-height: 62px;
+}
+
+.player .p-option:active:not(:disabled),
+.player .p-chip:active:not(:disabled),
+.player .p-cell:active:not(:disabled) {
+  transform: translateY(2px);
+  box-shadow:
+    inset 0 0 0 1.5px var(--p-e),
+    0 1px 0 var(--p-e);
+}
+
+.player .p-option[aria-pressed="true"],
+.player .p-chip[aria-pressed="true"],
+.player .p-cell[aria-pressed="true"] {
+  background: var(--p-sf);
+  box-shadow:
+    inset 0 0 0 2px var(--p-a),
+    0 var(--p-edge) 0 var(--p-a);
+}
+
+.player .p-cell.is-paired {
+  box-shadow:
+    inset 0 0 0 1.5px color-mix(in oklch, var(--p-a) 45%, var(--p-e)),
+    0 var(--p-edge) 0 color-mix(in oklch, var(--p-a) 45%, var(--p-e));
+}
+
+.player .p-option .p-key {
+  width: 30px;
+  height: 30px;
+  border-radius: 10px;
+  background: transparent;
+  box-shadow: inset 0 0 0 1.5px var(--p-e);
+}
+
+.player .p-option[aria-pressed="true"] .p-key,
+.player .p-option.is-right .p-key,
+.player .p-option.is-wrong .p-key {
+  box-shadow: none;
+}
+
+/* A graded answer wins over the pressed state: same weight, later in the file. */
+.player .p-option.is-right,
+.player .p-chip.is-right,
+.player .p-cell.is-right,
+.player .p-tf-row.is-right,
+.player .p-slot.is-filled.is-right,
+.player .p-blank.is-right {
+  background: var(--p-oks);
+  color: var(--p-oki);
+  box-shadow:
+    inset 0 0 0 2px var(--p-ok),
+    0 var(--p-edge) 0 var(--p-ok);
+}
+
+.player .p-option.is-wrong,
+.player .p-chip.is-wrong,
+.player .p-cell.is-wrong,
+.player .p-tf-row.is-wrong,
+.player .p-slot.is-filled.is-wrong,
+.player .p-blank.is-wrong {
+  background: var(--p-ers);
+  color: var(--p-eri);
+  box-shadow:
+    inset 0 0 0 2px var(--p-er),
+    0 var(--p-edge) 0 var(--p-er);
+}
+
+.player .p-option.is-right .p-key {
+  background: var(--p-ok);
+  color: var(--p-okb);
+}
+
+.player .p-option.is-wrong .p-key {
+  background: var(--p-er);
+  color: var(--p-erb);
+}
+
+.player .p-tf-mark {
+  font: 600 12px var(--font-sans);
+  text-transform: none;
+  letter-spacing: 0;
+  background: color-mix(in oklch, currentColor 10%, transparent);
+}
+
+.player .p-chip:disabled {
+  box-shadow: inset 0 0 0 1.5px var(--p-e);
+}
+
+/* ---------- The main button: solid, with an edge that presses ---------- */
+
+.player .p-primary {
+  box-shadow: 0 4px 0 color-mix(in oklch, var(--p-a) 68%, #000);
+  border-radius: 16px;
+  height: 56px;
+  font-size: 17px;
+}
+
+.player .p-primary:active:not(:disabled) {
+  transform: translateY(3px);
+  box-shadow: 0 1px 0 color-mix(in oklch, var(--p-a) 68%, #000);
+}
+
+.player .p-primary:disabled {
+  background: var(--p-e);
+  color: var(--p-s);
+  box-shadow: 0 4px 0 var(--p-n2);
+}
+
+.player .p-secondary {
+  height: 56px;
+  border-radius: 16px;
+  background: transparent;
+  box-shadow: inset 0 0 0 1.5px var(--p-e);
+}
+
+/* ---------- The sheet: tinted by the answer, and it says why ---------- */
+
+.player .p-sheet {
+  background: var(--p-ers);
+  color: var(--p-eri);
+  box-shadow: 0 -24px 48px -32px rgba(0, 0, 0, 0.45);
+}
+
+.player .p-sheet.is-ok {
+  background: var(--p-oks);
+}
+
+.player .p-sheet-title {
+  font-size: 20px;
+}
+
+.player .p-sheet-body {
+  color: var(--p-eri);
+}
+
+.player .is-ok .p-sheet-body {
+  color: var(--p-oki);
+}
+
+.player .p-sheet:not(.is-ok) .p-primary {
+  background: var(--p-er);
+  color: var(--p-erb);
+  box-shadow: 0 4px 0 color-mix(in oklch, var(--p-er) 68%, #000);
+}
+
+.player .p-sheet.is-ok .p-primary {
+  background: var(--p-ok);
+  color: var(--p-okb);
+  box-shadow: 0 4px 0 color-mix(in oklch, var(--p-ok) 68%, #000);
+}
+
+.player .p-sheet .p-secondary {
+  box-shadow: inset 0 0 0 1.5px color-mix(in oklch, currentColor 30%, transparent);
+  color: inherit;
+}
+
+/* ---------- The end of a topic ---------- */
+
+.player .p-summary .p-title {
+  font-size: 40px;
+}
+
+.player .p-stats > div {
+  border-radius: 18px;
+  background: var(--p-c);
+  box-shadow:
+    inset 0 0 0 1.5px var(--p-e),
+    0 var(--p-edge) 0 var(--p-e);
+}
+
+.player .p-stats dt {
+  font: 500 13px var(--font-sans);
+  text-transform: none;
+  letter-spacing: 0;
+  color: var(--p-s);
+}
+
+.player .p-stats dd {
+  font: 600 26px var(--font-sans);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .p-segs > i::after,
+  .player .p-xp.is-bump svg {
+    transition: none;
+    animation: none;
+  }
+
+  .player .p-option:active:not(:disabled),
+  .player .p-chip:active:not(:disabled),
+  .player .p-cell:active:not(:disabled),
+  .player .p-primary:active:not(:disabled) {
+    transform: none;
+  }
+}
+
+/* A card's front speaks in the teacher's voice, big enough to read from arm's length. */
+.player .p-flash-text {
+  font-family: var(--p-voice);
+  font-size: 28px;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+}
+
+/* ---------- Speak: the browser listens, and each word lights up when it was heard ---------- */
+
+.player .p-phrase {
+  font-family: var(--p-voice);
+  font-weight: 500;
+  font-size: 30px;
+  line-height: 1.2;
+}
+
+.player .p-phrase span {
+  transition: color 0.25s ease;
+}
+
+.player .p-phrase .is-heard {
+  color: var(--p-ok);
+}
+
+.player .p-phrase .is-missed {
+  color: var(--p-n3);
+  text-decoration: underline wavy color-mix(in oklch, var(--p-er) 55%, transparent);
+  text-underline-offset: 6px;
+  text-decoration-thickness: 1.5px;
+}
+
+.player .p-speak .p-stage.is-said {
+  box-shadow:
+    inset 0 0 0 2px var(--p-ok),
+    0 var(--p-edge) 0 var(--p-ok);
+}
+
+.p-mic-row {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 0;
+}
+
+.player .p-mic {
+  width: 100%;
+  height: 64px;
+  border: 0;
+  border-radius: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  font-size: 17px;
+  font-weight: 600;
+  background: var(--p-c);
+  color: var(--p-a);
+  box-shadow:
+    inset 0 0 0 2px var(--p-a),
+    0 4px 0 var(--p-a);
+}
+
+.player .p-mic-row .p-mic svg {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+
+.player .p-mic.is-on {
+  background: var(--p-a);
+  color: var(--p-oa);
+  animation: p-listen 1.4s ease-in-out infinite;
+}
+
+@keyframes p-listen {
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 0 color-mix(in oklch, var(--p-a) 40%, transparent),
+      0 4px 0 color-mix(in oklch, var(--p-a) 68%, #000);
+  }
+  50% {
+    box-shadow:
+      0 0 0 10px color-mix(in oklch, var(--p-a) 0%, transparent),
+      0 4px 0 color-mix(in oklch, var(--p-a) 68%, #000);
+  }
+}
+
+.p-said {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  font-size: 16px;
+  font-weight: 600;
+  text-align: center;
+}
+
+.p-said.is-good {
+  flex-direction: row;
+  color: var(--p-ok);
+}
+
+.player .p-said.is-good svg {
+  stroke: currentColor;
+}
+
+.p-said.is-close {
+  color: var(--p-i);
+}
+
+.player .p-said span {
+  font-weight: 400;
+  font-size: 14px;
+  color: var(--p-s);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .player .p-mic.is-on {
+    animation: none;
+  }
+
+  .player .p-phrase span {
+    transition: none;
+  }
+}

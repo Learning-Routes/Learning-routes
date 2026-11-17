@@ -1,7 +1,7 @@
 import type { AnswerResult, PlayView } from "@learning-routes/core/actions/player";
 import { fill } from "@learning-routes/core/copy/player";
 import { UI_COPY } from "@learning-routes/core/copy/ui";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ThemeToggle } from "../ui/theme-toggle";
 import { Icon, usePlayer } from "./shared";
 
@@ -30,22 +30,46 @@ export function TopBar({
       </a>
       <p className="p-topbar-route">{route}</p>
       <div
-        className="p-progress"
+        className="p-segs"
         role="progressbar"
         aria-valuemin={0}
         aria-valuemax={total}
         aria-valuenow={at}
         aria-label={fill(words.beatOf, { n: at, total })}
       >
-        <i style={{ transform: `scaleX(${total ? at / total : 0})` }} />
+        {Array.from({ length: total }, (_, i) => (
+          <i key={i} className={i < at ? "is-done" : i === at ? "is-now" : ""} />
+        ))}
       </div>
-      <span className="p-xp" aria-live="polite">
-        {xp} XP
-      </span>
+      <XpBadge xp={xp} />
       <div className="p-theme">
         <ThemeToggle toDark={ui.toDark} toLight={ui.toLight} />
       </div>
     </div>
+  );
+}
+
+/** The topic's XP, with a star that jumps when it grows. */
+function XpBadge({ xp }: { xp: number }) {
+  const before = useRef(xp);
+  const [bump, setBump] = useState(false);
+  useEffect(() => {
+    if (xp > before.current) {
+      setBump(true);
+      const off = window.setTimeout(() => setBump(false), 520);
+      before.current = xp;
+      return () => window.clearTimeout(off);
+    }
+    before.current = xp;
+    return undefined;
+  }, [xp]);
+  return (
+    <span className={`p-xp ${bump ? "is-bump" : ""}`} aria-live="polite">
+      <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M12 2.5l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.4l-5.9 3.1 1.2-6.5L2.5 9.4l6.6-.9z" />
+      </svg>
+      {xp} XP
+    </span>
   );
 }
 
@@ -164,7 +188,7 @@ function SheetActions({
           className={ok ? "p-primary" : "p-secondary"}
           onClick={onContinue}
         >
-          {words.continue} <Icon name="arrow" />
+          {words.continue}
         </button>
       ) : null}
     </div>
@@ -227,7 +251,7 @@ export function Summary({
           </button>
         ) : (
           <a className="p-primary" href={nextHref ?? exit}>
-            {nextHref ? words.nextTopic : words.backToRoute} <Icon name="arrow" />
+            {nextHref ? words.nextTopic : words.backToRoute}
           </a>
         )}
         <a className="p-secondary" href={exit}>
