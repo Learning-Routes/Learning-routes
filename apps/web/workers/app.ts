@@ -1,4 +1,5 @@
 import { ServerTiming } from "@learning-routes/core/server-timing";
+import { IMAGES_PATH, TUTOR_PATH } from "@learning-routes/core/studio/entries";
 import { STUDIO_PATH } from "@learning-routes/core/studio/session";
 import { createRequestHandler, RouterContextProvider } from "react-router";
 import { pageContext } from "../app/context";
@@ -36,7 +37,9 @@ export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
     // The assistant's WebSocket: passed on as it is, since a 101 answer cannot be rebuilt with headers.
-    if (url.origin === env.APP_ORIGIN && url.pathname === STUDIO_PATH) {
+    // The tutor and route images too (Platform STEP 20): the agent Worker answers them, streaming.
+    const toAgent = [STUDIO_PATH, TUTOR_PATH, IMAGES_PATH].includes(url.pathname);
+    if (url.origin === env.APP_ORIGIN && toAgent) {
       return agentClient(env)(request);
     }
     const moved = await fromOldHost(

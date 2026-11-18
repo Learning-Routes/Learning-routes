@@ -46,6 +46,17 @@ export const MODELS = {
     // context_length in the models API; no price override.
     maxPromptTokens: 1_000_000,
   },
+  // Route images (Platform STEP 20 §B), copied from the models API on 17 November 2026. Output is
+  // priced at image_output ($30 a million; an image is about 1,290 tokens), the dearer of its two
+  // output prices, so a text-only answer is never priced under what it costs.
+  "google/gemini-2.5-flash-image": {
+    input: 300_000,
+    output: 30_000_000,
+    cacheRead: 30_000,
+    cacheWrite: 83_334,
+    // context_length in the models API.
+    maxPromptTokens: 32_768,
+  },
 } as const satisfies Record<string, ModelPrices>;
 
 export type ModelId = keyof typeof MODELS;

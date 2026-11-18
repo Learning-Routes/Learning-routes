@@ -22,7 +22,7 @@ export const TUTOR_LIMITS = {
   userDailyMicrocents: 2 * MICROCENTS_PER_CENT,
 } as const;
 
-/** The cheapest model that answers well in our five languages (ADR 0012). */
+/** The cheapest model that answers well in our five languages (ADR 0013). */
 export const TUTOR_MODEL: ModelId = "openai/gpt-5-nano";
 
 /** The tokens one learner's day can cost at most: every question at its ceiling. */

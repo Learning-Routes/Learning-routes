@@ -1,4 +1,5 @@
 import * as z from "zod";
+import { GENERATE_IMAGE } from "./generate-image";
 import { routeFormat } from "./guides";
 import { RouteId, type Tool, tool } from "./tool";
 import { UPLOAD_TOOLS } from "./upload-tools";
@@ -128,6 +129,7 @@ export const TOOLS: Tool[] = [
   }),
   ...WRITE_TOOLS,
   ...UPLOAD_TOOLS,
+  GENERATE_IMAGE,
 ];
 
 /** The scope a tool needs; null for a name that is no tool, which the SDK answers. */

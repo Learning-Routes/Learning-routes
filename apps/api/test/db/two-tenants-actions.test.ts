@@ -1,5 +1,6 @@
 import { defineAction, runAction } from "@learning-routes/core/actions/define";
-import { ACTION_NAMES } from "@learning-routes/core/actions/names";
+import { ENTRY_ACTIONS } from "@learning-routes/core/actions/entries";
+import { ACTION_NAMES, ENTRY_NAMES } from "@learning-routes/core/actions/names";
 import { ACTIONS } from "@learning-routes/core/actions/registry";
 import { drizzle } from "drizzle-orm/node-postgres";
 import type pg from "pg";
@@ -154,8 +155,6 @@ describe("two tenants, through every action", () => {
           submission: {},
         },
         "lesson.finish": { enrollmentId: enrollmentB, topic: 1 },
-        // The learner's tutor (Platform STEP 20): B's enrollment does not exist for A.
-        "tutor.ask": { enrollmentId: enrollmentB, topic: 1, question: "¿Y esto?" },
         // A route's community (Platform STEP 17): B's route does not exist for A.
         "community.list": { routeId: routeB },
         "community.post": { routeId: routeB, kind: "note", body: "ajeno" },
@@ -210,6 +209,18 @@ describe("two tenants, through every action", () => {
       for (const name of named) {
         const result = await runAction(ACTIONS, name, inputs[name], ctx);
         expect([name, result]).toEqual([
+          name,
+          { ok: false, code: "not_found", message: expect.any(String) },
+        ]);
+      }
+      // The agent Worker's own (Platform STEP 20): B's enrollment and B's space do not exist for A.
+      const entries = {
+        "tutor.ask": { enrollmentId: enrollmentB, topic: 1, question: "¿Y esto?" },
+        "image.generate": { spaceId: spaceB, prompt: "Un mapa" },
+      };
+      expect(Object.keys(entries).sort()).toEqual([...ENTRY_NAMES].sort());
+      for (const [name, input] of Object.entries(entries)) {
+        expect([name, await runAction(ENTRY_ACTIONS, name, input, ctx)]).toEqual([
           name,
           { ok: false, code: "not_found", message: expect.any(String) },
         ]);

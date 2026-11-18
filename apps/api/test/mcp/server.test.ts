@@ -143,6 +143,7 @@ describe("the protocol", () => {
       "add_lesson",
       "add_module",
       "create_route",
+      "generate_image",
       "get_route",
       "get_route_format",
       "import_route",

@@ -2,6 +2,7 @@ import { getAgentByName } from "agents";
 import { withClient } from "../db/with-db";
 import { readSessions } from "./auth";
 import { doorFor } from "./door";
+import { entryFor, fromMcp } from "./entries";
 import { creatorRequired, entryOf } from "./entry";
 import { type AgentEnv, USER_HEADER } from "./env";
 
@@ -20,6 +21,11 @@ const refuse = (status: number) => new Response(null, { status });
 
 export default {
   async fetch(request, env, ctx) {
+    // The tutor, route images, and the MCP's generate_image (Platform STEP 20): entries.ts.
+    const entry = entryFor(request, env, ctx) ?? fromMcp(request, env, ctx);
+    if (entry) {
+      return entry;
+    }
     const door = doorFor(request, env.APP_ORIGIN);
     if (door instanceof Response) {
       return door;

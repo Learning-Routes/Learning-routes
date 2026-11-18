@@ -36,7 +36,6 @@ export const ACTION_NAMES = [
   "enrollment.list",
   "lesson.read",
   "lesson.play",
-  "tutor.ask",
   "lesson.answer",
   "lesson.finish",
   "connection.list",
@@ -62,3 +61,8 @@ export const ACTION_NAMES = [
   "profile.update",
 ] as const;
 export type ActionName = (typeof ACTION_NAMES)[number];
+
+// The agent Worker's own entry points (Platform STEP 20). Each calls a model after its action
+// commits, so they stay out of the registry: only that Worker carries and runs them.
+export const ENTRY_NAMES = ["tutor.ask", "image.generate"] as const;
+export type EntryName = (typeof ENTRY_NAMES)[number];

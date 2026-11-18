@@ -54,6 +54,8 @@ export async function eraseUser(db: pg.Client, userId: string, authSecret: strin
   await db.query("delete from progress where user_id = $1", [userId]);
   // The tutor's questions restrict their enrollment's delete too (Platform STEP 20).
   await db.query("delete from tutor_questions where user_id = $1", [userId]);
+  // A creator's route images keep no words, but they are theirs (Platform STEP 20).
+  await db.query("delete from image_generations where user_id = $1", [userId]);
   // What they wrote in a community goes (Platform STEP 17); the replies others wrote to it stay,
   // under "[eliminado]", and the author's column empties as the user row goes.
   await db.query(

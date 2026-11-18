@@ -1,7 +1,7 @@
 import { drizzle } from "drizzle-orm/node-postgres";
 import pg from "pg";
 import { describe, expect, it } from "vitest";
-import { pgRepos } from "../../src/db/repos/index";
+import { tutorRepo } from "../../src/db/repos/tutor";
 import { actAs, backendPid, blockedOrDone, newUser, URLS } from "./connect";
 import { newEnrollment, newRoute, newSpace, newVersion } from "./fixtures";
 
@@ -32,7 +32,7 @@ describe("two tutor questions by one person at the same instant", () => {
       const take = async (db: pg.Client) => {
         await db.query("begin");
         await actAs(db, ana);
-        return pgRepos(drizzle(db, { casing: "snake_case" })).tutor.take(
+        return tutorRepo(drizzle(db, { casing: "snake_case" })).take(
           space,
           ana,
           enrollment,
@@ -50,7 +50,7 @@ describe("two tutor questions by one person at the same instant", () => {
       // Beto's row-level security shows him none of Ana's, and lets him take none on her enrollment.
       await two.query("begin");
       await actAs(two, beto);
-      const asBeto = pgRepos(drizzle(two, { casing: "snake_case" })).tutor;
+      const asBeto = tutorRepo(drizzle(two, { casing: "snake_case" }));
       expect(await asBeto.spentSince(ana, 0)).toBe(0);
       await expect(asBeto.take(space, ana, enrollment, 0, 10, now)).rejects.toThrow();
       await two.query("rollback");

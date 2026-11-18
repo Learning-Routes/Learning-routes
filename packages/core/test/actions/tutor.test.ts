@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { runAction } from "../../src/actions/define";
+import { ENTRY_ACTIONS } from "../../src/actions/entries";
 import { ACTIONS } from "../../src/actions/registry";
 import { TUTOR_LIMITS } from "../../src/tutor/tutor";
 import { ENROLLMENT, ROUTE, testCtx, testWorld } from "./test-ctx";
@@ -52,7 +53,7 @@ function world() {
 
 const ask = (w: ReturnType<typeof world>, input: object, now = NOON, who = "student-1") =>
   runAction(
-    ACTIONS,
+    ENTRY_ACTIONS,
     "tutor.ask",
     { enrollmentId: ENROLLMENT, topic: 1, question: "¿Cómo empiezo?", ...input },
     testCtx("ui", w, who, { now }),

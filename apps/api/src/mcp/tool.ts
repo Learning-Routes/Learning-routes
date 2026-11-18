@@ -18,6 +18,8 @@ export interface Tool {
   /** null for a tool that reads nothing of anyone's: `answers` holds what it says. */
   action: ToolActionName | null;
   answers?: () => Record<string, unknown>;
+  /** Made by the agent Worker (generate_image): call-tool.ts asks it instead of running an action. */
+  byAgent?: true;
   description: string;
   annotations: Record<string, boolean>;
   input: z.ZodType;

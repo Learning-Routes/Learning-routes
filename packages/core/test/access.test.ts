@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { can, PERMISSIONS } from "../src/access";
 import { ACTOR_KINDS } from "../src/actions/actor";
-import { ACTION_NAMES } from "../src/actions/names";
+import { ACTION_NAMES, ENTRY_NAMES } from "../src/actions/names";
 import { SpaceRole } from "../src/domain";
 
 // The permission table (Platform STEP 2 §3.1), listed in full: every registered
@@ -39,6 +39,7 @@ const EXPECTED: Record<string, Record<string, string[]>> = {
   "lesson.read": EVERYONE,
   "lesson.play": EVERYONE,
   "tutor.ask": { owner: ["ui"], coeditor: ["ui"], assistant: [], student: ["ui"] },
+  "image.generate": { owner: ["ui", "mcp"], coeditor: ["ui", "mcp"] },
   "lesson.answer": EVERYONE,
   "lesson.finish": EVERYONE,
   "space.list": { student: ["ui", "mcp"] },
@@ -77,10 +78,10 @@ const EXPECTED: Record<string, Record<string, string[]>> = {
 
 describe("can(role, action, via)", () => {
   it("has a row for every registered action, and only for those", () => {
-    expect(Object.keys(PERMISSIONS).sort()).toEqual([...ACTION_NAMES].sort());
+    expect(Object.keys(PERMISSIONS).sort()).toEqual([...ACTION_NAMES, ...ENTRY_NAMES].sort());
   });
 
-  it.each([...ACTION_NAMES])(
+  it.each([...ACTION_NAMES, ...ENTRY_NAMES])(
     "%s: answers as the table says for every role and every via",
     (action) => {
       const actual = Object.fromEntries(
@@ -97,7 +98,7 @@ describe("can(role, action, via)", () => {
   );
 
   it("gives the platform operator only the admin actions, through the app only", () => {
-    const allowed = ACTION_NAMES.flatMap((action) =>
+    const allowed = [...ACTION_NAMES, ...ENTRY_NAMES].flatMap((action) =>
       ACTOR_KINDS.filter((via) => can("operator", action, via)).map((via) => `${action} ${via}`),
     );
     expect(allowed.sort()).toEqual([

@@ -1,12 +1,13 @@
 import * as z from "zod";
 import { lessonView } from "../content/lesson-view";
+import { carried } from "../repos/carried";
 import { TUTOR_LIMITS, type TutorQuestion, tutorMessages } from "../tutor/tutor";
 import { ActionError, defineAction, inSpace } from "./define";
 import { ownReading } from "./enrollments";
 import { refused } from "./results";
 
 // The learner's tutor (Platform STEP 20 §A). This takes one of the day's questions and says what
-// to ask the model; the API asks it after this commits, since no model call runs inside a
+// to ask the model; the agent Worker asks it after this commits, since no model call runs inside a
 // transaction, and records what the answer used.
 
 const DAY = 86_400_000;
@@ -48,7 +49,7 @@ export const tutorAsk = defineAction({
       ),
     );
     const now = ctx.clock.now();
-    const id = await ctx.repos.tutor.take(
+    const id = await carried(ctx.repos.tutor).take(
       spaceId,
       ctx.actor.userId,
       input.enrollmentId,
