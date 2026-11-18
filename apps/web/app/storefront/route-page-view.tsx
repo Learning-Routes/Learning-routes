@@ -99,6 +99,7 @@ export function RoutePage({
         <RouteCover
           seed={route.routeId}
           title={inLocale(route.title, locale, route.sourceLocale)}
+          wide
           className="route-hero settle-1"
         />
         <section className="route-intro">

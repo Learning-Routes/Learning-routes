@@ -1,3 +1,5 @@
+import { useId } from "react";
+
 // A route's cover when it has no picture yet: drawn from the route's id, so each route keeps its
 // own look everywhere it appears. Hills at dusk in the route's own hue, and its path across them.
 // With the route's title it also says its subject: the title's first telling word, on a card.
@@ -33,6 +35,7 @@ function ridge(roll: () => number, base: number, swing: number) {
   return `${d} V300 H0 Z`;
 }
 
+const NOT_ID = /[^a-zA-Z0-9]/g;
 const WORD = /[\p{L}\p{N}]{4,}/u;
 
 /** The first word of a title that says something: "Guitarra" of "Guitarra desde cero". */
@@ -44,11 +47,14 @@ function subjectOf(title: string | undefined) {
 export function RouteCover({
   seed,
   title,
+  wide = false,
   className = "",
 }: {
   seed: string;
   /** The route's title, in the reader's language. */
   title?: string;
+  /** For a banner much wider than tall: shows the middle band, and a smaller card inside it. */
+  wide?: boolean;
   className?: string;
 }) {
   const subject = subjectOf(title);
@@ -57,7 +63,12 @@ export function RouteCover({
   const roll = rolls(n);
   const hue = HUES[n % HUES.length] ?? 268;
   const warm = (hue + 40) % 360;
-  const id = `rc${n.toString(36)}`;
+  // One route's cover can be on a page more than once, and a hidden copy must not own the
+  // gradient the others point to: each drawing names its own.
+  const id = `rc${useId().replace(NOT_ID, "")}`;
+  const scale = wide ? 0.72 : 1;
+  const cardX = 372 - cardWidth * scale;
+  const cardY = 150 - 43 * scale;
   const sunX = 90 + roll() * 220;
   const sunY = 70 + roll() * 60;
   const far = ridge(roll, 190, 60);
@@ -69,7 +80,7 @@ export function RouteCover({
   return (
     <svg
       className={`route-cover ${className}`.trim()}
-      viewBox="0 0 400 300"
+      viewBox={wide ? "0 60 400 180" : "0 0 400 300"}
       preserveAspectRatio="xMidYMid slice"
       aria-hidden="true"
       focusable="false"
@@ -98,7 +109,10 @@ export function RouteCover({
         opacity="0.9"
       />
       {subject ? (
-        <g className="route-cover-word" transform={`translate(${372 - cardWidth} 84) rotate(-4)`}>
+        <g
+          className="route-cover-word"
+          transform={`translate(${cardX} ${cardY}) scale(${scale}) rotate(-4 ${cardWidth / 2} 43)`}
+        >
           <path
             d={`M0 18a18 18 0 0 1 18-18h${cardWidth - 36}a18 18 0 0 1 18 18v32a18 18 0 0 1-18 18H46l-20 18V68h-8A18 18 0 0 1 0 50z`}
             fill="#fff"

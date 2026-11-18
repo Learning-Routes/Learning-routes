@@ -174,7 +174,7 @@
     padding: var(--space-5);
   }
   .my-page .my-next::after {
-    background: linear-gradient(180deg, rgba(12, 8, 20, 0.35) 0%, rgba(12, 8, 20, 0.86) 62%);
+    background: linear-gradient(180deg, rgba(12, 8, 20, 0.6) 0%, rgba(12, 8, 20, 0.88) 60%);
   }
 }
 

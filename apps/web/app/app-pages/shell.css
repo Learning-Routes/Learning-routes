@@ -433,7 +433,11 @@
     padding: var(--space-5);
   }
   .hub-hero::after {
-    background: linear-gradient(180deg, rgba(12, 8, 20, 0.3) 0%, rgba(12, 8, 20, 0.88) 60%);
+    background: linear-gradient(180deg, rgba(12, 8, 20, 0.6) 0%, rgba(12, 8, 20, 0.88) 60%);
+  }
+  /* Too little room for the words and the cover's card: the words stay. */
+  .hub-hero-cover .route-cover-word {
+    display: none;
   }
 }
 
