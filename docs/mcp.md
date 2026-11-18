@@ -6,7 +6,7 @@
 
 Con el servidor MCP de Learning Routes, tu propio asistente puede ver tus rutas, crear borradores y publicar cuando se lo pidas. Lo que crea queda en borrador hasta que pides publicarlo.
 
-**Dirección del servidor:** `https://app.learningroutes.com/mcp`
+**Dirección del servidor:** `https://learningroutes.com/mcp`
 
 Necesitas tener un espacio para enseñar, como dueño, coeditor o asistente.
 
@@ -22,7 +22,7 @@ Necesitas tener un espacio para enseñar, como dueño, coeditor o asistente.
 
 **Claude Code**
 
-1. Ejecuta `claude mcp add --transport http learning-routes https://app.learningroutes.com/mcp`.
+1. Ejecuta `claude mcp add --transport http learning-routes https://learningroutes.com/mcp`.
 2. Abre Claude Code y escribe `/mcp`.
 3. Elige `learning-routes` y autentícate en el navegador.
 
@@ -61,7 +61,7 @@ Abre **Enseñar**, luego **Conexiones**, y pulsa **Desconectar**. El acceso term
 
 With the Learning Routes MCP server, your own assistant can see your routes, create drafts and publish when you ask it to. What it creates stays a draft until you ask to publish it.
 
-**Server address:** `https://app.learningroutes.com/mcp`
+**Server address:** `https://learningroutes.com/mcp`
 
 You need a space to teach in, as its owner, a coeditor or an assistant.
 
@@ -77,7 +77,7 @@ You need a space to teach in, as its owner, a coeditor or an assistant.
 
 **Claude Code**
 
-1. Run `claude mcp add --transport http learning-routes https://app.learningroutes.com/mcp`.
+1. Run `claude mcp add --transport http learning-routes https://learningroutes.com/mcp`.
 2. Open Claude Code and type `/mcp`.
 3. Choose `learning-routes` and authenticate in the browser.
 

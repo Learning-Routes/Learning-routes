@@ -18,7 +18,7 @@
   "routes": [{ "pattern": "lrusercontent.com", "custom_domain": true }],
   "vars": {
     // The pages a creation may be framed by: the app, and the creators' hosts.
-    "FRAME_ANCESTORS": "https://app.learningroutes.com https://*.learningroutes.com"
+    "FRAME_ANCESTORS": "https://learningroutes.com https://*.learningroutes.com"
   },
   // The same secret as the API's CONTENT_SIGNING_SECRET: it signs a draft's short-lived address.
   "secrets": { "required": ["CONTENT_SIGNING_SECRET"] },

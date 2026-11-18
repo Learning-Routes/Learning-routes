@@ -22,7 +22,7 @@
     "@better-auth/memory-adapter": "./src/auth/unused/memory-adapter.ts"
   },
   "vars": {
-    "APP_ORIGIN": "https://app.learningroutes.com",
+    "APP_ORIGIN": "https://learningroutes.com",
     "ENVIRONMENT": "production",
     "CREATOR_DOMAIN": "learningroutes.com",
     "CONTENT_ORIGIN": "https://lrusercontent.com",

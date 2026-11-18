@@ -121,7 +121,7 @@ The steps from "Before you start" on are the setup on PlanetScale, for the move 
    pbcopy < /dev/null
    ```
 
-   Paste at the prompt. The value is never printed or saved. The app origin isn't a secret: it's `APP_ORIGIN` in `apps/api/wrangler.jsonc` (`https://app.learningroutes.com`). Change it there if the app moves.
+   Paste at the prompt. The value is never printed or saved. The app origin isn't a secret: it's `APP_ORIGIN` in `apps/api/wrangler.jsonc` (`https://learningroutes.com`, since Platform STEP 19). Change it there if the app moves.
 
 7. **Deploy the Workers, and check.** No workflow deploys the platform yet, so deploy by hand from `main`, API first, since the web Worker binds to it:
 
@@ -143,7 +143,7 @@ The steps from "Before you start" on are the setup on PlanetScale, for the move 
       pnpm --filter @learning-routes/api exec wrangler email sending enable mail.learningroutes.com
       ```
 
-   2. Ask for a link at `https://app.learningroutes.com/sign-in`.
+   2. Ask for a link at `https://learningroutes.com/sign-in`.
    3. Open the link in the email, within five minutes, and choose "Sign in".
 
 9. **Run the seed** with that email, as the default role:
@@ -187,7 +187,7 @@ The steps from "Before you start" on are the setup on PlanetScale, for the move 
 Do this before the first paid student. It has no code change.
 
 1. **Make the new database** with steps 1 to 3 above: the roles, then no migrations, since the restore brings them. Use the PS-5 HA plan ($15 a month). Save the three new URLs under new Keychain items, and keep the old ones until the end.
-2. **Stop writes,** so nothing is lost between the dump and the switch: point `learningroutes.com` and `app.learningroutes.com` at a holding page.
+2. **Stop writes,** so nothing is lost between the dump and the switch: point `learningroutes.com` at a holding page (`app.learningroutes.com` only redirects there).
 3. **Dump from Neon, as the migrator, with a Postgres 18 client:**
 
    ```sh
@@ -261,7 +261,7 @@ Do these once, before running the migrations that come with Platform STEP 4: mig
 
 ## Turnstile on "Quiero enseñar" (Platform STEP 4 §6.3)
 
-The widget is managed, for `app.learningroutes.com` only, and its site key is in `apps/web/wrangler.jsonc`. It needs its secret on the API Worker. Copy it from the widget's page in Cloudflare, set it at wrangler's prompt, then clear the clipboard:
+The widget is managed, for `learningroutes.com` only (Platform STEP 19; `TURNSTILE_HOSTNAMES` in `apps/api/wrangler.jsonc`), and its site key is in `apps/web/wrangler.jsonc`. It needs its secret on the API Worker. Copy it from the widget's page in Cloudflare, set it at wrangler's prompt, then clear the clipboard:
 
 ```sh
 pnpm --filter @learning-routes/api exec wrangler secret put TURNSTILE_SECRET

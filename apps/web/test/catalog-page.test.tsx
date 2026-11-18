@@ -31,7 +31,7 @@ const ROUTE: PublicRoute = {
 
 const view = (over: Partial<CatalogView> = {}): CatalogView => ({
   locale: "es",
-  appOrigin: "https://app.learningroutes.com",
+  appOrigin: "https://learningroutes.com",
   creatorOrigin: (slug) => `https://${slug}.learningroutes.com`,
   topic: null,
   search: null,
@@ -84,7 +84,7 @@ describe("the catalog page", () => {
   it("an empty catalog asks who wants to teach", () => {
     const html = render({ routes: [] });
     expect(html).toContain("¿Enseñas algo que sabes bien?");
-    expect(html).toContain('href="https://app.learningroutes.com/ser-creador"');
+    expect(html).toContain('href="https://learningroutes.com/ser-creador"');
   });
 
   it("links to the next and the previous page", () => {

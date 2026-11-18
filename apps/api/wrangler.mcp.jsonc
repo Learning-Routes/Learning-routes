@@ -24,7 +24,7 @@
     "@better-auth/memory-adapter": "./src/auth/unused/memory-adapter.ts"
   },
   "vars": {
-    "APP_ORIGIN": "https://app.learningroutes.com",
+    "APP_ORIGIN": "https://learningroutes.com",
     "ENVIRONMENT": "production",
     // Where a published route's public address lives.
     "CREATOR_DOMAIN": "learningroutes.com",

@@ -2,6 +2,7 @@ import { ServerTiming } from "@learning-routes/core/server-timing";
 import { STUDIO_PATH } from "@learning-routes/core/studio/session";
 import { createRequestHandler, RouterContextProvider } from "react-router";
 import { pageContext } from "../app/context";
+import { withAccount } from "./account";
 import { agentClient, apiClient, mcpClient } from "./api-client";
 import { servedFromEdge } from "./edge-cache";
 import {
@@ -12,6 +13,7 @@ import {
   isAppPathElsewhere,
   isMcpPath,
 } from "./hosts";
+import { fromOldHost } from "./old-host";
 import { withSecurityHeaders } from "./security-headers";
 import { themePost, withTheme } from "./theme";
 
@@ -37,10 +39,19 @@ export default {
     if (url.origin === env.APP_ORIGIN && url.pathname === STUDIO_PATH) {
       return agentClient(env)(request);
     }
+    const moved = await fromOldHost(
+      request,
+      { appOrigin: env.APP_ORIGIN, oldAppOrigin: env.OLD_APP_ORIGIN },
+      apiClient(env),
+    );
+    if (moved) {
+      return withSecurityHeaders(moved);
+    }
     const hosts = { appOrigin: env.APP_ORIGIN, creatorDomain: env.CREATOR_DOMAIN };
     const page = (await themePost(request, hosts)) ?? (await answer(request, env, ctx));
-    // After the edge cache: the cached page stays the same for everyone (Platform STEP 16).
-    return withSecurityHeaders(withTheme(page, request.headers.get("cookie")));
+    // After the edge cache: the cached page stays the same for everyone (Platform STEPs 16, 19).
+    const cookie = request.headers.get("cookie");
+    return withSecurityHeaders(withAccount(withTheme(page, cookie), cookie));
   },
 } satisfies ExportedHandler<Env>;
 

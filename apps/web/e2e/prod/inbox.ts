@@ -6,7 +6,7 @@ import { execFileSync } from "node:child_process";
 // sign-in link's: never printed.
 
 // Only our own sign-in link counts: a token in any other link of the mail is never taken.
-const TOKEN = /https:\/\/app\.learningroutes\.com\/sign-in\/confirm#token=([A-Za-z0-9_-]+)/;
+const TOKEN = /https:\/\/learningroutes\.com\/sign-in\/confirm#token=([A-Za-z0-9_-]+)/;
 const BASE64_BLOCK = /\r?\n\r?\n((?:[A-Za-z0-9+/=]{4,}\r?\n?)+)/g;
 const POLLS = 30;
 const POLL_MS = 2000;
