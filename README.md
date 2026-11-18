@@ -39,5 +39,6 @@ CI runs all of it in `.github/workflows/platform.yml`. Local secrets go in `apps
 - [ADR 0004: the architecture after the bake-off](docs/adr/0004-architecture-after-the-bake-off.md)
 - [ADR 0010: Neon's free plan until the first paid student](docs/adr/0010-neon-free-until-the-first-paid-student.md)
 - [ADR 0011: Worker budgets for the community](docs/adr/0011-worker-budgets-for-the-community.md)
+- [ADR 0012: the web Worker's budget for one address and one frame](docs/adr/0012-web-worker-budget-for-the-frame.md)
 - [Lessons from v1](docs/LESSONS_FROM_V1.md)
 - [Working agreement](docs/WORKING_AGREEMENT.md)
