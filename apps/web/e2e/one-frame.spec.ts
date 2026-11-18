@@ -7,6 +7,8 @@ import { newAddress, signInContext } from "./session";
 
 test.use({ locale: "es-ES" });
 
+const ONE_UNREAD = /1 sin leer/;
+const REPLIED = /Respondieron a lo que escribiste en Portugués para viajar/;
 const OPEN_ROUTE = `${creatorHost("mariana-ortega")}/portugues-para-viajar`;
 
 /** Signs a new person in and enrolls them in the open route; their enrollment's id. */
@@ -94,10 +96,8 @@ test("Avisos shows a reply, and Marcar como leídos clears the side panel's coun
 
   await page.goto(`${DEV}/avisos`);
   const badge = page.locator(".nav-badge");
-  await expect(badge).toHaveText(/1 sin leer/);
-  await expect(
-    page.getByRole("link", { name: /Respondieron a lo que escribiste en Portugués para viajar/ }),
-  ).toBeVisible();
+  await expect(badge).toHaveText(ONE_UNREAD);
+  await expect(page.getByRole("link", { name: REPLIED })).toBeVisible();
   await page.getByRole("button", { name: "Marcar como leídos" }).click();
   await expect(page.locator(".nav-badge")).toHaveCount(0);
 });
