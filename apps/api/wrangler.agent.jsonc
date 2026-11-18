@@ -16,6 +16,11 @@
     "logs": { "enabled": true, "head_sampling_rate": 1, "invocation_logs": false },
     "traces": { "enabled": true, "head_sampling_rate": 0.1 }
   },
+  // Better Auth modules these Workers never run (src/auth/unused): about 6.7 KiB gzip.
+  "alias": {
+    "@better-auth/telemetry": "./src/auth/unused/telemetry.ts",
+    "@better-auth/memory-adapter": "./src/auth/unused/memory-adapter.ts"
+  },
   "vars": {
     "APP_ORIGIN": "https://app.learningroutes.com",
     "ENVIRONMENT": "production",

@@ -32,6 +32,8 @@ export default {
         "src/mcp/index.ts",
         "src/agent/index.ts",
         "src/proof-inbox/index.ts",
+        // Stand in for two Better Auth modules through the wrangler configs' "alias".
+        "src/auth/unused/*.ts",
       ],
       // cloudflare:workers is the runtime's own module, not a package.
       ignoreDependencies: ["cloudflare"],
