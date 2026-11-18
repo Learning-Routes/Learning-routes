@@ -49,7 +49,8 @@ test("a new person goes from the landing to enrolled", async ({ page }) => {
   await expect(page).toHaveURL(`${DEV}/mis-rutas`);
   await expect(page.getByRole("heading", { name: TITLE })).toBeVisible();
   await expect(page.locator(".my-route").getByText("Con Andrés Mora")).toBeVisible();
-  await page.getByRole("link", { name: "Seguir", exact: true }).click();
+  // The side panel's "Sigues en" has a Seguir of its own (Platform STEP 23): the page's is in main.
+  await page.getByRole("main").getByRole("link", { name: "Seguir", exact: true }).click();
   await expect(page).toHaveURL(FIRST_TOPIC_URL);
   await expect(page.locator(".p-segs").first()).toBeVisible();
 });
