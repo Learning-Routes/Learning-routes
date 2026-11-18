@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 // Worker size budgets (STEP 46 §2.5): bigger Workers start slower and cost more to
 // ship. Reads wrangler's own gzip figure from a dry-run deploy; build apps/web first.
-// The API Worker's budget is 315 KiB and the agent's 615, the owner's decisions in ADRs 0004 and 0011.
+// The web Worker's budget is 285 KiB, the API Worker's 315 and the agent's 615: the owner's
+// decisions in ADRs 0004, 0011 and 0012.
 // Cloudflare's own limits are 64 MiB uncompressed and 1 s of startup, so the API
 // Worker's startup, as wrangler profiles it locally, is printed too (not a gate).
 import { execFileSync } from "node:child_process";
@@ -11,7 +12,7 @@ import { join } from "node:path";
 
 // The MCP Worker holds the OAuth provider and the MCP SDK (ADR 0009).
 const WORKERS = [
-  { name: "apps/web", cwd: "apps/web", budget: 255 },
+  { name: "apps/web", cwd: "apps/web", budget: 285 },
   { name: "apps/api", cwd: "apps/api", budget: 315 },
   { name: "learning-routes-mcp", cwd: "apps/api", budget: 500, config: "wrangler.mcp.jsonc" },
   // The creator's assistant (Platform STEP 10): the Agents SDK brings its own MCP client and capnweb.
