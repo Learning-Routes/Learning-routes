@@ -2,7 +2,7 @@ import { negotiateLocale } from "@learning-routes/core/locales";
 import { IMAGES_PATH, TUTOR_PATH } from "@learning-routes/core/studio/entries";
 import { withClient } from "../db/with-db";
 import { readSessions } from "./auth";
-import { CALLER_HEADER, CALLER_IMAGES_PATH, callerOf } from "./caller";
+import { CALLER_HEADER, CALLER_IMAGES_PATH, callerOf, overBinding } from "./caller";
 import type { Asked } from "./entry-ctx";
 import type { AgentEnv } from "./env";
 import { makeImage } from "./images";
@@ -52,15 +52,22 @@ export function fromMcp(
   if (new URL(request.url).pathname !== CALLER_IMAGES_PATH) {
     return null;
   }
+  // Hidden from anything that did not come over a service binding.
+  if (!overBinding(request)) {
+    return Promise.resolve(status(404));
+  }
   if (request.method !== "POST") {
     return Promise.resolve(status(405, { allow: "POST" }));
   }
   return (async () => {
-    const userId = await callerOf(request.headers.get(CALLER_HEADER), env.BETTER_AUTH_SECRET);
+    // The signature covers these exact bytes, so they are read once, checked, then parsed.
+    const text = await request.text();
+    const header = request.headers.get(CALLER_HEADER);
+    const userId = await callerOf(header, env.BETTER_AUTH_SECRET, text);
     if (userId === null) {
       return status(401);
     }
-    const body = await bodyOf(request);
+    const body = objectIn(text);
     const locale = negotiateLocale(request.headers.get("accept-language"));
     return withClient(env, ctx, (db) =>
       makeImage(
@@ -72,7 +79,16 @@ export function fromMcp(
 }
 
 async function bodyOf(request: Request): Promise<Record<string, unknown>> {
-  const parsed: unknown = await request.json().catch(() => null);
+  return objectIn(await request.text().catch(() => ""));
+}
+
+function objectIn(text: string): Record<string, unknown> {
+  let parsed: unknown = null;
+  try {
+    parsed = JSON.parse(text);
+  } catch {
+    parsed = null;
+  }
   return parsed !== null && typeof parsed === "object" && !Array.isArray(parsed)
     ? (parsed as Record<string, unknown>)
     : {};

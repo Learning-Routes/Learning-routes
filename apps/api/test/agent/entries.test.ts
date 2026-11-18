@@ -233,25 +233,35 @@ describe("the agent Worker's entry points", () => {
     }
   });
 
-  it("lets the MCP in only with a fresh caller signed by the shared secret", async () => {
+  it("lets the MCP in only over the binding, with a fresh caller signed for this body", async () => {
     const { env, ctx } = world();
     const me = await creator();
-    const asMcp = (header: string) =>
+    const body = JSON.stringify({ space_id: me.spaceId, prompt: "Un volcán" });
+    const asMcp = (header: string, sent = body, url = "https://agent/internal/images") =>
       fromMcp(
-        new Request("https://agent/internal/images", {
+        new Request(url, {
           method: "POST",
           headers: { "content-type": "application/json", "x-lr-caller": header },
-          body: JSON.stringify({ space_id: me.spaceId, prompt: "Un volcán" }),
+          body: sent,
         }),
         env,
         ctx,
         drawn(),
       ) as Promise<Response>;
-    expect((await asMcp(await signedCaller(TEST_SECRET, me.userId))).status).toBe(201);
-    expect((await asMcp(await signedCaller("another-secret", me.userId))).status).toBe(401);
-    const stale = await signedCaller(TEST_SECRET, me.userId, Date.now() - 120_000);
+    expect((await asMcp(await signedCaller(TEST_SECRET, me.userId, body))).status).toBe(201);
+    expect((await asMcp(await signedCaller("another-secret", me.userId, body))).status).toBe(401);
+    const stale = await signedCaller(TEST_SECRET, me.userId, body, Date.now() - 120_000);
     expect((await asMcp(stale)).status).toBe(401);
-    expect((await asMcp(`${me.userId}.${Date.now()}.00`)).status).toBe(401);
+    expect((await asMcp(`${me.userId}.${Date.now() + 30_000}.00`)).status).toBe(401);
+    // The same signature with another prompt is refused, and no image is taken for it.
+    const signed = await signedCaller(TEST_SECRET, me.userId, body);
+    const other = JSON.stringify({ space_id: me.spaceId, prompt: "Otra cosa" });
+    expect((await asMcp(signed, other)).status).toBe(401);
+    expect(await imagesOf(me.userId)).toHaveLength(1);
+    // Not over the binding: any other address.
+    expect((await asMcp(signed, body, "https://learningroutes.com/internal/images")).status).toBe(
+      404,
+    );
     expect(fromMcp(new Request("https://agent/elsewhere"), env, ctx)).toBeNull();
   });
 });

@@ -1,6 +1,6 @@
 import { IMAGE_LIMITS } from "@learning-routes/core/images/images";
 import * as z from "zod";
-import { CALLER_HEADER, CALLER_IMAGES_PATH, signedCaller } from "../agent/caller";
+import { CALLER_HEADER, CALLER_IMAGES_PATH, CALLER_ORIGIN, signedCaller } from "../agent/caller";
 import { failed, type Tool, tool } from "./tool";
 
 // generate_image (Platform STEP 20 §B): the same image as POST /api/creator/images, with the same
@@ -40,14 +40,15 @@ export async function imageByAgent(env: Env, userId: string, input: unknown) {
   if (!agent) {
     return failed("images_unavailable: images can't be made right now. Try again later.");
   }
+  const body = JSON.stringify(input);
   const response = await agent.fetch(
-    new Request(`https://agent${CALLER_IMAGES_PATH}`, {
+    new Request(`${CALLER_ORIGIN}${CALLER_IMAGES_PATH}`, {
       method: "POST",
       headers: {
         "content-type": "application/json",
-        [CALLER_HEADER]: await signedCaller(env.BETTER_AUTH_SECRET, userId),
+        [CALLER_HEADER]: await signedCaller(env.BETTER_AUTH_SECRET, userId, body),
       },
-      body: JSON.stringify(input),
+      body,
     }),
   );
   const answer = (await response.json().catch(() => ({}))) as {
