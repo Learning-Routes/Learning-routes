@@ -23,6 +23,11 @@
   // APP_ORIGIN: auth's base URL, its only trusted origin, and the only Origin a
   // non-GET request may carry. ENVIRONMENT is "development" only in .dev.vars,
   // where sign-in links go to the log; anywhere else they are mailed.
+  // Better Auth modules these Workers never run (src/auth/unused): about 6.7 KiB gzip.
+  "alias": {
+    "@better-auth/telemetry": "./src/auth/unused/telemetry.ts",
+    "@better-auth/memory-adapter": "./src/auth/unused/memory-adapter.ts"
+  },
   "vars": {
     "APP_ORIGIN": "https://app.learningroutes.com",
     "ENVIRONMENT": "production",
