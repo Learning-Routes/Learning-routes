@@ -61,6 +61,10 @@ const EXPECTED: Record<string, string[]> = {
   community_blocks: ["DELETE", "INSERT", "SELECT"],
   community_bans: ["DELETE", "INSERT", "SELECT"],
   notifications: ["SELECT"],
+  // The learner's tutor (Platform STEP 20): a question no model answered is given back.
+  tutor_questions: ["DELETE", "INSERT", "SELECT"],
+  // Route images (Platform STEP 20): an image no model made is given back.
+  image_generations: ["DELETE", "INSERT", "SELECT"],
   // The record of who did what: append-only.
   action_log: ["INSERT", "SELECT"],
 };
@@ -80,6 +84,21 @@ const UPDATABLE_COLUMNS: Record<string, string[]> = {
   ],
   community_reports: ["resolved_at", "resolved_by"],
   notifications: ["read_at"],
+  image_generations: [
+    "asset_key",
+    "completion_tokens",
+    "cost_microcents",
+    "made_at",
+    "model",
+    "prompt_tokens",
+  ],
+  tutor_questions: [
+    "answered_at",
+    "completion_tokens",
+    "cost_microcents",
+    "model",
+    "prompt_tokens",
+  ],
   blocks: ["archived_at", "data", "kind", "position", "updated_at"],
   catalog_listings: [
     "decided_at",
@@ -168,6 +187,8 @@ const GRANTS_FILES = [
   "0031_invitation_grants",
   "0036_stored_files_grants",
   "0041_community_grants",
+  "0044_tutor_grants",
+  "0047_images_grants",
 ].map((tag) => new URL(`../../drizzle/${tag}.sql`, import.meta.url));
 const PRIVILEGES = `select coalesce(string_agg(entry, ',' order by entry), '')
                       as all

@@ -58,6 +58,8 @@ describe("the creator gate", () => {
       "community.hide",
       "community.pin",
       "creation.upload",
+      // Route images (Platform STEP 20).
+      "image.generate",
       "lesson.add",
       "membership.add",
       "module.add",

@@ -59,24 +59,31 @@ type ProviderEnv = Pick<
   | "ANTHROPIC_API_KEY"
 >;
 
+/** What a Provider's apiKey says when Anthropic's own API answers; the real key stays in the fetcher. */
+const ANTHROPIC = "anthropic";
+/** Whether Anthropic's own API answers this provider's calls: it serves only Anthropic's models. */
+export const isAnthropic = (provider: Provider) => provider.apiKey === ANTHROPIC;
+
 const isDevelopment = (env: ProviderEnv) => String(env.ENVIRONMENT) === "development";
 
-// The scripted provider (§A1) or Anthropic with the owner's key (§A1b), in development only.
+// A provider asked for by name (MODEL_PROVIDER). "scripted" (§A1) answers from committed scripts and
+// is for development only. "anthropic" is Anthropic's own API with the platform's key (ADR 0014):
+// allowed anywhere, production included, so the assistant and the tutor work without OpenRouter.
 // undefined: none asked for, or refused; null: asked for without its key, so no one answers.
-function devProvider(env: ProviderEnv, refused: () => void): Provider | null | undefined {
-  if (env.MODEL_PROVIDER !== "scripted" && env.MODEL_PROVIDER !== "anthropic") {
+function namedProvider(env: ProviderEnv, refused: () => void): Provider | null | undefined {
+  if (env.MODEL_PROVIDER === "anthropic") {
+    return env.ANTHROPIC_API_KEY
+      ? { apiKey: ANTHROPIC, fetcher: anthropicFetch(env.ANTHROPIC_API_KEY) }
+      : null;
+  }
+  if (env.MODEL_PROVIDER !== "scripted") {
     return undefined;
   }
   if (!isDevelopment(env)) {
     refused();
     return undefined;
   }
-  if (env.MODEL_PROVIDER === "scripted") {
-    return { apiKey: "scripted", fetcher: scriptedFetch(STUDIO_SCRIPT_FILES.map(readScript)) };
-  }
-  return env.ANTHROPIC_API_KEY
-    ? { apiKey: "anthropic", fetcher: anthropicFetch(env.ANTHROPIC_API_KEY) }
-    : null;
+  return { apiKey: "scripted", fetcher: scriptedFetch(STUDIO_SCRIPT_FILES.map(readScript)) };
 }
 
 // "small": every call to the cheap tier, to shake out wiring before a run on the real tiers.
@@ -92,21 +99,21 @@ function tierOf(env: ProviderEnv, refused: () => void): ModelId | undefined {
 }
 
 /**
- * Who answers the model calls: OpenRouter with its key, or, in development only, the scripted
- * provider or Anthropic (MODEL_PROVIDER), on the small tier when MODEL_TIER_OVERRIDE says so. null: no
- * one, and the assistant is not switched on. Anywhere else a dev-only setting is ignored, and
- * `refused` is told so it can be logged.
+ * Who answers the model calls: OpenRouter with its key, or the provider MODEL_PROVIDER names:
+ * Anthropic anywhere, the scripted one in development only, where MODEL_TIER_OVERRIDE can also send
+ * every call to the small tier. null: no one, and the assistant is not switched on. A dev-only
+ * setting anywhere else is ignored, and `refused` is told so it can be logged.
  */
 export function providerFetch(
   env: ProviderEnv,
   refused: () => void = () => undefined,
 ): Provider | null {
   const tier = tierOf(env, refused);
-  const dev = devProvider(env, refused);
+  const named = namedProvider(env, refused);
   // A provider asked for never falls back to OpenRouter's key: the bill would go elsewhere.
   const provider =
-    dev !== undefined
-      ? dev
+    named !== undefined
+      ? named
       : env.OPENROUTER_API_KEY
         ? { apiKey: env.OPENROUTER_API_KEY, fetcher: fetch }
         : null;

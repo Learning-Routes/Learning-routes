@@ -8,10 +8,12 @@ import type { Community } from "./community-ports";
 import type { Connections, OwnSpace } from "./connection-ports";
 import type { EnrollmentReading, EnrollmentRecord } from "./enrollment-reading";
 import type { StoredFiles } from "./file-ports";
+import type { ImageGenerations } from "./image-ports";
 import type { ActionLog } from "./log-ports";
 import type { OwnEnrollment } from "./own-enrollment";
 import type { RepoResult } from "./repo-result";
 import type { RouteDetails } from "./route-details";
+import type { TutorQuestions } from "./tutor-ports";
 
 export type {
   ApplicationRecord,
@@ -288,6 +290,9 @@ export interface Repos {
   actionLog: ActionLog;
   storedFiles: StoredFiles;
   community: Community;
+  /** Only the agent Worker carries these two (Platform STEP 20): its entry points use them. */
+  tutor?: TutorQuestions;
+  images?: ImageGenerations;
   /** One unit of work: everything fn writes is kept together, or nothing is. */
   transaction<T>(fn: (repos: Repos) => Promise<T>): Promise<T>;
 }

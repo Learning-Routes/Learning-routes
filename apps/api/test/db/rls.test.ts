@@ -15,6 +15,7 @@ const TENANT_TABLES = [
   "community_reactions",
   "community_reports",
   "enrollments",
+  "image_generations",
   "lesson_prerequisites",
   "lessons",
   "memberships",
@@ -27,6 +28,7 @@ const TENANT_TABLES = [
   "routes",
   "spaces",
   "stored_files",
+  "tutor_questions",
   "user_profiles",
 ];
 

@@ -1,5 +1,5 @@
 import type { ActorKind } from "./actions/actor";
-import type { ActionName } from "./actions/names";
+import type { ActionName, EntryName } from "./actions/names";
 import type { SpaceRole } from "./domain";
 
 // Who may do what, the first fence (Platform STEP 2 §3.1). Each action lists, per
@@ -82,6 +82,11 @@ export const PERMISSIONS = {
   "lesson.play": EVERYONE,
   "lesson.answer": EVERYONE,
   "lesson.finish": EVERYONE,
+  // The learner's tutor (Platform STEP 20): in the app only, on one's own enrollment. Assistants
+  // ask no model on a learner's behalf.
+  "tutor.ask": { owner: ["ui"], coeditor: ["ui"], student: ["ui"] },
+  // A route's images (Platform STEP 20): its creators, in the app or through their own MCP client.
+  "image.generate": { owner: ["ui", "mcp"], coeditor: ["ui", "mcp"] },
   // A route's community (Platform STEP 17), in the app only: whoever is enrolled in the route
   // (a student of its space who cannot see the route gets not_found) and its creators.
   // Assistants read progress, not the community.
@@ -105,7 +110,7 @@ export const PERMISSIONS = {
   "notification.read": { student: ["ui"] },
   "profile.get": { student: ["ui"] },
   "profile.update": { student: ["ui"] },
-} as const satisfies Record<ActionName, Row>;
+} as const satisfies Record<ActionName | EntryName, Row>;
 
 /** A creator is an owner or a coeditor: the roles that build (Platform STEP 14). */
 export const isCreatorRole = (role: string | null | undefined): boolean =>
@@ -126,6 +131,6 @@ export function can(role: SpaceRole | "operator", action: string, via: ActorKind
   if (!Object.hasOwn(PERMISSIONS, action)) {
     return false;
   }
-  const row: Row = PERMISSIONS[action as ActionName];
+  const row: Row = PERMISSIONS[action as ActionName | EntryName];
   return row[role]?.includes(via) ?? false;
 }

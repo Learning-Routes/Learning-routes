@@ -33,11 +33,13 @@
     // Every assistant together, a day: $20.
     "AGENT_DAILY_MICROCENTS": "20000000",
     // Model calls each space's assistant may make in a minute.
-    "AGENT_CALLS_PER_MINUTE": "12"
+    "AGENT_CALLS_PER_MINUTE": "12",
+    // Anthropic's own API answers the assistant and the tutor (ADR 0014). Its key is a secret.
+    "MODEL_PROVIDER": "anthropic"
   },
   // BETTER_AUTH_SECRET, the API's, to read its sessions. No CONTENT_SIGNING_SECRET: the assistant
-  // uploads no creations, so it asks for no thumbnails. OPENROUTER_API_KEY is optional: without it
-  // the assistant says it is not switched on yet, and calls no model.
+  // uploads no creations, so it asks for no thumbnails. The model provider's key is an optional
+  // secret: without it the assistant and the tutor say they are not switched on, and call no model.
   "secrets": { "required": ["BETTER_AUTH_SECRET"] },
   "durable_objects": {
     "bindings": [

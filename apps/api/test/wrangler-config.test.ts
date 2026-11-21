@@ -66,13 +66,16 @@ describe("the API Worker's configuration (Platform STEP 2 §1.3)", () => {
 const ANTHROPIC_PROVIDER = /MODEL_PROVIDER\W+anthropic/i;
 
 describe("the assistant Worker's configuration (STEP 11-prep §A1)", () => {
-  it("never names MODEL_PROVIDER: production has only the real provider, or none", () => {
+  it("names Anthropic as production's provider, and holds no key and no dev-only setting", () => {
     // The file's top-level vars are production's; it has no other environment.
     const text = readFileSync(new URL("../wrangler.agent.jsonc", import.meta.url), "utf8");
-    expect((parseJsonc(text) as { env?: unknown }).env).toBeUndefined();
-    expect(text).not.toContain("MODEL_PROVIDER");
+    const config = parseJsonc(text) as { env?: unknown; vars: Record<string, string> };
+    expect(config.env).toBeUndefined();
+    // ADR 0014: Anthropic's own API answers. The scripted provider is never production's.
+    expect(config.vars.MODEL_PROVIDER).toBe("anthropic");
     expect(text).not.toContain("MODEL_TIER_OVERRIDE");
-    expect(text).not.toContain("ANTHROPIC_API_KEY");
+    // A key is a secret, never a var.
+    expect(Object.keys(config.vars).filter((name) => name.endsWith("_KEY"))).toEqual([]);
   });
 
   it("never runs a real model in CI: no workflow names Anthropic's provider or key", () => {

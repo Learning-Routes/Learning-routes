@@ -295,6 +295,48 @@
       "when": 1794887810993,
       "tag": "0041_community_grants",
       "breakpoints": true
+    },
+    {
+      "idx": 42,
+      "version": "7",
+      "when": 1794951341713,
+      "tag": "0042_tutor",
+      "breakpoints": true
+    },
+    {
+      "idx": 43,
+      "version": "7",
+      "when": 1794951346251,
+      "tag": "0043_tutor_rules",
+      "breakpoints": true
+    },
+    {
+      "idx": 44,
+      "version": "7",
+      "when": 1794951555457,
+      "tag": "0044_tutor_grants",
+      "breakpoints": true
+    },
+    {
+      "idx": 45,
+      "version": "7",
+      "when": 1794967805996,
+      "tag": "0045_images",
+      "breakpoints": true
+    },
+    {
+      "idx": 46,
+      "version": "7",
+      "when": 1794967812965,
+      "tag": "0046_images_rules",
+      "breakpoints": true
+    },
+    {
+      "idx": 47,
+      "version": "7",
+      "when": 1794967813521,
+      "tag": "0047_images_grants",
+      "breakpoints": true
     }
   ]
 }

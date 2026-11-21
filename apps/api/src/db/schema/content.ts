@@ -23,7 +23,7 @@ import {
   uniqueIndex,
   uuid,
 } from "drizzle-orm/pg-core";
-import { archivedAt, createdAt, id, oneOf, updatedAt } from "./columns";
+import { archivedAt, createdAt, id, oneOf, time, updatedAt } from "./columns";
 import { spaces } from "./tenancy";
 
 // Content (Platform STEP 2 §2.6–§2.9): the mutable draft of a route. Every row
@@ -226,5 +226,34 @@ export const storedFiles = pgTable(
     unique("stored_files_space_id_key_key").on(t.spaceId, t.key),
     check("stored_files_kind", sql`${t.kind} in ('creation', 'asset')`),
     check("stored_files_bytes_positive", sql`${t.bytes} > 0`),
+  ],
+);
+
+// Route images (Platform STEP 20 §B): one row per image a creator asked for, for the month's limit
+// and what it used. Never what was asked for. There is no AI balance yet: nobody is charged.
+export const imageGenerations = pgTable(
+  "image_generations",
+  {
+    id: id(),
+    spaceId: uuid()
+      .notNull()
+      .references(() => spaces.id, { onDelete: "restrict" }),
+    userId: uuid().notNull(),
+    askedAt: time().notNull(),
+    model: text(),
+    promptTokens: integer(),
+    completionTokens: integer(),
+    /** null until made, and when OpenRouter reported no cost. */
+    costMicrocents: bigint({ mode: "number" }),
+    /** The asset the image became. */
+    assetKey: text(),
+    madeAt: time(),
+  },
+  (t) => [
+    index("image_generations_user_id_asked_at_idx").on(t.userId, t.askedAt),
+    check(
+      "image_generations_usage",
+      sql`coalesce(${t.promptTokens} >= 0 and ${t.completionTokens} >= 0 and ${t.costMicrocents} >= 0, true)`,
+    ),
   ],
 );

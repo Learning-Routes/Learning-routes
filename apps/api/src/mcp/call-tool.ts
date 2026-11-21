@@ -8,6 +8,7 @@ import { pgRepos } from "../db/repos/index";
 import { pgTenancy } from "../db/tenancy";
 import { type Database, type Transaction, transactionAs } from "../db/with-db";
 import { newId } from "../ids";
+import { imageByAgent } from "./generate-image";
 import { CREATOR_REQUIRED_TEXT, failed, type Tool } from "./tool";
 import { filesStored, withAsset } from "./upload-steps";
 
@@ -137,7 +138,7 @@ function previewOf(env: Env, output: unknown) {
   return `${env.APP_ORIGIN}/creador/rutas/${routeId ?? route?.id}/vista-previa`;
 }
 
-const SPACE_OPTIONAL: readonly string[] = ["upload_document", "upload_asset"];
+const SPACE_OPTIONAL: readonly string[] = ["upload_document", "upload_asset", "generate_image"];
 
 /** "Their space", when they teach in one: upload_document and upload_asset may leave it out. */
 async function withOnlySpace(db: Database, caller: Caller, tool: Tool, input: unknown) {
@@ -204,6 +205,9 @@ export async function callTool(env: Env, db: Database, caller: Caller, tool: Too
   }
   if (!caller.scopes.has(tool.scope)) {
     return failed(`This connection does not include ${tool.scope}.`);
+  }
+  if (tool.byAgent) {
+    return imageByAgent(env, caller.userId, spaced);
   }
   if (tool.action === null) {
     const structuredContent = tool.answers?.() ?? {};

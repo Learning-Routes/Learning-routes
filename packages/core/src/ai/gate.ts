@@ -45,6 +45,8 @@ export interface CallSpec {
   tools?: ModelTool[];
   /** Stream the answer as it is written. */
   stream?: true;
+  /** Ask for an image (Platform STEP 20 §B): every output token is priced as an image's. */
+  image?: true;
 }
 
 export type GateContext = Omit<SpendRequest, "estimate">;
@@ -69,6 +71,7 @@ export interface ModelRequest {
   messages: ({ role: "system"; content: SystemContent } | ModelMessage | MarkedMessage)[];
   tools?: ModelTool[];
   stream?: true;
+  modalities?: ["image", "text"];
 }
 
 export type GateDecision =
@@ -148,6 +151,7 @@ function requestOf(spec: CallSpec, model: ModelId): ModelRequest {
     ],
     ...(spec.tools ? { tools: spec.tools } : {}),
     ...(spec.stream ? { stream: true as const } : {}),
+    ...(spec.image ? { modalities: ["image", "text"] as ["image", "text"] } : {}),
   };
 }
 
