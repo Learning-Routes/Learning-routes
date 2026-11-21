@@ -44,7 +44,10 @@ export function NoticeList({
           </>
         );
         return (
-          <li key={notice.id} className={notice.readAt === null ? "notice is-new" : "notice"}>
+          <li
+            key={notice.id}
+            className={notice.readAt === null ? "hub-notice is-new" : "hub-notice"}
+          >
             {enrollment ? (
               <a href={`/comunidad/${enrollment.enrollmentId}#p-${notice.postId}`}>{line}</a>
             ) : (

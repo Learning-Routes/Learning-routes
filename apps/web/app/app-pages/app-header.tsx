@@ -77,8 +77,9 @@ function CarryOnCard({ shell, locale }: { shell: ShellData; locale: LocaleCode }
 }
 
 /**
- * The header of every page inside the app, once someone is signed in: a bar on a narrow screen,
- * the side panel on a wide one. The same places, in the same order, on every page.
+ * The header of every page inside the app, once someone is signed in. On a wide screen it is the
+ * side panel; on a narrow one, a bar on top and the five places in a bar at the bottom, where a
+ * thumb reaches. The same places, in the same order, on every page.
  */
 export function AppHeader({
   locale,
@@ -129,6 +130,9 @@ export function AppHeader({
         >
           {words.notices}
         </Item>
+      </nav>
+      {shell ? <CarryOnCard shell={shell} locale={locale} /> : null}
+      <div className="shell-more">
         {showTeach ? (
           <Item href="/creador/asistente" icon="teach" current={place === "teach"}>
             {words.teach}
@@ -139,8 +143,7 @@ export function AppHeader({
             {words.signOut}
           </button>
         </form>
-      </nav>
-      {shell ? <CarryOnCard shell={shell} locale={locale} /> : null}
+      </div>
       <div className="shell-foot">
         {shell?.name ? (
           <p className="shell-me">

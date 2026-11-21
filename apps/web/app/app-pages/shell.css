@@ -17,6 +17,8 @@
   stroke: var(--color-accent);
 }
 .nav-badge {
+  /* Holds its own hidden words, so they never widen the page. */
+  position: relative;
   display: grid;
   place-items: center;
   min-width: 1.375rem;
@@ -41,6 +43,57 @@
 .shell-on,
 .shell-me {
   display: none;
+}
+.shell-more {
+  display: flex;
+  align-items: center;
+  margin-inline-start: auto;
+}
+
+/* On a narrow screen: the brand, Enseñar, the way out and the switch on top, and the five places
+   in a bar at the bottom, each with its sign and its name. */
+@media (max-width: 1023px) {
+  .desk:has(> .shell) {
+    padding-block-end: calc(4rem + env(safe-area-inset-bottom));
+  }
+  .shell-more .nav-link {
+    display: inline-flex;
+    padding-inline: var(--space-2);
+  }
+  .shell-more .nav-icon {
+    display: none;
+  }
+  .shell .site-nav {
+    position: fixed;
+    inset: auto 0 0;
+    z-index: var(--z-header);
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 0;
+    margin: 0;
+    padding: var(--space-1) var(--space-1) calc(var(--space-1) + env(safe-area-inset-bottom));
+    background: var(--color-bg);
+    border-block-start: 1px solid var(--color-border-subtle);
+  }
+  .shell .site-nav .nav-link {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 2px;
+    min-height: 3.5rem;
+    padding-inline: 2px;
+    font-size: var(--text-meta);
+    text-align: center;
+  }
+  .shell .site-nav .nav-badge {
+    position: absolute;
+    top: 4px;
+    left: calc(50% + 4px);
+    min-width: 1.125rem;
+    height: 1.125rem;
+    padding-inline: 4px;
+  }
 }
 .shell-foot {
   display: flex;
@@ -174,9 +227,18 @@
   .shell-on-go {
     width: 100%;
   }
+  .shell-more {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 2px;
+    margin-block-start: auto;
+    margin-inline-start: 0;
+  }
+  .shell-more .nav-form {
+    display: flex;
+  }
   .shell-foot {
     gap: var(--space-3);
-    margin-block-start: auto;
     padding-block-start: var(--space-3);
     border-block-start: 1px solid var(--color-border-subtle);
   }
@@ -333,8 +395,8 @@
   gap: var(--space-3);
 }
 .hub-questions a,
-.notice a,
-.notice p,
+.hub-notice a,
+.hub-notice p,
 .hub-feed a,
 .hub-feed div {
   display: grid;
@@ -353,7 +415,7 @@
   line-height: 1.35;
 }
 .hub-questions span,
-.notice span,
+.hub-notice span,
 .hub-feed-by span {
   font-size: var(--text-small);
   color: var(--color-sub);
@@ -376,7 +438,7 @@
   font-weight: var(--weight-label);
   line-height: 1.25;
 }
-.notice.is-new b::before {
+.hub-notice.is-new b::before {
   content: "";
   display: inline-block;
   width: 8px;
@@ -385,7 +447,7 @@
   border-radius: 50%;
   background: var(--color-accent);
 }
-.notice b {
+.hub-notice b {
   font-weight: var(--weight-label);
 }
 .hub-feed-by {
@@ -424,7 +486,7 @@
   .hub-tile:hover b,
   .hub-questions a:hover b,
   .hub-rooms a:hover,
-  .notice a:hover b {
+  .hub-notice a:hover b {
     text-decoration: underline;
   }
 }
