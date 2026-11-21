@@ -1,6 +1,6 @@
 import { type ActionResult, runAction } from "@learning-routes/core/actions/define";
 import { purgeTagsAfter } from "@learning-routes/core/actions/purge-tags";
-import { ACTIONS } from "@learning-routes/core/actions/registry";
+import { TOOL_ACTIONS } from "@learning-routes/core/actions/tool-actions";
 import type { DBAdapter } from "better-auth";
 import { takeFromWindow } from "../auth/rate-window";
 import { queuePurge } from "../cache/purge";
@@ -81,7 +81,7 @@ async function hasRoomToWrite(db: Database, caller: Caller, tool: Tool, input: u
   if (tool.action === null) {
     return true;
   }
-  const target = ACTIONS[tool.action].target(tool.toAction(input) as never);
+  const target = TOOL_ACTIONS[tool.action].target(tool.toAction(input) as never);
   const scope = await transactionAs(db, caller.userId, (tx) =>
     pgTenancy(tx).scopeOf(target, caller.userId),
   );
@@ -98,7 +98,7 @@ async function hasRoomToWrite(db: Database, caller: Caller, tool: Tool, input: u
 
 async function staleText(db: Database, caller: Caller, routeId: string): Promise<string> {
   const current = await transactionAs(db, caller.userId, (tx) =>
-    runAction(ACTIONS, "route.get", { routeId }, ctxFor(tx, caller)),
+    runAction(TOOL_ACTIONS, "route.get", { routeId }, ctxFor(tx, caller)),
   );
   const revision = current.ok ? (current.output as { revision: number }).revision : "unknown";
   return `The draft changed since you read it: its revision is now ${revision}. Call get_route to read it, then try again with that draft_revision.`;
@@ -113,8 +113,8 @@ async function publicUrl(
   spaceId: string,
 ) {
   const ctx = ctxFor(tx, caller);
-  const space = await runAction(ACTIONS, "space.get", { spaceId }, ctx);
-  const route = await runAction(ACTIONS, "route.get", { routeId }, ctx);
+  const space = await runAction(TOOL_ACTIONS, "space.get", { spaceId }, ctx);
+  const route = await runAction(TOOL_ACTIONS, "route.get", { routeId }, ctx);
   if (!(space.ok && route.ok)) {
     return null;
   }
@@ -146,7 +146,7 @@ async function withOnlySpace(db: Database, caller: Caller, tool: Tool, input: un
     return input;
   }
   const spaces = await transactionAs(db, caller.userId, (tx) =>
-    runAction(ACTIONS, "space.list", {}, ctxFor(tx, caller)),
+    runAction(TOOL_ACTIONS, "space.list", {}, ctxFor(tx, caller)),
   );
   const mine = spaces.ok ? (spaces.output as { id: string }[]) : [];
   return mine.length === 1 ? { ...given, space_id: mine[0]?.id } : null;
@@ -186,7 +186,7 @@ async function pinnedToSpace(db: Database, caller: Caller, tool: Tool, input: un
     shape && "space_id" in shape && given.route_id === undefined
       ? { ...given, space_id: spaceId }
       : given;
-  const target = ACTIONS[tool.action].target(tool.toAction(pinned) as never);
+  const target = TOOL_ACTIONS[tool.action].target(tool.toAction(pinned) as never);
   const scope = await transactionAs(db, caller.userId, (tx) =>
     pgTenancy(tx).scopeOf(target, caller.userId),
   );
@@ -222,7 +222,7 @@ export async function callTool(env: Env, db: Database, caller: Caller, tool: Too
   }
   const actionInput = tool.toAction(input);
   const { result, url } = await transactionAs(db, caller.userId, async (tx) => {
-    const answered = await runAction(ACTIONS, action, actionInput, ctxFor(tx, caller));
+    const answered = await runAction(TOOL_ACTIONS, action, actionInput, ctxFor(tx, caller));
     return {
       result: answered,
       url: answered.ok ? await urlOf(env, tx, caller, action, answered.output) : null,
