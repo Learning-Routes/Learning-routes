@@ -46,8 +46,10 @@
 }
 .shell-more {
   display: flex;
+  flex: none;
   align-items: center;
   margin-inline-start: auto;
+  white-space: nowrap;
 }
 
 /* On a narrow screen: the brand, Enseñar, the way out and the switch on top, and the five places

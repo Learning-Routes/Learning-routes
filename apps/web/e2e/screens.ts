@@ -148,7 +148,7 @@ export const SCREENS: Record<string, (page: Page) => Promise<unknown>> = {
   avisos: async (page) => {
     await replied(page);
     await page.goto(`${DEV}/avisos`);
-    await page.locator(".notice.is-new").waitFor();
+    await page.locator(".hub-notice.is-new").waitFor();
   },
   lesson: async (page) => {
     await enrolled(page);

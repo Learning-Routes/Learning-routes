@@ -72,7 +72,7 @@ function CarryOn({ enrollment, locale }: { enrollment: OwnEnrollment; locale: Lo
   const route = inLocale(enrollment.title, locale, enrollment.sourceLocale);
   return (
     <section className="hub-hero" aria-labelledby="hub-hero-title">
-      <RouteCover seed={enrollment.routeId} title={route} className="hub-hero-cover" />
+      <RouteCover seed={enrollment.routeId} title={route} wide className="hub-hero-cover" />
       <div className="hub-hero-words">
         <p>{`${words.carryOn}, ${filled(words.inRoute, { route })}`}</p>
         <h2 id="hub-hero-title">
