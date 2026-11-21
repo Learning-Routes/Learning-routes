@@ -129,6 +129,7 @@
 @media (max-width: 479px) {
   .shell .brand {
     gap: 0;
+    min-width: var(--size-touch);
     font-size: 0;
   }
 }
