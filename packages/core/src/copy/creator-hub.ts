@@ -36,6 +36,8 @@ export interface CreatorHubText {
   priceNote: string;
   priceCurrent: string;
   askCatalog: string;
+  inCatalog: string;
+  catalogWaiting: string;
   catalogAsked: string;
   catalogRefused: string;
   editPage: string;
@@ -77,6 +79,8 @@ export const CREATOR_HUB_TEXT: Record<LocaleCode, CreatorHubText> = {
     priceNote: "Tus estudiantes siguen entrando gratis hasta que el cobro esté activo.",
     priceCurrent: "Precio guardado: {price}",
     askCatalog: "Pedir entrar al catálogo",
+    inCatalog: "En el catálogo",
+    catalogWaiting: "En revisión para el catálogo",
     catalogAsked: "Pedido enviado. Lo revisaremos pronto.",
     catalogRefused: "Publica la ruta primero; solo así puede entrar al catálogo.",
     editPage: "Editar tu página",
@@ -121,6 +125,8 @@ export const CREATOR_HUB_TEXT: Record<LocaleCode, CreatorHubText> = {
     priceNote: "Your students keep starting free until payments are on.",
     priceCurrent: "Price saved: {price}",
     askCatalog: "Ask to join the catalog",
+    inCatalog: "In the catalog",
+    catalogWaiting: "Under review for the catalog",
     catalogAsked: "Request sent. We'll review it soon.",
     catalogRefused: "Publish the route first: only then can it join the catalog.",
     editPage: "Edit your page",
@@ -165,6 +171,8 @@ export const CREATOR_HUB_TEXT: Record<LocaleCode, CreatorHubText> = {
     priceNote: "Seus alunos continuam entrando grátis até a cobrança estar ativa.",
     priceCurrent: "Preço salvo: {price}",
     askCatalog: "Pedir para entrar no catálogo",
+    inCatalog: "No catálogo",
+    catalogWaiting: "Em análise para o catálogo",
     catalogAsked: "Pedido enviado. Vamos revisar em breve.",
     catalogRefused: "Publique a rota primeiro: só assim ela pode entrar no catálogo.",
     editPage: "Editar sua página",
@@ -210,6 +218,8 @@ export const CREATOR_HUB_TEXT: Record<LocaleCode, CreatorHubText> = {
       "Vos élèves continuent de commencer gratuitement tant que le paiement n'est pas actif.",
     priceCurrent: "Prix enregistré : {price}",
     askCatalog: "Demander à entrer au catalogue",
+    inCatalog: "Dans le catalogue",
+    catalogWaiting: "En cours d'examen pour le catalogue",
     catalogAsked: "Demande envoyée. Nous la verrons bientôt.",
     catalogRefused: "Publiez d'abord le parcours : c'est la condition pour entrer au catalogue.",
     editPage: "Modifier votre page",
@@ -255,6 +265,8 @@ export const CREATOR_HUB_TEXT: Record<LocaleCode, CreatorHubText> = {
     priceNote: "I tuoi studenti continuano a iniziare gratis finché i pagamenti non sono attivi.",
     priceCurrent: "Prezzo salvato: {price}",
     askCatalog: "Chiedi di entrare nel catalogo",
+    inCatalog: "Nel catalogo",
+    catalogWaiting: "In revisione per il catalogo",
     catalogAsked: "Richiesta inviata. La vedremo presto.",
     catalogRefused: "Pubblica prima il percorso: solo così può entrare nel catalogo.",
     editPage: "Modifica la tua pagina",

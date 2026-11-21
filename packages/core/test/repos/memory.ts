@@ -384,6 +384,10 @@ export function memoryRepos(state: State, actorId = ""): Repos {
             title: row.route.title,
             revision: row.revision,
             latestPublishedVersion: row.latestPublishedVersion,
+            listing:
+              [...state.listings.values()]
+                .map((listing) => (listing.routeId === row.route.id ? listing.status : null))
+                .find((status) => status === "requested" || status === "approved") ?? null,
           }))
           .sort((a, b) => (a.slug < b.slug ? -1 : 1)),
       replaceContent: (spaceId, routeId, expected, content) =>

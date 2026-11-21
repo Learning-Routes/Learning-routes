@@ -95,6 +95,8 @@ export interface RouteSummary {
   title: LocalizedText;
   revision: number;
   latestPublishedVersion: number | null;
+  /** Where the route stands with the catalog: asked and waiting, in it, or neither. */
+  listing: "requested" | "approved" | null;
 }
 
 /** An edit's answer: the draft's new revision. */
