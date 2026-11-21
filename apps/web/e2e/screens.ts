@@ -22,12 +22,47 @@ const MASKED = "le•••@example.com";
 /** A creator's host, in a local run. The browser resolves [slug].localhost by itself. */
 export const creatorHost = (slug: string) => `http://${slug}.localhost:4174`;
 
+const PORTUGUESE = `${creatorHost("mariana-ortega")}/portugues-para-viajar`;
+// No other test writes in this route's community, so its feed is the same on every run.
+const GUITAR = `${creatorHost("andres-mora")}/guitarra-desde-cero`;
+
 /** Enrolls as a new person, through the route's own button: leaves them on Mis rutas. */
-async function enrolled(page: Page) {
-  await signInContext(page.context(), newAddress("estudia"));
-  await page.goto(`${creatorHost("mariana-ortega")}/portugues-para-viajar`);
+async function enrolled(page: Page, route = PORTUGUESE, who = "estudia") {
+  await signInContext(page.context(), newAddress(who));
+  await page.goto(route);
   await page.getByRole("link", { name: "Empezar gratis" }).click();
   await page.getByRole("heading", { name: "Mis rutas" }).waitFor();
+}
+
+/** An action through the API, as the page's own session. */
+async function act(page: Page, name: string, input: object) {
+  const answer = await page.request.post(`${DEV}/api/a/${name}`, {
+    headers: { origin: DEV },
+    data: input,
+  });
+  return ((await answer.json()) as { output: Record<string, unknown> }).output;
+}
+
+/** Someone asks in Portugués para viajar and someone else answers: one unread notice. */
+async function replied(page: Page) {
+  await enrolled(page, PORTUGUESE, "avisos");
+  const { enrollments } = (await act(page, "enrollment.list", {})) as {
+    enrollments: { routeId: string }[];
+  };
+  const routeId = enrollments[0]?.routeId ?? "";
+  const { id: postId } = (await act(page, "community.post", {
+    routeId,
+    kind: "question",
+    body: "¿Cómo se dice «la cuenta, por favor»?",
+  })) as { id: string };
+  const other = await page.context().browser()?.newContext({ locale: "es-ES" });
+  if (!other) {
+    throw new Error("no browser for the second person");
+  }
+  const theirs = await other.newPage();
+  await enrolled(theirs, PORTUGUESE, "responde");
+  await act(theirs, "community.reply", { routeId, postId, body: "«A conta, por favor»." });
+  await other.close();
 }
 
 /** A teacher, signed in, on the assistant's question. */
@@ -98,7 +133,23 @@ export const SCREENS: Record<string, (page: Page) => Promise<unknown>> = {
     await signInContext(page.context(), newAddress("vacio"));
     await page.goto(`${DEV}/mis-rutas`);
   },
-  "my-routes": enrolled,
+  "my-routes": (page) => enrolled(page),
+  // The one frame (Platform STEP 23). Invented people only.
+  inicio: async (page) => {
+    await enrolled(page, GUITAR, "inicio");
+    await page.goto(`${DEV}/inicio`);
+    await page.locator("#hub-hero-title").waitFor();
+  },
+  comunidad: async (page) => {
+    await enrolled(page, GUITAR, "comunidad");
+    await page.goto(`${DEV}/comunidad`);
+    await page.locator("#hub-rooms").waitFor();
+  },
+  avisos: async (page) => {
+    await replied(page);
+    await page.goto(`${DEV}/avisos`);
+    await page.locator(".hub-notice.is-new").waitFor();
+  },
   lesson: async (page) => {
     await enrolled(page);
     await openReading(page);

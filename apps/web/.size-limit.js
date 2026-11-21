@@ -64,8 +64,33 @@ export default [
       `!${CLIENT}/assets/lesson-*.css`,
       `!${CLIENT}/assets/asistente-*.css`,
       `!${CLIENT}/assets/tema-*.css`,
+      `!${CLIENT}/assets/mis-rutas-*.css`,
+      `!${CLIENT}/assets/comunidad-*.css`,
+      `!${CLIENT}/assets/app-shell-*.css`,
     ],
     limit: "20 KB",
+    gzip: true,
+  },
+  {
+    // A page's own sheet, loaded on that page only, has its own budget instead of weighing on
+    // every surface (Platform STEPs 21 and 22). First the route's community.
+    name: "community CSS",
+    path: `${CLIENT}/assets/comunidad-*.css`,
+    limit: "2.5 KB",
+    gzip: true,
+  },
+  {
+    // The app's frame and the pages that gather (Platform STEP 23): loaded inside the app only.
+    name: "app frame CSS",
+    path: `${CLIENT}/assets/app-shell-*.css`,
+    limit: "3 KB",
+    gzip: true,
+  },
+  {
+    // The same for Mis rutas.
+    name: "Mis rutas CSS",
+    path: `${CLIENT}/assets/mis-rutas-*.css`,
+    limit: "2 KB",
     gzip: true,
   },
   {

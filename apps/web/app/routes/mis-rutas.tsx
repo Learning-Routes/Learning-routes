@@ -5,15 +5,17 @@ import { BRAND, type LocaleCode, negotiateLocale } from "@learning-routes/core/l
 import type { OwnEnrollment } from "@learning-routes/core/repos/ports";
 import { useEffect, useState } from "react";
 import { redirect } from "react-router";
-import { runApiAction } from "../app-api.server";
 import { AppHeader } from "../app-pages/app-header";
 import "../app-pages/app-pages.css";
+import "../app-pages/my-routes.css";
 import { pageContext } from "../context";
+import { ownList } from "../shell.server";
 import { filled, inLocale } from "../storefront/words";
 import { ButtonLink } from "../ui/button";
 import { EmptyState } from "../ui/parts";
 import { usePreloadRoute } from "../ui/preload-route";
 import { Rising } from "../ui/rising";
+import { ProgressRing, RouteCover } from "../ui/route-cover";
 import { RouteFigure } from "../ui/route-figure";
 import type { Route } from "./+types/mis-rutas";
 
@@ -26,18 +28,14 @@ function practiceHref(enrollment: OwnEnrollment) {
 // "Mis rutas", minimal, from v2's MisRutas (Platform STEP 4 §6.2).
 
 export async function loader({ request, context }: Route.LoaderArgs) {
-  const answer = await runApiAction<{
-    enrollments: OwnEnrollment[];
-    teaches: boolean;
-    name: string;
-  }>(context, request, "enrollment.list", {});
-  if (answer.status === 401 || !answer.body?.output) {
+  const list = await ownList(context, request);
+  if (!list) {
     throw redirect("/sign-in");
   }
   // Their own name comes with the list: one read of the session, not two. Accounts made by a
   // sign-in link start without one.
   return {
-    ...answer.body.output,
+    ...list,
     newEnrollment: new URL(request.url).searchParams.get("nueva"),
     locale: negotiateLocale(request.headers.get("accept-language"), "es"),
     platformOrigin: context.get(pageContext).platformOrigin,
@@ -104,6 +102,15 @@ function topicTotal(enrollment: OwnEnrollment) {
   return enrollment.lessonsPerModule.reduce((sum, count) => sum + count, 0);
 }
 
+/** The share of the route already done, from 0 to 1. */
+function shareDone(enrollment: OwnEnrollment) {
+  const total = topicTotal(enrollment);
+  if (enrollment.place.finished || total === 0) {
+    return enrollment.place.finished ? 1 : 0;
+  }
+  return (enrollment.place.number - 1) / total;
+}
+
 function CarryOn({
   enrollment,
   locale,
@@ -117,25 +124,35 @@ function CarryOn({
   const source = enrollment.sourceLocale;
   return (
     <section className="my-next" aria-labelledby="my-next-title">
-      <div className="settle-2">
-        <p className="my-next-line">{words.carryOn}</p>
-        <h2 id="my-next-title" className="my-next-title">
-          {filled(words.topicTitle, {
-            n: enrollment.place.number,
-            title: inLocale(enrollment.place.title, locale, source),
-          })}
-        </h2>
-        <p className="my-next-line">
-          {`${filled(words.routeWith, {
-            route: inLocale(enrollment.title, locale, source),
-            creator: inLocale(enrollment.creator, locale),
-          })} ${filled(words.onTopic, { n: enrollment.place.number, total: topicTotal(enrollment) })}`}
-        </p>
+      <RouteCover seed={enrollment.routeId} className="my-next-cover" />
+      <div className="my-next-body">
+        <div className="settle-2">
+          <p className="my-next-line">{words.carryOn}</p>
+          <h2 id="my-next-title" className="my-next-title">
+            {filled(words.topicTitle, {
+              n: enrollment.place.number,
+              title: inLocale(enrollment.place.title, locale, source),
+            })}
+          </h2>
+          <p className="my-next-line">
+            {`${filled(words.routeWith, {
+              route: inLocale(enrollment.title, locale, source),
+              creator: inLocale(enrollment.creator, locale),
+            })} ${filled(words.onTopic, { n: enrollment.place.number, total: topicTotal(enrollment) })}`}
+          </p>
+        </div>
+        <div className="my-next-go settle-3">
+          <ProgressRing
+            share={shareDone(enrollment)}
+            label={filled(words.onTopic, {
+              n: enrollment.place.number,
+              total: topicTotal(enrollment),
+            })}
+          />
+          <ButtonLink href={practiceHref(enrollment)}>{APP_PAGES_TEXT[locale].continue}</ButtonLink>
+        </div>
+        <EnrollmentLine enrollment={enrollment} box={NEXT_BOX} isNew={isNew} />
       </div>
-      <ButtonLink className="settle-3" href={practiceHref(enrollment)}>
-        {APP_PAGES_TEXT[locale].continue}
-      </ButtonLink>
-      <EnrollmentLine enrollment={enrollment} box={NEXT_BOX} isNew={isNew} />
     </section>
   );
 }
@@ -157,7 +174,8 @@ function MyRoute({
   });
   return (
     <li className="my-route">
-      <div>
+      <RouteCover seed={enrollment.routeId} title={title} className="my-route-cover" />
+      <div className="my-route-words">
         <h3 className="my-route-title">{title}</h3>
         <p className="my-route-line-words">
           {`${creator}. `}

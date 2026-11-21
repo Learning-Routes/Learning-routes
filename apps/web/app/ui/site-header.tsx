@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { ThemeToggle } from "./theme-toggle";
 
-function BrandMark() {
+export function BrandMark() {
   return (
     <svg className="brand-mark" width="26" height="26" viewBox="0 0 26 26" aria-hidden="true">
       <rect className="brand-mark-field" x="0.5" y="0.5" width="25" height="25" rx="7" />

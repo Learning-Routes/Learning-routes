@@ -208,6 +208,13 @@
 .route-page {
   padding-block: var(--space-10) var(--space-24);
 }
+.route-hero {
+  display: block;
+  width: 100%;
+  height: clamp(10rem, 22vw, 17rem);
+  margin-block-end: var(--space-8);
+  border-radius: var(--radius-section);
+}
 .route-intro {
   display: grid;
   gap: var(--space-5);

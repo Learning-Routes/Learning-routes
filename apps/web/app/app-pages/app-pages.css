@@ -474,33 +474,6 @@
   cursor: pointer;
   font-family: inherit;
 }
-/* Inside the app every link matters, so on a narrow screen they take a row of their own under the
-   brand, as tabs that scroll sideways if they must, instead of wrapping around it. */
-@media (max-width: 860px) {
-  .site-header:has(.nav-form) {
-    flex-wrap: wrap;
-    row-gap: 0;
-    padding-block-start: var(--space-1);
-  }
-  .site-nav:has(.nav-form) {
-    order: 1;
-    width: calc(100% + 2 * var(--space-4));
-    margin-inline: calc(-1 * var(--space-4));
-    padding-inline: var(--space-2);
-    overflow-x: auto;
-    scrollbar-width: none;
-    border-block-start: 1px solid var(--color-border-subtle);
-  }
-  .site-nav:has(.nav-form) .nav-link {
-    display: inline-flex;
-    flex: none;
-    padding-inline: var(--space-3);
-  }
-  .site-nav:has(.nav-form) .nav-form {
-    margin-inline-start: auto;
-  }
-}
-
 .hub-page {
   gap: var(--space-10);
 }
@@ -641,62 +614,51 @@
   margin-block-start: var(--space-3);
 }
 
-/* On a wide screen the app's header stands at the side (Platform STEP 18): the same links, in the
-   same order, as a rail that stays while the page scrolls. Only the app's own header does this,
-   the one with the sign-out form; storefront and landing headers stay on top. */
-@media (min-width: 1024px) {
-  .desk:has(> .site-header .nav-form) {
-    display: grid;
-    grid-template-columns: 15.5rem minmax(0, 1fr);
-    align-items: start;
-    min-height: 100dvh;
-  }
-  .desk:has(> .site-header .nav-form) > * {
-    grid-column: 2;
-  }
-  .desk > .site-header:has(.nav-form) {
-    grid-column: 1;
-    grid-row: 1 / span 99;
-    top: 0;
-    height: 100dvh;
-    flex-direction: column;
-    align-items: stretch;
-    justify-content: flex-start;
-    gap: var(--space-6);
-    padding: var(--space-6) var(--space-4) var(--space-5);
-    border-block-end: 0;
-    border-inline-end: 1px solid var(--color-border-subtle);
-  }
-  .site-header:has(.nav-form) .brand {
-    padding-inline: var(--space-3);
-  }
-  .site-header:has(.nav-form) .site-nav {
-    flex: 1;
-    flex-direction: column;
-    align-items: stretch;
-    gap: var(--space-1);
-    margin-inline-start: 0;
-  }
-  .site-nav:has(.nav-form) .nav-link {
-    min-height: 2.875rem;
-    padding-inline: var(--space-3);
-    border-radius: 12px;
-    font-size: var(--text-body);
-  }
-  .site-nav:has(.nav-form) .nav-link[aria-current="page"] {
-    background: var(--color-card);
-    box-shadow: inset 0 0 0 1.5px var(--color-border-subtle);
-    font-weight: var(--weight-display);
-  }
-  /* Signing out sits at the foot of the rail, away from the places you go. */
-  .site-nav:has(.nav-form) .nav-form {
-    margin-block-start: auto;
-  }
-  .site-nav:has(.nav-form) .nav-button {
-    width: 100%;
-    justify-content: flex-start;
-  }
-  .site-header:has(.nav-form) .theme-button {
-    margin-inline-start: var(--space-1);
-  }
+/* Teaching has a cost (Platform STEP 21): said plainly, before the form. */
+.teach-cost {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: var(--space-4);
+  margin-block-start: var(--space-6);
+  padding: var(--space-5);
+  border-radius: var(--radius-card);
+  background: var(--color-accent-soft);
+  box-shadow: inset 0 0 0 1.5px color-mix(in oklab, var(--color-accent) 28%, transparent);
+}
+.teach-cost-mark {
+  width: 3rem;
+  height: 3rem;
+  fill: none;
+  stroke: var(--color-accent);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.teach-cost-title {
+  margin: 0;
+  font-size: var(--text-title);
+  font-weight: var(--weight-display);
+  letter-spacing: -0.02em;
+}
+.teach-cost-body,
+.teach-cost-wait {
+  margin: var(--space-2) 0 0;
+  color: var(--color-sub);
+}
+.teach-cost-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  margin: var(--space-4) 0 0;
+}
+.teach-cost-soon {
+  flex: none;
+  white-space: nowrap;
+  padding: var(--space-1) var(--space-3);
+  border-radius: 999px;
+  background: var(--color-card);
+  font-size: var(--text-small);
+  font-weight: var(--weight-label);
+  color: var(--color-accent);
 }
