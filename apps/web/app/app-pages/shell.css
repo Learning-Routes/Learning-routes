@@ -124,6 +124,15 @@
   background: var(--color-accent);
 }
 
+/* On a phone the top bar has room for the brand's mark or its name, not both, next to Enseñar and
+   the way out: the mark stays, and the link keeps its name for whoever cannot see it. */
+@media (max-width: 479px) {
+  .shell .brand {
+    gap: 0;
+    font-size: 0;
+  }
+}
+
 /* On a wide screen the header stands at the side and stays while the page scrolls. */
 @media (min-width: 1024px) {
   .desk:has(> .shell) {
