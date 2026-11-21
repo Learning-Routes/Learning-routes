@@ -55,6 +55,7 @@ async function routesOf(
         title: route.title,
         lessons: modules.map((module) => lessons.filter((l) => l.moduleId === module.id).length),
         published: route.latestPublishedVersion !== null,
+        listing: route.listing ?? null,
         address: `${address}/${route.slug}`,
         revision: route.revision,
         priceMinor: draft.body?.output?.route.priceMinor ?? null,
