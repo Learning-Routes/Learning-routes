@@ -180,6 +180,11 @@ describe("scripted runs of the assistant, in the Workers runtime (STEP 11-prep Â
       "publish",
     ]);
     expect(events.some((event) => event.type === "published")).toBe(false);
+    // The first words begin the trail; every later message is kept as written, for a reload.
+    expect(events.filter((event) => event.type === "began" || event.type === "wrote")).toEqual([
+      { type: "began", text: script.opening },
+      { type: "wrote", text: "agrega prÃ¡ctica de fracciones" },
+    ]);
     const plans = events.filter((event) => event.type === "planned");
     // The plan the creator was first asked about stays as it was; the topic they added is new.
     expect(plans.at(-1)?.modules.flatMap((module) => module.lessons)).toEqual([
@@ -339,7 +344,9 @@ describe("scripted runs of the assistant, in the Workers runtime (STEP 11-prep Â
     const messages = (await storage.exec("select body from messages")) as { body: string }[];
     const holding = messages.filter((row) => row.body.includes(INJECTED));
     expect(holding.map((row) => (JSON.parse(row.body) as { role: string }).role)).toEqual(["user"]);
-    expect(JSON.stringify(page.events)).not.toContain(INJECTED);
+    // Only the creator's own message, echoed back to their page, carries the words.
+    const carrying = page.events.filter((event) => JSON.stringify(event).includes(INJECTED));
+    expect(carrying).toEqual([{ type: "wrote", text: `Para mi clase. ${INJECTED}` }]);
     page.close();
   }, 30_000);
 
