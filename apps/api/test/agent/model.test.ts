@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { AgentEnv } from "../../src/agent/env";
-import { modelCall, providerFetch, type SpendBook } from "../../src/agent/model";
+import { isAnthropic, modelCall, providerFetch, type SpendBook } from "../../src/agent/model";
 
 const HAIKU = "anthropic/claude-haiku-5.5";
 
@@ -153,10 +153,10 @@ describe("who answers the assistant's model calls (STEP 11-prep §A1)", () => {
   });
 });
 
-describe("the real-model provider and the small tier, local only (STEP 11-prep §A1b)", () => {
+describe("Anthropic's own API as the provider, and the small tier (STEP 11-prep §A1b, ADR 0014)", () => {
   const dev = { ENVIRONMENT: "development" } as const;
 
-  it("answers with Anthropic, in development, with its key; with no key, no one answers", () => {
+  it("answers with Anthropic, with its key; with no key, no one answers", () => {
     const provider = providerFetch({
       ...dev,
       MODEL_PROVIDER: "anthropic",
@@ -175,22 +175,40 @@ describe("the real-model provider and the small tier, local only (STEP 11-prep �
     ).toBeNull();
   });
 
-  it("refuses Anthropic and the small tier anywhere but development", () => {
+  it("answers with Anthropic in production too, and never bills OpenRouter in its place", () => {
     let refusals = 0;
     const refused = () => {
       refusals += 1;
     };
-    const production = { ENVIRONMENT: "production", ANTHROPIC_API_KEY: "test-anthropic-key" };
+    const production = { ENVIRONMENT: "production", MODEL_PROVIDER: "anthropic" };
+    const provider = providerFetch(
+      { ...production, ANTHROPIC_API_KEY: "test-anthropic-key" } as never,
+      refused,
+    );
+    expect(provider && isAnthropic(provider)).toBe(true);
+    expect(provider?.fetcher).not.toBe(fetch);
     expect(
-      providerFetch({ ...production, MODEL_PROVIDER: "anthropic" } as never, refused),
+      providerFetch({ ...production, OPENROUTER_API_KEY: "test-openrouter-key" } as never, refused),
     ).toBeNull();
+    expect(refusals).toBe(0);
+  });
+
+  it("refuses the small tier anywhere but development", () => {
+    let refusals = 0;
+    const refused = () => {
+      refusals += 1;
+    };
     expect(
       providerFetch(
-        { ...production, OPENROUTER_API_KEY: "test-key", MODEL_TIER_OVERRIDE: "small" } as never,
+        {
+          ENVIRONMENT: "production",
+          OPENROUTER_API_KEY: "test-key",
+          MODEL_TIER_OVERRIDE: "small",
+        } as never,
         refused,
       ),
     ).toEqual({ apiKey: "test-key", fetcher: fetch });
-    expect(refusals).toBe(2);
+    expect(refusals).toBe(1);
   });
 
   it("sends every call to the small tier, with the asked tier's room to write", async () => {

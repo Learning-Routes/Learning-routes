@@ -1,11 +1,13 @@
 import { type ActionResult, runAction } from "@learning-routes/core/actions/define";
 import { ENTRY_ACTIONS } from "@learning-routes/core/actions/entries";
 import { gate } from "@learning-routes/core/ai/gate";
+import type { ModelId } from "@learning-routes/core/ai/models";
 import { TUTOR_TEXT } from "@learning-routes/core/copy/tutor";
 import { TUTOR_LIMITS, TUTOR_MODEL } from "@learning-routes/core/tutor/tutor";
 import { streamFromOpenRouter } from "../ai/openrouter";
 import { transactionAs, withClient } from "../db/with-db";
 import { type Asked, entryCtx, entryRepos, ledgerOf } from "./entry-ctx";
+import { isAnthropic, logRefusal, providerFetch } from "./model";
 
 // The learner's tutor (Platform STEP 20 §A), on the agent Worker: POST /api/tutor/ask streams an
 // answer about a topic of the person's own enrollment. Core's tutor.ask takes one of the day's ten
@@ -19,6 +21,7 @@ import { type Asked, entryCtx, entryRepos, ledgerOf } from "./entry-ctx";
 // spend through the gate, and the key from a Worker secret.
 
 const DAY = 86_400_000;
+const TUTOR_MODEL_ANTHROPIC: ModelId = "anthropic/claude-haiku-5.5";
 
 type Repos = ReturnType<typeof entryRepos>;
 type Messages = Parameters<typeof gate>[0]["messages"];
@@ -43,6 +46,7 @@ function refusal(locale: Locale, result: Exclude<ActionResult, { ok: true }>) {
 
 /** The gate's decision for one question, within the person's and the platform's day of spend. */
 function gated(
+  model: ModelId,
   questionId: string,
   asked: { system: string; messages: Messages },
   platformDaily: number,
@@ -50,7 +54,7 @@ function gated(
 ) {
   return gate(
     {
-      model: TUTOR_MODEL,
+      model,
       maxTokens: TUTOR_LIMITS.answerTokens,
       promptCache: true,
       // The question's own id: never a person's.
@@ -74,11 +78,13 @@ function gated(
 
 export async function askTutor(asked: Asked): Promise<Response> {
   const { env, ctx, db, person, locale, body } = asked;
-  const apiKey = env.OPENROUTER_API_KEY;
-  // No key: no model can answer, and no question is taken.
-  if (!apiKey) {
+  const provider = providerFetch(env, logRefusal);
+  // No provider with its key: no model can answer, and no question is taken.
+  if (!provider) {
     return unavailable(locale);
   }
+  // Anthropic's own API serves only its models: there the tutor is its small one (ADR 0014).
+  const model = isAnthropic(provider) ? TUTOR_MODEL_ANTHROPIC : TUTOR_MODEL;
   const ledger = ledgerOf(env);
   const now = Date.now();
   const { result, spent } = await transactionAs(db, person.id, async (tx) => {
@@ -111,21 +117,35 @@ export async function askTutor(asked: Asked): Promise<Response> {
   const later = (work: (repos: Repos) => Promise<void>) =>
     withClient(env, ctx, (fresh) => transactionAs(fresh, person.id, (tx) => work(entryRepos(tx))));
   const giveBack = () => later((repos) => repos.tutor.release(questionId));
-  const decision = gated(questionId, { system, messages }, Number(env.AGENT_DAILY_MICROCENTS), [
-    await ledger.today(),
-    spent,
-  ]);
+  const decision = gated(
+    model,
+    questionId,
+    { system, messages },
+    Number(env.AGENT_DAILY_MICROCENTS),
+    [await ledger.today(), spent],
+  );
   if (decision.verdict === "refused") {
     await giveBack();
     console.error(JSON.stringify({ message: "tutor refused", reason: decision.reason }));
     return unavailable(locale);
   }
-  return answer(asked, { apiKey, ledger, decision, giveBack, later, questionId });
+  // A test's fetcher stands in for the network; otherwise the provider's own answers.
+  const fetcher = asked.fetcher === fetch ? provider.fetcher : asked.fetcher;
+  return answer(asked, {
+    apiKey: provider.apiKey,
+    fetcher,
+    ledger,
+    decision,
+    giveBack,
+    later,
+    questionId,
+  });
 }
 
 interface Answering {
   questionId: string;
   apiKey: string;
+  fetcher: typeof fetch;
   ledger: { add(n: number): Promise<void> };
   decision: Extract<ReturnType<typeof gate>, { verdict: "allowed" }>;
   giveBack: () => Promise<void>;
@@ -150,7 +170,7 @@ async function answer(asked: Asked, a: Answering): Promise<Response> {
       writer.write(encoder.encode(delta)).catch(() => undefined);
     }
   };
-  const done = streamFromOpenRouter(a.decision, a.apiKey, onText, asked.fetcher).then(
+  const done = streamFromOpenRouter(a.decision, a.apiKey, onText, a.fetcher).then(
     async (streamed) => {
       started(false);
       const usage = streamed.usage;

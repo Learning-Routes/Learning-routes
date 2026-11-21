@@ -7,14 +7,14 @@ export interface AgentEnv extends Env {
   Studio: DurableObjectNamespace;
   LEDGER: DurableObjectNamespace<SpendLedger>;
   CREATOR_DOMAIN: string;
-  /** Unset means the assistant is not switched on: it says so, and calls no model. */
+  /** With no provider named: unset means the assistant is not switched on, and calls no model. */
   OPENROUTER_API_KEY?: string;
   /**
-   * Development only (STEP 11-prep): "scripted" answers from the committed scripts, "anthropic" from
-   * Anthropic's API with ANTHROPIC_API_KEY. Refused anywhere else.
+   * "anthropic": Anthropic's own API answers, with ANTHROPIC_API_KEY, in any environment (ADR 0014).
+   * "scripted": the committed scripts answer, in development only (STEP 11-prep); refused elsewhere.
    */
   MODEL_PROVIDER?: string;
-  /** For MODEL_PROVIDER "anthropic": the owner's key, from the Keychain through the process env. */
+  /** For MODEL_PROVIDER "anthropic": a Worker secret in production, the Keychain in a local run. */
   ANTHROPIC_API_KEY?: string;
   /** Development only: "small" sends every call to the cheap tier. */
   MODEL_TIER_OVERRIDE?: string;
