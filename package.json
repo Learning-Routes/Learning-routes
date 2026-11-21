@@ -36,6 +36,6 @@
     "knip": "6.41.0",
     "lighthouse": "13.5.0",
     "turbo": "2.11.8",
-    "typescript": "5.9.3"
+    "typescript": "7.0.2"
   }
 }
