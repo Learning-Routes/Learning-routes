@@ -6,7 +6,8 @@ import type {
   RouteDrafts,
   RouteSummary,
 } from "@learning-routes/core/repos/ports";
-import { and, asc, eq, isNull, sql } from "drizzle-orm";
+import { and, asc, eq, inArray, isNull, sql } from "drizzle-orm";
+import { catalogListings } from "../schema/catalog";
 import { blocks, lessonPrerequisites, lessons, modules, routes } from "../schema/content";
 import { addBlock, changeBlock, isLiveLesson } from "./draft-blocks";
 import { detailsOf, replaceContent } from "./draft-content";
@@ -124,18 +125,33 @@ async function getDraft(db: Db, where: Where): Promise<RepoResult<RouteDraft>> {
   });
 }
 
-const listRoutes = (db: Db, spaceId: string): Promise<RouteSummary[]> =>
-  db
+// With each route, its one active row in the catalog, if it has one: asked, or approved.
+const listRoutes = async (db: Db, spaceId: string): Promise<RouteSummary[]> => {
+  const rows = await db
     .select({
       id: routes.id,
       slug: routes.slug,
       title: routes.title,
       revision: routes.draftRevision,
       latestPublishedVersion: routes.latestPublishedVersion,
+      listing: catalogListings.status,
     })
     .from(routes)
+    .leftJoin(
+      catalogListings,
+      and(
+        eq(catalogListings.routeId, routes.id),
+        eq(catalogListings.spaceId, routes.spaceId),
+        inArray(catalogListings.status, ["requested", "approved"]),
+      ),
+    )
     .where(and(eq(routes.spaceId, spaceId), isNull(routes.archivedAt)))
     .orderBy(asc(sql`${routes.slug} collate "C"`));
+  return rows.map((row) => ({
+    ...row,
+    listing: row.listing === "requested" || row.listing === "approved" ? row.listing : null,
+  }));
+};
 
 /**
  * Locks the live route's row at the revision the caller read: a concurrent edit

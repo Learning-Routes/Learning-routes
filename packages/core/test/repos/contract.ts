@@ -106,6 +106,22 @@ export function repositoryContract(name: string, withFixture: WithFixture) {
       });
     });
 
+    it("says with each of a space's routes where it stands with the catalog", async () => {
+      await withFixture(async ({ spaceId, ownerId, actAs }) => {
+        const repos = await actAs(ownerId);
+        const fields = routeFields("stands");
+        value(await repos.routeDrafts.create(spaceId, fields));
+        const standing = async () =>
+          (await repos.routeDrafts.list(spaceId)).find((route) => route.id === fields.id)?.listing;
+        expect(await standing()).toBeNull();
+        value(await repos.catalog.request(spaceId, fields.id));
+        expect(await standing()).toBe("requested");
+        // A withdrawn request stays as a record, and the route stands outside again.
+        value(await repos.catalog.withdraw(spaceId, fields.id));
+        expect(await standing()).toBeNull();
+      });
+    });
+
     it("lists only a user's own active enrollments, with a route's shape and no block", async () => {
       await withFixture(async ({ spaceId, ownerId, learnerId, actAs }) => {
         const owner = await actAs(ownerId);

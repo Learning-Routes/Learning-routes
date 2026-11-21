@@ -18,6 +18,8 @@ export interface HubRouteData {
   title: LocalizedText;
   lessons: number[];
   published: boolean;
+  /** Where it stands with the catalog: asked and waiting, in it, or neither. */
+  listing: "requested" | "approved" | null;
   address: string;
   revision: number;
   priceMinor: number | null;
@@ -103,6 +105,11 @@ export function HubRoute({
           <Badge tone={route.published ? "accent" : "neutral"}>
             {route.published ? words.published : words.draft}
           </Badge>
+          {route.listing ? (
+            <Badge tone={route.listing === "approved" ? "accent" : "neutral"}>
+              {route.listing === "approved" ? words.inCatalog : words.catalogWaiting}
+            </Badge>
+          ) : null}
           <TextLink href={`/creador/rutas/${route.id}/vista-previa`}>{words.preview}</TextLink>
           {route.published ? <TextLink href={route.address}>{words.viewPublic}</TextLink> : null}
         </div>
@@ -112,7 +119,7 @@ export function HubRoute({
             intent="publish"
             label={route.published ? words.republish : words.publish}
           />
-          {isOwner && route.published ? (
+          {isOwner && route.published && route.listing === null ? (
             <ActionForm route={route} intent="catalog" label={words.askCatalog} />
           ) : null}
           {isOwner ? <PriceForm route={route} locale={locale} /> : null}
