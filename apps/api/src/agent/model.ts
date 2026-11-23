@@ -199,7 +199,9 @@ export function modelCall(
         limits: {
           dailyMicrocents: limits.daily,
           userDailyMicrocents: limits.userDaily,
-          ratePerMinute: limits.perMinute,
+          // The minute's cap meets the creator's words, never a tool round of a turn already
+          // started: that turn finishes, and MAX_CALLS_PER_TURN bounds it. Every call still counts.
+          ratePerMinute: messages.at(-1)?.role === "user" ? limits.perMinute : null,
         },
         spend: {
           globalToday: await env.LEDGER.get(env.LEDGER.idFromName("global")).today(),
@@ -211,7 +213,7 @@ export function modelCall(
     );
     if (decision.verdict === "refused") {
       console.error(JSON.stringify({ message: "studio call refused", reason: decision.reason }));
-      return { ok: false, why: decision.reason.endsWith("budget") ? "budgetOut" : "failed" };
+      return { ok: false, why: whyRefused(decision.reason) };
     }
     const streamed = await streamFromOpenRouter(
       decision,
@@ -222,6 +224,14 @@ export function modelCall(
     await meter(env, book, model, streamed, decision.estimateMicrocents);
     return answerOf(streamed);
   };
+}
+
+/** What the creator hears of a refused call: too fast, out of budget, or our failure. */
+function whyRefused(reason: string): "tooFast" | "budgetOut" | "failed" {
+  if (reason === "rate_limit") {
+    return "tooFast";
+  }
+  return reason.endsWith("budget") ? "budgetOut" : "failed";
 }
 
 /** What the turn hears of a call: its answer, a pause for the provider's credit, or a failure. */

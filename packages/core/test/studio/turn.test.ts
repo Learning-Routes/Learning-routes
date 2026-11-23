@@ -43,6 +43,7 @@ function fake(answers: ModelAnswer[]) {
       budgetOut: "OUT",
       paused: "PAUSED",
       tooLong: "LONG",
+      tooFast: "FAST",
       working: () => "WORKING",
     },
   };
@@ -205,6 +206,9 @@ describe("a turn of the assistant", () => {
     const failed = fake([{ ok: false, why: "failed" }]);
     await runTurn(history(), failed.deps);
     expect(failed.events).toEqual([{ event: { type: "said", text: "FAILED" }, keep: true }]);
+    const fast = fake([{ ok: false, why: "tooFast" }]);
+    await runTurn(history(), fast.deps);
+    expect(fast.events).toEqual([{ event: { type: "said", text: "FAST" }, keep: true }]);
   });
 
   it("stops after a fixed number of model calls in one turn", async () => {
