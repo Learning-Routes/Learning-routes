@@ -15,6 +15,11 @@ const edgeRenderer = join(
 // pg reads ~/.pgpass only for a connection with no password; a Worker has neither (no-pgpass.cjs).
 const PGPASS = /^pgpass$/;
 const noPgpass = fileURLToPath(new URL("workers/no-pgpass.cjs", import.meta.url));
+// pg parses a connection string only when given one; the storefront passes Hyperdrive's fields.
+const CONNECTION_STRING = /^pg-connection-string$/;
+const noConnectionString = fileURLToPath(
+  new URL("workers/no-connection-string.cjs", import.meta.url),
+);
 
 /** The storefront's enhancement scripts (ADR 0008), at fixed addresses cached pages can name. */
 function enhancementScripts(): Plugin {
@@ -54,6 +59,7 @@ export default defineConfig(({ command }) => ({
         ? [
             { find: REACT_SERVER, replacement: edgeRenderer },
             { find: PGPASS, replacement: noPgpass },
+            { find: CONNECTION_STRING, replacement: noConnectionString },
           ]
         : [],
   },

@@ -1,4 +1,4 @@
-import { PUBLIC_READS, publicRead } from "@learning-routes/public-read/reads";
+import { PUBLIC_READS, publicRead, withPublicRead } from "@learning-routes/public-read/reads";
 import type pg from "pg";
 import { describe, expect, it } from "vitest";
 import { attempt, newUser, query, rolledBack, URLS } from "./connect";
@@ -406,5 +406,31 @@ describe("the storefront's queries", () => {
     for (const text of Object.values(PUBLIC_READS)) {
       expect(text).toMatch(PUBLIC_VIEW);
     }
+  });
+});
+
+// The web Worker's build has no connection-string parser (no-connection-string.cjs): the client
+// connects with Hyperdrive's own fields, never its connectionString.
+describe("a request's reads, through Hyperdrive", () => {
+  it("connect with the binding's host, port, user, password and database alone", async () => {
+    const url = new URL(URLS.public);
+    const binding = {
+      host: url.hostname,
+      port: Number(url.port),
+      user: decodeURIComponent(url.username),
+      password: decodeURIComponent(url.password),
+      database: url.pathname.slice(1),
+      get connectionString(): string {
+        throw new Error("the connection string was read");
+      },
+    };
+    const waited: Promise<unknown>[] = [];
+    const answer = await withPublicRead(
+      { DB_PUBLIC: binding },
+      { waitUntil: (promise) => void waited.push(promise) },
+      async () => "read",
+    );
+    await Promise.all(waited);
+    expect(answer).toBe("read");
   });
 });
