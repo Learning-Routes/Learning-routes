@@ -546,6 +546,10 @@
   color: #1d1226;
   box-shadow: 0 30px 70px rgb(0 0 0 / 0.55);
   animation: studio-settle 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  /* A glimpse, not the lesson: it never grows over the conversation below. */
+  max-height: min(58dvh, 30rem);
+  overflow-y: auto;
+  overscroll-behavior: contain;
 }
 .studio-note.is-pinned {
   left: 0;
@@ -566,8 +570,13 @@
   letter-spacing: -0.02em;
 }
 .studio-note-body {
+  display: -webkit-box;
   margin: 0 0 12px;
+  overflow: hidden;
+  -webkit-line-clamp: 5;
+  -webkit-box-orient: vertical;
   font-size: 0.875rem;
+  line-height: 1.5;
   color: #55475f;
 }
 .studio-note code {
