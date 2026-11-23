@@ -56,6 +56,8 @@ export type StudioEvent =
   | { type: "began"; text: string }
   | { type: "stepped"; step: StudioStep }
   | { type: "said"; text: string }
+  /** The creator's own words after the first message, so a reload shows the whole exchange. */
+  | { type: "wrote"; text: string }
   | { type: "working"; text: string }
   | { type: "worked" }
   /** `isFork`: each option is a branch of the trail the creator can walk. */
@@ -83,12 +85,23 @@ export interface TrailStop {
   decision: string;
 }
 
+/** One turn of the conversation as the page shows it. */
+export interface LogEntry {
+  who: "creator" | "assistant";
+  text: string;
+}
+
+/** The newest turns the page keeps; older ones are still in the agent's storage. */
+export const LOG_KEPT = 40;
+
 export interface StudioState {
   hasBegun: boolean;
   /** The creator's first words, kept at the trail's start. */
   opening: string | null;
   step: StudioStep;
   said: string;
+  /** Who said what, oldest first, at most `LOG_KEPT` turns. */
+  log: LogEntry[];
   working: string | null;
   options: StudioOption[];
   isFork: boolean;
@@ -105,6 +118,7 @@ export const INITIAL_STUDIO_STATE: StudioState = {
   opening: null,
   step: "meet",
   said: "",
+  log: [],
   working: null,
   options: [],
   isFork: false,
@@ -129,14 +143,39 @@ export function planStations(modules: readonly PlannedModule[]) {
   ]);
 }
 
+function logged(log: LogEntry[], entry: LogEntry): LogEntry[] {
+  const last = log.at(-1);
+  // Streamed words arrive as the same turn growing: they replace it instead of adding a new one.
+  if (
+    last &&
+    entry.who === "assistant" &&
+    last.who === "assistant" &&
+    entry.text.startsWith(last.text)
+  ) {
+    return [...log.slice(0, -1), entry];
+  }
+  return [...log, entry].slice(-LOG_KEPT);
+}
+
 export function studioReducer(state: StudioState, event: StudioEvent): StudioState {
   switch (event.type) {
     case "began":
-      return { ...state, hasBegun: true, opening: event.text };
+      return {
+        ...state,
+        hasBegun: true,
+        opening: event.text,
+        log: logged(state.log, { who: "creator", text: event.text }),
+      };
     case "stepped":
       return { ...state, step: event.step };
     case "said":
-      return { ...state, said: event.text };
+      return {
+        ...state,
+        said: event.text,
+        log: logged(state.log, { who: "assistant", text: event.text }),
+      };
+    case "wrote":
+      return { ...state, log: logged(state.log, { who: "creator", text: event.text }) };
     case "working":
       return { ...state, working: event.text };
     case "worked":
@@ -155,7 +194,13 @@ export function studioReducer(state: StudioState, event: StudioEvent): StudioSta
             { branch, branches: state.options.length, decision: chosen.decision ?? chosen.label },
           ]
         : state.trail;
-      return { ...state, options: [], isFork: false, trail };
+      return {
+        ...state,
+        options: [],
+        isFork: false,
+        trail,
+        log: logged(state.log, { who: "creator", text: chosen.label }),
+      };
     }
     case "planned": {
       const stations = planStations(event.modules).length;

@@ -58,6 +58,8 @@ describe("the studio map", () => {
       isReducedMotion: true,
       startLabel: "Empiezas aquí",
       floor: () => 700,
+      inset: () => 0,
+      ceiling: () => 74,
       onChoose() {},
       onHot() {},
     });
@@ -70,5 +72,16 @@ describe("the studio map", () => {
     expect(() => map.setPlan([])).not.toThrow();
     expect(() => map.setBuilt(0)).not.toThrow();
     map.dispose();
+  });
+});
+
+describe("the map's camera beside the route's list", () => {
+  it("centres the picture on the part of the page the list leaves visible", async () => {
+    const { MapCamera } = await import("../app/studio/studio-camera");
+    const view = new MapCamera();
+    view.resize(1440, 900, 356);
+    expect(view.camera.view?.offsetX).toBe(178);
+    view.resize(390, 844);
+    expect(view.camera.view?.offsetX).toBe(0);
   });
 });

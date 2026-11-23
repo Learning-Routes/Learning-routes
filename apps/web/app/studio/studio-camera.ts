@@ -41,9 +41,11 @@ export class MapCamera {
     this.pointer.y = event.clientY / window.innerHeight - 0.5;
   };
 
-  resize(width: number, height: number) {
+  resize(width: number, height: number, inset = 0) {
     this.camera.aspect = width / height;
     this.camera.fov = width < 720 ? 42 : 30;
+    // Shifts the picture left by half the covered side, so the map centres on what is visible.
+    this.camera.setViewOffset(width, height, inset / 2, 0, width, height);
     this.camera.updateProjectionMatrix();
   }
 

@@ -37,6 +37,11 @@ export interface AssistantText {
   /** {address} is where the route is now. */
   publishedAt: string;
   routeList: string;
+  /** {n} is how many of the route's stations are written, {total} how many it has. */
+  builtOf: string;
+  /** Read before each turn of the conversation, for screen readers. */
+  you: string;
+  assistant: string;
   noMap: string;
 }
 
@@ -74,6 +79,9 @@ export const ASSISTANT_TEXT: Record<LocaleCode, AssistantText> = {
     confirmNo: "Todavía no",
     publishedAt: "Publicada en {address}",
     routeList: "Tu ruta, en orden",
+    builtOf: "{n} de {total} listos",
+    you: "Tú",
+    assistant: "Tu asistente",
     noMap: "Este navegador no muestra el mapa. Tu ruta está en la lista.",
   },
   en: {
@@ -109,6 +117,9 @@ export const ASSISTANT_TEXT: Record<LocaleCode, AssistantText> = {
     confirmNo: "Not yet",
     publishedAt: "Published at {address}",
     routeList: "Your route, in order",
+    builtOf: "{n} of {total} ready",
+    you: "You",
+    assistant: "Your assistant",
     noMap: "This browser can't show the map. Your route is in the list.",
   },
   pt: {
@@ -144,6 +155,9 @@ export const ASSISTANT_TEXT: Record<LocaleCode, AssistantText> = {
     confirmNo: "Ainda não",
     publishedAt: "Publicada em {address}",
     routeList: "Sua rota, em ordem",
+    builtOf: "{n} de {total} prontos",
+    you: "Você",
+    assistant: "Seu assistente",
     noMap: "Este navegador não mostra o mapa. Sua rota está na lista.",
   },
   fr: {
@@ -179,6 +193,9 @@ export const ASSISTANT_TEXT: Record<LocaleCode, AssistantText> = {
     confirmNo: "Pas encore",
     publishedAt: "Publié sur {address}",
     routeList: "Votre parcours, dans l’ordre",
+    builtOf: "{n} sur {total} prêts",
+    you: "Vous",
+    assistant: "Votre assistant",
     noMap: "Ce navigateur n’affiche pas la carte. Votre parcours est dans la liste.",
   },
   it: {
@@ -214,6 +231,9 @@ export const ASSISTANT_TEXT: Record<LocaleCode, AssistantText> = {
     confirmNo: "Non ancora",
     publishedAt: "Pubblicato su {address}",
     routeList: "Il tuo percorso, in ordine",
+    builtOf: "{n} su {total} pronti",
+    you: "Tu",
+    assistant: "Il tuo assistente",
     noMap: "Questo browser non mostra la mappa. Il tuo percorso è nell'elenco.",
   },
 };
