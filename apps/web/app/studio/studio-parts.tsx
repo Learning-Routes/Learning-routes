@@ -123,6 +123,16 @@ export function RouteList({
   );
 }
 
+const TICKS = /`([^`]+)`/;
+
+/** A lesson's words, with what the model wrote between backticks as code and not as marks. */
+function withCode(text: string) {
+  return text.split(TICKS).map((part, index) =>
+    // split() puts each captured piece at an odd place.
+    index % 2 === 1 ? <code key={index}>{part}</code> : part,
+  );
+}
+
 export function PreviewNote({
   preview,
   words,
@@ -141,14 +151,14 @@ export function PreviewNote({
     <div ref={noteRef} className={`studio-note${isPinned ? " is-pinned" : ""}`}>
       <p className="studio-note-format">{filled(words.previewOf, { format: preview.format })}</p>
       <h2 className="studio-note-title">{preview.title}</h2>
-      <p className="studio-note-body">{preview.body}</p>
+      <p className="studio-note-body">{withCode(preview.body)}</p>
       {preview.question ? (
         <>
-          <p className="studio-note-prompt">{preview.question.prompt}</p>
+          <p className="studio-note-prompt">{withCode(preview.question.prompt)}</p>
           <ul className="studio-note-options">
             {preview.question.options.map((option, index) => (
               <li key={option} className={index === preview.question?.answer ? "is-answer" : ""}>
-                {option}
+                {withCode(option)}
               </li>
             ))}
           </ul>
