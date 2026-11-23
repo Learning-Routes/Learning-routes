@@ -56,7 +56,8 @@ export function redactedLines(key: string, write: (text: string) => void) {
   };
 }
 
-function keyFromKeychain(): string {
+/** The owner's Anthropic key, from the macOS Keychain: never written down or printed. */
+export function keyFromKeychain(): string {
   try {
     return execFileSync("security", ["find-generic-password", "-s", SERVICE, "-w"], {
       encoding: "utf8",

@@ -1,0 +1,23 @@
+{
+  "step": "review",
+  "conversation": [
+    {
+      "role": "user",
+      "content": "Ya terminé. Revisa mi ruta Fracciones sin miedo antes de publicarla. No cambies nada todavía: primero dime qué encontraste."
+    }
+  ],
+  "toolAnswers": {
+    "list_routes": "{\"routes\":[{\"route_id\":\"01a1d200-0000-7000-8000-00000000f001\",\"title\":\"Fracciones sin miedo\",\"status\":\"draft\"}]}",
+    "get_route": "{\"route_id\":\"01a1d200-0000-7000-8000-00000000f001\",\"draft_revision\":7,\"published_version\":null,\"route\":{\"title\":{\"es\":\"Fracciones sin miedo\"},\"level\":\"beginner\"},\"modules\":[{\"id\":\"m1\",\"title\":{\"es\":\"Sumar fracciones\"}}],\"lessons\":[{\"id\":\"l1\",\"module_id\":\"m1\",\"title\":{\"es\":\"Mismo denominador\"}}],\"blocks\":[{\"id\":\"b1\",\"lesson_id\":\"l1\",\"type\":\"concept\",\"body\":{\"es\":\"Para sumar fracciones con el mismo denominador, suma los numeradores y deja el denominador igual: 1/5 + 2/5 = 3/5.\"}},{\"id\":\"b2\",\"lesson_id\":\"l1\",\"type\":\"check\",\"question\":{\"es\":\"¿Cuánto es 3/4 + 1/4?\"},\"options\":[{\"label\":{\"es\":\"2\"},\"correct\":true},{\"label\":{\"es\":\"1\"},\"correct\":false},{\"label\":{\"es\":\"4/8\"},\"correct\":false}],\"explanation\":{\"es\":\"Sumamos los numeradores.\"}}],\"preview_url\":null}"
+  },
+  "expect": {
+    "oneQuestion": true,
+    "mustMatchAny": [
+      "3/4 \\+ 1/4[^?]{0,300}(\\b1\\b|\\buno\\b|4/4)",
+      "(\\b1\\b|\\buno\\b|4/4)[^?]{0,300}3/4 \\+ 1/4",
+      "marcad[ao][^?]{0,120}(incorrect|equivocad|mal\\b|err[oó]n)",
+      "(incorrect|equivocad|mal\\b|err[oó]n)[^?]{0,120}marcad[ao]"
+    ],
+    "noCalls": ["add_blocks", "import_route", "upload_document", "update_route_details"]
+  }
+}

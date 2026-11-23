@@ -117,6 +117,8 @@ export const SkillEval = z.strictObject({
     .array(z.strictObject({ role: z.enum(["user", "assistant"]), content: z.string().min(1) }))
     .min(1)
     .refine((messages) => messages.at(-1)?.role === "user", "It ends with the creator's words."),
+  /** Stand-in answers for the silent tools the moment reaches, by tool name. */
+  toolAnswers: z.record(z.string(), z.string().min(1)).optional(),
   expect: z.strictObject({
     oneQuestion: z.boolean().optional(),
     mustNotContain: z.array(z.string().min(1)).optional(),

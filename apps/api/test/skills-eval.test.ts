@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { problemsOf } from "../scripts/skills-eval";
+import { goesOn, isWanted, problemsOf, standInFor } from "../scripts/skills-eval";
 
 const golden = (expectations: object) => ({
   step: "meet" as const,
@@ -55,5 +55,41 @@ describe("the skills' eval checks", () => {
     expect(
       problemsOf(golden({ mustMatchAny: ["nombre", "llamas"], calls: ["ask_creator"] }), answer),
     ).toEqual(["matched none of nombre | llamas", "did not call ask_creator"]);
+  });
+
+  it("answer a silent tool with the moment's own stand-in when it gives one", () => {
+    const route = '{"title":"Fracciones sin miedo"}';
+    expect(standInFor({ ...golden({}), toolAnswers: { get_route: route } }, "get_route")).toBe(
+      route,
+    );
+    expect(standInFor(golden({}), "get_route")).toContain("not_found");
+    expect(standInFor(golden({}), "add_blocks")).toBeUndefined();
+  });
+
+  it("run a whole skill, or one of its moments by skill/file", () => {
+    expect(isWanted([], "answer-check", "a.json")).toBe(true);
+    expect(isWanted(["answer-check"], "answer-check", "a.json")).toBe(true);
+    expect(isWanted(["answer-check/b.json"], "answer-check", "a.json")).toBe(false);
+    expect(isWanted(["answer-check/b.json"], "answer-check", "b.json")).toBe(true);
+    expect(isWanted(["accessibility"], "answer-check", "a.json")).toBe(false);
+  });
+
+  // The first real run stopped at "I'll review your route" said beside set_step; the turn goes on.
+  it("go on past silent tools, with or without words beside them, as the turn does", () => {
+    const call = (name: string) => ({
+      id: name,
+      type: "function" as const,
+      function: { name, arguments: "{}" },
+    });
+    expect(goesOn(golden({}), { content: "Voy a revisarla.", toolCalls: [call("set_step")] })).toBe(
+      true,
+    );
+    expect(
+      goesOn(golden({}), { content: "", toolCalls: [call("set_step"), call("get_route")] }),
+    ).toBe(true);
+    expect(goesOn(golden({}), { content: "Listo.", toolCalls: [] })).toBe(false);
+    expect(
+      goesOn(golden({}), { content: "", toolCalls: [call("set_step"), call("ask_creator")] }),
+    ).toBe(false);
   });
 });

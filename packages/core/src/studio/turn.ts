@@ -29,7 +29,7 @@ const isContentTool = (name: string): name is ContentTool =>
 const READS: readonly ContentTool[] = ["get_route_format", "list_routes", "get_route"];
 
 /** The cheap tier talks; the strong tier plans and writes lessons (§1.2). */
-const TIERS: Record<StudioStep, ModelId> = {
+export const TIERS: Record<StudioStep, ModelId> = {
   meet: "anthropic/claude-haiku-5.5",
   content: "anthropic/claude-haiku-5.5",
   plan: "anthropic/claude-sonnet-5.5",
