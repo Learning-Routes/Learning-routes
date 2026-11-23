@@ -1,6 +1,7 @@
 import { execFileSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import { costOfUsage, type ModelId } from "@learning-routes/core/ai/models";
+import { writtenByAgent } from "@learning-routes/core/studio/check-order";
 import type { StudioEvent } from "@learning-routes/core/studio/session";
 import { expect, type Page, test } from "@playwright/test";
 import { openReading } from "./reading";
@@ -261,9 +262,11 @@ test("a creator builds and publishes with the assistant, and a student completes
     expect(
       writes.filter((write) => write.via !== "agent" || write.spaceId !== facts.spaceId),
     ).toEqual([]);
-    // No invented content: what was published is the script's arguments, word for word.
+    // No invented content: what was published is the script's arguments, word for word, each
+    // check's options in the mixed order the assistant saves them in.
     const written = CALLS.filter((call) => call.name === "add_blocks").flatMap(
-      (call) => call.arguments.blocks as Record<string, unknown>[],
+      (call) =>
+        (writtenByAgent(call.name, call.arguments) as { blocks: Record<string, unknown>[] }).blocks,
     );
     expect(facts.blocks).toEqual(expect.arrayContaining(written));
     expect(facts.blocks).toHaveLength(written.length);
