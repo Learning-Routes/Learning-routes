@@ -64,22 +64,44 @@ function toScreen(point: Vector3, camera: Camera) {
 }
 
 /** Moves every marker; one under the top bar or the subtitles is hidden, never drawn over them. */
-export function placeMarkers(markers: readonly Marker[], camera: Camera, floor: number) {
-  const width = window.innerWidth;
+export function placeMarkers(
+  markers: readonly Marker[],
+  camera: Camera,
+  floor: number,
+  inset = 0,
+  ceiling = TOP_BAR,
+) {
+  const width = window.innerWidth - inset;
   for (const marker of markers) {
     const s = toScreen(marker.position, camera);
-    const isShown = s.isAhead && s.x > -40 && s.x < width + 40 && s.y > TOP_BAR && s.y < floor;
+    const isShown = s.isAhead && s.x > -40 && s.x < width - 24 && s.y > ceiling && s.y < floor;
     marker.element.style.transform = `translate3d(${s.x}px,${s.y}px,0)`;
     marker.element.style.visibility = isShown ? "visible" : "hidden";
   }
 }
 
-/** A fork's chip, above its branch's end and kept inside the screen. */
-export function placeChip(chip: HTMLElement, anchor: Vector3, camera: Camera) {
+/**
+ * A fork's chip, above its branch's end and kept inside the screen. `placed` holds the chips
+ * already placed this frame: one that would cover another rises above it instead.
+ */
+export function placeChip(
+  chip: HTMLElement,
+  anchor: Vector3,
+  camera: Camera,
+  inset = 0,
+  placed: { left: number; right: number; top: number }[] = [],
+) {
   const s = toScreen(anchor, camera);
   const half = chip.offsetWidth / 2;
-  const x = Math.min(window.innerWidth - half - 16, Math.max(half + 16, s.x));
-  chip.style.transform = `translate3d(${x - half}px,${s.y - 44}px,0)`;
+  const x = Math.min(window.innerWidth - inset - half - 16, Math.max(half + 16, s.x));
+  let y = s.y - 44;
+  for (const other of placed) {
+    if (x - half < other.right + 6 && x + half > other.left - 6 && Math.abs(y - other.top) < 42) {
+      y = other.top - 44;
+    }
+  }
+  placed.push({ left: x - half, right: x + half, top: y });
+  chip.style.transform = `translate3d(${x - half}px,${y}px,0)`;
 }
 
 /** A pinned preview beside its station, above the subtitles, with a leader line to the station. */
@@ -88,6 +110,7 @@ export function placeNote(
   anchor: Vector3,
   camera: Camera,
   floor: number,
+  inset = 0,
 ) {
   const s = toScreen(anchor, camera);
   const { element, leader } = pin;
@@ -95,11 +118,12 @@ export function placeNote(
   const h = element.offsetHeight;
   if (window.innerWidth < NARROW) {
     // A phone has no room beside the station: the preview sits above the subtitles instead.
-    element.style.transform = `translate3d(16px,${Math.max(90, floor - h - 12)}px,0)`;
+    // Below the route's title, so the preview never covers it.
+    element.style.transform = `translate3d(16px,${Math.max(168, floor - h - 12)}px,0)`;
     leader.style.width = "0px";
     return;
   }
-  const x = s.x + 70 + w > window.innerWidth - 20 ? s.x - w - 70 : s.x + 70;
+  const x = s.x + 70 + w > window.innerWidth - inset - 20 ? s.x - w - 70 : s.x + 70;
   const y = Math.max(90, Math.min(floor - h - 20, s.y - h / 2));
   element.style.transform = `translate3d(${x}px,${y}px,0)`;
   const dx = (x > s.x ? x : x + w) - s.x;

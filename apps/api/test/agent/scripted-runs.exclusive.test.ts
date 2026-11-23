@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs";
 import { costOfUsage, type ModelId } from "@learning-routes/core/ai/models";
 import { AGENT_TEXT } from "@learning-routes/core/copy/agent";
+import { writtenByAgent } from "@learning-routes/core/studio/check-order";
 import type { StudioEvent } from "@learning-routes/core/studio/session";
 import { STUDIO_PATH } from "@learning-routes/core/studio/session";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
@@ -180,6 +181,11 @@ describe("scripted runs of the assistant, in the Workers runtime (STEP 11-prep Â
       "publish",
     ]);
     expect(events.some((event) => event.type === "published")).toBe(false);
+    // The first words begin the trail; every later message is kept as written, for a reload.
+    expect(events.filter((event) => event.type === "began" || event.type === "wrote")).toEqual([
+      { type: "began", text: script.opening },
+      { type: "wrote", text: "agrega prÃ¡ctica de fracciones" },
+    ]);
     const plans = events.filter((event) => event.type === "planned");
     // The plan the creator was first asked about stays as it was; the topic they added is new.
     expect(plans.at(-1)?.modules.flatMap((module) => module.lessons)).toEqual([
@@ -241,7 +247,8 @@ describe("scripted runs of the assistant, in the Workers runtime (STEP 11-prep Â
       });
     }
 
-    // No invented content: the draft's blocks are the script's, word for word.
+    // No invented content: the draft's blocks are the script's, word for word, each check's
+    // options in their mixed order.
     const route = await routeOf(creator.spaceId);
     expect(route?.latest_published_version).toBeNull();
     const blocks: { kind: string; data: Record<string, unknown> }[] = await query(
@@ -254,7 +261,9 @@ describe("scripted runs of the assistant, in the Workers runtime (STEP 11-prep Â
       "toolCalls" in turn.reply
         ? turn.reply.toolCalls
             .filter((call) => call.name === "add_blocks")
-            .flatMap((call) => call.arguments.blocks as unknown[])
+            .flatMap(
+              (call) => (writtenByAgent(call.name, call.arguments) as { blocks: unknown[] }).blocks,
+            )
         : [],
     );
     // A block's type is kept in its kind column.
@@ -339,7 +348,9 @@ describe("scripted runs of the assistant, in the Workers runtime (STEP 11-prep Â
     const messages = (await storage.exec("select body from messages")) as { body: string }[];
     const holding = messages.filter((row) => row.body.includes(INJECTED));
     expect(holding.map((row) => (JSON.parse(row.body) as { role: string }).role)).toEqual(["user"]);
-    expect(JSON.stringify(page.events)).not.toContain(INJECTED);
+    // Only the creator's own message, echoed back to their page, carries the words.
+    const carrying = page.events.filter((event) => JSON.stringify(event).includes(INJECTED));
+    expect(carrying).toEqual([{ type: "wrote", text: `Para mi clase. ${INJECTED}` }]);
     page.close();
   }, 30_000);
 

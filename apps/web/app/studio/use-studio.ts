@@ -33,6 +33,8 @@ export function useConversation(connect: () => StudioTransport) {
 
 export interface MapParts {
   canvas: RefObject<HTMLCanvasElement | null>;
+  /** The route's list: where it sits, the map does not draw labels. */
+  rail: RefObject<HTMLElement | null>;
   overlay: RefObject<HTMLDivElement | null>;
   stage: RefObject<HTMLElement | null>;
 }
@@ -61,7 +63,7 @@ export function useStudioMap(
       : import("./studio-map")
     )
       .then(({ StudioMap }) => {
-        const { canvas, overlay, stage } = parts;
+        const { canvas, overlay, stage, rail } = parts;
         if (isCancelled || !canvas.current || !overlay.current) {
           return;
         }
@@ -71,6 +73,17 @@ export function useStudioMap(
           isReducedMotion: isStill(),
           startLabel,
           floor: () => (stage.current?.getBoundingClientRect().top ?? window.innerHeight) - 16,
+          // On a phone the route's title spans the width: labels stay below it.
+          ceiling: () =>
+            window.innerWidth < 720
+              ? (document.querySelector(".studio-top")?.getBoundingClientRect().bottom ?? 74)
+              : 74,
+          inset: () => {
+            const list = rail.current;
+            return list && list.offsetWidth > 1
+              ? window.innerWidth - list.getBoundingClientRect().left
+              : 0;
+          },
           onChoose: (branch) => callbacks.current.onChoose(branch),
           onHot: (branch) => callbacks.current.onHot(branch),
         });

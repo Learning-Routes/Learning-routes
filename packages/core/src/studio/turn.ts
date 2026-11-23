@@ -43,9 +43,10 @@ export type ModelAnswer =
   | { ok: true; content: string; toolCalls: ToolCall[] }
   /**
    * budgetOut: the space's month is spent; paused: the provider's credit or key is out, which is
-   * the platform's to fix; failed: the call did not happen or broke.
+   * the platform's to fix; tooFast: the creator started turns faster than the space's minute
+   * allows; failed: the call did not happen or broke.
    */
-  | { ok: false; why: "budgetOut" | "paused" | "failed" };
+  | { ok: false; why: "budgetOut" | "paused" | "tooFast" | "failed" };
 
 export interface TurnDeps {
   step: StudioStep;
@@ -69,6 +70,7 @@ export interface TurnDeps {
     budgetOut: string;
     paused: string;
     tooLong: string;
+    tooFast: string;
     working: (tool: ContentTool) => string;
   };
 }
