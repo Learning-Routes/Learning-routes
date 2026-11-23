@@ -184,6 +184,11 @@ function translated(body: ReadableStream<Uint8Array>, model: ModelId): ReadableS
 
 /** Anthropic's refusal before any model ran, as OpenRouter would say it: out of credit is a 402. */
 async function refusedAs(response: Response): Promise<Response> {
+  if (response.status >= 300 && response.status < 400) {
+    return new Response(JSON.stringify({ error: { code: 502, message: "redirected" } }), {
+      status: 502,
+    });
+  }
   const body = (await response.json().catch(() => null)) as { error?: { message?: string } } | null;
   const message = body?.error?.message ?? "";
   const status = response.status === 400 && CREDIT_OUT.test(message) ? 402 : response.status;
@@ -222,8 +227,9 @@ export function anthropicFetch(apiKey: string, upstream: typeof fetch = fetch): 
         "content-type": "application/json",
       },
       body: JSON.stringify(messagesBody(request, served.id)),
-      // The key goes to Anthropic only: a redirect fails instead of carrying it elsewhere.
-      redirect: "error",
+      // The key goes to Anthropic only: a redirect is never followed. Workers throws on "error"
+      // for every fetch, so it is refused by hand below.
+      redirect: "manual",
       ...(init.signal ? { signal: init.signal } : {}),
     });
     return response.ok && response.body

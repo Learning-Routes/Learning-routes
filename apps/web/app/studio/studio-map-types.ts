@@ -18,6 +18,10 @@ export interface StudioMapOptions {
   startLabel: string;
   /** Where the subtitles begin, in pixels from the top: labels below it are hidden. */
   floor: () => number;
+  /** Where the page's header ends, in pixels from the top: labels above it are hidden. */
+  ceiling: () => number;
+  /** How much of the right side the route's list covers, in pixels: the map centres on the rest. */
+  inset: () => number;
   onChoose: (branch: number) => void;
   onHot: (branch: number) => void;
 }
