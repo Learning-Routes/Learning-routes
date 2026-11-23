@@ -525,7 +525,8 @@
 /* A lesson's preview, pinned beside its station */
 .studio-note {
   position: absolute;
-  z-index: 5;
+  /* Above the conversation: where they meet, the note is the one that reads. */
+  z-index: 7;
   right: 24px;
   top: 96px;
   width: 296px;
@@ -559,6 +560,13 @@
   font-size: 0.875rem;
   color: #55475f;
 }
+.studio-note code {
+  padding: 1px 5px;
+  border-radius: 5px;
+  background: #e9e2ee;
+  font-size: 0.8125rem;
+  color: #1d1226;
+}
 .studio-note-prompt {
   margin: 0 0 8px;
   font-size: 0.875rem;
@@ -566,19 +574,20 @@
 }
 .studio-note-options {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 6px;
   margin: 0;
   padding: 0;
   list-style: none;
 }
+/* One option a line, as tall as its words: an answer is often a sentence. */
 .studio-note-options li {
-  display: grid;
-  place-items: center;
-  height: 36px;
+  min-height: 36px;
+  padding: 8px 10px;
   border-radius: 8px;
   box-shadow: inset 0 0 0 1px #e2d9e8;
   font-size: 0.875rem;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
   font-variant-numeric: tabular-nums;
 }
 .studio-note-options .is-answer {
@@ -734,7 +743,7 @@
 
 .studio-toast {
   position: absolute;
-  z-index: 7;
+  z-index: 8;
   left: 50%;
   top: calc(env(safe-area-inset-top, 0px) + 22px);
   transform: translate(-50%, -14px);
