@@ -6,11 +6,13 @@ import { describe, expect, it } from "vitest";
 
 const require = createRequire(import.meta.url);
 
+const REFUSAL = /Hyperdrive's fields/;
+
 describe("the web Worker's stand-in for pg-connection-string", () => {
   it("refuses to parse a connection string, plainly", () => {
     const { parse } = require("../workers/no-connection-string.cjs") as {
       parse: (text: string) => unknown;
     };
-    expect(() => parse("postgres://someone@somewhere/db")).toThrow(/Hyperdrive's fields/);
+    expect(() => parse("postgres://someone@somewhere/db")).toThrow(REFUSAL);
   });
 });
