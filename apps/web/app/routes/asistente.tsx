@@ -20,7 +20,8 @@ export async function loader({ request, context }: Route.LoaderArgs) {
   if (owned.status === 401) {
     throw redirect("/sign-in");
   }
-  const isDemo = new URL(request.url).searchParams.has("demo");
+  const demo = new URL(request.url).searchParams.get("demo");
+  const isDemo = demo !== null;
   const space = (owned.body?.output ?? []).find((each) => EDITORS.includes(each.role));
   // Someone who edits no space has no assistant: Enseñar tells them how to start.
   if (!(space || isDemo)) {
@@ -31,6 +32,8 @@ export async function loader({ request, context }: Route.LoaderArgs) {
     spaceId: space?.id ?? null,
     creatorAccess: creatorAccessOf(owned.body?.output),
     isDemo,
+    // ?demo=largo plays the same demo with the preview of a long, real lesson.
+    isLongDemo: demo === "largo",
   };
 }
 
@@ -45,15 +48,16 @@ const STILL = () =>
   typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 export default function Assistant({ loaderData }: Route.ComponentProps) {
-  const { spaceId, isDemo, locale } = loaderData;
+  const { spaceId, isDemo, isLongDemo, locale } = loaderData;
   const connect = useCallback(
     () =>
       isDemo || !spaceId
         ? new DemoTransport(
             (ms) => new Promise((resolve) => setTimeout(resolve, STILL() ? Math.min(ms, 60) : ms)),
+            isLongDemo,
           )
         : new AgentTransport({ origin: window.location.origin, spaceId, locale }),
-    [isDemo, spaceId, locale],
+    [isDemo, isLongDemo, spaceId, locale],
   );
   return <StudioPage words={ASSISTANT_TEXT[loaderData.locale]} connect={connect} />;
 }

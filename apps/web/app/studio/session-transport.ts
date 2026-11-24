@@ -4,6 +4,7 @@ import type {
   StudioInput,
   StudioOption,
 } from "@learning-routes/core/studio/session";
+import { LONG_PREVIEW, SHORT_PREVIEW } from "./demo-previews";
 
 // How the assistant's page talks to the assistant (Platform STEP 10). The page only knows this
 // interface: the scripted demo below speaks it today, and the agent's connection replaces it.
@@ -62,7 +63,11 @@ export class DemoTransport implements StudioTransport {
   private isClosed = false;
   private withPractice = false;
 
-  constructor(private readonly pause: Pause) {}
+  constructor(
+    private readonly pause: Pause,
+    /** The preview of a real, long lesson instead of the short one: what the layout must hold. */
+    private readonly isLong = false,
+  ) {}
 
   send(input: StudioInput) {
     if (input.type === "message") {
@@ -216,13 +221,7 @@ export class DemoTransport implements StudioTransport {
     this.emit({ type: "built", stations: 4 });
     this.emit({
       type: "previewed",
-      preview: {
-        station: 1,
-        title: "¿Qué es una variable?",
-        format: "concepto y pregunta",
-        body: "Una variable es una caja con nombre: guarda un número que todavía no conocemos.",
-        question: { prompt: "Si 2 + x = 9, ¿qué guarda x?", options: ["5", "7", "11"], answer: 1 },
-      },
+      preview: this.isLong ? LONG_PREVIEW : SHORT_PREVIEW,
     });
     await this.say(
       withPractice

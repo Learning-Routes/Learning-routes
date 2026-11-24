@@ -1,5 +1,6 @@
 import { expect, test } from "@playwright/test";
 import { DEV, SCREENS } from "./screens";
+import { newAddress, signInContext } from "./session";
 
 // Reduced motion, overflow and touch targets on every designed screen (Platform STEP 3
 // §2.3, §5.3).
@@ -128,3 +129,63 @@ test("an error appearing moves nothing: the field keeps its line for it", async 
   await page.getByText("Escribe un correo con @").waitFor();
   expect((await button.boundingBox())?.y).toBe(before?.y);
 });
+
+// A real lesson is long: a title of a dozen words, code, options that are whole sentences. The
+// preview card once let them spill over each other and over the conversation.
+for (const [width, height] of [
+  [1440, 900],
+  [390, 844],
+] as const) {
+  test(`assistant: a long lesson's preview holds its text at ${width} px`, async ({ browser }) => {
+    const context = await browser.newContext({
+      viewport: { width, height },
+      reducedMotion: "reduce",
+      locale: "es-ES",
+    });
+    const page = await context.newPage();
+    await signInContext(context, newAddress("leccion-larga"));
+    await page.goto(`${DEV}/creador/asistente?demo=largo`);
+    await page.getByRole("textbox").fill("Enseño Python a quien nunca ha programado");
+    await page.keyboard.press("Enter");
+    for (const answer of ["Desde cero", "Adultos que vuelven", "Así está bien"]) {
+      await page.getByRole("button", { name: answer }).click();
+    }
+    const note = page.locator(".studio-note");
+    await expect(note.locator(".studio-note-options li")).toHaveCount(4);
+    await expect(note.locator("code").first()).toBeVisible();
+    const faults = await note.evaluate((card) => {
+      const found: string[] = [];
+      const box = card.getBoundingClientRect();
+      if (
+        box.left < 0 ||
+        box.right > window.innerWidth + 1 ||
+        box.bottom > window.innerHeight + 1
+      ) {
+        found.push("the card leaves the screen");
+      }
+      const rows = [...card.querySelectorAll<HTMLElement>(".studio-note-options li")];
+      rows.forEach((row, index) => {
+        const here = row.getBoundingClientRect();
+        if (row.scrollWidth > row.clientWidth + 1 || row.scrollHeight > row.clientHeight + 1) {
+          found.push(`option ${index + 1} spills`);
+        }
+        const next = rows[index + 1]?.getBoundingClientRect();
+        if (next && next.top < here.bottom - 1) {
+          found.push(`option ${index + 1} runs into the next`);
+        }
+      });
+      const title = card.querySelector<HTMLElement>(".studio-note-title");
+      if (title && title.scrollWidth > title.clientWidth + 1) {
+        found.push("the title spills");
+      }
+      return found;
+    });
+    expect(faults).toEqual([]);
+    expect(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+      ),
+    ).toBeLessThanOrEqual(0);
+    await context.close();
+  });
+}
