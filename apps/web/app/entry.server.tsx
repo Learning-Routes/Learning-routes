@@ -3,6 +3,7 @@ import { renderToReadableStream } from "react-dom/server";
 import type { EntryContext, RouterContextProvider } from "react-router";
 import { ServerRouter } from "react-router";
 import { pageContext } from "./context";
+import { TRAVEL_STYLE_HASH } from "./travel";
 
 type Surface =
   | { storefront?: boolean; challenge?: boolean; lessonMedia?: boolean; creationImages?: boolean }
@@ -24,7 +25,7 @@ function policy(
   return [
     "default-src 'self'",
     nonce === null ? "script-src 'self'" : `script-src 'self' 'nonce-${nonce}'${challenge}`,
-    "style-src 'self'",
+    `style-src 'self' ${TRAVEL_STYLE_HASH}`,
     hasMedia
       ? "img-src 'self' data: https:"
       : hasCreationImages

@@ -127,9 +127,7 @@ html:has(.stage) .site-header {
    The old page steps back and fades; the new one rises into place. The browser's own cross-document
    transition, same origin only: Chrome and Safari, and Firefox simply navigates. */
 @media (prefers-reduced-motion: no-preference) {
-  @view-transition {
-    navigation: auto;
-  }
+  /* The opt-in itself, @view-transition, is in the page's head: see travel.ts. */
   ::view-transition-group(*) {
     animation-duration: 420ms;
     animation-timing-function: cubic-bezier(0.3, 0.7, 0.2, 1);
