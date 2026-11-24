@@ -140,15 +140,18 @@ export async function action({ request, context }: Route.ActionArgs) {
     const answer = await runApiAction(context, request, "catalog.request", { routeId });
     return { notice: answer.body?.ok ? "catalogAsked" : "catalogRefused" } as const;
   }
-  if (intent === "price" && AMOUNT.test(field("amount"))) {
-    const priceMinor = Math.round(Number(field("amount").replace(",", ".")) * MINOR_UNITS);
+  if (intent === "price" && !AMOUNT.test(field("amount").trim())) {
+    return { notice: "priceBad" } as const;
+  }
+  if (intent === "price") {
+    const priceMinor = Math.round(Number(field("amount").trim().replace(",", ".")) * MINOR_UNITS);
     const answer = await runApiAction(context, request, "route.set_price", {
       routeId,
       expectedRevision,
       priceMinor,
       currency: field("currency"),
     });
-    return { notice: answer.body?.ok ? "priceSaved" : "publishFailed" } as const;
+    return { notice: answer.body?.ok ? "priceSaved" : "priceBad" } as const;
   }
   if (intent === "replace" || intent === "remove") {
     return { creation: await creationChange(context, request, form) } as const;

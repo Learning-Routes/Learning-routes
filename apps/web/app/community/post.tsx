@@ -1,6 +1,6 @@
 import type { CommunityText } from "@learning-routes/core/copy/community";
 import type { CommunityItem } from "@learning-routes/core/repos/community-ports";
-import { Form } from "react-router";
+import { Form, useNavigation } from "react-router";
 
 // One post of a route's community, with its replies (Platform STEP 22). Every action is a plain
 // form post, so it works before the page hydrates; text is rendered as text, never as HTML.
@@ -143,6 +143,7 @@ function Reply({ item, ...shared }: { item: CommunityItem } & Shared) {
 
 export function PostCard({ post, ...shared }: { post: Post } & Shared) {
   const { words } = shared;
+  const isSending = useNavigation().state !== "idle";
   const kind =
     post.kind === "question" || post.kind === "win" || post.kind === "note" ? post.kind : "note";
   const label = { question: words.kindQuestion, win: words.kindWin, note: words.kindNote }[kind];
@@ -183,7 +184,7 @@ export function PostCard({ post, ...shared }: { post: Post } & Shared) {
             aria-label={words.replyPlaceholder}
             autoComplete="off"
           />
-          <button type="submit" className="button button-primary button-small">
+          <button type="submit" className="button button-primary button-small" disabled={isSending}>
             <span className="button-label">{words.send}</span>
           </button>
         </Form>
