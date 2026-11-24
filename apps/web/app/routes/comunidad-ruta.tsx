@@ -3,7 +3,7 @@ import { COMMUNITY_TEXT } from "@learning-routes/core/copy/community";
 import { BRAND, negotiateLocale } from "@learning-routes/core/locales";
 import type { PostKind, ReportReason } from "@learning-routes/core/repos/community-ports";
 import type { OwnEnrollment } from "@learning-routes/core/repos/ports";
-import { data, Form, redirect } from "react-router";
+import { data, Form, redirect, useNavigation } from "react-router";
 import { isFromTheApp, runApiAction } from "../app-api.server";
 import { AppHeader } from "../app-pages/app-header";
 import "../app-pages/app-pages.css";
@@ -139,6 +139,8 @@ export async function action({ request, params, context }: Route.ActionArgs) {
 
 export default function Comunidad({ loaderData, actionData }: Route.ComponentProps) {
   const { enrollment, thread, teaches, me, nameless, now, locale } = loaderData;
+  // A second press while the first is on its way would write the same thing twice.
+  const isSending = useNavigation().state !== "idle";
   const words = COMMUNITY_TEXT[locale];
   const base = `/mis-rutas/${enrollment.enrollmentId}`;
   // A deleted post stays only while it holds replies: alone, it says nothing to anyone.
@@ -181,7 +183,11 @@ export default function Comunidad({ loaderData, actionData }: Route.ComponentPro
               placeholder={words.nameLabel}
               autoComplete="given-name"
             />
-            <button type="submit" className="button button-secondary button-small">
+            <button
+              type="submit"
+              className="button button-secondary button-small"
+              disabled={isSending}
+            >
               <span className="button-label">{words.nameSave}</span>
             </button>
           </Form>
@@ -213,7 +219,11 @@ export default function Comunidad({ loaderData, actionData }: Route.ComponentPro
                 </label>
               ))}
             </fieldset>
-            <button type="submit" className="button button-primary button-regular">
+            <button
+              type="submit"
+              className="button button-primary button-regular"
+              disabled={isSending}
+            >
               <span className="button-label">{words.publish}</span>
             </button>
           </div>

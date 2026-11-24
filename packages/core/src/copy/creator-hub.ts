@@ -33,6 +33,7 @@ export interface CreatorHubText {
   priceCurrency: string;
   priceSave: string;
   priceSaved: string;
+  priceBad: string;
   priceNote: string;
   priceCurrent: string;
   askCatalog: string;
@@ -76,6 +77,7 @@ export const CREATOR_HUB_TEXT: Record<LocaleCode, CreatorHubText> = {
     priceCurrency: "Moneda",
     priceSave: "Guardar precio",
     priceSaved: "Precio guardado; el cobro se activa pronto.",
+    priceBad: "No se guardó ese precio. Escríbelo solo con números, por ejemplo 12 o 12,50.",
     priceNote: "Tus estudiantes siguen entrando gratis hasta que el cobro esté activo.",
     priceCurrent: "Precio guardado: {price}",
     askCatalog: "Pedir entrar al catálogo",
@@ -122,6 +124,7 @@ export const CREATOR_HUB_TEXT: Record<LocaleCode, CreatorHubText> = {
     priceCurrency: "Currency",
     priceSave: "Save price",
     priceSaved: "Price saved; payments arrive soon.",
+    priceBad: "That price was not saved. Write it with numbers only, for example 12 or 12.50.",
     priceNote: "Your students keep starting free until payments are on.",
     priceCurrent: "Price saved: {price}",
     askCatalog: "Ask to join the catalog",
@@ -168,6 +171,7 @@ export const CREATOR_HUB_TEXT: Record<LocaleCode, CreatorHubText> = {
     priceCurrency: "Moeda",
     priceSave: "Salvar preço",
     priceSaved: "Preço salvo; a cobrança chega em breve.",
+    priceBad: "Esse preço não foi salvo. Escreva só com números, por exemplo 12 ou 12,50.",
     priceNote: "Seus alunos continuam entrando grátis até a cobrança estar ativa.",
     priceCurrent: "Preço salvo: {price}",
     askCatalog: "Pedir para entrar no catálogo",
@@ -214,6 +218,8 @@ export const CREATOR_HUB_TEXT: Record<LocaleCode, CreatorHubText> = {
     priceCurrency: "Devise",
     priceSave: "Enregistrer le prix",
     priceSaved: "Prix enregistré ; le paiement arrive bientôt.",
+    priceBad:
+      "Ce prix n’a pas été enregistré. Écrivez-le avec des chiffres seulement, par exemple 12 ou 12,50.",
     priceNote:
       "Vos élèves continuent de commencer gratuitement tant que le paiement n'est pas actif.",
     priceCurrent: "Prix enregistré : {price}",
@@ -262,6 +268,7 @@ export const CREATOR_HUB_TEXT: Record<LocaleCode, CreatorHubText> = {
     priceCurrency: "Valuta",
     priceSave: "Salva il prezzo",
     priceSaved: "Prezzo salvato; i pagamenti arrivano presto.",
+    priceBad: "Quel prezzo non è stato salvato. Scrivilo solo con numeri, per esempio 12 o 12,50.",
     priceNote: "I tuoi studenti continuano a iniziare gratis finché i pagamenti non sono attivi.",
     priceCurrent: "Prezzo salvato: {price}",
     askCatalog: "Chiedi di entrare nel catalogo",
