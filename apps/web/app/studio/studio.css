@@ -87,21 +87,31 @@
   font-size: 0.9375rem;
   text-decoration: none;
 }
+/* The route's name and summary keep to a column at the left: a long summary wraps there and
+   never runs across the map, its labels or the preview note. */
 .studio-route {
+  max-width: min(26rem, 100%);
   margin-top: 22px;
   animation: studio-settle 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
 .studio-route-title {
   margin: 0;
+  text-wrap: balance;
   font-weight: 600;
   font-size: 1.625rem;
   line-height: 1.15;
   letter-spacing: -0.025em;
 }
 .studio-route-summary {
-  margin: 2px 0 0;
+  display: -webkit-box;
+  margin: 4px 0 0;
+  overflow: hidden;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
   font-size: 0.875rem;
+  line-height: 1.45;
   color: var(--studio-sub);
+  text-wrap: pretty;
 }
 .studio-route-state {
   display: flex;
@@ -536,6 +546,10 @@
   color: #1d1226;
   box-shadow: 0 30px 70px rgb(0 0 0 / 0.55);
   animation: studio-settle 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  /* A glimpse, not the lesson: it never grows over the conversation below. */
+  max-height: min(58dvh, 30rem);
+  overflow-y: auto;
+  overscroll-behavior: contain;
 }
 .studio-note.is-pinned {
   left: 0;
@@ -556,8 +570,13 @@
   letter-spacing: -0.02em;
 }
 .studio-note-body {
+  display: -webkit-box;
   margin: 0 0 12px;
+  overflow: hidden;
+  -webkit-line-clamp: 5;
+  -webkit-box-orient: vertical;
   font-size: 0.875rem;
+  line-height: 1.5;
   color: #55475f;
 }
 .studio-note code {
