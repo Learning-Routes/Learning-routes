@@ -737,22 +737,26 @@ kbd.p-kbd {
     right: 0;
   }
 
+  /* The sheet is as wide as the lesson's column, which the outline and the tutor narrow: the
+     explanation keeps a readable measure and the buttons drop below it when both do not fit. */
   .p-sheet-inner {
     max-width: 760px;
-    flex-direction: row;
+    flex-flow: row wrap;
     align-items: center;
-    gap: 20px;
+    gap: 12px 20px;
   }
 
   .p-sheet-text {
-    flex: 1;
+    flex: 1 1 18rem;
     display: flex;
     flex-direction: column;
     gap: 4px;
   }
 
   .p-sheet-actions {
-    flex: 0 0 340px;
+    flex: 1 1 16rem;
+    max-width: 340px;
+    margin-inline-start: auto;
   }
 }
 

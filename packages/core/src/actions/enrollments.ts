@@ -58,13 +58,14 @@ export const enrollmentCreate = defineAction({
 export const enrollmentList = defineAction({
   name: "enrollment.list",
   kind: "query",
-  description: "List your own active enrollments, whether you teach anywhere, and your name.",
+  description: "List your own active enrollments, whether you teach anywhere, your name and id.",
   input: z.strictObject({}),
   target: () => ({ kind: "account", id: "self", self: true }),
   // The name comes with the list, so Mis rutas reads the session once, not twice (Platform STEP 15).
   run: async (ctx) => ({
     ...(await ctx.repos.enrollments.listOwn(ctx.actor.userId)),
     name: ctx.actor.name?.trim() ?? "",
+    userId: ctx.actor.userId,
   }),
 });
 

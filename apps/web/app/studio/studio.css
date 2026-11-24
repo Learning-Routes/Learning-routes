@@ -81,6 +81,7 @@
 .studio-brand {
   display: inline-flex;
   align-items: center;
+  min-height: var(--size-touch);
   gap: 10px;
   color: var(--studio-text);
   font-weight: 600;
