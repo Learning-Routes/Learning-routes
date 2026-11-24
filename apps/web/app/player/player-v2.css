@@ -290,6 +290,7 @@
 
 .player .p-sheet.is-ok {
   background: var(--p-oks);
+  color: var(--p-oki);
 }
 
 .player .p-sheet-title {

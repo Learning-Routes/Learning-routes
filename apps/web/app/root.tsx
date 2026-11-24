@@ -22,6 +22,7 @@ import { themeFromCookie } from "./theme";
 import { ButtonLink } from "./ui/button";
 import { SiteHeader } from "./ui/site-header";
 import "./app-pages/app-pages.css";
+import { TRAVEL_STYLE } from "./travel";
 import { useProgressHints } from "./ui/progress-hints";
 import { Rising } from "./ui/rising";
 
@@ -70,6 +71,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <Meta />
         <Links />
+        <style>{TRAVEL_STYLE}</style>
       </head>
       <body>
         {children}

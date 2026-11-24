@@ -31,6 +31,11 @@ export interface CommunityText {
   reportAbuse: string;
   reportOther: string;
   reported: string;
+  remove: string;
+  removeYes: string;
+  nameAsk: string;
+  nameLabel: string;
+  nameSave: string;
   tooMuch: string;
   failed: string;
   older: string;
@@ -68,6 +73,11 @@ export const COMMUNITY_TEXT: Record<LocaleCode, CommunityText> = {
     reportAbuse: "Es ofensiva o acosa a alguien",
     reportOther: "Otra cosa",
     reported: "Gracias. Tu reporte es anónimo y alguien lo va a revisar.",
+    remove: "Borrar",
+    removeYes: "Sí, borrar",
+    nameAsk: "Todavía apareces como «Alguien». ¿Cómo te llamas?",
+    nameLabel: "Tu nombre",
+    nameSave: "Guardar",
     tooMuch: "Has escrito mucho en esta hora. Vuelve a intentarlo en un rato.",
     failed: "No se pudo guardar. Inténtalo otra vez.",
     older: "Ver anteriores",
@@ -103,6 +113,11 @@ export const COMMUNITY_TEXT: Record<LocaleCode, CommunityText> = {
     reportAbuse: "It is offensive or harasses someone",
     reportOther: "Something else",
     reported: "Thank you. Your report is anonymous and someone will review it.",
+    remove: "Delete",
+    removeYes: "Yes, delete",
+    nameAsk: "You still appear as “Someone”. What is your name?",
+    nameLabel: "Your name",
+    nameSave: "Save",
     tooMuch: "You have written a lot this hour. Try again in a while.",
     failed: "It could not be saved. Try again.",
     older: "See earlier",
@@ -138,6 +153,11 @@ export const COMMUNITY_TEXT: Record<LocaleCode, CommunityText> = {
     reportAbuse: "É ofensiva ou assedia alguém",
     reportOther: "Outra coisa",
     reported: "Obrigado. Sua denúncia é anônima e alguém vai revisar.",
+    remove: "Apagar",
+    removeYes: "Sim, apagar",
+    nameAsk: "Você ainda aparece como «Alguém». Como você se chama?",
+    nameLabel: "Seu nome",
+    nameSave: "Salvar",
     tooMuch: "Você escreveu muito nesta hora. Tente de novo daqui a pouco.",
     failed: "Não foi possível salvar. Tente de novo.",
     older: "Ver anteriores",
@@ -173,6 +193,11 @@ export const COMMUNITY_TEXT: Record<LocaleCode, CommunityText> = {
     reportAbuse: "C’est offensant ou du harcèlement",
     reportOther: "Autre chose",
     reported: "Merci. Votre signalement est anonyme et sera examiné.",
+    remove: "Supprimer",
+    removeYes: "Oui, supprimer",
+    nameAsk: "Vous apparaissez encore comme « Quelqu’un ». Comment vous appelez-vous ?",
+    nameLabel: "Votre nom",
+    nameSave: "Enregistrer",
     tooMuch: "Vous avez beaucoup écrit cette heure-ci. Réessayez dans un moment.",
     failed: "Impossible d’enregistrer. Réessayez.",
     older: "Voir les précédentes",
@@ -208,6 +233,11 @@ export const COMMUNITY_TEXT: Record<LocaleCode, CommunityText> = {
     reportAbuse: "È offensiva o molesta qualcuno",
     reportOther: "Altro",
     reported: "Grazie. La segnalazione è anonima e qualcuno la esaminerà.",
+    remove: "Elimina",
+    removeYes: "Sì, elimina",
+    nameAsk: "Compari ancora come «Qualcuno». Come ti chiami?",
+    nameLabel: "Il tuo nome",
+    nameSave: "Salva",
     tooMuch: "Hai scritto molto in quest’ora. Riprova tra poco.",
     failed: "Non è stato possibile salvare. Riprova.",
     older: "Vedi precedenti",

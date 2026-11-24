@@ -21,6 +21,13 @@ import type { Route } from "./+types/comunidad-ruta";
 const POST_KINDS = ["question", "win", "note"] as const satisfies readonly PostKind[];
 const REPORT_REASONS = ["spam", "abuse", "other"] as const satisfies readonly ReportReason[];
 
+interface OwnList {
+  enrollments: OwnEnrollment[];
+  teaches: boolean;
+  name: string;
+  userId: string;
+}
+
 interface Thread {
   pinned: Post[];
   items: Post[];
@@ -28,12 +35,10 @@ interface Thread {
 }
 
 export async function loader({ request, params, context }: Route.LoaderArgs) {
-  const list = await runApiAction<{ enrollments: OwnEnrollment[]; teaches: boolean }>(
-    context,
-    request,
-    "enrollment.list",
-    {},
-  );
+  const [list, profile] = await Promise.all([
+    runApiAction<OwnList>(context, request, "enrollment.list", {}),
+    runApiAction<{ displayName: string | null }>(context, request, "profile.get", {}),
+  ]);
   if (list.status === 401 || !list.body?.output) {
     throw redirect("/sign-in");
   }
@@ -53,6 +58,9 @@ export async function loader({ request, params, context }: Route.LoaderArgs) {
     enrollment,
     thread: thread.body.output,
     teaches: list.body.output.teaches,
+    me: list.body.output.userId,
+    // Whoever signed in with only an address has no name yet, and would post as "Someone".
+    nameless: !(profile.body?.output?.displayName || list.body.output.name),
     now: Date.now(),
     locale: negotiateLocale(request.headers.get("accept-language"), "es"),
   };
@@ -83,6 +91,10 @@ function asked(form: FormData, routeId: string): [string, unknown] | null {
       return text("body") ? ["community.reply", { routeId, postId, body: text("body") }] : null;
     case "useful":
       return ["community.useful", { routeId, postId, on: text("on") === "1" }];
+    case "delete":
+      return ["community.delete", { routeId, postId }];
+    case "name":
+      return text("name") ? ["profile.update", { displayName: text("name") }] : null;
     case "report": {
       const reason = oneOf(REPORT_REASONS, text("reason"));
       return reason ? ["community.report", { routeId, postId, reason }] : null;
@@ -117,26 +129,29 @@ export async function action({ request, params, context }: Route.ActionArgs) {
   if (answer.body?.ok) {
     return { said: call[0] === "community.report" ? ("reported" as const) : ("done" as const) };
   }
+  // Reported before: the person already did what they came to do.
+  if (call[0] === "community.report" && answer.status === 409) {
+    return { said: "reported" as const };
+  }
   const tooMuch = answer.status === 429 || answer.body?.code === "rate_limited";
   return data({ said: tooMuch ? ("tooMuch" as const) : ("failed" as const) }, { status: 400 });
 }
 
 export default function Comunidad({ loaderData, actionData }: Route.ComponentProps) {
-  const { enrollment, thread, teaches, now, locale } = loaderData;
+  const { enrollment, thread, teaches, me, nameless, now, locale } = loaderData;
   const words = COMMUNITY_TEXT[locale];
   const base = `/mis-rutas/${enrollment.enrollmentId}`;
-  const posts = [...thread.pinned, ...thread.items];
+  // A deleted post stays only while it holds replies: alone, it says nothing to anyone.
+  const posts = [...thread.pinned, ...thread.items].filter(
+    (post) => !(post.isDeleted && post.replies.length === 0),
+  );
   const said = actionData?.said;
   return (
     <div className="desk">
       <AppHeader locale={locale} place="community" teaches={teaches} />
       <main className="app-page cm-page">
         <header className="cm-top">
-          <RouteCover
-            seed={enrollment.routeId}
-            title={inLocale(enrollment.title, locale, enrollment.sourceLocale)}
-            className="cm-cover"
-          />
+          <RouteCover seed={enrollment.routeId} className="cm-cover" />
           <div className="cm-top-words">
             <p className="cm-creator">{inLocale(enrollment.creator, locale)}</p>
             <h1 className="cm-title">
@@ -153,6 +168,24 @@ export default function Comunidad({ loaderData, actionData }: Route.ComponentPro
         {said === "reported" ? <Notice tone="success" title={words.reported} /> : null}
         {said === "tooMuch" ? <Notice tone="error" title={words.tooMuch} /> : null}
         {said === "failed" ? <Notice tone="error" title={words.failed} /> : null}
+        {nameless ? (
+          <Form method="post" className="cm-name">
+            <input type="hidden" name="intent" value="name" />
+            <label htmlFor="cm-name">{words.nameAsk}</label>
+            <input
+              className="cm-input cm-name-input"
+              id="cm-name"
+              name="name"
+              required
+              maxLength={60}
+              placeholder={words.nameLabel}
+              autoComplete="given-name"
+            />
+            <button type="submit" className="button button-secondary button-small">
+              <span className="button-label">{words.nameSave}</span>
+            </button>
+          </Form>
+        ) : null}
         <Form method="post" id="preguntar" className="cm-compose" key={posts[0]?.id ?? "first"}>
           <input type="hidden" name="intent" value="post" />
           <textarea
@@ -193,7 +226,7 @@ export default function Comunidad({ loaderData, actionData }: Route.ComponentPro
         ) : (
           <ol className="cm-posts">
             {posts.map((post) => (
-              <PostCard key={post.id} post={post} words={words} locale={locale} now={now} />
+              <PostCard key={post.id} post={post} words={words} locale={locale} now={now} me={me} />
             ))}
           </ol>
         )}

@@ -2,6 +2,11 @@
    gather everything: Inicio, Comunidad and Avisos. Loaded by the frame's route, so by every page
    inside it and by nothing else. */
 
+/* The frame is the same on every page of the app: when one page travels to the next it stays
+   where it is, and only what is inside the page leaves and arrives. */
+.shell {
+  view-transition-name: app-frame;
+}
 .shell .nav-link {
   gap: var(--space-3);
 }

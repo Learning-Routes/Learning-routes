@@ -41,6 +41,8 @@ interface Shared {
   words: CommunityText;
   locale: string;
   now: number;
+  /** The reader's own id: what they wrote they may delete, and never report. */
+  me: string;
 }
 
 function Useful({ item, words }: { item: CommunityItem; words: CommunityText }) {
@@ -80,7 +82,35 @@ function Report({ item, words }: { item: CommunityItem; words: CommunityText }) 
   );
 }
 
-function Byline({ item, words, locale, now }: { item: CommunityItem } & Shared) {
+/** One's own post or reply: asked twice, since it cannot be undone. */
+function Remove({ item, words }: { item: CommunityItem; words: CommunityText }) {
+  return (
+    <details className="cm-more">
+      <summary className="cm-act">{words.remove}</summary>
+      <Form method="post" preventScrollReset className="cm-report">
+        <input type="hidden" name="intent" value="delete" />
+        <input type="hidden" name="postId" value={item.id} />
+        <button type="submit" className="cm-choice">
+          {words.removeYes}
+        </button>
+      </Form>
+    </details>
+  );
+}
+
+/** What one may do with a post besides marking it useful: delete one's own, report another's. */
+function More({ item, words, me }: { item: CommunityItem; words: CommunityText; me: string }) {
+  if (item.isDeleted) {
+    return null;
+  }
+  return item.authorId === me ? (
+    <Remove item={item} words={words} />
+  ) : (
+    <Report item={item} words={words} />
+  );
+}
+
+function Byline({ item, words, locale, now }: { item: CommunityItem } & Omit<Shared, "me">) {
   return (
     <p className="cm-by">
       <b>{item.authorName || words.someone}</b>
@@ -104,7 +134,7 @@ function Reply({ item, ...shared }: { item: CommunityItem } & Shared) {
         {item.isHidden ? <p className="cm-hidden">{words.hidden}</p> : null}
         <div className="cm-acts">
           <Useful item={item} words={words} />
-          <Report item={item} words={words} />
+          <More item={item} words={words} me={shared.me} />
         </div>
       </div>
     </li>
@@ -131,7 +161,7 @@ export function PostCard({ post, ...shared }: { post: Post } & Shared) {
         <span className="cm-count">
           {words.replies.replace("{n}", String(post.replies.length))}
         </span>
-        <Report item={post} words={words} />
+        <More item={post} words={words} me={shared.me} />
       </div>
       {post.replies.length ? (
         <ol className="cm-replies">

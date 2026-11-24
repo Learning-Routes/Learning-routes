@@ -64,6 +64,28 @@ test("Comunidad lists the route's community, and a post written in it reaches th
   await expect(page.getByRole("link", { name: words })).toBeVisible();
 });
 
+test("Someone without a name gives one, writes under it, and deletes what they wrote", async ({
+  page,
+}) => {
+  const enrollment = await enrolled(page, "sin-nombre");
+  await page.goto(`${DEV}/comunidad/${enrollment}`);
+  const saved = () =>
+    page.waitForResponse((answer) => answer.request().method() === "POST" && answer.ok());
+  await page.locator('input[name="name"]').fill("Lucía Paz");
+  await Promise.all([saved(), page.getByRole("button", { name: "Guardar" }).click()]);
+  await expect(page.locator(".cm-name")).toHaveCount(0);
+  const words = `Ya sé presentarme en portugués ${crypto.randomUUID().slice(0, 8)}`;
+  await page.locator('textarea[name="body"]').fill(words);
+  await Promise.all([saved(), page.getByRole("button", { name: "Publicar" }).click()]);
+  const post = page.locator(".cm-post", { hasText: words });
+  await expect(post.locator(".cm-by")).toContainText("Lucía Paz");
+  // One's own post is deleted, never reported.
+  await expect(post.locator("summary", { hasText: "Reportar" })).toHaveCount(0);
+  await post.locator("summary", { hasText: "Borrar" }).click();
+  await Promise.all([saved(), post.getByRole("button", { name: "Sí, borrar" }).click()]);
+  await expect(page.getByText(words)).toHaveCount(0);
+});
+
 test("Avisos shows a reply, and Marcar como leídos clears the side panel's count", async ({
   page,
   browser,
