@@ -374,6 +374,8 @@
 }
 .studio-turn p {
   margin: 0;
+  /* The assistant's own line breaks: a list it wrote reads as a list. */
+  white-space: pre-line;
 }
 .studio-turn.is-old {
   opacity: 0.55;
@@ -556,6 +558,64 @@
   left: 0;
   top: 0;
   right: auto;
+}
+/* Folded: only its name, as a button, where the note was. */
+.studio-note.is-folded {
+  width: auto;
+  max-width: min(296px, calc(100vw - 32px));
+  padding: 0;
+  overflow: visible;
+}
+.studio-note-fold {
+  display: grid;
+  gap: 2px;
+  min-height: 44px;
+  padding: 8px 14px;
+  border: 0;
+  border-radius: inherit;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+}
+.studio-note-fold-title {
+  overflow: hidden;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.studio-note-close {
+  position: sticky;
+  top: 0;
+  float: inline-end;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  margin: -8px -8px 0 8px;
+  border: 0;
+  border-radius: 50%;
+  background: #e9e2ee;
+  color: #1d1226;
+  cursor: pointer;
+}
+.studio-note-close::after {
+  content: "";
+  position: absolute;
+  inset: -6px;
+}
+.studio-note-close path {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+}
+.studio-note-fold:focus-visible,
+.studio-note-close:focus-visible {
+  outline: 2px solid #6a2ea0;
+  outline-offset: 2px;
 }
 .studio-note-format {
   margin: 0;

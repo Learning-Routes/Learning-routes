@@ -25,6 +25,8 @@ export interface AssistantText {
   /** {format} is the lesson's format, in the assistant's words. */
   previewOf: string;
   openPreview: string;
+  previewShow: string;
+  previewHide: string;
   /** {title} is the route's title. */
   confirmTitle: string;
   /** {address} is where the route will be. */
@@ -71,6 +73,8 @@ export const ASSISTANT_TEXT: Record<LocaleCode, AssistantText> = {
     published: "Publicada",
     previewOf: "Así lo verá tu alumno, en formato {format}",
     openPreview: "Abrir la vista previa completa",
+    previewShow: "Vista previa",
+    previewHide: "Ocultar la vista previa",
     confirmTitle: "¿Publico «{title}»?",
     confirmWhere: "Quedará en {address}.",
     confirmPrice: "El módulo 1 es gratis y la ruta completa cuesta {price}.",
@@ -109,6 +113,8 @@ export const ASSISTANT_TEXT: Record<LocaleCode, AssistantText> = {
     published: "Published",
     previewOf: "What your student will see, as {format}",
     openPreview: "Open the full preview",
+    previewShow: "Preview",
+    previewHide: "Hide the preview",
     confirmTitle: "Publish “{title}”?",
     confirmWhere: "It will be at {address}.",
     confirmPrice: "Module 1 is free and the whole route costs {price}.",
@@ -147,6 +153,8 @@ export const ASSISTANT_TEXT: Record<LocaleCode, AssistantText> = {
     published: "Publicada",
     previewOf: "Assim seu aluno vai ver, no formato {format}",
     openPreview: "Abrir a prévia completa",
+    previewShow: "Prévia",
+    previewHide: "Ocultar a prévia",
     confirmTitle: "Publico «{title}»?",
     confirmWhere: "Ficará em {address}.",
     confirmPrice: "O módulo 1 é grátis e a rota completa custa {price}.",
@@ -185,6 +193,8 @@ export const ASSISTANT_TEXT: Record<LocaleCode, AssistantText> = {
     published: "Publié",
     previewOf: "Ce que verra votre élève, au format {format}",
     openPreview: "Ouvrir l’aperçu complet",
+    previewShow: "Aperçu",
+    previewHide: "Masquer l’aperçu",
     confirmTitle: "Je publie « {title} » ?",
     confirmWhere: "Il sera sur {address}.",
     confirmPrice: "Le module 1 est gratuit et le parcours complet coûte {price}.",
@@ -223,6 +233,8 @@ export const ASSISTANT_TEXT: Record<LocaleCode, AssistantText> = {
     published: "Pubblicato",
     previewOf: "Così lo vedrà il tuo studente, nel formato {format}",
     openPreview: "Apri l'anteprima completa",
+    previewShow: "Anteprima",
+    previewHide: "Nascondi l'anteprima",
     confirmTitle: "Pubblico «{title}»?",
     confirmWhere: "Sarà su {address}.",
     confirmPrice: "Il modulo 1 è gratis e il percorso completo costa {price}.",

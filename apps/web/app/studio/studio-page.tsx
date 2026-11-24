@@ -4,7 +4,8 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { filled } from "../storefront/words";
 import type { StudioTransport } from "./session-transport";
 import { Ask } from "./studio-ask";
-import { Choices, Confirm, PreviewNote, RouteList, StudioTop, Thread } from "./studio-parts";
+import { PreviewNote } from "./studio-note";
+import { Choices, Confirm, RouteList, StudioTop, Thread } from "./studio-parts";
 import { syncMap, useConversation, useStudioMap } from "./use-studio";
 
 // The creator's assistant (Platform STEP 10): a night map where every answer is a fork in the
@@ -87,7 +88,13 @@ export function StudioPage({
       <div ref={leader} className={`studio-leader${state.preview && hasMap ? " is-on" : ""}`} />
       <StudioTop state={state} words={words} />
       <RouteList state={state} words={words} listRef={rail} />
-      <PreviewNote preview={state.preview} words={words} isPinned={hasMap} noteRef={note} />
+      <PreviewNote
+        preview={state.preview}
+        log={state.log}
+        words={words}
+        isPinned={hasMap}
+        noteRef={note}
+      />
       <main ref={stage} className={`studio-stage${state.hasBegun ? "" : " is-first"}`}>
         {hasFailed ? <p className="studio-status">{words.noMap}</p> : null}
         <p className="studio-status" role="status">
