@@ -1,8 +1,8 @@
 name: Authorship
 
 # The owner's rule: no commit, PR or file names the tool that wrote it.
-# Fails when a commit in the PR carries a co-author trailer, or when the PR
-# description carries a "generated with" footer.
+# Fails when a commit in the PR carries a co-author trailer, when the PR description
+# carries a "generated with" footer, or when a line the PR adds to a file credits a tool.
 on:
   pull_request:
     types: [opened, synchronize, edited, reopened]
@@ -30,6 +30,13 @@ jobs:
             git log --format='%h %s' --grep='^co-authored-by:' -i -E "$BASE_SHA..$HEAD_SHA"
             exit 1
           fi
+
+      - name: Added file contents credit no tool
+        if: ${{ !cancelled() }}
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: .github/scripts/check-attribution.sh "$BASE_SHA" "$HEAD_SHA"
 
       - name: Description carries no generated-with footer
         if: ${{ !cancelled() }}
