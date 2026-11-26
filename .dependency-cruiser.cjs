@@ -5,7 +5,7 @@ const BROWSER = "^apps/web/app/(?!entry\\.server\\.tsx$)";
 // is the assistant's protocol (Platform STEP 10): pure types and a reducer, with no imports.
 // blocks/sim-numbers is what the player's simulators share with their graders (Platform STEP 12).
 const CORE_FOR_BROWSERS =
-  "^packages/core/src/(locales|copy/[a-z-]+|actions/names|studio/session|blocks/sim-numbers)\\.ts$";
+  "^packages/core/src/(locales|copy/[a-z-]+|actions/names|studio/session|blocks/sim-numbers|voice)\\.ts$";
 
 /** @type {import('dependency-cruiser').IConfiguration} */
 module.exports = {
@@ -47,7 +47,7 @@ module.exports = {
       severity: "error",
       from: { path: CORE_FOR_BROWSERS },
       to: {
-        path: "(^|/)node_modules/zod/|^packages/core/src/(?!locales|copy/|actions/names|studio/session|blocks/sim-numbers)",
+        path: "(^|/)node_modules/zod/|^packages/core/src/(?!locales|copy/|actions/names|studio/session|blocks/sim-numbers|voice)",
         reachable: true,
       },
     },

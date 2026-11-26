@@ -17,6 +17,7 @@ import {
 import { fromOldHost } from "./old-host";
 import { withSecurityHeaders } from "./security-headers";
 import { themePost, withTheme } from "./theme";
+import { voiceFile } from "./voice";
 
 const requestHandler = createRequestHandler(
   () => import("virtual:react-router/server-build"),
@@ -41,6 +42,10 @@ export default {
     const toAgent = [STUDIO_PATH, TUTOR_PATH, IMAGES_PATH].includes(url.pathname);
     if (url.origin === env.APP_ORIGIN && toAgent) {
       return agentClient(env)(request);
+    }
+    const voice = await voiceFile(request, env.VOICE);
+    if (voice) {
+      return withSecurityHeaders(voice);
     }
     const moved = await fromOldHost(
       request,
