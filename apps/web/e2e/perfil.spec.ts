@@ -18,6 +18,10 @@ test("a new learner names their profile and reaches it from the frame", async ({
   await expect(page.getByText("Nombre guardado")).toBeVisible();
   // The frame around every page carries the same name from then on.
   await expect(page.locator(".shell-me")).toContainText("Lucía Paz");
+  // Once named, the form folds away behind its own words.
+  await expect(page.getByLabel("Tu nombre")).toBeHidden();
+  await page.getByText("Cambiar nombre").click();
+  await expect(page.getByLabel("Tu nombre")).toHaveValue("Lucía Paz");
   // Nobody who does not teach is shown an assistant's address.
   await expect(page.getByText("Tu asistente (MCP)")).toHaveCount(0);
   await expect(page.getByRole("link", { name: "Pedir un espacio para enseñar" })).toBeVisible();
@@ -37,6 +41,13 @@ test("whoever teaches finds their assistant's address on their profile, on a pho
   const teaching = page.getByRole("region", { name: "Enseñas" });
   await expect(teaching.locator("code")).toHaveText(`${DEV}/mcp`);
   await expect(teaching.getByRole("button", { name: "Copiar dirección" })).toBeVisible();
+  // The head of the page takes them straight there, and the three steps are spelled out.
+  await expect(page.getByRole("link", { name: "Tu asistente (MCP)" })).toHaveAttribute(
+    "href",
+    "#asistente",
+  );
+  await expect(teaching.locator(".pf-steps li")).toHaveCount(3);
+  await expect(teaching.getByText("Aún no hay asistentes conectados.")).toBeVisible();
   await expect(
     teaching.getByRole("link", { name: "Cómo conectarlo, paso a paso" }),
   ).toHaveAttribute("href", "/creador/conecta");

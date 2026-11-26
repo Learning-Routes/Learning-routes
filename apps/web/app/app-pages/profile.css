@@ -1,152 +1,362 @@
-/* One's profile. Its own sheet: only this page needs it. */
+/* One's profile. Its own sheet: only this page needs it. The head is night in both themes, like
+   the route one is on in Mis rutas: the scene behind it is that route's own cover. */
 
 .pf {
   display: grid;
-  gap: var(--space-5);
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-6);
+  max-width: 68rem;
 }
-.pf-head {
-  display: flex;
+.pf-hero {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
   align-items: center;
-  gap: var(--space-4);
+  gap: var(--space-5) var(--space-6);
+  padding: var(--space-8) var(--space-6);
+  overflow: hidden;
+  border-radius: calc(var(--radius-card) + var(--space-2));
+  /* With no route yet there is no scene: a night sky of its own. */
+  background:
+    radial-gradient(90% 130% at 88% -10%, #4a2f86 0%, transparent 62%),
+    radial-gradient(70% 90% at 12% 120%, #2a1d52 0%, transparent 60%), var(--color-night);
+  color: #fff;
+  box-shadow: 0 30px 60px -36px var(--color-shade);
+  isolation: isolate;
 }
-.pf-head .app-title {
-  margin: 0;
-  overflow-wrap: anywhere;
+.pf-scene {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  width: 100%;
+  height: 100%;
 }
-.pf-face {
+.pf-hero::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: rgba(12, 8, 20, 0.72);
+}
+.pf-ring {
+  position: relative;
   display: grid;
   place-items: center;
-  flex: none;
-  width: 4rem;
-  height: 4rem;
+  width: clamp(5rem, 3.6rem + 6vw, 7.5rem);
+  aspect-ratio: 1;
   border-radius: 50%;
-  background: var(--color-accent);
-  color: var(--color-bg);
+  background: rgba(255, 255, 255, 0.1);
+}
+.pf-ring svg {
+  position: absolute;
+  inset: 0;
+}
+.pf-ring circle {
+  fill: none;
+  stroke-width: 5;
+  stroke-linecap: round;
+}
+.pf-ring-track {
+  stroke: rgba(255, 255, 255, 0.22);
+}
+.pf-ring-done {
+  stroke: var(--color-highlight);
+}
+.pf-ring b {
+  font-size: clamp(2rem, 1.4rem + 2.6vw, 3.25rem);
+  font-weight: var(--weight-display);
+  line-height: 1;
+}
+/* Nobody's initial yet: a head and shoulders. */
+.pf-ring b:empty {
+  width: 46%;
+  aspect-ratio: 1;
+  background:
+    radial-gradient(circle at 50% 30%, #fff 0 27%, transparent 28%),
+    radial-gradient(ellipse 50% 36% at 50% 100%, #fff 0 98%, transparent);
+}
+.pf-name {
+  margin: 0;
+  overflow-wrap: anywhere;
+  font-size: clamp(1.75rem, 1.2rem + 2.4vw, 3rem);
+  font-weight: var(--weight-display);
+  letter-spacing: -0.035em;
+  line-height: 1.04;
+  text-wrap: balance;
+}
+.pf-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-6);
+  margin: var(--space-3) 0 0;
+}
+.pf-stats div {
+  display: grid;
+}
+.pf-stats dt {
+  order: 2;
+  color: rgba(255, 255, 255, 0.82);
+  font-size: var(--text-small);
+}
+.pf-stats dd {
+  margin: 0;
   font-size: 1.75rem;
+  font-weight: var(--weight-display);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+}
+.pf-go,
+.pf-rename {
+  grid-column: 1 / -1;
+}
+.pf-go {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3) var(--space-5);
+}
+.pf-go:empty {
+  display: none;
+}
+.pf-go .button {
+  min-width: 9.5rem;
+  background: #fff;
+  color: #1d1226;
+  box-shadow: 0 4px 0 rgba(255, 255, 255, 0.4);
+}
+.pf-go .button:active {
+  transform: translateY(3px);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+.pf-jump,
+.pf-rename summary {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--size-touch);
+  color: #fff;
+  font-size: var(--text-small);
+  font-weight: var(--weight-label);
+  text-decoration: underline;
+  text-decoration-color: rgba(255, 255, 255, 0.5);
+  text-underline-offset: 0.25em;
+  cursor: pointer;
+}
+.pf-jump:focus-visible,
+.pf-rename summary:focus-visible,
+.pf-go .button:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 3px;
+}
+.pf-form {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: minmax(0, 22rem) auto;
+  justify-content: start;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+  margin-block-start: var(--space-2);
+  font-size: var(--text-small);
+}
+.pf-form label,
+.pf-form p {
+  grid-column: 1 / -1;
+  margin: 0;
+}
+.pf-form label {
   font-weight: var(--weight-label);
 }
-.pf-card {
-  margin: 0;
-  padding: var(--space-5);
-  border-radius: var(--radius-card);
-  background: var(--color-card);
-  box-shadow: inset 0 0 0 1px var(--color-border-subtle);
+.pf-form p {
+  color: rgba(255, 255, 255, 0.82);
 }
-.pf-card > .app-section-title {
-  margin-block: 0 var(--space-4);
+.pf-input {
+  min-width: 0;
+  min-height: var(--size-touch);
+  padding: 0 var(--space-3);
+  border: 1.5px solid rgba(255, 255, 255, 0.5);
+  border-radius: var(--radius-btn);
+  background: rgba(12, 8, 20, 0.55);
+  color: #fff;
+  font: inherit;
+  /* 16px: a phone does not zoom into a field this size. */
+  font-size: 1rem;
+}
+.pf-input:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
+}
+.pf-form .button {
+  background: #fff;
+  color: #1d1226;
+}
+
+.pf-title {
+  margin: 0 0 var(--space-4);
+  font-size: var(--text-title);
+  font-weight: 600;
 }
 .pf-meta {
   margin: 0;
   color: var(--color-sub);
   font-size: var(--text-small);
 }
-.pf-name {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  align-items: center;
-  gap: var(--space-2) var(--space-3);
+.pf-card,
+.pf-route {
+  padding: var(--space-5);
+  border-radius: var(--radius-card);
+  background: var(--color-card);
+  box-shadow:
+    inset 0 0 0 1px var(--color-border-subtle),
+    0 18px 30px -28px var(--color-shade);
 }
-.pf-name label,
-.pf-name .pf-meta {
-  grid-column: 1 / -1;
-}
-.pf-name label {
-  font-weight: var(--weight-label);
-}
-.pf-input {
-  min-width: 0;
-  min-height: var(--size-touch);
-  padding: 0 var(--space-3);
-  border: 1.5px solid var(--color-faint);
-  border-radius: var(--radius-btn);
-  background: var(--color-bg);
-  color: inherit;
-  font: inherit;
-  /* 16px: a phone does not zoom into a field this size. */
-  font-size: 1rem;
-}
-.pf-input:focus-visible {
-  outline: 2px solid var(--color-accent);
-  outline-offset: 2px;
-}
-.pf-stats {
-  display: flex;
-  gap: var(--space-6);
-  margin: 0 0 var(--space-4);
-}
-.pf-stats dt {
-  color: var(--color-sub);
-  font-size: var(--text-small);
-}
-.pf-stats dd {
-  margin: 0;
-  font-size: 1.75rem;
-  font-weight: var(--weight-label);
-  font-variant-numeric: tabular-nums;
-}
-.pf-routes {
+.pf-routes,
+.pf-spaces,
+.pf-clients {
   display: grid;
   gap: var(--space-4);
   margin: 0;
   padding: 0;
   list-style: none;
 }
+/* A route: its face and name, how much is done, and under them its real shape with one's place. */
 .pf-route {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
-  gap: var(--space-3) var(--space-4);
+  gap: var(--space-4);
 }
 .pf-cover {
-  flex: none;
-  width: 4.5rem;
-  height: 3.375rem;
+  width: 5.5rem;
+  height: 4rem;
+  overflow: hidden;
   border-radius: var(--radius-btn);
 }
-.pf-route-text {
-  display: grid;
-  flex: 1 1 14rem;
-  gap: var(--space-2);
-  min-width: 0;
+.pf-route-title {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: var(--weight-display);
+  letter-spacing: -0.02em;
+  text-wrap: balance;
 }
-.pf-route-title,
+.pf-line,
+.pf-where {
+  grid-column: 1 / -1;
+}
+.pf-line {
+  margin-block: var(--space-2);
+}
+.pf-route .pf-where {
+  grid-column: 1 / 3;
+}
+.pf-where b {
+  margin-inline-end: var(--space-3);
+  color: var(--color-txt);
+  font-variant-numeric: tabular-nums;
+}
+.pf-empty,
+.pf-invite,
+.pf-teach,
+.pf-side {
+  display: grid;
+  justify-items: start;
+  gap: var(--space-4);
+}
+.pf-side {
+  justify-items: stretch;
+  align-content: start;
+  gap: var(--space-5);
+}
+.pf-teach .pf-title,
+.pf-account .pf-title {
+  margin: 0;
+}
+.pf-spaces {
+  gap: var(--space-2);
+}
+.pf-spaces li,
+.pf-clients li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-1) var(--space-3);
+}
+/* The way in for an assistant: the one thing here a creator comes back for. */
+.pf-plug {
+  display: grid;
+  justify-items: start;
+  gap: var(--space-3);
+  justify-self: stretch;
+  padding: var(--space-4);
+  border-radius: var(--radius-btn);
+  background: var(--color-accent-soft);
+  scroll-margin-top: var(--space-8);
+}
+.pf-plug .connect-code {
+  font-size: var(--text-small);
+  font-weight: var(--weight-label);
+}
+.pf-plug-title,
 .pf-sub {
   margin: 0;
   font-size: 1rem;
   font-weight: var(--weight-label);
 }
-.pf-sub {
-  margin-block: var(--space-5) var(--space-2);
-}
-.pf-bar {
-  display: block;
-  width: 100%;
-  height: 8px;
-  border: 0;
-  border-radius: 999px;
-  background: var(--color-border-subtle);
-  accent-color: var(--color-accent);
-  overflow: hidden;
-  appearance: none;
-}
-.pf-bar::-webkit-progress-bar {
-  background: var(--color-border-subtle);
-}
-.pf-bar::-webkit-progress-value {
-  border-radius: 999px;
-  background: var(--color-accent);
-}
-.pf-bar::-moz-progress-bar {
-  border-radius: 999px;
-  background: var(--color-accent);
-}
-.pf-space,
-.pf-links {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-2) var(--space-4);
+.pf-steps {
+  display: grid;
+  gap: var(--space-2);
   margin: 0;
+  padding-inline-start: 1.25em;
+  font-size: var(--text-small);
+  line-height: 1.45;
 }
-.pf-links {
-  margin-block-start: var(--space-3);
+.pf-steps ::marker {
+  font-weight: var(--weight-label);
+  font-variant-numeric: tabular-nums;
+}
+.pf-clients {
+  gap: var(--space-2);
+}
+.pf-clients li::before {
+  content: "";
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: var(--color-positive);
+}
+
+@media (min-width: 62rem) {
+  .pf {
+    grid-template-columns: minmax(0, 1fr) 22rem;
+    align-items: start;
+  }
+  .pf-hero,
+  .pf > .notice {
+    grid-column: 1 / -1;
+  }
+  .pf-hero::after {
+    background: linear-gradient(
+      100deg,
+      rgba(12, 8, 20, 0.9) 0%,
+      rgba(12, 8, 20, 0.62) 55%,
+      rgba(12, 8, 20, 0.2) 100%
+    );
+  }
+  .pf-hero {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    padding: var(--space-10) var(--space-8);
+  }
+  .pf-go {
+    grid-column: auto;
+    flex-direction: column;
+    align-items: flex-end;
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .pf-ring-done {
+    animation: pf-ring 1.1s cubic-bezier(0.23, 1, 0.32, 1) 0.3s both;
+  }
+}
+@keyframes pf-ring {
+  from {
+    stroke-dasharray: 0 300;
+  }
 }
