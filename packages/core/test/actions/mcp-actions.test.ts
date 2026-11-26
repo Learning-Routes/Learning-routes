@@ -126,6 +126,37 @@ describe("blocks.add", () => {
     expect(added.map((block) => block.kind)).toEqual(["concept", "tip"]);
   });
 
+  it("puts them first, or after a block, in the order given", async () => {
+    const world = testWorld();
+    const lesson = await aLesson(world);
+    const ctx = testCtx("mcp", world, STAFF.owner);
+    const add = (expectedRevision: number, after: string | null | undefined, bodies: string[]) =>
+      runAction(
+        ACTIONS,
+        "blocks.add",
+        {
+          routeId: ROUTE,
+          expectedRevision,
+          lessonId: lesson.id,
+          after,
+          blocks: bodies.map((body) => ({ type: "concept", body: { es: body } })),
+        },
+        ctx,
+      ) as Promise<{ ok: true; output: { ids: string[]; revision: number } }>;
+    const last = await add(lesson.revision, undefined, ["tres", "seis"]);
+    const first = await add(last.output.revision, null, ["uno", "dos"]);
+    await add(first.output.revision, last.output.ids[0], ["cuatro", "cinco"]);
+    const inOrder = draftOf(world)
+      .blocks.filter((block) => block.lessonId === lesson.id)
+      .sort((a, b) => (a.position < b.position ? -1 : 1))
+      .map((block) => (block.data as { body: { es: string } }).body.es);
+    expect(inOrder).toEqual(["uno", "dos", "tres", "cuatro", "cinco", "seis"]);
+    expect(await add(lesson.revision, SPACE, ["nada"])).toMatchObject({
+      ok: false,
+      code: "not_found",
+    });
+  });
+
   it("writes none when one is not a block, or the lesson is not there", async () => {
     const world = testWorld();
     const lesson = await aLesson(world);
