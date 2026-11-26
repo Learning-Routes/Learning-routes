@@ -4,6 +4,7 @@ import { VOICE_FILE } from "@learning-routes/core/voice";
 // A phrase's recording (see core's voice.ts) is addressed by the hash of what it says, so a file
 // never changes: browsers and the edge keep it for a year. A phrase nobody recorded answers 404,
 // briefly kept, and the player falls back to the browser's voice.
+// A lesson's picture is addressed by the hash of its bytes: like a recording, it never changes.
 // A route's cover is addressed by the route's id and can be replaced, so it is kept an hour. A
 // route with no cover answers one clear pixel, so the page keeps the cover it draws and no
 // browser logs a missing file for every route that has no picture yet.
@@ -11,6 +12,7 @@ import { VOICE_FILE } from "@learning-routes/core/voice";
 const YEAR = "public, max-age=31536000, immutable";
 const HOUR = "public, max-age=3600, stale-while-revalidate=86400";
 const MISSING = "public, max-age=300";
+const PICTURE_FILE = /^\/imagen\/([a-f0-9]{64})\.webp$/;
 const COVER_FILE =
   /^\/portada\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})\.webp$/;
 
@@ -35,6 +37,10 @@ function keptAt(pathname: string): Kept | null {
   if (voice) {
     return { key: `${voice[1]}.mp3`, type: "audio/mpeg", cache: YEAR };
   }
+  const picture = PICTURE_FILE.exec(pathname);
+  if (picture) {
+    return { key: `img/${picture[1]}.webp`, type: "image/webp", cache: YEAR };
+  }
   const cover = COVER_FILE.exec(pathname);
   return cover ? { key: `cover/${cover[1]}.webp`, type: "image/webp", cache: HOUR } : null;
 }
@@ -49,7 +55,7 @@ export async function voiceFile(request: Request, bucket: Bucket): Promise<Respo
     return new Response(null, { status: 405, headers: { allow: "GET, HEAD" } });
   }
   const file = await bucket.get(kept.key);
-  if (file === null && kept.type === "image/webp") {
+  if (file === null && kept.cache === HOUR) {
     return new Response(CLEAR_PIXEL, {
       headers: { "content-type": kept.type, "cache-control": MISSING },
     });
