@@ -140,6 +140,11 @@ export const WRITE_TOOLS: Tool[] = [
       draft_revision: DraftRevision,
       lesson_id: z.uuid(),
       after: After,
+      // An assistant's client often drops a null, so the start of a lesson has its own word.
+      first: z
+        .boolean()
+        .optional()
+        .describe("True puts them at the start of the lesson, before what is already there."),
       blocks: z.array(z.record(z.string(), z.unknown())).min(1).max(100),
     }),
     output: z.strictObject({ block_ids: z.array(z.uuid()), draft_revision: z.int() }),
@@ -147,7 +152,7 @@ export const WRITE_TOOLS: Tool[] = [
       routeId: input.route_id,
       expectedRevision: input.draft_revision,
       lessonId: input.lesson_id,
-      after: input.after,
+      after: input.first ? null : input.after,
       blocks: input.blocks,
     }),
     toOutput: (output: { ids: string[] } & Revision) => ({
