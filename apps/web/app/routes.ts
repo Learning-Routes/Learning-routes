@@ -8,6 +8,7 @@ export default [
     route("comunidad", "routes/comunidad.tsx"),
     route("comunidad/:enrollmentId", "routes/comunidad-ruta.tsx"),
     route("avisos", "routes/avisos.tsx"),
+    route("perfil", "routes/perfil.tsx"),
     route("creador", "routes/creador.tsx"),
     route("creador/asistente", "routes/asistente.tsx"),
     route("creador/pagina", "routes/creador-pagina.tsx"),

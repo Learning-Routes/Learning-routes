@@ -11,7 +11,7 @@ import { RouteCover } from "../ui/route-cover";
 import { BrandMark } from "../ui/site-header";
 import { ThemeToggle } from "../ui/theme-toggle";
 
-type Place = "home" | "learn" | "community" | "notices" | "teach" | "admin" | null;
+type Place = "home" | "learn" | "community" | "notices" | "teach" | "admin" | "profile" | null;
 
 const ICONS = {
   home: "M4 11l8-7 8 7v9h-5v-6H9v6H4z",
@@ -145,13 +145,17 @@ export function AppHeader({
         </form>
       </div>
       <div className="shell-foot">
-        {shell?.name ? (
-          <p className="shell-me">
+        {shell ? (
+          <a
+            className="shell-me"
+            href="/perfil"
+            aria-current={place === "profile" ? "page" : undefined}
+          >
             <span className="shell-face" aria-hidden="true">
               {shell.name.trim()[0]?.toUpperCase()}
             </span>
-            <b>{shell.name}</b>
-          </p>
+            <b>{shell.name || SHELL_TEXT[locale].profile}</b>
+          </a>
         ) : null}
         <ThemeToggle toDark={UI_COPY[locale].toDark} toLight={UI_COPY[locale].toLight} />
       </div>

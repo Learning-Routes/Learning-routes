@@ -150,6 +150,17 @@ export const SCREENS: Record<string, (page: Page) => Promise<unknown>> = {
     await page.goto(`${DEV}/avisos`);
     await page.locator(".hub-notice.is-new").waitFor();
   },
+  // Whoever teaches sees everything a profile can hold: progress, their space and the assistant.
+  profile: async (page) => {
+    const email = newAddress("perfil");
+    await signInContext(page.context(), email);
+    makeTeacher(email);
+    await page.goto(PORTUGUESE);
+    await page.getByRole("link", { name: "Empezar gratis" }).click();
+    await page.getByRole("heading", { name: "Mis rutas" }).waitFor();
+    await page.goto(`${DEV}/perfil`);
+    await page.getByRole("region", { name: "Enseñas" }).waitFor();
+  },
   lesson: async (page) => {
     await enrolled(page);
     await openReading(page);
