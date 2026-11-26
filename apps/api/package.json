@@ -18,6 +18,7 @@
     "db:auth-schema": "auth generate --config src/auth/schema.config.ts --adapter drizzle --dialect postgresql --output auth-schema.generated.ts -y",
     "db:generate": "drizzle-kit generate",
     "db:erase-user": "tsx scripts/erase-user.ts",
+    "db:retire": "tsx scripts/retire.ts",
     "db:check": "node scripts/check-drizzle-sync.mjs",
     "db:measure-rls": "node scripts/measure-rls.ts",
     "db:seed": "tsx scripts/seed.ts",
