@@ -131,12 +131,15 @@ export const WRITE_TOOLS: Tool[] = [
     scope: "routes:write",
     action: "blocks.add",
     description:
+      // The words stay as assistants already know them (the snapshot in chatgpt-path.test.ts);
+      // `after` says for itself that left out, they go last.
       "Add blocks to the end of a lesson: all of them, or none. Read the format in the resource learning-routes://guides/route-format.",
     annotations: WRITE,
     input: z.strictObject({
       route_id: RouteId,
       draft_revision: DraftRevision,
       lesson_id: z.uuid(),
+      after: After,
       blocks: z.array(z.record(z.string(), z.unknown())).min(1).max(100),
     }),
     output: z.strictObject({ block_ids: z.array(z.uuid()), draft_revision: z.int() }),
@@ -144,6 +147,7 @@ export const WRITE_TOOLS: Tool[] = [
       routeId: input.route_id,
       expectedRevision: input.draft_revision,
       lessonId: input.lesson_id,
+      after: input.after,
       blocks: input.blocks,
     }),
     toOutput: (output: { ids: string[] } & Revision) => ({

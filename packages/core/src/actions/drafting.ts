@@ -124,10 +124,10 @@ export const blockAdd = defineAction({
 export const blockAddMany = defineAction({
   name: "blocks.add",
   kind: "mutation",
-  description: "Add blocks to the end of a lesson of a route's draft: all of them, or none.",
+  description:
+    "Add blocks to a lesson of a route's draft, at its end or after one of its blocks: all of them, or none.",
   input: z.strictObject({
-    routeId: z.uuid(),
-    expectedRevision: z.int().nonnegative(),
+    ...Edit,
     lessonId: z.uuid(),
     blocks: z.array(z.record(z.string(), z.unknown())).min(1).max(100),
   }),
@@ -151,9 +151,12 @@ export const blockAddMany = defineAction({
     });
     return ctx.repos.transaction(async (repos) => {
       let revision = input.expectedRevision;
+      // Each goes after the one before it, so they stay in the order given wherever they land.
+      let after = input.after;
       for (const block of blocks) {
-        const position = placed(siblings, undefined);
+        const position = placed(siblings, after);
         siblings.push({ id: block.id, position } as (typeof siblings)[number]);
+        after = block.id;
         ({ revision } = unwrap(
           await repos.routeDrafts.addBlock(spaceId, input.routeId, revision, {
             ...block,
