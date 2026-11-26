@@ -6,6 +6,8 @@ export interface ShellText {
   home: string;
   community: string;
   notices: string;
+  /** The link to one's profile, for whoever has not given a name yet. */
+  profile: string;
   /** Above the route one is on, in the side panel. */
   youAreOn: string;
   /** {n} is the topic's number, {total} how many the route has. */
@@ -19,6 +21,7 @@ export const SHELL_TEXT: Record<LocaleCode, ShellText> = {
     home: "Inicio",
     community: "Comunidad",
     notices: "Avisos",
+    profile: "Perfil",
     youAreOn: "Sigues en",
     topicOf: "Tema {n} de {total}",
     unread: "{n} sin leer",
@@ -27,6 +30,7 @@ export const SHELL_TEXT: Record<LocaleCode, ShellText> = {
     home: "Home",
     community: "Community",
     notices: "Notices",
+    profile: "Profile",
     youAreOn: "You are on",
     topicOf: "Topic {n} of {total}",
     unread: "{n} unread",
@@ -36,6 +40,7 @@ export const SHELL_TEXT: Record<LocaleCode, ShellText> = {
     home: "Início",
     community: "Comunidade",
     notices: "Avisos",
+    profile: "Perfil",
     youAreOn: "Você está em",
     topicOf: "Tema {n} de {total}",
     unread: "{n} não lidos",
@@ -45,6 +50,7 @@ export const SHELL_TEXT: Record<LocaleCode, ShellText> = {
     home: "Accueil",
     community: "Communauté",
     notices: "Avis",
+    profile: "Profil",
     youAreOn: "Vous en êtes à",
     topicOf: "Thème {n} sur {total}",
     unread: "{n} non lus",
@@ -54,6 +60,7 @@ export const SHELL_TEXT: Record<LocaleCode, ShellText> = {
     home: "Inizio",
     community: "Comunità",
     notices: "Avvisi",
+    profile: "Profilo",
     youAreOn: "Sei su",
     topicOf: "Tema {n} di {total}",
     unread: "{n} non letti",

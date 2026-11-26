@@ -62,11 +62,18 @@ export const enrollmentList = defineAction({
   input: z.strictObject({}),
   target: () => ({ kind: "account", id: "self", self: true }),
   // The name comes with the list, so Mis rutas reads the session once, not twice (Platform STEP 15).
-  run: async (ctx) => ({
-    ...(await ctx.repos.enrollments.listOwn(ctx.actor.userId)),
-    name: ctx.actor.name?.trim() ?? "",
-    userId: ctx.actor.userId,
-  }),
+  // It is the one they chose in their profile; the account's own only until they choose.
+  run: async (ctx) => {
+    const [list, profile] = await Promise.all([
+      ctx.repos.enrollments.listOwn(ctx.actor.userId),
+      ctx.repos.community.profile(ctx.actor.userId),
+    ]);
+    return {
+      ...list,
+      name: profile.displayName?.trim() || ctx.actor.name?.trim() || "",
+      userId: ctx.actor.userId,
+    };
+  },
 });
 
 export const enrollmentUpgrade = defineAction({

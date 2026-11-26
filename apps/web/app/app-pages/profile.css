@@ -1,0 +1,152 @@
+/* One's profile. Its own sheet: only this page needs it. */
+
+.pf {
+  display: grid;
+  gap: var(--space-5);
+}
+.pf-head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+.pf-head .app-title {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+.pf-face {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 4rem;
+  height: 4rem;
+  border-radius: 50%;
+  background: var(--color-accent);
+  color: var(--color-bg);
+  font-size: 1.75rem;
+  font-weight: var(--weight-label);
+}
+.pf-card {
+  margin: 0;
+  padding: var(--space-5);
+  border-radius: var(--radius-card);
+  background: var(--color-card);
+  box-shadow: inset 0 0 0 1px var(--color-border-subtle);
+}
+.pf-card > .app-section-title {
+  margin-block: 0 var(--space-4);
+}
+.pf-meta {
+  margin: 0;
+  color: var(--color-sub);
+  font-size: var(--text-small);
+}
+.pf-name {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+}
+.pf-name label,
+.pf-name .pf-meta {
+  grid-column: 1 / -1;
+}
+.pf-name label {
+  font-weight: var(--weight-label);
+}
+.pf-input {
+  min-width: 0;
+  min-height: var(--size-touch);
+  padding: 0 var(--space-3);
+  border: 1.5px solid var(--color-faint);
+  border-radius: var(--radius-btn);
+  background: var(--color-bg);
+  color: inherit;
+  font: inherit;
+  /* 16px: a phone does not zoom into a field this size. */
+  font-size: 1rem;
+}
+.pf-input:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+.pf-stats {
+  display: flex;
+  gap: var(--space-6);
+  margin: 0 0 var(--space-4);
+}
+.pf-stats dt {
+  color: var(--color-sub);
+  font-size: var(--text-small);
+}
+.pf-stats dd {
+  margin: 0;
+  font-size: 1.75rem;
+  font-weight: var(--weight-label);
+  font-variant-numeric: tabular-nums;
+}
+.pf-routes {
+  display: grid;
+  gap: var(--space-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.pf-route {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3) var(--space-4);
+}
+.pf-cover {
+  flex: none;
+  width: 4.5rem;
+  height: 3.375rem;
+  border-radius: var(--radius-btn);
+}
+.pf-route-text {
+  display: grid;
+  flex: 1 1 14rem;
+  gap: var(--space-2);
+  min-width: 0;
+}
+.pf-route-title,
+.pf-sub {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: var(--weight-label);
+}
+.pf-sub {
+  margin-block: var(--space-5) var(--space-2);
+}
+.pf-bar {
+  display: block;
+  width: 100%;
+  height: 8px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--color-border-subtle);
+  accent-color: var(--color-accent);
+  overflow: hidden;
+  appearance: none;
+}
+.pf-bar::-webkit-progress-bar {
+  background: var(--color-border-subtle);
+}
+.pf-bar::-webkit-progress-value {
+  border-radius: 999px;
+  background: var(--color-accent);
+}
+.pf-bar::-moz-progress-bar {
+  border-radius: 999px;
+  background: var(--color-accent);
+}
+.pf-space,
+.pf-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-4);
+  margin: 0;
+}
+.pf-links {
+  margin-block-start: var(--space-3);
+}

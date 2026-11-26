@@ -310,6 +310,15 @@ describe("enrollment.list (Platform STEP 4 §6.2)", () => {
       output: { teaches: true, enrollments: [] },
     });
   });
+
+  it("gives the name they chose in their profile", async () => {
+    const world = testWorld();
+    await call(world, "student-1", "profile.update", { displayName: "Lucía Paz" });
+    expect(await call(world, "student-1", "enrollment.list", {})).toMatchObject({
+      ok: true,
+      output: { name: "Lucía Paz" },
+    });
+  });
 });
 
 describe("space.create (Platform STEP 5 §1)", () => {

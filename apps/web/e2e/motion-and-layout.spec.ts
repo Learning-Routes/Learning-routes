@@ -6,7 +6,7 @@ import { newAddress, signInContext } from "./session";
 // §2.3, §5.3).
 
 const CONTROLS =
-  ".button, .theme-button, .nav-link, .brand, .field-input, .catalog-topic, .text-link, .lp-ideas a, .lp-ask input, .app-mode";
+  ".button, .theme-button, .nav-link, .brand, .field-input, .catalog-topic, .text-link, .lp-ideas a, .lp-ask input, .app-mode, .shell-me";
 
 test.use({ locale: "es-ES" });
 
