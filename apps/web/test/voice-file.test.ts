@@ -52,6 +52,23 @@ describe("a phrase's recording", () => {
     expect((await none?.arrayBuffer())?.byteLength).toBeLessThan(100);
   });
 
+  it("serves a lesson's picture by the hash of its bytes, for a year, and 404 when unknown", async () => {
+    const hash = "ab".repeat(32);
+    const files = bucket({ [`img/${hash}.webp`]: "webp bytes" });
+    const answer = await voiceFile(
+      new Request(`https://learningroutes.com/imagen/${hash}.webp`),
+      files,
+    );
+    expect(answer?.status).toBe(200);
+    expect(answer?.headers.get("content-type")).toBe("image/webp");
+    expect(answer?.headers.get("cache-control")).toContain("immutable");
+    const none = await voiceFile(
+      new Request(`https://learningroutes.com/imagen/${"cd".repeat(32)}.webp`),
+      files,
+    );
+    expect(none?.status).toBe(404);
+  });
+
   it("leaves every other address to the pages, and refuses to be written to", async () => {
     const elsewhere = ["/voz/", "/voz/../secret.mp3", "/voz/abc.mp3", "/inicio", "/portada/x.webp"];
     for (const path of elsewhere) {
