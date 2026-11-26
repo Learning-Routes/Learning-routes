@@ -207,13 +207,25 @@ describe("the tools", () => {
       ],
     });
     expect(blocks.isError).toBeFalsy();
-    const details = await oauth.tool(token, "update_route_details", {
+    const opening = await oauth.tool(token, "add_blocks", {
       route_id: route.route_id,
       draft_revision: blocks.structuredContent?.draft_revision,
+      lesson_id: lesson.structuredContent?.lesson_id,
+      first: true,
+      blocks: [{ type: "concept", body: { es: "Cero" } }],
+    });
+    expect(opening.isError).toBeFalsy();
+    const details = await oauth.tool(token, "update_route_details", {
+      route_id: route.route_id,
+      draft_revision: opening.structuredContent?.draft_revision,
       title: { es: "Ruta nueva" },
     });
     const read = await oauth.tool(token, "get_route", { route_id: route.route_id });
-    expect(read.structuredContent?.blocks).toHaveLength(2);
+    const written = read.structuredContent?.blocks as { id: string; position: string }[];
+    expect(written).toHaveLength(3);
+    // `first` puts a block before what the lesson already had.
+    const [earliest] = [...written].sort((a, b) => (a.position < b.position ? -1 : 1));
+    expect([earliest?.id]).toEqual(opening.structuredContent?.block_ids);
     const published = await oauth.tool(token, "publish_route", {
       route_id: route.route_id,
       draft_revision: details.structuredContent?.draft_revision,
