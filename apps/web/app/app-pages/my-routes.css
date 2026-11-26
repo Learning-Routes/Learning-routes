@@ -6,35 +6,6 @@
   width: 100%;
   height: 100%;
 }
-.ring {
-  position: relative;
-  display: inline-grid;
-  place-items: center;
-  width: 3.5rem;
-  height: 3.5rem;
-  flex: none;
-}
-.ring svg {
-  position: absolute;
-  inset: 0;
-}
-.ring circle {
-  fill: none;
-  stroke-width: 4;
-  stroke-linecap: round;
-}
-.ring-track {
-  stroke: var(--color-edge);
-}
-.ring-done {
-  stroke: var(--color-accent);
-}
-.ring b {
-  font-size: 0.8125rem;
-  font-weight: var(--weight-display);
-  font-variant-numeric: tabular-nums;
-}
-
 /* The route you are on: its cover fills the card, the words sit on it. */
 .my-page .my-next {
   position: relative;
@@ -201,9 +172,6 @@
   .my-page .my-route:nth-child(n + 4) {
     animation-delay: 0.21s;
   }
-  .ring-done {
-    animation: ring-fill 1.1s cubic-bezier(0.23, 1, 0.32, 1) 0.2s both;
-  }
 }
 @keyframes cover-walk {
   to {
@@ -220,10 +188,5 @@
   from {
     transform: translateY(18px);
     opacity: 0;
-  }
-}
-@keyframes ring-fill {
-  from {
-    stroke-dasharray: 0 100;
   }
 }

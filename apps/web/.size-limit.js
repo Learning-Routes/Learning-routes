@@ -95,10 +95,11 @@ export default [
     gzip: true,
   },
   {
-    // And for the profile. Measured 0.76 kB gzip on 26 November 2026.
+    // And for the profile. Measured 1.82 kB gzip on 26 November 2026, when it gained its night
+    // head, each route's real shape and the assistant's steps (it was 0.76 kB as a plain form).
     name: "profile CSS",
     path: `${CLIENT}/assets/perfil-*.css`,
-    limit: "1 KB",
+    limit: "2 KB",
     gzip: true,
   },
   {

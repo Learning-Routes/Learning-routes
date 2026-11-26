@@ -35,6 +35,10 @@ export interface ProfileText {
   wantToTeach: string;
   askToTeach: string;
   account: string;
+  changeName: string;
+  /** The three things one does to connect an assistant, in order. */
+  steps: readonly [string, string, string];
+  connectedNow: string;
 }
 
 export const PROFILE_TEXT: Record<LocaleCode, ProfileText> = {
@@ -67,6 +71,13 @@ export const PROFILE_TEXT: Record<LocaleCode, ProfileText> = {
     wantToTeach: "¿Quieres enseñar aquí?",
     askToTeach: "Pedir un espacio para enseñar",
     account: "Tu cuenta",
+    changeName: "Cambiar nombre",
+    steps: [
+      "Copia la dirección.",
+      "Pégala en tu asistente, donde se agregan conectores.",
+      "Entra con tu cuenta y pulsa Permitir.",
+    ],
+    connectedNow: "Conectados ahora",
   },
   en: {
     title: "Profile",
@@ -97,6 +108,13 @@ export const PROFILE_TEXT: Record<LocaleCode, ProfileText> = {
     wantToTeach: "Do you want to teach here?",
     askToTeach: "Ask for a space to teach in",
     account: "Your account",
+    changeName: "Change name",
+    steps: [
+      "Copy the address.",
+      "Paste it into your assistant, where connectors are added.",
+      "Sign in with your account and press Allow.",
+    ],
+    connectedNow: "Connected now",
   },
   pt: {
     title: "Perfil",
@@ -127,6 +145,13 @@ export const PROFILE_TEXT: Record<LocaleCode, ProfileText> = {
     wantToTeach: "Quer ensinar aqui?",
     askToTeach: "Pedir um espaço para ensinar",
     account: "Sua conta",
+    changeName: "Mudar nome",
+    steps: [
+      "Copie o endereço.",
+      "Cole no seu assistente, onde se adicionam conectores.",
+      "Entre com a sua conta e toque em Permitir.",
+    ],
+    connectedNow: "Conectados agora",
   },
   fr: {
     title: "Profil",
@@ -157,6 +182,13 @@ export const PROFILE_TEXT: Record<LocaleCode, ProfileText> = {
     wantToTeach: "Vous voulez enseigner ici ?",
     askToTeach: "Demander un espace pour enseigner",
     account: "Votre compte",
+    changeName: "Changer de nom",
+    steps: [
+      "Copiez l'adresse.",
+      "Collez-la dans votre assistant, là où on ajoute des connecteurs.",
+      "Connectez-vous avec votre compte et appuyez sur Autoriser.",
+    ],
+    connectedNow: "Connectés maintenant",
   },
   it: {
     title: "Profilo",
@@ -187,5 +219,12 @@ export const PROFILE_TEXT: Record<LocaleCode, ProfileText> = {
     wantToTeach: "Vuoi insegnare qui?",
     askToTeach: "Chiedi uno spazio per insegnare",
     account: "Il tuo account",
+    changeName: "Cambia nome",
+    steps: [
+      "Copia l'indirizzo.",
+      "Incollalo nel tuo assistente, dove si aggiungono i connettori.",
+      "Accedi con il tuo account e premi Consenti.",
+    ],
+    connectedNow: "Connessi ora",
   },
 };
