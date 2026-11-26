@@ -1,6 +1,7 @@
 import { useId } from "react";
 
-// A route's cover when it has no picture yet: drawn from the route's id, so each route keeps its
+// A route's cover: its own picture when it has one (see workers/voice.ts), over what is drawn
+// here when it has none: drawn from the route's id, so each route keeps its
 // own look everywhere it appears. Hills at dusk in the route's own hue, and its path across them.
 // With the route's title it also says its subject: the title's first telling word, on a card.
 // Everything is an SVG attribute; nothing here needs a style, so the strict CSP is untouched.
@@ -129,6 +130,14 @@ export function RouteCover({
           </text>
         </g>
       ) : null}
+      {/* The route's own picture, when it has one, over the drawing: an image that is not there
+          draws nothing, so the hills stay. No script, no style: the storefront has neither. */}
+      <image
+        href={`/portada/${seed}.webp`}
+        width="400"
+        height="300"
+        preserveAspectRatio="xMidYMid slice"
+      />
     </svg>
   );
 }
