@@ -2,6 +2,7 @@ import { fill } from "@learning-routes/core/copy/player";
 import { type ReactNode, useEffect, useRef, useState } from "react";
 import { type BeatProps, Icon, usePlayer } from "./shared";
 import { bestOf, type Heard, tokensOf } from "./speech-check";
+import { canSay, useVoice } from "./voice";
 
 // A speaking beat (Platform STEP 13): hear the phrase, say it, and see which words were heard.
 
@@ -11,20 +12,14 @@ export function Speak({ beat }: BeatProps) {
   const phrase = String(beat.data.phrase ?? "");
   const lang = String(beat.data.lang ?? "");
   const [speaking, setSpeaking] = useState(false);
-  const canSpeak = typeof window !== "undefined" && "speechSynthesis" in window;
+  const canSpeak = canSay();
   const check = useSpeechCheck(phrase, lang);
+  const say = useVoice();
 
-  const say = (rate: number) => {
-    const synth = window.speechSynthesis;
-    synth.cancel();
-    const utterance = new SpeechSynthesisUtterance(phrase);
-    utterance.lang = lang;
-    utterance.rate = rate;
-    utterance.onend = () => setSpeaking(false);
+  const listen = (rate: number) => {
     setSpeaking(true);
-    synth.speak(utterance);
+    void say(phrase, lang, rate, () => setSpeaking(false));
   };
-  useEffect(() => () => window.speechSynthesis?.cancel(), []);
 
   return (
     <div className="p-speak p-in d2">
@@ -37,10 +32,10 @@ export function Speak({ beat }: BeatProps) {
       >
         {canSpeak ? (
           <div className="p-row">
-            <button type="button" className="p-secondary p-small" onClick={() => say(1)}>
+            <button type="button" className="p-secondary p-small" onClick={() => listen(1)}>
               <Icon name={speaking ? "pause" : "play"} /> {words.listen}
             </button>
-            <button type="button" className="p-secondary p-small" onClick={() => say(0.6)}>
+            <button type="button" className="p-secondary p-small" onClick={() => listen(0.6)}>
               {words.slower}
             </button>
           </div>

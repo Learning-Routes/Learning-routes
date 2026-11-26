@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { list, obj, usePlayer } from "../shared";
+import { useVoice } from "../voice";
 import type { SimProps } from "./sim-props";
 
 // A conversation in the language being taught: the partner speaks, the learner picks a reply, and
@@ -8,16 +9,6 @@ import type { SimProps } from "./sim-props";
 interface Turn {
   line: string;
   choices: { text: string; reply: string }[];
-}
-
-function speak(text: string, lang: string) {
-  if (typeof window === "undefined" || !("speechSynthesis" in window)) {
-    return;
-  }
-  window.speechSynthesis.cancel();
-  const utterance = new SpeechSynthesisUtterance(text);
-  utterance.lang = lang;
-  window.speechSynthesis.speak(utterance);
 }
 
 const toneOfScore = (score: number) => {
@@ -33,18 +24,20 @@ function TurnView({
   note,
   partner,
   lang,
+  say,
 }: {
   turn: Turn;
   pick: number | undefined;
   note: { score: number; note: unknown } | undefined;
   partner: unknown;
   lang: string;
+  say: (text: string, lang: string) => unknown;
 }) {
   const { t } = usePlayer();
   const choice = pick === undefined ? null : turn.choices[pick];
   return (
     <div className="s-turn">
-      <button type="button" className="s-msg s-them p-in" onClick={() => speak(turn.line, lang)}>
+      <button type="button" className="s-msg s-them p-in" onClick={() => void say(turn.line, lang)}>
         {partner ? <small>{String(partner)}</small> : null}
         {turn.line}
       </button>
@@ -59,6 +52,8 @@ export default function Roleplay({ sim, setState, result }: SimProps) {
   const turns = list<Turn>(sim.turns);
   const lang = String(sim.lang ?? "");
   const [picks, setPicks] = useState<number[]>([]);
+  // One voice for the conversation: a new line silences the one before it.
+  const say = useVoice();
   const end = useRef<HTMLDivElement>(null);
   const notes = list<{ score: number; note: unknown }>(obj(result?.detail).notes);
 
@@ -88,6 +83,7 @@ export default function Roleplay({ sim, setState, result }: SimProps) {
           note={notes[i]}
           partner={sim.partner}
           lang={lang}
+          say={say}
         />
       ))}
       {current && !result?.correct ? (

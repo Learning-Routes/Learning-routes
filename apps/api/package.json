@@ -19,6 +19,7 @@
     "db:generate": "drizzle-kit generate",
     "db:erase-user": "tsx scripts/erase-user.ts",
     "db:retire": "tsx scripts/retire.ts",
+    "voice:record": "tsx scripts/record-voice.ts",
     "db:check": "node scripts/check-drizzle-sync.mjs",
     "db:measure-rls": "node scripts/measure-rls.ts",
     "db:seed": "tsx scripts/seed.ts",
