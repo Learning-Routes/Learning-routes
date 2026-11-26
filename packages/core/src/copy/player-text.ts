@@ -72,7 +72,6 @@ export interface PlayerText {
   lessonsOf: string;
   tutorTitle: string;
   tutorSub: string;
-  tutorSoon: string;
   topicDone: string;
   topicDoneBody: string;
   /** {n} is the score, {total} the number of questions. */

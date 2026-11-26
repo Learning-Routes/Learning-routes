@@ -62,7 +62,6 @@ export const pt: PlayerText = {
   lessonsOf: "{n} de {total} lições",
   tutorTitle: "Seu tutor",
   tutorSub: "Conhece esta rota",
-  tutorSoon: "Em breve você poderá perguntar ao tutor sobre cada passo.",
   topicDone: "Tema concluído",
   topicDoneBody: "O que você errou volta na sua revisão.",
   xpTotal: "XP nesta rota",

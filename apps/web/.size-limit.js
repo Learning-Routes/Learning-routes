@@ -163,6 +163,15 @@ export default [
     limit: "150 KB",
     gzip: true,
   },
+  {
+    // The tutor's panel, its words and its styles: fetched after the lesson is on screen.
+    name: "tutor panel",
+    path: readdirSync(`${CLIENT}/assets`)
+      .filter((file) => file.startsWith("tutor-panel-"))
+      .map((file) => `${CLIENT}/assets/${file}`),
+    limit: "4 KB",
+    gzip: true,
+  },
   // Each simulator is its own chunk, fetched when a topic reaches it (Platform STEP 12).
   ...SIMULATORS.map((name) => ({
     name: `simulator: ${name}`,

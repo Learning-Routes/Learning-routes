@@ -156,6 +156,7 @@ export function Player({ view, enrollmentId, locale, runner }: PlayerProps) {
   );
   const { play, end, next, review, done, primary, failed } = useFlow(view, enrollmentId);
   const total = view.beats.length;
+  const [tutorOpen, setTutorOpen] = useState(false);
   const exit = `/mis-rutas/${enrollmentId}?tema=${view.topicNumber}`;
   const hrefOf = (n: number) => `/mis-rutas/${enrollmentId}/tema/${n}`;
   const brand: CSSProperties = view.brandColor
@@ -171,6 +172,7 @@ export function Player({ view, enrollmentId, locale, runner }: PlayerProps) {
           at={done ? total : play.index}
           total={total}
           xp={view.xp.topic + play.xp.gained}
+          onTutor={() => setTutorOpen(true)}
         />
         <div className="p-body">
           <Outline view={view} hrefOf={hrefOf} />
@@ -211,7 +213,13 @@ export function Player({ view, enrollmentId, locale, runner }: PlayerProps) {
               />
             ) : null}
           </main>
-          <Tutor />
+          <Tutor
+            enrollmentId={enrollmentId}
+            topic={view.topicNumber}
+            beat={play.index}
+            isOpen={tutorOpen}
+            onClose={() => setTutorOpen(false)}
+          />
         </div>
       </div>
     </PlayerContext.Provider>
