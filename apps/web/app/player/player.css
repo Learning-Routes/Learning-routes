@@ -857,21 +857,6 @@ kbd.p-kbd {
   gap: 14px;
 }
 
-.p-bubble {
-  display: flex;
-  gap: 10px;
-  align-items: flex-start;
-}
-
-.p-bubble p {
-  margin: 0;
-  padding: 10px 12px;
-  border-radius: 4px 14px 14px 14px;
-  background: var(--p-ch);
-  font-size: 14px;
-  line-height: 1.5;
-}
-
 /* ---------- Motion ---------- */
 
 @keyframes p-in {

@@ -1,0 +1,132 @@
+/* The tutor's conversation. Loaded with the panel, after the lesson: none of this is needed to
+   start a topic. Uses the player's own tokens (--p-*). */
+
+.t-thread {
+  overflow-y: auto;
+  gap: 10px;
+}
+
+.t-msg {
+  margin: 0;
+  max-width: 92%;
+  padding: 10px 12px;
+  border-radius: 4px 14px 14px 14px;
+  background: var(--p-ch);
+  font-size: 14px;
+  line-height: 1.5;
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+
+.t-me {
+  align-self: flex-end;
+  border-radius: 14px 4px 14px 14px;
+  background: var(--p-a);
+  color: var(--p-oa);
+}
+
+.t-msg.is-failed {
+  background: var(--p-ers);
+  color: var(--p-eri);
+}
+
+.t-starters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.t-starter {
+  min-height: 40px;
+  padding: 8px 14px;
+  border: 1.5px solid var(--p-e);
+  border-radius: 999px;
+  background: none;
+  color: inherit;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.t-ask {
+  display: flex;
+  gap: 8px;
+  padding: 12px 16px 6px;
+  border-top: 1px solid var(--p-e);
+}
+
+.t-input {
+  flex: 1;
+  min-width: 0;
+  min-height: 44px;
+  padding: 0 14px;
+  border: 1.5px solid var(--p-e);
+  border-radius: 12px;
+  background: var(--p-sf);
+  color: inherit;
+  font: inherit;
+  /* 16px: a phone does not zoom into a field this size. */
+  font-size: 16px;
+}
+
+.t-send {
+  min-height: 44px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: 12px;
+  background: var(--p-a);
+  color: var(--p-oa);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.t-send:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.t-starter:focus-visible,
+.t-input:focus-visible,
+.t-send:focus-visible {
+  outline: 2px solid var(--p-a);
+  outline-offset: 2px;
+}
+
+.t-note {
+  margin: 0;
+  padding: 0 16px 12px;
+  font-size: 12px;
+  color: var(--p-s);
+}
+
+.t-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+}
+
+/* Wide: the tutor is a column of the page, always there. */
+@media (min-width: 1024px) {
+  .t-close,
+  .p-tutor-btn {
+    display: none;
+  }
+}
+
+/* Narrow: the top bar's button opens it over the lesson, as a sheet from below. */
+@media (max-width: 1023.98px) {
+  .p-tutor.is-open {
+    position: fixed;
+    inset: auto 0 0;
+    z-index: 30;
+    display: flex;
+    flex-direction: column;
+    height: min(78dvh, 640px);
+    border-radius: 20px 20px 0 0;
+    background: var(--p-g);
+    box-shadow: 0 -12px 40px rgb(0 0 0 / 0.28);
+  }
+}

@@ -62,7 +62,6 @@ export const en: PlayerText = {
   lessonsOf: "{n} of {total} lessons",
   tutorTitle: "Your tutor",
   tutorSub: "Knows this route",
-  tutorSoon: "Soon you will be able to ask your tutor about every step.",
   topicDone: "Topic done",
   topicDoneBody: "What you missed comes back in your review.",
   scoreOf: "{n} of {total}",

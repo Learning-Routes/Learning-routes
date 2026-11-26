@@ -1,7 +1,7 @@
 import type { AnswerResult, PlayView } from "@learning-routes/core/actions/player";
 import { fill } from "@learning-routes/core/copy/player";
 import { UI_COPY } from "@learning-routes/core/copy/ui";
-import { useEffect, useRef, useState } from "react";
+import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import { ThemeToggle } from "../ui/theme-toggle";
 import { Icon, usePlayer } from "./shared";
 
@@ -14,12 +14,14 @@ export function TopBar({
   at,
   total,
   xp,
+  onTutor,
 }: {
   route: string;
   exit: string;
   at: number;
   total: number;
   xp: number;
+  onTutor: () => void;
 }) {
   const { words, locale } = usePlayer();
   const ui = UI_COPY[locale];
@@ -42,6 +44,14 @@ export function TopBar({
         ))}
       </div>
       <XpBadge xp={xp} />
+      <button
+        type="button"
+        className="p-icon-btn p-tutor-btn"
+        aria-label={words.askTutor}
+        onClick={onTutor}
+      >
+        <Icon name="chat" size={18} />
+      </button>
       <div className="p-theme">
         <ThemeToggle toDark={ui.toDark} toLight={ui.toLight} />
       </div>
@@ -97,10 +107,20 @@ export function Outline({ view, hrefOf }: { view: PlayView; hrefOf: (n: number) 
   );
 }
 
-export function Tutor() {
+const TutorPanel = lazy(() => import("./tutor-panel"));
+
+/** The tutor: a column on a wide screen, a sheet the top bar opens on a narrow one. */
+export function Tutor(props: {
+  enrollmentId: string;
+  topic: number;
+  beat: number | null;
+  isOpen: boolean;
+  onClose: () => void;
+}) {
   const { words } = usePlayer();
+  const { isOpen, ...panel } = props;
   return (
-    <aside className="p-tutor" aria-label={words.tutorTitle}>
+    <aside className={`p-tutor${isOpen ? " is-open" : ""}`} aria-label={words.tutorTitle}>
       <div className="p-tutor-head">
         <span className="p-avatar" aria-hidden="true">
           <Icon name="chat" size={18} />
@@ -110,9 +130,9 @@ export function Tutor() {
           <p className="p-sub">{words.tutorSub}</p>
         </div>
       </div>
-      <div className="p-tutor-body">
-        <p className="p-bubble">{words.tutorSoon}</p>
-      </div>
+      <Suspense fallback={null}>
+        <TutorPanel {...panel} />
+      </Suspense>
     </aside>
   );
 }
