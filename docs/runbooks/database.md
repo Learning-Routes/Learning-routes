@@ -269,3 +269,20 @@ pbcopy < /dev/null
 ```
 
 Cloudflare's test keys pass only where `ENVIRONMENT` is `development`, so a missing secret refuses every application rather than letting them all through.
+
+## Taking a route or a space out of sight
+
+Nothing is deleted. `db:retire` sets `archived_at`, which the public reads honour: a retired route answers 404 and a retired space 410, and neither is listed. The edge keeps a page for at most five minutes.
+
+```sh
+# A rehearsal: the same checks, nothing kept.
+DATABASE_URL_MIGRATOR="$(security find-generic-password -s lr-migrator -w)" \
+  pnpm --filter @learning-routes/api db:retire route <space-slug>/<route-slug>
+# For real.
+… db:retire route <space-slug>/<route-slug> --apply
+… db:retire space <space-slug> --apply
+# Back again.
+… db:retire route <space-slug>/<route-slug> --restore --apply
+```
+
+A learner already enrolled keeps the route in their list. For a route that was only ever a test, add `--close-enrollments`: its active enrollments end and their progress stays. `--restore` does not reopen them.
