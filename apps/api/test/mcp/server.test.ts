@@ -211,7 +211,8 @@ describe("the tools", () => {
       route_id: route.route_id,
       draft_revision: blocks.structuredContent?.draft_revision,
       lesson_id: lesson.structuredContent?.lesson_id,
-      first: true,
+      // As text, the way a client that has not read the tool again sends it.
+      first: "true",
       blocks: [{ type: "concept", body: { es: "Cero" } }],
     });
     expect(opening.isError).toBeFalsy();
