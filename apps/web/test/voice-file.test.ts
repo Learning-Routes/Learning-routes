@@ -83,4 +83,45 @@ describe("a phrase's recording", () => {
     );
     expect(put?.status).toBe(405);
   });
+
+  it("serves a lesson's video and its captions by hash, and a part of the video when asked", async () => {
+    const hash = "ef".repeat(32);
+    const bytes = "0123456789";
+    const files = {
+      get: async (key: string, options?: { range: Headers }) => {
+        if (key === `video/${hash}.vtt`) {
+          return { body: new Response("WEBVTT").body as ReadableStream, size: 6 };
+        }
+        if (key !== `video/${hash}.mp4`) {
+          return null;
+        }
+        // The bucket reads the range itself; here, only "bytes=2-5".
+        const part = options ? { offset: 2, length: 4 } : undefined;
+        const body = part ? bytes.slice(2, 6) : bytes;
+        return { body: new Response(body).body as ReadableStream, size: bytes.length, range: part };
+      },
+    };
+    const address = `https://learningroutes.com/video/${hash}.mp4`;
+    const whole = await voiceFile(new Request(address), files);
+    expect(whole?.status).toBe(200);
+    expect(whole?.headers.get("content-type")).toBe("video/mp4");
+    expect(whole?.headers.get("accept-ranges")).toBe("bytes");
+    expect(whole?.headers.get("cache-control")).toContain("immutable");
+    const part = await voiceFile(new Request(address, { headers: { range: "bytes=2-5" } }), files);
+    expect(part?.status).toBe(206);
+    expect(part?.headers.get("content-range")).toBe("bytes 2-5/10");
+    expect(part?.headers.get("content-length")).toBe("4");
+    expect(await part?.text()).toBe("2345");
+    const captions = await voiceFile(
+      new Request(`https://learningroutes.com/video/${hash}.vtt`),
+      files,
+    );
+    expect(captions?.headers.get("content-type")).toBe("text/vtt; charset=utf-8");
+    expect(captions?.headers.has("accept-ranges")).toBe(false);
+    const none = await voiceFile(
+      new Request(`https://learningroutes.com/video/${"cd".repeat(32)}.mp4`),
+      files,
+    );
+    expect(none?.status).toBe(404);
+  });
 });

@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { data, redirect } from "react-router";
 import { runApiAction } from "../app-api.server";
 import { pageContext } from "../context";
+import { OwnHosts, ownHostsOf } from "../own-hosts";
 import { firstOpen } from "../player/first-open";
 import { Player } from "../player/player.client";
 import { inLocale } from "../storefront/words";
@@ -40,6 +41,7 @@ export async function loader({ params, request, context }: Route.LoaderArgs) {
   }
   const { contentOrigin } = context.get(pageContext);
   return {
+    ownHosts: ownHostsOf(context.get(pageContext)),
     view,
     enrollmentId: params.enrollmentId,
     locale: negotiateLocale(request.headers.get("accept-language"), "es"),
@@ -62,13 +64,17 @@ export function meta({ loaderData }: Route.MetaArgs) {
 }
 
 export default function Tema({ loaderData }: Route.ComponentProps) {
-  const { view, enrollmentId, locale, runner } = loaderData;
+  const { view, enrollmentId, locale, runner, ownHosts } = loaderData;
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
   if (!mounted) {
     return <PlayerShell view={view} locale={locale} />;
   }
-  return <Player view={view} enrollmentId={enrollmentId} locale={locale} runner={runner} />;
+  return (
+    <OwnHosts value={ownHosts}>
+      <Player view={view} enrollmentId={enrollmentId} locale={locale} runner={runner} />
+    </OwnHosts>
+  );
 }
 
 /**

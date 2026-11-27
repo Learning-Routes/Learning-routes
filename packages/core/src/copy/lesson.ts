@@ -30,6 +30,7 @@ export interface LessonText {
   videoLoads: string;
   openVideo: string;
   videoMissing: string;
+  captions: string;
   flipCard: string;
   seeAnswer: string;
   expectedOutput: string;
@@ -69,6 +70,7 @@ export const LESSON_TEXT: Record<LocaleCode, LessonText> = {
     videoLoads: "Se carga de {host} solo cuando lo pidas.",
     openVideo: "Abrir el video",
     videoMissing: "Este video no tiene una dirección segura.",
+    captions: "Subtítulos",
     flipCard: "Toca para voltear",
     seeAnswer: "Ver la respuesta",
     expectedOutput: "Lo que debe salir",
@@ -103,6 +105,7 @@ export const LESSON_TEXT: Record<LocaleCode, LessonText> = {
     videoLoads: "It loads from {host} only when you ask.",
     openVideo: "Open the video",
     videoMissing: "This video has no safe address.",
+    captions: "Captions",
     flipCard: "Tap to flip",
     seeAnswer: "See the answer",
     expectedOutput: "What it should print",
@@ -138,6 +141,7 @@ export const LESSON_TEXT: Record<LocaleCode, LessonText> = {
     videoLoads: "Só carrega do {host} quando você pedir.",
     openVideo: "Abrir o vídeo",
     videoMissing: "Este vídeo não tem um endereço seguro.",
+    captions: "Legendas",
     flipCard: "Toque para virar",
     seeAnswer: "Ver a resposta",
     expectedOutput: "O que deve aparecer",
@@ -174,6 +178,7 @@ export const LESSON_TEXT: Record<LocaleCode, LessonText> = {
     videoLoads: "Elle se charge depuis {host} seulement à votre demande.",
     openVideo: "Ouvrir la vidéo",
     videoMissing: "Cette vidéo n'a pas d'adresse sûre.",
+    captions: "Sous-titres",
     flipCard: "Touchez pour retourner",
     seeAnswer: "Voir la réponse",
     expectedOutput: "Ce qui doit s'afficher",
@@ -209,6 +214,7 @@ export const LESSON_TEXT: Record<LocaleCode, LessonText> = {
     videoLoads: "Si carica da {host} solo quando lo chiedi.",
     openVideo: "Apri il video",
     videoMissing: "Questo video non ha un indirizzo sicuro.",
+    captions: "Sottotitoli",
     flipCard: "Tocca per girare",
     seeAnswer: "Vedi la risposta",
     expectedOutput: "Cosa deve uscire",

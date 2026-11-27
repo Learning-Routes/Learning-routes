@@ -10,6 +10,8 @@ import "../app-pages/lesson.css";
 import { AppHeader } from "../app-pages/app-header";
 import { LessonBar } from "../app-pages/lesson-bar";
 import { isAnswerable, LessonBlocks, TopicDone } from "../app-pages/lesson-parts";
+import { pageContext } from "../context";
+import { OwnHosts, ownHostsOf } from "../own-hosts";
 import { filled, inLocale } from "../storefront/words";
 import { lessonPage } from "../surface";
 import { ButtonLink } from "../ui/button";
@@ -38,6 +40,7 @@ export async function loader({ request, params, context }: Route.LoaderArgs) {
     });
   }
   return {
+    ownHosts: ownHostsOf(context.get(pageContext)),
     lesson: answer.body.output,
     enrollmentId: params.enrollmentId,
     locale: negotiateLocale(request.headers.get("accept-language"), "es"),
@@ -63,55 +66,57 @@ export default function Seguir({ loaderData }: Route.ComponentProps) {
     ? `/mis-rutas/${enrollmentId}?tema=${lesson.next.number}`
     : "/mis-rutas";
   return (
-    <div className="desk opening">
-      <AppHeader locale={locale} place="learn" />
-      <LessonBar lesson={lesson} locale={locale} done={done} />
-      <article className="lesson">
-        <p className="lesson-route settle-1">{inLocale(lesson.routeTitle, locale, source)}</p>
-        <h1 className="lesson-title">
-          <Rising text={inLocale(lesson.title, locale, source)} />
-        </h1>
-        {lesson.locked ? (
-          <div className="lesson-note settle-2">
-            <h2 className="lesson-note-title">{words.lockedTitle}</h2>
-            <p>{words.lockedBody}</p>
-            <ButtonLink href="/mis-rutas">{APP_PAGES_TEXT[locale].backToMyRoutes}</ButtonLink>
-          </div>
-        ) : (
-          <>
-            {lesson.blocks.length > 0 ? (
-              <p className="lesson-play settle-2">
-                <ButtonLink href={`/mis-rutas/${enrollmentId}/tema/${lesson.topicNumber}`}>
-                  {PRACTICE_TEXT[locale].practiceTopic}
-                </ButtonLink>
-              </p>
-            ) : null}
-            <LessonBlocks
-              blocks={lesson.blocks}
-              locale={locale}
-              source={source}
-              creator={inLocale(lesson.creator, locale, source)}
-              onAllRight={() => setDone(true)}
-            />
-            {lesson.blocks.length === 0 ? <p className="settle-2">{words.empty}</p> : null}
-            <TopicDone
-              shown={done || !lesson.blocks.some(isAnswerable)}
-              celebrate={done}
-              locale={locale}
-              href={nextHref}
-              nextLine={
-                lesson.next
-                  ? filled(words.nextIs, {
-                      n: lesson.next.number,
-                      title: inLocale(lesson.next.title, locale, source),
-                    })
-                  : words.routeDone
-              }
-              action={lesson.next ? words.nextTopic : APP_PAGES_TEXT[locale].backToMyRoutes}
-            />
-          </>
-        )}
-      </article>
-    </div>
+    <OwnHosts value={loaderData.ownHosts}>
+      <div className="desk opening">
+        <AppHeader locale={locale} place="learn" />
+        <LessonBar lesson={lesson} locale={locale} done={done} />
+        <article className="lesson">
+          <p className="lesson-route settle-1">{inLocale(lesson.routeTitle, locale, source)}</p>
+          <h1 className="lesson-title">
+            <Rising text={inLocale(lesson.title, locale, source)} />
+          </h1>
+          {lesson.locked ? (
+            <div className="lesson-note settle-2">
+              <h2 className="lesson-note-title">{words.lockedTitle}</h2>
+              <p>{words.lockedBody}</p>
+              <ButtonLink href="/mis-rutas">{APP_PAGES_TEXT[locale].backToMyRoutes}</ButtonLink>
+            </div>
+          ) : (
+            <>
+              {lesson.blocks.length > 0 ? (
+                <p className="lesson-play settle-2">
+                  <ButtonLink href={`/mis-rutas/${enrollmentId}/tema/${lesson.topicNumber}`}>
+                    {PRACTICE_TEXT[locale].practiceTopic}
+                  </ButtonLink>
+                </p>
+              ) : null}
+              <LessonBlocks
+                blocks={lesson.blocks}
+                locale={locale}
+                source={source}
+                creator={inLocale(lesson.creator, locale, source)}
+                onAllRight={() => setDone(true)}
+              />
+              {lesson.blocks.length === 0 ? <p className="settle-2">{words.empty}</p> : null}
+              <TopicDone
+                shown={done || !lesson.blocks.some(isAnswerable)}
+                celebrate={done}
+                locale={locale}
+                href={nextHref}
+                nextLine={
+                  lesson.next
+                    ? filled(words.nextIs, {
+                        n: lesson.next.number,
+                        title: inLocale(lesson.next.title, locale, source),
+                      })
+                    : words.routeDone
+                }
+                action={lesson.next ? words.nextTopic : APP_PAGES_TEXT[locale].backToMyRoutes}
+              />
+            </>
+          )}
+        </article>
+      </div>
+    </OwnHosts>
   );
 }

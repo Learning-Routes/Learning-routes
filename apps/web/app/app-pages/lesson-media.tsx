@@ -1,5 +1,6 @@
 import type { LocalizedText } from "@learning-routes/core/localized-text";
-import { useState } from "react";
+import { use, useState } from "react";
+import { OwnHosts } from "../own-hosts";
 import { Button } from "../ui/button";
 import type { ViewContext } from "./lesson-context";
 import { Markdown } from "./markdown-view";
@@ -53,15 +54,29 @@ export function Figure({ context }: { context: ViewContext }) {
   );
 }
 
-/** Nothing of a third party loads until the person asks: not a frame, not a thumbnail. */
+/**
+ * Nothing of a third party loads until the person asks: not a frame, not a thumbnail. A video kept
+ * on our own hosts is ours, and plays in place, with its captions when it has them.
+ */
 export function Video({ context }: { context: ViewContext }) {
-  const { block, md, words } = context;
+  const { block, md, words, source } = context;
   const [playing, setPlaying] = useState(false);
+  const ownHosts = use(OwnHosts);
   const address = safeAddress(block.data.video_url);
   const embed = address ? videoEmbed(address) : null;
+  const isOurs = address !== null && ownHosts.includes(new URL(address).origin);
+  const captions = safeAddress(block.data.subtitles_url);
   return (
     <section className="lesson-video settle-2">
       <Markdown nodes={md("body")} />
+      {isOurs ? (
+        // biome-ignore lint/a11y/useMediaCaption: its captions are there when the creator gave them
+        <video className="lesson-video-frame" src={address} controls playsInline preload="metadata">
+          {captions ? (
+            <track kind="captions" src={captions} srcLang={source} label={words.captions} default />
+          ) : null}
+        </video>
+      ) : null}
       {embed && playing ? (
         <iframe
           className="lesson-video-frame"
@@ -82,7 +97,7 @@ export function Video({ context }: { context: ViewContext }) {
           <p className="app-fine">{words.videoLoads.replace("{host}", embed.host)}</p>
         </div>
       ) : null}
-      {!embed && address ? (
+      {!embed && !isOurs && address ? (
         <a className="text-link" href={address} rel="noopener nofollow ugc">
           {words.openVideo}
         </a>

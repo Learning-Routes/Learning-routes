@@ -8,6 +8,8 @@ import { AppHeader } from "../app-pages/app-header";
 import "../app-pages/app-pages.css";
 import { LessonBlocks } from "../app-pages/lesson-parts";
 import "../app-pages/lesson.css";
+import { pageContext } from "../context";
+import { OwnHosts, ownHostsOf } from "../own-hosts";
 import { inLocale } from "../storefront/words";
 import { lessonPage } from "../surface";
 import { Rising } from "../ui/rising";
@@ -37,6 +39,7 @@ export async function loader({ request, params, context }: Route.LoaderArgs) {
     throw data(null, { status: 404 });
   }
   return {
+    ownHosts: ownHostsOf(context.get(pageContext)),
     ...answer.body.output,
     current: wanted > 0 ? wanted : 1,
     routeId: params.routeId,
@@ -57,53 +60,55 @@ export default function VistaPrevia({ loaderData }: Route.ComponentProps) {
   const source = route.sourceLocale;
   let number = 0;
   return (
-    <div className="desk opening">
-      <AppHeader locale={locale} place="teach" />
-      <p className="preview-band" role="status">
-        {words.previewBand}
-      </p>
-      <div className="preview-page">
-        <nav className="preview-outline" aria-label={words.previewOutline}>
-          <h1 className="app-title">
-            <Rising text={inLocale(route.title, locale, source)} />
-          </h1>
-          {outline.map((module, index) => (
-            <section key={index}>
-              <h2 className="my-route-title">{inLocale(module.title, locale, source)}</h2>
-              <ol>
-                {module.lessons.map((lesson) => {
-                  number += 1;
-                  return (
-                    <li key={number}>
-                      <a
-                        className="text-link"
-                        aria-current={number === current ? "page" : undefined}
-                        href={`/creador/rutas/${routeId}/vista-previa?tema=${number}`}
-                      >
-                        {inLocale(lesson, locale, source)}
-                      </a>
-                    </li>
-                  );
-                })}
-              </ol>
-            </section>
-          ))}
-        </nav>
-        {view ? (
-          <article className="lesson">
-            <h2 className="lesson-title">{inLocale(view.title, locale, source)}</h2>
-            <LessonBlocks
-              blocks={view.blocks}
-              locale={locale}
-              source={source}
-              creator={inLocale(view.creator, locale, source)}
-              onAllRight={() => undefined}
-            />
-          </article>
-        ) : (
-          <p className="app-copy">{words.previewEmpty}</p>
-        )}
+    <OwnHosts value={loaderData.ownHosts}>
+      <div className="desk opening">
+        <AppHeader locale={locale} place="teach" />
+        <p className="preview-band" role="status">
+          {words.previewBand}
+        </p>
+        <div className="preview-page">
+          <nav className="preview-outline" aria-label={words.previewOutline}>
+            <h1 className="app-title">
+              <Rising text={inLocale(route.title, locale, source)} />
+            </h1>
+            {outline.map((module, index) => (
+              <section key={index}>
+                <h2 className="my-route-title">{inLocale(module.title, locale, source)}</h2>
+                <ol>
+                  {module.lessons.map((lesson) => {
+                    number += 1;
+                    return (
+                      <li key={number}>
+                        <a
+                          className="text-link"
+                          aria-current={number === current ? "page" : undefined}
+                          href={`/creador/rutas/${routeId}/vista-previa?tema=${number}`}
+                        >
+                          {inLocale(lesson, locale, source)}
+                        </a>
+                      </li>
+                    );
+                  })}
+                </ol>
+              </section>
+            ))}
+          </nav>
+          {view ? (
+            <article className="lesson">
+              <h2 className="lesson-title">{inLocale(view.title, locale, source)}</h2>
+              <LessonBlocks
+                blocks={view.blocks}
+                locale={locale}
+                source={source}
+                creator={inLocale(view.creator, locale, source)}
+                onAllRight={() => undefined}
+              />
+            </article>
+          ) : (
+            <p className="app-copy">{words.previewEmpty}</p>
+          )}
+        </div>
       </div>
-    </div>
+    </OwnHosts>
   );
 }
