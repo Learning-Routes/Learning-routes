@@ -391,6 +391,9 @@
   border: 0;
   border-radius: var(--radius-card);
 }
+video.lesson-video-frame {
+  background: #000;
+}
 .lesson-video-ask {
   display: flex;
   flex-wrap: wrap;

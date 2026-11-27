@@ -4,6 +4,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { BLOCK_VIEWS } from "../app/app-pages/lesson-blocks";
 import { LessonBlocks } from "../app/app-pages/lesson-parts";
+import { OwnHosts } from "../app/own-hosts";
 
 // Every block kind in the schema renders (Platform STEP 8 §1). The student never loses what a
 // creator wrote: a kind with no view fails the types, and this.
@@ -184,6 +185,30 @@ describe("the lesson page", () => {
     expect(other).not.toContain("<button");
     const unsafe = render("video", { video_url: "javascript:alert(1)" });
     expect(unsafe).not.toContain("javascript:");
+  });
+
+  it("plays a video kept on our own hosts in place, with its captions", () => {
+    const hash = "ab".repeat(32);
+    const html = renderToStaticMarkup(
+      <OwnHosts value={["https://learningroutes.com"]}>
+        <LessonBlocks
+          blocks={[
+            lessonBlock("video", {
+              video_url: `https://learningroutes.com/video/${hash}.mp4`,
+              subtitles_url: `https://learningroutes.com/video/${hash}.vtt`,
+            }),
+          ]}
+          locale="es"
+          source="es"
+          creator="Ana"
+          onAllRight={() => undefined}
+        />
+      </OwnHosts>,
+    );
+    expect(html).toContain("<video");
+    expect(html).toContain(`src="https://learningroutes.com/video/${hash}.mp4"`);
+    expect(html).toContain('kind="captions"');
+    expect(html).not.toContain("<a ");
   });
 
   it("makes each card a button, with both faces there to read", () => {
