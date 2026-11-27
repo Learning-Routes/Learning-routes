@@ -609,7 +609,8 @@ html[data-theme="dark"] .lp {
 }
 .landing-routes-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
+  /* auto-fill: one route alone keeps a card's width instead of stretching across the page. */
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 18rem), 1fr));
   gap: var(--space-6);
   margin: 0;
   padding: 0;
