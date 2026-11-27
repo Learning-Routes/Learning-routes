@@ -595,6 +595,8 @@ export function repositoryContract(name: string, withFixture: WithFixture) {
           error: "not_found",
         });
         const student = await actAs(learnerId);
+        // The list says a newer version is out, until the enrollment moves to it.
+        expect((await student.enrollments.listOwn(learnerId)).enrollments[0]?.hasUpdate).toBe(true);
         expect(value(await student.enrollments.upgrade(spaceId, enrollmentId))).toEqual({
           pinnedVersion: 2,
         });
@@ -614,6 +616,7 @@ export function repositoryContract(name: string, withFixture: WithFixture) {
         });
         const { enrollments: mine } = await student.enrollments.listOwn(learnerId);
         expect(mine[0]?.completedLessons).toBe(1);
+        expect(mine[0]?.hasUpdate).toBe(false);
       });
     });
   });

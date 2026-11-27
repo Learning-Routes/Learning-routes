@@ -43,6 +43,11 @@ async function listOwn(db: Db, userId: string) {
       modules: sql<Snapshot["modules"]>`${routeVersions.snapshot} -> 'modules'`,
       lessons: sql<Snapshot["lessons"]>`${routeVersions.snapshot} -> 'lessons'`,
       creator: spaces.name,
+      // A student may read every version of a route they are on (route_versions_select).
+      hasUpdate: sql<boolean>`exists (
+        select 1 from route_versions as newer
+        where newer.route_id = ${enrollments.routeId} and newer.version > ${enrollments.pinnedVersion}
+      )`,
       completedIds: sql<string[]>`(
         select coalesce(array_agg(${progress.lessonId}), '{}') from ${progress}
         where ${progress.enrollmentId} = ${enrollments.id} and ${progress.status} = 'completed'
