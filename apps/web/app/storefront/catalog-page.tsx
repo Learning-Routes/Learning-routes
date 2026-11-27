@@ -19,6 +19,8 @@ export interface CatalogView {
   page: number;
   routes: PublicRoute[];
   hasNext: boolean;
+  /** The topics that have a route: the only ones worth offering as a filter. */
+  topics: RouteTopic[];
 }
 
 type Filters = Pick<CatalogView, "locale" | "topic" | "search" | "page">;
@@ -39,8 +41,18 @@ export function catalogHref({ locale, topic, search, page }: Filters): string {
   return `/${locale}/explorar${text ? `?${text}` : ""}`;
 }
 
-function TopicFilters({ locale, topic, search }: Pick<CatalogView, "locale" | "topic" | "search">) {
+function TopicFilters({
+  locale,
+  topic,
+  search,
+  topics,
+}: Pick<CatalogView, "locale" | "topic" | "search" | "topics">) {
   const words = CATALOG_TEXT[locale];
+  // A topic with no route is no choice; the one in the address stays, so it can be left.
+  const offered = ROUTE_TOPICS.filter((value) => topics.includes(value) || value === topic);
+  if (offered.length < 2 && topic === null) {
+    return null;
+  }
   const choice = (name: string, value: RouteTopic | null) => (
     <li key={name}>
       <a
@@ -60,7 +72,7 @@ function TopicFilters({ locale, topic, search }: Pick<CatalogView, "locale" | "t
     <nav aria-label={words.filterLabel}>
       <ul className="catalog-topics">
         {choice(words.allTopics, null)}
-        {ROUTE_TOPICS.map((value) => choice(TOPIC_NAMES[locale][value], value))}
+        {offered.map((value) => choice(TOPIC_NAMES[locale][value], value))}
       </ul>
     </nav>
   );
@@ -167,7 +179,7 @@ export function CatalogPage({ view }: { view: CatalogView }) {
           </form>
         </search>
         <div className="settle-2">
-          <TopicFilters locale={locale} topic={topic} search={search} />
+          <TopicFilters locale={locale} topic={topic} search={search} topics={view.topics} />
         </div>
         <p className="catalog-free settle-3">{words.firstFree}</p>
         {routes.length === 0 ? (

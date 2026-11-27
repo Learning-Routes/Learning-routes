@@ -1,7 +1,6 @@
 import { CATALOG_TEXT } from "@learning-routes/core/copy/catalog";
 import { LANDING_TEXT } from "@learning-routes/core/copy/landing";
 import { CLOSE_TEXT } from "@learning-routes/core/copy/landing-close";
-import { EXAMPLE_ROUTE_KEYS, EXAMPLE_ROUTES } from "@learning-routes/core/copy/landing-routes";
 import { STAGE_TEXT } from "@learning-routes/core/copy/landing-stage";
 import type { LocaleCode } from "@learning-routes/core/locales";
 import { Button, ButtonLink } from "../ui/button";
@@ -98,11 +97,25 @@ function Blueprint({ locale }: { locale: LocaleCode }) {
   );
 }
 
-export function CloseSheet({ locale, teachHref }: { locale: LocaleCode; teachHref: string }) {
+/** A route to start with, as the closing sheet offers it. */
+export interface Idea {
+  title: string;
+  href: string;
+}
+
+export function CloseSheet({
+  locale,
+  teachHref,
+  ideas,
+}: {
+  locale: LocaleCode;
+  teachHref: string;
+  /** Routes that are really there to open. With none, the sheet offers none. */
+  ideas: Idea[];
+}) {
   const close = CLOSE_TEXT[locale];
   const shared = CATALOG_TEXT[locale];
   const catalog = `/${locale}/explorar`;
-  const { routes } = EXAMPLE_ROUTES[locale];
   return (
     <section className="lp-final" aria-labelledby="lp-close-title">
       <div className="lp-wrap">
@@ -129,14 +142,16 @@ export function CloseSheet({ locale, teachHref }: { locale: LocaleCode; teachHre
                 />
                 <Button type="submit">{close.button}</Button>
               </form>
-              <nav className="lp-ideas" aria-label={close.ideasGroup}>
-                <span>{close.ideasLabel}</span>
-                {EXAMPLE_ROUTE_KEYS.map((key) => (
-                  <a key={key} href={`${catalog}?q=${encodeURIComponent(routes[key].tab)}`}>
-                    {routes[key].title}
-                  </a>
-                ))}
-              </nav>
+              {ideas.length > 0 ? (
+                <nav className="lp-ideas" aria-label={close.ideasGroup}>
+                  <span>{close.ideasLabel}</span>
+                  {ideas.map((idea) => (
+                    <a key={idea.href} href={idea.href}>
+                      {idea.title}
+                    </a>
+                  ))}
+                </nav>
+              ) : null}
             </div>
             <Blueprint locale={locale} />
           </div>

@@ -15,6 +15,7 @@ import { EnhancementScript } from "../../storefront/enhancement-script";
 import { publicReads } from "../../storefront/public-reads.server";
 import { RouteCard } from "../../storefront/route-card";
 import { PlatformHeader } from "../../storefront/site-frame";
+import { inLocale } from "../../storefront/words";
 import { storefront } from "../../surface";
 import { TextLink } from "../../ui/parts";
 import type { Route } from "./+types/home";
@@ -123,7 +124,14 @@ export default function StorefrontHome({ loaderData }: Route.ComponentProps) {
           <RouteShapes locale={lang} />
         )}
         <LessonFormats locale={lang} />
-        <CloseSheet locale={lang} teachHref={`${appOrigin}/ser-creador`} />
+        <CloseSheet
+          locale={lang}
+          teachHref={`${appOrigin}/ser-creador`}
+          ideas={routes.slice(0, 4).map((route) => ({
+            title: inLocale(route.title, lang, route.sourceLocale),
+            href: `${protocol}//${route.spaceSlug}.${creatorDomain}/${route.slug}`,
+          }))}
+        />
       </main>
       <footer className="lp-footer">
         <div className="lp-wrap">

@@ -38,6 +38,7 @@ const view = (over: Partial<CatalogView> = {}): CatalogView => ({
   page: 1,
   routes: [ROUTE],
   hasNext: false,
+  topics: ["idiomas", "musica"],
   ...over,
 });
 const render = (over?: Partial<CatalogView>) =>
@@ -72,6 +73,16 @@ describe("the catalog page", () => {
     expect(render({ topic: "musica" })).toContain(
       'aria-current="true" href="/es/explorar?tema=musica"',
     );
+  });
+
+  it("offers only the topics that have a route, and no filter when there is one topic", () => {
+    const html = render();
+    expect(html).toContain("?tema=idiomas");
+    expect(html).toContain("?tema=musica");
+    expect(html).not.toContain("?tema=arte");
+    expect(render({ topics: ["idiomas"] })).not.toContain("catalog-topics");
+    // A topic in the address stays on show, so it can be left.
+    expect(render({ topics: ["idiomas"], topic: "arte", routes: [] })).toContain("?tema=idiomas");
   });
 
   it("says when a search finds nothing, with a link that clears the filters", () => {
