@@ -101,6 +101,12 @@
   padding: 0;
   list-style: none;
 }
+/* On a desk the cards keep their full size: three fill the row, as before. */
+@media (min-width: 72rem) {
+  .catalog-grid {
+    grid-template-columns: repeat(auto-fill, minmax(21rem, 1fr));
+  }
+}
 .catalog-pages {
   display: flex;
   justify-content: space-between;
