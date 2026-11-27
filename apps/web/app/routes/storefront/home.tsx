@@ -127,10 +127,7 @@ export default function StorefrontHome({ loaderData }: Route.ComponentProps) {
         <CloseSheet
           locale={lang}
           teachHref={`${appOrigin}/ser-creador`}
-          ideas={routes.slice(0, 4).map((route) => ({
-            title: inLocale(route.title, lang, route.sourceLocale),
-            href: `${protocol}//${route.spaceSlug}.${creatorDomain}/${route.slug}`,
-          }))}
+          ideas={routes.slice(0, 4).map((route) => inLocale(route.title, lang, route.sourceLocale))}
         />
       </main>
       <footer className="lp-footer">

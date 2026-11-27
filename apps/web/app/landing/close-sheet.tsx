@@ -97,12 +97,6 @@ function Blueprint({ locale }: { locale: LocaleCode }) {
   );
 }
 
-/** A route to start with, as the closing sheet offers it. */
-export interface Idea {
-  title: string;
-  href: string;
-}
-
 export function CloseSheet({
   locale,
   teachHref,
@@ -110,8 +104,8 @@ export function CloseSheet({
 }: {
   locale: LocaleCode;
   teachHref: string;
-  /** Routes that are really there to open. With none, the sheet offers none. */
-  ideas: Idea[];
+  /** Titles of routes that are really there, so each search finds one. With none, no ideas. */
+  ideas: string[];
 }) {
   const close = CLOSE_TEXT[locale];
   const shared = CATALOG_TEXT[locale];
@@ -146,8 +140,8 @@ export function CloseSheet({
                 <nav className="lp-ideas" aria-label={close.ideasGroup}>
                   <span>{close.ideasLabel}</span>
                   {ideas.map((idea) => (
-                    <a key={idea.href} href={idea.href}>
-                      {idea.title}
+                    <a key={idea} href={`${catalog}?q=${encodeURIComponent(idea)}`}>
+                      {idea}
                     </a>
                   ))}
                 </nav>

@@ -84,15 +84,13 @@ test.describe("on a touch screen", () => {
   });
 });
 
-test("the landing's closing sheet offers routes that are there to open", async ({ page }) => {
+test("the landing's closing sheet suggests routes that are there to find", async ({ page }) => {
   await page.goto(`${DEV}/es`);
-  const cards = await page
-    .locator(".landing-routes-grid a.route-card")
-    .evaluateAll((links) => links.map((link) => link.getAttribute("href")));
-  const ideas = await page
-    .locator(".lp-ideas a")
-    .evaluateAll((links) => links.map((link) => link.getAttribute("href")));
-  // Each idea is one of the routes above it: never a search that could come back empty.
+  const titles = await page.locator(".landing-routes-grid .route-card-title").allTextContents();
+  const ideas = await page.locator(".lp-ideas a").allTextContents();
+  // Each idea is the title of a route shown above it: never a search that comes back empty.
   expect(ideas.length).toBeGreaterThan(0);
-  expect(cards).toEqual(expect.arrayContaining(ideas));
+  expect(titles).toEqual(expect.arrayContaining(ideas));
+  await page.goto(`${CATALOG}?q=${encodeURIComponent(ideas[0] ?? "")}`);
+  await expect(page.locator(`${CARDS} h2`).first()).toHaveText(ideas[0] ?? "");
 });
