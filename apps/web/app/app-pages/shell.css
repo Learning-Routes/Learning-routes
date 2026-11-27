@@ -104,7 +104,7 @@
 
 /* On a narrow screen: the brand, Enseñar, the way out and the switch on top, and the five places
    in a bar at the bottom, each with its sign and its name. */
-@media (max-width: 1023px) {
+@media (max-width: 899px) {
   .desk:has(> .shell) {
     padding-block-end: calc(4rem + env(safe-area-inset-bottom));
   }
@@ -184,8 +184,9 @@
   }
 }
 
-/* On a wide screen the header stands at the side and stays while the page scrolls. */
-@media (min-width: 1024px) {
+/* On a wide screen the header stands at the side and stays while the page scrolls. From 900 px:
+   a laptop window that shares the screen is still a desk, not a phone. */
+@media (min-width: 900px) {
   .desk:has(> .shell) {
     display: grid;
     grid-template-columns: 17rem minmax(0, 1fr);
@@ -199,6 +200,10 @@
   .desk:has(> .shell) > .app-page {
     width: 100%;
     padding-inline: var(--space-10);
+  }
+  /* Every page starts where the widest one does, so the title stays put from page to page. */
+  .desk:has(> .shell) > .app-page {
+    margin-inline: max(0px, calc((100% - 77.5rem) / 2)) auto;
   }
   .desk > .shell {
     grid-column: 1;
@@ -251,6 +256,10 @@
     box-shadow:
       inset 0 0 0 1.5px var(--color-border-subtle),
       0 3px 0 var(--color-border-subtle);
+  }
+  /* Inicio, Mis rutas and the profile open with the way on themselves: once is enough. */
+  .desk:has(.hub-hero, .my-next, .pf-hero) .shell-on {
+    display: none;
   }
   .shell-on-label {
     margin: 0;

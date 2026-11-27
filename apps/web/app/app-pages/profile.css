@@ -323,7 +323,8 @@
   background: var(--color-positive);
 }
 
-@media (min-width: 62rem) {
+/* Two columns once the page itself, beside the frame, has room for both. */
+@media (min-width: 76rem) {
   .pf {
     grid-template-columns: minmax(0, 1fr) 22rem;
     align-items: start;

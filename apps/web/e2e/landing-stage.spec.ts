@@ -172,13 +172,14 @@ test("an idea fills the field, and without JavaScript it is a link to the search
   const context = await browser.newContext({ reducedMotion: "reduce", locale: "es-ES" });
   const page = await context.newPage();
   await page.goto("/es");
-  await page.getByRole("link", { name: "Guitarra para empezar" }).click();
-  await expect(page.locator("#lp-want")).toHaveValue("Guitarra");
+  // The ideas are the titles of routes that are there (the fixtures' own).
+  await page.locator(".lp-ideas").getByRole("link", { name: "Guitarra desde cero" }).click();
+  await expect(page.locator("#lp-want")).toHaveValue("Guitarra desde cero");
   await context.close();
   const plain = await browser.newContext({ javaScriptEnabled: false, locale: "es-ES" });
   const noScript = await plain.newPage();
   await noScript.goto("/es");
-  await noScript.getByRole("link", { name: "Guitarra para empezar" }).click();
+  await noScript.locator(".lp-ideas").getByRole("link", { name: "Guitarra desde cero" }).click();
   await expect(noScript).toHaveURL(IDEA_SEARCH);
   await plain.close();
 });

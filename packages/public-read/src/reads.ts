@@ -39,6 +39,8 @@ export const PUBLIC_READS = {
                    where featured_position is not null order by featured_position limit 3`,
   newestToStart: `select ${ROUTE_COLUMNS} from public_catalog
                    order by approved_at desc, route_id limit 3`,
+  // The topics that have a route, so the catalog offers no filter that comes back empty.
+  topicsInCatalog: "select distinct topic from public_catalog where topic is not null",
   // How many follow it, never who (Platform STEP 17).
   spaceBySlug: `select space.id, space.slug, space.name, space.default_locale, space.locales,
                        space.tagline, space.bio, space.brand_color,
@@ -177,6 +179,11 @@ export function publicRead(db: Queryable) {
         routes: rows.slice(0, CATALOG_PAGE_SIZE).map(routeFrom),
         hasNext: rows.length > CATALOG_PAGE_SIZE,
       };
+    },
+    /** The topics with at least one route in the catalog. */
+    async topicsInCatalog(): Promise<RouteTopic[]> {
+      const { rows } = await db.query(PUBLIC_READS.topicsInCatalog, []);
+      return rows.map((row) => row.topic as RouteTopic);
     },
     /** The landing's three: those an operator chose or, with none chosen, the newest. */
     async routesToStart(): Promise<PublicRoute[]> {

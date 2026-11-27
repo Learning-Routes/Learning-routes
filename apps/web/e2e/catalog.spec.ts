@@ -39,7 +39,9 @@ test.describe("with no JavaScript", () => {
     await page.goto(CATALOG);
     await page.getByRole("link", { name: "Música" }).click();
     await expect(page.locator(`${CARDS} h2`)).toHaveText(["Guitarra desde cero"]);
-    await page.getByRole("link", { name: "Negocios" }).click();
+    // A topic with no route is not offered; an address that names one still says so, and lets go.
+    await expect(page.getByRole("link", { name: "Negocios" })).toHaveCount(0);
+    await page.goto(`${CATALOG}?tema=negocios`);
     await expect(page.getByText("No encontramos rutas de Negocios")).toBeVisible();
     await page.getByRole("link", { name: "Quitar los filtros" }).click();
     expect(new URL(page.url()).search).toBe("");
@@ -80,4 +82,15 @@ test.describe("on a touch screen", () => {
     await card.tap();
     await page.waitForURL(PORTUGUESE_PAGE);
   });
+});
+
+test("the landing's closing sheet suggests routes that are there to find", async ({ page }) => {
+  await page.goto(`${DEV}/es`);
+  const titles = await page.locator(".landing-routes-grid .route-card-title").allTextContents();
+  const ideas = await page.locator(".lp-ideas a").allTextContents();
+  // Each idea is the title of a route shown above it: never a search that comes back empty.
+  expect(ideas.length).toBeGreaterThan(0);
+  expect(titles).toEqual(expect.arrayContaining(ideas));
+  await page.goto(`${CATALOG}?q=${encodeURIComponent(ideas[0] ?? "")}`);
+  await expect(page.locator(`${CARDS} h2`).first()).toHaveText(ideas[0] ?? "");
 });

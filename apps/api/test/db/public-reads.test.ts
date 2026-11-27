@@ -364,6 +364,16 @@ describe("searching the catalog (Platform STEP 4 §3.2)", () => {
     });
   });
 
+  it("names the topics that have a route in the catalog, and no other", async () => {
+    await rolledBack(URLS.migrator, async (db) => {
+      await approved(db, "m", "Música", "musica");
+      await approved(db, "n", "Negocios", "negocios");
+      const topics = await asStranger(db, () => publicRead(db).topicsInCatalog());
+      expect(topics).toEqual(expect.arrayContaining(["musica", "negocios"]));
+      expect(topics).not.toContain("arte");
+    });
+  });
+
   it("pages by 24, and says when there is a next page", async () => {
     await rolledBack(URLS.migrator, async (db) => {
       const word = unique();

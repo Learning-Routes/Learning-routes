@@ -38,11 +38,14 @@ export async function loader({ params, request, context }: Route.LoaderArgs) {
     search: typed === "" ? null : typed,
     page: Number.isInteger(number) && number > 0 && number <= MAX_PAGE ? number : 1,
   };
-  const { routes, hasNext } = await publicReads(context, (reads) => reads.catalog(filters));
+  const { routes, hasNext, topics } = await publicReads(context, async (reads) => ({
+    ...(await reads.catalog(filters)),
+    topics: await reads.topicsInCatalog(),
+  }));
   const { appOrigin, creatorDomain } = context.get(pageContext);
   const tags = ["catalog", ...routes.map((route) => `route:${route.routeId}`)];
   return data(
-    { ...filters, routes, hasNext, appOrigin, creatorDomain, origin: url.origin },
+    { ...filters, routes, hasNext, topics, appOrigin, creatorDomain, origin: url.origin },
     { headers: storefrontHeaders(tags) },
   );
 }
