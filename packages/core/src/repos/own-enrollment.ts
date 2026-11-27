@@ -12,4 +12,6 @@ export interface OwnEnrollment {
   completedLessons: number;
   /** The topic they carry on with, from 1. */
   place: { number: number; title: LocalizedText | null; finished: boolean };
+  /** Whether the route has a version published after the one this enrollment is on. */
+  hasUpdate: boolean;
 }

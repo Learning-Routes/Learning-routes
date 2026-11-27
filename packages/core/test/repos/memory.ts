@@ -533,6 +533,10 @@ export function memoryRepos(state: State, actorId = ""): Repos {
           .map((row) => {
             const { snapshot } = state.versions.get(`${row.routeId}:${row.pinnedVersion}`) ?? {};
             return {
+              hasUpdate: [...state.versions.keys()].some((key) => {
+                const [routeId, version] = key.split(":");
+                return routeId === row.routeId && Number(version) > row.pinnedVersion;
+              }),
               enrollmentId: row.id,
               routeId: row.routeId,
               title: snapshot?.route.title ?? { en: "" },

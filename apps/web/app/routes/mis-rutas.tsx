@@ -8,6 +8,8 @@ import { redirect } from "react-router";
 import { AppHeader } from "../app-pages/app-header";
 import "../app-pages/app-pages.css";
 import "../app-pages/my-routes.css";
+import { runApiAction } from "../app-api.server";
+import { RouteUpdates } from "../app-pages/route-updates";
 import { pageContext } from "../context";
 import { ownList } from "../shell.server";
 import { filled, inLocale } from "../storefront/words";
@@ -40,6 +42,16 @@ export async function loader({ request, context }: Route.LoaderArgs) {
     locale: negotiateLocale(request.headers.get("accept-language"), "es"),
     platformOrigin: context.get(pageContext).platformOrigin,
   };
+}
+
+/** Move one of their enrollments to the route's newest version. */
+export async function action({ request, context }: Route.ActionArgs) {
+  const enrollmentId = String((await request.formData()).get("enrollment") ?? "");
+  const answer = await runApiAction(context, request, "enrollment.upgrade", { enrollmentId });
+  if (answer.status === 401) {
+    throw redirect("/sign-in");
+  }
+  return { said: answer.body?.ok ? ("updated" as const) : ("updateFailed" as const) };
 }
 
 export const headers: Route.HeadersFunction = () => ({ "Cache-Control": "no-store" });
@@ -201,7 +213,7 @@ function MyRoute({
   );
 }
 
-export default function MisRutas({ loaderData }: Route.ComponentProps) {
+export default function MisRutas({ loaderData, actionData }: Route.ComponentProps) {
   usePreloadRoute("routes/tema");
   const { enrollments, teaches, locale, platformOrigin, newEnrollment, name } = loaderData;
   const arriving = useArrivingEnrollment(newEnrollment);
@@ -234,6 +246,7 @@ export default function MisRutas({ loaderData }: Route.ComponentProps) {
             </nav>
           ) : null}
         </div>
+        <RouteUpdates enrollments={enrollments} said={actionData?.said} locale={locale} />
         {enrollments.length === 0 ? (
           <EmptyState
             title={words.emptyTitle}
