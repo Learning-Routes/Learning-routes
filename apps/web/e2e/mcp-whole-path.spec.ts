@@ -167,7 +167,8 @@ test("an assistant imports and publishes a route, until it is disconnected", asy
 
   await page.getByRole("link", { name: "Empezar gratis" }).click();
   await page.getByRole("heading", { name: "Mis rutas" }).waitFor();
-  await expect(page.getByText(HOSTILE_TITLE).first()).toBeVisible();
+  // In the page itself: the frame no longer repeats the route that Mis rutas opens with.
+  await expect(page.getByRole("main").getByText(HOSTILE_TITLE).first()).toBeVisible();
   expect(await page.evaluate(() => "__pwned" in window)).toBe(false);
 
   // The creator's hub: the creation's card, a new version in its block, then out of the draft.
