@@ -55,7 +55,7 @@ export const STAGE_TEXT: Record<LocaleCode, StageText> = {
     ],
     overview: "Este es el recorrido de una ruta, paso a paso.",
     map: {
-      example: "Ruta de ejemplo",
+      example: "English Unlimited",
       done: "Hecho",
       here: "Estás aquí",
       coming: "Por llegar",
@@ -97,7 +97,7 @@ export const STAGE_TEXT: Record<LocaleCode, StageText> = {
     ],
     overview: "This is how a route goes, step by step.",
     map: {
-      example: "Example route",
+      example: "English Unlimited",
       done: "Done",
       here: "You are here",
       coming: "Still ahead",
@@ -139,7 +139,7 @@ export const STAGE_TEXT: Record<LocaleCode, StageText> = {
     ],
     overview: "Este é o percurso de uma rota, passo a passo.",
     map: {
-      example: "Rota de exemplo",
+      example: "English Unlimited",
       done: "Feito",
       here: "Você está aqui",
       coming: "Por vir",
@@ -181,7 +181,7 @@ export const STAGE_TEXT: Record<LocaleCode, StageText> = {
     ],
     overview: "Voici comment se déroule un parcours, étape par étape.",
     map: {
-      example: "Parcours d'exemple",
+      example: "English Unlimited",
       done: "Fait",
       here: "Vous êtes ici",
       coming: "À venir",
@@ -223,7 +223,7 @@ export const STAGE_TEXT: Record<LocaleCode, StageText> = {
     ],
     overview: "Ecco come si svolge un percorso, passo dopo passo.",
     map: {
-      example: "Percorso di esempio",
+      example: "English Unlimited",
       done: "Fatto",
       here: "Sei qui",
       coming: "Da fare",

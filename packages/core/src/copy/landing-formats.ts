@@ -32,13 +32,13 @@ export const LANDING_FORMATS_TEXT: Record<LocaleCode, LandingFormatsText> = {
       "Cada tema usa la forma que mejor lo enseña: ordenar, escuchar, escribir código, seguir un ejemplo o completar un esquema.",
     order: {
       title: "Ordena los pasos",
-      body: "Para procesos: entiendes por qué va cada cosa en su lugar.",
-      steps: ["Mezcla la harina y el agua", "Deja reposar la masa", "Hornea 30 minutos"],
+      body: "Para diálogos y procesos: entiendes por qué va cada cosa en su lugar.",
+      steps: ["Good morning!", "A coffee, please.", "Here you are."],
     },
     listen: {
       title: "Escucha y repite",
       body: "Para idiomas y música: oyes, repites y comparas.",
-      phrase: "«Onde fica a estação?»",
+      phrase: "«Where is the station?»",
       meaning: "¿Dónde queda la estación?",
     },
     code: {
@@ -49,7 +49,7 @@ export const LANDING_FORMATS_TEXT: Record<LocaleCode, LandingFormatsText> = {
     worked: {
       title: "Ejemplo resuelto",
       body: "Cada paso aparece cuando lo necesitas.",
-      notes: ["resta 6", "divide entre 2"],
+      notes: ["con he, she, it: -s", "pregunta con does"],
     },
     diagram: {
       title: "Completa el esquema",
@@ -68,14 +68,14 @@ export const LANDING_FORMATS_TEXT: Record<LocaleCode, LandingFormatsText> = {
       "Each topic takes the form that teaches it best: put steps in order, listen, write code, follow an example or complete a diagram.",
     order: {
       title: "Put the steps in order",
-      body: "For processes: you see why each step goes where it does.",
-      steps: ["Mix the flour and water", "Let the dough rest", "Bake for 30 minutes"],
+      body: "For dialogues and processes: you see why each step goes where it does.",
+      steps: ["Good morning!", "A coffee, please.", "Here you are."],
     },
     listen: {
       title: "Listen and repeat",
       body: "For languages and music: you hear it, say it and compare.",
-      phrase: "«Onde fica a estação?»",
-      meaning: "Where is the station?",
+      phrase: "«Where is the station?»",
+      meaning: "¿Dónde queda la estación?",
     },
     code: {
       title: "Write and test",
@@ -85,7 +85,7 @@ export const LANDING_FORMATS_TEXT: Record<LocaleCode, LandingFormatsText> = {
     worked: {
       title: "Worked example",
       body: "Each step appears when you need it.",
-      notes: ["subtract 6", "divide by 2"],
+      notes: ["with he, she, it: -s", "question with does"],
     },
     diagram: {
       title: "Complete the diagram",
@@ -104,13 +104,13 @@ export const LANDING_FORMATS_TEXT: Record<LocaleCode, LandingFormatsText> = {
       "Cada tema usa a forma que melhor o ensina: ordenar, ouvir, escrever código, seguir um exemplo ou completar um esquema.",
     order: {
       title: "Ordene os passos",
-      body: "Para processos: você entende por que cada coisa vai no seu lugar.",
-      steps: ["Misture a farinha e a água", "Deixe a massa descansar", "Asse por 30 minutos"],
+      body: "Para diálogos e processos: você entende por que cada coisa vai no seu lugar.",
+      steps: ["Good morning!", "A coffee, please.", "Here you are."],
     },
     listen: {
       title: "Ouça e repita",
       body: "Para idiomas e música: você ouve, repete e compara.",
-      phrase: "«¿Dónde queda la estación?»",
+      phrase: "«Where is the station?»",
       meaning: "Onde fica a estação?",
     },
     code: {
@@ -121,7 +121,7 @@ export const LANDING_FORMATS_TEXT: Record<LocaleCode, LandingFormatsText> = {
     worked: {
       title: "Exemplo resolvido",
       body: "Cada passo aparece quando você precisa.",
-      notes: ["subtraia 6", "divida por 2"],
+      notes: ["com he, she, it: -s", "pergunta com does"],
     },
     diagram: {
       title: "Complete o esquema",
@@ -140,13 +140,13 @@ export const LANDING_FORMATS_TEXT: Record<LocaleCode, LandingFormatsText> = {
       "Chaque thème prend la forme qui l'enseigne le mieux : ordonner, écouter, écrire du code, suivre un exemple ou compléter un schéma.",
     order: {
       title: "Remettez les étapes dans l'ordre",
-      body: "Pour les procédés : vous comprenez pourquoi chaque étape est à sa place.",
-      steps: ["Mélangez la farine et l'eau", "Laissez reposer la pâte", "Enfournez 30 minutes"],
+      body: "Pour les dialogues et les procédés : vous comprenez pourquoi chaque étape est à sa place.",
+      steps: ["Good morning!", "A coffee, please.", "Here you are."],
     },
     listen: {
       title: "Écoutez et répétez",
       body: "Pour les langues et la musique : vous écoutez, répétez et comparez.",
-      phrase: "«Onde fica a estação?»",
+      phrase: "«Where is the station?»",
       meaning: "Où est la gare ?",
     },
     code: {
@@ -157,7 +157,7 @@ export const LANDING_FORMATS_TEXT: Record<LocaleCode, LandingFormatsText> = {
     worked: {
       title: "Exemple résolu",
       body: "Chaque étape apparaît quand vous en avez besoin.",
-      notes: ["soustrayez 6", "divisez par 2"],
+      notes: ["avec he, she, it : -s", "question avec does"],
     },
     diagram: {
       title: "Complétez le schéma",
@@ -176,13 +176,13 @@ export const LANDING_FORMATS_TEXT: Record<LocaleCode, LandingFormatsText> = {
       "Ogni argomento prende la forma che lo insegna meglio: ordinare, ascoltare, scrivere codice, seguire un esempio o completare uno schema.",
     order: {
       title: "Metti i passaggi in ordine",
-      body: "Per i procedimenti: capisci perché ogni cosa va al suo posto.",
-      steps: ["Mescola farina e acqua", "Lascia riposare l'impasto", "Inforna per 30 minuti"],
+      body: "Per dialoghi e procedimenti: capisci perché ogni cosa va al suo posto.",
+      steps: ["Good morning!", "A coffee, please.", "Here you are."],
     },
     listen: {
       title: "Ascolta e ripeti",
       body: "Per lingue e musica: ascolti, ripeti e confronti.",
-      phrase: "«Onde fica a estação?»",
+      phrase: "«Where is the station?»",
       meaning: "Dov'è la stazione?",
     },
     code: {
@@ -193,7 +193,7 @@ export const LANDING_FORMATS_TEXT: Record<LocaleCode, LandingFormatsText> = {
     worked: {
       title: "Esempio svolto",
       body: "Ogni passaggio appare quando ti serve.",
-      notes: ["sottrai 6", "dividi per 2"],
+      notes: ["con he, she, it: -s", "domanda con does"],
     },
     diagram: {
       title: "Completa lo schema",
