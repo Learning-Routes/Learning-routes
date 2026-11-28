@@ -1,5 +1,5 @@
 import { LANDING_FORMATS_TEXT } from "@learning-routes/core/copy/landing-formats";
-import { EXAMPLE_ROUTE_KEYS, EXAMPLE_ROUTES } from "@learning-routes/core/copy/landing-routes";
+import { EXAMPLE_ROUTE_KEYS, exampleRoute } from "@learning-routes/core/copy/landing-routes";
 import type { LocaleCode } from "@learning-routes/core/locales";
 import { filled } from "../storefront/words";
 import { RouteFigure } from "../ui/route-figure";
@@ -15,7 +15,6 @@ const EXAMPLE_LESSONS = [6, 5, 5];
 /** While no route is published, the example routes show what a route's shape means. */
 export function RouteShapes({ locale }: { locale: LocaleCode }) {
   const words = LANDING_FORMATS_TEXT[locale];
-  const { routes } = EXAMPLE_ROUTES[locale];
   const topics = EXAMPLE_LESSONS.reduce((sum, count) => sum + count - 1, 0);
   return (
     <section className="landing-routes" aria-labelledby="fm-shapes">
@@ -36,7 +35,7 @@ export function RouteShapes({ locale }: { locale: LocaleCode }) {
                 travels
                 className="route-card-line"
               />
-              <h3 className="route-card-title">{routes[key].title}</h3>
+              <h3 className="route-card-title">{exampleRoute(locale, key).title}</h3>
               <p className="route-card-creator">{words.example}</p>
               <p className="route-card-facts">
                 {filled(words.shapeFacts, { modules: EXAMPLE_LESSONS.length, topics })}
@@ -123,12 +122,12 @@ export function LessonFormats({ locale }: { locale: LocaleCode }) {
           <h3>{worked.title}</h3>
           <p className="fm-body">{worked.body}</p>
           <ol className="fm-scene fm-worked" aria-hidden="true">
-            <li>2x + 6 = 14</li>
+            <li>I work here.</li>
             <li>
-              2x = 8<small>{worked.notes[0]}</small>
+              He works here.<small>{worked.notes[0]}</small>
             </li>
             <li>
-              x = 4<small>{worked.notes[1]}</small>
+              Does he work here?<small>{worked.notes[1]}</small>
             </li>
           </ol>
         </article>

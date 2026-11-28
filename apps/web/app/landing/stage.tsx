@@ -1,10 +1,6 @@
 import { CATALOG_TEXT } from "@learning-routes/core/copy/catalog";
 import { LANDING_TEXT } from "@learning-routes/core/copy/landing";
-import {
-  EXAMPLE_ROUTE_KEYS,
-  EXAMPLE_ROUTES,
-  exampleRouteForMap,
-} from "@learning-routes/core/copy/landing-routes";
+import { EXAMPLE_ROUTE_KEYS, exampleRoute } from "@learning-routes/core/copy/landing-routes";
 import { STAGE_TEXT } from "@learning-routes/core/copy/landing-stage";
 import type { LocaleCode } from "@learning-routes/core/locales";
 import { ButtonLink } from "../ui/button";
@@ -65,7 +61,6 @@ function Legend({ locale }: { locale: LocaleCode }) {
 
 function RouteTabs({ locale }: { locale: LocaleCode }) {
   const { map } = STAGE_TEXT[locale];
-  const { routes } = EXAMPLE_ROUTES[locale];
   return (
     <div className="lp-seg">
       <span id="lp-seg-label">{map.example}</span>
@@ -73,7 +68,7 @@ function RouteTabs({ locale }: { locale: LocaleCode }) {
       <div className="lp-opts" role="group" aria-labelledby="lp-seg-label">
         {EXAMPLE_ROUTE_KEYS.map((key, index) => (
           <button key={key} type="button" data-route={key} aria-pressed={index === 0}>
-            {routes[key].tab}
+            {exampleRoute(locale, key).tab}
           </button>
         ))}
       </div>
@@ -84,7 +79,10 @@ function RouteTabs({ locale }: { locale: LocaleCode }) {
 function stageData(locale: LocaleCode) {
   const { map } = STAGE_TEXT[locale];
   const routes = Object.fromEntries(
-    EXAMPLE_ROUTE_KEYS.map((key) => [key, exampleRouteForMap(locale, key)]),
+    EXAMPLE_ROUTE_KEYS.map((key) => {
+      const { title, modules } = exampleRoute(locale, key);
+      return [key, { title, modules }];
+    }),
   );
   const words = {
     yourRoute: map.example,

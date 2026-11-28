@@ -6,9 +6,9 @@ import { ASSISTANT_TEXT } from "../src/copy/assistant";
 import { CATALOG_TEXT } from "../src/copy/catalog";
 import { CONNECT_TEXT } from "../src/copy/connect";
 import { CREATOR_TEXT } from "../src/copy/creator";
+import { HOUSE_ROUTE } from "../src/copy/house-route";
 import { LANDING_TEXT } from "../src/copy/landing";
 import { CLOSE_TEXT } from "../src/copy/landing-close";
-import { EXAMPLE_ROUTES } from "../src/copy/landing-routes";
 import { STAGE_TEXT } from "../src/copy/landing-stage";
 import { LESSON_TEXT } from "../src/copy/lesson";
 import { MY_ROUTES_TEXT } from "../src/copy/my-routes";
@@ -91,7 +91,7 @@ describe("the copy check", () => {
     ["landing", LANDING_TEXT],
     ["landing stage", STAGE_TEXT],
     ["landing close", CLOSE_TEXT],
-    ["example routes", EXAMPLE_ROUTES],
+    ["house route", HOUSE_ROUTE],
     ["catalog", CATALOG_TEXT],
     ["creator", CREATOR_TEXT],
     ["app pages", APP_PAGES_TEXT],

@@ -136,11 +136,13 @@ test("the example tabs change the map, and the panels' links only take focus whe
     .locator(".lp-journey")
     .evaluate((journey) => journey.getBoundingClientRect().top);
   await page.evaluate((y) => window.scrollTo(0, window.scrollY + y + innerHeight * 2), stage);
-  const python = page.getByRole("button", { name: "Python", exact: true });
-  await expect(python).toBeVisible();
-  await python.click();
-  await expect(python).toHaveAttribute("aria-pressed", "true");
-  await expect(page.locator(".lp-mr b")).toHaveText("Python desde cero");
+  await expect(page.locator(".lp-ml b").first()).toHaveText("Hola: preséntate");
+  const travel = page.getByRole("button", { name: "Viajes", exact: true });
+  await expect(travel).toBeVisible();
+  await travel.click();
+  await expect(travel).toHaveAttribute("aria-pressed", "true");
+  await expect(page.locator(".lp-mr b")).toHaveText("Inglés desde cero");
+  await expect(page.locator(".lp-ml b").first()).toHaveText("Planes y viajes");
   await expect(page.locator(".lp-ann").last().getByRole("link")).toHaveAttribute("tabindex", "-1");
 });
 
