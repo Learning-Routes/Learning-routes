@@ -68,7 +68,8 @@ test("the player keeps its switch on a phone", async ({ browser }) => {
   });
   const page = await context.newPage();
   await SCREENS["my-routes"](page);
-  await page.getByRole("link", { name: "Seguir", exact: true }).first().click();
+  // The page's own way on: the frame keeps a second one, hidden while this page shows it.
+  await page.getByRole("main").getByRole("link", { name: "Seguir", exact: true }).click();
   await page.locator(".p-segs").waitFor();
   await toggledAndKept(page);
   await context.close();
